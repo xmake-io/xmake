@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        looker.h
@@ -30,6 +30,11 @@
  * includes
  */
 #include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -74,7 +79,7 @@ tb_long_t           tb_dns_looker_wait(tb_dns_looker_ref_t looker, tb_long_t tim
  */
 tb_void_t           tb_dns_looker_exit(tb_dns_looker_ref_t looker);
 
-/*! look address from the host name, block
+/*! lookup address from the host name, block
  *
  * try to look it from cache first
  *
@@ -84,5 +89,10 @@ tb_void_t           tb_dns_looker_exit(tb_dns_looker_ref_t looker);
  * @return          tb_true or tb_false
  */
 tb_bool_t           tb_dns_looker_done(tb_char_t const* name, tb_ipaddr_ref_t addr);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif

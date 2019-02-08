@@ -14,7 +14,7 @@
  * along with TArch; 
  * If not, see <a href="http://www.gnu.org/licenses/"> http://www.gnu.org/licenses/</a>
  * 
- * Copyright (C) 2009 - 2017, ruki All rights reserved.
+ * Copyright (C) 2009 - 2019, ruki All rights reserved.
  *
  * @author      ruki
  * @file        snprintf.c

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        socket.h
@@ -101,7 +101,7 @@ typedef enum __tb_socket_event_e
     TB_SOCKET_EVENT_NONE                = 0x0000
 ,   TB_SOCKET_EVENT_RECV                = 0x0001
 ,   TB_SOCKET_EVENT_SEND                = 0x0002
-,   TB_SOCKET_EVENT_CONN                = TB_SOCKET_EVENT_SEND
+,   TB_SOCKET_EVENT_CONN                = TB_SOCKET_EVENT_SEND 
 ,   TB_SOCKET_EVENT_ACPT                = TB_SOCKET_EVENT_RECV
 ,   TB_SOCKET_EVENT_EALL                = TB_SOCKET_EVENT_RECV | TB_SOCKET_EVENT_SEND
 
@@ -144,10 +144,10 @@ tb_bool_t           tb_socket_pair(tb_size_t type, tb_socket_ref_t pair[2]);
  */
 tb_bool_t           tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...);
 
-/*! connect socket
+/*! connect the given client address
  *
  * @param sock      the socket 
- * @param addr      the address
+ * @param addr      the client address
  *
  * @return          ok: 1, continue: 0; failed: -1
  */
@@ -221,6 +221,26 @@ tb_long_t           tb_socket_recv(tb_socket_ref_t sock, tb_byte_t* data, tb_siz
  */
 tb_long_t           tb_socket_send(tb_socket_ref_t sock, tb_byte_t const* data, tb_size_t size);
 
+/*! recv the socket data for tcp with block mode
+ *
+ * @param sock      the socket 
+ * @param data      the data
+ * @param size      the size
+ *
+ * @return          tb_true or tb_false
+ */
+tb_bool_t           tb_socket_brecv(tb_socket_ref_t sock, tb_byte_t* data, tb_size_t size);
+
+/*! send the socket data for tcp with block mode
+ *
+ * @param sock      the socket 
+ * @param data      the data
+ * @param size      the size
+ *
+ * @return          tb_true or tb_false
+ */
+tb_bool_t           tb_socket_bsend(tb_socket_ref_t sock, tb_byte_t const* data, tb_size_t size);
+
 /*! recvv the socket data for tcp
  * 
  * @param sock      the socket 
@@ -241,7 +261,7 @@ tb_long_t           tb_socket_recvv(tb_socket_ref_t sock, tb_iovec_t const* list
  */
 tb_long_t           tb_socket_sendv(tb_socket_ref_t sock, tb_iovec_t const* list, tb_size_t size);
 
-/*! sendf the socket data
+/*! send file data 
  * 
  * @param sock      the socket 
  * @param file      the file

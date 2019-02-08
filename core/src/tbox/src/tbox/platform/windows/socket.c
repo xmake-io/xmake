@@ -16,11 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        socket.c
- *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -29,6 +28,7 @@
 #include "prefix.h"
 #include "../socket.h"
 #include "interface/interface.h"
+#include "iocp_object.h"
 #include "socket_pool.h"
 #include "../posix/sockaddr.h"
 #ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
@@ -307,10 +307,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // enable the nagle's algorithm
             tb_int_t enable = (tb_int_t)tb_va_arg(args, tb_bool_t);
             if (!tb_ws2_32()->setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (tb_char_t*)&enable, sizeof(enable)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_TCP_NODELAY:
@@ -341,10 +338,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // set the recv buffer size
             tb_int_t real = (tb_int_t)buff_size;
             if (!tb_ws2_32()->setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (tb_char_t*)&real, sizeof(real)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_RECV_BUFF_SIZE:
@@ -375,10 +369,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // set the send buffer size
             tb_int_t real = (tb_int_t)buff_size;
             if (!tb_ws2_32()->setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (tb_char_t*)&real, sizeof(real)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_SEND_BUFF_SIZE:
@@ -421,6 +412,12 @@ tb_long_t tb_socket_connect(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
     tb_assert_and_check_return_val(sock && addr, -1);
     tb_assert_and_check_return_val(!tb_ipaddr_is_empty(addr), -1);
 
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to connect if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_connect(object, addr);
+#endif
+
     // load addr
     tb_size_t               n = 0;
 	struct sockaddr_storage d = {0};
@@ -439,7 +436,8 @@ tb_long_t tb_socket_connect(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
     if (e == WSAEISCONN) return 1;
 
     // continue?
-    if (e == WSAEWOULDBLOCK || e == WSAEINPROGRESS) return 0;
+    if (e == WSAEWOULDBLOCK || e == WSAEINPROGRESS) 
+        return 0;
 
     // error
     return -1;
@@ -495,6 +493,12 @@ tb_socket_ref_t tb_socket_accept(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
     // check
     tb_assert_and_check_return_val(sock, tb_null);
 
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to accept if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_accept(object, addr);
+#endif
+
     // done
     tb_bool_t       ok = tb_false;
     tb_socket_ref_t acpt = tb_null;
@@ -514,6 +518,20 @@ tb_socket_ref_t tb_socket_accept(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
         // non-block
         ULONG nb = 1;
         if (tb_ws2_32()->ioctlsocket(fd, FIONBIO, &nb) == SOCKET_ERROR) break;
+
+        /* disable the nagle's algorithm to fix 40ms ack delay in some case (.e.g send-send-40ms-recv)
+         *
+         * 40ms is the tcp ack delay, which indicates that you are likely 
+         * encountering a bad interaction between delayed acks and the nagle's algorithm. 
+         *
+         * TCP_NODELAY simply disables the nagle's algorithm and is a one-time setting on the socket, 
+         * whereas the other two must be set at the appropriate times during the life of the connection 
+         * and can therefore be trickier to use.
+         * 
+         * so we set TCP_NODELAY to reduce response delay for the accepted socket in the server by default
+         */
+        tb_int_t enable = 1;
+        setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (tb_char_t*)&enable, sizeof(enable));
 
         // save address
         if (addr) tb_sockaddr_save(addr, &d);
@@ -590,6 +608,9 @@ tb_bool_t tb_socket_exit(tb_socket_ref_t sock)
     // check
     tb_assert_and_check_return_val(sock, tb_false);
 
+    // trace
+    tb_trace_d("close: %p", sock);
+
 #ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
     // attempt to cancel waiting from coroutine first
     tb_pointer_t scheduler_io = tb_null;
@@ -600,14 +621,17 @@ tb_bool_t tb_socket_exit(tb_socket_ref_t sock)
     if ((scheduler_io = tb_lo_scheduler_io_self()) && tb_lo_scheduler_io_cancel((tb_lo_scheduler_io_ref_t)scheduler_io, sock)) {}
 #endif
 
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // remove iocp object for this socket if exists
+    tb_iocp_object_remove(sock);
+#endif
+
     // close it
     tb_bool_t ok = !tb_ws2_32()->closesocket(tb_sock2fd(sock))? tb_true : tb_false;
-
-    // failed?
     if (!ok)
     {
         // trace
-        tb_trace_e("clos: %p failed, errno: %d", sock, GetLastError());
+        tb_trace_e("close: %p failed, errno: %d", sock, GetLastError());
     }
 
     // ok?
@@ -618,6 +642,12 @@ tb_long_t tb_socket_recv(tb_socket_ref_t sock, tb_byte_t* data, tb_size_t size)
     // check
     tb_assert_and_check_return_val(sock && data, -1);
     tb_check_return_val(size, 0);
+
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to recv data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_recv(object, data, size);
+#endif
 
     // recv
     tb_long_t real = tb_ws2_32()->recv(tb_sock2fd(sock), (tb_char_t*)data, (tb_int_t)size, 0);
@@ -640,6 +670,12 @@ tb_long_t tb_socket_send(tb_socket_ref_t sock, tb_byte_t const* data, tb_size_t 
     tb_assert_and_check_return_val(sock && data, -1);
     tb_check_return_val(size, 0);
 
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to send data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_send(object, data, size);
+#endif
+
     // recv
     tb_long_t real = tb_ws2_32()->send(tb_sock2fd(sock), (tb_char_t const*)data, (tb_int_t)size, 0);
 
@@ -660,25 +696,28 @@ tb_hong_t tb_socket_sendf(tb_socket_ref_t sock, tb_file_ref_t file, tb_hize_t of
     // check
     tb_assert_and_check_return_val(sock && file && size, -1);
 
-    // the transmitfile func
-    tb_mswsock_TransmitFile_t pTransmitFile = tb_mswsock()->TransmitFile;
-    tb_assert_and_check_return_val(pTransmitFile, -1);
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to send file data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_sendf(object, file, offset, size);
+#endif
 
-    // transmit it
-    OVERLAPPED  olap = {0}; olap.Offset = (DWORD)offset;
-    tb_hong_t   real = pTransmitFile((SOCKET)sock - 1, (HANDLE)file, (DWORD)size, (1 << 16), &olap, tb_null, 0);
+    // read data
+    tb_byte_t data[8192];
+    tb_long_t read = tb_file_pread(file, data, sizeof(data), offset);
+    tb_check_return_val(read > 0, read);
+
+    // send data
+    tb_size_t writ = 0;
+    while (writ < read)
+    {
+        tb_long_t real = tb_socket_send(sock, data + writ, read - writ);
+        if (real > 0) writ += real;
+        else break;
+    }
 
     // ok?
-    if (real >= 0) return real;
-
-    // errno
-    tb_long_t e = tb_ws2_32()->WSAGetLastError();
-
-    // continue?
-    if (e == WSAEWOULDBLOCK || e == WSAEINPROGRESS || e == WSA_IO_PENDING) return 0;
-
-    // error
-    return -1;
+    return writ == read? writ : -1;
 }
 tb_long_t tb_socket_urecv(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_byte_t* data, tb_size_t size)
 {
@@ -687,6 +726,12 @@ tb_long_t tb_socket_urecv(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_byte_t*
 
     // no size?
     tb_check_return_val(size, 0);
+
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to urecv data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_urecv(object, addr, data, size);
+#endif
 
     // recv
 	struct sockaddr_storage d = {0};
@@ -718,6 +763,12 @@ tb_long_t tb_socket_usend(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_byte_t 
     // no size?
     tb_check_return_val(size, 0);
 
+#if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+    // attempt to use iocp object to usend data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_usend(object, addr, data, size);
+#endif
+
     // load addr
     tb_size_t               n = 0;
 	struct sockaddr_storage d = {0};
@@ -740,6 +791,12 @@ tb_long_t tb_socket_recvv(tb_socket_ref_t sock, tb_iovec_t const* list, tb_size_
 {
     // check
     tb_assert_and_check_return_val(sock && list && size, -1);
+
+#ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
+    // attempt to use iocp object to recv data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_recvv(object, list, size);
+#endif
 
     // walk read
     tb_size_t i = 0;
@@ -779,6 +836,12 @@ tb_long_t tb_socket_sendv(tb_socket_ref_t sock, tb_iovec_t const* list, tb_size_
     // check
     tb_assert_and_check_return_val(sock && list && size, -1);
 
+#ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
+    // attempt to use iocp object to send data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_sendv(object, list, size);
+#endif
+
     // walk writ
     tb_size_t i = 0;
     tb_size_t writ = 0;
@@ -816,6 +879,12 @@ tb_long_t tb_socket_urecvv(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_iovec_
 {
     // check
     tb_assert_and_check_return_val(sock && list && size, -1);
+
+#ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
+    // attempt to use iocp object to recv data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_urecvv(object, addr, list, size);
+#endif
 
     // done
     tb_size_t               i = 0;
@@ -860,6 +929,12 @@ tb_long_t tb_socket_usendv(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_iovec_
     // check
     tb_assert_and_check_return_val(sock && addr && list && size, -1);
     tb_assert_and_check_return_val(!tb_ipaddr_is_empty(addr), -1);
+
+#ifdef TB_CONFIG_MODULE_HAVE_COROUTINE
+    // attempt to use iocp object to send data if exists
+    tb_iocp_object_ref_t object = tb_iocp_object_get_or_new(sock);
+    if (object) return tb_iocp_object_usendv(object, addr, list, size);
+#endif
 
     // load addr
     tb_size_t               n = 0;

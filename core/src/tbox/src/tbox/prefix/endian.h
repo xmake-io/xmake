@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        endian.h
@@ -38,15 +38,16 @@
 #ifdef __BYTE_ORDER__
 #   if __BYTE_ORDER__ != __ORDER_LITTLE_ENDIAN__
 #       define TB_WORDS_BIGENDIAN
-#       error check it
 #   endif
+#endif
+#if defined(MIPSEB) || defined(_MIPSEB) || defined(__MIPSEB__)
+#   define TB_WORDS_BIGENDIAN
 #endif
 
 // float endian
 #ifdef __FLOAT_WORD_ORDER__
 #   if __FLOAT_WORD_ORDER__ != __ORDER_LITTLE_ENDIAN__
-#   define TB_FLOAT_BIGENDIAN
-#       error check it
+#       define TB_FLOAT_BIGENDIAN
 #   endif
 #endif
 

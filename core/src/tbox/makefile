@@ -188,11 +188,7 @@ tbox_C_FILES 			+= \
 						src/tbox/container/hash_map \
 						src/tbox/container/hash_set \
 						src/tbox/container/heap \
-						src/tbox/container/iterator/long \
-						src/tbox/container/iterator/mem \
-						src/tbox/container/iterator/ptr \
-						src/tbox/container/iterator/size \
-						src/tbox/container/iterator/str \
+						src/tbox/container/array_iterator \
 						src/tbox/container/iterator \
 						src/tbox/container/list \
 						src/tbox/container/list_entry \
@@ -234,6 +230,7 @@ tbox_C_FILES 			+= \
 						src/tbox/platform/thread_local \
 						src/tbox/platform/time \
 						src/tbox/platform/timer \
+						src/tbox/platform/impl/sockdata \
 						src/tbox/platform/impl/dns \
 						src/tbox/platform/impl/platform \
 						src/tbox/libm/isfin \

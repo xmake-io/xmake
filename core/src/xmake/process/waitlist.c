@@ -128,7 +128,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
         {
             // save one process info
             lua_newtable(lua);
-            lua_pushlightuserdata(lua, infolist[i].process);
+            lua_pushlightuserdata(lua, (tb_pointer_t)infolist[i].process);
             lua_rawseti(lua, -2, 1);
             lua_pushinteger(lua, infolist[i].index + 1);
             lua_rawseti(lua, -2, 2);

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        server.c
@@ -246,7 +246,7 @@ static tb_long_t tb_dns_server_test(tb_ipaddr_ref_t addr)
             tb_long_t r = tb_socket_urecv(sock, tb_null, rpkt + read, TB_DNS_RPKT_MAXN - read);
 
             // trace
-            tb_trace_d("read %d", r);
+            tb_trace_d("read %ld", r);
 
             // check
             tb_check_break(r >= 0);
@@ -261,7 +261,7 @@ static tb_long_t tb_dns_server_test(tb_ipaddr_ref_t addr)
                 r = tb_socket_wait(sock, TB_SOCKET_EVENT_RECV, TB_DNS_SERVER_TEST_TIMEOUT);
 
                 // trace
-                tb_trace_d("wait %d", r);
+                tb_trace_d("wait %ld", r);
 
                 // fail or timeout?
                 tb_check_break(r > 0);

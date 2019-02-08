@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        prefix.h
@@ -52,15 +52,16 @@ static __tb_inline__ tb_time_t tb_filetime_to_time(FILETIME ft)
     return (tb_time_t)((LONGLONG)(ui.QuadPart - 116444736000000000ull) / 10000000ul);  
 }
 
-// the path full for wchar
+// get absolute path for wchar
 static __tb_inline__ tb_wchar_t const* tb_path_absolute_w(tb_char_t const* path, tb_wchar_t* full, tb_size_t maxn)
 {
-    // the path full
-    tb_char_t full_a[TB_PATH_MAXN] = {0};
-    if (!tb_path_absolute(path, full_a, TB_PATH_MAXN)) return tb_null;
+    // get absolute path
+    tb_char_t data[TB_PATH_MAXN] = {0};
+    path = tb_path_absolute(path, data, TB_PATH_MAXN);
+    tb_check_return_val(path, tb_null);
 
     // atow
-    return tb_atow(full, full_a, maxn) != -1? full : tb_null;
+    return tb_atow(full, path, maxn) != -1? full : tb_null;
 }
 
 #endif

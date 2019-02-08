@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        iterator.h
@@ -51,18 +51,10 @@ typedef enum __tb_iterator_mode_t
 
 }tb_iterator_mode_t;
 
-/// the iterator type
-typedef struct __tb_iterator_t
+/// the iterator operation type
+struct __tb_iterator_t;
+typedef struct __tb_iterator_op_t
 {
-    /// the iterator mode
-    tb_size_t               mode;
-
-    /// the iterator step
-    tb_size_t               step;
-
-    /// the iterator priv
-    tb_pointer_t            priv;
-
     /// the iterator size
     tb_size_t               (*size)(struct __tb_iterator_t* iterator);
 
@@ -93,27 +85,30 @@ typedef struct __tb_iterator_t
     /// the iterator remove
     tb_void_t               (*remove)(struct __tb_iterator_t* iterator, tb_size_t itor);
 
-    /// the iterator remove range
-    tb_void_t               (*remove_range)(struct __tb_iterator_t* iterator, tb_size_t prev, tb_size_t next, tb_size_t size);
+    /// the iterator nremove 
+    tb_void_t               (*nremove)(struct __tb_iterator_t* iterator, tb_size_t prev, tb_size_t next, tb_size_t size);
 
-}tb_iterator_t;
+}tb_iterator_op_t;
 
-/// the array iterator type
-typedef struct __tb_array_iterator_t
+/// the iterator operation ref type
+typedef tb_iterator_op_t const* tb_iterator_op_ref_t;
+
+/// the iterator type
+typedef struct __tb_iterator_t
 {
-    /// the iterator base
-    tb_iterator_t           base;
+    /// the iterator mode
+    tb_size_t               mode;
 
-    /// the items
-    tb_pointer_t            items;
+    /// the iterator step
+    tb_size_t               step;
 
-    /// the items count
-    tb_size_t               count;
+    /// the iterator priv
+    tb_pointer_t            priv;
 
-}tb_array_iterator_t, *tb_array_iterator_ref_t;
+    /// the iterator operation
+    tb_iterator_op_ref_t    op;
 
-/// the iterator ref type
-typedef tb_iterator_t*      tb_iterator_ref_t;
+}tb_iterator_t, *tb_iterator_ref_t;
 
 /// the iterator comp func type
 typedef tb_long_t           (*tb_iterator_comp_t)(tb_iterator_ref_t iterator, tb_cpointer_t litem, tb_cpointer_t ritem);
@@ -121,67 +116,6 @@ typedef tb_long_t           (*tb_iterator_comp_t)(tb_iterator_ref_t iterator, tb
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
-
-/*! make iterator for the long array
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_long(tb_array_iterator_ref_t iterator, tb_long_t* items, tb_size_t count);
-
-/*! make iterator for the size array
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_size(tb_array_iterator_ref_t iterator, tb_size_t* items, tb_size_t count);
-
-/*! make iterator for the c-string array
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_str(tb_array_iterator_ref_t iterator, tb_char_t** items, tb_size_t count);
-
-/*! make iterator for the c-string array and ignore case
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_istr(tb_array_iterator_ref_t iterator, tb_char_t** items, tb_size_t count);
-
-/*! make iterator for the pointer array
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_ptr(tb_array_iterator_ref_t iterator, tb_pointer_t* items, tb_size_t count);
-
-/*! make iterator for the memory array
- * 
- * @param iterator  the iterator
- * @param items     the items
- * @param count     the count
- * @param size      the element size
- *
- * @return          the iterator
- */
-tb_iterator_ref_t   tb_iterator_make_for_mem(tb_array_iterator_ref_t iterator, tb_pointer_t items, tb_size_t count, tb_size_t size);
 
 /*! the iterator mode
  * 
@@ -272,7 +206,7 @@ tb_void_t           tb_iterator_remove(tb_iterator_ref_t iterator, tb_size_t ito
  * @param next      the next item
  * @param size      the removed size
  */
-tb_void_t           tb_iterator_remove_range(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size);
+tb_void_t           tb_iterator_nremove(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size);
 
 /*! copy the iterator item
  * 

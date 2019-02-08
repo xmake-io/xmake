@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        trace.h
@@ -82,7 +82,7 @@ tb_bool_t           tb_trace_mode_set(tb_size_t mode);
  *
  * @return          the trace file handle
  */
-tb_handle_t         tb_trace_file(tb_noarg_t);
+tb_file_ref_t       tb_trace_file(tb_noarg_t);
 
 /*! set the trace file 
  *

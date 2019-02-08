@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        circle_queue.c
@@ -183,19 +183,27 @@ tb_circle_queue_ref_t tb_circle_queue_init(tb_size_t maxn, tb_element_t element)
         queue->maxn      = maxn + 1;
         queue->element   = element;
 
+        // init operation
+        static tb_iterator_op_t op = 
+        {
+            tb_circle_queue_itor_size
+        ,   tb_circle_queue_itor_head
+        ,   tb_circle_queue_itor_last
+        ,   tb_circle_queue_itor_tail
+        ,   tb_circle_queue_itor_prev
+        ,   tb_circle_queue_itor_next
+        ,   tb_circle_queue_itor_item
+        ,   tb_circle_queue_itor_comp
+        ,   tb_circle_queue_itor_copy
+        ,   tb_null
+        ,   tb_null
+        };
+
         // init iterator
-        queue->itor.mode = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE | TB_ITERATOR_MODE_MUTABLE;
         queue->itor.priv = tb_null;
         queue->itor.step = element.size;
-        queue->itor.size = tb_circle_queue_itor_size;
-        queue->itor.head = tb_circle_queue_itor_head;
-        queue->itor.last = tb_circle_queue_itor_last;
-        queue->itor.tail = tb_circle_queue_itor_tail;
-        queue->itor.prev = tb_circle_queue_itor_prev;
-        queue->itor.next = tb_circle_queue_itor_next;
-        queue->itor.item = tb_circle_queue_itor_item;
-        queue->itor.copy = tb_circle_queue_itor_copy;
-        queue->itor.comp = tb_circle_queue_itor_comp;
+        queue->itor.mode = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE | TB_ITERATOR_MODE_MUTABLE;
+        queue->itor.op   = &op;
 
         // make data
         queue->data = (tb_byte_t*)tb_nalloc0(queue->maxn, element.size);

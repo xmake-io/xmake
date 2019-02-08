@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        remove_if.c
@@ -79,7 +79,7 @@ tb_void_t tb_remove_if_until(tb_iterator_ref_t iterator, tb_predicate_break_ref_
     {
         // save next
         next = tb_iterator_next(iterator, itor);
-   
+
         // done predicate
         ok = pred(iterator, tb_iterator_item(iterator, itor), value, &is_break);
 
@@ -113,7 +113,7 @@ tb_void_t tb_remove_if_until(tb_iterator_ref_t iterator, tb_predicate_break_ref_
                 tb_size_t prev_tail = tb_iterator_tail(iterator);
 
                 // remove items
-                tb_iterator_remove_range(iterator, base, ok? next : itor, size);
+                tb_iterator_nremove(iterator, base, ok? next : itor, size);
 
                 // reset state
                 need = tb_false;
@@ -126,20 +126,16 @@ tb_void_t tb_remove_if_until(tb_iterator_ref_t iterator, tb_predicate_break_ref_
                     prev = base;
 
                     // the body items are removed?
-                    if (base != prev_tail)
-                    {
-                        // the next itor
-                        itor = tb_iterator_next(iterator, base);
-
-                        // the last item be not removed? skip the last walked item
-                        if (!ok)
-                        {
-                            prev = itor;
-                            itor = tb_iterator_next(iterator, itor);
-                        }
-                    }
+                    if (base != prev_tail) itor = tb_iterator_next(iterator, base);
                     // the head items are removed?
                     else itor = tb_iterator_head(iterator);
+
+                    // the last item be not removed? skip the last walked item
+                    if (!ok)
+                    {
+                        prev = itor;
+                        itor = tb_iterator_next(iterator, itor);
+                    }
 
                     // break?
                     tb_check_break(!is_break);

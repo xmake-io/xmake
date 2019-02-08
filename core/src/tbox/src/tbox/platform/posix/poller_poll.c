@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        poller_poll.c
@@ -54,11 +54,8 @@ typedef struct __tb_poller_poll_t
     // the copied poll fds
     tb_vector_ref_t         cfds;
 
-    // the user private data hash (socket => priv)
-    tb_cpointer_t*          hash;
-
-    // the user private data hash size
-    tb_size_t               hash_size;
+    // the socket data
+    tb_sockdata_t           sockdata;
     
 }tb_poller_poll_t, *tb_poller_poll_ref_t;
 
@@ -107,70 +104,6 @@ static tb_bool_t tb_poller_walk_modify(tb_iterator_ref_t iterator, tb_pointer_t 
     // ok
     return tb_true;
 }
-static tb_void_t tb_poller_hash_set(tb_poller_poll_ref_t poller, tb_socket_ref_t sock, tb_cpointer_t priv)
-{
-    // check
-    tb_assert(poller && sock);
-
-    // the socket fd
-    tb_long_t fd = tb_sock2fd(sock);
-    tb_assert(fd > 0 && fd < TB_MAXS32);
-
-    // not null?
-    if (priv)
-    {
-        // no hash? init it first
-        tb_size_t need = fd + 1;
-        if (!poller->hash)
-        {
-            // init hash
-            poller->hash = tb_nalloc0_type(need, tb_cpointer_t);
-            tb_assert_and_check_return(poller->hash);
-
-            // init hash size
-            poller->hash_size = need;
-        }
-        else if (need > poller->hash_size)
-        {
-            // grow hash
-            poller->hash = (tb_cpointer_t*)tb_ralloc(poller->hash, need * sizeof(tb_cpointer_t));
-            tb_assert_and_check_return(poller->hash);
-
-            // init growed space
-            tb_memset(poller->hash + poller->hash_size, 0, (need - poller->hash_size) * sizeof(tb_cpointer_t));
-
-            // grow hash size
-            poller->hash_size = need;
-        }
-
-        // save the user private data
-        poller->hash[fd] = priv;
-    }
-}
-static __tb_inline__ tb_cpointer_t tb_poller_hash_get(tb_poller_poll_ref_t poller, tb_socket_ref_t sock)
-{
-    // check
-    tb_assert(poller && poller->hash && sock);
-
-    // the socket fd
-    tb_long_t fd = tb_sock2fd(sock);
-    tb_assert(fd > 0 && fd < TB_MAXS32);
-
-    // get the user private data
-    return fd < poller->hash_size? poller->hash[fd] : tb_null;
-}
-static __tb_inline__ tb_void_t tb_poller_hash_del(tb_poller_poll_ref_t poller, tb_socket_ref_t sock)
-{
-    // check
-    tb_assert(poller && poller->hash && sock);
-
-    // the socket fd
-    tb_long_t fd = tb_sock2fd(sock);
-    tb_assert(fd > 0 && fd < TB_MAXS32);
-
-    // remove the user private data
-    if (fd < poller->hash_size) poller->hash[fd] = tb_null;
-}
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -185,6 +118,9 @@ tb_poller_ref_t tb_poller_init(tb_cpointer_t priv)
         // make poller
         poller = tb_malloc0_type(tb_poller_poll_t);
         tb_assert_and_check_break(poller);
+
+        // init socket data
+        tb_sockdata_init(&poller->sockdata);
 
         // init poll fds
         poller->pfds = tb_vector_init(0, tb_element_mem(sizeof(struct pollfd), tb_null, tb_null));
@@ -231,11 +167,6 @@ tb_void_t tb_poller_exit(tb_poller_ref_t self)
     poller->pair[0] = tb_null;
     poller->pair[1] = tb_null;
 
-    // exit hash
-    if (poller->hash) tb_free(poller->hash);
-    poller->hash        = tb_null;
-    poller->hash_size   = 0;
-
     // close pfds
     if (poller->pfds) tb_vector_exit(poller->pfds);
     poller->pfds = tb_null;
@@ -244,26 +175,15 @@ tb_void_t tb_poller_exit(tb_poller_ref_t self)
     if (poller->cfds) tb_vector_exit(poller->cfds);
     poller->cfds = tb_null;
 
+    // exit socket data
+    tb_sockdata_exit(&poller->sockdata);
+
     // free it
     tb_free(poller);
 }
-tb_void_t tb_poller_clear(tb_poller_ref_t self)
+tb_size_t tb_poller_type(tb_poller_ref_t poller)
 {
-    // check
-    tb_poller_poll_ref_t poller = (tb_poller_poll_ref_t)self;
-    tb_assert_and_check_return(poller);
-
-    // clear hash
-    if (poller->hash) tb_memset(poller->hash, 0, poller->hash_size * sizeof(tb_cpointer_t));
-
-    // clear pfds
-    if (poller->pfds) tb_vector_clear(poller->pfds);
-
-    // clear cfds
-    if (poller->cfds) tb_vector_clear(poller->cfds);
-
-    // spak it
-    if (poller->pair[0]) tb_socket_send(poller->pair[0], (tb_byte_t const*)"p", 1);
+    return TB_POLLER_TYPE_POLL;
 }
 tb_cpointer_t tb_poller_priv(tb_poller_ref_t self)
 {
@@ -295,7 +215,7 @@ tb_void_t tb_poller_spak(tb_poller_ref_t self)
 tb_bool_t tb_poller_support(tb_poller_ref_t self, tb_size_t events)
 {
     // all supported events 
-    static tb_size_t events_supported = TB_POLLER_EVENT_EALL;
+    static const tb_size_t events_supported = TB_POLLER_EVENT_EALL;
 
     // is supported?
     return (events_supported & events) == events;
@@ -319,7 +239,7 @@ tb_bool_t tb_poller_insert(tb_poller_ref_t self, tb_socket_ref_t sock, tb_size_t
     tb_vector_insert_tail(poller->pfds, &pfd);
 
     // bind user private data to socket
-    tb_poller_hash_set(poller, sock, priv);
+    tb_sockdata_insert(&poller->sockdata, sock, priv);
 
     // ok
     return tb_true;
@@ -334,7 +254,7 @@ tb_bool_t tb_poller_remove(tb_poller_ref_t self, tb_socket_ref_t sock)
     tb_remove_first_if(poller->pfds, tb_poller_walk_remove, (tb_cpointer_t)(tb_long_t)tb_sock2fd(sock));
 
     // remove user private data from this socket
-    tb_poller_hash_del(poller, sock);
+    tb_sockdata_remove(&poller->sockdata, sock);
 
     // ok
     return tb_true;
@@ -355,7 +275,7 @@ tb_bool_t tb_poller_modify(tb_poller_ref_t self, tb_socket_ref_t sock, tb_size_t
     tb_walk_all(poller->pfds, tb_poller_walk_modify, tuple);
 
     // modify user private data to socket
-    tb_poller_hash_set(poller, sock, priv);
+    tb_sockdata_insert(&poller->sockdata, sock, priv);
 
     // ok
     return tb_true;
@@ -431,7 +351,7 @@ tb_long_t tb_poller_wait(tb_poller_ref_t self, tb_poller_event_func_t func, tb_l
                 events |= TB_POLLER_EVENT_RECV | TB_POLLER_EVENT_SEND;
 
             // call event function
-            func(self, sock, events, tb_poller_hash_get(poller, sock));
+            func(self, sock, events, tb_sockdata_get(&poller->sockdata, sock));
 
             // update the events count
             wait++;

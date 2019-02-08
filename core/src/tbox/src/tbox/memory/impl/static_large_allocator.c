@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        static_large_allocator.c
@@ -52,6 +52,14 @@ typedef __tb_pool_data_aligned__ struct __tb_static_large_data_head_t
 
     // is free?
     tb_uint32_t                     bfree : 1;
+
+    /* patch 4 bytes for align(8) for tinycc/x86_64
+     * 
+     * __tb_aligned__(8) struct doesn't seem to work 
+     */
+#if defined(TB_COMPILER_IS_TINYC) && defined(TB_CPU_BIT64)
+    tb_uint32_t                     padding;
+#endif
 
     // the data head base
     tb_byte_t                       base[sizeof(tb_pool_data_head_t)];
@@ -461,7 +469,7 @@ static tb_static_large_data_head_t* tb_static_large_allocator_malloc_done(tb_sta
         base_head->debug.line      = (tb_uint16_t)line_;
 
         // calculate the skip frames
-        tb_size_t skip_nframe = (tb_allocator() && tb_allocator_type(tb_allocator()) == TB_ALLOCATOR_DEFAULT)? 6 : 3;
+        tb_size_t skip_nframe = (tb_allocator() && tb_allocator_type(tb_allocator()) == TB_ALLOCATOR_TYPE_DEFAULT)? 6 : 3;
 
         // save backtrace
         tb_pool_data_save_backtrace(&base_head->debug, skip_nframe);
@@ -583,7 +591,7 @@ static tb_static_large_data_head_t* tb_static_large_allocator_ralloc_fast(tb_sta
         base_head->debug.line      = (tb_uint16_t)line_;
 
         // calculate the skip frames
-        tb_size_t skip_nframe = (tb_allocator() && tb_allocator_type(tb_allocator()) == TB_ALLOCATOR_DEFAULT)? 6 : 3;
+        tb_size_t skip_nframe = (tb_allocator() && tb_allocator_type(tb_allocator()) == TB_ALLOCATOR_TYPE_DEFAULT)? 6 : 3;
 
         // save backtrace
         tb_pool_data_save_backtrace(&base_head->debug, skip_nframe);
@@ -913,7 +921,8 @@ tb_allocator_ref_t tb_static_large_allocator_init(tb_byte_t* data, tb_size_t siz
     tb_memset_(allocator, 0, sizeof(tb_static_large_allocator_t));
 
     // init base
-    allocator->base.type             = TB_ALLOCATOR_LARGE;
+    allocator->base.type             = TB_ALLOCATOR_TYPE_LARGE;
+    allocator->base.flag             = TB_ALLOCATOR_FLAG_NONE;
     allocator->base.large_malloc     = tb_static_large_allocator_malloc;
     allocator->base.large_ralloc     = tb_static_large_allocator_ralloc;
     allocator->base.large_free       = tb_static_large_allocator_free;

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        queue_buffer.c
@@ -224,9 +224,18 @@ tb_long_t tb_queue_buffer_writ(tb_queue_buffer_ref_t buffer, tb_byte_t const* da
     }
     tb_assert_and_check_return_val(buffer->data && buffer->head, -1);
 
-    // no left?
+    // full?
     tb_size_t left = buffer->maxn - buffer->size;
     tb_check_return_val(left, 0);
+
+    // attempt to write data in tail directly if the tail space is enough
+    tb_byte_t* tail = buffer->head + buffer->size;
+    if (buffer->data + buffer->maxn >= tail + size)
+    {
+        tb_memcpy(tail, data, size);
+        buffer->size += size;
+        return (tb_long_t)size;
+    }
 
     // move data to head
     if (buffer->head != buffer->data)
@@ -235,7 +244,7 @@ tb_long_t tb_queue_buffer_writ(tb_queue_buffer_ref_t buffer, tb_byte_t const* da
         buffer->head = buffer->data;
     }
 
-    // writ data
+    // write data
     tb_size_t writ = left > size? size : left;
     tb_memcpy(buffer->data + buffer->size, data, writ);
     buffer->size += writ;
@@ -288,11 +297,11 @@ tb_byte_t* tb_queue_buffer_push_init(tb_queue_buffer_ref_t buffer, tb_size_t* si
     }
     tb_assert_and_check_return_val(buffer->data && buffer->head, tb_null);
 
-    // no left?
+    // full?
     tb_size_t left = buffer->maxn - buffer->size;
     tb_check_return_val(left, tb_null);
 
-    // move data to head
+    // move data to head first, make sure there is enough write space 
     if (buffer->head != buffer->data)
     {
         if (buffer->size) tb_memmov(buffer->data, buffer->head, buffer->size);

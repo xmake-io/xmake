@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        allocator.h
@@ -74,20 +74,31 @@ __tb_extern_c_enter__
 /// the allocator type enum
 typedef enum __tb_allocator_type_e
 {
-    TB_ALLOCATOR_NONE       = 0
-,   TB_ALLOCATOR_DEFAULT    = 1
-,   TB_ALLOCATOR_NATIVE     = 2
-,   TB_ALLOCATOR_STATIC     = 4
-,   TB_ALLOCATOR_LARGE      = 5
-,   TB_ALLOCATOR_SMALL      = 6
+    TB_ALLOCATOR_TYPE_NONE       = 0
+,   TB_ALLOCATOR_TYPE_DEFAULT    = 1
+,   TB_ALLOCATOR_TYPE_NATIVE     = 2
+,   TB_ALLOCATOR_TYPE_STATIC     = 4
+,   TB_ALLOCATOR_TYPE_LARGE      = 5
+,   TB_ALLOCATOR_TYPE_SMALL      = 6
 
 }tb_allocator_type_e;
+
+/// the allocator flag enum
+typedef enum __tb_allocator_flag_e
+{
+    TB_ALLOCATOR_FLAG_NONE      = 0
+,   TB_ALLOCATOR_FLAG_NOLOCK    = 1
+
+}tb_allocator_flag_e;
 
 /// the allocator type
 typedef struct __tb_allocator_t
 {
     /// the type
-    tb_size_t               type;
+    tb_uint32_t             type : 16;
+
+    /// the flag
+    tb_uint32_t             flag : 16;
 
     /// the lock
     tb_spinlock_t           lock;

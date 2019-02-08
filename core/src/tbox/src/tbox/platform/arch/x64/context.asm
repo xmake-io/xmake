@@ -58,15 +58,15 @@ extern _exit:proc
 ;             ---------------------------------------
 ;            |   r12   |   r13   |   r14   |   r15   | 
 ;             ---------------------------------------   
-;            32        40        48        56                 --------------------------------------------------------
-;                                                            |                                                        |
-;                                                            |          func     __end     arguments             retval(from)
-;             -----------------------------------------------------------------------------------------------------------------------------------
-;            |   rdi   |   rsi   |   rbx   |   rbp   | retval(saved) |   rip   |   end   |  unused  | context(unused) |  priv(unused)  | padding |
-;             -----------------------------------------------------------------------------------------------------------------------------------
-;            64        72        80        88        96              104       112       120        128               136                          
-;                                                                              |         |
-;                                                                              |      16-align
+;            32        40        48        56                 ---------------------------------------
+;                                                            |                                       |
+;                                    func    __end           |         __entry    arguments     retval(from)
+;             --------------------------------------------------------------------------------------------------------------------------
+;            |   rdi   |   rsi   |   rbx   |   rbp   | retval(saved) |   rip   |   unused  | context(unused) |  priv(unused)  | padding |
+;             --------------------------------------------------------------------------------------------------------------------------
+;            64        72        80        88        96              104       112         120               128              136                          
+;                                                                              |         
+;                                                                              | 16-align
 ;                                                                              |
 ;                                                                    rsp when jump to function
 ;
@@ -94,10 +94,10 @@ tb_context_make proc frame
     and rax, -16
 
     ; reserve space for context-data on context-stack
-    sub rax, 120
+    sub rax, 112
 
-    ; context.rip = func
-    mov [rax + 104], r8
+    ; context.rbx = func
+    mov [rax + 80], r8
 
     ; save bottom address of context stack as 'limit'
     mov [rax + 16], rcx
@@ -120,12 +120,35 @@ tb_context_make proc frame
     lea rcx, [rax + 128]
     mov [rax + 96], rcx
 
+    ; context.rip = the address of label __entry
+    lea rcx, __entry
+    mov [rax + 104], rcx
+
     ; context.end = the address of label __end
     lea rcx, __end
-    mov [rax + 112], rcx
+    mov [rax + 88], rcx
 
     ; return pointer to context-data
     ret 
+
+__entry:
+
+    ; patch return address (__end) on stack
+    push rbp
+
+    ; jump to the context function entry(rip)
+    ;
+    ;
+    ;                                     
+    ;              -----------------------------------------------------------------
+    ; context: .. |   end   |  unused  | context(unused) |  priv(unused)  | padding |
+    ;              -----------------------------------------------------------------
+    ;             0         8 arguments 
+    ;             |         
+    ;            rsp 16-align 
+    ;           (now)
+    ;;
+    jmp rbx
 
 __end:
     ; exit(0)

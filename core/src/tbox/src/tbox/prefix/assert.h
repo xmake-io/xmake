@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        assert.h
@@ -54,7 +54,7 @@ __tb_extern_c_enter__
 
 // assert
 #ifdef __tb_debug__
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_assertf(x, fmt, arg...)                                   do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); tb_abort(); } } while(0)
 #       define tb_assertf_and_check_abort(x, fmt, arg...)                   tb_assertf(x, fmt, ##arg)
 #       define tb_assertf_and_check_return(x, fmt, arg...)                  tb_assertf(x, fmt, ##arg)
@@ -80,7 +80,7 @@ __tb_extern_c_enter__
 #       define tb_assertf_and_check_continue                               
 #   endif
 #else
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_assertf(x, fmt, arg...)                             
 #       define tb_assertf_and_check_abort(x, fmt, arg...)                   tb_check_abort(x)
 #       define tb_assertf_and_check_return(x, fmt, arg...)                  tb_check_return(x)
@@ -129,7 +129,7 @@ __tb_extern_c_enter__
 
 // assert and pass code, not abort it
 #ifdef __tb_debug__
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_assertf_pass_return(x, fmt, arg...)                           do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); return ; } } while(0)
 #       define tb_assertf_pass_return_val(x, v, fmt, arg...)                    do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); return (v); } } while(0)
 #       define tb_assertf_pass_goto(x, b, fmt, arg...)                          do { if (!(x)) {tb_trace_a("expr[%s]: " fmt, #x, ##arg); tb_assert_backtrace_dump(); tb_trace_sync(); goto b; } } while(0)
@@ -167,7 +167,7 @@ __tb_extern_c_enter__
 #       define tb_assertf_pass_and_check_continue                                
 #   endif
 #else
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_assertf_pass_return(x, fmt, arg...)                            
 #       define tb_assertf_pass_return_val(x, v, fmt, arg...)                     
 #       define tb_assertf_pass_goto(x, b, fmt, arg...)                           
@@ -250,11 +250,17 @@ __tb_extern_c_enter__
  * @endcode
  */
 #if __tb_has_feature__(c_static_assert)
-#   define tb_assert_static(x)      _Static_assert(x, "")
+#   define tb_assert_static(x)          _Static_assert(x, "")
+#   define tb_assert_static_msg(x, m)   _Static_assert(x, m)
+#elif defined(__cpp_static_assert)
+#   define tb_assert_static(x)          static_assert(x, "")
+#   define tb_assert_static_msg(x, m)   static_assert(x, m)
 #elif defined(TB_COMPILER_IS_GCC) && TB_COMPILER_VERSION_BE(4, 6)
-#   define tb_assert_static(x)      _Static_assert(x, "")
+#   define tb_assert_static(x)          _Static_assert(x, "")
+#   define tb_assert_static_msg(x, m)   _Static_assert(x, m)
 #else
-#   define tb_assert_static(x)      do { typedef int __tb_static_assert__[(x)? 1 : -1]; __tb_volatile__ __tb_static_assert__ __a; tb_used_ptr((tb_cpointer_t)(tb_size_t)__a); } while(0)
+#   define tb_assert_static(x)          do { typedef int __tb_static_assert__[(x)? 1 : -1]; __tb_volatile__ __tb_static_assert__ __a; tb_used_ptr((tb_cpointer_t)(tb_size_t)__a); } while(0)
+#   define tb_assert_static_msg(x, m)   tb_assert_static(x)
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////

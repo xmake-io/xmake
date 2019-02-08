@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        memset.c
@@ -63,7 +63,7 @@ static tb_pointer_t tb_memset_impl(tb_pointer_t s, tb_byte_t c, tb_size_t n)
     tb_check_return_val(n, s);
 
     // init
-    __tb_register__ tb_byte_t* p = s;
+    __tb_register__ tb_byte_t* p = (tb_byte_t*)s;
 
     // done
 #ifdef __tb_small__

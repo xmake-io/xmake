@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        addrinfo.c
@@ -46,7 +46,7 @@ static __tb_inline__ tb_int_t tb_addrinfo_ai_family(tb_ipaddr_ref_t addr)
         return AF_UNSPEC;
     }
 }
-tb_bool_t tb_addrinfo_addr_impl_1(tb_char_t const* name, tb_ipaddr_ref_t addr)
+static tb_bool_t tb_addrinfo_addr_impl_1(tb_char_t const* name, tb_ipaddr_ref_t addr)
 {
     // done
     tb_bool_t           ok = tb_false;
@@ -79,7 +79,7 @@ tb_bool_t tb_addrinfo_addr_impl_1(tb_char_t const* name, tb_ipaddr_ref_t addr)
     // ok?
     return ok;
 }
-tb_bool_t tb_addrinfo_addr_impl_2(tb_char_t const* name, tb_ipaddr_ref_t addr)
+static tb_bool_t tb_addrinfo_addr_impl_2(tb_char_t const* name, tb_ipaddr_ref_t addr)
 {
     // not support ipv6
     tb_assert_and_check_return_val(tb_ipaddr_family(addr) != TB_IPADDR_FAMILY_IPV6, tb_false);
@@ -104,7 +104,7 @@ tb_bool_t tb_addrinfo_addr_impl_2(tb_char_t const* name, tb_ipaddr_ref_t addr)
 #endif
 
 #ifdef TB_ADDRINFO_NAME_IMPL
-tb_char_t const* tb_addrinfo_name_impl_1(tb_ipaddr_ref_t addr, tb_char_t* name, tb_size_t maxn)
+static tb_char_t const* tb_addrinfo_name_impl_1(tb_ipaddr_ref_t addr, tb_char_t* name, tb_size_t maxn)
 {
     // load socket address
     struct sockaddr_storage saddr;
@@ -114,7 +114,7 @@ tb_char_t const* tb_addrinfo_name_impl_1(tb_ipaddr_ref_t addr, tb_char_t* name, 
     // get host name from address
     return !tb_ws2_32()->getnameinfo((struct sockaddr const*)&saddr, saddrlen, name, (DWORD)maxn, tb_null, 0, NI_NAMEREQD)? name : tb_null;
 }
-tb_char_t const* tb_addrinfo_name_impl_2(tb_ipaddr_ref_t addr, tb_char_t* name, tb_size_t maxn)
+static tb_char_t const* tb_addrinfo_name_impl_2(tb_ipaddr_ref_t addr, tb_char_t* name, tb_size_t maxn)
 {
     // done
     struct hostent* hostaddr = tb_null;

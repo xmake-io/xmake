@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        cpu.h
@@ -51,7 +51,8 @@
     || defined(_M_X64) \
     || defined(_M_AMD64) \
     || defined(_M_IA64) \
-    || (defined(__WORDSIZE) && (__WORDSIZE == 64))
+    || (defined(__WORDSIZE) && (__WORDSIZE == 64)) \
+    || defined(TCC_TARGET_X86_64)
 #   define TB_CPU_BITSIZE       (64)
 #   define TB_CPU_BITBYTE       (8)
 #   define TB_CPU_BITALIGN      (7)

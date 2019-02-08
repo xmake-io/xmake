@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        static_string.c
@@ -34,11 +34,11 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-// the maximum grow size of value string 
+// the format string data size
 #ifdef __tb_small__
-#   define TB_STATIC_STRING_FMTD_SIZE       (4096)
+#   define TB_STATIC_STRING_FMTD_SIZE       (512)
 #else
-#   define TB_STATIC_STRING_FMTD_SIZE       (8192)
+#   define TB_STATIC_STRING_FMTD_SIZE       (1024)
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////

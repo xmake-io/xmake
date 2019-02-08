@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        thread_pool.c
@@ -201,7 +201,7 @@ typedef struct __tb_thread_pool_impl_t
 static tb_handle_t tb_thread_pool_instance_init(tb_cpointer_t* ppriv)
 {
     // init it
-    return tb_thread_pool_init(0, 0);
+    return (tb_handle_t)tb_thread_pool_init(0, 0);
 }
 static tb_void_t tb_thread_pool_instance_exit(tb_handle_t pool, tb_cpointer_t priv)
 {

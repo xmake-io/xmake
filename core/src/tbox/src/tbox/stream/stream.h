@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        stream.h
@@ -33,9 +33,6 @@
 #include "filter.h"
 #include "transfer.h"
 #include "static_stream.h"
-#ifdef TB_CONFIG_API_HAVE_DEPRECATED
-#   include "deprecated/deprecated.h"
-#endif
 
 /*!architecture
  *
@@ -346,6 +343,16 @@ tb_stream_ref_t         tb_stream_init_from_file(tb_char_t const* path, tb_size_
  * @return              the stream
  */
 tb_stream_ref_t         tb_stream_init_from_sock(tb_char_t const* host, tb_uint16_t port, tb_size_t type, tb_bool_t bssl);
+
+/*! init stream from sock reference
+ *
+ * @param sock          the socket 
+ * @param type          the socket type, tcp or udp
+ * @param bssl          enable ssl?
+ *
+ * @return              the stream
+ */
+tb_stream_ref_t         tb_stream_init_from_sock_ref(tb_socket_ref_t sock, tb_size_t type, tb_bool_t bssl);
 
 /*! init stream from http or https
  *

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        option.c
@@ -75,8 +75,8 @@ static __tb_inline__ tb_bool_t tb_option_is_integer(tb_char_t const* data)
     // init
     tb_char_t const* p = data;
 
-    // skip '-'
-    if (*p == '-') p++;
+    // skip '-' & '+'
+    if (*p == '-' || *p == '+') p++;
 
     // walk
     for (; *p && tb_isdigit(*p); p++);

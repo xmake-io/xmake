@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        poller.h
@@ -40,6 +40,18 @@ __tb_extern_c_enter__
  * types
  */
 
+/// the poller type enum
+typedef enum __tb_poller_type_e
+{
+    TB_POLLER_TYPE_NONE         = 0
+,   TB_POLLER_TYPE_IOCP         = 1
+,   TB_POLLER_TYPE_POLL         = 2
+,   TB_POLLER_TYPE_EPOLL        = 3
+,   TB_POLLER_TYPE_KQUEUE       = 4
+,   TB_POLLER_TYPE_SELECT       = 5
+
+}tb_poller_type_e;
+
 /// the poller event enum, only for sock
 typedef enum __tb_poller_event_e
 {
@@ -60,6 +72,9 @@ typedef enum __tb_poller_event_e
      * be similar to epoll.EPOLLRDHUP and kqueue.EV_EOF
      */
 ,   TB_POLLER_EVENT_EOF         = 0x0100
+
+    /// socket error after waiting
+,   TB_POLLER_EVENT_ERROR       = 0x0200
 
 }tb_poller_event_e;
 
@@ -93,11 +108,13 @@ tb_poller_ref_t     tb_poller_init(tb_cpointer_t priv);
  */
 tb_void_t           tb_poller_exit(tb_poller_ref_t poller);
 
-/*! clear all sockets
+/*! get the poller type
  *
  * @param poller    the poller
+ *
+ * @return          the poller type
  */
-tb_void_t           tb_poller_clear(tb_poller_ref_t poller);
+tb_size_t           tb_poller_type(tb_poller_ref_t poller);
 
 /*! get the user private data
  *

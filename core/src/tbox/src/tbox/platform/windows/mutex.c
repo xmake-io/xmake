@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        mutex.c
@@ -41,7 +41,7 @@ tb_mutex_ref_t tb_mutex_init()
 }
 tb_void_t tb_mutex_exit(tb_mutex_ref_t mutex)
 {
-    if (mutex) CloseHandle(mutex);
+    if (mutex) CloseHandle((HANDLE)mutex);
 }
 tb_bool_t tb_mutex_enter(tb_mutex_ref_t mutex)
 {

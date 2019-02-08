@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        default_allocator.c
@@ -320,7 +320,8 @@ tb_allocator_ref_t tb_default_allocator_init(tb_allocator_ref_t large_allocator)
         tb_assert_and_check_break(allocator);
 
         // init base
-        allocator->base.type            = TB_ALLOCATOR_DEFAULT;
+        allocator->base.type            = TB_ALLOCATOR_TYPE_DEFAULT;
+        allocator->base.flag            = TB_ALLOCATOR_FLAG_NONE;
         allocator->base.malloc          = tb_default_allocator_malloc;
         allocator->base.ralloc          = tb_default_allocator_ralloc;
         allocator->base.free            = tb_default_allocator_free;

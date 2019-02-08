@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        prefix.h
@@ -33,6 +33,7 @@
 #include "../../libc/libc.h"
 #include "../../utils/utils.h"
 #include "../../memory/memory.h"
+#include "../../object/object.h"
 #include "../../stream/stream.h"
 #include "../../platform/platform.h"
 

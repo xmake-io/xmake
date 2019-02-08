@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        ifaddrs.c
@@ -37,12 +37,12 @@
 static tb_void_t tb_ifaddrs_interface_exit(tb_element_ref_t element, tb_pointer_t buff)
 {
     // check
-    tb_ifaddrs_interface_ref_t interface = (tb_ifaddrs_interface_ref_t)buff;
-    if (interface)
+    tb_ifaddrs_interface_ref_t iface = (tb_ifaddrs_interface_ref_t)buff;
+    if (iface)
     {
         // exit the interface name
-        if (interface->name) tb_free(interface->name);
-        interface->name = tb_null;
+        if (iface->name) tb_free(iface->name);
+        iface->name = tb_null;
     }
 }
 static tb_void_t tb_ifaddrs_interface_load4(tb_list_ref_t interfaces)
@@ -83,26 +83,26 @@ static tb_void_t tb_ifaddrs_interface_load4(tb_list_ref_t interfaces)
             /* attempt to get the interface from the cached interfaces
              * and make a new interface if no the cached interface
              */
-            tb_ifaddrs_interface_t      interface_new = {0};
-            tb_ifaddrs_interface_ref_t  interface = tb_ifaddrs_interface_find((tb_iterator_ref_t)interfaces, adapter->AdapterName);
-            if (!interface) interface = &interface_new;
+            tb_ifaddrs_interface_t      iface_new = {0};
+            tb_ifaddrs_interface_ref_t  iface = tb_ifaddrs_interface_find((tb_iterator_ref_t)interfaces, adapter->AdapterName);
+            if (!iface) iface = &iface_new;
 
             // check
-            tb_assert(interface == &interface_new || interface->name);
+            tb_assert(iface == &iface_new || iface->name);
 
             // save flags
-            if (adapter->Type == MIB_IF_TYPE_LOOPBACK) interface->flags |= TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK;
+            if (adapter->Type == MIB_IF_TYPE_LOOPBACK) iface->flags |= TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK;
 
             // save hwaddr
-            if (adapter->AddressLength == sizeof(interface->hwaddr.u8))
+            if (adapter->AddressLength == sizeof(iface->hwaddr.u8))
             {
-                interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR;
-                tb_memcpy(interface->hwaddr.u8, adapter->Address, sizeof(interface->hwaddr.u8));
+                iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR;
+                tb_memcpy(iface->hwaddr.u8, adapter->Address, sizeof(iface->hwaddr.u8));
             }
 
             // save ipaddrs
             PIP_ADDR_STRING ipAddress = &adapter->IpAddressList;
-            while (ipAddress && (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR) != TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
+            while (ipAddress && (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR) != TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
             {
                 // done
                 tb_ipaddr_t ipaddr;
@@ -111,13 +111,13 @@ static tb_void_t tb_ifaddrs_interface_load4(tb_list_ref_t interfaces)
                 {
                     if (ipaddr.family == TB_IPADDR_FAMILY_IPV4)
                     {
-                        interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4;
-                        interface->ipaddr4 = ipaddr.u.ipv4;
+                        iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4;
+                        iface->ipaddr4 = ipaddr.u.ipv4;
                     }
                     else if (ipaddr.family == TB_IPADDR_FAMILY_IPV6)
                     {
-                        interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6;
-                        interface->ipaddr6 = ipaddr.u.ipv6;
+                        iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6;
+                        iface->ipaddr6 = ipaddr.u.ipv6;
                     }
                 }
 
@@ -126,15 +126,15 @@ static tb_void_t tb_ifaddrs_interface_load4(tb_list_ref_t interfaces)
             }
 
             // new interface? save it
-            if (    interface == &interface_new
-                &&  interface->flags)
+            if (    iface == &iface_new
+                &&  iface->flags)
             {
                 // save interface name
-                interface->name = tb_strdup(adapter->AdapterName);
-                tb_assert(interface->name);
+                iface->name = tb_strdup(adapter->AdapterName);
+                tb_assert(iface->name);
 
                 // save interface
-                tb_list_insert_tail(interfaces, interface);
+                tb_list_insert_tail(interfaces, iface);
             }
 
             // the next adapter
@@ -185,26 +185,26 @@ static tb_void_t tb_ifaddrs_interface_load6(tb_list_ref_t interfaces)
             /* attempt to get the interface from the cached interfaces
              * and make a new interface if no the cached interface
              */
-            tb_ifaddrs_interface_t      interface_new = {0};
-            tb_ifaddrs_interface_ref_t  interface = tb_ifaddrs_interface_find((tb_iterator_ref_t)interfaces, address->AdapterName);
-            if (!interface) interface = &interface_new;
+            tb_ifaddrs_interface_t      iface_new = {0};
+            tb_ifaddrs_interface_ref_t  iface = tb_ifaddrs_interface_find((tb_iterator_ref_t)interfaces, address->AdapterName);
+            if (!iface) iface = &iface_new;
 
             // check
-            tb_assert(interface == &interface_new || interface->name);
+            tb_assert(iface == &iface_new || iface->name);
 
             // save flags
-            if (address->IfType == IF_TYPE_SOFTWARE_LOOPBACK) interface->flags |= TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK;
+            if (address->IfType == IF_TYPE_SOFTWARE_LOOPBACK) iface->flags |= TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK;
 
             // save hwaddr
-            if (address->PhysicalAddressLength == sizeof(interface->hwaddr.u8))
+            if (address->PhysicalAddressLength == sizeof(iface->hwaddr.u8))
             {
-                interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR;
-                tb_memcpy(interface->hwaddr.u8, address->PhysicalAddress, sizeof(interface->hwaddr.u8));
+                iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR;
+                tb_memcpy(iface->hwaddr.u8, address->PhysicalAddress, sizeof(iface->hwaddr.u8));
             }
 
             // save ipaddrs
             PIP_ADAPTER_UNICAST_ADDRESS ipAddress = address->FirstUnicastAddress;
-            while (ipAddress && (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR) != TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
+            while (ipAddress && (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR) != TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
             {
                 // done
                 tb_ipaddr_t ipaddr;
@@ -213,13 +213,13 @@ static tb_void_t tb_ifaddrs_interface_load6(tb_list_ref_t interfaces)
                 {
                     if (ipaddr.family == TB_IPADDR_FAMILY_IPV4)
                     {
-                        interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4;
-                        interface->ipaddr4 = ipaddr.u.ipv4;
+                        iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4;
+                        iface->ipaddr4 = ipaddr.u.ipv4;
                     }
                     else if (ipaddr.family == TB_IPADDR_FAMILY_IPV6)
                     {
-                        interface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6;
-                        interface->ipaddr6 = ipaddr.u.ipv6;
+                        iface->flags |= TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6;
+                        iface->ipaddr6 = ipaddr.u.ipv6;
                     }
                 }
 
@@ -228,15 +228,15 @@ static tb_void_t tb_ifaddrs_interface_load6(tb_list_ref_t interfaces)
             }
 
             // new interface? save it
-            if (    interface == &interface_new
-                &&  interface->flags)
+            if (    iface == &iface_new
+                &&  iface->flags)
             {
                 // save interface name
-                interface->name = tb_strdup(address->AdapterName);
-                tb_assert(interface->name);
+                iface->name = tb_strdup(address->AdapterName);
+                tb_assert(iface->name);
 
                 // save interface
-                tb_list_insert_tail(interfaces, interface);
+                tb_list_insert_tail(interfaces, iface);
             }
 
             // the next address

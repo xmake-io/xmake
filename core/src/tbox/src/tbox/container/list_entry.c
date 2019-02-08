@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        list_entry.c
@@ -113,7 +113,7 @@ static tb_void_t tb_list_entry_itor_remove(tb_iterator_ref_t iterator, tb_size_t
     // remove it
     tb_list_entry_remove(list, (tb_list_entry_ref_t)itor);
 }
-static tb_void_t tb_list_entry_itor_remove_range(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
+static tb_void_t tb_list_entry_itor_nremove(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
 {
     // check
     tb_list_entry_head_ref_t list = tb_container_of(tb_list_entry_head_t, itor, iterator);
@@ -150,28 +150,34 @@ tb_void_t tb_list_entry_init_(tb_list_entry_head_ref_t list, tb_size_t entry_off
     // check
     tb_assert_and_check_return(list && entry_size > sizeof(tb_list_entry_t));
 
-    // init it
-    list->next          = (tb_list_entry_ref_t)list;
-    list->prev          = (tb_list_entry_ref_t)list;
-    list->size          = 0;
-    list->eoff          = entry_offset;
-    list->copy          = copy;
+    // init list
+    list->next = (tb_list_entry_ref_t)list;
+    list->prev = (tb_list_entry_ref_t)list;
+    list->size = 0;
+    list->eoff = entry_offset;
+    list->copy = copy;
+
+    // init operation
+    static tb_iterator_op_t op = 
+    {
+        tb_list_entry_itor_size
+    ,   tb_list_entry_itor_head
+    ,   tb_list_entry_itor_last
+    ,   tb_list_entry_itor_tail
+    ,   tb_list_entry_itor_prev
+    ,   tb_list_entry_itor_next
+    ,   tb_list_entry_itor_item
+    ,   tb_null
+    ,   tb_list_entry_itor_copy
+    ,   tb_list_entry_itor_remove
+    ,   tb_list_entry_itor_nremove
+    };
  
     // init iterator
-    list->itor.mode         = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE;
-    list->itor.priv         = tb_null;
-    list->itor.step         = entry_size;
-    list->itor.size         = tb_list_entry_itor_size;
-    list->itor.head         = tb_list_entry_itor_head;
-    list->itor.last         = tb_list_entry_itor_last;
-    list->itor.tail         = tb_list_entry_itor_tail;
-    list->itor.prev         = tb_list_entry_itor_prev;
-    list->itor.next         = tb_list_entry_itor_next;
-    list->itor.item         = tb_list_entry_itor_item;
-    list->itor.copy         = tb_list_entry_itor_copy;
-    list->itor.remove       = tb_list_entry_itor_remove;
-    list->itor.remove_range = tb_list_entry_itor_remove_range;
-    list->itor.comp = tb_null;
+    list->itor.priv = tb_null;
+    list->itor.step = entry_size;
+    list->itor.mode = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE;
+    list->itor.op   = &op;
 }
 tb_void_t tb_list_entry_exit(tb_list_entry_head_ref_t list)
 {

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        fixed_pool.c
@@ -139,7 +139,7 @@ static tb_void_t tb_fixed_pool_slot_exit(tb_fixed_pool_t* pool, tb_fixed_pool_sl
 
     // make the iterator
     tb_array_iterator_t array_iterator;
-    tb_iterator_ref_t   iterator = tb_iterator_make_for_ptr(&array_iterator, (tb_pointer_t*)pool->slot_list, pool->slot_count);
+    tb_iterator_ref_t   iterator = tb_array_iterator_init_ptr(&array_iterator, (tb_pointer_t*)pool->slot_list, pool->slot_count);
     tb_assert(iterator);
 
     // find the slot from the slot list
@@ -314,7 +314,7 @@ static tb_fixed_pool_slot_t* tb_fixed_pool_slot_find(tb_fixed_pool_t* pool, tb_p
 
     // make the iterator
     tb_array_iterator_t array_iterator;
-    tb_iterator_ref_t   iterator = tb_iterator_make_for_ptr(&array_iterator, (tb_pointer_t*)pool->slot_list, pool->slot_count);
+    tb_iterator_ref_t   iterator = tb_array_iterator_init_ptr(&array_iterator, (tb_pointer_t*)pool->slot_list, pool->slot_count);
     tb_assert(iterator);
 
     // find it

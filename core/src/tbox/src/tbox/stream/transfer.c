@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        transfer.c
@@ -51,7 +51,7 @@ tb_hong_t tb_transfer(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_size_
     
     // open it first if ostream have been not opened
     if (tb_stream_is_closed(ostream) && !tb_stream_open(ostream)) return -1;
-                
+
     // done func
     if (func) func(TB_STATE_OK, tb_stream_offset(istream), tb_stream_size(istream), 0, 0, priv);
 
@@ -124,10 +124,7 @@ tb_hong_t tb_transfer(tb_stream_ref_t istream, tb_stream_ref_t ostream, tb_size_
         {
             // wait
             tb_long_t wait = tb_stream_wait(istream, TB_STREAM_WAIT_READ, tb_stream_timeout(istream));
-            tb_assert_and_check_break(wait >= 0);
-
-            // timeout?
-            tb_check_break(wait);
+            tb_check_break(wait > 0);
 
             // has writ?
             tb_assert_and_check_break(wait & TB_STREAM_WAIT_READ);

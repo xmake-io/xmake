@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        thread.c
@@ -86,10 +86,11 @@ tb_long_t tb_thread_wait(tb_thread_ref_t thread, tb_long_t timeout, tb_int_t* re
     tb_check_return_val(r >= WAIT_OBJECT_0, -1);
 
     // get the return value
-    DWORD code = 0;
-    if (retval && GetExitCodeThread((HANDLE)thread, &code))
-        *retval = (tb_int_t)code;
-    else *retval = 0;
+    if (retval)
+    {
+        DWORD code = 0;
+        *retval = GetExitCodeThread((HANDLE)thread, &code)? (tb_int_t)code : 0;
+    }
 
     // ok
     return 1;

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        prefix.h
@@ -37,6 +37,11 @@
 #include "../../platform/platform.h"
 #include "../../container/container.h"
 #include "../../algorithm/algorithm.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -148,5 +153,9 @@ tb_void_t                       tb_pool_data_save_backtrace(tb_pool_data_debug_h
 
 #endif
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif

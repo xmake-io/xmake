@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        http.c
@@ -85,6 +85,9 @@ typedef struct __tb_http_t
     // the cookies
     tb_string_t         cookies;
 
+    // the request/response data for decreasing stack size
+    tb_char_t           data[8192];
+
 }tb_http_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -109,9 +112,12 @@ static tb_bool_t tb_http_connect(tb_http_t* http)
         // trace
         tb_trace_d("connect: host: %s", host_changed? "changed" : "keep");
 
-        // ctrl stream
+        // set url and timeout
         if (!tb_stream_ctrl(http->stream, TB_STREAM_CTRL_SET_URL, tb_url_cstr(&http->option.url))) break;
         if (!tb_stream_ctrl(http->stream, TB_STREAM_CTRL_SET_TIMEOUT, http->option.timeout)) break;
+
+        // reset keep-alive and close socket first before connecting anthor host
+        if (host_changed && !tb_stream_ctrl(http->stream, TB_STREAM_CTRL_SOCK_KEEP_ALIVE, tb_false)) break;
 
         // dump option
 #if defined(__tb_debug__) && TB_TRACE_MODULE_DEBUG
@@ -127,9 +133,6 @@ static tb_bool_t tb_http_connect(tb_http_t* http)
         // open stream
         if (!tb_stream_open(http->stream)) break;
 
-        // trace
-        tb_trace_d("connect: ok");
-
         // ok
         ok = tb_true;
 
@@ -138,6 +141,9 @@ static tb_bool_t tb_http_connect(tb_http_t* http)
 
     // failed? save state
     if (!ok) http->status.state = tb_stream_state(http->stream);
+
+    // trace
+    tb_trace_d("connect: %s, state: %s", ok? "ok" : "failed", tb_state_cstr(http->status.state));
 
     // ok?
     return ok;
@@ -173,9 +179,8 @@ static tb_bool_t tb_http_request(tb_http_t* http)
         tb_string_clear(&http->request);
 
         // init the head value
-        tb_char_t           data[8192];
-        tb_static_string_t  value;
-        if (!tb_static_string_init(&value, data, sizeof(data))) break;
+        tb_static_string_t value;
+        if (!tb_static_string_init(&value, http->data, sizeof(http->data))) break;
 
         // init method
         tb_char_t const* method = tb_http_method_cstr(http->option.method);
@@ -303,8 +308,8 @@ static tb_bool_t tb_http_request(tb_http_t* http)
         tb_string_chrcat(&http->request, ' ');
 
         // encode path
-        tb_url_encode2(path, tb_strlen(path), data, sizeof(data) - 1);
-        path = data;
+        tb_url_encode2(path, tb_strlen(path), http->data, sizeof(http->data) - 1);
+        path = http->data;
 
         // append path
         tb_string_cstrcat(&http->request, path);
@@ -316,8 +321,8 @@ static tb_bool_t tb_http_request(tb_http_t* http)
             tb_string_chrcat(&http->request, '?');
 
             // encode args
-            tb_url_encode2(args, tb_strlen(args), data, sizeof(data) - 1);
-            args = data;
+            tb_url_encode2(args, tb_strlen(args), http->data, sizeof(http->data) - 1);
+            args = http->data;
 
             // append args
             tb_string_cstrcat(&http->request, args);
@@ -557,16 +562,15 @@ static tb_bool_t tb_http_response(tb_http_t* http)
     do
     {
         // read line
-        tb_char_t line[8192];
         tb_long_t real = 0;
         tb_size_t indx = 0;
-        while ((real = tb_stream_bread_line(http->stream, line, sizeof(line) - 1)) >= 0)
+        while ((real = tb_stream_bread_line(http->stream, http->data, sizeof(http->data) - 1)) >= 0)
         {
             // trace
-            tb_trace_d("response: %s", line);
+            tb_trace_d("response: %s", http->data);
  
             // do callback
-            if (http->option.head_func && !http->option.head_func(line, http->option.head_priv)) break;
+            if (http->option.head_func && !http->option.head_func(http->data, http->option.head_priv)) break;
             
             // end?
             if (!real)
@@ -647,7 +651,7 @@ static tb_bool_t tb_http_response(tb_http_t* http)
             }
 
             // done it
-            if (!tb_http_response_done(http, line, indx++)) break;
+            if (!tb_http_response_done(http, http->data, indx++)) break;
         }
 
     } while (0);
@@ -662,6 +666,7 @@ static tb_bool_t tb_http_redirect(tb_http_t* http)
 
     // done
     tb_size_t i = 0;
+    tb_bool_t ok = tb_true;
     for (i = 0; i < http->option.redirect && tb_string_size(&http->status.location); i++)
     {
         // read the redirect content
@@ -692,7 +697,7 @@ static tb_bool_t tb_http_redirect(tb_http_t* http)
         // switch to sstream
         http->stream = http->sstream;
 
-        // done location url
+        // get location url
         tb_char_t const* location = tb_string_cstr(&http->status.location);
         tb_assert_and_check_break(location);
 
@@ -716,17 +721,17 @@ static tb_bool_t tb_http_redirect(tb_http_t* http)
         }
 
         // connect it
-        if (!tb_http_connect(http)) break;
+        if (!(ok = tb_http_connect(http))) break;
 
         // request it
-        if (!tb_http_request(http)) break;
+        if (!(ok = tb_http_request(http))) break;
 
         // response it
-        if (!tb_http_response(http)) break;
+        if (!(ok = tb_http_response(http))) break;
     }
 
     // ok?
-    return (i < http->option.redirect && tb_string_size(&http->status.location))? tb_false : tb_true;
+    return ok && !tb_string_size(&http->status.location);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -735,8 +740,8 @@ static tb_bool_t tb_http_redirect(tb_http_t* http)
 tb_http_ref_t tb_http_init()
 {
     // done
-    tb_bool_t           ok = tb_false;
-    tb_http_t*     http = tb_null;
+    tb_bool_t   ok = tb_false;
+    tb_http_t*  http = tb_null;
     do
     {
         // make http

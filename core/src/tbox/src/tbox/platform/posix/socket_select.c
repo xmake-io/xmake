@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        socket_select.c
@@ -29,6 +29,7 @@
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include "../windows/interface/interface.h"
 #else
+#   include <sys/socket.h>
 #   include <sys/select.h>
 #endif
 #if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) \
@@ -109,16 +110,18 @@ tb_long_t tb_socket_wait(tb_socket_ref_t sock, tb_size_t events, tb_long_t timeo
     // timeout?
     tb_check_return_val(r, 0);
 
-    // error?
-    tb_int_t o = 0;
+    // check socket error?
 #ifdef TB_CONFIG_OS_WINDOWS
+    tb_int_t error = 0;
     tb_int_t n = sizeof(tb_int_t);
-    tb_ws2_32()->getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&o, &n);
+    if (!tb_ws2_32()->getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&error, &n) && error)
+        return -1;
 #else
+    tb_int_t error = 0;
     socklen_t n = sizeof(socklen_t);
-    getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&o, &n);
+    if (!getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&error, &n) && error)
+        return -1;
 #endif
-    if (o) return -1;
 
     // ok
     tb_long_t e = TB_SOCKET_EVENT_NONE;

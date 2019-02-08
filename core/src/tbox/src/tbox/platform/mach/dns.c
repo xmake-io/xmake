@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        dns.c
@@ -50,8 +50,8 @@ typedef tb_int_t (*tb_dns_res_ninit_func_t)(res_state);
 tb_bool_t tb_dns_init_env()
 {
     // done
-    tb_size_t   count = 0;
-    tb_handle_t library = tb_dynamic_init("libresolv.dylib");
+    tb_size_t           count = 0;
+    tb_dynamic_ref_t    library = tb_dynamic_init("libresolv.dylib");
     if (library) 
     {
         // the res_ninit func

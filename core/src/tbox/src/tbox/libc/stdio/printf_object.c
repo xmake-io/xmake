@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        printf_object.c
@@ -131,7 +131,7 @@ tb_printf_object_func_t tb_printf_object_find(tb_char_t const* name)
 
     // init the iterator
     tb_array_iterator_t array_iterator;
-    tb_iterator_ref_t   iterator = tb_iterator_make_for_mem(&array_iterator, g_list, g_size, sizeof(tb_printf_object_entry_t));
+    tb_iterator_ref_t   iterator = tb_array_iterator_init_mem(&array_iterator, g_list, g_size, sizeof(tb_printf_object_entry_t));
     tb_assert_and_check_return_val(iterator, tb_null);
 
     // find it

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        keyword.h
@@ -43,12 +43,12 @@
 #   define __tb_register__                      
 #endif
 #define __tb_volatile__                         volatile
-#define __tb_func__                             __FUNCTION__
-#define __tb_file__                             __FILE__
-#define __tb_line__                             __LINE__
 
 #if defined(TB_COMPILER_IS_MSVC)
 
+#   define __tb_func__                          __FUNCTION__
+#   define __tb_file__                          __FILE__
+#   define __tb_line__                          __LINE__
 #   define __tb_asm__                           __asm
 #   define __tb_inline__                        __inline
 #   define __tb_inline_force__                  __forceinline
@@ -61,6 +61,9 @@
 
 #elif defined(TB_COMPILER_IS_GCC)
 
+#   define __tb_func__                          __FUNCTION__
+#   define __tb_file__                          __FILE__
+#   define __tb_line__                          __LINE__
 #   define __tb_asm__                           __asm__
 #   define __tb_inline__                        __inline__
 #   define __tb_inline_force__                  __inline__ __attribute__((always_inline))
@@ -82,6 +85,22 @@
 #       define __tb_fastcall__                  __attribute__((__fastcall__))
 #       define __tb_thiscall__                  __attribute__((__thiscall__))
 #   endif
+
+#elif defined(TB_COMPILER_IS_TINYC)
+
+#   define __tb_func__                          __func__
+#   define __tb_file__                          __FILE__
+#   define __tb_line__                          __LINE__
+#   define __tb_asm__                           __asm__
+#   define __tb_inline__                        __inline__
+#   define __tb_inline_force__                  __inline__ __attribute__((always_inline))
+#   define __tb_packed__                        __attribute__((packed, aligned(1)))
+#   define __tb_aligned__(a)                    __attribute__((aligned(a)))
+#   define __tb_cdecl__                         __attribute__((cdecl))
+#   define __tb_stdcall__                       __attribute__((stdcall))
+#   define __tb_fastcall__                      __attribute__((fastcall))
+#   define __tb_thiscall__                      __attribute__((thiscall))
+
 #else
 
 #   define __tb_asm__               
@@ -252,7 +271,7 @@
  * @endcode
  * 
  */
-#define __tb_typeref__(object)                              struct __tb_##object##_dummy_t{tb_int_t dummy;}* tb_##object##_ref_t
+#define __tb_typeref__(object)                              struct __tb_##object##_dummy_t{tb_int_t dummy;} const* tb_##object##_ref_t
 
 // macros
 #define __tb_mstring__(x)                                   #x

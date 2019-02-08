@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        vector.c
@@ -173,7 +173,7 @@ static tb_void_t tb_vector_itor_remove(tb_iterator_ref_t iterator, tb_size_t ito
     // remove it
     tb_vector_remove((tb_vector_ref_t)iterator, itor);
 }
-static tb_void_t tb_vector_itor_remove_range(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
+static tb_void_t tb_vector_itor_nremove(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
 {
     // check
     tb_vector_t* vector = (tb_vector_t*)iterator;
@@ -210,21 +210,27 @@ tb_vector_ref_t tb_vector_init(tb_size_t grow, tb_element_t element)
         vector->element   = element;
         tb_assert_and_check_break(vector->maxn < TB_VECTOR_MAXN);
 
+        // init operation
+        static tb_iterator_op_t op = 
+        {
+            tb_vector_itor_size
+        ,   tb_vector_itor_head
+        ,   tb_vector_itor_last
+        ,   tb_vector_itor_tail
+        ,   tb_vector_itor_prev
+        ,   tb_vector_itor_next
+        ,   tb_vector_itor_item
+        ,   tb_vector_itor_comp
+        ,   tb_vector_itor_copy
+        ,   tb_vector_itor_remove
+        ,   tb_vector_itor_nremove
+        };
+
         // init iterator
-        vector->itor.mode         = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE | TB_ITERATOR_MODE_RACCESS | TB_ITERATOR_MODE_MUTABLE;
-        vector->itor.priv         = tb_null;
-        vector->itor.step         = element.size;
-        vector->itor.size         = tb_vector_itor_size;
-        vector->itor.head         = tb_vector_itor_head;
-        vector->itor.last         = tb_vector_itor_last;
-        vector->itor.tail         = tb_vector_itor_tail;
-        vector->itor.prev         = tb_vector_itor_prev;
-        vector->itor.next         = tb_vector_itor_next;
-        vector->itor.item         = tb_vector_itor_item;
-        vector->itor.copy         = tb_vector_itor_copy;
-        vector->itor.comp         = tb_vector_itor_comp;
-        vector->itor.remove       = tb_vector_itor_remove;
-        vector->itor.remove_range = tb_vector_itor_remove_range;
+        vector->itor.priv = tb_null;
+        vector->itor.step = element.size;
+        vector->itor.mode = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_REVERSE | TB_ITERATOR_MODE_RACCESS | TB_ITERATOR_MODE_MUTABLE;
+        vector->itor.op   = &op;
 
         // make data
         vector->data = (tb_byte_t*)tb_nalloc0(vector->maxn, element.size);
@@ -287,7 +293,6 @@ tb_void_t tb_vector_copy(tb_vector_ref_t self, tb_vector_ref_t copy)
     tb_assert_and_check_return(vector->element.size == vector_copy->element.size);
 
     // check itor
-    tb_assert_and_check_return(vector->itor.mode == vector_copy->itor.mode);
     tb_assert_and_check_return(vector->itor.step == vector_copy->itor.step);
 
     // null? clear it

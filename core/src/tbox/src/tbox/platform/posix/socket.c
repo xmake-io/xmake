@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        socket.c
@@ -210,10 +210,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // enable the nagle's algorithm
             tb_int_t enable = (tb_int_t)tb_va_arg(args, tb_bool_t);
             if (!setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (tb_char_t*)&enable, sizeof(enable)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_TCP_NODELAY:
@@ -244,10 +241,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // set the recv buffer size
             tb_int_t real = (tb_int_t)buff_size;
             if (!setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (tb_char_t*)&real, sizeof(real)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_RECV_BUFF_SIZE:
@@ -278,10 +272,7 @@ tb_bool_t tb_socket_ctrl(tb_socket_ref_t sock, tb_size_t ctrl, ...)
             // set the send buffer size
             tb_int_t real = (tb_int_t)buff_size;
             if (!setsockopt(fd, SOL_SOCKET, SO_SNDBUF, (tb_char_t*)&real, sizeof(real)))
-            {
-                // ok
                 ok = tb_true;
-            }
         }
         break;
     case TB_SOCKET_CTRL_GET_SEND_BUFF_SIZE:
@@ -414,7 +405,6 @@ tb_socket_ref_t tb_socket_accept(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
     // non-block
     fcntl(fd, F_SETFL, fcntl(fd, F_GETFL) | O_NONBLOCK);
 
-#ifdef TB_CONFIG_OS_LINUX
     /* disable the nagle's algorithm to fix 40ms ack delay in some case (.e.g send-send-40ms-recv)
      *
      * 40ms is the tcp ack delay on linux, which indicates that you are likely 
@@ -433,8 +423,8 @@ tb_socket_ref_t tb_socket_accept(tb_socket_ref_t sock, tb_ipaddr_ref_t addr)
      * 
      * so we set TCP_NODELAY to reduce response delay for the accepted socket in the server by default
      */
-    tb_socket_ctrl(sock, TB_SOCKET_CTRL_SET_TCP_NODELAY, tb_true);
-#endif
+    tb_int_t enable = 1;
+    setsockopt(fd, IPPROTO_TCP, TCP_NODELAY, (tb_char_t*)&enable, sizeof(enable));
 
     // save address
     if (addr) tb_sockaddr_save(addr, &d);

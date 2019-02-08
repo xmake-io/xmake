@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        socket.c
@@ -152,6 +152,8 @@ tb_long_t tb_socket_usendv(tb_socket_ref_t sock, tb_ipaddr_ref_t addr, tb_iovec_
 #   include "posix/socket_select.c"
 #elif defined(TB_CONFIG_POSIX_HAVE_POLL)
 #   include "posix/socket_poll.c"
+#elif defined(TB_CONFIG_POSIX_HAVE_SELECT)
+#   include "posix/socket_select.c"
 #else
 tb_long_t tb_socket_wait(tb_socket_ref_t sock, tb_size_t events, tb_long_t timeout)
 {
@@ -159,3 +161,60 @@ tb_long_t tb_socket_wait(tb_socket_ref_t sock, tb_size_t events, tb_long_t timeo
     return -1;
 }
 #endif
+
+tb_bool_t tb_socket_brecv(tb_socket_ref_t sock, tb_byte_t* data, tb_size_t size)
+{
+    // recv data
+    tb_size_t recv = 0;
+    tb_long_t wait = 0;
+    while (recv < size)
+    {
+        // recv it
+        tb_long_t real = tb_socket_recv(sock, data + recv, size - recv);
+
+        // has data?
+        if (real > 0) 
+        {
+            recv += real;
+            wait = 0;
+        }
+        // no data? wait it
+        else if (!real && !wait)
+        {
+            // wait it
+            wait = tb_socket_wait(sock, TB_SOCKET_EVENT_RECV, -1);
+            tb_check_break(wait > 0);
+        }
+        // failed or end?
+        else break;
+    }
+    return recv == size;
+}
+tb_bool_t tb_socket_bsend(tb_socket_ref_t sock, tb_byte_t const* data, tb_size_t size)
+{
+    // send data
+    tb_size_t send = 0;
+    tb_long_t wait = 0;
+    while (send < size)
+    {
+        // send it
+        tb_long_t real = tb_socket_send(sock, data + send, size - send);
+
+        // has data?
+        if (real > 0) 
+        {
+            send += real;
+            wait = 0;
+        }
+        // no data? wait it
+        else if (!real && !wait)
+        {
+            // wait it
+            wait = tb_socket_wait(sock, TB_SOCKET_EVENT_SEND, -1);
+            tb_check_break(wait > 0);
+        }
+        // failed or end?
+        else break;
+    }
+    return send == size;
+}

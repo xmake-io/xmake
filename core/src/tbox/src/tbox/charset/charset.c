@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        charset.c
@@ -106,7 +106,7 @@ static tb_charset_ref_t tb_charset_find_by_name(tb_char_t const* name)
 {
     // make iterator
     tb_array_iterator_t array_iterator;
-    tb_iterator_ref_t   iterator = tb_iterator_make_for_mem(&array_iterator, g_charsets, tb_arrayn(g_charsets), sizeof(tb_charset_t));
+    tb_iterator_ref_t   iterator = tb_array_iterator_init_mem(&array_iterator, g_charsets, tb_arrayn(g_charsets), sizeof(tb_charset_t));
     tb_assert_and_check_return_val(iterator, tb_null);
 
     // find it by the binary search
@@ -121,7 +121,7 @@ static tb_charset_ref_t tb_charset_find_by_type(tb_size_t type)
 {
     // make iterator
     tb_array_iterator_t array_iterator;
-    tb_iterator_ref_t   iterator = tb_iterator_make_for_mem(&array_iterator, g_charsets, tb_arrayn(g_charsets), sizeof(tb_charset_t));
+    tb_iterator_ref_t   iterator = tb_array_iterator_init_mem(&array_iterator, g_charsets, tb_arrayn(g_charsets), sizeof(tb_charset_t));
     tb_assert_and_check_return_val(iterator, tb_null);
 
     // find it by the binary search

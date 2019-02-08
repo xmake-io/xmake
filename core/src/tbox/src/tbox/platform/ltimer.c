@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        ltimer.c
@@ -563,7 +563,7 @@ tb_bool_t tb_ltimer_spak(tb_ltimer_ref_t self)
             tb_spinlock_enter(&timer->lock);
 
             // exit the expired task
-            tb_pointer_t data[2]; data[0] = self; data[1] = &now;
+            tb_pointer_t data[2]; data[0] = (tb_pointer_t)self; data[1] = &now;
             tb_walk_all(list, tb_ltimer_expired_task_exit, data);
 
             // leave

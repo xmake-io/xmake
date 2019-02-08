@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX op->n Source Group.
  *
  * @author      ruki
  * @file        iterator.c
@@ -52,89 +52,89 @@ tb_size_t tb_iterator_step(tb_iterator_ref_t iterator)
 tb_size_t tb_iterator_size(tb_iterator_ref_t iterator)
 {
     // check
-    tb_assert(iterator && iterator->size);
+    tb_assert(iterator && iterator->op && iterator->op->size);
 
     // size
-    return iterator->size(iterator);
+    return iterator->op->size(iterator);
 }
 tb_size_t tb_iterator_head(tb_iterator_ref_t iterator)
 {
     // check
-    tb_assert(iterator && iterator->head);
+    tb_assert(iterator && iterator->op && iterator->op->head);
     
     // head
-    return iterator->head(iterator);
+    return iterator->op->head(iterator);
 }
 tb_size_t tb_iterator_last(tb_iterator_ref_t iterator)
 {
     // check
-    tb_assert(iterator && iterator->last);
+    tb_assert(iterator && iterator->op && iterator->op->last);
     
     // last
-    return iterator->last(iterator);
+    return iterator->op->last(iterator);
 }
 tb_size_t tb_iterator_tail(tb_iterator_ref_t iterator)
 {
     // check
-    tb_assert(iterator && iterator->tail);
+    tb_assert(iterator && iterator->op && iterator->op->tail);
 
     // tail
-    return iterator->tail(iterator);
+    return iterator->op->tail(iterator);
 }
 tb_size_t tb_iterator_prev(tb_iterator_ref_t iterator, tb_size_t itor)
 {
     // check
-    tb_assert(iterator && iterator->prev);
+    tb_assert(iterator && iterator->op && iterator->op->prev);
 
     // prev
-    return iterator->prev(iterator, itor);
+    return iterator->op->prev(iterator, itor);
 }
 tb_size_t tb_iterator_next(tb_iterator_ref_t iterator, tb_size_t itor)
 {
     // check
-    tb_assert(iterator && iterator->next);
+    tb_assert(iterator && iterator->op && iterator->op->next);
 
     // next
-    return iterator->next(iterator, itor);
+    return iterator->op->next(iterator, itor);
 }
 tb_pointer_t tb_iterator_item(tb_iterator_ref_t iterator, tb_size_t itor)
 {
     // check
-    tb_assert(iterator && iterator->item);
+    tb_assert(iterator && iterator->op && iterator->op->item);
 
     // item
-    return iterator->item(iterator, itor);
+    return iterator->op->item(iterator, itor);
 }
 tb_void_t tb_iterator_remove(tb_iterator_ref_t iterator, tb_size_t itor)
 {
     // check
-    tb_assert(iterator && iterator->remove);
+    tb_assert(iterator && iterator->op && iterator->op->remove);
 
     // remove
-    return iterator->remove(iterator, itor);
+    return iterator->op->remove(iterator, itor);
 }
-tb_void_t tb_iterator_remove_range(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
+tb_void_t tb_iterator_nremove(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
 {
     // check
-    tb_assert(iterator && iterator->remove_range);
+    tb_assert(iterator && iterator->op && iterator->op->nremove);
 
-    // remove range
-    return iterator->remove_range(iterator, prev, next, size);
+    // nremove 
+    return iterator->op->nremove(iterator, prev, next, size);
 }
 tb_void_t tb_iterator_copy(tb_iterator_ref_t iterator, tb_size_t itor, tb_cpointer_t item)
 {
     // check
-    tb_assert(iterator && iterator->copy);
+    tb_assert(iterator && iterator->op && iterator->op->copy);
 
     // copy
-    return iterator->copy(iterator, itor, item);
+    return iterator->op->copy(iterator, itor, item);
 }
 tb_long_t tb_iterator_comp(tb_iterator_ref_t iterator, tb_cpointer_t litem, tb_cpointer_t ritem)
 {
     // check
-    tb_assert(iterator && iterator->comp);
+    tb_assert(iterator && iterator->op && iterator->op->comp);
 
     // comp
-    return iterator->comp(iterator, litem, ritem);
+    return iterator->op->comp(iterator, litem, ritem);
 }
 

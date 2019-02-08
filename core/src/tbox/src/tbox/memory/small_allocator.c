@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        small_allocator.c
@@ -440,7 +440,8 @@ tb_allocator_ref_t tb_small_allocator_init(tb_allocator_ref_t large_allocator)
         allocator->large_allocator      = large_allocator;
 
         // init base
-        allocator->base.type            = TB_ALLOCATOR_SMALL;
+        allocator->base.type            = TB_ALLOCATOR_TYPE_SMALL;
+        allocator->base.flag            = TB_ALLOCATOR_FLAG_NONE;
         allocator->base.malloc          = tb_small_allocator_malloc;
         allocator->base.ralloc          = tb_small_allocator_ralloc;
         allocator->base.free            = tb_small_allocator_free;

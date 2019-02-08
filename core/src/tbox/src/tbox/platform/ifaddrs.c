@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        ifaddrs.c
@@ -42,7 +42,7 @@
 static tb_handle_t tb_ifaddrs_instance_init(tb_cpointer_t* ppriv)
 {
     // init it
-    return tb_ifaddrs_init();
+    return (tb_handle_t)tb_ifaddrs_init();
 }
 static tb_void_t tb_ifaddrs_instance_exit(tb_handle_t ifaddrs, tb_cpointer_t priv)
 {
@@ -135,17 +135,17 @@ tb_bool_t tb_ifaddrs_hwaddr(tb_ifaddrs_ref_t ifaddrs, tb_char_t const* name, tb_
 
     // done
     tb_bool_t ok = tb_false;
-    tb_for_all_if (tb_ifaddrs_interface_ref_t, interface, iterator, interface)
+    tb_for_all_if (tb_ifaddrs_interface_ref_t, iface, iterator, iface)
     {
-        // get hwaddr from the given interface name?
+        // get hwaddr from the given iface name?
         if (name)
         {
             // is this?
-            if (    (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
-                &&  (interface->name && !tb_strcmp(interface->name, name)))
+            if (    (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
+                &&  (iface->name && !tb_strcmp(iface->name, name)))
             {
                 // save hwaddr
-                tb_hwaddr_copy(hwaddr, &interface->hwaddr);
+                tb_hwaddr_copy(hwaddr, &iface->hwaddr);
 
                 // ok
                 ok = tb_true;
@@ -155,12 +155,12 @@ tb_bool_t tb_ifaddrs_hwaddr(tb_ifaddrs_ref_t ifaddrs, tb_char_t const* name, tb_
         else
         {
             // is this?
-            if (    (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
-                &&  (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
-                &&  !(interface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK))
+            if (    (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
+                &&  (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
+                &&  !(iface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK))
             {
                 // save hwaddr
-                tb_hwaddr_copy(hwaddr, &interface->hwaddr);
+                tb_hwaddr_copy(hwaddr, &iface->hwaddr);
 
                 // ok
                 ok = tb_true;
@@ -194,30 +194,30 @@ tb_bool_t tb_ifaddrs_ipaddr(tb_ifaddrs_ref_t ifaddrs, tb_char_t const* name, tb_
 
     // done
     tb_bool_t ok = tb_false;
-    tb_for_all_if (tb_ifaddrs_interface_ref_t, interface, iterator, interface)
+    tb_for_all_if (tb_ifaddrs_interface_ref_t, iface, iterator, iface)
     {
         // is this?
-        if (    (name || !(interface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK))
-            &&  (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
-            &&  (!name || (interface->name && !tb_strcmp(interface->name, name))))
+        if (    (name || !(iface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK))
+            &&  (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR)
+            &&  (!name || (iface->name && !tb_strcmp(iface->name, name))))
         {
             // ipv4?
-            if (    interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4
+            if (    iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4
                 &&  (!family || family == TB_IPADDR_FAMILY_IPV4))
             {
                 // save ipaddr4
-                tb_ipaddr_ipv4_set(ipaddr, &interface->ipaddr4);
+                tb_ipaddr_ipv4_set(ipaddr, &iface->ipaddr4);
 
                 // ok
                 ok = tb_true;
                 break;
             }
             // ipv6?
-            else if (    interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6
+            else if (    iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6
                     &&  (!family || family == TB_IPADDR_FAMILY_IPV6))
             {
                 // save ipaddr6
-                tb_ipaddr_ipv6_set(ipaddr, &interface->ipaddr6);
+                tb_ipaddr_ipv6_set(ipaddr, &iface->ipaddr6);
 
                 // ok
                 ok = tb_true;
@@ -236,16 +236,16 @@ tb_void_t tb_ifaddrs_dump(tb_ifaddrs_ref_t ifaddrs)
     tb_trace_i("");
 
     // done
-    tb_for_all_if (tb_ifaddrs_interface_ref_t, interface, tb_ifaddrs_itor(ifaddrs, tb_true), interface)
+    tb_for_all_if (tb_ifaddrs_interface_ref_t, iface, tb_ifaddrs_itor(ifaddrs, tb_true), iface)
     {
         // trace
-        tb_trace_i("name: %s%s", interface->name, (interface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK)? "[loopback]" : "");
-        if (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4)
-            tb_trace_i("    ipaddr4: %{ipv4}",  &interface->ipaddr4);
-        if (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6)
-            tb_trace_i("    ipaddr6: %{ipv6}",  &interface->ipaddr6);
-        if (interface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
-            tb_trace_i("    hwaddr: %{hwaddr}", &interface->hwaddr);
+        tb_trace_i("name: %s%s", iface->name, (iface->flags & TB_IFADDRS_INTERFACE_FLAG_IS_LOOPBACK)? "[loopback]" : "");
+        if (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR4)
+            tb_trace_i("    ipaddr4: %{ipv4}",  &iface->ipaddr4);
+        if (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_IPADDR6)
+            tb_trace_i("    ipaddr6: %{ipv6}",  &iface->ipaddr6);
+        if (iface->flags & TB_IFADDRS_INTERFACE_FLAG_HAVE_HWADDR)
+            tb_trace_i("    hwaddr: %{hwaddr}", &iface->hwaddr);
     }
 }
 #endif

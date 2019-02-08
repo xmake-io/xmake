@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        cache.h
@@ -30,6 +30,11 @@
  * includes
  */
 #include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_enter__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -61,5 +66,10 @@ tb_bool_t           tb_dns_cache_get(tb_char_t const* name, tb_ipaddr_ref_t addr
  * @param addr      the host addr
  */
 tb_void_t           tb_dns_cache_set(tb_char_t const* name, tb_ipaddr_ref_t addr);
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * extern
+ */
+__tb_extern_c_leave__
 
 #endif

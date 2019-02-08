@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        static_buffer.c
@@ -73,7 +73,7 @@ tb_byte_t* tb_static_buffer_data(tb_static_buffer_ref_t buffer)
     tb_assert_and_check_return_val(buffer, tb_null);
 
     // the buffer data
-    return buffer->size? buffer->data : tb_null;
+    return buffer->data;
 }
 tb_size_t tb_static_buffer_size(tb_static_buffer_ref_t buffer)
 {

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @tlocal      thread_local.c
@@ -95,6 +95,10 @@ tb_void_t tb_thread_local_exit(tb_thread_local_ref_t local)
 {
     // check
     tb_assert(local);
+
+    // free the previous data first
+    if (local->free && tb_thread_local_has(local))
+        local->free(tb_thread_local_get(local));
 
     // exit it
     pthread_key_delete(((pthread_key_t*)local->priv)[0]);

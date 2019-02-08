@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        allocator.c
@@ -56,10 +56,10 @@ tb_allocator_ref_t tb_allocator()
 tb_size_t tb_allocator_type(tb_allocator_ref_t allocator)
 {
     // check
-    tb_assert_and_check_return_val(allocator, TB_ALLOCATOR_DEFAULT);
+    tb_assert_and_check_return_val(allocator, TB_ALLOCATOR_TYPE_DEFAULT);
 
     // get it
-    return allocator->type;
+    return (tb_size_t)allocator->type;
 }
 tb_pointer_t tb_allocator_malloc_(tb_allocator_ref_t allocator, tb_size_t size __tb_debug_decl__)
 {
@@ -67,7 +67,8 @@ tb_pointer_t tb_allocator_malloc_(tb_allocator_ref_t allocator, tb_size_t size _
     tb_assert_and_check_return_val(allocator, tb_null);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // malloc it
     tb_pointer_t data = tb_null;
@@ -82,7 +83,7 @@ tb_pointer_t tb_allocator_malloc_(tb_allocator_ref_t allocator, tb_size_t size _
     tb_assertf(!(((tb_size_t)data) & (TB_POOL_DATA_ALIGN - 1)), "malloc(%lu): unaligned data: %p", size, data);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return data;
@@ -129,7 +130,8 @@ tb_pointer_t tb_allocator_ralloc_(tb_allocator_ref_t allocator, tb_pointer_t dat
     tb_assert_and_check_return_val(allocator, tb_null);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // ralloc it
     tb_pointer_t data_new = tb_null;
@@ -158,7 +160,7 @@ tb_pointer_t tb_allocator_ralloc_(tb_allocator_ref_t allocator, tb_pointer_t dat
     tb_assertf(!(((tb_size_t)data_new) & (TB_POOL_DATA_ALIGN - 1)), "ralloc(%lu): unaligned data: %p", size, data);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return data_new;
@@ -169,7 +171,8 @@ tb_bool_t tb_allocator_free_(tb_allocator_ref_t allocator, tb_pointer_t data __t
     tb_assert_and_check_return_val(allocator, tb_false);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // trace
     tb_trace_d("free(%p): at %s(): %d, %s", data __tb_debug_args__);
@@ -195,7 +198,7 @@ tb_bool_t tb_allocator_free_(tb_allocator_ref_t allocator, tb_pointer_t data __t
 #endif
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return ok;
@@ -206,7 +209,8 @@ tb_pointer_t tb_allocator_large_malloc_(tb_allocator_ref_t allocator, tb_size_t 
     tb_assert_and_check_return_val(allocator, tb_null);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // malloc it
     tb_pointer_t data = tb_null;
@@ -227,7 +231,7 @@ tb_pointer_t tb_allocator_large_malloc_(tb_allocator_ref_t allocator, tb_size_t 
     tb_assert(!real || *real >= size);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return data;
@@ -274,7 +278,8 @@ tb_pointer_t tb_allocator_large_ralloc_(tb_allocator_ref_t allocator, tb_pointer
     tb_assert_and_check_return_val(allocator, tb_null);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // ralloc it
     tb_pointer_t data_new = tb_null;
@@ -309,7 +314,7 @@ tb_pointer_t tb_allocator_large_ralloc_(tb_allocator_ref_t allocator, tb_pointer
     tb_assertf(!(((tb_size_t)data_new) & (TB_POOL_DATA_ALIGN - 1)), "ralloc(%lu): unaligned data: %p", size, data);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return data_new;
@@ -320,7 +325,8 @@ tb_bool_t tb_allocator_large_free_(tb_allocator_ref_t allocator, tb_pointer_t da
     tb_assert_and_check_return_val(allocator, tb_false);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // trace
     tb_trace_d("large_free(%p): at %s(): %d, %s", data __tb_debug_args__);
@@ -346,7 +352,7 @@ tb_bool_t tb_allocator_large_free_(tb_allocator_ref_t allocator, tb_pointer_t da
 #endif
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 
     // ok?
     return ok;
@@ -472,13 +478,14 @@ tb_void_t tb_allocator_clear(tb_allocator_ref_t allocator)
     tb_assert_and_check_return(allocator);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // clear it
     if (allocator->clear) allocator->clear(allocator);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 }
 tb_void_t tb_allocator_exit(tb_allocator_ref_t allocator)
 {
@@ -498,13 +505,14 @@ tb_void_t tb_allocator_dump(tb_allocator_ref_t allocator)
     tb_assert_and_check_return(allocator);
 
     // enter
-    tb_spinlock_enter(&allocator->lock);
+    tb_bool_t lockit = !(allocator->flag & TB_ALLOCATOR_FLAG_NOLOCK);
+    if (lockit) tb_spinlock_enter(&allocator->lock);
 
     // dump it
     if (allocator->dump) allocator->dump(allocator);
 
     // leave
-    tb_spinlock_leave(&allocator->lock);
+    if (lockit) tb_spinlock_leave(&allocator->lock);
 }
 tb_bool_t tb_allocator_have(tb_allocator_ref_t allocator, tb_cpointer_t data)
 {

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        trace.h
@@ -57,7 +57,7 @@ __tb_extern_c_enter__
 #endif
 
 // trace prefix
-#if defined(TB_COMPILER_IS_GCC)
+#if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #   define tb_trace_p(prefix, fmt, arg ...)                 do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, fmt __tb_newline__, ## arg); } while (0)
 #   define tb_tracef_p(prefix, fmt, arg ...)                do { tb_trace_done(prefix, TB_TRACE_MODULE_NAME, fmt, ## arg); } while (0)
 #   ifdef __tb_debug__
@@ -136,7 +136,7 @@ __tb_extern_c_enter__
  *
  */
 #if TB_TRACE_MODULE_DEBUG && defined(__tb_debug__) 
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define TB_TRACE_DEBUG
 #       define tb_trace_d(fmt, arg ...)                 tb_trace_p(__tb_prefix__, fmt, ## arg)
 #       define tb_tracef_d(fmt, arg ...)                tb_tracef_p(__tb_prefix__, fmt, ## arg)
@@ -152,7 +152,7 @@ __tb_extern_c_enter__
 #       define tb_tracet_d
 #   endif
 #else
-#   if defined(TB_COMPILER_IS_GCC) || (defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0))
+#   if defined(TB_COMPILER_IS_GCC) || (defined(TB_COMPILER_IS_MSVC) && TB_COMPILER_VERSION_BE(13, 0)) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_trace_d(fmt, ...)         
 #       define tb_tracef_d(fmt, ...)            
 #       define tb_tracet_d(fmt, ...)            
@@ -163,7 +163,7 @@ __tb_extern_c_enter__
 #   endif
 #endif
 
-#if defined(TB_COMPILER_IS_GCC)
+#if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #   define tb_trace_i(fmt, arg ...)                 tb_trace_p(__tb_prefix__, fmt, ## arg)
 #   define tb_trace_e(fmt, arg ...)                 tb_trace_error_p(__tb_prefix__, fmt, ## arg)
 #   define tb_trace_a(fmt, arg ...)                 tb_trace_assert_p(__tb_prefix__, fmt, ## arg)
@@ -205,7 +205,7 @@ __tb_extern_c_enter__
 #endif
 
 // trace once
-#if defined(TB_COMPILER_IS_GCC)
+#if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #   define tb_trace1_d(fmt, arg ...)                do { static tb_bool_t __trace_once = tb_false; if (!__trace_once) { tb_trace_d(fmt, ## arg); __trace_once = tb_true; } } while (0)
 #   define tb_trace1_i(fmt, arg ...)                do { static tb_bool_t __trace_once = tb_false; if (!__trace_once) { tb_trace_i(fmt, ## arg); __trace_once = tb_true; } } while (0)
 #   define tb_trace1_e(fmt, arg ...)                do { static tb_bool_t __trace_once = tb_false; if (!__trace_once) { tb_trace_e(fmt, ## arg); __trace_once = tb_true; } } while (0)
@@ -219,6 +219,7 @@ __tb_extern_c_enter__
 #   define tb_trace1_w(fmt, ...)                    do { static tb_bool_t __trace_once = tb_false; if (!__trace_once) { tb_trace_w(fmt, __VA_ARGS__); __trace_once = tb_true; } } while (0)
 #else
 #   define tb_trace1_i
+#   define tb_trace1_w
 #endif
 
 // trace more info?
@@ -242,7 +243,7 @@ __tb_extern_c_enter__
 #   undef tb_trace1_a
 #   undef tb_trace1_w
 #   define TB_TRACE_MODULE_DEBUG    (0)
-#   if defined(TB_COMPILER_IS_GCC)
+#   if defined(TB_COMPILER_IS_GCC) || defined(TB_COMPILER_IS_TINYC)
 #       define tb_trace_d(fmt, arg ...)                 
 #       define tb_trace_e(fmt, arg ...)                 
 #       define tb_trace_a(fmt, arg ...)                 

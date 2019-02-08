@@ -8,7 +8,8 @@ target("tbox")
     add_defines("__tb_prefix__=\"tbox\"")
 
     -- set the auto-generated config.h
-    set_config_header("$(buildir)/$(plat)/$(arch)/$(mode)/tbox.config.h", {prefix = "TB_CONFIG", version = "1.6.2", buildversion = "%Y%m%d%H%M"})
+    set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")
+    add_configfiles("tbox.config.h.in")
 
     -- add include directories
     add_includedirs("..")
@@ -26,10 +27,10 @@ target("tbox")
     add_headerfiles("$(buildir)/$(plat)/$(arch)/$(mode)/tbox.config.h", {prefixdir = "tbox"})
 
     -- add packages
-    add_options("zlib", "mysql", "sqlite3", "openssl", "polarssl", "mbedtls", "pcre2", "pcre")
+    add_packages("mbedtls", "polarssl", "openssl", "pcre2", "pcre", "zlib", "mysql", "sqlite3")
 
     -- add options
-    add_options("info", "float", "wchar", "exception", "deprecated")
+    add_options("info", "float", "wchar", "exception")
 
     -- add modules
     add_options("xml", "zip", "hash", "regex", "coroutine", "object", "charset", "database")
@@ -43,7 +44,7 @@ target("tbox")
     add_files("prefix/**.c") 
     add_files("memory/**.c") 
     add_files("string/**.c") 
-    add_files("stream/**.c|**/charset.c|**/zip.c|deprecated/**.c") 
+    add_files("stream/**.c|**/charset.c|**/zip.c") 
     add_files("network/**.c|impl/ssl/*.c") 
     add_files("algorithm/**.c") 
     add_files("container/**.c|element/obj.c") 
@@ -70,17 +71,6 @@ target("tbox")
         if not is_plat("windows") then
             add_files("hash/arch/crc32.S")
         end
-    end
-
-    -- add the source files for the asio module
-    if has_config("deprecated") then 
-        add_files("asio/deprecated/*.c|ssl.c")
-        add_files("stream/deprecated/**async_**.c")
-        add_files("stream/deprecated/transfer_pool.c")
-        add_files("platform/deprecated/aicp.c")
-        add_files("platform/deprecated/aioo.c")
-        add_files("platform/deprecated/aiop.c")
-        if has_config("openssl", "polarssl", "mbedtls") then add_files("asio/deprecated/ssl.c") end
     end
 
     -- add the source files for the coroutine module
@@ -132,17 +122,18 @@ target("tbox")
     -- add the source files for the database module
     if has_config("database") then 
         add_files("database/*.c")
-        if has_config("mysql") then add_files("database/impl/mysql.c") end
-        if has_config("sqlite3") then add_files("database/impl/sqlite3.c") end
+        if has_package("mysql") then add_files("database/impl/mysql.c") end
+        if has_package("sqlite3") then add_files("database/impl/sqlite3.c") end
     end
 
     -- add the source files for the ssl package
-    if has_config("mbedtls") then add_files("network/impl/ssl/mbedtls.c")
-    elseif has_config("polarssl") then add_files("network/impl/ssl/polarssl.c") 
-    elseif has_config("openssl") then add_files("network/impl/ssl/openssl.c") end
+    if has_package("mbedtls") then add_files("network/impl/ssl/mbedtls.c")
+    elseif has_package("polarssl") then add_files("network/impl/ssl/polarssl.c") 
+    elseif has_package("openssl") then add_files("network/impl/ssl/openssl.c") end
 
     -- add the source for the windows 
     if is_os("windows") then
+        add_files("platform/windows/iocp_object.c")
         add_files("platform/windows/socket_pool.c")
         add_files("platform/windows/interface/*.c")
     end

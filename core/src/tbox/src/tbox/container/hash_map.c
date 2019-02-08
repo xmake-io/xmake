@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        hash_map.c
@@ -392,7 +392,7 @@ static tb_void_t tb_hash_map_itor_remove(tb_iterator_ref_t iterator, tb_size_t i
     // update the hash_map item size
     hash_map->item_size--;
 }
-static tb_void_t tb_hash_map_itor_remove_range(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
+static tb_void_t tb_hash_map_itor_nremove(tb_iterator_ref_t iterator, tb_size_t prev, tb_size_t next, tb_size_t size)
 {
     // check
     tb_hash_map_t* hash_map = (tb_hash_map_t*)iterator;
@@ -503,20 +503,27 @@ tb_hash_map_ref_t tb_hash_map_init(tb_size_t bucket_size, tb_element_t element_n
         hash_map->element_name = element_name;
         hash_map->element_data = element_data;
 
-        // init item itor
-        hash_map->itor.mode             = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_MUTABLE;
-        hash_map->itor.priv             = tb_null;
-        hash_map->itor.step             = sizeof(tb_hash_map_item_t);
-        hash_map->itor.size             = tb_hash_map_itor_size;
-        hash_map->itor.head             = tb_hash_map_itor_head;
-        hash_map->itor.tail             = tb_hash_map_itor_tail;
-        hash_map->itor.prev             = tb_null;
-        hash_map->itor.next             = tb_hash_map_itor_next;
-        hash_map->itor.item             = tb_hash_map_itor_item;
-        hash_map->itor.copy             = tb_hash_map_itor_copy;
-        hash_map->itor.comp             = tb_hash_map_itor_comp;
-        hash_map->itor.remove           = tb_hash_map_itor_remove;
-        hash_map->itor.remove_range     = tb_hash_map_itor_remove_range;
+        // init operation
+        static tb_iterator_op_t op = 
+        {
+            tb_hash_map_itor_size
+        ,   tb_hash_map_itor_head
+        ,   tb_null
+        ,   tb_hash_map_itor_tail
+        ,   tb_null
+        ,   tb_hash_map_itor_next
+        ,   tb_hash_map_itor_item
+        ,   tb_hash_map_itor_comp
+        ,   tb_hash_map_itor_copy
+        ,   tb_hash_map_itor_remove
+        ,   tb_hash_map_itor_nremove
+        };
+
+        // init iterator
+        hash_map->itor.priv = tb_null;
+        hash_map->itor.step = sizeof(tb_hash_map_item_t);
+        hash_map->itor.mode = TB_ITERATOR_MODE_FORWARD | TB_ITERATOR_MODE_MUTABLE;
+        hash_map->itor.op   = &op;
 
         // init self size
         hash_map->hash_size = tb_align_pow2(bucket_size);

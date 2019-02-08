@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        ole32.c
@@ -40,7 +40,7 @@ static tb_bool_t tb_ole32_instance_init(tb_handle_t instance, tb_cpointer_t priv
 
     // the ole32 module
     HANDLE module = GetModuleHandleA("ole32.dll");
-    if (!module) module = tb_dynamic_init("ole32.dll");
+    if (!module) module = (HANDLE)tb_dynamic_init("ole32.dll");
     tb_assert_and_check_return_val(module, tb_false);
 
     // init interfaces

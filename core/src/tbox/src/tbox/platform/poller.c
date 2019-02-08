@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        poller.c
@@ -24,22 +24,32 @@
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * trace
+ */
+#define TB_TRACE_MODULE_NAME            "poller"
+#define TB_TRACE_MODULE_DEBUG           (1)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "poller.h"
+#include "impl/sockdata.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 #if defined(TB_CONFIG_OS_WINDOWS)
-#   include "posix/poller_select.c"
+#   if defined(TB_CONFIG_MODULE_HAVE_COROUTINE) && !defined(TB_CONFIG_MICRO_ENABLE)
+#       include "windows/poller_iocp.c"
+#   else
+#       include "posix/poller_select.c"
+#   endif
 #elif defined(TB_CONFIG_POSIX_HAVE_EPOLL_CREATE) \
     && defined(TB_CONFIG_POSIX_HAVE_EPOLL_WAIT)
 #   include "linux/poller_epoll.c"
 #elif defined(TB_CONFIG_OS_MACOSX)
 #   include "mach/poller_kqueue.c"
-#elif defined(TB_CONFIG_POSIX_HAVE_POLL) \
-    && !defined(TB_CONFIG_MICRO_ENABLE) /* TODO remove vector for supporting the micro mode */
+#elif defined(TB_CONFIG_POSIX_HAVE_POLL) && !defined(TB_CONFIG_MICRO_ENABLE) /* TODO remove vector for supporting the micro mode */
 #   include "posix/poller_poll.c"
 #elif defined(TB_CONFIG_POSIX_HAVE_SELECT)
 #   include "posix/poller_select.c"
@@ -50,10 +60,6 @@ tb_poller_ref_t tb_poller_init(tb_cpointer_t priv)
     return tb_null;
 }
 tb_void_t tb_poller_exit(tb_poller_ref_t poller)
-{
-    tb_trace_noimpl();
-}
-tb_void_t tb_poller_clear(tb_poller_ref_t poller)
 {
     tb_trace_noimpl();
 }

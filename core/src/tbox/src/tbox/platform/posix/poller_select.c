@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        poller_select.c
@@ -31,6 +31,7 @@
 #ifdef TB_CONFIG_OS_WINDOWS
 #   include "../windows/interface/interface.h"
 #else
+#   include <sys/socket.h>
 #   include <sys/select.h>
 #endif
 
@@ -107,7 +108,7 @@ static tb_void_t tb_poller_list_set(tb_poller_select_ref_t poller, tb_socket_ref
         // no list? init it first
         if (!poller->list)
         {
-            // init hash
+            // init list
             poller->list = tb_nalloc0_type(FD_SETSIZE, tb_poller_data_t);
             tb_assert_and_check_return(poller->list);
         }
@@ -122,13 +123,13 @@ static tb_void_t tb_poller_list_set(tb_poller_select_ref_t poller, tb_socket_ref
         else
         {
             // insert the private data
-            if (i < n) tb_memmov(poller->list + i + 1, poller->list + i, (n - i) * sizeof(tb_poller_data_t));
+            if (i < n) tb_memmov_(poller->list + i + 1, poller->list + i, (n - i) * sizeof(tb_poller_data_t));
             poller->list[i].sock = sock;
             poller->list[i].priv = priv;
-        }
 
-        // update the list size
-        poller->list_size++;
+            // update the list size
+            poller->list_size++;
+        }
     }
 }
 static tb_void_t tb_poller_list_del(tb_poller_select_ref_t poller, tb_socket_ref_t sock)
@@ -143,10 +144,13 @@ static tb_void_t tb_poller_list_del(tb_poller_select_ref_t poller, tb_socket_ref
         tb_size_t i = 0;
         tb_size_t n = poller->list_size;
         for (i = 0; i < n; i++) if (sock == poller->list[i].sock) break;
-        if (i + 1 < n) tb_memmov(poller->list + i, poller->list + i + 1, (n - i - 1) * sizeof(tb_poller_data_t));
 
-        // update the list size
-        poller->list_size--;
+        // found and remove it
+        if (i < n)
+        {
+            if (i + 1 < n) tb_memmov_(poller->list + i, poller->list + i + 1, (n - i - 1) * sizeof(tb_poller_data_t));
+            poller->list_size--;
+        }
     }
 }
 
@@ -221,24 +225,9 @@ tb_void_t tb_poller_exit(tb_poller_ref_t self)
     // free it
     tb_free(poller);
 }
-tb_void_t tb_poller_clear(tb_poller_ref_t self)
+tb_size_t tb_poller_type(tb_poller_ref_t poller)
 {
-    // check
-    tb_poller_select_ref_t poller = (tb_poller_select_ref_t)self;
-    tb_assert_and_check_return(poller);
-
-    // clear fds
-    poller->sfdm = 0;
-    FD_ZERO(&poller->rfds);
-    FD_ZERO(&poller->wfds);
-    FD_ZERO(&poller->rfdc);
-    FD_ZERO(&poller->wfdc);
-
-    // clear list
-    poller->list_size = 0;
-
-    // spak it
-    if (poller->pair[0]) tb_socket_send(poller->pair[0], (tb_byte_t const*)"p", 1);
+    return TB_POLLER_TYPE_SELECT;
 }
 tb_cpointer_t tb_poller_priv(tb_poller_ref_t self)
 {
@@ -270,7 +259,7 @@ tb_void_t tb_poller_spak(tb_poller_ref_t self)
 tb_bool_t tb_poller_support(tb_poller_ref_t self, tb_size_t events)
 {
     // all supported events 
-    static tb_size_t events_supported = TB_POLLER_EVENT_EALL;
+    static const tb_size_t events_supported = TB_POLLER_EVENT_EALL;
 
     // is supported?
     return (events_supported & events) == events;
@@ -314,7 +303,7 @@ tb_bool_t tb_poller_remove(tb_poller_ref_t self, tb_socket_ref_t sock)
     tb_poller_list_del(poller, sock);
 
     // update socket count
-    poller->count--;
+    if (poller->count > 0) poller->count--;
 
     // ok
     return tb_true;
@@ -340,7 +329,7 @@ tb_long_t tb_poller_wait(tb_poller_ref_t self, tb_poller_event_func_t func, tb_l
 {
     // check
     tb_poller_select_ref_t poller = (tb_poller_select_ref_t)self;
-    tb_assert_and_check_return_val(poller && poller->list && func, -1);
+    tb_assert_and_check_return_val(poller && func, -1);
 
     // init time
     struct timeval t = {0};
@@ -383,6 +372,9 @@ tb_long_t tb_poller_wait(tb_poller_ref_t self, tb_poller_event_func_t func, tb_l
             // end?
             tb_check_break(wait >= 0);
 
+            // check
+            tb_assert_and_check_return_val(poller->list, -1);
+
             // the sock
             tb_socket_ref_t sock = (tb_socket_ref_t)poller->list[i].sock;
             tb_assert_and_check_return_val(sock, -1);
@@ -413,6 +405,19 @@ tb_long_t tb_poller_wait(tb_poller_ref_t self, tb_poller_event_func_t func, tb_l
             tb_size_t events = TB_POLLER_EVENT_NONE;
             if (FD_ISSET(fd, &poller->rfdc)) events |= TB_POLLER_EVENT_RECV;
             if (FD_ISSET(fd, &poller->wfdc)) events |= TB_POLLER_EVENT_SEND;
+
+            // check socket error?
+#ifdef TB_CONFIG_OS_WINDOWS
+            tb_int_t error = 0;
+            tb_int_t n = sizeof(tb_int_t);
+            if (!tb_ws2_32()->getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&error, &n) && error)
+                events |= TB_POLLER_EVENT_ERROR;
+#else
+            tb_int_t error = 0;
+            socklen_t n = sizeof(socklen_t);
+            if (!getsockopt(fd, SOL_SOCKET, SO_ERROR, (tb_char_t*)&error, &n) && error)
+                events |= TB_POLLER_EVENT_ERROR;
+#endif
 
             // exists events?
             if (events)

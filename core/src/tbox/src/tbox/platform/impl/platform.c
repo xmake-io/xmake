@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        platform.c
@@ -32,7 +32,6 @@
 #include "../exception.h"
 #include "../cache_time.h"
 #include "../../network/network.h"
-#include "../deprecated/deprecated.h"
 #ifdef TB_CONFIG_OS_ANDROID
 #   include "../android/android.h"
 #endif

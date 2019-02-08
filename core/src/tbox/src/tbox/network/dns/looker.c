@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        looker.c
@@ -236,7 +236,6 @@ static tb_long_t tb_dns_looker_reqt(tb_dns_looker_t* looker)
     {
         // writ data
         tb_long_t writ = tb_socket_usend(looker->sock, addr, data + looker->size, size - looker->size);
-        //tb_trace_d("writ: %d", writ);
         tb_assert_and_check_return_val(writ >= 0, -1);
 
         // no data? 
@@ -481,12 +480,13 @@ static tb_long_t tb_dns_looker_resp(tb_dns_looker_t* looker, tb_ipaddr_ref_t add
     looker->step &= ~TB_DNS_LOOKER_STEP_NEVT;
 
     // recv response data
-    tb_byte_t rpkt[4096];
-    while (1)
+    tb_size_t  size = tb_static_buffer_size(&looker->rpkt);
+    tb_size_t  maxn = tb_static_buffer_maxn(&looker->rpkt);
+    tb_byte_t* data = tb_static_buffer_data(&looker->rpkt);
+    while (size < maxn)
     {
         // read data
-        tb_long_t read = tb_socket_urecv(looker->sock, tb_null, rpkt, 4096);
-        //tb_trace_d("read %d", read);
+        tb_long_t read = tb_socket_urecv(looker->sock, tb_null, data + size, maxn - size);
         tb_assert_and_check_return_val(read >= 0, -1);
 
         // no data? 
@@ -506,8 +506,9 @@ static tb_long_t tb_dns_looker_resp(tb_dns_looker_t* looker, tb_ipaddr_ref_t add
         }
         else looker->tryn = 0;
 
-        // copy data
-        tb_static_buffer_memncat(&looker->rpkt, rpkt, read);
+        // update buffer size
+        tb_static_buffer_resize(&looker->rpkt, size + read);
+        size = tb_static_buffer_size(&looker->rpkt);
     }
 
     // done
@@ -643,7 +644,7 @@ tb_long_t tb_dns_looker_wait(tb_dns_looker_ref_t self, tb_long_t timeout)
     tb_dns_looker_t* looker = (tb_dns_looker_t*)self;
     tb_assert_and_check_return_val(looker && looker->sock, -1);
 
-    // has asio event?
+    // has io event?
     tb_size_t e = TB_SOCKET_EVENT_NONE;
     if (!(looker->step & TB_DNS_LOOKER_STEP_NEVT))
     {
@@ -655,6 +656,9 @@ tb_long_t tb_dns_looker_wait(tb_dns_looker_ref_t self, tb_long_t timeout)
     tb_long_t r = 0;
     if (e)
     {
+        // trace
+        tb_trace_d("waiting %p ..", looker->sock);
+
         // wait
         r = tb_socket_wait(looker->sock, e, timeout);
 

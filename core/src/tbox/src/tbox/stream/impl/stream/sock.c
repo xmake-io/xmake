@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * \sock        sock.c
@@ -61,13 +61,16 @@ typedef struct __tb_stream_sock_t
 #endif
 
     // the sock type
-    tb_uint32_t             type    : 23;
+    tb_uint32_t             type : 22;
 
     // the try number
-    tb_uint32_t             tryn    : 8;
+    tb_uint32_t             tryn : 8;
 
     // keep alive after being closed?
-    tb_uint32_t             balived : 1;
+    tb_uint32_t             keep_alive : 1;
+
+    // is owner of socket 
+    tb_uint32_t             owner : 1;
 
     // the wait event
     tb_long_t               wait;
@@ -103,9 +106,6 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
     stream_sock->read = 0;
     stream_sock->writ = 0;
 
-    // opened?
-    tb_check_return_val(!stream_sock->sock, tb_true);
-
     // the url
     tb_url_ref_t url = tb_stream_url(stream);
     tb_assert_and_check_return_val(url, tb_false);
@@ -135,10 +135,9 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
     if (tb_ipaddr_ip_is_empty(addr))
     {
         // look ip 
-        tb_ipaddr_t ip_addr;
+        tb_ipaddr_t ip_addr = {0};
         if (!tb_addrinfo_addr(tb_url_host(url), &ip_addr)) 
         {
-            // failed
             tb_stream_state_set(stream, TB_STATE_SOCK_DNS_FAILED);
             return tb_false;
         }
@@ -152,8 +151,15 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
     if (args && !tb_strnicmp(args, "udp=", 4)) stream_sock->type = TB_SOCKET_TYPE_UDP;
     else if (args && !tb_strnicmp(args, "tcp=", 4)) stream_sock->type = TB_SOCKET_TYPE_TCP;
 
+    // exit sock first if not keep-alive
+    if (!stream_sock->keep_alive && stream_sock->sock)
+    {
+        if (stream_sock->sock && !tb_socket_exit(stream_sock->sock)) return tb_false;
+        stream_sock->sock = tb_null;
+    }
+
     // make sock
-    stream_sock->sock = tb_socket_init(stream_sock->type, tb_ipaddr_family(addr));
+    if (!stream_sock->sock) stream_sock->sock = tb_socket_init(stream_sock->type, tb_ipaddr_family(addr));
     
     // open sock failed?
     if (!stream_sock->sock)
@@ -173,7 +179,7 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
     case TB_SOCKET_TYPE_TCP:
         {
             // trace
-            tb_trace_d("connect: %s[%{ipaddr}]: ..", tb_url_host(url), addr);
+            tb_trace_d("sock(%p): connect: %s[%{ipaddr}]: ..", stream_sock->sock, tb_url_host(url), addr);
 
             // connect it
             tb_long_t real = -1;
@@ -194,7 +200,7 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
             else tb_stream_state_set(stream, !real? TB_STATE_SOCK_CONNECT_TIMEOUT : TB_STATE_SOCK_CONNECT_FAILED);
 
             // trace
-            tb_trace_d("connect: %s", ok? "ok" : "no");
+            tb_trace_d("sock(%p): connect: %s", stream_sock->sock, ok? "ok" : "failed");
             
             // ok?
             if (ok)
@@ -226,9 +232,9 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
                     } while (0);
 
                     // trace
-                    tb_trace_d("ssl: %s", ok? "ok" : "no");
+                    tb_trace_d("sock(%p): ssl: %s", stream_sock->sock, ok? "ok" : "no");
             
-                    // failed? save state
+                    // ssl failed? save state 
                     if (!ok) tb_stream_state_set(stream, stream_sock->hssl? tb_ssl_state(stream_sock->hssl) : TB_STATE_SOCK_SSL_FAILED);
 #endif
                 }
@@ -262,6 +268,129 @@ static tb_bool_t tb_stream_sock_open(tb_stream_ref_t stream)
         break;
     }
 
+    // open failed? close ssl and socket
+    if (!ok)
+    {
+#ifdef TB_SSL_ENABLE
+        // exit ssl
+        if (stream_sock->hssl) tb_ssl_exit(stream_sock->hssl);
+        stream_sock->hssl = tb_null;
+#endif
+
+        // exit sock
+        if (stream_sock->sock) tb_socket_exit(stream_sock->sock);
+        stream_sock->sock = tb_null;
+    }
+
+    // ok?
+    return ok;
+}
+static tb_bool_t tb_stream_sock_open_ref(tb_stream_ref_t stream)
+{
+    // check
+    tb_stream_sock_t* stream_sock = tb_stream_sock_cast(stream);
+    tb_assert_and_check_return_val(stream_sock && stream_sock->type, tb_false);
+
+    // clear
+    stream_sock->wait = 0;
+    stream_sock->tryn = 0;
+    stream_sock->read = 0;
+    stream_sock->writ = 0;
+
+    // the url
+    tb_url_ref_t url = tb_stream_url(stream);
+    tb_assert_and_check_return_val(url, tb_false);
+
+#ifndef TB_SSL_ENABLE
+    // ssl? not supported
+    if (tb_url_ssl(url))
+    {
+        // trace
+        tb_trace_w("ssl is not supported now! please enable it from config if you need it.");
+
+        // save state
+        tb_stream_state_set(stream, TB_STATE_SOCK_SSL_NOT_SUPPORTED);
+        return tb_false;
+    }
+#endif
+
+    // done
+    tb_bool_t ok = tb_false;
+    switch (stream_sock->type)
+    {
+    case TB_SOCKET_TYPE_TCP:
+        {
+            // ssl? init it
+            if (tb_url_ssl(url))
+            {
+#ifdef TB_SSL_ENABLE
+                do
+                {
+                    // init ssl
+                    if (!stream_sock->hssl) stream_sock->hssl = tb_ssl_init(tb_false);
+                    tb_assert_and_check_break(stream_sock->hssl);
+
+                    // init bio
+                    tb_ssl_set_bio_sock(stream_sock->hssl, stream_sock->sock);
+
+                    // init timeout
+                    tb_ssl_set_timeout(stream_sock->hssl, tb_stream_timeout(stream));
+
+                    // open ssl
+                    if (!tb_ssl_open(stream_sock->hssl)) break;
+
+                    // ok
+                    ok = tb_true;
+
+                } while (0);
+
+                // trace
+                tb_trace_d("sock(%p): ssl: %s", stream_sock->sock, ok? "ok" : "no");
+        
+                // ssl failed? save state 
+                if (!ok) tb_stream_state_set(stream, stream_sock->hssl? tb_ssl_state(stream_sock->hssl) : TB_STATE_SOCK_SSL_FAILED);
+#endif
+            }
+            else ok = tb_true;
+        }
+        break;
+    case TB_SOCKET_TYPE_UDP:
+        {
+            // ssl? not supported
+            if (tb_url_ssl(url))
+            {
+                // trace
+                tb_trace_w("udp ssl is not supported!");
+
+                // save state
+                tb_stream_state_set(stream, TB_STATE_SOCK_SSL_NOT_SUPPORTED);
+            }
+            else
+            {
+                // ok
+                ok = tb_true;
+                tb_stream_state_set(stream, TB_STATE_OK);
+            }
+        }
+        break;
+    default:
+        {
+            // trace
+            tb_trace_e("unknown socket type: %lu", stream_sock->type);
+        }
+        break;
+    }
+
+    // open failed? close ssl and socket
+    if (!ok)
+    {
+#ifdef TB_SSL_ENABLE
+        // exit ssl
+        if (stream_sock->hssl) tb_ssl_exit(stream_sock->hssl);
+        stream_sock->hssl = tb_null;
+#endif
+    }
+
     // ok?
     return ok;
 }
@@ -278,11 +407,14 @@ static tb_bool_t tb_stream_sock_clos(tb_stream_ref_t stream)
 #endif
 
     // keep alive? not close it
-    tb_check_return_val(!stream_sock->balived, tb_true);
+    tb_check_return_val(!stream_sock->keep_alive, tb_true);
 
-    // exit sock
-    if (stream_sock->sock && !tb_socket_exit(stream_sock->sock)) return tb_false;
-    stream_sock->sock = tb_null;
+    // exit socket
+    if (stream_sock->owner) 
+    {
+        if (stream_sock->sock && !tb_socket_exit(stream_sock->sock)) return tb_false;
+        stream_sock->sock = tb_null;
+    }
 
     // clear 
     stream_sock->wait = 0;
@@ -306,7 +438,7 @@ static tb_void_t tb_stream_sock_exit(tb_stream_ref_t stream)
 #endif
 
     // exit sock
-    if (stream_sock->sock) tb_socket_exit(stream_sock->sock);
+    if (stream_sock->sock && stream_sock->owner) tb_socket_exit(stream_sock->sock);
     stream_sock->sock = tb_null;
 
     // clear 
@@ -358,7 +490,7 @@ static tb_long_t tb_stream_sock_read(tb_stream_ref_t stream, tb_byte_t* data, tb
                 real = tb_ssl_read(stream_sock->hssl, data, size);
 
                 // trace
-                tb_trace_d("read: %ld <? %lu", real, size);
+                tb_trace_d("sock(%p): read: %ld <? %lu", stream_sock->sock, real, size);
 
                 // failed or closed?
                 tb_check_return_val(real >= 0, -1);
@@ -370,7 +502,7 @@ static tb_long_t tb_stream_sock_read(tb_stream_ref_t stream, tb_byte_t* data, tb
                 real = tb_socket_recv(stream_sock->sock, data, size);
 
                 // trace
-                tb_trace_d("read: %ld <? %lu", real, size);
+                tb_trace_d("sock(%p): read: %ld <? %lu", stream_sock->sock, real, size);
 
                 // failed or closed?
                 tb_check_return_val(real >= 0, -1);
@@ -389,7 +521,7 @@ static tb_long_t tb_stream_sock_read(tb_stream_ref_t stream, tb_byte_t* data, tb
             real = tb_socket_urecv(stream_sock->sock, tb_null, data, size);
 
             // trace
-            tb_trace_d("read: %ld <? %lu", real, size);
+            tb_trace_d("sock(%p): read: %ld <? %lu", stream_sock->sock, real, size);
 
             // failed or closed?
             tb_check_return_val(real >= 0, -1);
@@ -445,7 +577,7 @@ static tb_long_t tb_stream_sock_writ(tb_stream_ref_t stream, tb_byte_t const* da
                 real = tb_ssl_writ(stream_sock->hssl, data, size);
 
                 // trace
-                tb_trace_d("writ: %ld <? %lu", real, size);
+                tb_trace_d("sock(%p): writ: %ld <? %lu", stream_sock->sock, real, size);
 
                 // failed or closed?
                 tb_check_return_val(real >= 0, -1);
@@ -457,7 +589,7 @@ static tb_long_t tb_stream_sock_writ(tb_stream_ref_t stream, tb_byte_t const* da
                 real = tb_socket_send(stream_sock->sock, data, size);
 
                 // trace
-                tb_trace_d("writ: %ld <? %lu", real, size);
+                tb_trace_d("sock(%p): writ: %ld <? %lu", stream_sock->sock, real, size);
 
                 // failed or closed?
                 tb_check_return_val(real >= 0, -1);
@@ -480,7 +612,7 @@ static tb_long_t tb_stream_sock_writ(tb_stream_ref_t stream, tb_byte_t const* da
             real = tb_socket_usend(stream_sock->sock, addr, data, size);
 
             // trace
-            tb_trace_d("writ: %ld <? %lu", real, size);
+            tb_trace_d("sock(%p): writ: %ld <? %lu", stream_sock->sock, real, size);
 
             // failed or closed?
             tb_check_return_val(real >= 0, -1);
@@ -534,7 +666,7 @@ static tb_long_t tb_stream_sock_wait(tb_stream_ref_t stream, tb_size_t wait, tb_
     }
 
     // trace
-    tb_trace_d("wait: %ld", stream_sock->wait);
+    tb_trace_d("sock(%p): wait: %ld", stream_sock->sock, stream_sock->wait);
 
     // ok?
     return stream_sock->wait;
@@ -550,7 +682,7 @@ static tb_bool_t tb_stream_sock_ctrl(tb_stream_ref_t stream, tb_size_t ctrl, tb_
         {
             // check
             tb_assert_and_check_return_val(tb_stream_is_closed(stream), tb_false);
-            tb_assert_and_check_return_val(!stream_sock->balived, tb_false);
+            tb_assert_and_check_return_val(!stream_sock->keep_alive, tb_false);
 
             // the type
             tb_size_t type = (tb_size_t)tb_va_arg(args, tb_size_t);
@@ -572,8 +704,8 @@ static tb_bool_t tb_stream_sock_ctrl(tb_stream_ref_t stream, tb_size_t ctrl, tb_
     case TB_STREAM_CTRL_SOCK_KEEP_ALIVE:
         {
             // keep alive?
-            tb_bool_t balived = (tb_bool_t)tb_va_arg(args, tb_bool_t);
-            stream_sock->balived = balived? 1 : 0;
+            tb_bool_t keep_alive = (tb_bool_t)tb_va_arg(args, tb_bool_t);
+            stream_sock->keep_alive = keep_alive? 1 : 0;
             return tb_true;
         }
     default:
@@ -628,11 +760,76 @@ tb_stream_ref_t tb_stream_init_from_sock(tb_char_t const* host, tb_uint16_t port
         stream = tb_stream_init_sock();
         tb_assert_and_check_break(stream);
 
-        // ctrl
+        // ctrl stream
         if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_HOST, host)) break;
         if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_PORT, port)) break;
         if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_SSL, bssl)) break;
         if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SOCK_SET_TYPE, type)) break;
+
+        // init the sock stream
+        tb_stream_sock_t* stream_sock = tb_stream_sock_cast(stream);
+        tb_assert_and_check_break(stream_sock);
+
+        // mark as owner of socket
+        stream_sock->owner = 1;
+   
+        // ok
+        ok = tb_true;
+
+    } while (0);
+
+    // failed?
+    if (!ok)
+    {
+        // exit it
+        if (stream) tb_stream_exit(stream);
+        stream = tb_null;
+    }
+
+    // ok?
+    return stream;
+}
+tb_stream_ref_t tb_stream_init_from_sock_ref(tb_socket_ref_t sock, tb_size_t type, tb_bool_t bssl)
+{
+    // check
+    tb_assert_and_check_return_val(sock, tb_null);
+
+    // done
+    tb_bool_t           ok = tb_false;
+    tb_stream_ref_t     stream = tb_null;
+    do
+    {
+        // init stream
+        stream = tb_stream_init(    TB_STREAM_TYPE_SOCK
+                                ,   sizeof(tb_stream_sock_t)
+                                ,   TB_STREAM_SOCK_CACHE_MAXN
+                                ,   tb_stream_sock_open_ref
+                                ,   tb_stream_sock_clos
+                                ,   tb_stream_sock_exit
+                                ,   tb_stream_sock_ctrl
+                                ,   tb_stream_sock_wait
+                                ,   tb_stream_sock_read
+                                ,   tb_stream_sock_writ
+                                ,   tb_null
+                                ,   tb_null
+                                ,   tb_stream_sock_kill);
+        tb_assert_and_check_break(stream);
+
+        // ctrl stream
+        if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_HOST, "fd")) break;
+        if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_PORT, (tb_uint16_t)tb_sock2fd(sock))) break;
+        if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SET_SSL, bssl)) break;
+        if (!tb_stream_ctrl(stream, TB_STREAM_CTRL_SOCK_SET_TYPE, type)) break;
+
+        // init the sock stream
+        tb_stream_sock_t* stream_sock = tb_stream_sock_cast(stream);
+        tb_assert_and_check_break(stream_sock);
+
+        // only be reference of socket
+        stream_sock->owner = 0;
+
+        // save socket
+        stream_sock->sock = sock;
    
         // ok
         ok = tb_true;

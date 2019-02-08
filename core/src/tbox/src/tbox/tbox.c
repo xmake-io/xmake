@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        tbox.c
@@ -30,6 +30,7 @@
 #include "libc/impl/impl.h"
 #include "libm/impl/impl.h"
 #include "math/impl/impl.h"
+#include "object/impl/impl.h"
 #include "memory/impl/impl.h"
 #include "network/impl/impl.h"
 #include "platform/impl/impl.h"

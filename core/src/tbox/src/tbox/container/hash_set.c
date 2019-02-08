@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        hash_set.c
@@ -66,13 +66,22 @@ tb_hash_set_ref_t tb_hash_set_init(tb_size_t bucket_size, tb_element_t element)
 {
     // init hash set
     tb_iterator_ref_t hash_set = (tb_iterator_ref_t)tb_hash_map_init(bucket_size, element, tb_element_true());
+    tb_assert_and_check_return_val(hash_set, tb_null);
 
     // @note the private data of the hash map iterator cannot be used
     tb_assert(!hash_set->priv);
 
+    // init operation
+    static tb_iterator_op_t op = {0};
+    if (op.item != tb_hash_set_itor_item)
+    {
+        op = *hash_set->op;
+        op.item = tb_hash_set_itor_item;
+    }
+
     // hacking hash_map and hook the item
-    hash_set->priv = (tb_pointer_t)hash_set->item;
-    hash_set->item = tb_hash_set_itor_item;
+    hash_set->priv = (tb_pointer_t)hash_set->op->item;
+    hash_set->op = &op;
 
     // ok?
     return (tb_hash_set_ref_t)hash_set;

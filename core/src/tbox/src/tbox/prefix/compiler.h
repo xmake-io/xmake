@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        compiler.h
@@ -88,6 +88,21 @@
 #       error Unknown Intel C++ Compiler Version
 #   endif
 
+// tiny c
+#elif defined(__TINYC__)
+#   define TB_COMPILER_IS_TINYC
+#   define TB_COMPILER_VERSION_BT(major, minor)     (__TINYC__ > ((major) * 100 + (minor)))
+#   define TB_COMPILER_VERSION_BE(major, minor)     (__TINYC__ >= ((major) * 100 + (minor)))
+#   define TB_COMPILER_VERSION_EQ(major, minor)     (__TINYC__ == ((major) * 100 + (minor)))
+#   define TB_COMPILER_VERSION_LT(major, minor)     (__TINYC__ < ((major) * 100 + (minor)))
+#   define TB_COMPILER_VERSION_LE(major, minor)     (__TINYC__ <= ((major) * 100 + (minor)))
+#   define TB_COMPILER_STRING                       "tiny c"
+#   if (__TINYC__ == 926)
+#       define TB_COMPILER_VERSION_STRING           "tiny c 0.9.26"
+#   else
+#       error Unknown Tiny C Compiler Version
+#   endif
+
 // borland c++
 #elif defined(__BORLANDC__)
 #   define TB_COMPILER_IS_BORLAND
@@ -116,6 +131,9 @@
 // gnu c/c++ 
 #elif defined(__GNUC__)
 #   define TB_COMPILER_IS_GCC
+#   if defined(__MINGW32__) || defined(__MINGW64__) 
+#       define TB_COMPILER_IS_MINGW
+#   endif
 #   define TB_COMPILER_VERSION_BT(major, minor)     ((__GNUC__ * 100 + __GNUC_MINOR__) > ((major) * 100 + (minor)))
 #   define TB_COMPILER_VERSION_BE(major, minor)     ((__GNUC__ * 100 + __GNUC_MINOR__) >= ((major) * 100 + (minor)))
 #   define TB_COMPILER_VERSION_EQ(major, minor)     ((__GNUC__ * 100 + __GNUC_MINOR__) == ((major) * 100 + (minor)))

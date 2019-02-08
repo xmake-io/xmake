@@ -11,16 +11,12 @@ target("xmake")
     add_defines("__tb_prefix__=\"xmake\"")
 
     -- set the auto-generated config.h
-    set_config_header("$(projectdir)/xmake.config.h", {prefix = "XM_CONFIG"})
-
-    -- set the object files directory
-    set_objectdir("$(buildir)/.objs")
+    set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")
+    add_configfiles("xmake.config.h.in")
 
     -- add includes directory
     add_includedirs("$(projectdir)", "$(buildir)/luajit")
-
-    -- add packages
-    add_packages("tbox")
+    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
 
     -- add the common source files
     add_files("**.c|winos/*.c")

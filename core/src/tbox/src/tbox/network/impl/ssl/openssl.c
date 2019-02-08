@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        openssl.c
@@ -92,19 +92,7 @@ static tb_int_t         tb_ssl_bio_method_gets(BIO* bio, tb_char_t* data, tb_int
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
-static BIO_METHOD g_ssl_bio_method =
-{
-    BIO_TYPE_SOURCE_SINK | 100
-,   "ssl_bio"
-,   tb_ssl_bio_method_writ
-,   tb_ssl_bio_method_read
-,   tb_ssl_bio_method_puts
-,   tb_ssl_bio_method_gets
-,   tb_ssl_bio_method_ctrl
-,   tb_ssl_bio_method_init
-,   tb_ssl_bio_method_exit
-,   tb_null
-};
+static BIO_METHOD* g_ssl_bio_method = tb_null;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * library implementation
@@ -114,11 +102,26 @@ static tb_handle_t tb_ssl_library_init(tb_cpointer_t* ppriv)
     // init it
     SSL_library_init();
 
+    // init bio method
+    g_ssl_bio_method = BIO_meth_new(BIO_TYPE_SOURCE_SINK | 100, "ssl_bio");
+    tb_assert_and_check_return_val(g_ssl_bio_method, tb_null);
+
+    // init methods
+    BIO_meth_set_write(g_ssl_bio_method, tb_ssl_bio_method_writ);
+    BIO_meth_set_read(g_ssl_bio_method, tb_ssl_bio_method_read);
+    BIO_meth_set_puts(g_ssl_bio_method, tb_ssl_bio_method_puts);
+    BIO_meth_set_gets(g_ssl_bio_method, tb_ssl_bio_method_gets);
+    BIO_meth_set_ctrl(g_ssl_bio_method, tb_ssl_bio_method_ctrl);
+    BIO_meth_set_create(g_ssl_bio_method, tb_ssl_bio_method_init);
+    BIO_meth_set_destroy(g_ssl_bio_method, tb_ssl_bio_method_exit);
+
     // ok
     return ppriv;
 }
 static tb_void_t tb_ssl_library_exit(tb_handle_t ssl, tb_cpointer_t priv)
 {
+    if (g_ssl_bio_method) BIO_meth_free(g_ssl_bio_method);
+    g_ssl_bio_method = tb_null;
 }
 static tb_handle_t tb_ssl_library_load()
 {
@@ -195,11 +198,9 @@ static tb_int_t tb_ssl_bio_method_init(BIO* bio)
     tb_trace_d("bio: init");
 
     // init 
-    bio->init       = 1;
-    bio->num        = 0;
-    bio->ptr        = tb_null;
-    bio->flags      = 0;
-    bio->shutdown   = 1;
+    BIO_set_init(bio, 1);
+    BIO_set_data(bio, tb_null);
+    BIO_set_shutdown(bio, 1);
 
     // ok
     return 1;
@@ -213,10 +214,9 @@ static tb_int_t tb_ssl_bio_method_exit(BIO* bio)
     tb_trace_d("bio: exit");
 
     // exit 
-    bio->init       = 0;
-    bio->num        = 0;
-    bio->ptr        = tb_null;
-    bio->flags      = 0;
+    BIO_set_init(bio, 0);
+    BIO_set_data(bio, tb_null);
+    BIO_set_shutdown(bio, 0);
 
     // ok
     return 1;
@@ -227,7 +227,7 @@ static tb_int_t tb_ssl_bio_method_read(BIO* bio, tb_char_t* data, tb_int_t size)
     tb_assert_and_check_return_val(bio && data && size >= 0, -1);
 
     // the ssl
-    tb_ssl_t* ssl = (tb_ssl_t*)bio->ptr;
+    tb_ssl_t* ssl = (tb_ssl_t*)BIO_get_data(bio);
     tb_assert_and_check_return_val(ssl && ssl->read, -1);
 
     // writ 
@@ -267,7 +267,7 @@ static tb_int_t tb_ssl_bio_method_writ(BIO* bio, tb_char_t const* data, tb_int_t
     tb_assert_and_check_return_val(bio && data && size >= 0, -1);
 
     // the ssl
-    tb_ssl_t* ssl = (tb_ssl_t*)bio->ptr;
+    tb_ssl_t* ssl = (tb_ssl_t*)BIO_get_data(bio);
     tb_assert_and_check_return_val(ssl && ssl->writ, -1);
 
     // writ 
@@ -307,7 +307,7 @@ static tb_long_t tb_ssl_bio_method_ctrl(BIO* bio, tb_int_t cmd, tb_long_t num, t
     tb_assert_and_check_return_val(bio, -1);
 
     // the ssl
-    tb_ssl_t* ssl = (tb_ssl_t*)bio->ptr;
+    tb_ssl_t* ssl = (tb_ssl_t*)BIO_get_data(bio);
     tb_assert_and_check_return_val(ssl, -1);
 
     // done
@@ -369,6 +369,9 @@ tb_ssl_ref_t tb_ssl_init(tb_bool_t bserver)
         // load openssl library
         if (!tb_ssl_library_load()) break;
 
+        // check
+        tb_assert_and_check_break(g_ssl_bio_method);
+
         // make ssl
         ssl = tb_malloc0_type(tb_ssl_t);
         tb_assert_and_check_break(ssl);
@@ -377,7 +380,7 @@ tb_ssl_ref_t tb_ssl_init(tb_bool_t bserver)
         ssl->timeout = 30000;
 
         // init ctx
-        ssl->ctx = SSL_CTX_new(SSLv3_method());
+        ssl->ctx = SSL_CTX_new(SSLv23_method());
         tb_assert_and_check_break(ssl->ctx);
         
         // make ssl
@@ -392,11 +395,11 @@ tb_ssl_ref_t tb_ssl_init(tb_bool_t bserver)
         SSL_set_verify(ssl->ssl, 0, tb_ssl_verify);
 
         // init bio
-        ssl->bio = BIO_new(&g_ssl_bio_method);
+        ssl->bio = BIO_new(g_ssl_bio_method);
         tb_assert_and_check_break(ssl->bio);
 
         // set bio to ssl
-        ssl->bio->ptr = ssl;
+        BIO_set_data(ssl->bio, ssl);
         SSL_set_bio(ssl->ssl, ssl->bio, ssl->bio);
 
         // init state

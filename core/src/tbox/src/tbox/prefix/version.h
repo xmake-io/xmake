@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        version.h
@@ -45,12 +45,12 @@
 #define TB_VERSION_ALTER            TB_CONFIG_VERSION_ALTER
 
 /// the build version
-#define TB_VERSION_BUILD            TB_CONFIG_VERSION_BUILD
-
-/// the build version string
 #ifndef TB_CONFIG_VERSION_BUILD
 #   define TB_CONFIG_VERSION_BUILD  0
 #endif
+#define TB_VERSION_BUILD            TB_CONFIG_VERSION_BUILD
+
+/// the build version string
 #define TB_VERSION_BUILD_STRING     __tb_mstring_ex__(TB_CONFIG_VERSION_BUILD)
 
 /// the version string

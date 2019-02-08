@@ -52,12 +52,12 @@
  *                                                                                       (16-align for macosx)
  *
  *
- *                                                       func     __end           from
- *             ------------------------------------------------------------------------------------------
- * context:   |   edi   |   esi   |   ebx   |   ebp   |   eip   |   end   | context |  priv  |  padding  |
- *             ------------------------------------------------------------------------------------------
+ *                                   func      __end   __entry      from
+ *             --------------------------------------------------------------------------------
+ * context:   |   edi   |   esi   |   ebx   |   ebp   |   eip   | context |  priv  |  padding  |
+ *             --------------------------------------------------------------------------------
  *            0         4         8         12        16        20        24    arguments 
- *                                                              |         |
+ *                                                              |         
  *                                                              | 16-align for macosx
  *                                                              |
  *                                                   esp when jump to function
@@ -81,20 +81,56 @@ function(tb_context_make)
     andl $-16, %eax
 
     // reserve space for context-data on context-stack 
-    leal -24(%eax), %eax
+    leal -20(%eax), %eax
 
-    // context.eip = func
+    /* context.ebx = func
+     *
+     * @note ebp will be affected only when enter into the context function first
+     */
     movl 12(%esp), %edx
-    movl %edx, 16(%eax)
+    movl %edx, 8(%eax)
 
-    // context.ebp = the address of label __end
+    // context.eip = the address of label __entry
     call 1f
 1:  popl %ecx
-    addl $__end - 1b, %ecx
-    movl %ecx, 20(%eax) 
+    addl $__entry - 1b, %ecx
+    movl %ecx, 16(%eax) 
+
+    /* context.ebp = the address of label __end
+     *
+     * @note ebp will be affected only when enter into the context function first
+     */
+    call 2f
+2:  popl %ecx
+    addl $__end - 2b, %ecx
+    movl %ecx, 12(%eax) 
 
     // return the context pointer
     ret
+
+__entry:
+    
+    // pass old-arguments(context: eax, priv: edx) to the context function
+    movl %eax, (%esp)
+    movl %edx, 0x4(%esp)
+
+    // patch __end, retval = the address of label __end
+    pushl %ebp
+
+    /* jump to the context function entry
+     *
+     *              patch __end
+     *                  |
+     *                  |        old-context
+     *              ----|------------------------------------
+     * context: .. | retval | context |   priv   |  padding  |  
+     *              -----------------------------------------
+     *             0        4     arguments 
+     *             |        |
+     *            esp    16-align
+     *           (now)
+     */
+    jmp *%ebx
 
 __end:
     // exit(0)
@@ -148,19 +184,15 @@ function(tb_context_jump)
     // return from-context(context: eax, priv: edx) from jump 
     // ...
 
-    // pass old-context(context: eax, priv: edx) arguments to the context function
-    movl %eax, 4(%esp)
-    movl %edx, 8(%esp)
-
     /* jump to the return or function address(eip)
      *
      *
-     *                           old-context
-     *              ------------------------------------------
-     * context: .. |   end   | context |   priv   |  padding  |
-     *              ------------------------------------------
+     *                 old-context
+     *              --------------------------------
+     * context: .. | context |   priv   |  padding  |
+     *              --------------------------------
      *             0         4    arguments 
-     *             |         |
+     *             |         
      *            esp  16-align for macosx
      *           (now)
      */

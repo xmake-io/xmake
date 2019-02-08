@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        stream.c
@@ -74,7 +74,7 @@ tb_stream_ref_t tb_stream_init(     tb_size_t type
         stream = (tb_stream_t*)tb_malloc0(sizeof(tb_stream_t) + type_size);
         tb_assert_and_check_break(stream);
 
-        // init stream referenced
+        // init stream reference
         stream_ref = (tb_stream_ref_t)&stream[1];
 
         // init type

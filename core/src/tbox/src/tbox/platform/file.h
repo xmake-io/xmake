@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        file.h
@@ -64,9 +64,6 @@ typedef enum __tb_file_mode_t
 ,   TB_FILE_MODE_APPEND     = 16    //!< append
 ,   TB_FILE_MODE_TRUNC      = 32    //!< truncate
 ,   TB_FILE_MODE_DIRECT     = 64    //!< direct, no cache, @note data & size must be aligned by TB_FILE_DIRECT_ASIZE
-,   TB_FILE_MODE_ASIO       = 128   //!< support for asio
-
-,   TB_FILE_MODE_BINARY     = 256   //!< binary (deprecated)
 
 }tb_file_mode_t;
 

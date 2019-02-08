@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        native_allocator.c
@@ -76,7 +76,8 @@ static tb_bool_t tb_native_allocator_instance_init(tb_handle_t instance, tb_cpoi
     if (!tb_native_memory_init()) return tb_false;
 
     // init allocator
-    allocator->type         = TB_ALLOCATOR_NATIVE;
+    allocator->type         = TB_ALLOCATOR_TYPE_NATIVE;
+    allocator->flag         = TB_ALLOCATOR_FLAG_NOLOCK;
     allocator->malloc       = tb_native_allocator_malloc;
     allocator->ralloc       = tb_native_allocator_ralloc;
     allocator->free         = tb_native_allocator_free;

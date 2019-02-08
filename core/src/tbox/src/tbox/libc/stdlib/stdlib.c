@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        stdlib.c
@@ -48,6 +48,8 @@ tb_uint64_t tb_s2tou64(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // skip "0b"
     if (s[0] == '0' && (s[1] == 'b' || s[1] == 'B'))
@@ -89,6 +91,8 @@ tb_uint64_t tb_s8tou64(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // skip '0'
     while ((*s) == '0') s++;
@@ -126,6 +130,8 @@ tb_uint64_t tb_s10tou64(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // skip '0'
     while ((*s) == '0') s++;
@@ -163,6 +169,8 @@ tb_uint64_t tb_s16tou64(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // skip "0x"
     if (s[0] == '0' && (s[1] == 'x' || s[1] == 'X'))
@@ -203,7 +211,7 @@ tb_uint64_t tb_stou64(tb_char_t const* s)
     while (tb_isspace(*p)) p++;
 
     // has sign?
-    if (*p == '-') p++;
+    if (*p == '-' || *p == '+') p++;
 
     // is hex?
     if (*p++ == '0')
@@ -263,6 +271,8 @@ tb_double_t tb_s2tod(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // nan?
     if (s[0] == 'n' && s[1] == 'a' && s[2] == 'n')
@@ -350,6 +360,8 @@ tb_double_t tb_s8tod(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // nan?
     if (s[0] == 'n' && s[1] == 'a' && s[2] == 'n')
@@ -437,6 +449,8 @@ tb_double_t tb_s10tod(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // nan?
     if (s[0] == 'n' && s[1] == 'a' && s[2] == 'n')
@@ -524,6 +538,8 @@ tb_double_t tb_s16tod(tb_char_t const* s)
         sign = 1;
         s++;
     }
+    // skip '+'
+    else if (*s == '+') s++;
 
     // nan?
     if (s[0] == 'n' && s[1] == 'a' && s[2] == 'n')
@@ -649,7 +665,7 @@ tb_double_t tb_stod(tb_char_t const* s)
     while (tb_isspace(*p)) p++;
 
     // has sign?
-    if (*p == '-') p++;
+    if (*p == '-' || *p == '+') p++;
 
     // is hex?
     if (*p++ == '0')

@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2017, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        impl.h
@@ -30,6 +30,7 @@
  */
 #include "dns.h"
 #include "socket.h"
+#include "sockdata.h"
 #include "exception.h"
 #include "thread_local.h"
 #include "platform.h"

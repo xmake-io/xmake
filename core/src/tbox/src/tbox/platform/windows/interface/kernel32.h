@@ -16,7 +16,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  * 
- * Copyright (C) 2009 - 2018, TBOOX Open Source Group.
+ * Copyright (C) 2009 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
  * @file        kernel32.h
@@ -29,6 +29,13 @@
  * includes
  */
 #include "prefix.h"
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#ifndef FILE_SKIP_COMPLETION_PORT_ON_SUCCESS
+#   define FILE_SKIP_COMPLETION_PORT_ON_SUCCESS   (0x1)
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
