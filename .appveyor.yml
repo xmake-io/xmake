@@ -12,7 +12,7 @@ install:
   - cmd: echo %CI%
 
 build_script:
-  - ps: Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/tboox/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
+  - ps: Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
   - cmd: xmake lua versioninfo
   - cmd: xmake -P core 
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
