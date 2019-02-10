@@ -452,6 +452,7 @@ function option.interpreter()
         ,   plat       = function() return config.get("plat") or os.host() end
         ,   mode       = function() return config.get("mode") or "release" end
         ,   host       = os.host()
+        ,   prefix     = "$(prefix)"
         ,   globaldir  = global.directory()
         ,   configdir  = config.directory()
         ,   projectdir = os.projectdir()

@@ -147,20 +147,6 @@ function project._api_add_plugindirs(interp, ...)
     interp:api_builtin_includes(plugindirs)
 end
 
--- add package directories and load all packages from the given directories
-function project._api_add_packagedirs(interp, ...)
-
-    -- get all directories
-    local pkgdirs = {}
-    local dirs = table.join(...)
-    for _, dir in ipairs(dirs) do
-        table.insert(pkgdirs, dir .. "/*.pkg")
-    end
-
-    -- add all packages
-    interp:api_builtin_includes(pkgdirs)
-end
-
 -- add platform directories
 function project._api_add_platformdirs(interp, ...)
     platform.add_directories(...)
@@ -214,6 +200,11 @@ function project.interpreter()
         ,   "add_requires"
         ,   "add_repositories"
         }
+    ,   pathes = 
+        {
+            -- add_xxx
+            "add_packagedirs"
+        }
     ,   keyvalues =
         {
             "set_config"
@@ -236,7 +227,6 @@ function project.interpreter()
             -- add_xxx
         ,   {"add_moduledirs",          project._api_add_moduledirs   }
         ,   {"add_plugindirs",          project._api_add_plugindirs   }
-        ,   {"add_packagedirs",         project._api_add_packagedirs  }
         ,   {"add_platformdirs",        project._api_add_platformdirs }
         }
     }
@@ -574,6 +564,48 @@ function project._load_options(disable_filter)
     local results, errors = project._load_scope("option", true, not disable_filter)
     if not results then
         return nil, errors
+    end
+
+    -- load the options from the package directories, e.g. packagedir/*.pkg
+    for _, packagedir in ipairs(table.wrap(project.get("packagedirs"))) do
+        local packagefiles = os.files(path.join(packagedir, "*.pkg", "xmake.lua"))
+        if packagefiles then
+            for _, packagefile in ipairs(packagefiles) do
+
+                -- load the package file
+                local interp = option.interpreter()
+                local ok, errors = interp:load(packagefile)
+                if not ok then
+                    return nil, errors
+                end
+
+                -- load the package options from the the package file
+                local packageinfos, errors = interp:make("option", true, not disable_filter)
+                if not packageinfos then
+                    return nil, errors
+                end
+
+                -- transform includedirs and links
+                local rootdir = path.directory(packagefile)
+                for _, packageinfo in pairs(packageinfos) do
+                    local linkdirs = {}
+                    local includedirs = {}
+                    for _, linkdir in ipairs(table.wrap(packageinfo.linkdirs)) do
+                        table.insert(linkdirs, path.join(rootdir, linkdir))
+                    end
+                    for _, includedir in ipairs(table.wrap(packageinfo.includedirs)) do
+                        table.insert(includedirs, path.join(rootdir, includedir))
+                    end
+                    if #linkdirs > 0 then
+                        packageinfo.linkdirs = linkdirs
+                    end
+                    if #includedirs > 0 then
+                        packageinfo.includedirs = includedirs
+                    end
+                end
+                table.join2(results, packageinfos)
+            end
+        end
     end
 
     -- check options
