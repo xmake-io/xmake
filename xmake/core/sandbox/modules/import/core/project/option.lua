@@ -29,9 +29,9 @@ local sandbox_core_project_option = sandbox_core_project_option or {}
 local option = require("project/option")
 local raise  = require("sandbox/modules/raise")
 
--- get the option apis
-function sandbox_core_project_option.apis()
-    return option.apis()
+-- get the option interpreter
+function sandbox_core_project_option.interpreter()
+    return option.interpreter()
 end
 
 -- return module

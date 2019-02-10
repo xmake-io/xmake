@@ -580,12 +580,8 @@ function project._load_options(disable_filter)
     local options = {}
     for optionname, optioninfo in pairs(results) do
 
-        -- init a option instance
-        local instance = table.inherit(option)
-
-        -- save name and info
-        instance._NAME = optionname
-        instance._INFO = optioninfo
+        -- init an option instance
+        local instance = option.new(optionname, optioninfo)
       
         -- save it
         options[optionname] = instance

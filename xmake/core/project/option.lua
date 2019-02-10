@@ -24,6 +24,7 @@
 
 -- define module
 local option = option or {}
+local _instance = _instance or {}
 
 -- load modules
 local io             = require("base/io")
@@ -32,6 +33,8 @@ local path           = require("base/path")
 local table          = require("base/table")
 local utils          = require("base/utils")
 local baseoption     = require("base/option")
+local global         = require("base/global")
+local interpreter    = require("base/interpreter")
 local config         = require("project/config")
 local cache          = require("project/cache")
 local linker         = require("tool/linker")
@@ -41,62 +44,22 @@ local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
--- get cache
-function option._cache()
+-- new an instance
+function _instance.new(name, info)
 
-    -- get it from cache first if exists
-    if option._CACHE then
-        return option._CACHE
-    end
+    -- new an instance
+    local instance = table.inherit(_instance)
 
-    -- init cache
-    option._CACHE = cache("local.option")
+    -- init instance
+    instance._NAME      = name
+    instance._INFO      = info
 
     -- ok
-    return option._CACHE
-end
-
--- get option apis
-function option.apis()
-
-    return 
-    {
-        values =
-        {
-            -- option.set_xxx
-            "option.set_values"
-        ,   "option.set_default"
-        ,   "option.set_showmenu"
-        ,   "option.set_category"
-        ,   "option.set_warnings"
-        ,   "option.set_optimize"
-        ,   "option.set_languages"
-        ,   "option.set_description"
-            -- option.add_xxx
-        ,   "option.add_deps"
-        ,   "option.add_imports"
-        ,   "option.add_vectorexts"
-        ,   "option.add_features"
-        }
-    ,   keyvalues =
-        {
-            -- option.set_xxx
-            "option.set_configvar"
-        }
-    ,   script =
-        {
-            -- option.before_xxx
-            "option.before_check"
-            -- option.on_xxx
-        ,   "option.on_check"
-            -- option.after_xxx
-        ,   "option.after_check"
-        }
-    }
+    return instance
 end
 
 -- save the option info to the cache
-function option:_save()
+function _instance:_save()
 
     -- clear scripts for caching to file    
     self:set("check", nil)
@@ -108,12 +71,12 @@ function option:_save()
 end
 
 -- clear the option info for cache
-function option:_clear()
+function _instance:_clear()
     option._cache():set(self:name(), nil)
 end
 
 -- check option conditions
-function option:_do_check()
+function _instance:_do_check()
 
     -- import check_cxsnippets()
     self._check_cxsnippets = self._check_cxsnippets or sandbox_module.import("lib.detect.check_cxsnippets", {anonymous = true})
@@ -189,7 +152,7 @@ function option:_do_check()
 end
 
 -- on check
-function option:_on_check()
+function _instance:_on_check()
 
     -- get check script
     local check = self:script("check")
@@ -201,7 +164,7 @@ function option:_on_check()
 end
 
 -- check option 
-function option:_check()
+function _instance:_check()
 
     -- disable this option first
     self:enable(false)
@@ -226,7 +189,7 @@ function option:_check()
 end
 
 -- attempt to check option 
-function option:check()
+function _instance:check()
 
     -- the option name
     local name = self:name()
@@ -270,12 +233,12 @@ function option:check()
 end
 
 -- get the option value
-function option:value()
+function _instance:value()
     return config.get(self:name())
 end
 
 -- set the option value
-function option:set_value(value)
+function _instance:set_value(value)
 
     -- set value to option
     config.set(self:name(), value)
@@ -285,7 +248,7 @@ function option:set_value(value)
 end
 
 -- clear the option status and need recheck it
-function option:clear()
+function _instance:clear()
 
     -- clear config
     config.set(self:name(), nil)
@@ -295,7 +258,7 @@ function option:clear()
 end
 
 -- this option is enabled?
-function option:enabled()
+function _instance:enabled()
     return config.get(self:name())
 end
 
@@ -304,7 +267,7 @@ end
 -- @param enabled   enable option?
 -- @param opt       the argument options, .e.g {readonly = true, force = false}
 --
-function option:enable(enabled, opt)
+function _instance:enable(enabled, opt)
 
     -- init options
     opt = opt or {}
@@ -323,22 +286,22 @@ function option:enable(enabled, opt)
 end
 
 -- dump this option
-function option:dump()
+function _instance:dump()
     table.dump(self._INFO)
 end
 
 -- get the type: option
-function option:type()
+function _instance:type()
     return "option"
 end
 
 -- get the option info
-function option:get(infoname)
+function _instance:get(infoname)
     return self._INFO[infoname]
 end
 
 -- set the value to the option info
-function option:set(name_or_info, ...)
+function _instance:set(name_or_info, ...)
     if type(name_or_info) == "string" then
         local args = ...
         if args ~= nil then
@@ -354,7 +317,7 @@ function option:set(name_or_info, ...)
 end
 
 -- add the value to the option info
-function option:add(name_or_info, ...)
+function _instance:add(name_or_info, ...)
     if type(name_or_info) == "string" then
         local info = table.wrap(self._INFO[name_or_info])
         self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
@@ -366,7 +329,7 @@ function option:add(name_or_info, ...)
 end
 
 -- get the given dependent option
-function option:dep(name)
+function _instance:dep(name)
     local deps = self:deps()
     if deps then
         return deps[name]
@@ -374,48 +337,22 @@ function option:dep(name)
 end
 
 -- get option deps
-function option:deps()
+function _instance:deps()
     return self._DEPS
 end
 
 -- get option order deps
-function option:orderdeps()
+function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
 -- get the option name
-function option:name()
+function _instance:name()
     return self._NAME
 end
 
--- load the option info from the cache
-function option.load(name)
-
-    -- check
-    assert(name)
-
-    -- get info
-    local info = option._cache():get(name)
-    if info == nil then
-        return 
-    end
-
-    -- init option instance
-    local instance = table.inherit(option)
-    instance._INFO = info
-    instance._NAME = name
-
-    -- ok
-    return instance
-end
-
--- save all options to the cache file
-function option.save()
-    option._cache():flush()
-end
-
 -- get xxx_script
-function option:script(name)
+function _instance:script(name)
 
     -- get script
     local script = self:get(name)
@@ -432,6 +369,132 @@ function option:script(name)
 
     -- ok
     return script
+end
+
+-- get cache
+function option._cache()
+
+    -- get it from cache first if exists
+    if option._CACHE then
+        return option._CACHE
+    end
+
+    -- init cache
+    option._CACHE = cache("local.option")
+
+    -- ok
+    return option._CACHE
+end
+
+-- get option apis
+function option.apis()
+
+    return 
+    {
+        values =
+        {
+            -- option.set_xxx
+            "option.set_values"
+        ,   "option.set_default"
+        ,   "option.set_showmenu"
+        ,   "option.set_category"
+        ,   "option.set_warnings"
+        ,   "option.set_optimize"
+        ,   "option.set_languages"
+        ,   "option.set_description"
+            -- option.add_xxx
+        ,   "option.add_deps"
+        ,   "option.add_imports"
+        ,   "option.add_vectorexts"
+        ,   "option.add_features"
+        }
+    ,   keyvalues =
+        {
+            -- option.set_xxx
+            "option.set_configvar"
+        }
+    ,   script =
+        {
+            -- option.before_xxx
+            "option.before_check"
+            -- option.on_xxx
+        ,   "option.on_check"
+            -- option.after_xxx
+        ,   "option.after_check"
+        }
+    }
+end
+
+-- get interpreter
+function option.interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if option._INTERPRETER then
+        return option._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+
+    -- define apis for option
+    interp:api_define(option.apis())
+
+    -- define apis for language
+    interp:api_define(language.apis())
+
+    -- register filter handler
+    interp:filter():register("option", function (variable)
+ 
+        -- init maps
+        local maps = 
+        {
+            arch       = function() return config.get("arch") or os.arch() end
+        ,   plat       = function() return config.get("plat") or os.host() end
+        ,   mode       = function() return config.get("mode") or "release" end
+        ,   host       = os.host()
+        ,   globaldir  = global.directory()
+        ,   configdir  = config.directory()
+        ,   projectdir = os.projectdir()
+        ,   programdir = os.programdir()
+        }
+
+        -- map it
+        local result = maps[variable]
+        if type(result) == "function" then
+            result = result()
+        end
+        return result
+    end)
+
+    -- save interpreter
+    option._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- new an option instance
+function option.new(name, info)
+    return _instance.new(name, info)
+end
+
+-- load the option info from the cache
+function option.load(name)
+
+    -- check
+    assert(name)
+
+    -- get info
+    local info = option._cache():get(name)
+    if info == nil then
+        return 
+    end
+    return option.new(name, info)
+end
+
+-- save all options to the cache file
+function option.save()
+    option._cache():flush()
 end
 
 -- return module

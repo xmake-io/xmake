@@ -48,7 +48,6 @@ function _instance.new(name, info)
     local instance = table.inherit(_instance)
 
     -- init instance
-    instance._name      = name
     instance._NAME      = name
     instance._INFO      = info
 

@@ -24,7 +24,6 @@
 
 -- imports
 import("core.base.global")
-import("core.base.interpreter")
 import("core.project.config")
 import("core.project.option")
 import("core.project.target")
@@ -172,13 +171,7 @@ function _find_package_from_packagedirs(name, opt)
     end
 
     -- init interpreter
-    local interp = interpreter.new()
-
-    -- define apis for option
-    interp:api_define(option.apis())
-
-    -- define apis for language
-    interp:api_define(language.apis())
+    local interp = option.interpreter()
 
     -- register filter handler
     interp:filter():register("find_package", function (variable)
@@ -188,15 +181,7 @@ function _find_package_from_packagedirs(name, opt)
         {
             arch       = opt.arch
         ,   plat       = opt.plat
-        ,   mode       = opt.mode or config.get("mode")
-        ,   host       = os.host()
-        ,   tmpdir     = function () return os.tmpdir() end
-        ,   curdir     = function () return os.curdir() end
-        ,   scriptdir  = function () return os.scriptdir() end
-        ,   globaldir  = global.directory()
-        ,   configdir  = config.directory()
-        ,   projectdir = os.projectdir()
-        ,   programdir = os.programdir()
+        ,   mode       = opt.mode 
         }
 
         -- get variable
@@ -215,6 +200,9 @@ function _find_package_from_packagedirs(name, opt)
         raise(errors)
     end
 
+    -- unregister filter handler
+    interp:filter():register("find_package", nil)
+ 
     -- get package info
     local packageinfo = packageinfos[name]
     if not packageinfo then
