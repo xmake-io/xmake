@@ -554,8 +554,8 @@ function project._load_options(disable_filter)
         return {}, nil
     end
 
-    -- load the project file first if has not been loaded?
-    local ok, errors = project._load()
+    -- reload the project file to ensure `if is_plat() then add_packagedirs() end` works
+    local ok, errors = project._load(true)
     if not ok then
         return nil, errors
     end
@@ -591,10 +591,10 @@ function project._load_options(disable_filter)
                     local linkdirs = {}
                     local includedirs = {}
                     for _, linkdir in ipairs(table.wrap(packageinfo.linkdirs)) do
-                        table.insert(linkdirs, path.join(rootdir, linkdir))
+                        table.insert(linkdirs, path.is_absolute(linkdir) and linkdir or path.join(rootdir, linkdir))
                     end
                     for _, includedir in ipairs(table.wrap(packageinfo.includedirs)) do
-                        table.insert(includedirs, path.join(rootdir, includedir))
+                        table.insert(includedirs, path.is_absolute(includedir) and includedir or path.join(rootdir, includedir))
                     end
                     if #linkdirs > 0 then
                         packageinfo.linkdirs = linkdirs
