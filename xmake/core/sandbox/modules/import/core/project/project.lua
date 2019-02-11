@@ -169,7 +169,16 @@ end
 
 -- get the project modes
 function sandbox_core_project.modes()
-    return project.get("modes")
+    local modes = project.get("modes") or {}
+    for _, target in pairs(table.wrap(project.targets())) do
+        for _, rule in ipairs(target:orderules()) do
+            local name = rule:name()
+            if name:startswith("mode.") then
+                table.insert(modes, name:sub(6))
+            end
+        end
+    end
+    return table.unique(modes)
 end
 
 -- get the the given require info

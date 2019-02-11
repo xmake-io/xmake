@@ -101,6 +101,24 @@ function deprecated_project._api_add_packages(interp, ...)
     return deprecated_project._api_add_pkgs(interp, ...)
 end
 
+-- set modes
+function deprecated_project._api_set_modes(interp, ...)
+
+    -- get api function
+    local apifunc = interp:api_func("set_modes")
+    assert(apifunc)
+
+    -- register api
+    interp:api_register_builtin("set_modes", function (...) 
+
+                                            -- deprecated
+                                            deprecated.add("add_rules(\"mode.debug\", \"mode.release\")", "set_modes(\"debug\", \"release\")")
+
+                                            -- dispatch it
+                                            apifunc(...)
+                                        end)
+end
+
 -- add_csnippet/add_cxxsnippet for option
 function deprecated_project._api_option_add_cxsnippet(interp, apiname)
 
@@ -243,6 +261,9 @@ function deprecated_project.api_register(interp)
 
     -- register api: is_option() to root
     interp:api_register(nil, "is_option",   deprecated_project._api_is_option)
+
+    -- register api: set_modes() to root
+    deprecated_project._api_set_modes(interp)
 
     -- register api: add_csnippet/add_cxxsnippet() to option
     deprecated_project._api_option_add_cxsnippet(interp, "add_csnippet")

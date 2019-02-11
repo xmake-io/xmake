@@ -26,6 +26,7 @@
 * [#327](https://github.com/xmake-io/xmake/issues/327): Support conan package manager for `lib.detect.find_package` 
 * [#319](https://github.com/xmake-io/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
 * Improve `lib.detect.find_package` and add builtin `find_packages("zlib 1.x", "openssl", {xxx = ...})` api
+* Mark `set_modes()` as deprecated, we use `add_rules("mode.debug", "mode.release")` instead of it
 
 ### Bugs fixed
 
@@ -574,6 +575,7 @@
 * [#327](https://github.com/xmake-io/xmake/issues/327): 改进`lib.detect.find_package`增加对conan包管理器的支持
 * [#319](https://github.com/xmake-io/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
 * 改进`lib.detect.find_package`并且添加内建的`find_packages("zlib 1.x", "openssl", {xxx = ...})`接口
+* 标记`set_modes()`作为废弃接口， 我们使用`add_rules("mode.debug", "mode.release")`来替代它
 
 ### Bugs修复
 
