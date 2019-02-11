@@ -585,7 +585,7 @@ function project._load_options(disable_filter)
                     return nil, errors
                 end
 
-                -- transform includedirs and links
+                -- transform includedirs and linkdirs
                 local rootdir = path.directory(packagefile)
                 for _, packageinfo in pairs(packageinfos) do
                     local linkdirs = {}

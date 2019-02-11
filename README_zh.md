@@ -245,10 +245,11 @@ target("console")
 ```lua
 add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
 add_requires("tbox >1.6.1", {optional = true, debug = true})
+add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
 target("test")
     set_kind("shared")
     add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib")
+    add_packages("libuv", "ffmpeg", "tbox", "zlib", "pcre2")
 ```
 
 查找和使用本地已安装的包：
@@ -258,9 +259,7 @@ target("test")
     set_kind("shared")
     add_files("src/*.c")
     on_load(function (target)
-        import("lib.detect.find_package")
-        target:add(find_package("zlib"))
-        target:add(find_package("openssl"))
+        target:add(find_package("zlib", "openssl", "brew::pcre2/libpcre2-8"))
     end)
 ```
 
@@ -271,7 +270,7 @@ target("test")
 * [tbox](https://github.com/tboox/tbox)
 * [gbox](https://github.com/tboox/gbox)
 * [vm86](https://github.com/tboox/vm86)
-* [更多](https://github.com/tboox/awesome-xmake)
+* [更多](https://github.com/xmake-io/awesome-xmake)
 
 ## 演示视频
 
