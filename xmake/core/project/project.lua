@@ -327,8 +327,23 @@ function project._load(force)
         return false, (errors or "load project file failed!")
     end
 
-    -- load the project info
-    project._INFO = project._load_scope(nil, true, true)
+    -- load the root info of the project 
+    local rootinfo, errors = project._load_scope("root", true, true) 
+    if not rootinfo then
+        return false, errors
+    end
+
+    -- load the root info of the target
+    local rootinfo_target, errors = project._load_scope("root.target", true, true) 
+    if not rootinfo_target then
+        return false, errors
+    end
+
+    -- save the root info
+    for name, value in pairs(rootinfo_target) do
+        rootinfo["target." .. name] = value
+    end
+    project._INFO = rootinfo
 
     -- leave the project directory
     oldir, errors = os.cd(oldir)

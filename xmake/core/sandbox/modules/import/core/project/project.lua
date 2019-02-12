@@ -167,6 +167,11 @@ function sandbox_core_project.name()
     return project.get("project")
 end
 
+-- get the project version, the root version of the target scope
+function sandbox_core_project.version()
+    return project.get("target.version")
+end
+
 -- get the project modes
 function sandbox_core_project.modes()
     local modes = project.get("modes") or {}

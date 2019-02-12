@@ -433,7 +433,7 @@ end
 function interpreter:_filter(values)
 
     -- check
-    assert(self and values)
+    assert(self and values ~= nil)
 
     -- return values directly if no filter
     local filter = self._PRIVATE._FILTER
@@ -511,8 +511,6 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
         -- update it
         results[name] = values
     end
-
-    -- ok?
     return results
 end
 
@@ -530,9 +528,25 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         os.raise("the scope %s() is empty!", scope_kind)
     end
 
-    -- make results
+    -- get the root results of the given scope kind, e.g. root.target
     local results = {}
-    if scope_kind then
+    if scope_kind:startswith("root.") then
+
+        local root_scope = scopes._ROOT[scope_kind:sub(6)]
+        if root_scope then
+            results = self:_handle(root_scope, remove_repeat, enable_filter)
+        end
+
+    -- get the root results without scope kind
+    elseif scope_kind == "root" or scope_kind == nil then
+
+        local root_scope = scopes._ROOT["__rootkind"]
+        if root_scope then
+            results = self:_handle(root_scope, remove_repeat, enable_filter)
+        end
+
+    -- get the results of the given scope kind
+    elseif scope_kind then
 
         -- not this scope for kind?
         local scope_for_kind = scopes[scope_kind]
@@ -567,13 +581,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             -- add this scope
             results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter)
         end
-    else
-
-        -- only uses the root scope kind
-        results = self:_handle(scopes._ROOT["__rootkind"], remove_repeat, enable_filter)
     end
-
-    -- ok?
     return results
 end
 
