@@ -34,15 +34,20 @@ local sandbox_try = sandbox_try or {}
 -- traceback
 function sandbox_try._traceback(errors)
 
-    -- not verbose?
+    -- no diagnosis info?
     if not option.get("diagnosis") then
         if errors then
             -- remove the prefix info
             local _, pos = errors:find(":%d+: ")
             if pos then
-                return errors:sub(pos + 1)
+                errors = errors:sub(pos + 1)
             end
         end
+        return errors
+    end
+
+    -- traceback exists?
+    if errors and errors:find("stack traceback:", 1, true) then
         return errors
     end
 

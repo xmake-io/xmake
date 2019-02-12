@@ -31,11 +31,12 @@
 --
 function check_cxxincludes(definition, includes, opt)
     opt = opt or {}
-    option(opt.name or definition)
+    local optname = "__" .. (opt.name or definition)
+    option(optname)
         add_cxxincludes(includes)
         add_defines(definition)
     option_end()
-    add_options(opt.name or definition)
+    add_options(optname)
 end
 
 -- check include c++ files and add macro definition to the configuration files 
@@ -47,9 +48,10 @@ end
 --
 function configvar_check_cxxincludes(definition, includes, opt)
     opt = opt or {}
-    option(opt.name or definition)
+    local optname = "__" .. (opt.name or definition)
+    option(optname)
         add_cxxincludes(includes)
         set_configvar(definition, 1)
     option_end()
-    add_options(opt.name or definition)
+    add_options(optname)
 end

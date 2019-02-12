@@ -36,7 +36,7 @@ local sandbox   = require("sandbox/sandbox")
 -- traceback
 function interpreter._traceback(errors)
 
-    -- not verbose?
+    -- disable backtrace?
     if errors then
         local _, pos = errors:find("[nobacktrace]: ", 1, true)
         if pos then

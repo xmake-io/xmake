@@ -66,8 +66,6 @@ function main()
         catch 
         {
             function (errors)
-
-                -- failed
                 if errors then
                     raise(errors)
                 elseif targetname then
