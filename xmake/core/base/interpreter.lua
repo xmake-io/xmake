@@ -530,7 +530,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- get the root results of the given scope kind, e.g. root.target
     local results = {}
-    if scope_kind:startswith("root.") then
+    if scope_kind and scope_kind:startswith("root.") then
 
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
