@@ -49,6 +49,9 @@ function check_csnippets(definition, snippets, opt)
         if opt.cxflags then
             add_cxflags(opt.cxflags)
         end
+        if opt.defines then
+            add_defines(opt.defines)
+        end
     option_end()
     add_options(optname)
 end
@@ -79,6 +82,9 @@ function configvar_check_csnippets(definition, snippets, opt)
         end
         if opt.cxflags then
             add_cxflags(opt.cxflags)
+        end
+        if opt.defines then
+            add_defines(opt.defines)
         end
     option_end()
     add_options(optname)

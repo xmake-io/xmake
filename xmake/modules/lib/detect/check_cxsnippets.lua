@@ -201,23 +201,23 @@ function main(snippets, opt)
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
         local kind = ifelse(sourcekind == "cc", "c", "c++")
         if #includes > 0 then
-            cprint("${dim}checking for the %s includes(%s) ... %s", kind, table.concat(includes, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            cprint("${dim}> checking for the %s includes(%s)", kind, table.concat(includes, ", "))
         end
         if #types > 0 then
-            cprint("${dim}checking for the %s types(%s) ... %s", kind, table.concat(types, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            cprint("${dim}> checking for the %s types(%s)", kind, table.concat(types, ", "))
         end
         if #funcs > 0 then
-            cprint("${dim}checking for the %s funcs(%s) ... %s", kind, table.concat(funcs, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            cprint("${dim}> checking for the %s funcs(%s)", kind, table.concat(funcs, ", "))
         end
         if #links > 0 then
-            cprint("${dim}checking for the %s links(%s) ... %s", kind, table.concat(links, ", "), ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            cprint("${dim}> checking for the %s links(%s)", kind, table.concat(links, ", "))
         end
         for idx_or_name, snippet in pairs(snippets) do
             local name = idx_or_name
             if type(name) == "number" then
                 name = snippet:sub(1, 16)
             end
-            cprint("${dim}checking for the %s snippet(%s) ... %s", kind, name, ok and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+            cprint("${dim}> checking for the %s snippet(%s)", kind, name)
         end
     end
     if errors and #errors > 0 and option.get("diagnosis") then

@@ -44,6 +44,12 @@ function check_ctypes(definition, types, opt)
         if opt.cxflags then
             add_cxflags(opt.cxflags)
         end
+        if opt.defines then
+            add_defines(opt.defines)
+        end
+        if opt.includes then
+            add_cincludes(opt.includes)
+        end
     option_end()
     add_options(optname)
 end
@@ -69,6 +75,12 @@ function configvar_check_ctypes(definition, types, opt)
         end
         if opt.cxflags then
             add_cxflags(opt.cxflags)
+        end
+        if opt.defines then
+            add_defines(opt.defines)
+        end
+        if opt.includes then
+            add_cincludes(opt.includes)
         end
     option_end()
     add_options(optname)

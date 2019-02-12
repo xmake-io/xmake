@@ -56,6 +56,9 @@ function check_cxxfuncs(definition, funcs, opt)
         if opt.cxxflags then
             add_cxxflags(opt.cxxflags)
         end
+        if opt.defines then
+            add_defines(opt.defines)
+        end
     option_end()
     add_options(optname)
 end
@@ -87,6 +90,9 @@ function configvar_check_cxxfuncs(definition, funcs, opt)
         end
         if opt.cxxflags then
             add_cxxflags(opt.cxxflags)
+        end
+        if opt.defines then
+            add_defines(opt.defines)
         end
     option_end()
     add_options(optname)
