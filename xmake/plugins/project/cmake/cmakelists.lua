@@ -28,9 +28,153 @@ import("core.project.project")
 import("core.language.language")
 import("core.platform.platform")
 
+-- make common flags
+function _make_common_flags(target, sourcekind, sourcebatch)
+
+    -- make source flags
+    local sourceflags = {}
+    local flags_stats = {}
+    local files_count = 0
+    local first_flags = nil
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+
+        -- make compiler flags
+        local flags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
+        for _, flag in ipairs(flags) do
+            flags_stats[flag] = (flags_stats[flag] or 0) + 1
+        end
+
+        -- update files count
+        files_count = files_count + 1
+
+        -- save first flags
+        if first_flags == nil then
+            first_flags = flags
+        end
+
+        -- save source flags
+        sourceflags[sourcefile] = flags
+    end
+
+    -- make common flags
+    local commonflags = {}
+    for _, flag in ipairs(first_flags) do
+        if flags_stats[flag] == files_count then
+            table.insert(commonflags, flag)
+        end
+    end
+
+    -- remove common flags from source flags
+    local sourceflags_ = {}
+    for sourcefile, flags in pairs(sourceflags) do
+        local otherflags = {}
+        for _, flag in ipairs(flags) do
+            if flags_stats[flag] ~= files_count then
+                table.insert(otherflags, flag)
+            end
+        end
+        sourceflags_[sourcefile] = otherflags
+    end
+
+    -- ok?
+    return commonflags, sourceflags_
+end
+
+-- make project info
+function _make_project(cmakelists)
+    cmakelists:print("cmake_minimum_required(VERSION 3.1.0)")
+    local project_name = project.name()
+    if project_name then
+        local project_info = ""
+        local project_version = project.version()
+        if project_version then
+            project_info = project_info .. " VERSION " .. project_version
+        end
+        cmakelists:print("project(%s%s)", project_name, project_info)
+    end
+    cmakelists:print("")
+end
+
+-- make phony
+function _make_phony(cmakelists, target)
+
+    -- make dependence for the dependent targets
+    cmakelists:printf("add_custom_target(%s", target:name())
+    local deps = target:get("deps")
+    if deps then
+        cmakelists:write(" DEPENDS")
+        for _, dep in ipairs(deps) do
+            cmakelists:write(" " .. dep)
+        end
+    end
+    cmakelists:print(")")
+    cmakelists:print("")
+end
+
+-- make target
+function _make_target(cmakelists, target, targetflags)
+
+    -- is phony target?
+    if target:isphony() then
+        return _make_phony(cmakelists, target)
+    end
+
+end
+
 -- make all
 function _make_all(cmakelists)
 
+    -- make project info
+    _make_project(cmakelists)
+
+    -- make variables for source kinds
+    for sourcekind, _ in pairs(language.sourcekinds()) do
+        local program = platform.tool(sourcekind)
+        if program and program ~= "" then
+            cmakelists:print("set(%s %s)", sourcekind:upper(), program)
+        end
+    end
+    cmakelists:print("")
+
+    -- make variables for linker kinds
+    local linkerkinds = {}
+    for _, _linkerkinds in pairs(language.targetkinds()) do
+        table.join2(linkerkinds, _linkerkinds)
+    end
+    for _, linkerkind in ipairs(table.unique(linkerkinds)) do
+        local program = platform.tool(linkerkind)
+        if program and program ~= "" then
+            cmakelists:print("set(%s %s)", (linkerkind:upper():gsub('%-', '_')), program)
+        end
+    end
+    cmakelists:print("")
+
+    -- TODO
+    -- disable precompiled header first
+    for _, target in pairs(project.targets()) do
+        target:set("pcheader", nil)
+        target:set("pcxxheader", nil)
+    end
+
+    -- make variables for target flags
+    local targetflags = {}
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+                if not sourcebatch.rulename then
+                    local commonflags, sourceflags = _make_common_flags(target, sourcekind, sourcebatch)
+                    cmakelists:print("set(%s_%s %s)", targetname, sourcekind:upper(), os.args(commonflags))
+                    targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
+                end
+            end
+        end
+    end
+    cmakelists:print("")
+
+    -- make it for all targets
+    for _, target in pairs(project.targets()) do
+        _make_target(cmakelists, target, targetflags)
+    end
 end
 
 -- make
