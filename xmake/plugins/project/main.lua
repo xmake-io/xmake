@@ -26,7 +26,8 @@
 import("core.base.option")
 import("core.base.task")
 import("core.platform.environment")
-import("makefile.makefile")
+import("make.makefile")
+import("cmake.cmakelists")
 import("vstudio.vs2002")
 import("vstudio.vs2003")
 import("vstudio.vs2005")
@@ -45,6 +46,7 @@ function _make(kind)
     local maps = 
     {
         makefile         = makefile.make
+    ,   cmakelists       = cmakelists.make
     ,   vs2002           = vs2002.make
     ,   vs2003           = vs2003.make
     ,   vs2005           = vs2005.make
