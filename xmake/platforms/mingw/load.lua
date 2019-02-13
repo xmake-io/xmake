@@ -44,6 +44,9 @@ function main(platform)
         platform:add("shflags", archflags)
     end
 
+    -- init flags for asm
+    platform:add("yasm.asflags", "-f", arch == "x86_64" and "win64" or "win32")
+
     -- add bin search library for loading some dependent .dll files windows 
     local bindir = config.get("bin")
     if bindir and is_host("windows") then
