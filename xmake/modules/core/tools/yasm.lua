@@ -22,6 +22,9 @@
 -- @file        yasm.lua
 --
 
+-- imports
+import("core.base.option")
+
 -- init it
 function init(self)
   
@@ -92,7 +95,36 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.runv(_compargv1(self, sourcefile, objectfile, flags))
+    local outdata, errdata = try
+    {
+        function ()
+            return os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+        end,
+        catch
+        {
+            function (errors)
+
+                -- try removing the old object file for forcing to rebuild this source file
+                os.tryrm(objectfile)
+
+                -- raise compiling errors
+                raise(errors)
+            end
+        },
+        finally
+        {
+            function (ok, outdata, errdata)
+
+                -- show warnings?
+                if ok and errdata and (option.get("diagnosis") or option.get("warning")) then
+                    errdata = errdata:trim()
+                    if #errdata > 0 then
+                        cprint("${color.warning}%s", errdata)
+                    end
+                end
+            end
+        }
+    }
 end
 
 -- make the complie arguments list
