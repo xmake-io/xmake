@@ -82,6 +82,7 @@ end
 
 -- make project info
 function _make_project(cmakelists)
+    cmakelists:print("# project")
     cmakelists:print("cmake_minimum_required(VERSION 3.1.0)")
     local project_name = project.name()
     if project_name then
@@ -128,6 +129,7 @@ function _make_all(cmakelists)
     _make_project(cmakelists)
 
     -- make variables for source kinds
+    cmakelists:print("# compilers")
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local program = platform.tool(sourcekind)
         if program and program ~= "" then
@@ -137,6 +139,7 @@ function _make_all(cmakelists)
     cmakelists:print("")
 
     -- make variables for linker kinds
+    cmakelists:print("# linkers")
     local linkerkinds = {}
     for _, _linkerkinds in pairs(language.targetkinds()) do
         table.join2(linkerkinds, _linkerkinds)
@@ -157,6 +160,7 @@ function _make_all(cmakelists)
     end
 
     -- make variables for target flags
+    cmakelists:print("# common flags")
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
@@ -172,6 +176,7 @@ function _make_all(cmakelists)
     cmakelists:print("")
 
     -- make it for all targets
+    cmakelists:print("# targets")
     for _, target in pairs(project.targets()) do
         _make_target(cmakelists, target, targetflags)
     end

@@ -30,8 +30,6 @@ import("core.platform.platform")
 
 -- get log makefile
 function _logfile()
-
-    -- get it
     return vformat("$(buildir)/.build.log")
 end
 
