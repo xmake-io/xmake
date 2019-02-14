@@ -131,10 +131,10 @@ end
 
 -- add target compile options
 function _add_target_compile_options(cmakelists, target)
-    local cflags = target:get("cflags") 
-    local cxflags = target:get("cxflags") 
-    local cxxflags = target:get("cxxflags") 
-    local cuflags = target:get("cuflags") 
+    local cflags   = target:get("cflags")
+    local cxflags  = target:get("cxflags")
+    local cxxflags = target:get("cxxflags")
+    local cuflags  = target:get("cuflags")
     if cflags or cxflags or cxxflags or cuflags then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(cflags) do
