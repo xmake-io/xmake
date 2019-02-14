@@ -35,7 +35,6 @@ end
 
 -- mkdir directory
 function _mkdir(makefile, dir)
-
     if is_plat("windows") then
         makefile:print("\t-@mkdir %s > NUL 2>&1", dir)
     else
@@ -45,8 +44,6 @@ end
 
 -- copy file
 function _cp(makefile, sourcefile, targetfile)
-
-    -- copy file
     if is_plat("windows") then
         makefile:print("\t@copy /Y %s %s > NUL 2>&1", sourcefile, targetfile)
     else
@@ -343,7 +340,7 @@ function _make_target(makefile, target, targetflags)
 
     -- TODO make header directories (deprecated)
     local dstheaderdirs = {}
-    local srcheaders, dstheaders = target:headerfiles()
+    local srcheaders, dstheaders = target:headers()
     for _, dstheader in ipairs(dstheaders) do
         dstheaderdirs[path.directory(dstheader)] = true
     end

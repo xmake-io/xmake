@@ -1542,7 +1542,7 @@ function target:configprefix()
     return configprefix
 end
 
--- get the config header files
+-- get the config header files (deprecated)
 function target:configheader(outputdir)
 
     -- get config header

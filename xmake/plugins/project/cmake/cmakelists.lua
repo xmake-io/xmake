@@ -115,6 +115,11 @@ function _add_target_include_directories(cmakelists, target)
         end
         cmakelists:print(")")
     end
+    -- export config header directory (deprecated)
+    local configheader = target:configheader()
+    if configheader then
+        cmakelists:print("target_include_directories(%s PUBLIC %s)", target:name(), path.directory(configheader))
+    end
 end
 
 -- add target compile definitions
@@ -211,8 +216,23 @@ function _add_target_link_options(cmakelists, target)
     end
 end
 
+-- TODO export target headers (deprecated)
+function _export_target_headers(target)
+    local srcheaders, dstheaders = target:headers()
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.cp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+end
+
 -- add target
-function _add_target(cmakelists, target, targetflags)
+function _add_target(cmakelists, target)
 
     -- add comment
     cmakelists:print("# target")
@@ -230,6 +250,9 @@ function _add_target(cmakelists, target, targetflags)
     else
         raise("unknown target kind %s", target:targetkind())
     end
+
+    -- TODO export target headers (deprecated)
+    _export_target_headers(target)
 
     -- add target dependencies
     _add_target_dependencies(cmakelists, target)
@@ -267,7 +290,7 @@ function _generate_cmakelists(cmakelists)
 
     -- add targets
     for _, target in pairs(project.targets()) do
-        _add_target(cmakelists, target, targetflags)
+        _add_target(cmakelists, target)
     end
 end
 
