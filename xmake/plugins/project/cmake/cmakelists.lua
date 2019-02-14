@@ -25,7 +25,12 @@
 -- imports
 import("core.project.project")
 
--- make project info
+-- get unix path 
+function _get_unix_path(filepath)
+    return (path.translate(filepath):gsub('\\', '/'))
+end
+
+-- add project info
 function _add_project(cmakelists)
     cmakelists:print("# project")
     cmakelists:print("cmake_minimum_required(VERSION 3.3.0)")
@@ -59,21 +64,21 @@ end
 function _add_target_binary(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
+    cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
 end
 
 -- add target: static
 function _add_target_static(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
+    cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
 end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
     cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
-    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
+    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), _get_unix_path(target:targetdir()))
 end
 
 -- add target dependencies
@@ -92,7 +97,7 @@ end
 function _add_target_sources(cmakelists, target)
     cmakelists:print("target_sources(%s PRIVATE", target:name())
     for _, sourcefile in ipairs(target:sourcefiles()) do
-        cmakelists:print("    " .. sourcefile)
+        cmakelists:print("    " .. _get_unix_path(sourcefile))
     end
     cmakelists:print(")")
 end
@@ -103,7 +108,7 @@ function _add_target_include_directories(cmakelists, target)
     if includedirs then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
-            cmakelists:print("    " .. includedir)
+            cmakelists:print("    " .. _get_unix_path(includedir))
         end
         cmakelists:print(")")
     end
@@ -111,14 +116,14 @@ function _add_target_include_directories(cmakelists, target)
     if headerdirs then
         cmakelists:print("target_include_directories(%s PUBLIC", target:name())
         for _, headerdir in ipairs(headerdirs) do
-            cmakelists:print("    " .. headerdir)
+            cmakelists:print("    " .. _get_unix_path(headerdir))
         end
         cmakelists:print(")")
     end
     -- export config header directory (deprecated)
     local configheader = target:configheader()
     if configheader then
-        cmakelists:print("target_include_directories(%s PUBLIC %s)", target:name(), path.directory(configheader))
+        cmakelists:print("target_include_directories(%s PUBLIC %s)", target:name(), _get_unix_path(path.directory(configheader)))
     end
 end
 
@@ -194,7 +199,7 @@ function _add_target_link_directories(cmakelists, target)
     if linkdirs then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())
         for _, linkdir in ipairs(linkdirs) do
-            cmakelists:print("    " .. linkdir)
+            cmakelists:print("    " .. _get_unix_path(linkdir))
         end
         cmakelists:print(")")
     end
