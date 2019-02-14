@@ -23,67 +23,12 @@
 --
 
 -- imports
-import("core.tool.compiler")
 import("core.project.project")
-import("core.language.language")
-import("core.platform.platform")
-
--- make common flags
-function _make_common_flags(target, sourcekind, sourcebatch)
-
-    -- make source flags
-    local sourceflags = {}
-    local flags_stats = {}
-    local files_count = 0
-    local first_flags = nil
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-
-        -- make compiler flags
-        local flags = compiler.compflags(sourcefile, {target = target, sourcekind = sourcekind})
-        for _, flag in ipairs(flags) do
-            flags_stats[flag] = (flags_stats[flag] or 0) + 1
-        end
-
-        -- update files count
-        files_count = files_count + 1
-
-        -- save first flags
-        if first_flags == nil then
-            first_flags = flags
-        end
-
-        -- save source flags
-        sourceflags[sourcefile] = flags
-    end
-
-    -- make common flags
-    local commonflags = {}
-    for _, flag in ipairs(first_flags) do
-        if flags_stats[flag] == files_count then
-            table.insert(commonflags, flag)
-        end
-    end
-
-    -- remove common flags from source flags
-    local sourceflags_ = {}
-    for sourcefile, flags in pairs(sourceflags) do
-        local otherflags = {}
-        for _, flag in ipairs(flags) do
-            if flags_stats[flag] ~= files_count then
-                table.insert(otherflags, flag)
-            end
-        end
-        sourceflags_[sourcefile] = otherflags
-    end
-
-    -- ok?
-    return commonflags, sourceflags_
-end
 
 -- make project info
-function _make_project(cmakelists)
+function _add_project(cmakelists)
     cmakelists:print("# project")
-    cmakelists:print("cmake_minimum_required(VERSION 3.1.0)")
+    cmakelists:print("cmake_minimum_required(VERSION 3.3.0)")
     local project_name = project.name()
     if project_name then
         local project_info = ""
@@ -96,10 +41,8 @@ function _make_project(cmakelists)
     cmakelists:print("")
 end
 
--- make phony
-function _make_phony(cmakelists, target)
-
-    -- make dependence for the dependent targets
+-- add target: phony
+function _add_target_phony(cmakelists, target)
     cmakelists:printf("add_custom_target(%s", target:name())
     local deps = target:get("deps")
     if deps then
@@ -112,73 +55,197 @@ function _make_phony(cmakelists, target)
     cmakelists:print("")
 end
 
--- make target
-function _make_target(cmakelists, target, targetflags)
-
-    -- is phony target?
-    if target:isphony() then
-        return _make_phony(cmakelists, target)
-    end
-
+-- add target: binary
+function _add_target_binary(cmakelists, target)
+    cmakelists:print("add_executable(%s \"\")", target:name())
 end
 
--- make all
-function _make_all(cmakelists)
+-- add target: static
+function _add_target_static(cmakelists, target)
+    cmakelists:print("add_library(%s STATIC \"\")", target:name())
+end
 
-    -- make project info
-    _make_project(cmakelists)
+-- add target: shared
+function _add_target_shared(cmakelists, target)
+    cmakelists:print("add_library(%s SHARED \"\")", target:name())
+end
 
-    -- make variables for source kinds
-    cmakelists:print("# compilers")
-    for sourcekind, _ in pairs(language.sourcekinds()) do
-        local program = platform.tool(sourcekind)
-        if program and program ~= "" then
-            cmakelists:print("set(%s %s)", sourcekind:upper(), program)
+-- add target dependencies
+function _add_target_dependencies(cmakelists, target)
+    local deps = target:get("deps")
+    if deps then
+        cmakelists:printf("add_dependencies(%s", target:name())
+        for _, dep in ipairs(deps) do
+            cmakelists:write(" " .. dep)
         end
+        cmakelists:print(")")
     end
-    cmakelists:print("")
+end
 
-    -- make variables for linker kinds
-    cmakelists:print("# linkers")
-    local linkerkinds = {}
-    for _, _linkerkinds in pairs(language.targetkinds()) do
-        table.join2(linkerkinds, _linkerkinds)
+-- add target sources
+function _add_target_sources(cmakelists, target)
+    cmakelists:print("target_sources(%s PRIVATE", target:name())
+    for _, sourcefile in ipairs(target:sourcefiles()) do
+        cmakelists:print("    " .. sourcefile)
     end
-    for _, linkerkind in ipairs(table.unique(linkerkinds)) do
-        local program = platform.tool(linkerkind)
-        if program and program ~= "" then
-            cmakelists:print("set(%s %s)", (linkerkind:upper():gsub('%-', '_')), program)
+    cmakelists:print(")")
+end
+
+-- add target include directories
+function _add_target_include_directories(cmakelists, target)
+    local includedirs = target:get("includedirs")
+    if includedirs then
+        cmakelists:print("target_include_directories(%s PRIVATE", target:name())
+        for _, includedir in ipairs(includedirs) do
+            cmakelists:print("    " .. includedir)
         end
+        cmakelists:print(")")
     end
-    cmakelists:print("")
+    --[[
+    local headerdirs = target:get("headerdirs")
+    if headerdirs then
+        cmakelists:print("target_include_directories(%s INTERFACE", target:name())
+        for _, headerdir in ipairs(headerdirs) do
+            cmakelists:print("    $<BUILD_INTERFACE:" .. headerdir .. ">")
+        end
+        cmakelists:print(")")
+    end]]
+end
 
-    -- TODO
-    -- disable precompiled header first
+-- add target compile definitions
+function _add_target_compile_definitions(cmakelists, target)
+    local defines = target:get("defines")
+    if defines then
+        cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
+        for _, define in ipairs(defines) do
+            cmakelists:print("    " .. define)
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target compile options
+function _add_target_compile_options(cmakelists, target)
+    local cflags = target:get("cflags") 
+    local cxflags = target:get("cxflags") 
+    local cxxflags = target:get("cxxflags") 
+    local cuflags = target:get("cuflags") 
+    if cflags or cxflags or cxxflags or cuflags then
+        cmakelists:print("target_compile_options(%s PRIVATE", target:name())
+        for _, flag in ipairs(cflags) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+        end
+        for _, flag in ipairs(cxflags) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+        end
+        for _, flag in ipairs(cxxflags) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+        end
+        for _, flag in ipairs(cuflags) do
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target link libraries
+function _add_target_link_libraries(cmakelists, target)
+    local links = target:get("links")
+    if links then
+        cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        for _, link in ipairs(links) do
+            cmakelists:print("    " .. link)
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target link directories
+function _add_target_link_directories(cmakelists, target)
+    local linkdirs = target:get("linkdirs")
+    if linkdirs then
+        cmakelists:print("target_link_directories(%s PRIVATE", target:name())
+        for _, linkdir in ipairs(linkdirs) do
+            cmakelists:print("    " .. linkdir)
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target link options
+function _add_target_link_options(cmakelists, target)
+    local shflags = target:get("shflags")
+    local ldflags = target:get("ldflags")
+    if ldflags or shflags then
+        cmakelists:print("target_link_options(%s PRIVATE", target:name())
+        for _, flag in ipairs(ldflags) do
+            cmakelists:print("    " .. flag)
+        end
+        for _, flag in ipairs(shflags) do
+            cmakelists:print("    " .. flag)
+        end
+        cmakelists:print(")")
+    end
+end
+
+-- add target
+function _add_target(cmakelists, target, targetflags)
+
+    -- add comment
+    cmakelists:print("# target")
+
+    -- is phony target?
+    local targetkind = target:targetkind()
+    if target:isphony() then
+        return _add_target_phony(cmakelists, target)
+    elseif targetkind == "binary" then
+        _add_target_binary(cmakelists, target)
+    elseif targetkind == "static" then
+        _add_target_static(cmakelists, target)
+    elseif targetkind == "shared" then
+        _add_target_shared(cmakelists, target)
+    else
+        raise("unknown target kind %s", target:targetkind())
+    end
+
+    -- add target dependencies
+    _add_target_dependencies(cmakelists, target)
+
+    -- add target include directories
+    _add_target_include_directories(cmakelists, target)
+
+    -- add target compile definitions
+    _add_target_compile_definitions(cmakelists, target)
+
+    -- add target compile options
+    _add_target_compile_options(cmakelists, target)
+
+    -- add target link libraries
+    _add_target_link_libraries(cmakelists, target)
+
+    -- add target link directories
+    _add_target_link_directories(cmakelists, target)
+
+    -- add target link options
+    _add_target_link_options(cmakelists, target)
+
+    -- add target sources
+    _add_target_sources(cmakelists, target)
+
+    -- end
+    cmakelists:print("")
+end
+
+-- generate cmakelists
+function _generate_cmakelists(cmakelists)
+
+    -- add project info
+    _add_project(cmakelists)
+
+    -- add targets
     for _, target in pairs(project.targets()) do
-        target:set("pcheader", nil)
-        target:set("pcxxheader", nil)
-    end
-
-    -- make variables for target flags
-    cmakelists:print("# common flags")
-    local targetflags = {}
-    for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
-            for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-                if not sourcebatch.rulename then
-                    local commonflags, sourceflags = _make_common_flags(target, sourcekind, sourcebatch)
-                    cmakelists:print("set(%s_%s %s)", targetname, sourcekind:upper(), os.args(commonflags))
-                    targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
-                end
-            end
-        end
-    end
-    cmakelists:print("")
-
-    -- make it for all targets
-    cmakelists:print("# targets")
-    for _, target in pairs(project.targets()) do
-        _make_target(cmakelists, target, targetflags)
+        _add_target(cmakelists, target, targetflags)
     end
 end
 
@@ -191,8 +258,8 @@ function make(outputdir)
     -- open the cmakelists
     local cmakelists = io.open(path.join(outputdir, "CMakeLists.txt"), "w")
 
-    -- make all
-    _make_all(cmakelists)
+    -- generate cmakelists
+    _generate_cmakelists(cmakelists)
 
     -- close the cmakelists
     cmakelists:close()
