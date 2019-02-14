@@ -58,16 +58,22 @@ end
 -- add target: binary
 function _add_target_binary(cmakelists, target)
     cmakelists:print("add_executable(%s \"\")", target:name())
+    cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
+    cmakelists:print("set_target_properties(%s PROPERTIES RUNTIME_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
 end
 
 -- add target: static
 function _add_target_static(cmakelists, target)
     cmakelists:print("add_library(%s STATIC \"\")", target:name())
+    cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
+    cmakelists:print("set_target_properties(%s PROPERTIES ARCHIVE_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
 end
 
 -- add target: shared
 function _add_target_shared(cmakelists, target)
     cmakelists:print("add_library(%s SHARED \"\")", target:name())
+    cmakelists:print("set_target_properties(%s PROPERTIES OUTPUT_NAME \"%s\")", target:name(), target:basename())
+    cmakelists:print("set_target_properties(%s PROPERTIES LIBRARY_OUTPUT_DIRECTORY \"%s\")", target:name(), target:targetdir())
 end
 
 -- add target dependencies
@@ -101,15 +107,14 @@ function _add_target_include_directories(cmakelists, target)
         end
         cmakelists:print(")")
     end
-    --[[
     local headerdirs = target:get("headerdirs")
     if headerdirs then
-        cmakelists:print("target_include_directories(%s INTERFACE", target:name())
+        cmakelists:print("target_include_directories(%s PUBLIC", target:name())
         for _, headerdir in ipairs(headerdirs) do
-            cmakelists:print("    $<BUILD_INTERFACE:" .. headerdir .. ">")
+            cmakelists:print("    " .. headerdir)
         end
         cmakelists:print(")")
-    end]]
+    end
 end
 
 -- add target compile definitions
@@ -158,6 +163,23 @@ function _add_target_link_libraries(cmakelists, target)
             cmakelists:print("    " .. link)
         end
         cmakelists:print(")")
+    end
+    local targetkind = target:targetkind()
+    if targetkind == "binary" or targetkind == "shared" then
+        local deplinks = {}
+        for _, dep in ipairs(target:orderdeps()) do
+            local depkind = dep:targetkind()
+            if depkind == "static" or depkind == "shared" then
+                table.insert(deplinks, dep:name())
+            end
+        end
+        if #deplinks > 0 then
+            cmakelists:printf("target_link_libraries(%s PRIVATE", target:name())
+            for _, deplink in ipairs(deplinks) do
+                cmakelists:write(" " .. deplink)
+            end
+            cmakelists:print(")")
+        end
     end
 end
 
