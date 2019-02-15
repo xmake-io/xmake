@@ -44,8 +44,6 @@ function _add_project(cmakelists)
         end
         cmakelists:print("project(%s%s)", project_name, project_info)
     end
---    cmakelists:print([[STRING (REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")]])
---    cmakelists:print([[STRING (REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")]])
     cmakelists:print("")
 end
 
@@ -205,6 +203,11 @@ function _add_target_language_standards(cmakelists, target)
         local cstd = cstds[lang]
         if cstd then
             cmakelists:print("set_property(TARGET %s PROPERTY C_STANDARD %s)", target:name(), cstd)
+            if cstd == "99" or cstd == "11" then
+                cmakelists:print("if(MSVC)")
+                cmakelists:print("    target_compile_options(%s PRIVATE $<$<COMPILE_LANGUAGE:C>:-TP>)", target:name())
+                cmakelists:print("endif()")
+            end
         end
         local cxxstd = cxxstds[lang]
         if cxxstd then
@@ -258,18 +261,18 @@ function _add_target_optimization(cmakelists, target)
     }
     local flags_msvc = 
     {   
-        none        = "-Od"
-    ,   faster      = "-O2"
-    ,   fastest     = "-Ox -fp:fast"
-    ,   smallest    = "-O1"
-    ,   aggressive  = "-Ox -fp:fast"
+        none        = "$<$<CONFIG:Debug>:-Od>"
+    ,   faster      = "$<$<CONFIG:Release>:-O2>"
+    ,   fastest     = "$<$<CONFIG:Release>:-Ox -fp:fast>"
+    ,   smallest    = "$<$<CONFIG:Release>:-O1>"
+    ,   aggressive  = "$<$<CONFIG:Release>:-Ox -fp:fast>"
     }
     local optimization = target:get("optimize")
     if optimization then
         cmakelists:print("if(MSVC)")
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
+        cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
         cmakelists:print("else()")
-            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
+        cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
         cmakelists:print("endif()")
     end
 end
