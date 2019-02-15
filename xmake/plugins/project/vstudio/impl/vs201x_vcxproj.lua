@@ -548,7 +548,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         elseif sourcekind == "mrc" then
             for _, info in ipairs(sourceinfo) do
                 local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
-                vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>",info.mode, info.arch, objectfile)
+                vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>", info.mode, info.arch, objectfile)
             end
 
         -- for *.c/cpp files

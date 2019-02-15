@@ -38,16 +38,10 @@ local global        = require("base/global")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
-
-    -- new an instance
-    local instance = table.inherit(_instance)
-
-    -- init instance
-    instance._NAME      = name
-    instance._INFO      = info
-    instance._ROOTDIR   = rootdir
-
-    -- ok
+    local instance    = table.inherit(_instance)
+    instance._NAME    = name
+    instance._INFO    = info
+    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -55,7 +49,7 @@ end
 function _instance:get(name)
 
     -- the info
-    local info = self._INFO
+    local info = self._INFO:info()
 
     -- get if from info first
     local value = info[name]
@@ -82,7 +76,7 @@ end
 
 -- get the language menu
 function _instance:menu()
-    return self._INFO.menu
+    return self._INFO:get("menu")
 end
 
 -- get the language name
@@ -115,12 +109,12 @@ end
 
 -- get the source kinds
 function _instance:sourcekinds()
-    return self._INFO.sourcekinds
+    return self._INFO:get("sourcekinds")
 end
 
 -- get the source flags
 function _instance:sourceflags()
-    return self._INFO.sourceflags
+    return self._INFO:get("sourceflags")
 end
 
 -- get the target kinds (targetkind => linkerkind)
@@ -129,7 +123,7 @@ end
 -- {binary = "ld", static = "ar", shared = "sh"}
 --
 function _instance:targetkinds()
-    return self._INFO.targetkinds
+    return self._INFO:get("targetkinds")
 end
 
 -- get the target flags (targetkind => linkerflag)
@@ -138,9 +132,7 @@ end
 -- {binary = "ldflags", static = "arflags", shared = "shflags"}
 --
 function _instance:targetflags()
-
-    -- get it
-    return self._INFO.targetflags
+    return self._INFO:get("targetflags")
 end
 
 -- get the mixing kinds for linker
@@ -149,14 +141,12 @@ end
 -- {"cc", "cxx"}
 --
 function _instance:mixingkinds()
-
-    -- get it
-    return self._INFO.mixingkinds
+    return self._INFO:get("mixingkinds")
 end
 
 -- get the language kinds
 function _instance:langkinds()
-    return self._INFO.langkinds
+    return self._INFO:get("langkinds")
 end
 
 -- get the name flags
@@ -169,7 +159,7 @@ function _instance:nameflags()
 
     -- get nameflags
     local results = {}
-    for targetkind, nameflags in pairs(table.wrap(self._INFO.nameflags)) do
+    for targetkind, nameflags in pairs(table.wrap(self._INFO:get("nameflags"))) do
 
         -- make tool info
         local toolinfo = results[targetkind] or {}

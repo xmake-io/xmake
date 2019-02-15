@@ -31,6 +31,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local scopeinfo = require("base/scopeinfo")
 local sandbox   = require("sandbox/sandbox")
 
 -- traceback
@@ -485,8 +486,8 @@ function interpreter:_filter(values)
     return results
 end
 
--- handle scope
-function interpreter:_handle(scope, remove_repeat, enable_filter)
+-- get scope info
+function interpreter:_scopeinfo(scope_kind, scope, remove_repeat, enable_filter)
 
     -- check
     assert(scope)
@@ -511,7 +512,7 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
         -- update it
         results[name] = values
     end
-    return results
+    return scopeinfo.new(scope_kind, results)
 end
 
 -- make results
@@ -534,7 +535,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
-            results = self:_handle(root_scope, remove_repeat, enable_filter)
+            results = self:_scopeinfo(scope_kind, root_scope, remove_repeat, enable_filter)
         end
 
     -- get the root results without scope kind
@@ -542,7 +543,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
         local root_scope = scopes._ROOT["__rootkind"]
         if root_scope then
-            results = self:_handle(root_scope, remove_repeat, enable_filter)
+            results = self:_scopeinfo(scope_kind, root_scope, remove_repeat, enable_filter)
         end
 
     -- get the results of the given scope kind
@@ -579,7 +580,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
             end
 
             -- add this scope
-            results[scope_name] = self:_handle(scope_values, remove_repeat, enable_filter)
+            results[scope_name] = self:_scopeinfo(scope_kind, scope_values, remove_repeat, enable_filter)
         end
     end
     return results

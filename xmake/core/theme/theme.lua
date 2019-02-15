@@ -35,16 +35,10 @@ local global        = require("base/global")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
-
-    -- new an instance
-    local instance = table.inherit(_instance)
-
-    -- init instance
-    instance._NAME      = name
-    instance._INFO      = info
-    instance._ROOTDIR   = rootdir
-
-    -- ok
+    local instance    = table.inherit(_instance)
+    instance._NAME    = name
+    instance._INFO    = info
+    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -55,7 +49,7 @@ end
 
 -- get the theme configuration
 function _instance:get(name)
-    return self._INFO[name]
+    return self._INFO:get(name)
 end
 
 -- the interpreter

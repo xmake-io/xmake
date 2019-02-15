@@ -33,6 +33,7 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
+local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
@@ -43,15 +44,9 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info)
-
-    -- new an instance
     local instance = table.inherit(_instance)
-
-    -- init instance
-    instance._NAME      = name
-    instance._INFO      = info
-
-    -- ok
+    instance._NAME = name
+    instance._INFO = info
     return instance
 end
 
@@ -59,7 +54,7 @@ end
 function _instance:get(name)
 
     -- get it from info first
-    local value = self._INFO[name]
+    local value = self._INFO:get(name)
     if value ~= nil then
         return value 
     end
@@ -838,7 +833,7 @@ function package.load_from_system(packagename)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packageinfo)
+    local instance, errors = _instance.new(packagename, scopeinfo.new("package", packageinfo))
     if not instance then
         return nil, errors
     end

@@ -211,7 +211,7 @@ function _find_package_from_packagedirs(name, opt)
 
     -- get linkdirs
     local linkdirs = {}
-    for _, linkdir in ipairs(packageinfo.linkdirs) do
+    for _, linkdir in ipairs(packageinfo:get("linkdirs")) do
         table.insert(linkdirs, path.join(packagepath, linkdir))
     end
     if #linkdirs == 0 then
@@ -220,7 +220,7 @@ function _find_package_from_packagedirs(name, opt)
 
     -- find library 
     local result = nil
-    for _, link in ipairs(packageinfo.links) do
+    for _, link in ipairs(packageinfo:get("links")) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
             result          = result or {}
@@ -232,11 +232,11 @@ function _find_package_from_packagedirs(name, opt)
     -- inherit other package info
     if result then
         result.includedirs = {}
-        for _, includedir in ipairs(packageinfo.includedirs) do
+        for _, includedir in ipairs(packageinfo:get("includedirs")) do
             table.insert(result.includedirs, path.join(packagepath, includedir))
         end
         for _, infoname in ipairs({"defines", "languages", "warnings"}) do
-            result[infoname] = packageinfo[infoname]
+            result[infoname] = packageinfo:get(infoname)
         end
     end
 

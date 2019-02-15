@@ -301,7 +301,7 @@ end
 
 -- get the project info from the given name
 function project.get(name)
-    return project._INFO and project._INFO[name] or nil
+    return project._INFO and project._INFO:get(name) or nil
 end
 
 -- load the project file
@@ -340,8 +340,8 @@ function project._load(force)
     end
 
     -- save the root info
-    for name, value in pairs(rootinfo_target) do
-        rootinfo["target." .. name] = value
+    for name, value in pairs(rootinfo_target:info()) do
+        rootinfo:set("target." .. name, value)
     end
     project._INFO = rootinfo
 
@@ -605,17 +605,17 @@ function project._load_options(disable_filter)
                 for _, packageinfo in pairs(packageinfos) do
                     local linkdirs = {}
                     local includedirs = {}
-                    for _, linkdir in ipairs(table.wrap(packageinfo.linkdirs)) do
+                    for _, linkdir in ipairs(table.wrap(packageinfo:get("linkdirs"))) do
                         table.insert(linkdirs, path.is_absolute(linkdir) and linkdir or path.join(rootdir, linkdir))
                     end
-                    for _, includedir in ipairs(table.wrap(packageinfo.includedirs)) do
+                    for _, includedir in ipairs(table.wrap(packageinfo:get("includedirs"))) do
                         table.insert(includedirs, path.is_absolute(includedir) and includedir or path.join(rootdir, includedir))
                     end
                     if #linkdirs > 0 then
-                        packageinfo.linkdirs = linkdirs
+                        packageinfo:set("linkdirs", linkdirs)
                     end
                     if #includedirs > 0 then
-                        packageinfo.includedirs = includedirs
+                        packageinfo:set("includedirs", includedirs)
                     end
                 end
                 table.join2(results, packageinfos)

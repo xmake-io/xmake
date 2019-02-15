@@ -34,6 +34,7 @@ local table          = require("base/table")
 local utils          = require("base/utils")
 local baseoption     = require("base/option")
 local global         = require("base/global")
+local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
 local cache          = require("project/cache")
@@ -46,15 +47,9 @@ local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info)
-
-    -- new an instance
     local instance = table.inherit(_instance)
-
-    -- init instance
-    instance._NAME      = name
-    instance._INFO      = info
-
-    -- ok
+    instance._NAME = name
+    instance._INFO = info
     return instance
 end
 
@@ -67,7 +62,7 @@ function _instance:_save()
     self:set("check_before", nil)
 
     -- save option
-    option._cache():set(self:name(), self._INFO)
+    option._cache():set(self:name(), self:info())
 end
 
 -- clear the option info for cache
@@ -285,9 +280,9 @@ function _instance:enable(enabled, opt)
     end
 end
 
--- dump this option
-function _instance:dump()
-    table.dump(self._INFO)
+-- get the option info
+function _instance:info()
+    return self._INFO:info()
 end
 
 -- get the type: option
@@ -296,8 +291,8 @@ function _instance:type()
 end
 
 -- get the option info
-function _instance:get(infoname)
-    return self._INFO[infoname]
+function _instance:get(name)
+    return self._INFO:get(name)
 end
 
 -- set the value to the option info
@@ -305,9 +300,9 @@ function _instance:set(name_or_info, ...)
     if type(name_or_info) == "string" then
         local args = ...
         if args ~= nil then
-            self._INFO[name_or_info] = table.unwrap(table.unique(table.join(...)))
+            self._INFO:set(name_or_info, table.unwrap(table.unique(table.join(...))))
         else
-            self._INFO[name_or_info] = nil
+            self._INFO:set(name_or_info, nil)
         end
     elseif table.is_dictionary(name_or_info) then
         for name, info in pairs(table.join(name_or_info, ...)) do
@@ -319,8 +314,8 @@ end
 -- add the value to the option info
 function _instance:add(name_or_info, ...)
     if type(name_or_info) == "string" then
-        local info = table.wrap(self._INFO[name_or_info])
-        self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
+        local info = table.wrap(self._INFO:get(name_or_info))
+        self._INFO:set(name_or_info, table.unwrap(table.unique(table.join(info, ...))))
     elseif table.is_dictionary(name_or_info) then
         for name, info in pairs(table.join(name_or_info, ...)) do
             self:add(name, info)
@@ -490,7 +485,7 @@ function option.load(name)
     if info == nil then
         return 
     end
-    return option.new(name, info)
+    return option.new(name, scopeinfo.new("option", info))
 end
 
 -- save all options to the cache file

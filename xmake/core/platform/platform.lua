@@ -38,16 +38,10 @@ local global        = require("base/global")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
-
-    -- new an instance
-    local instance = table.inherit(_instance)
-
-    -- init instance
-    instance._NAME      = name
-    instance._INFO      = info
-    instance._ROOTDIR   = rootdir
-
-    -- ok
+    local instance    = table.inherit(_instance)
+    instance._NAME    = name
+    instance._INFO    = info
+    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -58,27 +52,27 @@ end
 
 -- set the value to the platform info
 function _instance:set(name, ...)
-    self._INFO[name] = table.unwrap({...})
+    self._INFO:set(name, table.unwrap({...}))
 end
 
 -- add the value to the platform info
 function _instance:add(name, ...)
     local info = table.wrap(self._INFO[name])
-    self._INFO[name] = table.unwrap(table.join(info, ...))
+    self._INFO:set(name, table.unwrap(table.join(info, ...)))
 end
 
 -- get the platform configuration
 function _instance:get(name)
 
     -- attempt to get the static configure value
-    local value = self._INFO[name]
+    local value = self._INFO:get(name)
     if value ~= nil then
         return value
     end
 
     -- lazy loading platform if get other configuration
     if not self._LOADED and not self:_is_builtin_conf(name) then
-        local on_load = self._INFO.load
+        local on_load = self._INFO:get("load")
         if on_load then
             local ok, errors = sandbox.load(on_load, self)
             if not ok then
@@ -89,33 +83,33 @@ function _instance:get(name)
     end
 
     -- get other platform info
-    return self._INFO[name]
+    return self._INFO:get(name)
 end
 
 -- get the platform os
 function _instance:os()
-    return self._INFO.os
+    return self._INFO:get("os")
 end
 
 -- get the platform menu
 function _instance:menu()
     -- @note do not use self:get("menu") to avoid loading platform early
-    return self._INFO.menu
+    return self._INFO:get("menu")
 end
 
 -- get the platform hosts
 function _instance:hosts()
-    return self._INFO.hosts
+    return self._INFO:get("hosts")
 end
 
 -- get the platform archs
 function _instance:archs()
-    return self._INFO.archs
+    return self._INFO:get("archs")
 end
 
 -- get the platform script
 function _instance:script(name)
-    return self._INFO[name]
+    return self._INFO:get(name)
 end
 
 -- get user private data

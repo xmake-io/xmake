@@ -329,7 +329,7 @@ end
 
 -- get the target info
 function target:get(name)
-    return self._INFO[name]
+    return self._INFO:get(name)
 end
 
 -- set the value to the target info
@@ -350,15 +350,15 @@ function target:set(name_or_info, ...)
         -- set values
         local name = name_or_info
         if #values > 0 then
-            self._INFO[name] = table.unwrap(table.unique(table.join(unpack(values))))
+            self._INFO:set(name, table.unwrap(table.unique(table.join(unpack(values)))))
         else
-            self._INFO[name] = nil
+            self._INFO:set(name, nil)
         end
 
         -- save extra config
         if extra_config then
-            self._INFO["__extra_" .. name] = self._INFO["__extra_" .. name] or {}
-            local extrascope = self._INFO["__extra_" .. name]
+            self._INFO:set("__extra_" .. name, self._INFO:get("__extra_" .. name) or {})
+            local extrascope = self._INFO:get("__extra_" .. name)
             for _, value in ipairs(values) do
                 extrascope[value] = extra_config
             end
@@ -397,13 +397,13 @@ function target:add(name_or_info, ...)
 
         -- add values
         local name = name_or_info
-        local info = table.wrap(self._INFO[name])
-        self._INFO[name] = table.unwrap(table.unique(table.join(info, unpack(values))))
+        local info = table.wrap(self._INFO:get(name))
+        self._INFO:set(name, table.unwrap(table.unique(table.join(info, unpack(values)))))
 
         -- save extra config
         if extra_config then
-            self._INFO["__extra_" .. name] = self._INFO["__extra_" .. name] or {}
-            local extrascope = self._INFO["__extra_" .. name]
+            self._INFO:set("__extra_" .. name, self._INFO:get("__extra_" .. name) or {})
+            local extrascope = self._INFO:get("__extra_" .. name)
             for _, value in ipairs(values) do
                 extrascope[value] = extra_config
             end
@@ -477,9 +477,9 @@ function target:values_add(name, ...)
     self:add("values." .. name, ...)
 end
 
--- dump this target
-function target:dump()
-    table.dump(self._INFO)
+-- get the target info
+function target:info()
+    return self._INFO:info()
 end
 
 -- get the type: option
