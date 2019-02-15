@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.project")
+import("core.tool.compiler")
 
 -- get unix path 
 function _get_unix_path(filepath)
@@ -43,6 +44,8 @@ function _add_project(cmakelists)
         end
         cmakelists:print("project(%s%s)", project_name, project_info)
     end
+--    cmakelists:print([[STRING (REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")]])
+--    cmakelists:print([[STRING (REGEX REPLACE "/RTC(su|[1su])" "" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")]])
     cmakelists:print("")
 end
 
@@ -148,14 +151,22 @@ function _add_target_compile_options(cmakelists, target)
     if cflags or cxflags or cxxflags or cuflags then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(cflags) do
-            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+            if compiler.has_flags("c", flag, {target = target}) then
+                cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+            end
         end
         for _, flag in ipairs(cxflags) do
-            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
-            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+            if compiler.has_flags("c", flag, {target = target}) then
+                cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+            end
+            if compiler.has_flags("cxx", flag, {target = target}) then
+                cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+            end
         end
         for _, flag in ipairs(cxxflags) do
-            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+            if compiler.has_flags("cxx", flag, {target = target}) then
+                cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
+            end
         end
         for _, flag in ipairs(cuflags) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
@@ -199,6 +210,67 @@ function _add_target_language_standards(cmakelists, target)
         if cxxstd then
             cmakelists:print("set_property(TARGET %s PROPERTY CXX_STANDARD %s)", target:name(), cxxstd)
         end
+    end
+end
+
+-- add target warnings
+function _add_target_warnings(cmakelists, target)
+    local flags_gcc = 
+    {   
+        none  = "-w"
+    ,   less  = "-Wall"
+    ,   more  = "-Wall"
+    ,   all   = "-Wall"
+    ,   error = "-Werror"
+    }
+    local flags_msvc = 
+    {   
+        none  = "-W0"
+    ,   less  = "-W1"
+    ,   more  = "-W3"
+    ,   all   = "-W3" -- = "-Wall" will enable too more warnings
+    ,   error = "-WX"
+    }
+    local warnings = target:get("warnings")
+    if warnings then
+        cmakelists:print("if(MSVC)")
+        for _, warn in ipairs(warnings) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[warn])
+        end
+        cmakelists:print("else()")
+        for _, warn in ipairs(warnings) do
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[warn])
+        end
+        cmakelists:print("endif()")
+    end
+end
+
+-- add target optimization
+function _add_target_optimization(cmakelists, target)
+    local flags_gcc = 
+    {   
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Os"
+    ,   aggressive = "-Ofast"
+    }
+    local flags_msvc = 
+    {   
+        none        = "-Od"
+    ,   faster      = "-O2"
+    ,   fastest     = "-Ox -fp:fast"
+    ,   smallest    = "-O1"
+    ,   aggressive  = "-Ox -fp:fast"
+    }
+    local optimization = target:get("optimize")
+    if optimization then
+        cmakelists:print("if(MSVC)")
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_msvc[optimization])
+        cmakelists:print("else()")
+            cmakelists:print("    target_compile_options(%s PRIVATE %s)", target:name(), flags_gcc[optimization])
+        cmakelists:print("endif()")
     end
 end
 
@@ -250,10 +322,14 @@ function _add_target_link_options(cmakelists, target)
     if ldflags or shflags then
         cmakelists:print("target_link_options(%s PRIVATE", target:name())
         for _, flag in ipairs(ldflags) do
-            cmakelists:print("    " .. flag)
+            if target:linker():has_flags(flag) then
+                cmakelists:print("    " .. flag)
+            end
         end
         for _, flag in ipairs(shflags) do
-            cmakelists:print("    " .. flag)
+            if target:linker():has_flags(flag) then
+                cmakelists:print("    " .. flag)
+            end
         end
         cmakelists:print(")")
     end
@@ -311,6 +387,12 @@ function _add_target(cmakelists, target)
 
     -- add target compile options
     _add_target_compile_options(cmakelists, target)
+
+    -- add target warnings
+    _add_target_warnings(cmakelists, target)
+
+    -- add target optimization
+    _add_target_optimization(cmakelists, target)
 
     -- add target link libraries
     _add_target_link_libraries(cmakelists, target)
