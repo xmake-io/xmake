@@ -7,3 +7,4 @@ ${define HAS_STATIC_ASSERT}
 ${define HAS_SETJMP}
 ${define HAS_CONSTEXPR}
 ${define HAS_CONSEXPR_AND_STATIC_ASSERT}
+${define HAS_SSE2}
