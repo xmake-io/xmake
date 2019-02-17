@@ -158,10 +158,10 @@ function template.templates(language)
             end
 
             -- save template directory
-            results._DIRECTORY = path.directory(templatefile)
+            results:set("_DIRECTORY", path.directory(templatefile))
 
             -- insert to templates
-            table.insert(templates, results)
+            table.insert(templates, results:info())
         end
     end
 

@@ -486,8 +486,8 @@ function interpreter:_filter(values)
     return results
 end
 
--- get scope info
-function interpreter:_scopeinfo(scope_kind, scope, remove_repeat, enable_filter)
+-- handle scope data
+function interpreter:_handle(scope, remove_repeat, enable_filter)
 
     -- check
     assert(scope)
@@ -512,7 +512,7 @@ function interpreter:_scopeinfo(scope_kind, scope, remove_repeat, enable_filter)
         -- update it
         results[name] = values
     end
-    return scopeinfo.new(scope_kind, results)
+    return results
 end
 
 -- make results
@@ -529,58 +529,59 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         os.raise("the scope %s() is empty!", scope_kind)
     end
 
-    -- get the root results of the given scope kind, e.g. root.target
+    -- get the root scope info of the given scope kind, e.g. root.target
     local results = {}
     if scope_kind and scope_kind:startswith("root.") then
 
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
-            results = self:_scopeinfo(scope_kind, root_scope, remove_repeat, enable_filter)
+            results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
+        return scopeinfo.new(scope_kind, results)
 
-    -- get the root results without scope kind
+    -- get the root scope info without scope kind
     elseif scope_kind == "root" or scope_kind == nil then
 
         local root_scope = scopes._ROOT["__rootkind"]
         if root_scope then
-            results = self:_scopeinfo(scope_kind, root_scope, remove_repeat, enable_filter)
+            results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
+        return scopeinfo.new(scope_kind, results)
 
     -- get the results of the given scope kind
     elseif scope_kind then
 
         -- not this scope for kind?
         local scope_for_kind = scopes[scope_kind]
-        if not scope_for_kind then
-            return {}
-        end
+        if scope_for_kind then
 
-        -- fetch the root values in root scope first 
-        interpreter._fetch_root_scope(scopes._ROOT)
+            -- fetch the root values in root scope first 
+            interpreter._fetch_root_scope(scopes._ROOT)
 
-        -- merge results
-        for scope_name, scope in pairs(scope_for_kind) do
+            -- merge results
+            for scope_name, scope in pairs(scope_for_kind) do
 
-            -- add scope values
-            local scope_values = {}
-            for name, values in pairs(scope) do
-                if not name:startswith("__override_") then
-                    scope_values[name] = values
-                end
-            end
-
-            -- merge root values with the given scope name
-            local scope_root = scopes._ROOT[scope_kind .. "@@" .. scope_name]
-            if scope_root then
-                for name, values in pairs(scope_root) do
-                    if not scope["__override_" .. name] then
-                        scope_values[name] = table.join(values, scope_values[name] or {})
+                -- add scope values
+                local scope_values = {}
+                for name, values in pairs(scope) do
+                    if not name:startswith("__override_") then
+                        scope_values[name] = values
                     end
                 end
-            end
 
-            -- add this scope
-            results[scope_name] = self:_scopeinfo(scope_kind, scope_values, remove_repeat, enable_filter)
+                -- merge root values with the given scope name
+                local scope_root = scopes._ROOT[scope_kind .. "@@" .. scope_name]
+                if scope_root then
+                    for name, values in pairs(scope_root) do
+                        if not scope["__override_" .. name] then
+                            scope_values[name] = table.join(values, scope_values[name] or {})
+                        end
+                    end
+                end
+
+                -- add this scope
+                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter))
+            end
         end
     end
     return results
