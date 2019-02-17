@@ -34,11 +34,14 @@ local table = require("base/table")
 local utils = require("base/utils")
 
 -- new an instance
-function _instance.new(kind, info, interpreter)
+function _instance.new(kind, info, opt)
+    opt = opt or {}
     local instance = table.inherit(_instance)
     instance._KIND = kind or "root"
     instance._INFO = info
-    instance._INTERPRETER = interpreter
+    instance._INTERPRETER   = opt.interpreter
+    instance._REMOVE_REPEAT = opt.remove_repeat
+    instance._ENABLE_FILTER = opt.enable_filter
     return instance
 end
 
@@ -58,7 +61,15 @@ function _instance:_api_type(name)
     end
 end
 
--- TODO do filter 
+-- handle the api values
+function _instance:_api_handle_values(values)
+    local interp = self:interpreter()
+    if interp then
+        values = interp:_handle(values, self._REMOVE_REPEAT, self._ENABLE_FILTER)
+    end
+    return values
+end
+
 -- set the api values to the scope info
 function _instance:_api_set_values(name, ...)
 
@@ -74,8 +85,11 @@ function _instance:_api_set_values(name, ...)
         extra_config = nil
     end
 
+    -- handle values
+    local handled_values = self:_api_handle_values(values)
+
     -- save values
-    scope[name] = values
+    scope[name] = handled_values
 
     -- save extra config
     if extra_config then
@@ -102,13 +116,92 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
+    -- handle values
+    local handled_values = self:_api_handle_values(values)
+
     -- save values
-    scope[name] = table.join2(scope[name] or {}, values)
+    scope[name] = table.join2(scope[name] or {}, handled_values)
 
     -- save extra config
     if extra_config then
         scope["__extra_" .. name] = scope["__extra_" .. name] or {}
         local extrascope = scope["__extra_" .. name]
+        for _, value in ipairs(values) do
+            extrascope[value] = extra_config
+        end
+    end
+end
+
+-- set the api values to the scope info
+function _instance:_api_set_keyvalues(name, key, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- handle values
+    local handled_values = self:_api_handle_values(values)
+
+    -- save values to "name"
+    scope[name] = scope[name] or {}
+    scope[name][key] = handled_values
+
+    -- save values to "name.key"
+    local name_key = name .. "." .. key
+    scope[name_key] = handled_values
+
+    -- fix override attributes
+    scope["__override_" .. name] = false
+    scope["__override_" .. name_key] = true
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name_key] = scope["__extra_" .. name_key] or {}
+        local extrascope = scope["__extra_" .. name_key]
+        for _, value in ipairs(values) do
+            extrascope[value] = extra_config
+        end
+    end
+end
+
+-- add the api values to the scope info
+function _instance:_api_add_keyvalues(name, key, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- handle values
+    local handled_values = self:_api_handle_values(values)
+
+    -- save values to "name"
+    scope[name] = scope[name] or {}
+    scope[name][key] = table.join2(scope[name][key] or {}, handled_values)
+
+    -- save values to "name.key"
+    local name_key = name .. "." .. key
+    scope[name_key] = scope[name][key]
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name_key] = scope["__extra_" .. name_key] or {}
+        local extrascope = scope["__extra_" .. name_key]
         for _, value in ipairs(values) do
             extrascope[value] = extra_config
         end

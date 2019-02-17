@@ -531,13 +531,14 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- get the root scope info of the given scope kind, e.g. root.target
     local results = {}
+    local scope_opt = {interpreter = self, remove_repeat = remove_repeat, enable_filter = enable_filter}
     if scope_kind and scope_kind:startswith("root.") then
 
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
             results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
-        return scopeinfo.new(scope_kind, results, self)
+        return scopeinfo.new(scope_kind, results, scope_opt)
 
     -- get the root scope info without scope kind
     elseif scope_kind == "root" or scope_kind == nil then
@@ -546,7 +547,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         if root_scope then
             results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
-        return scopeinfo.new(scope_kind, results, self)
+        return scopeinfo.new(scope_kind, results, scope_opt)
 
     -- get the results of the given scope kind
     elseif scope_kind then
@@ -580,7 +581,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
                 end
 
                 -- add this scope
-                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter), self)
+                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter), scope_opt)
             end
         end
     end
