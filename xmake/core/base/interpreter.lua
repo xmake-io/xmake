@@ -348,30 +348,15 @@ end
 
 -- translate api pathes 
 function interpreter:_api_translate_pathes(values)
-
-    -- check
-    assert(self and self._PRIVATE)
-
-    -- the current file 
-    local curfile = self._PRIVATE._CURFILE
-    assert(curfile)
-
-    -- the current directory
-    local curdir = path.directory(curfile)
-    assert(curdir)
-
-    -- translate the relative path 
     local results = {}
     for _, p in ipairs(values) do
         assert(type(p) == "string", "invalid path value: " .. tostring(p))
         if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
-            table.insert(results, path.relative(path.absolute(p, curdir), self._PRIVATE._ROOTDIR))
+            table.insert(results, path.relative(path.absolute(p, self:scriptdir()), self:rootdir()))
         else
             table.insert(results, p)
         end
     end
-
-    -- ok?
     return results
 end
 

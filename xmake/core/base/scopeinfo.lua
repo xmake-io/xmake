@@ -62,12 +62,28 @@ function _instance:_api_type(name)
 end
 
 -- handle the api values
-function _instance:_api_handle_values(values)
+function _instance:_api_handle(values)
     local interp = self:interpreter()
     if interp then
         values = interp:_handle(values, self._REMOVE_REPEAT, self._ENABLE_FILTER)
     end
     return values
+end
+
+-- save api source info, .e.g call api() in sourcefile:linenumber
+function _instance:_api_save_sourceinfo_to_scope(scope, apiname, values)
+
+    -- save api source info, .e.g call api() in sourcefile:linenumber
+    local sourceinfo = debug.getinfo(5, "Sl")
+    if sourceinfo then
+        scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
+        local sourcescope = scope["__sourceinfo_" .. apiname]
+        for _, value in ipairs(values) do
+            if type(value) == "string" then
+                sourcescope[value] = {file = sourceinfo.short_src or sourceinfo.source, line = sourceinfo.currentline}
+            end
+        end
+    end
 end
 
 -- set the api values to the scope info
@@ -86,7 +102,7 @@ function _instance:_api_set_values(name, ...)
     end
 
     -- handle values
-    local handled_values = self:_api_handle_values(values)
+    local handled_values = self:_api_handle(values)
 
     -- save values
     scope[name] = handled_values
@@ -116,11 +132,8 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
-    -- handle values
-    local handled_values = self:_api_handle_values(values)
-
     -- save values
-    scope[name] = table.join2(scope[name] or {}, handled_values)
+    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), values))
 
     -- save extra config
     if extra_config then
@@ -132,7 +145,7 @@ function _instance:_api_add_values(name, ...)
     end
 end
 
--- set the api values to the scope info
+-- set the api key-values to the scope info
 function _instance:_api_set_keyvalues(name, key, ...)
 
     -- get the scope info
@@ -147,16 +160,13 @@ function _instance:_api_set_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- handle values
-    local handled_values = self:_api_handle_values(values)
-
     -- save values to "name"
     scope[name] = scope[name] or {}
-    scope[name][key] = handled_values
+    scope[name][key] = self:_api_handle(values)
 
     -- save values to "name.key"
     local name_key = name .. "." .. key
-    scope[name_key] = handled_values
+    scope[name_key] = scope[name][key]
 
     -- fix override attributes
     scope["__override_" .. name] = false
@@ -172,7 +182,7 @@ function _instance:_api_set_keyvalues(name, key, ...)
     end
 end
 
--- add the api values to the scope info
+-- add the api key-values to the scope info
 function _instance:_api_add_keyvalues(name, key, ...)
 
     -- get the scope info
@@ -187,12 +197,9 @@ function _instance:_api_add_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- handle values
-    local handled_values = self:_api_handle_values(values)
-
     -- save values to "name"
     scope[name] = scope[name] or {}
-    scope[name][key] = table.join2(scope[name][key] or {}, handled_values)
+    scope[name][key] = self:_api_handle(table.join2(table.wrap(scope[name][key]), values))
 
     -- save values to "name.key"
     local name_key = name .. "." .. key
@@ -206,6 +213,50 @@ function _instance:_api_add_keyvalues(name, key, ...)
             extrascope[value] = extra_config
         end
     end
+end
+
+-- set the api pathes to the scope info
+function _instance:_api_set_pathes(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+end
+
+-- add the api pathes to the scope info
+function _instance:_api_add_pathes(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get interpreter
+    local interp = self:interpreter()
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- translate pathes
+    local pathes = interp:_api_translate_pathes(values)
+
+    -- save values
+    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes))
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        for _, value in ipairs(pathes) do
+            extrascope[value] = extra_config
+        end
+    end
+
+    -- save api source info, .e.g call api() in sourcefile:linenumber
+    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 
 -- get the scope kind
