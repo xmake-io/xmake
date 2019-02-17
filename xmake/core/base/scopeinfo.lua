@@ -34,11 +34,85 @@ local table = require("base/table")
 local utils = require("base/utils")
 
 -- new an instance
-function _instance.new(kind, info)
+function _instance.new(kind, info, interpreter)
     local instance = table.inherit(_instance)
     instance._KIND = kind or "root"
     instance._INFO = info
+    instance._INTERPRETER = interpreter
     return instance
+end
+
+-- get apis
+function _instance:_apis()
+    local interp = self:interpreter()
+    if interp then
+        return interp:api_definitions()
+    end
+end
+
+-- get the given api type
+function _instance:_api_type(name)
+    local apis = self:_apis()
+    if apis then
+        return apis[self:kind() .. '.' .. name]
+    end
+end
+
+-- TODO do filter 
+-- set the api values to the scope info
+function _instance:_api_set_values(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- save values
+    scope[name] = values
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        for _, value in ipairs(values) do
+            extrascope[value] = extra_config
+        end
+    end
+end
+
+-- add the api values to the scope info
+function _instance:_api_add_values(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- save values
+    scope[name] = table.join2(scope[name] or {}, values)
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        for _, value in ipairs(values) do
+            extrascope[value] = extra_config
+        end
+    end
 end
 
 -- get the scope kind
@@ -56,6 +130,11 @@ function _instance:info()
     return self._INFO
 end
 
+-- get interpreter
+function _instance:interpreter()
+    return self._INTERPRETER
+end
+
 -- get the scope info from the given name
 function _instance:get(name)
     return self._INFO[name]
@@ -66,9 +145,47 @@ function _instance:set(name, value)
     self._INFO[name] = value
 end
 
+-- set the api value to the scope info
+function _instance:apival_set(name, ...)
+    if type(name) == "string" then
+        local api_type = self:_api_type("set_" .. name)
+        if api_type then
+            local set_xxx = self["_api_set_" .. api_type]
+            if set_xxx then
+                set_xxx(self, name, ...)
+            else
+                os.raise("unknown apitype(%s) for %s:set(%s, ...)", api_type, self:kind(), name)
+            end
+        else
+            os.raise("unknown api(%s) for %s:set(%s, ...)", name, self:kind(), name)
+        end
+    else
+        -- TODO
+    end
+end
+
+-- add the api value to the scope info
+function _instance:apival_add(name, ...)
+    if type(name) == "string" then
+        local api_type = self:_api_type("add_" .. name)
+        if api_type then
+            local add_xxx = self["_api_add_" .. api_type]
+            if add_xxx then
+                add_xxx(self, name, ...)
+            else
+                os.raise("unknown apitype(%s) for %s:add(%s, ...)", api_type, self:kind(), name)
+            end
+        else
+            os.raise("unknown api(%s) for %s:add(%s, ...)", name, self:kind(), name)
+        end
+    else
+        -- TODO
+    end
+end
+
 -- new an scope instance
-function scopeinfo.new(name, info)
-    return _instance.new(name, info)
+function scopeinfo.new(...)
+    return _instance.new(...)
 end
 
 -- return module

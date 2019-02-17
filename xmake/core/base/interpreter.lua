@@ -537,7 +537,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         if root_scope then
             results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
-        return scopeinfo.new(scope_kind, results)
+        return scopeinfo.new(scope_kind, results, self)
 
     -- get the root scope info without scope kind
     elseif scope_kind == "root" or scope_kind == nil then
@@ -546,7 +546,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
         if root_scope then
             results = self:_handle(root_scope, remove_repeat, enable_filter)
         end
-        return scopeinfo.new(scope_kind, results)
+        return scopeinfo.new(scope_kind, results, self)
 
     -- get the results of the given scope kind
     elseif scope_kind then
@@ -580,7 +580,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
                 end
 
                 -- add this scope
-                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter))
+                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter), self)
             end
         end
     end
@@ -792,11 +792,7 @@ end
 -- the root api will affect these scopes
 --
 function interpreter:rootscope_set(scope_kind)
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- set it
     self._PRIVATE._ROOTSCOPE = scope_kind
 end
 
@@ -813,6 +809,11 @@ function interpreter:apis(scope_kind)
     else
         return self._PRIVATE._ROOTAPIS or {}
     end
+end
+
+-- get api definitions
+function interpreter:api_definitions()
+    return self._API_DEFINITIONS
 end
 
 -- register api 
@@ -1489,9 +1490,10 @@ end
 -- @endcode
 --
 function interpreter:api_define(apis)
- 
-    -- register language apis
+
+    -- register apis
     local scopes = {}
+    local definitions = self._API_DEFINITIONS or {}
     for apitype, apifuncs in pairs(apis) do
         for _, apifunc in ipairs(apifuncs) do
 
@@ -1506,6 +1508,9 @@ function interpreter:api_define(apis)
                 apiscript   = apifunc[2]
                 apifunc     = apifunc[1]
             end
+
+            -- register api definition, "scope.apiname" => "apitype"
+            definitions[apifunc] = apitype
 
             -- get api function 
             local apiscope = nil
@@ -1555,6 +1560,7 @@ function interpreter:api_define(apis)
             end
         end
     end
+    self._API_DEFINITIONS = definitions
 end
 
 -- the builtin api: set_xmakever()

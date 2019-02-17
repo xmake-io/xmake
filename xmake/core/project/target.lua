@@ -333,6 +333,11 @@ function target:get(name)
 end
 
 -- set the value to the target info
+function target:set(name, ...)
+    self._INFO:apival_set(name, ...)
+end
+
+--[[
 function target:set(name_or_info, ...)
 
     -- set values to the given key?
@@ -378,9 +383,14 @@ function target:set(name_or_info, ...)
             self:set(name, info)
         end
     end
-end
+end]]
 
 -- add the value to the target info
+function target:add(name, ...)
+    self._INFO:apival_add(name, ...)
+end
+
+--[[
 function target:add(name_or_info, ...)
 
     -- add values to the given key?
@@ -424,6 +434,7 @@ function target:add(name_or_info, ...)
         end
     end
 end
+]]
 
 -- get user private data
 function target:data(name)
