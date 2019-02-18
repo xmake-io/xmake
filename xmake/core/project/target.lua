@@ -337,104 +337,15 @@ function target:set(name, ...)
     self._INFO:apival_set(name, ...)
 end
 
---[[
-function target:set(name_or_info, ...)
-
-    -- set values to the given key?
-    if type(name_or_info) == "string" then
-
-        -- get extra config
-        local values = {...}
-        local extra_config = values[#values]
-        if table.is_dictionary(extra_config) then 
-            table.remove(values)
-        else
-            extra_config = nil
-        end
-
-        -- set values
-        local name = name_or_info
-        if #values > 0 then
-            self._INFO:set(name, table.unwrap(table.unique(table.join(unpack(values)))))
-        else
-            self._INFO:set(name, nil)
-        end
-
-        -- save extra config
-        if extra_config then
-            self._INFO:set("__extra_" .. name, self._INFO:get("__extra_" .. name) or {})
-            local extrascope = self._INFO:get("__extra_" .. name)
-            for _, value in ipairs(values) do
-                extrascope[value] = extra_config
-            end
-        end
-
-    -- set array, e.g. set({{links = ..}, {links = ..}})
-    elseif table.is_array(name_or_info) then
-        for _, dict in pairs(name_or_info) do
-            for name, info in pairs(dict) do
-                self:set(name, info)
-            end
-        end
-
-    -- set dictionary, e.g. set({links = ..})
-    elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(name_or_info) do
-            self:set(name, info)
-        end
-    end
-end]]
-
 -- add the value to the target info
 function target:add(name, ...)
     self._INFO:apival_add(name, ...)
 end
 
---[[
-function target:add(name_or_info, ...)
-
-    -- add values to the given key?
-    if type(name_or_info) == "string" then
-
-        -- get extra config
-        local values = {...}
-        local extra_config = values[#values]
-        if table.is_dictionary(extra_config) then 
-            table.remove(values)
-        else
-            extra_config = nil
-        end
-
-        -- add values
-        local name = name_or_info
-        local info = table.wrap(self._INFO:get(name))
-        self._INFO:set(name, table.unwrap(table.unique(table.join(info, unpack(values)))))
-
-        -- save extra config
-        if extra_config then
-            self._INFO:set("__extra_" .. name, self._INFO:get("__extra_" .. name) or {})
-            local extrascope = self._INFO:get("__extra_" .. name)
-            for _, value in ipairs(values) do
-                extrascope[value] = extra_config
-            end
-        end
-
-    -- add array, e.g. add({{links = ..}, {links = ..}})
-    elseif table.is_array(name_or_info) then
-        for _, dict in pairs(name_or_info) do
-            for name, info in pairs(dict) do
-                self:add(name, info)
-            end
-        end
-
-    -- add dictionary, e.g. add({links = ..})
-    elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(name_or_info) do
-            self:add(name, info)
-        end
-    end
+-- remove the value to the target info
+function target:del(name, ...)
+    self._INFO:apival_del(name, ...)
 end
-]]
 
 -- get user private data
 function target:data(name)

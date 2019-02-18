@@ -296,31 +296,18 @@ function _instance:get(name)
 end
 
 -- set the value to the option info
-function _instance:set(name_or_info, ...)
-    if type(name_or_info) == "string" then
-        local args = ...
-        if args ~= nil then
-            self._INFO:set(name_or_info, table.unwrap(table.unique(table.join(...))))
-        else
-            self._INFO:set(name_or_info, nil)
-        end
-    elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(table.join(name_or_info, ...)) do
-            self:set(name, info)
-        end
-    end
+function _instance:set(name, ...)
+    self._INFO:apival_set(name, ...)
 end
 
 -- add the value to the option info
-function _instance:add(name_or_info, ...)
-    if type(name_or_info) == "string" then
-        local info = table.wrap(self._INFO:get(name_or_info))
-        self._INFO:set(name_or_info, table.unwrap(table.unique(table.join(info, ...))))
-    elseif table.is_dictionary(name_or_info) then
-        for name, info in pairs(table.join(name_or_info, ...)) do
-            self:add(name, info)
-        end
-    end
+function _instance:add(name, ...)
+    self._INFO:apival_add(name, ...)
+end
+
+-- remove the value to the option info
+function _instance:del(name, ...)
+    self._INFO:apival_del(name, ...)
 end
 
 -- get the given dependent option

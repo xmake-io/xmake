@@ -220,6 +220,36 @@ function _instance:_api_set_pathes(name, ...)
 
     -- get the scope info
     local scope = self._INFO
+
+    -- get interpreter
+    local interp = self:interpreter()
+
+    -- get extra config
+    local values = {...}
+    local extra_config = values[#values]
+    if table.is_dictionary(extra_config) then 
+        table.remove(values)
+    else
+        extra_config = nil
+    end
+
+    -- translate pathes
+    local pathes = self:_api_translate_pathes(values)
+
+    -- save values
+    scope[name] = self:_api_handle(pathes)
+
+    -- save extra config
+    if extra_config then
+        scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+        local extrascope = scope["__extra_" .. name]
+        for _, value in ipairs(pathes) do
+            extrascope[value] = extra_config
+        end
+    end
+
+    -- save api source info, .e.g call api() in sourcefile:linenumber
+    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 
 -- add the api pathes to the scope info
@@ -259,6 +289,32 @@ function _instance:_api_add_pathes(name, ...)
     self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 
+-- remove the api pathes to the scope info
+function _instance:_api_del_pathes(name, ...)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- get interpreter
+    local interp = self:interpreter()
+
+    -- translate pathes
+    local values = {...}
+    local pathes = interp:_api_translate_pathes(values)
+
+    -- mark these pathes as deleted
+    local pathes_deleted = {}
+    for _, pathname in ipairs(pathes) do
+        table.insert(pathes_deleted, "__del_" .. pathname)
+    end
+
+    -- save values
+    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes_deleted))
+
+    -- save api source info, .e.g call api() in sourcefile:linenumber
+    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
+end
+
 -- get the scope kind
 function _instance:kind()
     return self._KIND
@@ -289,7 +345,7 @@ function _instance:set(name, value)
     self._INFO[name] = value
 end
 
--- set the api value to the scope info
+-- set the api values to the scope info
 function _instance:apival_set(name, ...)
     if type(name) == "string" then
         local api_type = self:_api_type("set_" .. name)
@@ -301,14 +357,31 @@ function _instance:apival_set(name, ...)
                 os.raise("unknown apitype(%s) for %s:set(%s, ...)", api_type, self:kind(), name)
             end
         else
-            os.raise("unknown api(%s) for %s:set(%s, ...)", name, self:kind(), name)
+            -- unknown api values? only set values
+            self:_api_set_values(name, ...)
+        end
+
+    -- set array, e.g. set({{links = ..}, {links = ..}})
+    elseif table.is_array(name) then
+        local array = name
+        for _, dict in ipairs(array) do
+            for k, v in pairs(dict) do
+                self:apival_set(k, unpack(table.wrap(v)))
+            end
+        end
+
+    -- set dictionary, e.g. set({links = ..})
+    elseif table.is_dictionary(name) then
+        local dict = name
+        for k, v in pairs(dict) do
+            self:apival_set(k, unpack(table.wrap(v)))
         end
     else
-        -- TODO
+        os.raise("unknown type(%s) for %s:set(%s, ...)", type(name), self:kind(), name)
     end
 end
 
--- add the api value to the scope info
+-- add the api values to the scope info
 function _instance:apival_add(name, ...)
     if type(name) == "string" then
         local api_type = self:_api_type("add_" .. name)
@@ -320,10 +393,47 @@ function _instance:apival_add(name, ...)
                 os.raise("unknown apitype(%s) for %s:add(%s, ...)", api_type, self:kind(), name)
             end
         else
-            os.raise("unknown api(%s) for %s:add(%s, ...)", name, self:kind(), name)
+            -- unknown api values? only add values
+            self:_api_add_values(name, ...)
+        end
+
+    -- add array, e.g. add({{links = ..}, {links = ..}})
+    elseif table.is_array(name) then
+        local array = name
+        for _, dict in ipairs(array) do
+            for k, v in pairs(dict) do
+                self:apival_add(k, unpack(table.wrap(v)))
+            end
+        end
+
+    -- add dictionary, e.g. add({links = ..})
+    elseif table.is_dictionary(name) then
+        local dict = name
+        for k, v in pairs(dict) do
+            self:apival_add(k, unpack(table.wrap(v)))
+        end
+    else
+        os.raise("unknown type(%s) for %s:add(%s, ...)", type(name), self:kind(), name)
+    end
+end
+
+-- remove the api values to the scope info
+function _instance:apival_del(name, ...)
+    if type(name) == "string" then
+        local api_type = self:_api_type("del_" .. name)
+        if api_type then
+            local del_xxx = self["_api_del_" .. api_type]
+            if del_xxx then
+                del_xxx(self, name, ...)
+            else
+                os.raise("unknown apitype(%s) for %s:del(%s, ...)", api_type, self:kind(), name)
+            end
+        else
+            os.raise("unknown api(%s) for %s:del(%s, ...)", name, self:kind(), name)
         end
     else
         -- TODO
+        os.raise("cannot support to remove a dictionary!")
     end
 end
 
