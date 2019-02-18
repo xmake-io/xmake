@@ -113,6 +113,9 @@ function _instance:_api_set_values(name, ...)
         extra_config = nil
     end
 
+    -- expand values
+    values = table.join(unpack(values))
+
     -- handle values
     local handled_values = self:_api_handle(values)
 
@@ -144,6 +147,9 @@ function _instance:_api_add_values(name, ...)
         extra_config = nil
     end
 
+    -- expand values
+    values = table.join(unpack(values))
+
     -- save values
     scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), values))
 
@@ -171,6 +177,9 @@ function _instance:_api_set_keyvalues(name, key, ...)
     else
         extra_config = nil
     end
+
+    -- expand values
+    values = table.join(unpack(values))
 
     -- save values to "name"
     scope[name] = scope[name] or {}
@@ -208,6 +217,9 @@ function _instance:_api_add_keyvalues(name, key, ...)
     else
         extra_config = nil
     end
+
+    -- expand values
+    values = table.join(unpack(values))
 
     -- save values to "name"
     scope[name] = scope[name] or {}
@@ -288,6 +300,9 @@ function _instance:_api_set_pathes(name, ...)
         extra_config = nil
     end
 
+    -- expand values
+    values = table.join(unpack(values))
+
     -- translate pathes
     local pathes = self:_api_translate_pathes(values)
 
@@ -325,6 +340,9 @@ function _instance:_api_add_pathes(name, ...)
         extra_config = nil
     end
 
+    -- expand values
+    values = table.join(unpack(values))
+
     -- translate pathes
     local pathes = interp:_api_translate_pathes(values)
 
@@ -353,8 +371,10 @@ function _instance:_api_del_pathes(name, ...)
     -- get interpreter
     local interp = self:interpreter()
 
+    -- expand values
+    values = table.join(...)
+
     -- translate pathes
-    local values = {...}
     local pathes = interp:_api_translate_pathes(values)
 
     -- mark these pathes as deleted
