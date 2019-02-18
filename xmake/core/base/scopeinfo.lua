@@ -68,7 +68,7 @@ function _instance:_api_handle(values)
 
         -- remove repeat first for each slice with deleted item (__del_xxx)
         if self._REMOVE_REPEAT and not table.is_dictionary(values) then
-            values = table.unique(values, function (v) return v:startswith("__del_") end)
+            values = table.unique(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
         end
 
         -- filter values
