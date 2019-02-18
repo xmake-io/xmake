@@ -50,12 +50,14 @@ end
 --
 -- configvar_check_cflags("HAS_SSE2", "-msse2")
 -- configvar_check_cflags("HAS_SSE2", {"-msse2", "/arch:SSE2"})
+-- configvar_check_cflags("SSE=2", "-msse2")
 --
 function configvar_check_cflags(definition, flags, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    local defname, defval = unpack(definition:split('='))
     option(optname)
-        set_configvar(definition, 1)
+        set_configvar(defname, defval or 1)
         on_check(function (option)
             import("core.tool.compiler")
             if compiler.has_flags("c", flags, opt) then

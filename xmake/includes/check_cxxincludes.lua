@@ -49,9 +49,10 @@ end
 function configvar_check_cxxincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    local defname, defval = unpack(definition:split('='))
     option(optname)
         add_cxxincludes(includes)
-        set_configvar(definition, 1)
+        set_configvar(defname, defval or 1)
     option_end()
     add_options(optname)
 end

@@ -64,9 +64,10 @@ end
 function configvar_check_cxxtypes(definition, types, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    local defname, defval = unpack(definition:split('='))
     option(optname)
         add_cxxtypes(types)
-        set_configvar(definition, 1)
+        set_configvar(defname, defval or 1)
         if opt.languages then
             set_languages(opt.languages)
         end

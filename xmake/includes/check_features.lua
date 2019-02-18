@@ -61,9 +61,10 @@ end
 function configvar_check_features(definition, features, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    local defname, defval = unpack(definition:split('='))
     option(optname)
         add_features(features)
-        set_configvar(definition, 1)
+        set_configvar(defname, defval or 1)
         if opt.languages then
             set_languages(opt.languages)
         end

@@ -65,9 +65,10 @@ end
 function configvar_check_csnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    local defname, defval = unpack(definition:split('='))
     option(optname)
         add_csnippets(definition, snippets)
-        set_configvar(definition, 1)
+        set_configvar(defname, defval or 1)
         if opt.links then
             add_links(opt.links)
         end
