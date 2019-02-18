@@ -304,7 +304,7 @@ function _instance:_api_set_pathes(name, ...)
     values = table.join(unpack(values))
 
     -- translate pathes
-    local pathes = self:_api_translate_pathes(values)
+    local pathes = interp:_api_translate_pathes(values)
 
     -- save values
     scope[name] = self:_api_handle(pathes)
