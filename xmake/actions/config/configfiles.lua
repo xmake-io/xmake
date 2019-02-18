@@ -184,9 +184,20 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 
             -- is ${define variable}?
             local isdefine = false
-            if variable:startswith("define") then
+            if variable:startswith("define ") then
                 variable = variable:split("%s+")[2]
                 isdefine = true
+            end
+
+            -- is ${default variable xxx}?
+            local default = nil
+            local isdefault = false
+            if variable:startswith("default ") then
+                local varinfo = variable:split("%s+")
+                variable  = varinfo[2]
+                default   = varinfo[3]
+                isdefault = true
+                assert(default ~= nil, "please set default value for variable(%s)", variable)
             end
 
             -- get variable value
@@ -206,6 +217,12 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                     value = ("#define %s \"%s\""):format(variable, value)
                 else
                     raise("unknown variable(%s) type: %s", variable, type(value))
+                end
+            elseif isdefault then
+                if value == nil then
+                    value = default
+                else
+                    value = tostring(value)
                 end
             else
                 assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)

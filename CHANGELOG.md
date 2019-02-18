@@ -28,6 +28,7 @@
 * [#319](https://github.com/xmake-io/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
 * Improve `lib.detect.find_package` and add builtin `find_packages("zlib 1.x", "openssl", {xxx = ...})` api
 * Mark `set_modes()` as deprecated, we use `add_rules("mode.debug", "mode.release")` instead of it
+* [#353](https://github.com/xmake-io/xmake/issues/353) Improve `target:set`, `target:add` and add `target:del` to modify target configuration
 
 ### Bugs fixed
 
@@ -578,6 +579,7 @@
 * [#319](https://github.com/xmake-io/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
 * 改进`lib.detect.find_package`并且添加内建的`find_packages("zlib 1.x", "openssl", {xxx = ...})`接口
 * 标记`set_modes()`作为废弃接口， 我们使用`add_rules("mode.debug", "mode.release")`来替代它
+* [#353](https://github.com/xmake-io/xmake/issues/353) 改进`target:set`, `target:add` 并且添加`target:del`去动态修改target配置
 
 ### Bugs修复
 
