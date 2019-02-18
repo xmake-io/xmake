@@ -65,7 +65,19 @@ end
 function _instance:_api_handle(values)
     local interp = self:interpreter()
     if interp then
-        values = interp:_handle(values, self._REMOVE_REPEAT, self._ENABLE_FILTER)
+
+        -- remove repeat first for each slice with deleted item (__del_xxx)
+        if self._REMOVE_REPEAT and not table.is_dictionary(values) then
+            values = table.unique(values, function (v) return v:startswith("__del_") end)
+        end
+
+        -- filter values
+        if self._ENABLE_FILTER then
+            values = interp:_filter(values)
+        end
+
+        -- unwrap it if be only one
+        values = table.unwrap(values)
     end
     return values
 end
@@ -212,6 +224,49 @@ function _instance:_api_add_keyvalues(name, key, ...)
         for _, value in ipairs(values) do
             extrascope[value] = extra_config
         end
+    end
+end
+
+-- set the api dictionary to the scope info
+function _instance:_api_set_dictionary(name, dict_or_key, value)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- check
+    if type(dict_or_key) == "table" then
+        local dict = {}
+        for k, v in pairs(dict_or_key) do
+            dict[k] = self:_api_handle(v)
+        end
+        scope[name] = dict
+    elseif type(dict_or_key) == "string" and value ~= nil then
+        scope[name] = {[dict_or_key] = self:_api_handle(value)}
+    else
+        -- error
+        os.raise("%s:set(%s, ...): invalid value type!", self:kind(), name, type(dict))
+    end
+end
+
+-- add the api dictionary to the scope info
+function _instance:_api_add_dictionary(name, dict_or_key, value)
+
+    -- get the scope info
+    local scope = self._INFO
+
+    -- check
+    scope[name] = scope[name] or {}
+    if type(dict_or_key) == "table" then
+        local dict = {}
+        for k, v in pairs(dict_or_key) do
+            dict[k] = self:_api_handle(v)
+        end
+        table.join2(scope[name], dict)
+    elseif type(dict_or_key) == "string" and value ~= nil then
+        scope[name][dict_or_key] = self:_api_handle(value)
+    else
+        -- error
+        os.raise("%s:add(%s, ...): invalid value type!", self:kind(), name, type(dict))
     end
 end
 
