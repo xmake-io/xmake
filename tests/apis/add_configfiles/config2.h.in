@@ -9,4 +9,4 @@
 @define FOO2_ENABLE2@
 @define FOO2_STRING@
 
-@default default_test 0@
+#define DEFAULT_TEST @default default_test 0@
