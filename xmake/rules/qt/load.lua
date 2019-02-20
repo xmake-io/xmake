@@ -79,6 +79,7 @@ function main(target, opt)
     end
 
     -- do frameworks for qt
+    local useframeworks = false
     for _, framework in ipairs(target:get("frameworks")) do
 
         -- translate qt frameworks
@@ -89,21 +90,34 @@ function main(target, opt)
             
             -- add includedirs 
             if is_plat("macosx") then
-                target:add("includedirs", path.join(qt.sdkdir, "lib/" .. framework .. ".framework/Headers"))
+                local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
+                if os.isdir(frameworkdir) then
+                    target:add("includedirs", path.join(frameworkdir, "Headers"))
+                    useframeworks = true
+                else
+                    target:add("links", _link(framework, major))
+                    target:add("includedirs", path.join(qt.sdkdir, "include", framework))
+                end
             else 
                 target:add("links", _link(framework, major))
-                target:add("includedirs", path.join(qt.sdkdir, "include/" .. framework))
+                target:add("includedirs", path.join(qt.sdkdir, "include", framework))
             end
         end
     end
 
     -- add includedirs, linkdirs 
     if is_plat("macosx") then
-        target:add("frameworks", "DiskArbitration", "IOKit")
-        target:add("frameworkdirs", qt.linkdirs)
+        if useframeworks then
+            target:add("frameworks", "DiskArbitration", "IOKit")
+            target:add("frameworkdirs", qt.linkdirs)
+            target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
+        else
+            target:set("frameworks", "DiskArbitration", "IOKit")
+            target:add("rpathdirs", qt.linkdirs)
+            target:add("includedirs", path.join(qt.sdkdir, "include"))
+        end
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("linkdirs", qt.linkdirs)
-        target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
     elseif is_plat("linux") then
         target:set("frameworks", nil)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
