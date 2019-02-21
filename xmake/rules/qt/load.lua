@@ -107,14 +107,23 @@ function main(target, opt)
 
     -- add includedirs, linkdirs 
     if is_plat("macosx") then
+        target:add("frameworks", "DiskArbitration", "IOKit")
         if useframeworks then
-            target:add("frameworks", "DiskArbitration", "IOKit")
             target:add("frameworkdirs", qt.linkdirs)
             target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
         else
-            target:set("frameworks", "DiskArbitration", "IOKit")
             target:add("rpathdirs", qt.linkdirs)
             target:add("includedirs", path.join(qt.sdkdir, "include"))
+
+            -- remove qt frameworks
+            local frameworks = table.wrap(target:get("frameworks"))
+            for i = #frameworks, 1, -1 do
+                local framework = frameworks[i]
+                if framework:startswith("Qt") then
+                    table.remove(frameworks, i)
+                end
+            end
+            target:set("frameworks", frameworks)
         end
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("linkdirs", qt.linkdirs)
