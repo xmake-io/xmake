@@ -107,7 +107,8 @@ function main(target, opt)
 
     -- add includedirs, linkdirs 
     if is_plat("macosx") then
-        target:add("frameworks", "DiskArbitration", "IOKit")
+        target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics")
+        target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
         if useframeworks then
             target:add("frameworkdirs", qt.linkdirs)
             target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
