@@ -22,12 +22,29 @@
 -- @file        load.lua
 --
 
+-- imports
+import("core.project.target")
+
 -- make link for framework
 function _link(framework, major)
     if major and framework:startswith("Qt") then
         framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and "d" or "")
     end
     return framework
+end
+
+-- find the static third-party links from qt link directories, e.g. libqt*.a
+function _find_static_links_3rd(linkdirs)
+    local links = {}
+    for _, linkdir in ipairs(linkdirs) do
+        for _, libpath in ipairs(os.files(path.join(linkdir, is_plat("windows") and "qt*.lib" or "libqt*.a"))) do
+            local basename = path.basename(libpath)
+            if (is_mode("debug") and basename:endswith("_debug")) or not basename:endswith("_debug") then
+                table.insert(links, target.linkname(path.filename(libpath)))
+            end
+        end
+    end
+    return links
 end
 
 -- the main entry
@@ -146,5 +163,8 @@ function main(target, opt)
         target:add("linkdirs", qt.linkdirs)
         target:add("links", "mingw32")
     end
+
+    -- add some static third-party links if exists
+    target:add("links", _find_static_links_3rd(qt.linkdirs))
 end
 
