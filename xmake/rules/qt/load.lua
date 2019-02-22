@@ -28,7 +28,8 @@ import("core.project.target")
 -- make link for framework
 function _link(framework, major)
     if major and framework:startswith("Qt") then
-        framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and "d" or "")
+        local debug_suffix = is_plat("windows") and "d" or "_debug"
+        framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
     end
     return framework
 end
@@ -36,10 +37,11 @@ end
 -- find the static third-party links from qt link directories, e.g. libqt*.a
 function _find_static_links_3rd(linkdirs)
     local links = {}
+    local debug_suffix = is_plat("windows") and "d" or "_debug"
     for _, linkdir in ipairs(linkdirs) do
         for _, libpath in ipairs(os.files(path.join(linkdir, is_plat("windows") and "qt*.lib" or "libqt*.a"))) do
             local basename = path.basename(libpath)
-            if (is_mode("debug") and basename:endswith("_debug")) or not basename:endswith("_debug") then
+            if (is_mode("debug") and basename:endswith(debug_suffix)) or not basename:endswith(debug_suffix) then
                 table.insert(links, target.linkname(path.filename(libpath)))
             end
         end
@@ -145,6 +147,8 @@ function main(target, opt)
         end
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("linkdirs", qt.linkdirs)
+        target:add("linkdirs", path.join(qt.sdkdir, "plugins", "platforms"))
+        target:add("links", "qcocoa")
     elseif is_plat("linux") then
         target:set("frameworks", nil)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
