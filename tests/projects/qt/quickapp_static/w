@@ -2,9 +2,6 @@
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
--- includes
-includes("qt_add_static_plugins.lua")
-
 -- add target
 target("qt_demo")
 
@@ -29,5 +26,7 @@ target("qt_demo")
     end
 
     -- add plugin: qml.QtQuick
-    qt_add_static_plugins("QtQuick2Plugin", {linkdirs = "qml/QtQuick.2", links = "qtquick2plugin"})
+    add_values("qt.linkdirs", "qml/QtQuick.2")
+    add_values("qt.links", "qtquick2plugin")
+    add_values("qt.plugins", "QtQuick2Plugin")
 

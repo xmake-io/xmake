@@ -12,7 +12,6 @@ int main(int argc, char *argv[])
     QQmlApplicationEngine engine;
 
     Q_IMPORT_PLUGIN(QtQuick2Plugin) 
-//    Q_IMPORT_PLUGIN(QtQuick2WindowPlugin)
 
     qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
     qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance()) ->initializeEngine( &engine, "QtQuick");

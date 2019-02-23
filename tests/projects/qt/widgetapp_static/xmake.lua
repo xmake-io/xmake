@@ -2,6 +2,9 @@
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
+-- includes
+includes("qt_add_static_plugins.lua")
+
 -- add target
 target("qt_demo")
 
@@ -21,19 +24,12 @@ target("qt_demo")
     -- add frameworks
     add_frameworks("QtWidgets")
 
-    -- add plugin: platforms
-    add_values("qt.linkdirs", "plugins/platforms")
+    -- add plugin: QXXXIntegrationPlugin
     if is_plat("macosx") then
-        add_values("qt.links", "qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "cups")
-        add_values("qt.plugins", "QCocoaIntegrationPlugin")
+        qt_add_static_plugins("QCocoaIntegrationPlugin", {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "cups"}})
     elseif is_plat("windows") then
-        add_values("qt.links", "Qt5PrintSupport", "Qt5PlatformSupport", "cups")
-        add_values("qt.plugins", "QWindowsIntegrationPlugin")
+        qt_add_static_plugins("QWindowsIntegrationPlugin", {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "cups"}})
     end
 
-    -- add plugin: imageformats.QSvgPlugin (optional)
-    --[[
-    add_values("qt.linkdirs", "plugins/imageformats")
-    add_values("qt.links", "qsvg", "Qt5Svg")
-    add_values("qt.plugins", "QSvgPlugin")
-    ]]
+    -- add plugin: QSvgPlugin (optional)
+    qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg", "Qt5Svg"}})
