@@ -20,3 +20,4 @@ target("qt_demo")
 
     -- add frameworks
     add_frameworks("QtWidgets")
+

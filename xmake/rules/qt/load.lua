@@ -23,6 +23,7 @@
 --
 
 -- imports
+import("core.project.config")
 import("core.project.target")
 
 -- make link for framework
@@ -34,12 +35,12 @@ function _link(framework, major)
     return framework
 end
 
--- find the static third-party links from qt link directories, e.g. libqt*.a
-function _find_static_links_3rd(linkdirs)
+-- find the static links from the given qt link directories, e.g. libqt*.a
+function _find_static_links(linkdirs, libpattern)
     local links = {}
     local debug_suffix = is_plat("windows") and "d" or "_debug"
     for _, linkdir in ipairs(linkdirs) do
-        for _, libpath in ipairs(os.files(path.join(linkdir, is_plat("windows") and "qt*.lib" or "libqt*.a"))) do
+        for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
             if (is_mode("debug") and basename:endswith(debug_suffix)) or not basename:endswith(debug_suffix) then
                 table.insert(links, target.linkname(path.filename(libpath)))
@@ -92,6 +93,30 @@ function main(target, opt)
     -- deprecated API in order to know how to port your code away from it.
     target:add("defines", "QT_DEPRECATED_WARNINGS")
 
+    -- add plugins
+    local plugins = target:values("qt.plugins")
+    if plugins then
+        local importfile = path.join(config.buildir(), ".qt", "plugin", target:name(), "static_import.cpp")
+        local file = io.open(importfile, "w")
+        if file then
+            file:print("#include <QtPlugin>")
+            for _, plugin in ipairs(plugins) do
+                file:print("Q_IMPORT_PLUGIN(%s)", plugin)
+            end
+            file:close()
+            target:add("files", importfile)
+        end
+    end
+
+    -- add qt links and directories
+    for _, qt_linkdir in ipairs(target:values("qt.linkdirs")) do
+        local linkdir = path.join(qt.sdkdir, qt_linkdir)
+        if os.isdir(linkdir) then
+            target:add("linkdirs", linkdir)
+        end
+    end
+    target:add("links", target:values("qt.links"))
+
     -- add frameworks
     if opt.frameworks then
         target:add("frameworks", opt.frameworks)
@@ -126,7 +151,7 @@ function main(target, opt)
 
     -- add includedirs, linkdirs 
     if is_plat("macosx") then
-        target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics")
+        target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics", "OpenGL")
         target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
         if useframeworks then
             target:add("frameworkdirs", qt.linkdirs)
@@ -147,8 +172,7 @@ function main(target, opt)
         end
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
         target:add("linkdirs", qt.linkdirs)
-        target:add("linkdirs", path.join(qt.sdkdir, "plugins", "platforms"))
-        target:add("links", "qcocoa")
+
     elseif is_plat("linux") then
         target:set("frameworks", nil)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
@@ -169,6 +193,6 @@ function main(target, opt)
     end
 
     -- add some static third-party links if exists
-    target:add("links", _find_static_links_3rd(qt.linkdirs))
+    target:add("links", _find_static_links(qt.linkdirs, is_plat("windows") and "qt*.lib" or "libqt*.a"))
 end
 
