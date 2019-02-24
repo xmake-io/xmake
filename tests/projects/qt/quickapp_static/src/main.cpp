@@ -1,7 +1,5 @@
 #include <QGuiApplication>
 #include <QQmlApplicationEngine>
-#include <QQmlExtensionPlugin>
-#include <QtPlugin>
 
 int main(int argc, char *argv[])
 {
@@ -10,12 +8,6 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QQmlApplicationEngine engine;
-
-    Q_IMPORT_PLUGIN(QtQuick2Plugin) 
-
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance())->registerTypes("QtQuick");
-    qobject_cast<QQmlExtensionPlugin*>(qt_static_plugin_QtQuick2Plugin().instance()) ->initializeEngine( &engine, "QtQuick");
-
     engine.load(QUrl(QStringLiteral("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;

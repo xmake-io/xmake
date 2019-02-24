@@ -30,4 +30,5 @@ target("qt_demo")
 
     -- add plugin: qml.QtQuick
     qt_add_static_plugins("QtQuick2Plugin", {linkdirs = "qml/QtQuick.2", links = "qtquick2plugin"})
+    qt_add_static_plugins("QtQuick2WindowPlugin", {linkdirs = "qml/QtQuick/Window.2", links = "windowplugin"})
 
