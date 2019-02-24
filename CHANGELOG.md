@@ -29,6 +29,7 @@
 * Improve `lib.detect.find_package` and add builtin `find_packages("zlib 1.x", "openssl", {xxx = ...})` api
 * Mark `set_modes()` as deprecated, we use `add_rules("mode.debug", "mode.release")` instead of it
 * [#353](https://github.com/xmake-io/xmake/issues/353) Improve `target:set`, `target:add` and add `target:del` to modify target configuration
+* [#356](https://github.com/xmake-io/xmake/issues/356) Add `qt_add_static_plugins()` api to support static Qt sdk
 
 ### Bugs fixed
 
@@ -580,6 +581,7 @@
 * 改进`lib.detect.find_package`并且添加内建的`find_packages("zlib 1.x", "openssl", {xxx = ...})`接口
 * 标记`set_modes()`作为废弃接口， 我们使用`add_rules("mode.debug", "mode.release")`来替代它
 * [#353](https://github.com/xmake-io/xmake/issues/353) 改进`target:set`, `target:add` 并且添加`target:del`去动态修改target配置
+* [#356](https://github.com/xmake-io/xmake/issues/356) 添加`qt_add_static_plugins()`接口去支持静态Qt sdk
 
 ### Bugs修复
 
