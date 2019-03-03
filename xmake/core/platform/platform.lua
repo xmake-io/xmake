@@ -50,15 +50,14 @@ function _instance:name()
     return self._NAME
 end
 
--- set the value to the platform info
+-- set the value to the platform configuration
 function _instance:set(name, ...)
-    self._INFO:set(name, table.unwrap({...}))
+    self._INFO:apival_set(name, ...)
 end
 
--- add the value to the platform info
+-- add the value to the platform configuration
 function _instance:add(name, ...)
-    local info = table.wrap(self._INFO[name])
-    self._INFO:set(name, table.unwrap(table.join(info, ...)))
+    self._INFO:apival_add(name, ...)
 end
 
 -- get the platform configuration
