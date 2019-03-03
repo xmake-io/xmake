@@ -25,7 +25,7 @@ target("qt_demo")
     if is_plat("macosx") then
         qt_add_static_plugins("QCocoaIntegrationPlugin", {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "cups"}})
     elseif is_plat("windows") then
-        qt_add_static_plugins("QWindowsIntegrationPlugin", {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "cups"}})
+        qt_add_static_plugins("QWindowsIntegrationPlugin", {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "qwindows"}})
     end
 
     -- add plugin: qml.QtQuick
