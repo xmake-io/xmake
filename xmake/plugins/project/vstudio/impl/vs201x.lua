@@ -224,6 +224,7 @@ function make(outputdir, vsinfo)
             if mode ~= config.mode() or arch ~= config.arch() then
                 
                 -- modify config
+                config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
                 config.set("mode", mode, {readonly = true, force = true})
                 config.set("arch", arch, {readonly = true, force = true})
 

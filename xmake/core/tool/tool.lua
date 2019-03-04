@@ -32,6 +32,7 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local table         = require("base/table")
 local string        = require("base/string")
+local config        = require("project/config")
 local sandbox       = require("sandbox/sandbox")
 local platform      = require("platform/platform")
 local import        = require("sandbox/modules/import")
@@ -132,7 +133,7 @@ end
 function tool.load(kind, program)
 
     -- init key
-    local key = kind .. (program or "") 
+    local key = kind .. (program or "") .. (config.get("arch") or os.arch())
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}

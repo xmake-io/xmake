@@ -232,10 +232,13 @@ function platform.load(plat)
         return nil, string.format("unknown platform!")
     end
 
+    -- get cache key
+    local cachekey = plat .. "_" .. (config.get("arch") or os.arch())
+
     -- get it directly from cache dirst
     platform._PLATFORMS = platform._PLATFORMS or {}
-    if platform._PLATFORMS[plat] then
-        return platform._PLATFORMS[plat]
+    if platform._PLATFORMS[cachekey] then
+        return platform._PLATFORMS[cachekey]
     end
 
     -- find the platform script path
@@ -291,7 +294,7 @@ function platform.load(plat)
     end
 
     -- save instance to the cache
-    platform._PLATFORMS[plat] = instance
+    platform._PLATFORMS[cachekey] = instance
     return instance
 end
 

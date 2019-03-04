@@ -166,7 +166,7 @@ function linker.load(targetkind, sourcekinds, target)
     local linkerinfo = linkerinfo_or_errors
 
     -- init cache key
-    local cachekey = linkerinfo.linkerkind .. (linkerinfo.program or "")
+    local cachekey = linkerinfo.linkerkind .. (linkerinfo.program or "") .. (config.get("arch") or os.arch())
 
     -- get it directly from cache dirst
     builder._INSTANCES = builder._INSTANCES or {}

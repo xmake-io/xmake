@@ -105,7 +105,7 @@ function compiler.load(sourcekind, target)
     end
 
     -- init cache key
-    local cachekey = sourcekind .. (program_or_errors or "")
+    local cachekey = sourcekind .. (program_or_errors or "") .. (config.get("arch") or os.arch())
 
     -- get it directly from cache dirst
     compiler._INSTANCES = compiler._INSTANCES or {}

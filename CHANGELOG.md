@@ -30,6 +30,7 @@
 * Mark `set_modes()` as deprecated, we use `add_rules("mode.debug", "mode.release")` instead of it
 * [#353](https://github.com/xmake-io/xmake/issues/353) Improve `target:set`, `target:add` and add `target:del` to modify target configuration
 * [#356](https://github.com/xmake-io/xmake/issues/356) Add `qt_add_static_plugins()` api to support static Qt sdk
+* [#351](https://github.com/xmake-io/xmake/issues/351) Support yasm for generating vs201x project
 
 ### Bugs fixed
 
@@ -582,6 +583,7 @@
 * 标记`set_modes()`作为废弃接口， 我们使用`add_rules("mode.debug", "mode.release")`来替代它
 * [#353](https://github.com/xmake-io/xmake/issues/353) 改进`target:set`, `target:add` 并且添加`target:del`去动态修改target配置
 * [#356](https://github.com/xmake-io/xmake/issues/356) 添加`qt_add_static_plugins()`接口去支持静态Qt sdk
+* [#351](https://github.com/xmake-io/xmake/issues/351) 生成vs201x插件增加对yasm的支持
 
 ### Bugs修复
 
