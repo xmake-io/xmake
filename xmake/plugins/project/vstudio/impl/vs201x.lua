@@ -74,17 +74,19 @@ function _make_targetinfo(mode, arch, target)
     -- save object dir
     targetinfo.objectdir = target:objectdir()
 
-    -- save compiler flags
-    local firstcompflags=nil
+    -- save compiler flags and cmds
+    local firstcompflags = nil
     targetinfo.compflags = {}
+    targetinfo.compcmds  = {}
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if not sourcebatch.rulename then
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target})
                 if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx") then
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
+                targetinfo.compcmds[sourcefile]  = compiler.compcmd("__sourcefile__", "__objectfile__", {sourcekind = sourcekind, target = target})
             end
         end
     end

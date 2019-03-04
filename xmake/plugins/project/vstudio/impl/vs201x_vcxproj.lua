@@ -24,6 +24,7 @@
 
 -- imports
 import("core.project.config")
+import("core.tool.compiler")
 import("core.language.language")
 import("vsfile")
 
@@ -540,8 +541,9 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
             vcxprojfile:print("<FileType>Document</FileType>")
             for _, info in ipairs(sourceinfo) do
                 local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
+                local compcmd = info.compcmd:gsub("__objectfile__", objectfile):gsub("__sourcefile__", sourcefile)
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
-                vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s /nologo /c %s -Fo%s %s</Command>", info.mode .. '|' .. info.arch, ifelse(info.arch == "x64", "ml64", "ml"), os.args(info.flags), objectfile, sourcefile)
+                vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Command>", info.mode .. '|' .. info.arch, compcmd)
             end
 
         -- for *.rc files
@@ -652,10 +654,11 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         -- for *.asm files
         local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
         if info.sourcekind == "as" then 
+            local compcmd = info.compcmd:gsub("__objectfile__", objectfile):gsub("__sourcefile__", sourcefile)
             vcxprojfile:print("<ExcludedFromBuild>false</ExcludedFromBuild>")
             vcxprojfile:print("<FileType>Document</FileType>")
             vcxprojfile:print("<Outputs>%s</Outputs>", objectfile)
-            vcxprojfile:print("<Command>%s /nologo /c %s -Fo%s %s</Command>", ifelse(info.arch == "x64", "ml64", "ml"), os.args(info.flags), objectfile, sourcefile)
+            vcxprojfile:print("<Command>%s</Command>", compcmd)
 
         -- for *.rc files
         elseif sourcekind == "mrc" then
@@ -722,7 +725,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
                         local objectfile    = objectfiles[idx]
                         local flags         = targetinfo.sourceflags[sourcefile]
                         sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
-                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags})
+                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compcmd = targetinfo.compcmds[sourcefile]})
                     end
                 end
             end
