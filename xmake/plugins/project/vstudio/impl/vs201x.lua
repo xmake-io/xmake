@@ -77,7 +77,7 @@ function _make_targetinfo(mode, arch, target)
     -- save compiler flags and cmds
     local firstcompflags = nil
     targetinfo.compflags = {}
-    targetinfo.compcmds  = {}
+    targetinfo.compargvs = {}
     for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
         if not sourcebatch.rulename then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -86,7 +86,7 @@ function _make_targetinfo(mode, arch, target)
                     firstcompflags = compflags
                 end
                 targetinfo.compflags[sourcefile] = compflags
-                targetinfo.compcmds[sourcefile]  = compiler.compcmd("__sourcefile__", "__objectfile__", {sourcekind = sourcekind, target = target})
+                targetinfo.compargvs[sourcefile] = table.join(compiler.compargv("__sourcefile__", "__objectfile__", {sourcekind = sourcekind, target = target}))
             end
         end
     end

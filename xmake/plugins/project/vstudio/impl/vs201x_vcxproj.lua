@@ -87,6 +87,25 @@ function _get_platform_sdkver(target, vsinfo)
     return sdkver or sdkvers["vs" .. vsinfo.vstudio_version]
 end
 
+-- make compiling command
+function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
+    local argv = {}
+    for _, v in ipairs(compargv) do
+        v = v:gsub("__sourcefile__", sourcefile)
+        v = v:gsub("__objectfile__", objectfile)
+        -- -Idir or /Idir
+        v = v:gsub("[%-/]I(.*)", function (dir)
+                dir = path.translate(dir:trim())
+                if not path.is_absolute(dir) then
+                    dir = path.relative(path.absolute(dir), vcxprojdir)
+                end
+                return "/I" .. dir
+            end)
+        table.insert(argv, v)
+    end
+    return table.concat(argv, " ")
+end
+
 -- make compiling flags
 function _make_compflags(sourcefile, targetinfo, vcxprojdir)
 
@@ -541,7 +560,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
             vcxprojfile:print("<FileType>Document</FileType>")
             for _, info in ipairs(sourceinfo) do
                 local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
-                local compcmd = info.compcmd:gsub("__objectfile__", objectfile):gsub("__sourcefile__", sourcefile)
+                local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, vcxprojdir)
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
                 vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Command>", info.mode .. '|' .. info.arch, compcmd)
             end
@@ -654,7 +673,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         -- for *.asm files
         local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
         if info.sourcekind == "as" then 
-            local compcmd = info.compcmd:gsub("__objectfile__", objectfile):gsub("__sourcefile__", sourcefile)
+            local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, vcxprojdir)
             vcxprojfile:print("<ExcludedFromBuild>false</ExcludedFromBuild>")
             vcxprojfile:print("<FileType>Document</FileType>")
             vcxprojfile:print("<Outputs>%s</Outputs>", objectfile)
@@ -725,7 +744,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
                         local objectfile    = objectfiles[idx]
                         local flags         = targetinfo.sourceflags[sourcefile]
                         sourceinfos[sourcefile] = sourceinfos[sourcefile] or {}
-                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compcmd = targetinfo.compcmds[sourcefile]})
+                        table.insert(sourceinfos[sourcefile], {mode = targetinfo.mode, arch = targetinfo.arch, sourcekind = sourcekind, objectfile = objectfile, flags = flags, compargv = targetinfo.compargvs[sourcefile]})
                     end
                 end
             end
