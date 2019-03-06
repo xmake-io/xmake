@@ -94,12 +94,12 @@ function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
         v = v:gsub("__sourcefile__", sourcefile)
         v = v:gsub("__objectfile__", objectfile)
         -- -Idir or /Idir
-        v = v:gsub("[%-/]I(.*)", function (dir)
+        v = v:gsub("([%-/]I)(.*)", function (I, dir)
                 dir = path.translate(dir:trim())
                 if not path.is_absolute(dir) then
                     dir = path.relative(path.absolute(dir), vcxprojdir)
                 end
-                return "/I" .. dir
+                return I .. dir
             end)
         table.insert(argv, v)
     end
