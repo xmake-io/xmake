@@ -561,6 +561,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
     -- enter it
     local nodename = ifelse(sourcekind == "as", "CustomBuild", ifelse(sourcekind == "mrc", "ResourceCompile", "ClCompile"))
     sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
+    sourcefilename = path.filename(sourcefile)
     vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
         -- for *.asm files
@@ -573,6 +574,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
                 vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Command>", info.mode .. '|' .. info.arch, compcmd)
             end
+            vcxprojfile:print("<Message>%s</Message>", sourcefilename)
 
         -- for *.rc files
         elseif sourcekind == "mrc" then
