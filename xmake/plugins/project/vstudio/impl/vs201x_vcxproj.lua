@@ -573,6 +573,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
                 vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Command>", info.mode .. '|' .. info.arch, compcmd)
             end
+            vcxprojfile:print("<Message>%s</Message>", path.filename(sourcefile))
 
         -- for *.rc files
         elseif sourcekind == "mrc" then
