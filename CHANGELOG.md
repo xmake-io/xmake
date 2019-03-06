@@ -15,6 +15,7 @@
 * Add the builtin api `find_packages("pcre2", "zlib")` to find multiple packages
 * [#320](https://github.com/xmake-io/xmake/issues/320): Add template configuration files and replace all variables before building
 * [#179](https://github.com/xmake-io/xmake/issues/179): Generate CMakelist.txt file for `xmake project` plugin
+* [#361](https://github.com/xmake-io/xmake/issues/361): Support vs2019 preview
 
 ### Changes
 
@@ -568,6 +569,7 @@
 * 添加内置API `find_packages("pcre2", "zlib")`去同时查找多个依赖包，不需要通过import导入即可直接调用
 * [#320](https://github.com/xmake-io/xmake/issues/320): 添加模板配置文件相关接口，`add_configfiles`和`set_configvar`
 * [#179](https://github.com/xmake-io/xmake/issues/179): 扩展`xmake project`插件，新增CMakelist.txt生成支持
+* [#361](https://github.com/xmake-io/xmake/issues/361): 增加对vs2019 preview的支持
 
 ### 改进
 
