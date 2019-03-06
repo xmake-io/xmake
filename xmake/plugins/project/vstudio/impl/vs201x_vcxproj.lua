@@ -24,7 +24,6 @@
 
 -- imports
 import("core.project.config")
-import("core.tool.compiler")
 import("core.language.language")
 import("vsfile")
 
@@ -39,6 +38,7 @@ function _get_toolset_ver(targetinfo, vsinfo)
     ,   vs2013 = "v120"
     ,   vs2015 = "v140"
     ,   vs2017 = "v141"
+    ,   vs2019 = "v142"
     }
 
     -- get toolset version from vs version
@@ -72,6 +72,7 @@ function _get_platform_sdkver(target, vsinfo)
     {
         vs2015 = "10.0.10240.0"
     ,   vs2017 = "10.0.14393.0"
+    ,   vs2019 = "10.0.17763.0"
     }
 
     -- get sdk version for vcvarsall[arch].WindowsSDKVersion
@@ -178,6 +179,7 @@ function _make_header(vcxprojfile, vsinfo)
     ,   vs2013 = '12'
     ,   vs2015 = '14'
     ,   vs2017 = '15'
+    ,   vs2019 = '16'
     }
 
     -- make header

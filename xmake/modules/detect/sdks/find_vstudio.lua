@@ -128,7 +128,8 @@ function main(opt)
     -- init vsvers
     local vsvers = 
     {
-        ["15.0"] = "2017"
+        ["16.0"] = "2019"
+    ,   ["15.0"] = "2017"
     ,   ["14.0"] = "2015"
     ,   ["12.0"] = "2013"
     ,   ["11.0"] = "2012"
@@ -246,6 +247,16 @@ function main(opt)
         end
         if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
             table.insert(pathes, vswhere_VCAuxiliaryBuildDir)
+        end
+        
+        -- find vs from some logical drives pathes
+        for _, logical_drive in ipairs(winos.logical_drives()) do
+            if os.isdir(path.join(logical_drive, "Program Files (x86)")) then
+                table.insert(pathes, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+                table.insert(pathes, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
+            end
+            table.insert(pathes, path.join(logical_drive, "Program Files", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+            table.insert(pathes, path.join(logical_drive, "Program Files", "Microsoft Visual Studio " .. version, "VC"))
         end
 
         -- find vcvarsall.bat, vcvars32.bat for vs7.1

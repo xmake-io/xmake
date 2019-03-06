@@ -19,7 +19,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vs2017.lua
+-- @file        vs2019.lua
 --
 
 -- imports
@@ -31,7 +31,7 @@ function make(outputdir)
     -- init vstudio info
     local vsinfo = 
     {
-        vstudio_version     = "2017"
+        vstudio_version     = "2019"
     ,   filters_version     = "4.0"
     ,   solution_version    = "12"
     }
