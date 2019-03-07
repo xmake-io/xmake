@@ -310,10 +310,8 @@
 #       define TB_COMPILER_VERSION_STRING           "visual c++ .net 2017 (14.1)"
 #   elif (_MSC_VER == 1920)
 #       define TB_COMPILER_VERSION_STRING           "visual c++ .net 2019 (16.0)"
-#   elif (_MSC_VER > 1920)
-#       define TB_COMPILER_VERSION_STRING           "visual c++ .net >= 2019 (16.0)"
 #   else
-#       error Unknown visual c++ Compiler Version
+#       define TB_COMPILER_VERSION_STRING           "unknown visual c++ compiler"
 #   endif
 
 // suppress warning
