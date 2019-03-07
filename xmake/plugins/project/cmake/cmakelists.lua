@@ -42,7 +42,7 @@ function _add_project(cmakelists)
         if project_version then
             project_info = project_info .. " VERSION " .. project_version
         end
-        cmakelists:print("project(%s%s)", project_name, project_info)
+        cmakelists:print("project(%s%s LANGUAGES C CXX ASM)", project_name, project_info)
     end
     cmakelists:print("")
 end
