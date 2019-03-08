@@ -12,6 +12,12 @@ target("dep2")
     add_includedirs("inc2", {interface = true})
     add_defines("TEST2", {interface = true})
 
+    on_load(function (target)
+        print(target:extraconf("includedirs"))
+        print(target:extraconf("defines", "TEST2"))
+        print(target:extraconf("defines", "TEST2", "interface"))
+    end)
+
 target("dep3")
     set_kind("static")
     add_files("src/*.c") 

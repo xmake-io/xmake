@@ -228,6 +228,48 @@ function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
 end
 
+-- get the extra configuration
+--
+-- e.g. 
+--
+-- add_includedirs("inc", {public = true})
+--
+-- function (target)
+--     target:extraconf("includedirs", "inc", "public")  -> true
+--     target:extraconf("includedirs", "inc")  -> {public = true}
+--     target:extraconf("includedirs")  -> {["inc"] = {public = true}}
+-- end
+--
+function _instance:extraconf(name, item, key)
+
+    -- get extra configurations
+    local extraconfs = self._EXTRACONFS
+    if not extraconfs then
+        extraconfs = {}
+        self._EXTRACONFS = extraconfs
+    end
+
+    -- get configuration
+    local extraconf = extraconfs[name]
+    if not extraconf then
+        extraconf = {}
+        for k, v in pairs(table.wrap(self:get("__extra_" .. name))) do
+            extraconf[k] = v
+        end
+        extraconfs[name] = extraconf
+    end
+
+    -- get configuration value
+    local value = extraconf
+    if item then
+        value = extraconf[item]
+        if value and key then
+            value = value[key]
+        end
+    end
+    return value
+end
+
 -- get user private data
 function _instance:data(name)
     return self._DATA and self._DATA[name] or nil
@@ -384,20 +426,7 @@ end
 
 -- get the given dependent config
 function _instance:depconfig(name)
-
-    -- get deps config
-    --
-    -- .e.g {inherit = false}
-    --
-    local depsconfig = self._DEPSCONFIG
-    if not depsconfig then
-        depsconfig = {}
-        for depname, depconfig in pairs(table.wrap(self:get("__extra_deps"))) do
-            depsconfig[depname] = depconfig
-        end
-        self._DEPSCONFIG = depsconfig
-    end
-    return depsconfig[name]
+    return self:extraconf("deps", name)
 end
 
 -- get target rules
