@@ -27,6 +27,7 @@ local target    = target or {}
 local _instance = _instance or {}
 
 -- load modules
+local bit            = require("bit")
 local os             = require("base/os")
 local path           = require("base/path")
 local utils          = require("base/utils")
@@ -208,9 +209,73 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
     return srcfiles, dstfiles, fileinfos
 end
 
+-- get the visibility, private: 1, interface: 2, public: 3 = 1 | 2
+function _instance:_visibility(opt)
+    local visibility = 1
+    if opt then
+        if opt.interface then
+            visibility = 2
+        elseif opt.public then
+            visibility = 3
+        end
+    end
+    return visibility
+end
+
 -- get the target info
-function _instance:get(name)
-    return self._INFO:get(name)
+--
+-- e.g. 
+--
+-- default: get private
+--  - target:get("cflags")
+--  - target:get("cflags", {private = true})
+--
+-- get private and interface
+--  - target:get("cflags", {public = true})
+--
+-- get interface
+--  - target:get("cflags", {interface = true})
+--
+function _instance:get(name, opt)
+
+    -- get values
+    local values = self._INFO:get(name)
+
+    -- get thr required visibility
+    local vs_private   = 1
+    local vs_interface = 2
+    local vs_public    = 3 -- all
+    local vs_required  = self:_visibility(opt)
+
+    -- get all values? (private and interface)
+    if vs_required == vs_public then
+        return values
+    end
+
+    -- get the extra configuration
+    local extraconf = self._INFO:extraconf(name)
+    if extraconf then
+        -- filter values for public, private or interface if be not dictionary
+        if not table.is_dictionary(values) then
+            local results = {}
+            for _, value in ipairs(table.wrap(values)) do
+                local vs_conf = self:_visibility(extraconf[value])
+                if bit.band(vs_required, vs_conf) ~= 0 then
+                    table.insert(results, value)
+                end
+            end
+            if #results > 0 then
+                return table.unwrap(results)
+            end
+        else
+            return values
+        end
+    else
+        -- only get thr private values
+        if bit.band(vs_required, vs_private) ~= 0 then
+            return values
+        end
+    end
 end
 
 -- set the value to the target info
@@ -229,45 +294,8 @@ function _instance:del(name, ...)
 end
 
 -- get the extra configuration
---
--- e.g. 
---
--- add_includedirs("inc", {public = true})
---
--- function (target)
---     target:extraconf("includedirs", "inc", "public")  -> true
---     target:extraconf("includedirs", "inc")  -> {public = true}
---     target:extraconf("includedirs")  -> {["inc"] = {public = true}}
--- end
---
 function _instance:extraconf(name, item, key)
-
-    -- get extra configurations
-    local extraconfs = self._EXTRACONFS
-    if not extraconfs then
-        extraconfs = {}
-        self._EXTRACONFS = extraconfs
-    end
-
-    -- get configuration
-    local extraconf = extraconfs[name]
-    if not extraconf then
-        extraconf = {}
-        for k, v in pairs(table.wrap(self:get("__extra_" .. name))) do
-            extraconf[k] = v
-        end
-        extraconfs[name] = extraconf
-    end
-
-    -- get configuration value
-    local value = extraconf
-    if item then
-        value = extraconf[item]
-        if value and key then
-            value = value[key]
-        end
-    end
-    return value
+    return self._INFO:extraconf(name, item, key)
 end
 
 -- get user private data

@@ -212,6 +212,35 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
     end
 end
 
+--[[
+-- inherts from target deps
+function builder:_inherit_from_targetdeps(results, target, flagname)
+
+    -- for all target deps
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+
+        -- reverse deps order for links
+        local dep = orderdeps[total + 1 - idx]
+
+        -- inherit this dep target?
+        local depinherit = target:extraconfig("deps", dep:name(), "inherit")
+        if (depinherit == nil or depinherit) then
+
+            dep:extraconf(flagname, "")
+            table.join2(values, dep:get(name))
+
+            if dep:type() == "target" then
+                for _, opt in ipairs(dep:orderopts()) do
+                    table.join2(values, opt:get(name))
+                end
+                self:_inherit_from_targetpkgs(values, dep, name)
+            end
+        end
+    end
+end]]
+
 -- add flags from the configure 
 function builder:_addflags_from_config(flags)
     for _, flagkind in ipairs(self:_flagkinds()) do

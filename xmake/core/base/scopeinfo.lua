@@ -512,6 +512,45 @@ function _instance:apival_del(name, ...)
     end
 end
 
+-- get the extra configuration
+--
+-- e.g. 
+--
+-- add_includedirs("inc", {public = true})
+--
+-- function (target)
+--     _instance:extraconf("includedirs", "inc", "public")  -> true
+--     _instance:extraconf("includedirs", "inc")  -> {public = true}
+--     _instance:extraconf("includedirs")  -> {["inc"] = {public = true}}
+-- end
+--
+function _instance:extraconf(name, item, key)
+
+    -- get extra configurations
+    local extraconfs = self._EXTRACONFS
+    if not extraconfs then
+        extraconfs = {}
+        self._EXTRACONFS = extraconfs
+    end
+
+    -- get configuration
+    local extraconf = extraconfs[name]
+    if not extraconf then
+        extraconf = self:get("__extra_" .. name)
+        extraconfs[name] = extraconf
+    end
+
+    -- get configuration value
+    local value = extraconf
+    if item then
+        value = extraconf and extraconf[item] or nil
+        if value and key then
+            value = value[key]
+        end
+    end
+    return value
+end
+
 -- new an scope instance
 function scopeinfo.new(...)
     return _instance.new(...)
