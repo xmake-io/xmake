@@ -45,7 +45,7 @@ function compiler:_language()
 end
 
 -- add flags from the platform 
-function compiler:_addflags_from_platform(flags, targetkind)
+function compiler:_add_flags_from_platform(flags, targetkind)
 
     -- add flags 
     local toolname = self:name()
@@ -60,7 +60,7 @@ function compiler:_addflags_from_platform(flags, targetkind)
 end
 
 -- add flags from the compiler 
-function compiler:_addflags_from_compiler(flags, targetkind)
+function compiler:_add_flags_from_compiler(flags, targetkind)
     for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- add compiler, e.g. cxflags
@@ -286,31 +286,31 @@ function compiler:compflags(opt)
 
     -- add flags from the configure 
     local flags = {}
-    self:_addflags_from_config(flags)
+    self:_add_flags_from_config(flags)
 
     -- add flags for the target
-    self:_addflags_from_target(flags, target)
+    self:_add_flags_from_target(flags, target)
 
     -- add flags for the source file
     if opt.sourcefile and target and target.fileconfig then
         local fileconfig = target:fileconfig(opt.sourcefile)
         if fileconfig then
-            self:_addflags_from_argument(flags, target, fileconfig)
+            self:_add_flags_from_argument(flags, target, fileconfig)
         end
     end
 
     -- add flags for the argument
     if opt.config then
-        self:_addflags_from_argument(flags, target, opt.config)
+        self:_add_flags_from_argument(flags, target, opt.config)
     end
 
     -- add flags from the platform 
     if target then
-        self:_addflags_from_platform(flags, targetkind)
+        self:_add_flags_from_platform(flags, targetkind)
     end
 
     -- add flags from the compiler 
-    self:_addflags_from_compiler(flags, targetkind)
+    self:_add_flags_from_compiler(flags, targetkind)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)

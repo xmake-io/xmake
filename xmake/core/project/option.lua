@@ -310,6 +310,11 @@ function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
 end
 
+-- get the extra configuration
+function _instance:extraconf(name, item, key)
+    return self._INFO:extraconf(name, item, key)
+end
+
 -- get the given dependent option
 function _instance:dep(name)
     local deps = self:deps()

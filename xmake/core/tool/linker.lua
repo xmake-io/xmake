@@ -41,7 +41,7 @@ local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
 -- add flags from the platform 
-function linker:_addflags_from_platform(flags, targetkind)
+function linker:_add_flags_from_platform(flags, targetkind)
 
     -- add flags 
     local toolkind = self:kind()
@@ -57,7 +57,7 @@ function linker:_addflags_from_platform(flags, targetkind)
 end
 
 -- add flags from the compiler 
-function linker:_addflags_from_compiler(flags, target, targetkind)
+function linker:_add_flags_from_compiler(flags, target, targetkind)
 
     -- make flags 
     local flags_of_compiler = {}
@@ -85,7 +85,7 @@ function linker:_addflags_from_compiler(flags, target, targetkind)
 end
 
 -- add flags from the linker 
-function linker:_addflags_from_linker(flags)
+function linker:_add_flags_from_linker(flags)
 
     -- add flags
     local toolkind = self:kind()
@@ -265,28 +265,28 @@ function linker:linkflags(opt)
 
     -- add flags from the configure 
     local flags = {}
-    self:_addflags_from_config(flags)
+    self:_add_flags_from_config(flags)
 
     -- add flags for the target
-    self:_addflags_from_target(flags, target)
+    self:_add_flags_from_target(flags, target)
 
     -- add flags for the argument
     if opt.config then
-        self:_addflags_from_argument(flags, target, opt.config)
+        self:_add_flags_from_argument(flags, target, opt.config)
     end
 
     -- add flags from the platform 
     if target then
-        self:_addflags_from_platform(flags, targetkind)
+        self:_add_flags_from_platform(flags, targetkind)
     end
 
     -- add flags from the compiler 
     if target then
-        self:_addflags_from_compiler(flags, target, targetkind)
+        self:_add_flags_from_compiler(flags, target, targetkind)
     end
 
     -- add flags from the linker 
-    self:_addflags_from_linker(flags)
+    self:_add_flags_from_linker(flags)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)

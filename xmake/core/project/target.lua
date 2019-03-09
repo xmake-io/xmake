@@ -452,11 +452,6 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- get the given dependent config
-function _instance:depconfig(name)
-    return self:extraconf("deps", name)
-end
-
 -- get target rules
 function _instance:rules()
     return self._RULES

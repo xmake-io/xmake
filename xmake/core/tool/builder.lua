@@ -115,34 +115,8 @@ function builder:_flagkinds()
     return self._FLAGKINDS
 end
 
--- inherts from target packages
-function builder:_inherit_from_targetpkgs(values, target, name)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        local configinfo = target:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
-        else
-            -- uses the builtin package configs
-            table.join2(values, pkg:get(name))
-        end
-    end
-end
-
--- inherts from target deps
-function builder:_inherit_from_target(values, target, name)
-    table.join2(values, target:get(name))
-    if target:type() == "target" then
-        for _, opt in ipairs(target:orderopts()) do
-            table.join2(values, opt:get(name))
-        end
-        self:_inherit_from_targetpkgs(values, target, name)
-    end
-end
-
--- inherts from target deps
-function builder:_inherit_from_targetdeps(results, target, flagname)
+-- inherit links from target deps
+function builder:_inherit_links_from_targetdeps(results, target, flagname)
 
     -- for all target deps
     local orderdeps = target:orderdeps()
@@ -155,8 +129,8 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
         -- is static or shared target library? link it
         local depkind      = dep:targetkind()
         local targetkind   = target:targetkind()
-        local depconfig    = table.wrap(target:depconfig(dep:name()))
-        if (depkind == "static" or depkind == "shared" or depkind == "object") and (depconfig.inherit == nil or depconfig.inherit) then
+        local depinherit   = target:extraconf("deps", dep:name(), "inherit")
+        if (depkind == "static" or depkind == "shared" or depkind == "object") and (depinherit == nil or depinherit) then
             if (flagname == "links" or flagname == "syslinks") and (targetkind == "binary" or targetkind == "shared") then
 
                 -- add dependent link
@@ -165,7 +139,7 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
                 end
 
                 -- inherit links from the depdent target
-                self:_inherit_from_target(results, dep, flagname)
+                self:_add_values_from_target(results, dep, flagname)
 
             elseif flagname == "linkdirs" and (targetkind == "binary" or targetkind == "shared") then
 
@@ -175,7 +149,7 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
                 end
 
                 -- inherit linkdirs from the depdent target
-                self:_inherit_from_target(results, dep, flagname)
+                self:_add_values_from_target(results, dep, flagname)
 
             elseif flagname == "rpathdirs" and (targetkind == "binary" or targetkind == "shared") then
 
@@ -212,58 +186,78 @@ function builder:_inherit_from_targetdeps(results, target, flagname)
     end
 end
 
---[[
--- inherts from target deps
-function builder:_inherit_from_targetdeps(results, target, flagname)
-
-    -- for all target deps
+-- inherit values (only for public/interface) from target deps
+--
+-- e.g. 
+-- add_defines("", {public = true})
+-- add_defines("", {interface = true})
+--
+function builder:_inherit_values_from_targetdeps(values, target, name)
     local orderdeps = target:orderdeps()
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
-
-        -- reverse deps order for links
         local dep = orderdeps[total + 1 - idx]
-
-        -- inherit this dep target?
-        local depinherit = target:extraconfig("deps", dep:name(), "inherit")
-        if (depinherit == nil or depinherit) then
-
-            dep:extraconf(flagname, "")
-            table.join2(values, dep:get(name))
-
-            if dep:type() == "target" then
-                for _, opt in ipairs(dep:orderopts()) do
-                    table.join2(values, opt:get(name))
-                end
-                self:_inherit_from_targetpkgs(values, dep, name)
-            end
+        local depinherit = target:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            table.join2(values, dep:get(name, {interface = true}))
         end
     end
-end]]
+end
+
+-- add values from target
+function builder:_add_values_from_target(values, target, name)
+    table.join2(values, target:get(name))
+    if target:type() == "target" then
+        self:_add_values_from_targetopts(values, target, name)
+        self:_add_values_from_targetpkgs(values, target, name)
+    end
+end
+
+-- add values from target options
+function builder:_add_values_from_targetopts(values, target, name)
+	for _, opt in ipairs(target:orderopts()) do
+		table.join2(values, table.wrap(opt:get(name)))
+	end
+end
+
+-- add values from target packages
+function builder:_add_values_from_targetpkgs(values, target, name)
+    for _, pkg in ipairs(target:orderpkgs()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = target:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+end
 
 -- add flags from the configure 
-function builder:_addflags_from_config(flags)
+function builder:_add_flags_from_config(flags)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, config.get(flagkind))
     end
 end
 
 -- add flags from the option 
-function builder:_addflags_from_option(flags, opt)
+function builder:_add_flags_from_option(flags, opt)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, self:_mapflags(opt:get(flagkind), flagkind))
     end
 end
 
 -- add flags from the package 
-function builder:_addflags_from_package(flags, pkg)
+function builder:_add_flags_from_package(flags, pkg)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind))
     end
 end
 
 -- add flags from the target 
-function builder:_addflags_from_target(flags, target)
+function builder:_add_flags_from_target(flags, target)
 
     -- no target?
     if not target then
@@ -279,33 +273,33 @@ function builder:_addflags_from_target(flags, target)
     local targetflags = cache[key]
     if not targetflags then
     
-        -- add flags (named) and inherited flags from language
+        -- add flags from language
         targetflags = {}
-        self:_addflags_from_language(targetflags, target)
+        self:_add_flags_from_language(targetflags, target)
 
         -- add flags for the target 
         if target:type() == "target" then
 
             -- add flags from options
             for _, opt in ipairs(target:orderopts()) do
-                self:_addflags_from_option(targetflags, opt)
+                self:_add_flags_from_option(targetflags, opt)
             end
 
             -- add flags from packages
             for _, pkg in ipairs(target:orderpkgs()) do
-                self:_addflags_from_package(targetflags, pkg)
+                self:_add_flags_from_package(targetflags, pkg)
             end
         end
 
         -- add the target flags 
         for _, flagkind in ipairs(self:_flagkinds()) do
-            
-            -- get flags and extra info
             local flags = target:get(flagkind)
-            local flagextra = target:get("__extra_" .. flagkind)
-            if flagextra then
+            local extraconf = target:extraconf(flagkind)
+            if extraconf then
                 for _, flag in ipairs(table.wrap(flags)) do
-                    if (flagextra[flag] or {}).force then
+                    -- force to add flags?
+                    local flagconf = extraconf[flag]
+                    if flagconf and flagconf.force then
                         table.join2(targetflags, flag)
                     else
                         table.join2(targetflags, self:_mapflags(flag, flagkind))
@@ -325,7 +319,7 @@ function builder:_addflags_from_target(flags, target)
 end
 
 -- add flags from the argument option 
-function builder:_addflags_from_argument(flags, target, args)
+function builder:_add_flags_from_argument(flags, target, args)
 
     -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
@@ -343,14 +337,19 @@ function builder:_addflags_from_argument(flags, target, args)
     -- add flags (named) from the language 
     if target then
         local key = target:type()
-        self:_addflags_from_language(flags, target, {[key] = function (name) return args[name] end})
+        self:_add_flags_from_language(flags, target, {[key] = function (name) return args[name] end})
     end
 end
 
--- add flags (named) from the language 
-function builder:_addflags_from_language(flags, target, getters)
+-- add flags from the language 
+function builder:_add_flags_from_language(flags, target, getters)
 
     -- init getters
+    --
+    -- e.g.
+    --
+    -- target.linkdirs => flags = getters("target")("linkdirs")
+    --
     local getters = getters or
     {
         config      =   config.get
@@ -363,14 +362,15 @@ function builder:_addflags_from_language(flags, target, getters)
 
                                 -- link? add includes and links of all dependent targets first
                                 if name == "links" or name == "syslinks" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
-                                    self:_inherit_from_targetdeps(results, target, name)
+                                    self:_inherit_links_from_targetdeps(results, target, name)
                                 end
+
+                                -- inherit flagvalues (public or interface) of all dependent targets
+                                self:_inherit_values_from_targetdeps(results, target, name)
 
                                 -- get flagvalues of target with given flagname
                                 table.join2(results, target:get(name))
                             end
-
-                            -- ok?
                             return results
                         end
     ,   option      =   function (name)
@@ -378,10 +378,8 @@ function builder:_addflags_from_language(flags, target, getters)
                             -- is target? get flagvalues of the attached options and packages
                             local results = {}
                             if target:type() == "target" then
-                                for _, opt in ipairs(target:orderopts()) do
-                                    table.join2(results, table.wrap(opt:get(name)))
-                                end
-                                self:_inherit_from_targetpkgs(results, target, name)
+								self:_add_values_from_targetopts(results, target, name)
+                                self:_add_values_from_targetpkgs(results, target, name)
 
                             -- is option? get flagvalues of option with given flagname
                             elseif target:type() == "option" then
