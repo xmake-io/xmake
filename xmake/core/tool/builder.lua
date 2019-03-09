@@ -186,6 +186,26 @@ function builder:_inherit_links_from_targetdeps(results, target, flagname)
     end
 end
 
+-- inherit flags (only for public/interface) from target deps
+--
+-- e.g. 
+-- add_cflags("", {public = true})
+-- add_cflags("", {interface = true})
+--
+function builder:_inherit_flags_from_targetdeps(flags, target)
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = target:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                self:_add_flags_from_flagkind(flags, dep, flagkind, {interface = true})
+            end
+        end
+    end
+end
+
 -- inherit values (only for public/interface) from target deps
 --
 -- e.g. 
@@ -235,6 +255,25 @@ function builder:_add_values_from_targetpkgs(values, target, name)
     end
 end
 
+-- add flags from the flagkind 
+function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
+    local targetflags = target:get(flagkind, opt)
+    local extraconf   = target:extraconf(flagkind)
+    if extraconf then
+        for _, flag in ipairs(table.wrap(targetflags)) do
+            -- force to add flags?
+            local flagconf = extraconf[flag]
+            if flagconf and flagconf.force then
+                table.join2(flags, flag)
+            else
+                table.join2(flags, self:_mapflags(flag, flagkind))
+            end
+        end
+    else
+        table.join2(flags, self:_mapflags(targetflags, flagkind))
+    end
+end
+
 -- add flags from the configure 
 function builder:_add_flags_from_config(flags)
     for _, flagkind in ipairs(self:_flagkinds()) do
@@ -245,7 +284,7 @@ end
 -- add flags from the option 
 function builder:_add_flags_from_option(flags, opt)
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:_mapflags(opt:get(flagkind), flagkind))
+        self:_add_flags_from_flagkind(targetflags, opt, flagkind)
     end
 end
 
@@ -289,25 +328,14 @@ function builder:_add_flags_from_target(flags, target)
             for _, pkg in ipairs(target:orderpkgs()) do
                 self:_add_flags_from_package(targetflags, pkg)
             end
+
+            -- inherit flags (public/interface) from all dependent targets
+            self:_inherit_flags_from_targetdeps(targetflags, target)
         end
 
         -- add the target flags 
         for _, flagkind in ipairs(self:_flagkinds()) do
-            local flags = target:get(flagkind)
-            local extraconf = target:extraconf(flagkind)
-            if extraconf then
-                for _, flag in ipairs(table.wrap(flags)) do
-                    -- force to add flags?
-                    local flagconf = extraconf[flag]
-                    if flagconf and flagconf.force then
-                        table.join2(targetflags, flag)
-                    else
-                        table.join2(targetflags, self:_mapflags(flag, flagkind))
-                    end
-                end
-            else
-                table.join2(targetflags, self:_mapflags(flags, flagkind))
-            end
+            self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
 
         -- cache it

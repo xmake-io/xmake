@@ -2,6 +2,8 @@
 target("dep1")
     set_kind("static")
     add_files("src/*.c") 
+    add_cflags("-DFLAG1")
+    add_cflags("-DFLAG2", {interface = true})
     add_includedirs("inc1", {public = true})
     add_defines("TEST1", {public = true})
 
