@@ -16,6 +16,7 @@
 * [#320](https://github.com/xmake-io/xmake/issues/320): Add template configuration files and replace all variables before building
 * [#179](https://github.com/xmake-io/xmake/issues/179): Generate CMakelist.txt file for `xmake project` plugin
 * [#361](https://github.com/xmake-io/xmake/issues/361): Support vs2019 preview
+* [#368](https://github.com/xmake-io/xmake/issues/368): Support `private, public, interface` to improve dependency inheritance like cmake
 
 ### Changes
 
@@ -570,6 +571,7 @@
 * [#320](https://github.com/xmake-io/xmake/issues/320): 添加模板配置文件相关接口，`add_configfiles`和`set_configvar`
 * [#179](https://github.com/xmake-io/xmake/issues/179): 扩展`xmake project`插件，新增CMakelist.txt生成支持
 * [#361](https://github.com/xmake-io/xmake/issues/361): 增加对vs2019 preview的支持
+* [#368](https://github.com/xmake-io/xmake/issues/368): 支持`private, public, interface`属性设置去继承target配置
 
 ### 改进
 

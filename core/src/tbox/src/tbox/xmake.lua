@@ -12,12 +12,8 @@ target("tbox")
     add_configfiles("tbox.config.h.in")
 
     -- add include directories
-    add_includedirs("..")
-    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
-
-    -- add public header directories
-    add_headerdirs("..")
-    add_headerdirs("$(buildir)/$(plat)/$(arch)/$(mode)")
+    add_includedirs("..", {public = true})
+    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
 
     -- add the header files for installing
     add_headerfiles("../(tbox/**.h)|**/impl/**.h")

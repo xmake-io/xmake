@@ -155,6 +155,23 @@ function deprecated_project._api_target_add_headers(interp)
                                         end)
 end
 
+-- add_headerdirs for target
+function deprecated_project._api_target_add_headerdirs(interp)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("target", "add_headerdirs")
+    assert(apifunc)
+
+    -- register api
+    interp:_api_within_scope_set("target", "add_headerdirs", function (value, ...) 
+
+                                            -- deprecated
+                                            deprecated.add("add_includedirs(%s, {public|interface = true})", "add_headerdirs(%s)", tostring(value))
+
+                                            -- dispatch it
+                                            apifunc(value, ...)
+                                        end)
+end
 
 -- add_defines_h for target
 function deprecated_project._api_target_add_defines_h(interp)
@@ -271,6 +288,7 @@ function deprecated_project.api_register(interp)
 
     -- register api: add_headers() to target
     deprecated_project._api_target_add_headers(interp)
+    deprecated_project._api_target_add_headerdirs(interp)
 
     -- register api: add_defines_h()/set_config_header() to option/target
     deprecated_project._api_option_add_defines_h(interp)
