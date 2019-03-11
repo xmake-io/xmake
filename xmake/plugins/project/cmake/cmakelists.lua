@@ -31,10 +31,33 @@ function _get_unix_path(filepath)
     return (path.translate(filepath):gsub('\\', '/'))
 end
 
+-- add values from target options
+function _add_values_from_targetopts(values, target, name)
+	for _, opt in ipairs(target:orderopts()) do
+		table.join2(values, table.wrap(opt:get(name)))
+	end
+end
+
+-- add values from target packages
+function _add_values_from_targetpkgs(values, target, name)
+    for _, pkg in ipairs(target:orderpkgs()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = target:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+end
+
+
 -- add project info
 function _add_project(cmakelists)
     cmakelists:print("# project")
-    cmakelists:print("cmake_minimum_required(VERSION 3.3.0)")
+    cmakelists:print("cmake_minimum_required(VERSION 3.13.0)")
     local project_name = project.name()
     if project_name then
         local project_info = ""
@@ -105,14 +128,17 @@ end
 
 -- add target include directories
 function _add_target_include_directories(cmakelists, target)
-    local includedirs = target:get("includedirs")
-    if includedirs then
+    local includedirs = table.wrap(target:get("includedirs"))
+    _add_values_from_targetopts(includedirs, target, "includedirs")
+    _add_values_from_targetpkgs(includedirs, target, "includedirs")
+    if #includedirs > 0 then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
             cmakelists:print("    " .. _get_unix_path(includedir))
         end
         cmakelists:print(")")
     end
+
     -- TODO deprecated
     local headerdirs = target:get("headerdirs")
     if headerdirs then
@@ -139,8 +165,10 @@ end
 
 -- add target compile definitions
 function _add_target_compile_definitions(cmakelists, target)
-    local defines = target:get("defines")
-    if defines then
+    local defines = table.wrap(target:get("defines"))
+    _add_values_from_targetopts(defines, target, "defines")
+    _add_values_from_targetpkgs(defines, target, "defines")
+    if #defines > 0 then
         cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
         for _, define in ipairs(defines) do
             cmakelists:print("    " .. define)
@@ -288,37 +316,42 @@ end
 
 -- add target link libraries
 function _add_target_link_libraries(cmakelists, target)
-    local links = target:get("links")
-    if links then
+
+    -- add links
+    local links = table.wrap(target:get("links"))
+
+    -- add links from target options
+    _add_values_from_targetopts(links, target, "links")
+
+    -- add links from target packages
+    _add_values_from_targetpkgs(links, target, "links")
+
+    -- add links from target deps
+    local targetkind = target:targetkind()
+    if targetkind == "binary" or targetkind == "shared" then
+        for _, dep in ipairs(target:orderdeps()) do
+            local depkind = dep:targetkind()
+            if depkind == "static" or depkind == "shared" then
+                table.insert(links, dep:name())
+            end
+        end
+    end
+    table.join2(links, target:get("syslinks"))
+    if #links > 0 then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, link in ipairs(links) do
             cmakelists:print("    " .. link)
         end
         cmakelists:print(")")
     end
-    local targetkind = target:targetkind()
-    if targetkind == "binary" or targetkind == "shared" then
-        local deplinks = {}
-        for _, dep in ipairs(target:orderdeps()) do
-            local depkind = dep:targetkind()
-            if depkind == "static" or depkind == "shared" then
-                table.insert(deplinks, dep:name())
-            end
-        end
-        if #deplinks > 0 then
-            cmakelists:printf("target_link_libraries(%s PRIVATE", target:name())
-            for _, deplink in ipairs(deplinks) do
-                cmakelists:write(" " .. deplink)
-            end
-            cmakelists:print(")")
-        end
-    end
 end
 
 -- add target link directories
 function _add_target_link_directories(cmakelists, target)
-    local linkdirs = target:get("linkdirs")
-    if linkdirs then
+    local linkdirs = table.wrap(target:get("linkdirs"))
+    _add_values_from_targetopts(linkdirs, target, "linkdirs")
+    _add_values_from_targetpkgs(linkdirs, target, "linkdirs")
+    if #linkdirs > 0 then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())
         for _, linkdir in ipairs(linkdirs) do
             cmakelists:print("    " .. _get_unix_path(linkdir))
