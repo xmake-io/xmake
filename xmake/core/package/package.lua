@@ -260,6 +260,8 @@ function _instance:manifest_save()
     manifest.arch        = self:arch()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
+    manifest.envs        = self:envs()
+    manifest.vars        = self:vars()
     local repo = self:repo()
     if repo then
         manifest.repo        = {}
@@ -275,29 +277,54 @@ function _instance:manifest_save()
     end
 end
 
--- get prefix variables
+-- get the exported variables
+function _instance:vars()
+    local vars = self._VARS
+    if not vars then
+        vars = {}
+        self._VARS = vars
+    end
+    return vars
+end
+
+-- get the given variable
 function _instance:getvar(name)
-    -- TODO
+    return self:vars()[name]
 end
 
--- set prefix variables
+-- set the given variable
 function _instance:setvar(name, ...)
+    self:vars()[name] = {...}
 end
 
--- add prefix variables
+-- add the given variable
 function _instance:addvar(name, ...)
+    self:vars()[name] = table.join(self:vars()[name] or {}, ...)
 end
 
--- get environment variables
+-- get the exported environments
+function _instance:envs()
+    local envs = self._ENVS
+    if not envs then
+        envs = {}
+        self._ENVS = envs
+    end
+    return envs
+end
+
+-- get the given environment variable
 function _instance:getenv(name)
+    return self:envs()[name]
 end
 
--- set environment variables
+-- set the given environment variable
 function _instance:setenv(name, ...)
+    self:envs()[name] = {...}
 end
 
--- add values to environment variable 
+-- add the given environment variable
 function _instance:addenv(name, ...)
+    self:envs()[name] = table.join(self:envs()[name] or {}, ...)
 end
 
 -- get user private data
@@ -565,8 +592,7 @@ function _instance:fetch(opt)
 
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_package("xmake::" .. self:name(), {mode = self:mode(),
-                                                                      version = require_ver,
+            fetchinfo = self._find_package("xmake::" .. self:name(), {version = self:version_str(),
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
                                                                       force = opt.force}) 
@@ -695,19 +721,6 @@ end
 -- the install directory
 function package.installdir()
     return path.join(global.directory(), "packages")
-end
-
--- get environment variables
-function package.getenv(is_global, mode, plat, arch, name)
-    -- TODO
-end
-
--- add values to environment variable 
-function package.addenv(is_global, mode, plat, arch, name, values)
-end
-
--- remove values to environment variable 
-function package.delenv(is_global, mode, plat, arch, name, values)
 end
 
 -- load the package from the system directories
