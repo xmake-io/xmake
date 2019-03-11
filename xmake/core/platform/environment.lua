@@ -39,20 +39,6 @@ function environment._enter_toolchains()
     -- save the toolchains environment
     environment._PATH = os.getenv("PATH")
 
-    -- add global search binary pathes
-    local globaldir = package.prefixdir(true, "release", os.host(), os.arch())
-    for _, dir in ipairs(table.wrap(package.getenv(true, "release", os.host(), os.arch(), "PATH"))) do
-        os.addenv("PATH", path.join(globaldir, dir))
-    end
-    os.addenv("PATH", path.join(globaldir, "bin"))
-
-    -- add local search binary pathes
-    local localdir = package.prefixdir(false, "release", os.host(), os.arch())
-    for _, dir in ipairs(table.wrap(package.getenv(false, "release", os.host(), os.arch(), "PATH"))) do
-        os.addenv("PATH", path.join(localdir, dir))
-    end
-    os.addenv("PATH", path.join(localdir, "bin"))
-
     -- add $programdir/winenv/bin to $path
     if os.host() == "windows" then
         os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
@@ -72,22 +58,6 @@ function environment._enter_run()
     -- save the running environment
     environment._PATH            = os.getenv("PATH")
     environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
-
-    -- add global search library pathes of pathes
-    local globaldir = package.prefixdir(true, "release", os.host(), os.arch())
-    if os.host() == "windows" then
-        os.addenv("PATH", path.join(globaldir, "lib"))
-    else
-        os.addenv("LD_LIBRARY_PATH", path.join(globaldir, "lib"))
-    end
-
-    -- add local search library pathes of pathes
-    local localdir = package.prefixdir(false, "release", os.host(), os.arch())
-    if os.host() == "windows" then
-        os.addenv("PATH", path.join(localdir, "lib"))
-    else
-        os.addenv("LD_LIBRARY_PATH", path.join(localdir, "lib"))
-    end
 end
 
 -- leave the running environment

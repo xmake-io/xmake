@@ -226,7 +226,7 @@ function _instance:installdir(...)
     
     -- make the given install directory
     local name = self:name():lower():gsub("::", "_")
-    local dir = path.join(package.installdir(table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), ...)
+    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:configs_hash(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -235,82 +235,29 @@ function _instance:installdir(...)
     return dir
 end
 
--- get the prefix directory
-function _instance:prefixdir(...)
-    
-    -- make the given prefix directory
-    local dir = path.join(package.prefixdir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), ...)
-
-    -- ensure the prefix directory
-    if not os.isdir(dir) then
-        os.mkdir(dir)
-    end
-    return dir
-end
-
--- get the prefix info
-function _instance:prefixinfo()
-    if self._PREFIXINFO == nil then
-        local prefixfile = self:prefixfile()
-        self._PREFIXINFO = os.isfile(prefixfile) and io.load(prefixfile) or {}
-    end
-    return self._PREFIXINFO
-end
-
--- get the prefix info file
-function _instance:prefixfile()
-    local name = self:name():lower():gsub("::", "_")
-    return path.join(package.prefixinfodir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), "info.txt")
-end
-
 -- get prefix variables
 function _instance:getvar(name)
-    return self:prefixinfo()[name]
+    -- TODO
 end
 
 -- set prefix variables
 function _instance:setvar(name, ...)
-    self:prefixinfo()[name] = {...}
 end
 
 -- add prefix variables
 function _instance:addvar(name, ...)
-    self:prefixinfo()[name] = table.join(self:prefixinfo()[name] or {}, ...)
 end
 
 -- get environment variables
 function _instance:getenv(name)
-    return self:prefixinfo().envars and self:prefixinfo().envars[name] or nil
 end
 
 -- set environment variables
 function _instance:setenv(name, ...)
-    self:prefixinfo().envars = self:prefixinfo().envars or {}
-    self:prefixinfo().envars[name] = {...}
 end
 
 -- add values to environment variable 
 function _instance:addenv(name, ...)
-    self:prefixinfo().envars = self:prefixinfo().envars or {}
-    self:prefixinfo().envars[name] = table.join(self:prefixinfo().envars[name] or {}, ...)
-end
-
--- register package info in the root prefix info 
-function _instance:register()
-
-    -- register the environment variables
-    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.addenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
-    end
-end
-
--- unregister package info from the root prefix info 
-function _instance:unregister()
-
-    -- unregister the environment variables
-    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.delenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
-    end
 end
 
 -- get user private data
@@ -406,25 +353,7 @@ end
 
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
-
-    -- save require info
     self._REQUIREINFO = requireinfo
-
-    -- get version
-    local version = requireinfo and requireinfo.version or nil
-    local limitversion = version and version ~= "master" and version ~= "lastest"
-    if requireinfo and not self:is3rd() then
-        
-        -- switch to local package if exists package configuration or debug package or limit version
-        if requireinfo.config or requireinfo.debug or limitversion then
-            self._FROMKIND = "local"
-        end
-
-        -- disable the system package if limit version 
-        if limitversion then
-            requireinfo.system = false
-        end
-    end
 end
 
 -- get the all configuration values of package
@@ -438,10 +367,12 @@ end
 -- get the hash of configs
 function _instance:configs_hash()
     if self._CONFIGS_HASH == nil then
+        local str = self:plat() .. self:arch() .. self:mode()
         local configs = self:configs()
         if configs then
-            self._CONFIGS_HASH = hash.uuid(string.serialize(configs, true)):split('-')[1]:lower()
+            str = str .. string.serialize(configs, true)
         end
+        self._CONFIGS_HASH = hash.uuid(str):gsub('-', ''):lower()
     end
     return self._CONFIGS_HASH
 end
@@ -594,8 +525,7 @@ function _instance:fetch(opt)
 
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_package("xmake::" .. self:name(), {prefixdirs = self:prefixdir(), 
-                                                                      mode = self:mode(),
+            fetchinfo = self._find_package("xmake::" .. self:name(), {mode = self:mode(),
                                                                       islocal = self:from("local"), 
                                                                       version = require_ver,
                                                                       cachekey = "fetch_package_xmake",
@@ -724,77 +654,21 @@ function package.cachedir()
 end
 
 -- the install directory
-function package.installdir(mode, plat, arch)
-    return path.join(global.directory(), "installed", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix directory
-function package.prefixdir(is_global, mode, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix info directory
-function package.prefixinfodir(is_global, mode, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", "info", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix info
-function package.prefixinfo(is_global, mode, plat, arch)
-    local prefixfile = package.prefixfile(is_global, mode, plat, arch)
-    return os.isfile(prefixfile) and io.load(prefixfile) or {}
-end
-
--- get the prefix info file
-function package.prefixfile(is_global, mode, plat, arch)
-    return path.join(package.prefixinfodir(is_global, mode, plat, arch), "info.txt")
+function package.installdir()
+    return path.join(global.directory(), "installed")
 end
 
 -- get environment variables
 function package.getenv(is_global, mode, plat, arch, name)
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    return prefixinfo.envars and prefixinfo.envars[name] or nil
+    -- TODO
 end
 
 -- add values to environment variable 
 function package.addenv(is_global, mode, plat, arch, name, values)
-
-    -- add to the root prefix info
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    prefixinfo.envars = prefixinfo.envars or {}
-    prefixinfo.envars[name] = table.join(prefixinfo.envars[name] or {}, values)
-    io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
-
-    -- add to the current environment
-    if values then
-        -- PATH? add the prefix root directory 
-        if name:lower() == "path" then
-            local prefixdir = package.prefixdir(is_global, mode, plat, arch)
-            for _, value in ipairs(values) do
-                os.addenv(name, path.join(prefixdir, value))
-            end
-        else
-            os.addenv(name, unpack(values))
-        end
-    end
 end
 
 -- remove values to environment variable 
 function package.delenv(is_global, mode, plat, arch, name, values)
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    local prefixvalues = prefixinfo.envars and prefixinfo.envars[name] or nil
-    if prefixvalues then
-        local exists = {}
-        for _, value in ipairs(values) do
-            exists[value:trim()] = true
-        end
-        for i = #prefixvalues, 1, -1 do
-            value = prefixvalues[i]:trim()
-            if exists[value] then
-                table.remove(prefixvalues, i)
-            end
-        end
-        io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
-    end
 end
 
 -- load the package from the system directories

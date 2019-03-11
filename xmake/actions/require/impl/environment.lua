@@ -54,36 +54,10 @@ function enter()
     if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
         package.install_packages("7z")
     end
-
-    -- get prefix directories
-    local plat = get_config("plat")
-    local arch = get_config("arch")
-    _g.prefixdirs = _g.prefixdirs or 
-    {
-        core_package.prefixdir(false, "release", plat, arch),
-        core_package.prefixdir(true, "release", plat, arch), 
-    }
-
-    -- add search directories of pkgconfig, aclocal, cmake 
-    _g._ACLOCAL_PATH = os.getenv("ACLOCAL_PATH")
-    _g._PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
-    _g._CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
-    for _, prefixdir in ipairs(_g.prefixdirs) do
-        if not is_plat("windows") then
-            os.addenv("ACLOCAL_PATH", path.join(prefixdir, "share", "aclocal"))
-            os.addenv("PKG_CONFIG_PATH", path.join(prefixdir, "lib", "pkgconfig"))
-        end
-        os.addenv("CMAKE_PREFIX_PATH", prefixdir)
-    end
 end
 
 -- leave environment
 function leave()
-
-    -- restore search directories of pkgconfig, aclocal, cmake 
-    os.setenv("ACLOCAL_PATH", _g._ACLOCAL_PATH)
-    os.setenv("PKG_CONFIG_PATH", _g._PKG_CONFIG_PATH)
-    os.setenv("CMAKE_PREFIX_PATH", _g._CMAKE_PREFIX_PATH)
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

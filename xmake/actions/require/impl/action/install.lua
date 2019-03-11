@@ -27,7 +27,6 @@ import("core.base.option")
 import("core.project.target")
 import("test")
 import(".utils.filter")
-import("prefix")
 
 -- install the given package
 function main(package)
@@ -87,9 +86,6 @@ function main(package)
                     end
                 else
 
-                    -- uninstall it from the prefix directory first
-                    prefix.uninstall(package)
-
                     -- build and install package to the install directory
                     local installedfile = path.join(package:installdir(), "installed.txt")
                     if not os.isfile(installedfile) then
@@ -108,9 +104,6 @@ function main(package)
                         -- mark as installed
                         io.writefile(installedfile, "")
                     end
-
-                    -- install to the prefix directory
-                    prefix.install(package)
 
                     -- test it
                     test(package)

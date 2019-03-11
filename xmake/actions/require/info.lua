@@ -136,12 +136,6 @@ function main(package_names)
         -- show cache directory
         cprint("      -> ${magenta}cachedir${clear}: %s", instance:cachedir())
 
-        -- show prefix directory
-        cprint("      -> ${magenta}prefixdir${clear}: %s", instance:prefixdir())
-
-        -- show prefix file
-        cprint("      -> ${magenta}prefixfile${clear}: %s", instance:prefixfile())
-
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
 

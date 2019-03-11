@@ -36,18 +36,8 @@ function sandbox_core_package_package.cachedir()
 end
 
 -- the install directory
-function sandbox_core_package_package.installdir(mode, plat, arch)
-    return package.installdir(mode, plat, arch)
-end
-
--- get the prefix directory
-function sandbox_core_package_package.prefixdir(is_global, mode, plat, arch)
-    return package.prefixdir(is_global, mode, plat, arch)
-end
-
--- get the prefix info directory
-function sandbox_core_package_package.prefixinfodir(is_global, mode, plat, arch)
-    return package.prefixinfodir(is_global, mode, plat, arch)
+function sandbox_core_package_package.installdir()
+    return package.installdir()
 end
 
 -- load the package from the project file 
