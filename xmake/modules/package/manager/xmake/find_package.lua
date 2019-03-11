@@ -35,7 +35,7 @@ import("lib.detect.find_library")
 function _find_package_from_repo(name, opt)
 
     -- get build mode, e.g. debug_f7821231
-    local mode = table.concat({opt.mode or "release", opt.configs_hash}, '_')
+    local mode = table.concat({opt.mode or "release", opt.buildhash}, '_')
 
     -- get the prefix directories
     local prefixdirs = table.wrap(opt.prefixdirs)
@@ -247,7 +247,7 @@ end
 -- find package using the xmake package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x", configs_hash = "xxxxxx")
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x", buildhash = "xxxxxx")
 --
 function main(name, opt)
 

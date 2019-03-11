@@ -116,9 +116,9 @@ function main(package_names)
             cprint("      -> ${magenta}urls${clear}:")
             for _, url in ipairs(urls) do
                 print("         -> %s", filter.handle(url, instance))
-                local sha256 = instance:sha256(instance:url_alias(url))
-                if sha256 then
-                    cprint("            -> ${yellow}%s${clear}", sha256)
+                local sourcehash = instance:sourcehash(instance:url_alias(url))
+                if sourcehash then
+                    cprint("            -> ${yellow}%s${clear}", sourcehash)
                 end
             end
         end

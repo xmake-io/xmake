@@ -167,30 +167,30 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- get sha256 of the url_alias@version_str
-function _instance:sha256(url_alias)
+-- get hash of the source package for the url_alias@version_str
+function _instance:sourcehash(url_alias)
 
-    -- get sha256
+    -- get sourcehash
     local versions    = self:get("versions")
     local version_str = self:version_str()
     if versions and version_str then
 
-        local sha256 = nil
+        local sourcehash = nil
         if url_alias then
-            sha256 = versions[url_alias .. ":" ..version_str]
+            sourcehash = versions[url_alias .. ":" ..version_str]
         end
-        if not sha256 then
-            sha256 = versions[version_str]
+        if not sourcehash then
+            sourcehash = versions[version_str]
         end
 
         -- ok?
-        return sha256
+        return sourcehash
     end
 end
 
 -- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
 function _instance:revision(url_alias)
-    return self:sha256(url_alias)
+    return self:sourcehash(url_alias)
 end
 
 -- this package is from system/local/global?
@@ -198,7 +198,6 @@ end
 -- @param kind  the from kind
 --
 -- system: from the system directories (.e.g /usr/local)
--- local:  from the local project package directories (.e.g projectdir/.xmake/packages)
 -- global: from the global package directories (.e.g ~/.xmake/packages)
 --
 function _instance:from(kind)
@@ -226,7 +225,7 @@ function _instance:installdir(...)
     
     -- make the given install directory
     local name = self:name():lower():gsub("::", "_")
-    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:configs_hash(), ...)
+    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:buildhash(), ...)
 
     -- ensure the install directory
     if not os.isdir(dir) then
@@ -364,17 +363,17 @@ function _instance:configs()
     end
 end
 
--- get the hash of configs
-function _instance:configs_hash()
-    if self._CONFIGS_HASH == nil then
+-- get the build hash
+function _instance:buildhash()
+    if self._BUILDHASH == nil then
         local str = self:plat() .. self:arch() .. self:mode()
         local configs = self:configs()
         if configs then
             str = str .. string.serialize(configs, true)
         end
-        self._CONFIGS_HASH = hash.uuid(str):gsub('-', ''):lower()
+        self._BUILDHASH = hash.uuid(str):gsub('-', ''):lower()
     end
-    return self._CONFIGS_HASH
+    return self._BUILDHASH
 end
 
 -- get the group name
@@ -526,11 +525,10 @@ function _instance:fetch(opt)
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
             fetchinfo = self._find_package("xmake::" .. self:name(), {mode = self:mode(),
-                                                                      islocal = self:from("local"), 
                                                                       version = require_ver,
                                                                       cachekey = "fetch_package_xmake",
-                                                                      configs_hash = self:configs_hash(),
-                                                                      force = opt.force or self:from("local")}) 
+                                                                      buildhash = self:buildhash(),
+                                                                      force = opt.force}) 
             if fetchinfo then fetchfrom = self._FROMKIND end
         end
 
