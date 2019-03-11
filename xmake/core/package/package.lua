@@ -222,16 +222,57 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir(...)
-    
-    -- make the given install directory
     local name = self:name():lower():gsub("::", "_")
     local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:buildhash(), ...)
-
-    -- ensure the install directory
     if not os.isdir(dir) then
         os.mkdir(dir)
     end
     return dir
+end
+
+-- get the manifest file of this package
+function _instance:manifest_file()
+    return path.join(self:installdir(), "manifest.txt")
+end
+
+-- load the manifest file of this package
+function _instance:manifest_load()
+    local manifest_file = self:manifest_file()
+    if os.isfile(manifest_file) then
+        local manifest, errors = io.load(manifest_file)
+        if not manifest then
+            os.raise(errors)
+        end
+        return manifest
+    end
+end
+
+-- save the manifest file of this package
+function _instance:manifest_save()
+
+    -- make manifest
+    local manifest       = {}
+    manifest.name        = self:name()
+    manifest.description = self:description()
+    manifest.version     = self:version_str()
+    manifest.kind        = self:kind()
+    manifest.plat        = self:plat()
+    manifest.arch        = self:arch()
+    manifest.mode        = self:mode()
+    manifest.configs     = self:configs()
+    local repo = self:repo()
+    if repo then
+        manifest.repo        = {}
+        manifest.repo.name   = repo:name()
+        manifest.repo.url    = repo:url()
+        manifest.repo.branch = repo:branch()
+    end
+
+    -- save manifest
+    local ok, errors = io.save(self:manifest_file(), manifest)
+    if not ok then
+        os.raise(errors)
+    end
 end
 
 -- get prefix variables
@@ -653,7 +694,7 @@ end
 
 -- the install directory
 function package.installdir()
-    return path.join(global.directory(), "installed")
+    return path.join(global.directory(), "packages")
 end
 
 -- get environment variables

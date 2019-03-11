@@ -87,8 +87,7 @@ function main(package)
                 else
 
                     -- build and install package to the install directory
-                    local installedfile = path.join(package:installdir(), "installed.txt")
-                    if not os.isfile(installedfile) then
+                    if not package:manifest_load() then
 
                         -- clean install directory first
                         os.tryrm(package:installdir())
@@ -101,8 +100,8 @@ function main(package)
                             end
                         end
 
-                        -- mark as installed
-                        io.writefile(installedfile, "")
+                        -- save the package info to the manifest file
+                        package:manifest_save()
                     end
 
                     -- test it

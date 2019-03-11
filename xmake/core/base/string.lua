@@ -43,7 +43,9 @@ function string._makestr(object, deflate, serialize, level)
         if deflate then
             s = s .. "{"
         else
-            s = s .. "\n"
+            if level > 0 then
+                s = s .. "\n"
+            end
             for l = 1, level do
                 s = s .. "    "
             end
@@ -69,7 +71,7 @@ function string._makestr(object, deflate, serialize, level)
             
             -- make key = value
             if type(k) == "string" then
-                if serialize then
+                if serialize and not k:match("^%a[%w_]+$") then
                     k = string.format("[%q]", k)
                 end
                 if deflate then
