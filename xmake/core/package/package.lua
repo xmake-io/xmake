@@ -557,7 +557,7 @@ function _instance:fetch(opt)
 
     -- fetch binary tool?
     fetchinfo = nil
-    local isSys = false
+    local isSys = nil
     if self:kind() == "binary" then
     
         -- import find_tool
@@ -606,7 +606,9 @@ function _instance:fetch(opt)
     self._FETCHINFO = fetchinfo
                 
     -- mark as system package?
-    self._isSys = isSys
+    if isSys ~= nil then
+        self._isSys = isSys
+    end
 
     -- ok
     return fetchinfo
