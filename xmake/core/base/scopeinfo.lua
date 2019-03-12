@@ -451,7 +451,7 @@ function _instance:apival_set(name, ...)
         for k, v in pairs(dict) do
             self:apival_set(k, unpack(table.wrap(v)))
         end
-    else
+    elseif name ~= nil then
         os.raise("unknown type(%s) for %s:set(%s, ...)", type(name), self:kind(), name)
     end
 end
@@ -487,7 +487,7 @@ function _instance:apival_add(name, ...)
         for k, v in pairs(dict) do
             self:apival_add(k, unpack(table.wrap(v)))
         end
-    else
+    elseif name ~= nil then
         os.raise("unknown type(%s) for %s:add(%s, ...)", type(name), self:kind(), name)
     end
 end
@@ -506,7 +506,7 @@ function _instance:apival_del(name, ...)
         else
             os.raise("unknown api(%s) for %s:del(%s, ...)", name, self:kind(), name)
         end
-    else
+    elseif name ~= nil then
         -- TODO
         os.raise("cannot support to remove a dictionary!")
     end
