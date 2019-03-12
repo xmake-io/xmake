@@ -783,7 +783,6 @@ end
 
 -- get requires info
 function project.requires()
-
     if not project._REQUIRES then
         local requires, errors = project._load_requires()
         if not requires then
