@@ -344,7 +344,7 @@ function _get_confirm(packages)
         -- get packages for each repositories
         local packages_repo = {}
         for _, package in ipairs(packages) do
-            local reponame = package:repo() and package:repo():name() or package:fromkind()
+            local reponame = package:repo() and package:repo():name() or (package:isSys() and "system" or "")
             if package:is3rd() then
                 reponame = package:name():lower():split("::")[1]
             end
@@ -355,7 +355,9 @@ function _get_confirm(packages)
         -- show tips
         cprint("${bright color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
         for reponame, packages in pairs(packages_repo) do
-            print("in %s:", reponame)
+            if reponame ~= "" then
+                print("in %s:", reponame)
+            end
             for _, package in ipairs(packages) do
                 print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
             end

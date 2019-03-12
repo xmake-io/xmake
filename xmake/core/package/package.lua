@@ -193,22 +193,6 @@ function _instance:revision(url_alias)
     return self:sourcehash(url_alias)
 end
 
--- this package is from system/local/global?
---
--- @param kind  the from kind
---
--- system: from the system directories (.e.g /usr/local)
--- global: from the global package directories (.e.g ~/.xmake/packages)
---
-function _instance:from(kind)
-    return self._FROMKIND == kind
-end
-
--- get from kind
-function _instance:fromkind()
-    return self._FROMKIND
-end
-
 -- get the package kind, binary or nil(static, shared)
 function _instance:kind()
     return self:get("kind")
@@ -486,7 +470,12 @@ end
 -- we need install and find package by third-party package manager directly
 --
 function _instance:is3rd()
-    return self:name():find("::", 1, true)
+    return self._is3rd
+end
+
+-- is the system package?
+function _instance:isSys()
+    return self._isSys
 end
 
 -- get xxx_script
@@ -547,7 +536,7 @@ end
 --
 -- @param opt   the fetch option, .e.g {force = true, system = false}
 --
--- @return {packageinfo}, fetchfrom (.e.g local/global/system)
+-- @return {packageinfo}, fetchfrom (.e.g global/system)
 --
 function _instance:fetch(opt)
 
@@ -555,10 +544,9 @@ function _instance:fetch(opt)
     opt = opt or {}
 
     -- attempt to get it from cache
-    local fetchfrom = self._FETCHFROM
     local fetchinfo = self._FETCHINFO
     if not opt.force and fetchinfo then
-        return fetchinfo, fetchfrom
+        return fetchinfo
     end
 
     -- fetch the require version
@@ -569,7 +557,7 @@ function _instance:fetch(opt)
 
     -- fetch binary tool?
     fetchinfo = nil
-    fetchfrom = nil
+    local isSys = false
     if self:kind() == "binary" then
     
         -- import find_tool
@@ -578,7 +566,7 @@ function _instance:fetch(opt)
         -- fetch it from the system directories, TODO find the given version
         fetchinfo = self._find_tool(self:name(), {force = opt.force})
         if fetchinfo then
-            fetchfrom = "system" -- ignore self:requireinfo().system
+            isSys = true -- ignore self:requireinfo().system
         end
     else
 
@@ -596,7 +584,9 @@ function _instance:fetch(opt)
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
                                                                       force = opt.force}) 
-            if fetchinfo then fetchfrom = self._FROMKIND end
+            if fetchinfo then
+                isSys = self._isSys
+            end
         end
 
         -- fetch it from the system directories
@@ -606,16 +596,20 @@ function _instance:fetch(opt)
                                                          mode = self:mode(),
                                                          cachekey = "fetch_package_system",
                                                          system = true})
-            if fetchinfo then fetchfrom = "system" end
+            if fetchinfo then 
+                isSys = true
+            end
         end
     end
 
     -- save to cache
     self._FETCHINFO = fetchinfo
-    self._FETCHFROM = fetchfrom
+                
+    -- mark as system package?
+    self._isSys = isSys
 
     -- ok
-    return fetchinfo, fetchfrom
+    return fetchinfo
 end
 
 -- exists this package in local
@@ -734,6 +728,7 @@ function package.load_from_system(packagename)
 
     -- get package info
     local packageinfo = {}
+    local is3rd = false
     if packagename:find("::", 1, true) then
 
         -- get interpreter
@@ -756,6 +751,11 @@ function package.load_from_system(packagename)
 
         -- save the install script
         packageinfo.install = instance:script()
+
+        -- is third-party package?
+        if not packagename:startswith("xmake::") then
+            is3rd = true
+        end
     end
 
     -- new an instance
@@ -764,8 +764,9 @@ function package.load_from_system(packagename)
         return nil, errors
     end
 
-    -- mark as system package
-    instance._FROMKIND = "system"
+    -- mark as system or 3rd package
+    instance._isSys = true
+    instance._is3rd = is3rd
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -799,9 +800,6 @@ function package.load_from_project(packagename, project)
     if not instance then
         return nil, errors
     end
-
-    -- mark as local package
-    instance._FROMKIND = "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -867,9 +865,6 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- save repository
     instance._REPO = repo
-
-    -- mark as global/project package?
-    instance._FROMKIND = repo:is_global() and "global" or "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance

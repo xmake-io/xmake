@@ -97,7 +97,7 @@ function _check_missing_packages(packages)
     local packages_missing = {}
     local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if not instance:exists() and (#instance:urls() > 0 or instance:from("system")) then
+        if not instance:exists() and (#instance:urls() > 0 or instance:isSys()) then
             if instance:optional() then
                 optional_missing[instance:name()] = instance
             else
