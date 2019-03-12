@@ -244,7 +244,8 @@ function repository.add(name, url, branch, is_global)
     repository._cache(is_global):set("repositories", repositories)
 
     -- flush it
-    return repository._cache(is_global):flush()
+    repository._cache(is_global):flush()
+    return true
 end
 
 -- remove repository from gobal or local directory
@@ -263,7 +264,8 @@ function repository.remove(name, is_global)
     repository._cache(is_global):set("repositories", repositories)
 
     -- flush it
-    return repository._cache(is_global):flush()
+    repository._cache(is_global):flush()
+    return true
 end
 
 -- clear all repositories
@@ -273,7 +275,8 @@ function repository.clear(is_global)
     repository._cache(is_global):set("repositories", {})
 
     -- flush it
-    return repository._cache(is_global):flush()
+    repository._cache(is_global):flush()
+    return true
 end
 
 
