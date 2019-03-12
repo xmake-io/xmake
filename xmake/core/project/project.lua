@@ -195,7 +195,8 @@ function project.interpreter()
         {
             -- set_xxx
             "set_project"
-        ,   "set_modes"
+        ,   "set_modes"     -- TODO deprecated
+        ,   "set_description"
             -- add_xxx
         ,   "add_requires"
         ,   "add_repositories"
@@ -795,7 +796,6 @@ end
 
 -- get string requires 
 function project.requires_str()
-
     if not project._REQUIRES_STR then
 
         -- reload the project file to handle `has_config()`
