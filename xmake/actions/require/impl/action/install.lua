@@ -87,7 +87,7 @@ function main(package)
                 else
 
                     -- build and install package to the install directory
-                    if not package:manifest_load() then
+                    if option.get("force") or not package:manifest_load() then
 
                         -- clean install directory first
                         os.tryrm(package:installdir())
@@ -102,10 +102,10 @@ function main(package)
 
                         -- save the package info to the manifest file
                         package:manifest_save()
-                    end
 
-                    -- test it
-                    test(package)
+                        -- test it
+                        test(package)
+                    end
                 end
             end
 
