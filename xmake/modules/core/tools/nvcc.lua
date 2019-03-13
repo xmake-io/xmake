@@ -102,6 +102,26 @@ function nf_optimize(self, level)
     return maps[level] 
 end
 
+-- make the language flag
+function nf_language(self, stdname)
+
+    -- the stdc++ maps
+    if _g.cxxmaps == nil then
+        _g.cxxmaps = 
+        {
+            cxx03       = "--std c++03"
+        ,   cxx11       = "--std c++11"
+        ,   cxx14       = "--std c++14"
+        }
+        local cxxmaps2 = {}
+        for k, v in pairs(_g.cxxmaps) do
+            cxxmaps2[k:gsub("xx", "++")] = v
+        end
+        table.join2(_g.cxxmaps, cxxmaps2)
+    end
+    return _g.cxxmaps[stdname]
+end
+
 -- make the define flag
 function nf_define(self, macro)
     return "-D" .. macro

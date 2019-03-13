@@ -60,12 +60,20 @@ language("cuda")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
+        ,   "target.languages"
+        ,   "target.defines"
+        ,   "target.undefines"
         ,   "option.symbols"
         ,   "option.warnings"
         ,   "option.optimize:check"
         ,   "option.vectorexts:check"
         ,   "option.includedirs"
+        ,   "option.languages"
+        ,   "option.defines"
+        ,   "option.undefines"
         ,   "platform.includedirs"
+        ,   "platform.defines"
+        ,   "platform.undefines"
         }
     ,   binary =
         {
