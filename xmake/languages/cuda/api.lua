@@ -35,6 +35,8 @@ function apis()
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
+    ,   "target.add_defines"
+    ,   "target.add_undefines"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
     ,   "option.add_links"
@@ -43,6 +45,8 @@ function apis()
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
+    ,   "option.add_defines"
+    ,   "option.add_undefines"
     ,   "option.add_rpathdirs"
     }
     _g.pathes = 
