@@ -38,6 +38,7 @@ local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local platform       = require("platform/platform")
+local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
@@ -50,6 +51,11 @@ function _instance.new(name, info)
     return instance
 end
 
+-- get the package name 
+function _instance:name()
+    return self._NAME
+end
+
 -- get the package configure
 function _instance:get(name)
 
@@ -60,9 +66,14 @@ function _instance:get(name)
     end
 end
 
--- get the package name 
-function _instance:name()
-    return self._NAME
+-- set the value to the package info
+function _instance:set(name, ...)
+    self._INFO:apival_set(name, ...)
+end
+
+-- add the value to the package info
+function _instance:add(name, ...)
+    self._INFO:apival_add(name, ...)
 end
 
 -- get the package description
@@ -245,7 +256,22 @@ function _instance:manifest_save()
     manifest.mode        = self:mode()
     manifest.configs     = self:configs()
     manifest.envs        = self:envs()
-    manifest.vars        = self:vars()
+
+    -- save variables
+    local vars = {}
+    local apis = language.apis()
+    for _, apiname in ipairs(table.join(apis.values, apis.pathes)) do
+        if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
+            local name = apiname:sub(13)
+            local value = self:get(name)
+            if value ~= nil then
+                vars[name] = value
+            end
+        end
+    end
+    manifest.vars = vars
+
+    -- save repository
     local repo = self:repo()
     if repo then
         manifest.repo        = {}
@@ -261,29 +287,14 @@ function _instance:manifest_save()
     end
 end
 
--- get the exported variables
-function _instance:vars()
-    local vars = self._VARS
-    if not vars then
-        vars = {}
-        self._VARS = vars
-    end
-    return vars
-end
-
--- get the given variable
-function _instance:getvar(name)
-    return self:vars()[name]
-end
-
--- set the given variable
+-- TODO: set the given variable, deprecated
 function _instance:setvar(name, ...)
-    self:vars()[name] = {...}
+    self:set(name, ...)
 end
 
--- add the given variable
+-- TODO add the given variable, deprecated
 function _instance:addvar(name, ...)
-    self:vars()[name] = table.join(self:vars()[name] or {}, ...)
+    self:add(name, ...)
 end
 
 -- get the exported environments
@@ -653,6 +664,9 @@ function package._interpreter()
  
     -- define apis
     interp:api_define(package.apis())
+
+    -- define apis for language
+    interp:api_define(language.apis())
     
     -- save interpreter
     package._INTERPRETER = interp
