@@ -128,7 +128,8 @@ function _parse_require(require_str, requires_extra, parentinfo)
         group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
-        config           = require_extra.config,    -- the build configuration of package
+        configs          = require_extra.configs or -- the build configuration of package
+                           require_extra.config,    -- TODO deprecated
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional -- default: false, inherit parentinfo.optional
     }

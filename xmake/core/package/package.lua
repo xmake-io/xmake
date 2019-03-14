@@ -76,6 +76,11 @@ function _instance:add(name, ...)
     self._INFO:apival_add(name, ...)
 end
 
+-- get the extra configuration
+function _instance:extraconf(name, item, key)
+    return self._INFO:extraconf(name, item, key)
+end
+
 -- get the package description
 function _instance:description()
     return self:get("description")
@@ -418,11 +423,19 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
--- get the all configuration values of package
+-- get the given configuration value of package
+function _instance:config(name)
+    local configs = self:configs()
+    if configs then
+        return configs[name]
+    end
+end
+
+-- get the configurations of package
 function _instance:configs()
     local requireinfo = self:requireinfo()
     if requireinfo then
-        return requireinfo.config
+        return requireinfo.configs
     end
 end
 
@@ -444,14 +457,6 @@ function _instance:group()
     local requireinfo = self:requireinfo()
     if requireinfo then
         return requireinfo.group
-    end
-end
-
--- get the given configuration value of package
-function _instance:config(name)
-    local configs = self:configs()
-    if configs then
-        return configs[name]
     end
 end
 
@@ -691,6 +696,7 @@ function package.apis()
         ,   "package.add_deps"
         ,   "package.add_urls"
         ,   "package.add_imports"
+        ,   "package.add_configs"
         }
     ,   script =
         {

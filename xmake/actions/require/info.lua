@@ -154,6 +154,34 @@ function main(package_names)
             end
         end
 
+        -- show requires
+        cprint("      -> ${magenta}requires${clear}:")
+        cprint("         -> ${cyan}plat${clear}: %s", instance:plat())
+        cprint("         -> ${cyan}arch${clear}: %s", instance:arch())
+        cprint("         -> ${cyan}mode${clear}: %s", instance:mode())
+        local configs_required = instance:configs()
+        if configs_required then
+            cprint("         -> ${cyan}configs${clear}:")
+            for name, value in pairs(configs_required) do
+                cprint("            -> %s: %s", name, value)
+            end
+        end
+
+        -- show configs
+        local configs = instance:get("configs")
+        if configs then
+            cprint("      -> ${magenta}configs${clear}:")
+            for _, conf in ipairs(configs) do
+                cprint("         -> ${cyan}%s${clear}:", conf)
+                for name, value in pairs(instance:extraconf("configs", conf)) do
+                    if type(value) == "table" then
+                        value = string.serialize(value, true)
+                    end
+                    cprint("            -> %s: %s", name, value)
+                end
+            end
+        end
+
         -- end
         print("")
     end
