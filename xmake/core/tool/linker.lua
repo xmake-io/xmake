@@ -247,7 +247,7 @@ end
 -- get the link flags
 --
 -- @param opt   the argument options (contain all the linker attributes of target), 
---              .e.g {target = ..., targetkind = "static", config = {ldflags = "", links = "", linkdirs = "", ...}}
+--              .e.g {target = ..., targetkind = "static", configs = {ldflags = "", links = "", linkdirs = "", ...}}
 --
 function linker:linkflags(opt)
 
@@ -271,8 +271,9 @@ function linker:linkflags(opt)
     self:_add_flags_from_target(flags, target)
 
     -- add flags for the argument
-    if opt.config then
-        self:_add_flags_from_argument(flags, target, opt.config)
+    local configs = opt.configs or opt.config
+    if configs then
+        self:_add_flags_from_argument(flags, target, configs)
     end
 
     -- add flags from the platform 

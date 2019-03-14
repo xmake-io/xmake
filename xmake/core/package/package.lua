@@ -646,7 +646,7 @@ function _instance:fetch(opt)
     return fetchinfo
 end
 
--- exists this package in local
+-- exists this package?
 function _instance:exists()
     return self._FETCHINFO
 end

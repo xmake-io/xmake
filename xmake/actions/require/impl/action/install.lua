@@ -79,6 +79,7 @@ function main(package)
             local installtask = function () 
 
                 -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+                local need_test = false
                 if package:is3rd() then
                     local script = package:script("install")
                     if script ~= nil then
@@ -102,10 +103,20 @@ function main(package)
 
                         -- save the package info to the manifest file
                         package:manifest_save()
-
-                        -- test it
-                        test(package)
+                        need_test = true
                     end
+                end
+
+                -- fetch package and force to flush the cache
+                local fetchinfo = package:fetch({force = true})
+                if option.get("verbose") or option.get("diagnosis") then
+                    print(fetchinfo)  
+                end
+                assert(fetchinfo, "fetch %s failed!", tipname)
+
+                -- test it
+                if need_test then
+                    test(package)
                 end
             end
 
@@ -115,13 +126,6 @@ function main(package)
             else
                 process.asyncrun(installtask)
             end
-
-            -- fetch package and force to flush the cache
-            local fetchinfo = package:fetch({force = true})
-            if option.get("verbose") or option.get("diagnosis") then
-                print(fetchinfo)  
-            end
-            assert(fetchinfo, "fetch %s failed!", tipname)
 
             -- trace
             cprint("${color.success}${text.success}")

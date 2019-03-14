@@ -601,44 +601,10 @@ function uninstall_packages(requires, opt)
     -- remove all packages
     local packages = {}
     for _, instance in ipairs(load_packages(requires, opt)) do
-        if os.isfile(instance:prefixfile()) then
-
-            -- uninstall package from the prefix directory
-            action.prefix.uninstall(instance)
-
-            -- remove ok
+        if os.isfile(instance:manifest_file()) then
             table.insert(packages, instance)
         end
-
-        -- remove the installed files
         os.tryrm(instance:installdir())
-    end
-    return packages
-end
-
--- only unlink packages from the prefix directory
-function unlink_packages(requires, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- do not remove dependent packages
-    opt.nodeps = true
-
-    -- clear the detect cache
-    detectcache.clear()
-
-    -- unlink all packages
-    local packages = {}
-    for _, instance in ipairs(load_packages(requires, opt)) do
-        if os.isfile(instance:prefixfile()) then
-
-            -- uninstall package from the prefix directory
-            action.prefix.uninstall(instance)
-
-            -- remove ok
-            table.insert(packages, instance)
-        end
     end
     return packages
 end

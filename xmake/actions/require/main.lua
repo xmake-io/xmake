@@ -34,7 +34,6 @@ import("clear")
 import("search")
 import("install")
 import("uninstall")
-import("unlink")
 
 --
 -- the default repositories:
@@ -88,11 +87,6 @@ function main()
     elseif option.get("uninstall") then
 
         uninstall(option.get("requires"))
-
-    -- unlink the installed packages 
-    elseif option.get("unlink") then
-
-        unlink(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then

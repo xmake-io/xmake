@@ -51,7 +51,6 @@ task("require")
                 ,   {                                                                                                                                }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
-                ,   {nil, "unlink",     "k",  nil,       "Only unlink the installed packages."                                                       }
                 ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages."                                                         }
                 ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                                           }
                 ,   {                                                                                                                                }

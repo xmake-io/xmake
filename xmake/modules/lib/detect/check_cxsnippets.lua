@@ -120,7 +120,7 @@ end
 --                  .e.g 
 --                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
---                  , config = {defines = "xx", cxflags = ""}}
+--                  , configs = {defines = "xx", cxflags = ""}}
 --
 -- funcs:
 --      sigsetjmp

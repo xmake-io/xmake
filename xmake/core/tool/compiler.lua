@@ -266,7 +266,7 @@ end
 --
 -- @param opt   the argument options (contain all the compiler attributes of target), 
 --              .e.g
---              {target = ..., targetkind = "static", config = {defines = "", cxflags = "", includedirs = ""}}
+--              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
 -- @return      flags string, flags list
 --
@@ -300,8 +300,9 @@ function compiler:compflags(opt)
     end
 
     -- add flags for the argument
-    if opt.config then
-        self:_add_flags_from_argument(flags, target, opt.config)
+    local configs = opt.configs or opt.config
+    if configs then
+        self:_add_flags_from_argument(flags, target, configs)
     end
 
     -- add flags from the platform 
