@@ -294,6 +294,50 @@ function _sort_packages_urls(packages)
     end
 end
 
+-- check the configurations of packages
+--
+-- package("pcre2")
+--      add_configs("bitwidth", {description = "Set the code unit width.", default = "8", values = {"8", "16", "32"}})
+--      add_configs("bitwidth", {type = "number", values = {8, 16, 32}})
+--      add_configs("bitwidth", {constraint = function(value) if tonumber(value) < 100 then return true end})
+--
+function _check_packages_configs(packages)
+    for _, package in ipairs(packages) do
+        local configs_defined = {}
+        for _, name in ipairs(package:get("configs")) do
+            configs_defined[name] = package:extraconf("configs", name) or {}
+        end
+        for name, value in pairs(package:configs()) do
+            local conf = configs_defined[name]
+            if conf then
+                local config_type = conf.type or "string"
+                if type(value) ~= config_type then
+                    raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
+                end
+                if conf.values then
+                    local found = false
+                    for _, config_value in ipairs(conf.values) do
+                        if tostring(value) == tostring(config_value) then
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then
+                        raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
+                    end
+                end
+                if conf.constraint then
+                    if not conf.constraint(value) then
+                        raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
+                    end
+                end
+            else
+                raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
+            end
+        end
+    end
+end
+
 -- select packages version
 function _select_packages_version(packages)
 
@@ -441,6 +485,9 @@ function install_packages(requires, opt)
 
     -- load packages
     local packages = load_packages(requires, opt)
+
+    -- check the configurations of packages
+    _check_packages_configs(packages)
 
     -- fetch packages (with system) from local first
     if not option.get("force") then 

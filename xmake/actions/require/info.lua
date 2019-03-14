@@ -168,10 +168,10 @@ function main(package_names)
         end
 
         -- show configs
-        local configs = instance:get("configs")
-        if configs then
+        local configs_defined = instance:get("configs")
+        if configs_defined then
             cprint("      -> ${magenta}configs${clear}:")
-            for _, conf in ipairs(configs) do
+            for _, conf in ipairs(configs_defined) do
                 cprint("         -> ${cyan}%s${clear}:", conf)
                 for name, value in pairs(instance:extraconf("configs", conf)) do
                     if type(value) == "table" then

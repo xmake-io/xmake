@@ -433,10 +433,26 @@ end
 
 -- get the configurations of package
 function _instance:configs()
-    local requireinfo = self:requireinfo()
-    if requireinfo then
-        return requireinfo.configs
+    local configs = self._CONFIGS
+    if configs == nil then
+        local configs_defined = self:get("configs")
+        if configs_defined then
+            configs = {}
+            local requireinfo = self:requireinfo()
+            local configs_required = requireinfo and requireinfo.configs or {}
+            for _, name in ipairs(table.wrap(configs_defined)) do
+                local value = configs_required[name]
+                if value == nil then
+                    value = self:extraconf("configs", name, "default")
+                end
+                configs[name] = value
+            end
+        else
+            configs = false
+        end
+        self._CONFIGS = configs
     end
+    return configs and configs or nil
 end
 
 -- get the build hash
