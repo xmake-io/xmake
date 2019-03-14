@@ -17,6 +17,7 @@
 * [#179](https://github.com/xmake-io/xmake/issues/179): Generate CMakelist.txt file for `xmake project` plugin
 * [#361](https://github.com/xmake-io/xmake/issues/361): Support vs2019 preview
 * [#368](https://github.com/xmake-io/xmake/issues/368): Support `private, public, interface` to improve dependency inheritance like cmake
+* [#284](https://github.com/xmake-io/xmake/issues/284): Add passing user configs description for `package()`
 
 ### Changes
 
@@ -572,6 +573,7 @@
 * [#179](https://github.com/xmake-io/xmake/issues/179): 扩展`xmake project`插件，新增CMakelist.txt生成支持
 * [#361](https://github.com/xmake-io/xmake/issues/361): 增加对vs2019 preview的支持
 * [#368](https://github.com/xmake-io/xmake/issues/368): 支持`private, public, interface`属性设置去继承target配置
+* [#284](https://github.com/xmake-io/xmake/issues/284): 通过`add_configs()`添加和传递用户自定义配置到`package()`
 
 ### 改进
 
