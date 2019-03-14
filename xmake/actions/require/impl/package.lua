@@ -299,7 +299,7 @@ end
 -- package("pcre2")
 --      add_configs("bitwidth", {description = "Set the code unit width.", default = "8", values = {"8", "16", "32"}})
 --      add_configs("bitwidth", {type = "number", values = {8, 16, 32}})
---      add_configs("bitwidth", {constraint = function(value) if tonumber(value) < 100 then return true end})
+--      add_configs("bitwidth", {restrict = function(value) if tonumber(value) < 100 then return true end})
 --
 function _check_packages_configs(packages)
     for _, package in ipairs(packages) do
@@ -326,8 +326,8 @@ function _check_packages_configs(packages)
                         raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
                     end
                 end
-                if conf.constraint then
-                    if not conf.constraint(value) then
+                if conf.restrict then
+                    if not conf.restrict(value) then
                         raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
                     end
                 end
