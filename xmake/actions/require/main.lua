@@ -30,7 +30,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("list")
 import("info")
-import("clear")
+import("clean")
 import("search")
 import("install")
 import("uninstall")
@@ -73,10 +73,10 @@ function main()
     -- load project first
     _load_project()
 
-    -- clear all installed packages cache
-    if option.get("clear") then
+    -- clean all installed packages cache
+    if option.get("clean") then
 
-        clear(option.get("global"))
+        clean(option.get("global"))
 
     -- search for the given packages from repositories
     elseif option.get("search") then
