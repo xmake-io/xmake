@@ -29,12 +29,14 @@ import("lib.detect.find_file")
 -- get configs
 function _get_configs(package, configs)
     local configs = configs or {}
-    local vs_runtime = package:config("vs_runtime")
-    if vs_runtime then
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+    if package:plat() == "windows" then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+            table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+            table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+            table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+        end
     end
     return configs
 end
