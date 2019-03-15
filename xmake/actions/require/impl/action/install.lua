@@ -100,6 +100,9 @@ function main(package)
                                 filter.call(script, package)
                             end
                         end
+
+                        -- save the package info to the manifest file
+                        package:manifest_save()
                         need_test = true
                     end
                 end
@@ -111,14 +114,9 @@ function main(package)
                 end
                 assert(fetchinfo, "fetch %s failed!", tipname)
 
-                -- need continue to test it?
+                -- test it
                 if need_test then
-
-                    -- test it
                     test(package)
-
-                    -- save the package info to the manifest file
-                    package:manifest_save()
                 end
             end
 
@@ -144,6 +142,9 @@ function main(package)
 
                 -- trace
                 cprint("${color.failure}${text.failure}")
+
+                -- remove the invalid package directory
+                os.tryrm(package:installdir())
 
                 -- failed
                 if not package:requireinfo().optional then
