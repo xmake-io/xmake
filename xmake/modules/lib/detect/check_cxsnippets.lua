@@ -199,7 +199,7 @@ function main(snippets, opt)
 
     -- trace
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
-        local kind = ifelse(sourcekind == "cc", "c", "c++")
+        local kind = opt.sourcekind == "cc" and "c" or "c++"
         if #includes > 0 then
             cprint("${dim}> checking for the %s includes(%s)", kind, table.concat(includes, ", "))
         end

@@ -30,7 +30,7 @@ import("lib.detect.check_cxsnippets")
 -- @param funcs     the funcs
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], includes = "", config = {linkdirs = .., links = .., defines = .., ..}}
+--                  { verbose = false, target = [target|option], includes = "", configs = {linkdirs = .., links = .., defines = .., ..}}
 --
 -- funcs:
 --      sigsetjmp
@@ -55,5 +55,6 @@ function main(funcs, opt)
     opt.funcs      = funcs
     
     -- has funcs?
-    return check_cxsnippets("", opt)
+    local name = opt.name or "has_cfuncs"
+    return check_cxsnippets({[name] = ""}, opt)
 end

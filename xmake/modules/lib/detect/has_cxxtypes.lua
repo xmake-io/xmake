@@ -30,7 +30,7 @@ import("lib.detect.check_cxsnippets")
 -- @param types     the types
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], includes = .., config = {defines = .., ..}}
+--                  { verbose = false, target = [target|option], includes = .., configs = {defines = .., ..}}
 --
 -- @return          true or false
 --
@@ -49,5 +49,6 @@ function main(types, opt)
     opt.types      = types
     
     -- has types?
-    return check_cxsnippets("", opt)
+    local name = opt.name or "has_cxxtypes"
+    return check_cxsnippets({[name] = ""}, opt)
 end

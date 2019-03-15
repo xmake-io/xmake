@@ -30,7 +30,7 @@ import("lib.detect.check_cxsnippets")
 -- @param includes  the includes
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], config = {defines = "..", .. }}
+--                  { verbose = false, target = [target|option], configs = {defines = "..", .. }}
 --
 -- @return          true or false
 --
@@ -49,5 +49,6 @@ function main(includes, opt)
     opt.includes   = includes
     
     -- has includes?
-    return check_cxsnippets("", opt)
+    local name = opt.name or "has_cincludes"
+    return check_cxsnippets({[name] = ""}, opt)
 end
