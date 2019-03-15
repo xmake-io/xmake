@@ -154,6 +154,18 @@ function main(package_names)
             end
         end
 
+        -- show supported platforms
+        local platforms = {}
+        local on_install = instance:get("install")
+        if type(on_install) == "table" then
+            for plat, _ in pairs(on_install) do
+                table.insert(platforms, plat)
+            end
+        else
+            table.insert(platforms, "all")
+        end
+        cprint("      -> ${magenta}platforms${clear}: %s", table.concat(platforms, ", "))
+
         -- show requires
         cprint("      -> ${magenta}requires${clear}:")
         cprint("         -> ${cyan}plat${clear}: %s", instance:plat())
