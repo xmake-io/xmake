@@ -100,9 +100,6 @@ function main(package)
                                 filter.call(script, package)
                             end
                         end
-
-                        -- save the package info to the manifest file
-                        package:manifest_save()
                         need_test = true
                     end
                 end
@@ -114,9 +111,14 @@ function main(package)
                 end
                 assert(fetchinfo, "fetch %s failed!", tipname)
 
-                -- test it
+                -- need continue to test it?
                 if need_test then
+
+                    -- test it
                     test(package)
+
+                    -- save the package info to the manifest file
+                    package:manifest_save()
                 end
             end
 
