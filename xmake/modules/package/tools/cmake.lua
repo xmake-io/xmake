@@ -26,6 +26,19 @@
 import("core.base.option")
 import("lib.detect.find_file")
 
+-- get configs
+function _get_configs(package, configs)
+    local configs = configs or {}
+    local vs_runtime = package:config("vs_runtime")
+    if vs_runtime then
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+    end
+    return configs
+end
+
 -- install package
 function install(package, configs)
 
@@ -39,7 +52,7 @@ function install(package, configs)
         table.insert(argv, "-A")
         table.insert(argv, "x64")
     end
-    for name, value in pairs(configs) do
+    for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then

@@ -124,7 +124,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         reponame         = reponame,
         version          = version,
         alias            = require_extra.alias,     -- set package alias name
-        debug            = require_extra.debug,     -- uses the debug package, default: false
         group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
@@ -241,6 +240,18 @@ function _sort_packagedeps(package)
     return orderdeps
 end
 
+-- add some builtin configs to package
+function _add_package_configs(package)
+    package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
+    package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
+    package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
+    package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
+    package:add("configs", "ldflags", {builtin = true, description = "Set the binary linker flags."})
+    package:add("configs", "arflags", {builtin = true, description = "Set the static library archiver flags."})
+    package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
+end
+
 -- load all required packages
 function _load_packages(requires, opt)
 
@@ -271,6 +282,9 @@ function _load_packages(requires, opt)
                 package._ORDERDEPS = table.unique(_sort_packagedeps(package))
             end
 
+            -- add some builtin configs to package
+            _add_package_configs(package)
+
             -- save this package package
             table.insert(packages, package)
         end
@@ -293,7 +307,7 @@ function _sort_packages_urls(packages)
         package:urls_set(fasturl.sort(package:urls()))
     end
 end
-
+  
 -- check the configurations of packages
 --
 -- package("pcre2")
@@ -456,6 +470,9 @@ function load_packages(requires, opt)
     -- select packages version
     _select_packages_version(packages)
 
+    -- check the configurations of packages
+    _check_packages_configs(packages)
+
     -- remove repeat packages with same the package name and version
     local unique = {}
     local results = {}
@@ -485,9 +502,6 @@ function install_packages(requires, opt)
 
     -- load packages
     local packages = load_packages(requires, opt)
-
-    -- check the configurations of packages
-    _check_packages_configs(packages)
 
     -- fetch packages (with system) from local first
     if not option.get("force") then 

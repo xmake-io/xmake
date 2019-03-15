@@ -158,7 +158,6 @@ function main(package_names)
         cprint("      -> ${magenta}requires${clear}:")
         cprint("         -> ${cyan}plat${clear}: %s", instance:plat())
         cprint("         -> ${cyan}arch${clear}: %s", instance:arch())
-        cprint("         -> ${cyan}mode${clear}: %s", instance:mode())
         local configs_required = instance:configs()
         if configs_required then
             cprint("         -> ${cyan}configs${clear}:")
@@ -167,17 +166,50 @@ function main(package_names)
             end
         end
 
-        -- show configs
+        -- show user configs
         local configs_defined = instance:get("configs")
         if configs_defined then
             cprint("      -> ${magenta}configs${clear}:")
             for _, conf in ipairs(configs_defined) do
-                cprint("         -> ${cyan}%s${clear}:", conf)
-                for name, value in pairs(instance:extraconf("configs", conf)) do
-                    if type(value) == "table" then
-                        value = string.serialize(value, true)
+                local configs_extra = instance:extraconf("configs", conf)
+                if configs_extra and not configs_extra.builtin then
+                    cprintf("         -> ${cyan}%s${clear}: ", conf)
+                    if configs_extra.description then
+                        printf(configs_extra.description)
                     end
-                    cprint("            -> %s: %s", name, value)
+                    if configs_extra.default ~= nil then
+                        printf(" (default: %s)", configs_extra.default)
+                    elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
+                        printf(" (type: %s)", configs_extra.type)
+                    end
+                    print("")
+                    if configs_extra.values then
+                        cprint("            -> values: %s", string.serialize(configs_extra.values, true))
+                    end
+                end
+            end
+        end
+
+        -- show builtin configs
+        local configs_defined = instance:get("configs")
+        if configs_defined then
+            cprint("      -> ${magenta}configs (builtin)${clear}:")
+            for _, conf in ipairs(configs_defined) do
+                local configs_extra = instance:extraconf("configs", conf)
+                if configs_extra and configs_extra.builtin then
+                    cprintf("         -> ${cyan}%s${clear}: ", conf)
+                    if configs_extra.description then
+                        printf(configs_extra.description)
+                    end
+                    if configs_extra.default ~= nil then
+                        printf(" (default: %s)", configs_extra.default)
+                    elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
+                        printf(" (type: %s)", configs_extra.type)
+                    end
+                    print("")
+                    if configs_extra.values then
+                        cprint("            -> values: %s", string.serialize(configs_extra.values, true))
+                    end
                 end
             end
         end

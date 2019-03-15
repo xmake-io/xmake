@@ -458,7 +458,7 @@ end
 -- get the build hash
 function _instance:buildhash()
     if self._BUILDHASH == nil then
-        local str = self:plat() .. self:arch() .. self:mode()
+        local str = self:plat() .. self:arch() 
         local configs = self:configs()
         if configs then
             str = str .. string.serialize(configs, true)
@@ -484,12 +484,7 @@ end
 
 -- is debug package?
 function _instance:debug()
-    -- @note always release for the binary package
-    if self:kind() == "binary" then
-        return false
-    end
-    local requireinfo = self:requireinfo()
-    return requireinfo and requireinfo.debug or false
+    return self:config("debug")
 end
 
 -- is the supported package?
