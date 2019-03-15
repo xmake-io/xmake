@@ -38,6 +38,23 @@ function _get_configs(package, configs)
             table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
         end
     end
+    local cflags = package:config("cflags")
+    if cflags then
+        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cflags .. '"')
+    end
+    local cxflags = package:config("cxflags")
+    if cxflags then
+        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cxflags .. '"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxflags .. '"')
+    end
+    local cxxflags = package:config("cxxflags")
+    if cxxflags then
+        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxxflags .. '"')
+    end
+    local asflags = package:config("asflags")
+    if asflags then
+        table.insert(configs, '-DCMAKE_ASM_FLAGS="' .. asflags .. '"')
+    end
     return configs
 end
 
@@ -54,6 +71,8 @@ function install(package, configs)
         table.insert(argv, "-A")
         table.insert(argv, "x64")
     end
+
+    -- pass configurations
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then

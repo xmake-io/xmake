@@ -22,6 +22,56 @@
 -- @file        autoconf.lua
 --
 
+-- get configs
+function _get_configs(package, configs)
+    local configs = configs or {}
+    table.insert(configs, "--prefix=" .. package:installdir())
+    return configs
+end
+
+-- enter environments
+function _enter_envs(package)
+    
+    -- get old environments
+    local envs    = {}
+    envs.CFLAGS   = os.getenv("CFLAGS")
+    envs.CXXFLAGS = os.getenv("CXXFLAGS")
+    envs.ASFLAGS  = os.getenv("ASFLAGS")
+
+    -- set new environments
+    local cflags   = package:config("cflags")
+    local cxflags  = package:config("cxflags")
+    local cxxflags = package:config("cxxflags")
+    local asflags  = package:config("asflags")
+    if package:plat() == "windows" then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            cxflags = (cxflags or "") .. " /" .. vs_runtime .. (package:debug() and "d" or "")
+        end
+    end
+    if cflags then
+        os.addenv("CFLAGS", cflags)
+    end
+    if cxflags then
+        os.addenv("CFLAGS", cxflags)
+        os.addenv("CXXFLAGS", cxflags)
+    end
+    if cxxflags then
+        os.addenv("CXXFLAGS", cxxflags)
+    end
+    if asflags then
+        os.addenv("ASFLAGS", asflags)
+    end
+    return envs
+end
+
+-- leave environments
+function _leave_envs(package, envs)
+    for k, v in pairs(envs) do
+        os.setenv(k, v)
+    end
+end
+
 -- install package
 function install(package, configs)
 
@@ -34,12 +84,9 @@ function install(package, configs)
         end
     end
 
-    -- inherit require and option configs
+    -- pass configurations
     local argv = {}
-    if not configs or not configs.prefix then
-        table.insert(argv, "--prefix=" .. package:installdir())
-    end
-    for name, value in pairs(configs) do
+    for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then
@@ -50,15 +97,8 @@ function install(package, configs)
         end
     end
 
-    -- inherit flags from configs
-    local flags_prev = {}
-    for _, name in ipairs({"cflags", "cxxflags", "ldflags"}) do
-        local flags = package:config(name) or (configs and configs[name] or nil)
-        if flags then
-            flags_prev[name] = os.getenv(name:upper())
-            os.addenv(name:upper(), flags)
-        end
-    end
+    -- enter environments
+    local envs = _enter_envs(package)
 
     -- do configure
     os.vrunv("./configure", argv)
@@ -67,9 +107,7 @@ function install(package, configs)
     os.vrun("make -j4")
     os.vrun("make install")
 
-    -- restore flags
-    for name, flags in pairs(flags_prev) do
-        os.setenv(name:upper(), flags)
-    end
+    -- leave environments
+    _leave_envs(package, envs)
 end
 

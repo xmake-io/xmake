@@ -25,11 +25,40 @@
 -- imports
 import("core.base.option")
 
+-- get configs
+function _get_configs(package, configs)
+    local configs  = configs or {}
+    local cflags   = package:config("cflags")
+    local cxflags  = package:config("cxflags")
+    local cxxflags = package:config("cxxflags")
+    local asflags  = package:config("asflags")
+    if package:plat() == "windows" then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            cxflags = (cxflags or "") .. " /" .. vs_runtime .. (package:debug() and "d" or "")
+        end
+    end
+    table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
+    if cflags then
+        table.insert(configs, '--cflags="' .. cflags .. '"')
+    end
+    if cxflags then
+        table.insert(configs, '--cxflags="' .. cxflags .. '"')
+    end
+    if cxxflags then
+        table.insert(configs, '--cxxflags="' .. cxxflags .. '"')
+    end
+    if asflags then
+        table.insert(configs, '--asflags="' .. asflags .. '"')
+    end
+    return configs
+end
+
 -- install package
 function install(package, configs)
 
     -- inherit builtin configs
-    local argv    = {"f", "-y"}
+    local argv = {"f", "-y"}
     local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
     for _, name in ipairs(names) do
         local value = get_config(name)
@@ -37,11 +66,17 @@ function install(package, configs)
             table.insert(argv, "--" .. name .. "=" .. tostring(value))
         end
     end
-    table.insert(argv, "--mode=" .. (package:debug() and "debug" or "release"))
 
-    -- inherit require and option configs
-    for name, value in pairs(table.join(package:configs() or {}, configs or {})) do
-        table.insert(argv, "--" .. name .. "=" .. tostring(value))
+    -- pass configurations
+    for name, value in pairs(_get_configs(package, configs)) do
+        value = tostring(value):trim()
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
     end
     if option.get("verbose") then
         table.insert(argv, "-v")

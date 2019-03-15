@@ -246,9 +246,7 @@ function _add_package_configs(package)
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
-    package:add("configs", "ldflags", {builtin = true, description = "Set the binary linker flags."})
-    package:add("configs", "arflags", {builtin = true, description = "Set the static library archiver flags."})
-    package:add("configs", "shflags", {builtin = true, description = "Set the shared library linker flags."})
+    package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
 end
 
