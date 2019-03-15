@@ -132,6 +132,15 @@ function _find_package_from_repo(name, opt)
         end
     end
 
+    -- update the project references file
+    local projectdir = os.projectdir()
+    if projectdir and os.isdir(projectdir) then
+        local references_file = path.join(installdir, "references.txt")
+        local references = os.isfile(references_file) and io.load(references_file) or {}
+        references[projectdir] = os.date("%y%m%d")
+        io.save(references_file, references)
+    end
+
     -- get version
     result.version = manifest.version or path.filename(path.directory(path.directory(manifest_file)))
     return result

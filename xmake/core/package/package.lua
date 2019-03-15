@@ -230,6 +230,18 @@ function _instance:installdir(...)
     return dir
 end
 
+-- get the references info of this package
+function _instance:references()
+    local references_file = path.join(self:installdir(), "references.txt")
+    if os.isfile(references_file) then
+        local references, errors = io.load(references_file)
+        if not references then
+            os.raise(errors)
+        end
+        return references
+    end
+end
+
 -- get the manifest file of this package
 function _instance:manifest_file()
     return path.join(self:installdir(), "manifest.txt")

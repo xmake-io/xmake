@@ -129,6 +129,12 @@ function main(package_names)
             end
         end
 
+        -- show repository
+        local repo = instance:repo()
+        if repo then
+            cprint("      -> ${magenta}repo${clear}: %s %s %s", repo:name(), repo:url(), repo:branch() or "")
+        end
+
         -- show deps
         local deps = instance:orderdeps()
         if deps and #deps > 0 then
@@ -223,6 +229,15 @@ function main(package_names)
                         cprint("            -> values: %s", string.serialize(configs_extra.values, true))
                     end
                 end
+            end
+        end
+
+        -- show references
+        local references = instance:references()
+        if references then
+            cprint("      -> ${magenta}references${clear}:")
+            for projectdir, refdate in pairs(references) do
+                cprint("         -> %s: %s%s", refdate, projectdir, os.isdir(projectdir) and "" or " ${red}(not found)${clear}")
             end
         end
 
