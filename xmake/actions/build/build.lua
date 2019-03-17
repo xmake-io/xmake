@@ -71,6 +71,13 @@ end
 -- build the given target 
 function _build_target(target)
 
+    -- enter the environments of the target packages
+    local oldenvs = {}
+    for name, values in pairs(target:pkgenvs()) do
+        oldenvs[name] = os.getenv(name)
+        os.addenv(name, unpack(values))
+    end
+
     -- the target scripts
     local scripts =
     {
@@ -136,6 +143,11 @@ function _build_target(target)
         if script ~= nil then
             script(target, {origin = (i == 2 and _do_build_target or nil)})
         end
+    end
+
+    -- leave the environments of the target packages
+    for name, values in pairs(oldenvs) do
+        os.setenv(name, values)
     end
 
     -- update target index
