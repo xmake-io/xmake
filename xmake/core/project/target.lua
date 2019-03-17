@@ -572,6 +572,28 @@ function _instance:orderpkgs()
     return self._ORDERPKGS_ENABLED
 end
 
+-- get the environments of packages
+function _instance:pkgenvs()
+    local pkgenvs = self._PKGENVS 
+    if not pkgenvs then
+        pkgenvs = {}
+        self._PKGENVS = pkgenvs
+        for _, pkgname in ipairs(table.wrap(self:get("packages"))) do
+            local pkg = self:pkg(pkgname)
+            if pkg then
+                local envs = pkg:get("envs")
+                if envs then
+                    for name, values in pairs(envs) do
+                        pkgenvs[name] = pkgenvs[name] or {}
+                        table.join2(pkgenvs[name], values)
+                    end
+                end
+            end
+        end
+    end
+    return pkgenvs
+end
+
 -- get the config info of the given package 
 function _instance:pkgconfig(pkgname)
     local extra_packages = self:get("__extra_packages")

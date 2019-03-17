@@ -131,9 +131,6 @@ function sandbox_lib_detect_find_program._find_from_packages(name, opt)
 
     -- init pathes
     local pathes = {}
-    table.insert(pathes, path.join(installdir, "bin"))
-
-    -- load manifest info
     local manifest = io.load(manifest_file)
     if manifest and manifest.envs then
         local pathenvs = manifest.envs.PATH

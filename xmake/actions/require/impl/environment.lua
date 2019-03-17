@@ -42,11 +42,12 @@ function _enter_package(package_name, envs, installdir)
 
     -- add the new environments
     oldenvs.PATH = os.getenv("PATH") 
-    os.addenv("PATH", path.join(installdir, "bin"))
     for name, values in pairs(envs) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" then
-            for _, value in ipairs(values) do
+            if path.is_absolute(value) then
+                os.addenv(name, value)
+            else
                 os.addenv(name, path.join(installdir, value))
             end
         else

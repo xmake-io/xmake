@@ -319,6 +319,9 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
+        if self:kind() == "binary" then
+            envs.PATH = {"bin"}
+        end
         self._ENVS = envs
     end
     return envs
@@ -336,15 +339,15 @@ function _instance:envs_enter()
 
     -- add the new environments
     local installdir = self:installdir()
-    if self:kind() == "binary" then
-        oldenvs.PATH = os.getenv("PATH") 
-        os.addenv("PATH", path.join(installdir, "bin"))
-    end
     for name, values in pairs(self:envs()) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" then
             for _, value in ipairs(values) do
-                os.addenv(name, path.join(installdir, value))
+                if path.is_absolute(value) then
+                    os.addenv(name, value)
+                else
+                    os.addenv(name, path.join(installdir, value))
+                end
             end
         else
             os.addenv(name, unpack(values))
