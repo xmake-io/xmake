@@ -27,6 +27,7 @@ package("git")
     end
 
     on_load("windows", function (package)
+        package:addenv("PATH", path.join("share", "MinGit", "mingw32", "bin"))
         package:addenv("PATH", path.join("share", "MinGit", "cmd"))
     end)
 

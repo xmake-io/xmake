@@ -127,13 +127,13 @@ end
 function leave()
 
     -- leave the environments of installed packages 
-    for _, instance in ipairs(_g._PACKAGES) do
+    for _, instance in irpairs(_g._PACKAGES) do
         instance:envs_leave()
     end
     _g._PACKAGES = nil
 
     -- leave the environments of git and 7z
-    _leave_packages("git", "7z")
+    _leave_packages("7z", "git")
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

@@ -93,12 +93,22 @@ function main(package)
                         -- clean install directory first
                         os.tryrm(package:installdir())
 
+                        -- enter the environments of all package dependencies
+                        for _, dep in ipairs(package:orderdeps()) do
+                            dep:envs_enter()
+                        end
+
                         -- do install
                         for i = 1, 3 do
                             local script = scripts[i]
                             if script ~= nil then
                                 filter.call(script, package)
                             end
+                        end
+
+                        -- leave the environments of all package dependencies
+                        for _, dep in irpairs(package:orderdeps()) do
+                            dep:envs_leave()
                         end
 
                         -- save the package info to the manifest file
