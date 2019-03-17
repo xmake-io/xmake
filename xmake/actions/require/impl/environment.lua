@@ -29,9 +29,66 @@ import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
 import("package")
 
+-- enter the package environments
+function _enter_package(package_name, envs, installdir)
+
+    -- save the old environments
+    _g._OLDENVS = _g._OLDENVS or {}
+    local oldenvs = _g._OLDENVS[package_name]
+    if not oldenvs then
+        oldenvs = {}
+        _g._OLDENVS[package_name] = oldenvs
+    end
+
+    -- add the new environments
+    oldenvs.PATH = os.getenv("PATH") 
+    os.addenv("PATH", path.join(installdir, "bin"))
+    for name, values in pairs(envs) do
+        oldenvs[name] = oldenvs[name] or os.getenv(name)
+        if name == "PATH" then
+            for _, value in ipairs(values) do
+                os.addenv(name, path.join(installdir, value))
+            end
+        else
+            os.addenv(name, unpack(values))
+        end
+    end
+end
+
+-- leave the package environments
+function _leave_package(package_name)
+    _g._OLDENVS = _g._OLDENVS or {}
+    local oldenvs = _g._OLDENVS[package_name]
+    if oldenvs then
+        for name, values in pairs(oldenvs) do
+            os.setenv(name, values)
+        end
+        _g._OLDENVS[package_name] = nil
+    end
+end
+
+-- enter environment of the given binary packages, git, 7z, ..
+function _enter_packages(...)
+    for _, name in ipairs({...}) do
+        for _, manifest_file in ipairs(os.files(path.join(core_package.installdir(), name:sub(1, 1), name, "*", "*", "manifest.txt"))) do
+            local manifest = io.load(manifest_file) 
+            if manifest and manifest.plat == os.host() and manifest.arch == os.arch() then
+                _enter_package(name, manifest.envs, path.directory(manifest_file))
+            end
+        end
+    end
+end
+
+-- leave environment of the given binary packages, git, 7z, ..
+function _leave_packages(...)
+    for _, name in ipairs({...}) do
+        _leave_package(name)
+    end
+end
+
 -- enter environment
 --
--- ensure that we can find some basic tools: git, make/nmake/cmake, msbuild ...
+-- ensure that we can find some basic tools: git, unzip, ...
 --
 -- If these tools not exist, we will install it first.
 --
@@ -45,19 +102,38 @@ function enter()
         raise("unzip not found! we need install it first")
     end
 
+    -- enter the environments of git and 7z
+    _enter_packages("git", "7z")
+
     -- git not found? install it first
+    local packages = {}
     if not find_tool("git") then
-        package.install_packages("git")
+        table.join2(packages, package.install_packages("git"))
     end
 
     -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
     if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
-        package.install_packages("7z")
+        table.join2(packages, package.install_packages("7z"))
     end
+
+    -- enter the environments of installed packages 
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
+    end
+    _g._PACKAGES = packages
 end
 
 -- leave environment
 function leave()
+
+    -- leave the environments of installed packages 
+    for _, instance in ipairs(_g._PACKAGES) do
+        instance:envs_leave()
+    end
+    _g._PACKAGES = nil
+
+    -- leave the environments of git and 7z
+    _leave_packages("git", "7z")
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

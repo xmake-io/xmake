@@ -117,16 +117,52 @@ function sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
     end
 end
 
+-- find program from the xmake packages
+function sandbox_lib_detect_find_program._find_from_packages(name, opt)
+
+    -- get the manifest file of package, .e.g ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt 
+    local manifest_file = path.join(package.installdir(), name:sub(1, 1), name, opt.version, opt.buildhash, "manifest.txt")
+    if not os.isfile(manifest_file) then
+        return 
+    end
+
+    -- get install directory of this package
+    local installdir = path.directory(manifest_file)
+
+    -- init pathes
+    local pathes = {}
+    table.insert(pathes, path.join(installdir, "bin"))
+
+    -- load manifest info
+    local manifest = io.load(manifest_file)
+    if manifest and manifest.envs then
+        local pathenvs = manifest.envs.PATH
+        if pathenvs then
+            for _, pathenv in ipairs(pathenvs) do
+                table.insert(pathes, path.join(installdir, pathenv))
+            end
+        end
+    end
+
+    -- find it
+    return sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
+end
+
 -- find program
 function sandbox_lib_detect_find_program._find(name, pathes, opt)
 
-    -- attempt to check it from the given directories
+    -- attempt to find it from the given directories
     local program_path = sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
     if program_path then
         return program_path
     end
 
-    -- attempt to check it from regists
+    -- attempt to find it from the xmake packages
+    if opt.version and opt.buildhash then
+        return sandbox_lib_detect_find_program._find_from_packages(name, opt)
+    end
+
+    -- attempt to find it from regists
     if os.host() == "windows" then
         local program_name = name:lower()
         if not program_name:endswith(".exe") then
@@ -143,7 +179,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
             end
         end
     else
-        -- attempt to check it use `which program` command
+        -- attempt to find it use `which program` command
         local ok, program_path = os.iorunv("which", {name})
         if ok and program_path then
             -- check it
@@ -156,7 +192,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
         end
     end
 
-    -- attempt to check it from the some default system directories
+    -- attempt to find it from the some default system directories
     local syspathes = {}
     if os.host() ~= "windows" then
         table.insert(syspathes, "/usr/local/bin")
@@ -169,7 +205,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
         end
     end
 
-    -- attempt to check it directly in current environment 
+    -- attempt to find it directly in current environment 
     --
     -- @note must be detected at the end, because full path is more accurate
     --

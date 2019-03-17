@@ -107,6 +107,9 @@ function main(package)
                     end
                 end
 
+                -- enter the package environments
+                package:envs_enter()
+
                 -- fetch package and force to flush the cache
                 local fetchinfo = package:fetch({force = true})
                 if option.get("verbose") or option.get("diagnosis") then
@@ -118,6 +121,9 @@ function main(package)
                 if need_test then
                     test(package)
                 end
+
+                -- leave the package environments
+                package:envs_leave()
             end
 
             -- install package
@@ -142,6 +148,9 @@ function main(package)
 
                 -- trace
                 cprint("${color.failure}${text.failure}")
+
+                -- leave the package environments
+                package:envs_leave()
 
                 -- remove the invalid package directory
                 os.tryrm(package:installdir())

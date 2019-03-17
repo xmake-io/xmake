@@ -324,6 +324,44 @@ function _instance:envs()
     return envs
 end
 
+-- enter the package environments
+function _instance:envs_enter()
+
+    -- save the old environments
+    local oldenvs = self._OLDENVS
+    if not oldenvs then
+        oldenvs = {}
+        self._OLDENVS = oldenvs
+    end
+
+    -- add the new environments
+    local installdir = self:installdir()
+    if self:kind() == "binary" then
+        oldenvs.PATH = os.getenv("PATH") 
+        os.addenv("PATH", path.join(installdir, "bin"))
+    end
+    for name, values in pairs(self:envs()) do
+        oldenvs[name] = oldenvs[name] or os.getenv(name)
+        if name == "PATH" then
+            for _, value in ipairs(values) do
+                os.addenv(name, path.join(installdir, value))
+            end
+        else
+            os.addenv(name, unpack(values))
+        end
+    end
+end
+
+-- leave the package environments
+function _instance:envs_leave()
+    if self._OLDENVS then
+        for name, values in pairs(self._OLDENVS) do
+            os.setenv(name, values)
+        end
+        self._OLDENVS = nil
+    end
+end
+
 -- get the given environment variable
 function _instance:getenv(name)
     return self:envs()[name]
@@ -594,6 +632,11 @@ function _instance:fetch(opt)
         require_ver = nil
     end
 
+    -- nil: find xmake or system packages
+    -- true: only find system package
+    -- false: only find xmake packages
+    local system = opt.system or self:requireinfo().system
+
     -- fetch binary tool?
     fetchinfo = nil
     local isSys = nil
@@ -602,20 +645,29 @@ function _instance:fetch(opt)
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
-        -- fetch it from the system directories, TODO find the given version
-        fetchinfo = self._find_tool(self:name(), {force = opt.force})
-        if fetchinfo then
-            isSys = true -- ignore self:requireinfo().system
+        -- only fetch it from the xmake repository first
+        if not fetchinfo and system ~= true and not self:is3rd() then
+            fetchinfo = self._find_tool(self:name(), {version = self:version_str(),
+                                                      cachekey = "fetch_package_xmake",
+                                                      buildhash = self:buildhash(),
+                                                      force = opt.force}) 
+            if fetchinfo then
+                isSys = self._isSys
+            end
+        end
+
+        -- fetch it from the system directories
+        if not fetchinfo and system ~= false then
+            fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
+                                                      force = opt.force})
+            if fetchinfo then
+                isSys = true 
+            end
         end
     else
 
         -- import find_package
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
-
-        -- nil: find local or system packages
-        -- true: only find system package
-        -- false: only find local packages
-        local system = opt.system or self:requireinfo().system
 
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
