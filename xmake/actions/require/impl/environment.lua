@@ -45,10 +45,12 @@ function _enter_package(package_name, envs, installdir)
     for name, values in pairs(envs) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" then
-            if path.is_absolute(value) then
-                os.addenv(name, value)
-            else
-                os.addenv(name, path.join(installdir, value))
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    os.addenv(name, value)
+                else
+                    os.addenv(name, path.join(installdir, value))
+                end
             end
         else
             os.addenv(name, unpack(values))
