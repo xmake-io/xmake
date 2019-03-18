@@ -41,39 +41,40 @@ function _register_required_package(instance, requireinfo)
         -- clear require info first
         requireinfo:clear()
 
-        -- add this packages info 
-        if instance:kind() == "binary" then
-            -- add path environments
-            local envs = {}
-            local installdir = instance:installdir()
-            for name, values in pairs(instance:envs()) do
-                if name == "PATH" then
-                    for _, value in ipairs(values) do
-                        envs[name] = envs[name] or {}
-                        if path.is_absolute(value) then
-                            table.insert(envs[name], value)
-                        else
-                            table.insert(envs[name], path.join(installdir, value))
-                        end
-                    end
-                else
-                    envs[name] = values
+        -- add include and links info
+        requireinfo:add(instance:fetch())
+        local orderdeps = instance:orderdeps()
+        if orderdeps then
+            local total = #orderdeps
+            for idx, _ in ipairs(orderdeps) do
+                local dep = orderdeps[total + 1 - idx]
+                if dep then
+                    requireinfo:add((dep:fetch()))
                 end
             end
+        end
+
+        -- add environments
+        local envs = {}
+        local hasenvs = false
+        local installdir = instance:installdir()
+        for name, values in pairs(instance:envs()) do
+            if name == "PATH" then
+                for _, value in ipairs(values) do
+                    envs[name] = envs[name] or {}
+                    if path.is_absolute(value) then
+                        table.insert(envs[name], value)
+                    else
+                        table.insert(envs[name], path.join(installdir, value))
+                    end
+                end
+            else
+                envs[name] = values
+            end
+            hasenvs = true
+        end
+        if hasenvs then
             requireinfo:add({envs = envs})
-        else
-            -- add include and links info
-            requireinfo:add(instance:fetch())
-            local orderdeps = instance:orderdeps()
-            if orderdeps then
-                local total = #orderdeps
-                for idx, _ in ipairs(orderdeps) do
-                    local dep = orderdeps[total + 1 - idx]
-                    if dep then
-                        requireinfo:add((dep:fetch()))
-                    end
-                end
-            end
         end
 
         -- save this package version

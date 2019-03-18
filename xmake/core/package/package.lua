@@ -319,7 +319,7 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
-        if self:kind() == "binary" then
+        if self:plat() == os.host() and os.isdir(path.join(self:installdir(), "bin")) then
             envs.PATH = {"bin"}
         end
         self._ENVS = envs
