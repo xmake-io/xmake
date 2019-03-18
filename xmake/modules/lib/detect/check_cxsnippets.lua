@@ -144,10 +144,22 @@ function main(snippets, opt)
     -- init snippets
     snippets = snippets or {}
 
+    -- get configs
+    local configs = opt.configs or opt.config
+
     -- get links
-    local links = table.wrap(opt.links)
+    local links = {}
+    if configs and configs.links then
+        table.join2(links, configs.links) 
+    end
     if opt.target then
         table.join2(links, opt.target:get("links"))
+    end
+    if configs and configs.syslinks then
+        table.join2(links, configs.syslinks) 
+    end
+    if opt.target then
+        table.join2(links, opt.target:get("syslinks"))
     end
 
     -- get types
