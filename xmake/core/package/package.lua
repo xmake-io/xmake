@@ -717,7 +717,10 @@ end
 
 -- fetch all local info with dependencies
 function _instance:fetchdeps()
-    local fetchinfo = table.copy(self:fetch())
+    local fetchinfo = self:fetch()
+    if not fetchinfo then
+        return
+    end
     local orderdeps = self:orderdeps()
     local total = #orderdeps
     for idx, _ in ipairs(orderdeps) do
