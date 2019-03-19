@@ -32,10 +32,6 @@ package("cmake")
         end
     end
 
-    on_load(function (package)
-        package:addenv("PATH", "bin")
-    end)
-
     on_install("macosx", function (package)
         os.cp("CMake.app/Contents/bin", package:installdir())
         os.cp("CMake.app/Contents/share", package:installdir())

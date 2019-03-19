@@ -12,10 +12,6 @@ package("libtool")
         add_versions("2.4.5", "509cb49c7de14ce7eaf88993cf09fd4071882699dfd874c2e95b31ab107d6987")
     end
 
-    on_load(function (package)
-        package:addenv("PATH", "bin")
-    end)
-
     on_install("macosx", "linux", function (package)
         import("package.tools.autoconf").install(package, {"--disable-dependency-tracking", "--enable-ltdl-install"})
     end)

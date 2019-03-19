@@ -26,10 +26,6 @@ package("7z")
         add_versions("gitlab:16.02", "93c6a14efb6dc9ee2fbb8c8fd4b5f319537c98182f8810f3b25cfa6363d9905b")
     end
 
-    on_load(function (package)
-        package:addenv("PATH", "bin")
-    end)
-
     on_install("macosx", "linux", function (package)
         os.vrun("make 7z")
         os.cp("bin", package:installdir())

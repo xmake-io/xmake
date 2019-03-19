@@ -321,6 +321,9 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
+        if self:kind() == "binary" then
+            envs = {"bin"}
+        end
         self._ENVS = envs
     end
     return envs

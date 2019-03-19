@@ -13,10 +13,6 @@ package("automake")
         add_versions("1.9.5", "68712753fcb756f3707b7da554917afb348450eb8530cae3b623a067078596fd")
     end
 
-    on_load(function (package)
-        package:addenv("PATH", "bin")
-    end)
-
     on_install("macosx", "linux", function (package)
         import("package.tools.autoconf").install(package)
         io.writefile(path.join(package:installdir("share", "aclocal"), "dirlist"), [[

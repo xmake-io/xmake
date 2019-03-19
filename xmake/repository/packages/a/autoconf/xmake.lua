@@ -12,10 +12,6 @@ package("autoconf")
         add_versions("2.68", "eff70a2916f2e2b3ed7fe8a2d7e63d72cf3a23684b56456b319c3ebce0705d99")
     end
 
-    on_load(function (package)
-        package:addenv("PATH", "bin")
-    end)
-
     on_install("macosx", "linux", function (package)
         import("package.tools.autoconf").install(package)
     end)
