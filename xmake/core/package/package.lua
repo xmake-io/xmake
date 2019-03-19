@@ -614,7 +614,7 @@ function _instance:script(name, generic)
     return result
 end
 
--- fetch package info from the local packages
+-- fetch the local package info 
 --
 -- @param opt   the fetch option, .e.g {force = true, system = false}
 --
@@ -712,7 +712,51 @@ end
 
 -- exists this package?
 function _instance:exists()
-    return self._FETCHINFO
+    return self._FETCHINFO ~= nil
+end
+
+-- fetch all local info with dependencies
+function _instance:fetchdeps()
+    local fetchinfo = table.copy(self:fetch())
+    local orderdeps = self:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinfo = dep:fetch()
+        if depinfo then
+            for name, values in pairs(depinfo) do
+                fetchinfo[name] = table.wrap(fetchinfo[name])
+                table.join2(fetchinfo[name], values)
+            end
+        end
+    end
+    return fetchinfo
+end
+
+-- has the given c funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cfuncs(funcs, opt)
+    opt = opt or {}
+    opt.configs = self:fetchdeps()
+    return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
+end
+
+-- has the given c++ funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cxxfuncs(funcs, opt)
+    opt = opt or {}
+    opt.configs = self:fetchdeps()
+    return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
 
 -- the current mode is belong to the given modes?
