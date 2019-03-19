@@ -11,6 +11,10 @@ package("pkg-config")
         add_versions("0.29.2", "6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591")
     end
 
+    on_load(function (package)
+        package:addenv("PATH", "bin")
+    end)
+
     on_install("macosx", "linux", function (package)
         local pcpath = {"/usr/local/lib/pkgconfig", "/usr/lib/pkgconfig"}
         if is_host("macosx") then

@@ -251,6 +251,8 @@ end
 function _instance:manifest_load()
     local manifest_file = self:manifest_file()
     if os.isfile(manifest_file) then
+        
+        -- load manifest
         local manifest, errors = io.load(manifest_file)
         if not manifest then
             os.raise(errors)
@@ -319,9 +321,6 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
-        if self:plat() == os.host() and os.isdir(path.join(self:installdir(), "bin")) then
-            envs.PATH = {"bin"}
-        end
         self._ENVS = envs
     end
     return envs
