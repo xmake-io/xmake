@@ -58,6 +58,27 @@ function _get_configs(package, configs)
     return configs
 end
 
+-- enter environments
+function _enter_envs(package)
+    
+    -- get old environments
+    local envs = {}
+    envs.CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
+
+    -- set new environments
+    for _, dep in ipairs(package:orderdeps()) do
+        os.addenv("CMAKE_PREFIX_PATH", dep:installdir())
+    end
+    return envs
+end
+
+-- leave environments
+function _leave_envs(package, envs)
+    for k, v in pairs(envs) do
+        os.setenv(k, v)
+    end
+end
+
 -- install package
 function install(package, configs)
 
@@ -85,6 +106,9 @@ function install(package, configs)
     end
     table.insert(argv, '..')
 
+    -- enter environments
+    local envs = _enter_envs(package)
+
     -- generate build file
     os.vrunv("cmake", argv)
 
@@ -108,6 +132,9 @@ function install(package, configs)
         os.cp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end
+
+    -- leave environments
+    _leave_envs(package, envs)
     os.cd(oldir)
 end
 
