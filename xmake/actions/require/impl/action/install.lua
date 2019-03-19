@@ -162,8 +162,16 @@ function main(package)
                 -- leave the package environments
                 package:envs_leave()
 
-                -- remove the invalid package directory
-                os.tryrm(package:installdir())
+                -- copy the invalid package directory to cache
+                local installdir = package:installdir()
+                if os.isdir(installdir) then
+                    local installdir_failed = path.join(package:cachedir(), "installdir.failed")
+                    os.tryrm(installdir_failed)
+                    if not os.isdir(installdir_failed) then
+                        os.cp(installdir, installdir_failed)
+                    end
+                end
+                os.tryrm(installdir)
 
                 -- failed
                 if not package:requireinfo().optional then

@@ -322,7 +322,7 @@ function _instance:envs()
     if not envs then
         envs = {}
         if self:kind() == "binary" then
-            envs = {"bin"}
+            envs.PATH = {"bin"}
         end
         self._ENVS = envs
     end
@@ -618,7 +618,7 @@ end
 --
 -- @param opt   the fetch option, .e.g {force = true, system = false}
 --
--- @return {packageinfo}, fetchfrom (.e.g global/system)
+-- @return {packageinfo}, fetchfrom (.e.g xmake/system)
 --
 function _instance:fetch(opt)
 
