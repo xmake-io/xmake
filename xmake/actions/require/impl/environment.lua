@@ -53,7 +53,7 @@ function _enter_package(package_name, envs, installdir)
                 end
             end
         else
-            os.addenv(name, unpack(values))
+            os.addenv(name, unpack(table.wrap(values)))
         end
     end
 end

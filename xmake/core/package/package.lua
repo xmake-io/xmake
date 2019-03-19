@@ -352,7 +352,7 @@ function _instance:envs_enter()
                 end
             end
         else
-            os.addenv(name, unpack(values))
+            os.addenv(name, unpack(table.wrap(values)))
         end
     end
 end
