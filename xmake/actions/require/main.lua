@@ -30,11 +30,10 @@ import("core.project.project")
 import("core.platform.platform")
 import("list")
 import("info")
-import("clear")
+import("clean")
 import("search")
 import("install")
 import("uninstall")
-import("unlink")
 
 --
 -- the default repositories:
@@ -74,10 +73,10 @@ function main()
     -- load project first
     _load_project()
 
-    -- clear all installed packages cache
-    if option.get("clear") then
+    -- clean all installed packages cache
+    if option.get("clean") then
 
-        clear(option.get("global"))
+        clean(option.get("global"))
 
     -- search for the given packages from repositories
     elseif option.get("search") then
@@ -88,11 +87,6 @@ function main()
     elseif option.get("uninstall") then
 
         uninstall(option.get("requires"))
-
-    -- unlink the installed packages 
-    elseif option.get("unlink") then
-
-        unlink(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then

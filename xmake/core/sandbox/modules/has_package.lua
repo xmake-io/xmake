@@ -1,4 +1,4 @@
---!The Make-like install Utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed to the Apache Software Foundation (ASF) under one
 -- or more contributor license agreements.  See the NOTICE file
@@ -19,35 +19,19 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        uninstall.lua
+-- @file        has_package.lua
 --
 
--- uninstall package from the prefix directory
-function main(package)
-
-    -- remove the previous installed files
-    local prefixdir = package:prefixdir()
-    for _, relativefile in ipairs(package:prefixinfo().installed) do
-
-        -- trace
-        vprint("removing %s ..", relativefile)
-
-        -- remove file
-        local prefixfile = path.absolute(relativefile, prefixdir)
-        os.tryrm(prefixfile)
- 
-        -- remove it if the parent directory is empty
-        local parentdir = path.directory(prefixfile)
-        while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do
-            os.tryrm(parentdir)
-            parentdir = path.directory(parentdir)
+-- return module
+return function (...)
+    require("sandbox/modules/import/core/sandbox/module").import("core.project.project")
+    local requires = project.requires()
+    if requires then
+        for _, name in ipairs(table.join(...)) do
+            local pkg = requires[name]
+            if pkg and pkg:enabled() then
+                return true
+            end
         end
     end
-
-    -- unregister this package
-    package:unregister()
-
-    -- remove the prefix file
-    os.tryrm(package:prefixfile())
 end
-

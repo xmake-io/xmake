@@ -44,6 +44,14 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_rpathdirs"
+        -- package.add_xxx
+    ,   "package.add_links"
+    ,   "package.add_syslinks"
+    ,   "package.add_dcflags"
+    ,   "package.add_ldflags"
+    ,   "package.add_arflags"
+    ,   "package.add_shflags"
+    ,   "package.add_rpathdirs"
     }
     _g.pathes = 
     {
@@ -53,6 +61,9 @@ function apis()
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
+        -- package.add_xxx
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs"
     }
 
     -- ok

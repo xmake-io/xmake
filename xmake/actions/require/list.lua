@@ -29,14 +29,20 @@ import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- from local/global/system/remote?
+-- from xmake/system/remote?
 function _from(instance)
-    local fetchinfo, fetchfrom = instance:fetch()
+    local fetchinfo = instance:fetch()
     if fetchinfo then
-        return ", ${green}" .. fetchfrom .. "${clear}"
+        if instance:is3rd() then
+            return ", ${green}3rd${clear}"
+        elseif instance:isSys() then
+            return ", ${green}system${clear}"
+        else
+            return ""
+        end
     elseif #instance:urls() > 0 then
         return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
-    elseif instance:from("system") then
+    elseif instance:isSys() then
         return ", ${red}missing${clear}"
     else
         return ""

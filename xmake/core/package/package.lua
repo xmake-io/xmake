@@ -38,6 +38,7 @@ local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local platform       = require("platform/platform")
+local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
@@ -50,6 +51,11 @@ function _instance.new(name, info)
     return instance
 end
 
+-- get the package name 
+function _instance:name()
+    return self._NAME
+end
+
 -- get the package configure
 function _instance:get(name)
 
@@ -60,9 +66,19 @@ function _instance:get(name)
     end
 end
 
--- get the package name 
-function _instance:name()
-    return self._NAME
+-- set the value to the package info
+function _instance:set(name, ...)
+    self._INFO:apival_set(name, ...)
+end
+
+-- add the value to the package info
+function _instance:add(name, ...)
+    self._INFO:apival_add(name, ...)
+end
+
+-- get the extra configuration
+function _instance:extraconf(name, item, key)
+    return self._INFO:extraconf(name, item, key)
 end
 
 -- get the package description
@@ -167,47 +183,30 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- get sha256 of the url_alias@version_str
-function _instance:sha256(url_alias)
+-- get hash of the source package for the url_alias@version_str
+function _instance:sourcehash(url_alias)
 
-    -- get sha256
+    -- get sourcehash
     local versions    = self:get("versions")
     local version_str = self:version_str()
     if versions and version_str then
 
-        local sha256 = nil
+        local sourcehash = nil
         if url_alias then
-            sha256 = versions[url_alias .. ":" ..version_str]
+            sourcehash = versions[url_alias .. ":" ..version_str]
         end
-        if not sha256 then
-            sha256 = versions[version_str]
+        if not sourcehash then
+            sourcehash = versions[version_str]
         end
 
         -- ok?
-        return sha256
+        return sourcehash
     end
 end
 
 -- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
 function _instance:revision(url_alias)
-    return self:sha256(url_alias)
-end
-
--- this package is from system/local/global?
---
--- @param kind  the from kind
---
--- system: from the system directories (.e.g /usr/local)
--- local:  from the local project package directories (.e.g projectdir/.xmake/packages)
--- global: from the global package directories (.e.g ~/.xmake/packages)
---
-function _instance:from(kind)
-    return self._FROMKIND == kind
-end
-
--- get from kind
-function _instance:fromkind()
-    return self._FROMKIND
+    return self:sourcehash(url_alias)
 end
 
 -- get the package kind, binary or nil(static, shared)
@@ -223,94 +222,164 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir(...)
-    
-    -- make the given install directory
     local name = self:name():lower():gsub("::", "_")
-    local dir = path.join(package.installdir(table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), ...)
-
-    -- ensure the install directory
+    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:buildhash(), ...)
     if not os.isdir(dir) then
         os.mkdir(dir)
     end
     return dir
 end
 
--- get the prefix directory
-function _instance:prefixdir(...)
-    
-    -- make the given prefix directory
-    local dir = path.join(package.prefixdir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), ...)
-
-    -- ensure the prefix directory
-    if not os.isdir(dir) then
-        os.mkdir(dir)
+-- get the references info of this package
+function _instance:references()
+    local references_file = path.join(self:installdir(), "references.txt")
+    if os.isfile(references_file) then
+        local references, errors = io.load(references_file)
+        if not references then
+            os.raise(errors)
+        end
+        return references
     end
-    return dir
 end
 
--- get the prefix info
-function _instance:prefixinfo()
-    if self._PREFIXINFO == nil then
-        local prefixfile = self:prefixfile()
-        self._PREFIXINFO = os.isfile(prefixfile) and io.load(prefixfile) or {}
+-- get the manifest file of this package
+function _instance:manifest_file()
+    return path.join(self:installdir(), "manifest.txt")
+end
+
+-- load the manifest file of this package
+function _instance:manifest_load()
+    local manifest_file = self:manifest_file()
+    if os.isfile(manifest_file) then
+        
+        -- load manifest
+        local manifest, errors = io.load(manifest_file)
+        if not manifest then
+            os.raise(errors)
+        end
+        return manifest
     end
-    return self._PREFIXINFO
 end
 
--- get the prefix info file
-function _instance:prefixfile()
-    local name = self:name():lower():gsub("::", "_")
-    return path.join(package.prefixinfodir(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch()), name:sub(1, 1):lower(), name, self:version_str(), "info.txt")
+-- save the manifest file of this package
+function _instance:manifest_save()
+
+    -- make manifest
+    local manifest       = {}
+    manifest.name        = self:name()
+    manifest.description = self:description()
+    manifest.version     = self:version_str()
+    manifest.kind        = self:kind()
+    manifest.plat        = self:plat()
+    manifest.arch        = self:arch()
+    manifest.mode        = self:mode()
+    manifest.configs     = self:configs()
+    manifest.envs        = self:envs()
+
+    -- save variables
+    local vars = {}
+    local apis = language.apis()
+    for _, apiname in ipairs(table.join(apis.values, apis.pathes)) do
+        if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
+            local name = apiname:sub(13)
+            local value = self:get(name)
+            if value ~= nil then
+                vars[name] = value
+            end
+        end
+    end
+    manifest.vars = vars
+
+    -- save repository
+    local repo = self:repo()
+    if repo then
+        manifest.repo        = {}
+        manifest.repo.name   = repo:name()
+        manifest.repo.url    = repo:url()
+        manifest.repo.branch = repo:branch()
+    end
+
+    -- save manifest
+    local ok, errors = io.save(self:manifest_file(), manifest)
+    if not ok then
+        os.raise(errors)
+    end
 end
 
--- get prefix variables
-function _instance:getvar(name)
-    return self:prefixinfo()[name]
-end
-
--- set prefix variables
+-- TODO: set the given variable, deprecated
 function _instance:setvar(name, ...)
-    self:prefixinfo()[name] = {...}
+    self:set(name, ...)
 end
 
--- add prefix variables
+-- TODO add the given variable, deprecated
 function _instance:addvar(name, ...)
-    self:prefixinfo()[name] = table.join(self:prefixinfo()[name] or {}, ...)
+    self:add(name, ...)
 end
 
--- get environment variables
+-- get the exported environments
+function _instance:envs()
+    local envs = self._ENVS
+    if not envs then
+        envs = {}
+        if self:kind() == "binary" then
+            envs.PATH = {"bin"}
+        end
+        self._ENVS = envs
+    end
+    return envs
+end
+
+-- enter the package environments
+function _instance:envs_enter()
+
+    -- save the old environments
+    local oldenvs = self._OLDENVS
+    if not oldenvs then
+        oldenvs = {}
+        self._OLDENVS = oldenvs
+    end
+
+    -- add the new environments
+    local installdir = self:installdir()
+    for name, values in pairs(self:envs()) do
+        oldenvs[name] = oldenvs[name] or os.getenv(name)
+        if name == "PATH" then
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    os.addenv(name, value)
+                else
+                    os.addenv(name, path.join(installdir, value))
+                end
+            end
+        else
+            os.addenv(name, unpack(table.wrap(values)))
+        end
+    end
+end
+
+-- leave the package environments
+function _instance:envs_leave()
+    if self._OLDENVS then
+        for name, values in pairs(self._OLDENVS) do
+            os.setenv(name, values)
+        end
+        self._OLDENVS = nil
+    end
+end
+
+-- get the given environment variable
 function _instance:getenv(name)
-    return self:prefixinfo().envars and self:prefixinfo().envars[name] or nil
+    return self:envs()[name]
 end
 
--- set environment variables
+-- set the given environment variable
 function _instance:setenv(name, ...)
-    self:prefixinfo().envars = self:prefixinfo().envars or {}
-    self:prefixinfo().envars[name] = {...}
+    self:envs()[name] = {...}
 end
 
--- add values to environment variable 
+-- add the given environment variable
 function _instance:addenv(name, ...)
-    self:prefixinfo().envars = self:prefixinfo().envars or {}
-    self:prefixinfo().envars[name] = table.join(self:prefixinfo().envars[name] or {}, ...)
-end
-
--- register package info in the root prefix info 
-function _instance:register()
-
-    -- register the environment variables
-    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.addenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
-    end
-end
-
--- unregister package info from the root prefix info 
-function _instance:unregister()
-
-    -- unregister the environment variables
-    for name, values in pairs(table.wrap(self:prefixinfo().envars)) do
-        package.delenv(self:from("global"), table.concat({self:mode(), self:configs_hash()}, '_'), self:plat(), self:arch(), name, values)
-    end
+    self:envs()[name] = table.join(self:envs()[name] or {}, ...)
 end
 
 -- get user private data
@@ -406,52 +475,7 @@ end
 
 -- set the require info 
 function _instance:requireinfo_set(requireinfo)
-
-    -- save require info
     self._REQUIREINFO = requireinfo
-
-    -- get version
-    local version = requireinfo and requireinfo.version or nil
-    local limitversion = version and version ~= "master" and version ~= "lastest"
-    if requireinfo and not self:is3rd() then
-        
-        -- switch to local package if exists package configuration or debug package or limit version
-        if requireinfo.config or requireinfo.debug or limitversion then
-            self._FROMKIND = "local"
-        end
-
-        -- disable the system package if limit version 
-        if limitversion then
-            requireinfo.system = false
-        end
-    end
-end
-
--- get the all configuration values of package
-function _instance:configs()
-    local requireinfo = self:requireinfo()
-    if requireinfo then
-        return requireinfo.config
-    end
-end
-
--- get the hash of configs
-function _instance:configs_hash()
-    if self._CONFIGS_HASH == nil then
-        local configs = self:configs()
-        if configs then
-            self._CONFIGS_HASH = hash.uuid(string.serialize(configs, true)):split('-')[1]:lower()
-        end
-    end
-    return self._CONFIGS_HASH
-end
-
--- get the group name
-function _instance:group()
-    local requireinfo = self:requireinfo()
-    if requireinfo then
-        return requireinfo.group
-    end
 end
 
 -- get the given configuration value of package
@@ -459,6 +483,51 @@ function _instance:config(name)
     local configs = self:configs()
     if configs then
         return configs[name]
+    end
+end
+
+-- get the configurations of package
+function _instance:configs()
+    local configs = self._CONFIGS
+    if configs == nil then
+        local configs_defined = self:get("configs")
+        if configs_defined then
+            configs = {}
+            local requireinfo = self:requireinfo()
+            local configs_required = requireinfo and requireinfo.configs or {}
+            for _, name in ipairs(table.wrap(configs_defined)) do
+                local value = configs_required[name]
+                if value == nil then
+                    value = self:extraconf("configs", name, "default")
+                end
+                configs[name] = value
+            end
+        else
+            configs = false
+        end
+        self._CONFIGS = configs
+    end
+    return configs and configs or nil
+end
+
+-- get the build hash
+function _instance:buildhash()
+    if self._BUILDHASH == nil then
+        local str = self:plat() .. self:arch() 
+        local configs = self:configs()
+        if configs then
+            str = str .. string.serialize(configs, true)
+        end
+        self._BUILDHASH = hash.uuid(str):gsub('-', ''):lower()
+    end
+    return self._BUILDHASH
+end
+
+-- get the group name
+function _instance:group()
+    local requireinfo = self:requireinfo()
+    if requireinfo then
+        return requireinfo.group
     end
 end
 
@@ -470,12 +539,7 @@ end
 
 -- is debug package?
 function _instance:debug()
-    -- @note always release for the binary package
-    if self:kind() == "binary" then
-        return false
-    end
-    local requireinfo = self:requireinfo()
-    return requireinfo and requireinfo.debug or false
+    return self:config("debug")
 end
 
 -- is the supported package?
@@ -488,7 +552,12 @@ end
 -- we need install and find package by third-party package manager directly
 --
 function _instance:is3rd()
-    return self:name():find("::", 1, true)
+    return self._is3rd
+end
+
+-- is the system package?
+function _instance:isSys()
+    return self._isSys
 end
 
 -- get xxx_script
@@ -545,11 +614,11 @@ function _instance:script(name, generic)
     return result
 end
 
--- fetch package info from the local packages
+-- fetch the local package info 
 --
 -- @param opt   the fetch option, .e.g {force = true, system = false}
 --
--- @return {packageinfo}, fetchfrom (.e.g local/global/system)
+-- @return {packageinfo}, fetchfrom (.e.g xmake/system)
 --
 function _instance:fetch(opt)
 
@@ -557,10 +626,9 @@ function _instance:fetch(opt)
     opt = opt or {}
 
     -- attempt to get it from cache
-    local fetchfrom = self._FETCHFROM
     local fetchinfo = self._FETCHINFO
     if not opt.force and fetchinfo then
-        return fetchinfo, fetchfrom
+        return fetchinfo
     end
 
     -- fetch the require version
@@ -569,39 +637,52 @@ function _instance:fetch(opt)
         require_ver = nil
     end
 
+    -- nil: find xmake or system packages
+    -- true: only find system package
+    -- false: only find xmake packages
+    local system = opt.system or self:requireinfo().system
+
     -- fetch binary tool?
     fetchinfo = nil
-    fetchfrom = nil
+    local isSys = nil
     if self:kind() == "binary" then
     
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
-        -- fetch it from the system directories, TODO find the given version
-        fetchinfo = self._find_tool(self:name(), {force = opt.force})
-        if fetchinfo then
-            fetchfrom = "system" -- ignore self:requireinfo().system
+        -- only fetch it from the xmake repository first
+        if not fetchinfo and system ~= true and not self:is3rd() then
+            fetchinfo = self._find_tool(self:name(), {version = self:version_str(),
+                                                      cachekey = "fetch_package_xmake",
+                                                      buildhash = self:buildhash(),
+                                                      force = opt.force}) 
+            if fetchinfo then
+                isSys = self._isSys
+            end
+        end
+
+        -- fetch it from the system directories
+        if not fetchinfo and system ~= false then
+            fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
+                                                      force = opt.force})
+            if fetchinfo then
+                isSys = true 
+            end
         end
     else
 
         -- import find_package
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
 
-        -- nil: find local or system packages
-        -- true: only find system package
-        -- false: only find local packages
-        local system = opt.system or self:requireinfo().system
-
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_package("xmake::" .. self:name(), {prefixdirs = self:prefixdir(), 
-                                                                      mode = self:mode(),
-                                                                      islocal = self:from("local"), 
-                                                                      version = require_ver,
+            fetchinfo = self._find_package("xmake::" .. self:name(), {version = self:version_str(),
                                                                       cachekey = "fetch_package_xmake",
-                                                                      configs_hash = self:configs_hash(),
-                                                                      force = opt.force or self:from("local")}) 
-            if fetchinfo then fetchfrom = self._FROMKIND end
+                                                                      buildhash = self:buildhash(),
+                                                                      force = opt.force}) 
+            if fetchinfo then
+                isSys = self._isSys
+            end
         end
 
         -- fetch it from the system directories
@@ -611,21 +692,76 @@ function _instance:fetch(opt)
                                                          mode = self:mode(),
                                                          cachekey = "fetch_package_system",
                                                          system = true})
-            if fetchinfo then fetchfrom = "system" end
+            if fetchinfo then 
+                isSys = true
+            end
         end
     end
 
     -- save to cache
     self._FETCHINFO = fetchinfo
-    self._FETCHFROM = fetchfrom
+                
+    -- mark as system package?
+    if isSys ~= nil then
+        self._isSys = isSys
+    end
 
     -- ok
-    return fetchinfo, fetchfrom
+    return fetchinfo
 end
 
--- exists this package in local
+-- exists this package?
 function _instance:exists()
-    return self._FETCHINFO
+    return self._FETCHINFO ~= nil
+end
+
+-- fetch all local info with dependencies
+function _instance:fetchdeps()
+    local fetchinfo = self:fetch()
+    if not fetchinfo then
+        return
+    end
+    local orderdeps = self:orderdeps()
+    if orderdeps then
+        local total = #orderdeps
+        for idx, _ in ipairs(orderdeps) do
+            local dep = orderdeps[total + 1 - idx]
+            local depinfo = dep:fetch()
+            if depinfo then
+                for name, values in pairs(depinfo) do
+                    fetchinfo[name] = table.wrap(fetchinfo[name])
+                    table.join2(fetchinfo[name], values)
+                end
+            end
+        end
+    end
+    return fetchinfo
+end
+
+-- has the given c funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cfuncs(funcs, opt)
+    opt = opt or {}
+    opt.configs = self:fetchdeps()
+    return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
+end
+
+-- has the given c++ funcs?
+--
+-- @param funcs     the funcs
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cxxfuncs(funcs, opt)
+    opt = opt or {}
+    opt.configs = self:fetchdeps()
+    return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
 
 -- the current mode is belong to the given modes?
@@ -662,6 +798,9 @@ function package._interpreter()
  
     -- define apis
     interp:api_define(package.apis())
+
+    -- define apis for language
+    interp:api_define(language.apis())
     
     -- save interpreter
     package._INTERPRETER = interp
@@ -686,6 +825,7 @@ function package.apis()
         ,   "package.add_deps"
         ,   "package.add_urls"
         ,   "package.add_imports"
+        ,   "package.add_configs"
         }
     ,   script =
         {
@@ -724,77 +864,8 @@ function package.cachedir()
 end
 
 -- the install directory
-function package.installdir(mode, plat, arch)
-    return path.join(global.directory(), "installed", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix directory
-function package.prefixdir(is_global, mode, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix info directory
-function package.prefixinfodir(is_global, mode, plat, arch)
-    return path.join(is_global and global.directory() or config.directory(), "prefix", "info", plat or os.host(), arch or os.arch(), mode or "release")
-end
-
--- get the prefix info
-function package.prefixinfo(is_global, mode, plat, arch)
-    local prefixfile = package.prefixfile(is_global, mode, plat, arch)
-    return os.isfile(prefixfile) and io.load(prefixfile) or {}
-end
-
--- get the prefix info file
-function package.prefixfile(is_global, mode, plat, arch)
-    return path.join(package.prefixinfodir(is_global, mode, plat, arch), "info.txt")
-end
-
--- get environment variables
-function package.getenv(is_global, mode, plat, arch, name)
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    return prefixinfo.envars and prefixinfo.envars[name] or nil
-end
-
--- add values to environment variable 
-function package.addenv(is_global, mode, plat, arch, name, values)
-
-    -- add to the root prefix info
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    prefixinfo.envars = prefixinfo.envars or {}
-    prefixinfo.envars[name] = table.join(prefixinfo.envars[name] or {}, values)
-    io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
-
-    -- add to the current environment
-    if values then
-        -- PATH? add the prefix root directory 
-        if name:lower() == "path" then
-            local prefixdir = package.prefixdir(is_global, mode, plat, arch)
-            for _, value in ipairs(values) do
-                os.addenv(name, path.join(prefixdir, value))
-            end
-        else
-            os.addenv(name, unpack(values))
-        end
-    end
-end
-
--- remove values to environment variable 
-function package.delenv(is_global, mode, plat, arch, name, values)
-    local prefixinfo = package.prefixinfo(is_global, mode, plat, arch)
-    local prefixvalues = prefixinfo.envars and prefixinfo.envars[name] or nil
-    if prefixvalues then
-        local exists = {}
-        for _, value in ipairs(values) do
-            exists[value:trim()] = true
-        end
-        for i = #prefixvalues, 1, -1 do
-            value = prefixvalues[i]:trim()
-            if exists[value] then
-                table.remove(prefixvalues, i)
-            end
-        end
-        io.save(package.prefixfile(is_global, mode, plat, arch), prefixinfo)
-    end
+function package.installdir()
+    return path.join(global.directory(), "packages")
 end
 
 -- load the package from the system directories
@@ -808,6 +879,7 @@ function package.load_from_system(packagename)
 
     -- get package info
     local packageinfo = {}
+    local is3rd = false
     if packagename:find("::", 1, true) then
 
         -- get interpreter
@@ -830,6 +902,11 @@ function package.load_from_system(packagename)
 
         -- save the install script
         packageinfo.install = instance:script()
+
+        -- is third-party package?
+        if not packagename:startswith("xmake::") then
+            is3rd = true
+        end
     end
 
     -- new an instance
@@ -838,8 +915,9 @@ function package.load_from_system(packagename)
         return nil, errors
     end
 
-    -- mark as system package
-    instance._FROMKIND = "system"
+    -- mark as system or 3rd package
+    instance._isSys = true
+    instance._is3rd = is3rd
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -873,9 +951,6 @@ function package.load_from_project(packagename, project)
     if not instance then
         return nil, errors
     end
-
-    -- mark as local package
-    instance._FROMKIND = "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -941,9 +1016,6 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- save repository
     instance._REPO = repo
-
-    -- mark as global/project package?
-    instance._FROMKIND = repo:is_global() and "global" or "local"
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance

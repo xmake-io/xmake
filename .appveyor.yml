@@ -13,10 +13,10 @@ install:
 
 build_script:
   - ps: Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
-  - cmd: xmake lua versioninfo
+  - cmd: xmake --version
   - cmd: xmake -P core 
   - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
-  - cmd: core\build\xmake lua versioninfo
+  - cmd: core\build\xmake --version
   - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
   - cmd: xmake lua -D tests\test.lua
 

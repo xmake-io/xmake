@@ -27,7 +27,62 @@ import("core.base.option")
 import("core.project.target")
 import("test")
 import(".utils.filter")
-import("prefix")
+
+-- patch pkgconfig if not exists
+function _patch_pkgconfig(package)
+
+    -- get lib/pkgconfig/*.pc file
+    local pcfile = path.join(package:installdir(), "lib", "pkgconfig", package:name() .. ".pc")
+    if os.isfile(pcfile) then
+        return 
+    end
+
+    -- trace
+    vprint("patching %s ..", pcfile)
+
+    -- fetch package
+    local fetchinfo = package:fetchdeps()
+    if not fetchinfo then
+        return 
+    end
+
+    -- get libs
+    local libs = ""
+    for _, linkdir in ipairs(fetchinfo.linkdirs) do
+        libs = libs .. "-L" .. linkdir
+    end
+    libs = libs .. " -L${libdir}"
+    for _, link in ipairs(fetchinfo.links) do
+        libs = libs .. " -l" .. link
+    end
+    for _, link in ipairs(fetchinfo.syslinks) do
+        libs = libs .. " -l" .. link
+    end
+
+    -- cflags 
+    local cflags = ""
+    for _, includedir in ipairs(fetchinfo.includedirs) do
+        cflags = cflags .. "-I" .. includedir
+    end
+    cflags = cflags .. " -I${includedir}"
+
+    -- patch a *.pc file
+    local file = io.open(pcfile, 'w')
+    if file then
+        file:print("prefix=%s", package:installdir())
+        file:print("exec_prefix=${prefix}")
+        file:print("libdir=${exec_prefix}/lib")
+        file:print("includedir=${prefix}/include")
+        file:print("")
+        file:print("Name: %s", package:name())
+        file:print("Description: %s", package:description())
+        file:print("Version: %s", package:version_str())
+        file:print("Libs: %s", libs)
+        file:print("Libs.private: ")
+        file:print("Cflags: %s", cflags)
+        file:close()
+    end
+end
 
 -- install the given package
 function main(package)
@@ -80,6 +135,7 @@ function main(package)
             local installtask = function () 
 
                 -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+                local installed_now = false
                 if package:is3rd() then
                     local script = package:script("install")
                     if script ~= nil then
@@ -87,15 +143,16 @@ function main(package)
                     end
                 else
 
-                    -- uninstall it from the prefix directory first
-                    prefix.uninstall(package)
-
                     -- build and install package to the install directory
-                    local installedfile = path.join(package:installdir(), "installed.txt")
-                    if not os.isfile(installedfile) then
+                    if option.get("force") or not package:manifest_load() then
 
                         -- clean install directory first
                         os.tryrm(package:installdir())
+
+                        -- enter the environments of all package dependencies
+                        for _, dep in ipairs(package:orderdeps()) do
+                            dep:envs_enter()
+                        end
 
                         -- do install
                         for i = 1, 3 do
@@ -105,16 +162,39 @@ function main(package)
                             end
                         end
 
-                        -- mark as installed
-                        io.writefile(installedfile, "")
-                    end
+                        -- leave the environments of all package dependencies
+                        for _, dep in irpairs(package:orderdeps()) do
+                            dep:envs_leave()
+                        end
 
-                    -- install to the prefix directory
-                    prefix.install(package)
+                        -- save the package info to the manifest file
+                        package:manifest_save()
+                        installed_now = true
+                    end
+                end
+
+                -- enter the package environments
+                package:envs_enter()
+
+                -- fetch package and force to flush the cache
+                local fetchinfo = package:fetch({force = true})
+                if option.get("verbose") or option.get("diagnosis") then
+                    print(fetchinfo)  
+                end
+                assert(fetchinfo, "fetch %s failed!", tipname)
+
+                -- this package is installed now
+                if installed_now then
+
+                    -- patch pkg-config files for package
+                    _patch_pkgconfig(package)
 
                     -- test it
                     test(package)
                 end
+
+                -- leave the package environments
+                package:envs_leave()
             end
 
             -- install package
@@ -123,13 +203,6 @@ function main(package)
             else
                 process.asyncrun(installtask)
             end
-
-            -- fetch package and force to flush the cache
-            local fetchinfo = package:fetch({force = true})
-            if option.get("verbose") or option.get("diagnosis") then
-                print(fetchinfo)  
-            end
-            assert(fetchinfo, "fetch %s failed!", tipname)
 
             -- trace
             cprint("${color.success}${text.success}")
@@ -146,6 +219,20 @@ function main(package)
 
                 -- trace
                 cprint("${color.failure}${text.failure}")
+
+                -- leave the package environments
+                package:envs_leave()
+
+                -- copy the invalid package directory to cache
+                local installdir = package:installdir()
+                if os.isdir(installdir) then
+                    local installdir_failed = path.join(package:cachedir(), "installdir.failed")
+                    os.tryrm(installdir_failed)
+                    if not os.isdir(installdir_failed) then
+                        os.cp(installdir, installdir_failed)
+                    end
+                end
+                os.tryrm(installdir)
 
                 -- failed
                 if not package:requireinfo().optional then

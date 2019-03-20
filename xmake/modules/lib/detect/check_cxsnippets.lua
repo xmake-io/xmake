@@ -120,7 +120,7 @@ end
 --                  .e.g 
 --                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
---                  , config = {defines = "xx", cxflags = ""}}
+--                  , configs = {defines = "xx", cxflags = ""}}
 --
 -- funcs:
 --      sigsetjmp
@@ -144,10 +144,22 @@ function main(snippets, opt)
     -- init snippets
     snippets = snippets or {}
 
+    -- get configs
+    local configs = opt.configs or opt.config
+
     -- get links
-    local links = table.wrap(opt.links)
+    local links = {}
+    if configs and configs.links then
+        table.join2(links, configs.links) 
+    end
     if opt.target then
         table.join2(links, opt.target:get("links"))
+    end
+    if configs and configs.syslinks then
+        table.join2(links, configs.syslinks) 
+    end
+    if opt.target then
+        table.join2(links, opt.target:get("syslinks"))
     end
 
     -- get types
@@ -199,7 +211,7 @@ function main(snippets, opt)
 
     -- trace
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
-        local kind = ifelse(sourcekind == "cc", "c", "c++")
+        local kind = opt.sourcekind == "cc" and "c" or "c++"
         if #includes > 0 then
             cprint("${dim}> checking for the %s includes(%s)", kind, table.concat(includes, ", "))
         end

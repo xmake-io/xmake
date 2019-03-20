@@ -48,7 +48,7 @@ function _funcinfo(func)
     return name:trim(), code
 end
 
--- add c function
+-- TODO add c function, deprecated
 function _api_add_cfunc(interp, module, alias, links, includes, func)
 
     -- parse the function info
@@ -93,7 +93,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_options", name)
 end
 
--- add c functions
+-- TODO add c functions, deprecated
 function _api_add_cfuncs(interp, module, links, includes, ...)
 
     -- done
@@ -102,7 +102,7 @@ function _api_add_cfuncs(interp, module, links, includes, ...)
     end
 end
 
--- add c++ function
+-- TODO add c++ function, deprecated
 function _api_add_cxxfunc(interp, module, alias, links, includes, func)
 
     -- parse the function info
@@ -147,7 +147,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_options", name)
 end
 
--- add c++ functions
+-- TODO add c++ functions, deprecated
 function _api_add_cxxfuncs(interp, module, links, includes, ...)
 
     -- done
@@ -205,6 +205,19 @@ function apis()
     ,   "option.add_undefines_h_if_ok"-- TODO deprecated
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
+        -- package.add_xxx
+    ,   "package.add_links"
+    ,   "package.add_syslinks"
+    ,   "package.add_cflags"
+    ,   "package.add_cxflags"
+    ,   "package.add_cxxflags"
+    ,   "package.add_ldflags"
+    ,   "package.add_arflags"
+    ,   "package.add_shflags"
+    ,   "package.add_defines"
+    ,   "package.add_undefines"
+    ,   "package.add_frameworks"
+    ,   "package.add_rpathdirs"
     }
     _g.pathes = 
     {
@@ -215,8 +228,8 @@ function apis()
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
-    ,   "target.add_headers"       -- TODO deprecated
-    ,   "target.add_headerdirs"
+    ,   "target.add_headers"          -- TODO deprecated
+    ,   "target.add_headerdirs"       -- TODO deprecated
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
@@ -225,6 +238,10 @@ function apis()
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
     ,   "option.add_frameworkdirs"
+        -- package.add_xxx
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs"
+    ,   "package.add_frameworkdirs"
     }
     _g.dictionary =
     {

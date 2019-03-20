@@ -91,13 +91,13 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     -- get package file
     local packagefile = path.filename(url)
 
-    -- get sha256
-    local sha256 = package:sha256(url_alias)
-    assert(sha256, "cannot get sha256 of %s in package(%s)", url, package:name())
+    -- get sourcehash
+    local sourcehash = package:sourcehash(url_alias)
+    assert(sourcehash, "cannot get source hash of %s in package(%s)", url, package:name())
 
     -- the package file have been downloaded?
     local cached = true
-    if option.get("force") or not os.isfile(packagefile) or sha256 ~= hash.sha256(packagefile) then
+    if option.get("force") or not os.isfile(packagefile) or sourcehash ~= hash.sha256(packagefile) then
 
         -- no cached
         cached = false
@@ -109,7 +109,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         http.download(url, packagefile)
 
         -- check hash
-        if sha256 and sha256 ~= hash.sha256(packagefile) then
+        if sourcehash and sourcehash ~= hash.sha256(packagefile) then
             raise("unmatched checksum!")
         end
     end
@@ -146,7 +146,7 @@ function _urls(package)
     for _, url in ipairs(package:urls()) do
         if git.checkurl(url) then
             table.insert(urls[1], url)
-        elseif package:sha256(package:url_alias(url)) then
+        elseif package:sourcehash(package:url_alias(url)) then
             table.insert(urls[2], url)
         end
     end

@@ -195,7 +195,8 @@ function project.interpreter()
         {
             -- set_xxx
             "set_project"
-        ,   "set_modes"
+        ,   "set_modes"     -- TODO deprecated
+        ,   "set_description"
             -- add_xxx
         ,   "add_requires"
         ,   "add_repositories"
@@ -305,7 +306,7 @@ function project.get(name)
 end
 
 -- load the project file
-function project._load(force)
+function project._load(force, disable_filter)
 
     -- has already been loaded?
     if project._INFO and not force then
@@ -328,13 +329,13 @@ function project._load(force)
     end
 
     -- load the root info of the project 
-    local rootinfo, errors = project._load_scope("root", true, true) 
+    local rootinfo, errors = project._load_scope("root", true, not disable_filter) 
     if not rootinfo then
         return false, errors
     end
 
     -- load the root info of the target
-    local rootinfo_target, errors = project._load_scope("root.target", true, true) 
+    local rootinfo_target, errors = project._load_scope("root.target", true, not disable_filter) 
     if not rootinfo_target then
         return false, errors
     end
@@ -411,8 +412,8 @@ function project._load_tasks()
         return {}, nil
     end
 
-    -- load the project file first
-    local ok, errors = project._load(true)
+    -- load the project file first and disable filter
+    local ok, errors = project._load(true, true)
     if not ok then
         return nil, errors
     end
@@ -570,7 +571,7 @@ function project._load_options(disable_filter)
     end
 
     -- reload the project file to ensure `if is_plat() then add_packagedirs() end` works
-    local ok, errors = project._load(true)
+    local ok, errors = project._load(true, disable_filter)
     if not ok then
         return nil, errors
     end
@@ -783,7 +784,6 @@ end
 
 -- get requires info
 function project.requires()
-
     if not project._REQUIRES then
         local requires, errors = project._load_requires()
         if not requires then
@@ -796,7 +796,6 @@ end
 
 -- get string requires 
 function project.requires_str()
-
     if not project._REQUIRES_STR then
 
         -- reload the project file to handle `has_config()`

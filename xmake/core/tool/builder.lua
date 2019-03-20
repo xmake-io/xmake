@@ -366,6 +366,8 @@ function builder:_add_flags_from_argument(flags, target, args)
     if target then
         local key = target:type()
         self:_add_flags_from_language(flags, target, {[key] = function (name) return args[name] end})
+    else
+        self:_add_flags_from_language(flags, nil, {target = function (name) return args[name] end})
     end
 end
 

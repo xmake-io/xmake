@@ -87,7 +87,6 @@ function main(name, opt)
     if opt.verbose or option.get("verbose") then
         if result then
             cprint("checking for the %s ... ${color.success}%s", name, result.version and result.version or "${text.success}")
-            dprint(result)
         else
             cprint("checking for the %s ... ${color.nothing}${text.nothing}", name)
         end

@@ -29,9 +29,69 @@ import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
 import("package")
 
+-- enter the package environments
+function _enter_package(package_name, envs, installdir)
+
+    -- save the old environments
+    _g._OLDENVS = _g._OLDENVS or {}
+    local oldenvs = _g._OLDENVS[package_name]
+    if not oldenvs then
+        oldenvs = {}
+        _g._OLDENVS[package_name] = oldenvs
+    end
+
+    -- add the new environments
+    oldenvs.PATH = os.getenv("PATH") 
+    for name, values in pairs(envs) do
+        oldenvs[name] = oldenvs[name] or os.getenv(name)
+        if name == "PATH" then
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    os.addenv(name, value)
+                else
+                    os.addenv(name, path.join(installdir, value))
+                end
+            end
+        else
+            os.addenv(name, unpack(table.wrap(values)))
+        end
+    end
+end
+
+-- leave the package environments
+function _leave_package(package_name)
+    _g._OLDENVS = _g._OLDENVS or {}
+    local oldenvs = _g._OLDENVS[package_name]
+    if oldenvs then
+        for name, values in pairs(oldenvs) do
+            os.setenv(name, values)
+        end
+        _g._OLDENVS[package_name] = nil
+    end
+end
+
+-- enter environment of the given binary packages, git, 7z, ..
+function _enter_packages(...)
+    for _, name in ipairs({...}) do
+        for _, manifest_file in ipairs(os.files(path.join(core_package.installdir(), name:sub(1, 1), name, "*", "*", "manifest.txt"))) do
+            local manifest = io.load(manifest_file) 
+            if manifest and manifest.plat == os.host() and manifest.arch == os.arch() then
+                _enter_package(name, manifest.envs, path.directory(manifest_file))
+            end
+        end
+    end
+end
+
+-- leave environment of the given binary packages, git, 7z, ..
+function _leave_packages(...)
+    for _, name in ipairs({...}) do
+        _leave_package(name)
+    end
+end
+
 -- enter environment
 --
--- ensure that we can find some basic tools: git, make/nmake/cmake, msbuild ...
+-- ensure that we can find some basic tools: git, unzip, ...
 --
 -- If these tools not exist, we will install it first.
 --
@@ -45,45 +105,38 @@ function enter()
         raise("unzip not found! we need install it first")
     end
 
+    -- enter the environments of git and 7z
+    _enter_packages("git", "7z")
+
     -- git not found? install it first
+    local packages = {}
     if not find_tool("git") then
-        package.install_packages("git")
+        table.join2(packages, package.install_packages("git"))
     end
 
     -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
     if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
-        package.install_packages("7z")
+        table.join2(packages, package.install_packages("7z"))
     end
 
-    -- get prefix directories
-    local plat = get_config("plat")
-    local arch = get_config("arch")
-    _g.prefixdirs = _g.prefixdirs or 
-    {
-        core_package.prefixdir(false, "release", plat, arch),
-        core_package.prefixdir(true, "release", plat, arch), 
-    }
-
-    -- add search directories of pkgconfig, aclocal, cmake 
-    _g._ACLOCAL_PATH = os.getenv("ACLOCAL_PATH")
-    _g._PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
-    _g._CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
-    for _, prefixdir in ipairs(_g.prefixdirs) do
-        if not is_plat("windows") then
-            os.addenv("ACLOCAL_PATH", path.join(prefixdir, "share", "aclocal"))
-            os.addenv("PKG_CONFIG_PATH", path.join(prefixdir, "lib", "pkgconfig"))
-        end
-        os.addenv("CMAKE_PREFIX_PATH", prefixdir)
+    -- enter the environments of installed packages 
+    for _, instance in ipairs(packages) do
+        instance:envs_enter()
     end
+    _g._PACKAGES = packages
 end
 
 -- leave environment
 function leave()
 
-    -- restore search directories of pkgconfig, aclocal, cmake 
-    os.setenv("ACLOCAL_PATH", _g._ACLOCAL_PATH)
-    os.setenv("PKG_CONFIG_PATH", _g._PKG_CONFIG_PATH)
-    os.setenv("CMAKE_PREFIX_PATH", _g._CMAKE_PREFIX_PATH)
+    -- leave the environments of installed packages 
+    for _, instance in irpairs(_g._PACKAGES) do
+        instance:envs_leave()
+    end
+    _g._PACKAGES = nil
+
+    -- leave the environments of git and 7z
+    _leave_packages("7z", "git")
 
     -- restore search pathes of toolchains
     environment.leave("toolchains")

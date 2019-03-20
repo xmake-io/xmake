@@ -38,11 +38,11 @@ function _register_required_package(instance, requireinfo)
     if _g.optional_missing[instance:name()] then
         requireinfo:enable(false)
     else
-        -- add this package info
+        -- clear require info first
         requireinfo:clear()
-        requireinfo:add(instance:fetch())
 
-        -- add all dependent packages info 
+        -- add include and links info
+        requireinfo:add(instance:fetch())
         local orderdeps = instance:orderdeps()
         if orderdeps then
             local total = #orderdeps
@@ -52,6 +52,29 @@ function _register_required_package(instance, requireinfo)
                     requireinfo:add((dep:fetch()))
                 end
             end
+        end
+
+        -- add environments
+        local envs = {}
+        local hasenvs = false
+        local installdir = instance:installdir()
+        for name, values in pairs(instance:envs()) do
+            if name == "PATH" then
+                for _, value in ipairs(values) do
+                    envs[name] = envs[name] or {}
+                    if path.is_absolute(value) then
+                        table.insert(envs[name], value)
+                    else
+                        table.insert(envs[name], path.join(installdir, value))
+                    end
+                end
+            else
+                envs[name] = values
+            end
+            hasenvs = true
+        end
+        if hasenvs then
+            requireinfo:add({envs = envs})
         end
 
         -- save this package version
@@ -75,11 +98,9 @@ function _register_required_packages(packages)
         if not group or not registered_in_group[group] then
 
             -- do not register binary package
-            if instance:kind() ~= "binary" then
-                local requireinfo = project.require(instance:alias() or instance:name())
-                if requireinfo then
-                    _register_required_package(instance, requireinfo)
-                end
+            local requireinfo = project.require(instance:alias() or instance:name())
+            if requireinfo then
+                _register_required_package(instance, requireinfo)
             end
 
             -- mark as registered in group
@@ -97,7 +118,7 @@ function _check_missing_packages(packages)
     local packages_missing = {}
     local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if not instance:exists() and (#instance:urls() > 0 or instance:from("system")) then
+        if not instance:exists() and (#instance:urls() > 0 or instance:isSys()) then
             if instance:optional() then
                 optional_missing[instance:name()] = instance
             else

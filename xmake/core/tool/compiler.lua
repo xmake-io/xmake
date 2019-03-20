@@ -47,12 +47,10 @@ end
 -- add flags from the platform 
 function compiler:_add_flags_from_platform(flags, targetkind)
 
-    -- add flags 
-    local toolname = self:name()
-    for _, flagkind in ipairs(self:_flagkinds()) do
-
-        -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
-        if targetkind then
+    -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
+    if targetkind then
+        local toolname = self:name()
+        for _, flagkind in ipairs(self:_flagkinds()) do
             local toolflags = platform.get(targetkind .. '.' .. toolname .. '.' .. flagkind)
             table.join2(flags, toolflags or platform.get(targetkind .. '.' .. flagkind))
         end
@@ -266,7 +264,7 @@ end
 --
 -- @param opt   the argument options (contain all the compiler attributes of target), 
 --              .e.g
---              {target = ..., targetkind = "static", config = {defines = "", cxflags = "", includedirs = ""}}
+--              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
 -- @return      flags string, flags list
 --
@@ -300,14 +298,13 @@ function compiler:compflags(opt)
     end
 
     -- add flags for the argument
-    if opt.config then
-        self:_add_flags_from_argument(flags, target, opt.config)
+    local configs = opt.configs or opt.config
+    if configs then
+        self:_add_flags_from_argument(flags, target, configs)
     end
 
     -- add flags from the platform 
-    if target then
-        self:_add_flags_from_platform(flags, targetkind)
-    end
+    self:_add_flags_from_platform(flags, targetkind)
 
     -- add flags from the compiler 
     self:_add_flags_from_compiler(flags, targetkind)

@@ -26,6 +26,59 @@
 import("core.base.option")
 import("lib.detect.find_file")
 
+-- get configs
+function _get_configs(package, configs)
+    local configs = configs or {}
+    if package:plat() == "windows" then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+            table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+            table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+            table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+        end
+    end
+    local cflags = package:config("cflags")
+    if cflags then
+        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cflags .. '"')
+    end
+    local cxflags = package:config("cxflags")
+    if cxflags then
+        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cxflags .. '"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxflags .. '"')
+    end
+    local cxxflags = package:config("cxxflags")
+    if cxxflags then
+        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxxflags .. '"')
+    end
+    local asflags = package:config("asflags")
+    if asflags then
+        table.insert(configs, '-DCMAKE_ASM_FLAGS="' .. asflags .. '"')
+    end
+    return configs
+end
+
+-- enter environments
+function _enter_envs(package)
+    
+    -- get old environments
+    local envs = {}
+    envs.CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
+
+    -- set new environments
+    for _, dep in ipairs(package:orderdeps()) do
+        os.addenv("CMAKE_PREFIX_PATH", dep:installdir())
+    end
+    return envs
+end
+
+-- leave environments
+function _leave_envs(package, envs)
+    for k, v in pairs(envs) do
+        os.setenv(k, v)
+    end
+end
+
 -- install package
 function install(package, configs)
 
@@ -39,7 +92,9 @@ function install(package, configs)
         table.insert(argv, "-A")
         table.insert(argv, "x64")
     end
-    for name, value in pairs(configs) do
+
+    -- pass configurations
+    for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then
@@ -50,6 +105,9 @@ function install(package, configs)
         end
     end
     table.insert(argv, '..')
+
+    -- enter environments
+    local envs = _enter_envs(package)
 
     -- generate build file
     os.vrunv("cmake", argv)
@@ -74,6 +132,9 @@ function install(package, configs)
         os.cp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end
+
+    -- leave environments
+    _leave_envs(package, envs)
     os.cd(oldir)
 end
 

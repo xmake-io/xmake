@@ -114,6 +114,13 @@ function _parse_require(require_str, requires_extra, parentinfo)
         require_extra = requires_extra[require_str] or {}
     end
 
+    -- get required building configurations
+    local require_build_configs = require_extra.configs or require_extra.config
+    if require_extra.debug then
+        require_build_configs = require_build_configs or {}
+        require_build_configs.debug = true
+    end
+
     -- init required item
     local required = {}
     parentinfo = parentinfo or {}
@@ -124,11 +131,10 @@ function _parse_require(require_str, requires_extra, parentinfo)
         reponame         = reponame,
         version          = version,
         alias            = require_extra.alias,     -- set package alias name
-        debug            = require_extra.debug,     -- uses the debug package, default: false
         group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
-        config           = require_extra.config,    -- the build configuration of package
+        configs          = require_build_configs,   -- the required building configurations
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional -- default: false, inherit parentinfo.optional
     }
@@ -240,6 +246,16 @@ function _sort_packagedeps(package)
     return orderdeps
 end
 
+-- add some builtin configs to package
+function _add_package_configs(package)
+    package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
+    package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
+    package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
+    package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
+    package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
+end
+
 -- load all required packages
 function _load_packages(requires, opt)
 
@@ -270,6 +286,9 @@ function _load_packages(requires, opt)
                 package._ORDERDEPS = table.unique(_sort_packagedeps(package))
             end
 
+            -- add some builtin configs to package
+            _add_package_configs(package)
+
             -- save this package package
             table.insert(packages, package)
         end
@@ -290,6 +309,50 @@ function _sort_packages_urls(packages)
     -- sort and update urls
     for _, package in ipairs(packages) do
         package:urls_set(fasturl.sort(package:urls()))
+    end
+end
+  
+-- check the configurations of packages
+--
+-- package("pcre2")
+--      add_configs("bitwidth", {description = "Set the code unit width.", default = "8", values = {"8", "16", "32"}})
+--      add_configs("bitwidth", {type = "number", values = {8, 16, 32}})
+--      add_configs("bitwidth", {restrict = function(value) if tonumber(value) < 100 then return true end})
+--
+function _check_packages_configs(packages)
+    for _, package in ipairs(packages) do
+        local configs_defined = {}
+        for _, name in ipairs(package:get("configs")) do
+            configs_defined[name] = package:extraconf("configs", name) or {}
+        end
+        for name, value in pairs(package:configs()) do
+            local conf = configs_defined[name]
+            if conf then
+                local config_type = conf.type or "string"
+                if type(value) ~= config_type then
+                    raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
+                end
+                if conf.values then
+                    local found = false
+                    for _, config_value in ipairs(conf.values) do
+                        if tostring(value) == tostring(config_value) then
+                            found = true
+                            break
+                        end
+                    end
+                    if not found then
+                        raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
+                    end
+                end
+                if conf.restrict then
+                    if not conf.restrict(value) then
+                        raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
+                    end
+                end
+            else
+                raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
+            end
+        end
     end
 end
 
@@ -344,7 +407,7 @@ function _get_confirm(packages)
         -- get packages for each repositories
         local packages_repo = {}
         for _, package in ipairs(packages) do
-            local reponame = package:repo() and package:repo():name() or package:fromkind()
+            local reponame = package:repo() and package:repo():name() or (package:isSys() and "system" or "")
             if package:is3rd() then
                 reponame = package:name():lower():split("::")[1]
             end
@@ -355,7 +418,9 @@ function _get_confirm(packages)
         -- show tips
         cprint("${bright color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
         for reponame, packages in pairs(packages_repo) do
-            print("in %s:", reponame)
+            if reponame ~= "" then
+                print("in %s:", reponame)
+            end
             for _, package in ipairs(packages) do
                 print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
             end
@@ -408,6 +473,9 @@ function load_packages(requires, opt)
 
     -- select packages version
     _select_packages_version(packages)
+
+    -- check the configurations of packages
+    _check_packages_configs(packages)
 
     -- remove repeat packages with same the package name and version
     local unique = {}
@@ -551,44 +619,10 @@ function uninstall_packages(requires, opt)
     -- remove all packages
     local packages = {}
     for _, instance in ipairs(load_packages(requires, opt)) do
-        if os.isfile(instance:prefixfile()) then
-
-            -- uninstall package from the prefix directory
-            action.prefix.uninstall(instance)
-
-            -- remove ok
+        if os.isfile(instance:manifest_file()) then
             table.insert(packages, instance)
         end
-
-        -- remove the installed files
         os.tryrm(instance:installdir())
-    end
-    return packages
-end
-
--- only unlink packages from the prefix directory
-function unlink_packages(requires, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- do not remove dependent packages
-    opt.nodeps = true
-
-    -- clear the detect cache
-    detectcache.clear()
-
-    -- unlink all packages
-    local packages = {}
-    for _, instance in ipairs(load_packages(requires, opt)) do
-        if os.isfile(instance:prefixfile()) then
-
-            -- uninstall package from the prefix directory
-            action.prefix.uninstall(instance)
-
-            -- remove ok
-            table.insert(packages, instance)
-        end
     end
     return packages
 end

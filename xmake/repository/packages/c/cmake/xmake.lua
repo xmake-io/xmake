@@ -6,16 +6,28 @@ package("cmake")
 
     if is_host("macosx") then
         add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-Darwin-x86_64.tar.gz")
+        add_urls("https://github.com/Kitware/CMake/releases/download/v3.11.4/cmake-3.11.4-Darwin-x86_64.tar.gz")
+        add_urls("https://gitlab.com/xmake-mirror/cmake-releases/raw/master/cmake-3.11.4-Darwin-x86_64.tar.gz")
+        add_urls("https://dev.tencent.com/u/waruqi/p/cmake-releases/git/raw/master/cmake-3.11.4-Darwin-x86_64.tar.gz")
         add_versions("3.11.4", "2b5eb705f036b1906a5e0bce996e9cd56d43d73bdee8318ece3e5ce31657b812")
     elseif is_host("linux") and is_arch("x86_64") then
         add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-Linux-x86_64.tar.gz")
+        add_urls("https://github.com/Kitware/CMake/releases/download/v3.11.4/cmake-3.11.4-Linux-x86_64.tar.gz")
+        add_urls("https://gitlab.com/xmake-mirror/cmake-releases/raw/master/cmake-3.11.4-Linux-x86_64.tar.gz")
+        add_urls("https://dev.tencent.com/u/waruqi/p/cmake-releases/git/raw/master/cmake-3.11.4-Linux-x86_64.tar.gz")
         add_versions("3.11.4", "6dab016a6b82082b8bcd0f4d1e53418d6372015dd983d29367b9153f1a376435")
     elseif is_host("windows") then
         if os.arch() == "x64" then
             add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win64-x64.zip", {excludes = "*/doc/*"})
+            add_urls("https://github.com/Kitware/CMake/releases/download/v3.11.4/cmake-3.11.4-win64-x64.zip", {excludes = "*/doc/*"})
+            add_urls("https://gitlab.com/xmake-mirror/cmake-releases/raw/master/cmake-3.11.4-win64-x64.zip", {excludes = "*/doc/*"})
+            add_urls("https://dev.tencent.com/u/waruqi/p/cmake-releases/git/raw/master/cmake-3.11.4-win64-x64.zip", {excludes = "*/doc/*"})
             add_versions("3.11.4", "d3102abd0ded446c898252b58857871ee170312d8e7fd5cbff01fbcb1068a6e5")
         else
             add_urls("https://cmake.org/files/v3.11/cmake-3.11.4-win32-x86.zip", {excludes = "*/doc/*"})
+            add_urls("https://github.com/Kitware/CMake/releases/download/v3.11.4/cmake-3.11.4-win32-x86.zip", {excludes = "*/doc/*"})
+            add_urls("https://gitlab.com/xmake-mirror/cmake-releases/raw/master/cmake-3.11.4-win32-x86.zip", {excludes = "*/doc/*"})
+            add_urls("https://dev.tencent.com/u/waruqi/p/cmake-releases/git/raw/master/cmake-3.11.4-win32-x86.zip", {excludes = "*/doc/*"})
             add_versions("3.11.4", "b068001ff879f86e704977c50a8c5917e4b4406c66242366dba2674abe316579")
         end
     end

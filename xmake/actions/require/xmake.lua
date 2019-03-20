@@ -45,13 +45,12 @@ task("require")
                 -- options
             ,   options = 
                 {
-                    {'c', "clear",      "k",  nil,       "Clear all installed package caches."                                                       }
+                    {'c', "clean",      "k",  nil,       "Clear all package caches and uninstall all not-referenced packages."                                                       }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                                              }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                                            }
                 ,   {                                                                                                                                }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
-                ,   {nil, "unlink",     "k",  nil,       "Only unlink the installed packages."                                                       }
                 ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages."                                                         }
                 ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                                           }
                 ,   {                                                                                                                                }

@@ -127,16 +127,6 @@ function _find_package(manager_name, package_name, opt)
         -- remove repeat
         result.linkdirs    = table.unique(result.linkdirs)
         result.includedirs = table.unique(result.includedirs)
-
-        -- check valid version
-        if result.version then
-            local version = try { function () return semver.new(result.version) end }
-            if version then
-                result.version = version:rawstr()
-            else 
-                result.version = nil
-            end
-        end
     end
 
     -- ok?
@@ -191,7 +181,7 @@ function main(name, opt)
 
     -- match version?
     if opt.version and result then
-        if not result.version or not semver.satisfies(result.version, opt.version) then
+        if not (result.version and (result.version == opt.version or semver.satisfies(result.version, opt.version))) then
             result = nil
         end
     end

@@ -27,6 +27,7 @@ import("core.base.global")
 import("core.project.config")
 import("core.project.option")
 import("core.project.target")
+import("core.package.package")
 import("core.language.language")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
@@ -34,86 +35,76 @@ import("lib.detect.find_library")
 -- find package from the repository (maybe only include and no links)
 function _find_package_from_repo(name, opt)
 
-    -- get build mode, e.g. debug_f7821231
-    local mode = table.concat({opt.mode or "release", opt.configs_hash}, '_')
-
-    -- get the prefix directories
-    local prefixdirs = table.wrap(opt.prefixdirs)
-    local platsubdirs = path.join(config.get("plat") or os.host(), config.get("arch") or os.arch())
-    if #prefixdirs == 0 then
-        table.insert(prefixdirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", platsubdirs, mode))
-    end
-
-    -- find the prefix info file of package, .e.g prefix/info/z/zlib/1.2.11/info.txt
+    -- find the manifest file of package, .e.g ~/.xmake/packages/z/zlib/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt 
     local packagedirs = {}
-    local packagepath = path.join(name:sub(1, 1), name, "*")
-    table.insert(packagedirs, path.join(opt.islocal and config.directory() or global.directory(), "prefix", "info", platsubdirs, mode, packagepath))
-    local prefixfile = find_file("info.txt", packagedirs)
-    if not prefixfile then
+    table.insert(packagedirs, path.join(package.installdir(), name:sub(1, 1), name, opt.version or "*", opt.buildhash))
+    local manifest_file = find_file("manifest.txt", packagedirs)
+    if not manifest_file then
         return 
     end
 
-    -- load prefix info
-    local prefixinfo = io.load(prefixfile)
-    if not prefixinfo then
+    -- load manifest info
+    local manifest = io.load(manifest_file)
+    if not manifest then
         return 
     end
 
-    -- get prefix directory of this package
-    local prefixdir = path.translate(path.directory(path.directory(path.directory(path.directory(prefixfile)))):gsub("[/\\]prefix[/\\]info[/\\]", "/prefix/"))
+    -- get manifest variables
+    local vars = manifest.vars or {}
+
+    -- get install directory of this package
+    local installdir = path.directory(manifest_file)
 
     -- save includedirs to result (maybe only include and no links)
     local result = {}
     local includedirs = {}
-    for _, includedir in ipairs(prefixinfo.includedirs) do
-        table.insert(includedirs, path.join(prefixdir, includedir))
+    for _, includedir in ipairs(vars.includedirs) do
+        table.insert(includedirs, path.join(installdir, includedir))
     end
     if #includedirs == 0 then
-        table.insert(includedirs, path.join(prefixdir, "include"))
+        table.insert(includedirs, path.join(installdir, "include"))
     end
     result.includedirs = table.unique(includedirs)
 
     -- get links and link directories
     local links = {}
     local linkdirs = {}
-    for _, linkdir in ipairs(prefixinfo.linkdirs) do
-        table.insert(linkdirs, path.join(prefixdir, linkdir))
+    for _, linkdir in ipairs(vars.linkdirs) do
+        table.insert(linkdirs, path.join(installdir, linkdir))
     end
-    if prefixinfo.links then
-        table.join2(links, prefixinfo.links)
+    if vars.links then
+        table.join2(links, vars.links)
     end
-    if prefixinfo.installed and (not prefixinfo.linkdirs or not prefixinfo.links) then
+    if not vars.linkdirs or not vars.links then
         local found = false
-        for _, line in ipairs(prefixinfo.installed) do
-            line = line:trim()
-            if line:endswith(".lib") or line:endswith(".a") then
+        for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
+            if file:endswith(".lib") or file:endswith(".a") then
                 found = true
-                if not prefixinfo.linkdirs then
-                    table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+                if not vars.linkdirs then
+                    table.insert(linkdirs, path.directory(file))
                 end
-                if not prefixinfo.links then
-                    table.insert(links, target.linkname(path.filename(line)))
+                if not vars.links then
+                    table.insert(links, target.linkname(path.filename(file)))
                 end
             end
         end
         if not found then
-            for _, line in ipairs(prefixinfo.installed) do
-                line = line:trim()
-                if line:endswith(".so") or line:endswith(".dylib") then
-                    if not prefixinfo.linkdirs then
-                        table.insert(linkdirs, path.join(prefixdir, path.directory(line)))
+            for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
+                if file:endswith(".so") or file:endswith(".dylib") then
+                    if not vars.linkdirs then
+                        table.insert(linkdirs, path.directory(file))
                     end
-                    if not prefixinfo.links then
-                        table.insert(links, target.linkname(path.filename(line)))
+                    if not vars.links then
+                        table.insert(links, target.linkname(path.filename(file)))
                     end
                 end
             end
         end
     end
 
-    -- add root include and link directories
+    -- add root link directories
     if #linkdirs == 0 then
-        table.insert(linkdirs, path.join(prefixdir, "lib"))
+        table.insert(linkdirs, path.join(installdir, "lib"))
     end
 
     -- uses name as links directly .e.g libname.a
@@ -135,16 +126,25 @@ function _find_package_from_repo(name, opt)
     end
 
     -- inherit the other prefix variables
-    for name, values in pairs(prefixinfo) do
-        if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" and name ~= "installed" and name ~= "prefixdir" then
+    for name, values in pairs(vars) do
+        if name ~= "links" and name ~= "linkdirs" and name ~= "includedirs" then
             result[name] = values
         end
     end
 
-    -- get version
-    result.version = path.filename(path.directory(prefixfile))
+    -- update the project references file
+    if result then
+        local projectdir = os.projectdir()
+        if projectdir and os.isdir(projectdir) then
+            local references_file = path.join(installdir, "references.txt")
+            local references = os.isfile(references_file) and io.load(references_file) or {}
+            references[projectdir] = os.date("%y%m%d")
+            io.save(references_file, references)
+        end
+    end
 
-    -- ok
+    -- get version
+    result.version = manifest.version or path.filename(path.directory(path.directory(manifest_file)))
     return result
 end
 
@@ -247,7 +247,7 @@ end
 -- find package using the xmake package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x", configs_hash = "xxxxxx")
+-- @param opt   the options, .e.g {verbose = true, version = "1.12.x", buildhash = "xxxxxx")
 --
 function main(name, opt)
 

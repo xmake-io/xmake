@@ -31,14 +31,20 @@ import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- from local/global/system/remote?
+-- from xmake/system/remote?
 function _from(instance)
-    local fetchinfo, fetchfrom = instance:fetch()
+    local fetchinfo = instance:fetch()
     if fetchinfo then
-        return ", ${green}" .. fetchfrom .. "${clear}"
+        if instance:is3rd() then
+            return ", ${green}3rd${clear}"
+        elseif instance:isSys() then
+            return ", ${green}system${clear}"
+        else
+            return ""
+        end
     elseif #instance:urls() > 0 then
         return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
-    elseif instance:from("system") then
+    elseif instance:isSys() then
         return ", ${red}missing${clear}"
     else
         return ""
@@ -116,11 +122,17 @@ function main(package_names)
             cprint("      -> ${magenta}urls${clear}:")
             for _, url in ipairs(urls) do
                 print("         -> %s", filter.handle(url, instance))
-                local sha256 = instance:sha256(instance:url_alias(url))
-                if sha256 then
-                    cprint("            -> ${yellow}%s${clear}", sha256)
+                local sourcehash = instance:sourcehash(instance:url_alias(url))
+                if sourcehash then
+                    cprint("            -> ${yellow}%s${clear}", sourcehash)
                 end
             end
+        end
+
+        -- show repository
+        local repo = instance:repo()
+        if repo then
+            cprint("      -> ${magenta}repo${clear}: %s %s %s", repo:name(), repo:url(), repo:branch() or "")
         end
 
         -- show deps
@@ -136,12 +148,6 @@ function main(package_names)
         -- show cache directory
         cprint("      -> ${magenta}cachedir${clear}: %s", instance:cachedir())
 
-        -- show prefix directory
-        cprint("      -> ${magenta}prefixdir${clear}: %s", instance:prefixdir())
-
-        -- show prefix file
-        cprint("      -> ${magenta}prefixfile${clear}: %s", instance:prefixfile())
-
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
 
@@ -151,6 +157,87 @@ function main(package_names)
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
                 cprint("          -> ${magenta}%s${clear}: %s", name, table.concat(table.wrap(info), " "))
+            end
+        end
+
+        -- show supported platforms
+        local platforms = {}
+        local on_install = instance:get("install")
+        if type(on_install) == "table" then
+            for plat, _ in pairs(on_install) do
+                table.insert(platforms, plat)
+            end
+        else
+            table.insert(platforms, "all")
+        end
+        cprint("      -> ${magenta}platforms${clear}: %s", table.concat(platforms, ", "))
+
+        -- show requires
+        cprint("      -> ${magenta}requires${clear}:")
+        cprint("         -> ${cyan}plat${clear}: %s", instance:plat())
+        cprint("         -> ${cyan}arch${clear}: %s", instance:arch())
+        local configs_required = instance:configs()
+        if configs_required then
+            cprint("         -> ${cyan}configs${clear}:")
+            for name, value in pairs(configs_required) do
+                cprint("            -> %s: %s", name, value)
+            end
+        end
+
+        -- show user configs
+        local configs_defined = instance:get("configs")
+        if configs_defined then
+            cprint("      -> ${magenta}configs${clear}:")
+            for _, conf in ipairs(configs_defined) do
+                local configs_extra = instance:extraconf("configs", conf)
+                if configs_extra and not configs_extra.builtin then
+                    cprintf("         -> ${cyan}%s${clear}: ", conf)
+                    if configs_extra.description then
+                        printf(configs_extra.description)
+                    end
+                    if configs_extra.default ~= nil then
+                        printf(" (default: %s)", configs_extra.default)
+                    elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
+                        printf(" (type: %s)", configs_extra.type)
+                    end
+                    print("")
+                    if configs_extra.values then
+                        cprint("            -> values: %s", string.serialize(configs_extra.values, true))
+                    end
+                end
+            end
+        end
+
+        -- show builtin configs
+        local configs_defined = instance:get("configs")
+        if configs_defined then
+            cprint("      -> ${magenta}configs (builtin)${clear}:")
+            for _, conf in ipairs(configs_defined) do
+                local configs_extra = instance:extraconf("configs", conf)
+                if configs_extra and configs_extra.builtin then
+                    cprintf("         -> ${cyan}%s${clear}: ", conf)
+                    if configs_extra.description then
+                        printf(configs_extra.description)
+                    end
+                    if configs_extra.default ~= nil then
+                        printf(" (default: %s)", configs_extra.default)
+                    elseif configs_extra.type ~= nil and configs_extra.type ~= "string" then
+                        printf(" (type: %s)", configs_extra.type)
+                    end
+                    print("")
+                    if configs_extra.values then
+                        cprint("            -> values: %s", string.serialize(configs_extra.values, true))
+                    end
+                end
+            end
+        end
+
+        -- show references
+        local references = instance:references()
+        if references then
+            cprint("      -> ${magenta}references${clear}:")
+            for projectdir, refdate in pairs(references) do
+                cprint("         -> %s: %s%s", refdate, projectdir, os.isdir(projectdir) and "" or " ${red}(not found)${clear}")
             end
         end
 
