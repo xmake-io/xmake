@@ -45,19 +45,31 @@ task("require")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k",  nil,       "Clear all package caches and uninstall all not-referenced packages."                                                       }
-                ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                                              }
-                ,   {'l', "list",       "k",  nil,       "List all package dependencies."                                                            }
-                ,   {                                                                                                                                }
-                ,   {nil, "info",       "k",  nil,       "Show the given package info."                                                              }
-                ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories."                                          }
-                ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages."                                                         }
-                ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                                           }
-                ,   {                                                                                                                                }
+                    {'c', "clean",      "k",  nil,       "Clear all package caches and uninstall all not-referenced packages." }
+                ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                        }
+                ,   {'l', "list",       "k",  nil,       "List all package dependencies in project.",
+                                                         "e.g.",
+                                                         "    $ xmake require --list"                                          }
+                ,   {nil, "scan",       "k",  nil,       "Scan the given or all installed packages.",
+                                                         "e.g.",
+                                                         "    $ xmake require --scan",
+                                                         "    $ xmake require --scan zlib tbox"                                }
+                ,   {                                                                                                          }
+                ,   {nil, "info",       "k",  nil,       "Show the given package info.",
+                                                         "e.g.",
+                                                         "    $ xmake require --info tbox"                                     }
+                ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories.",
+                                                         "e.g.",
+                                                         "    $ xmake require --search tbox"                                   }
+                ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages.",
+                                                         "e.g.",
+                                                         "    $ xmake require --uninstall tbox"                                }
+                ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                     }
+                ,   {                                                                                                          }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",
-                                                         ".e.g",
+                                                         "e.g.",
                                                          "    $ xmake require zlib tbox",
                                                          "    $ xmake require \"zlib >=1.2.11\" \"tbox master\"",
-                                                         "    $ xmake require --extra=\"debug=true,system=false\" tbox"                              } 
+                                                         "    $ xmake require --extra=\"debug=true,system=false\" tbox"        }
                 }
             } 
