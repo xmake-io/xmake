@@ -33,10 +33,12 @@ end
 function _enter_envs(package)
     
     -- get old environments
-    local envs    = {}
-    envs.CFLAGS   = os.getenv("CFLAGS")
-    envs.CXXFLAGS = os.getenv("CXXFLAGS")
-    envs.ASFLAGS  = os.getenv("ASFLAGS")
+    local envs           = {}
+    envs.CFLAGS          = os.getenv("CFLAGS")
+    envs.CXXFLAGS        = os.getenv("CXXFLAGS")
+    envs.ASFLAGS         = os.getenv("ASFLAGS")
+    envs.ACLOCAL_PATH    = os.getenv("ACLOCAL_PATH")
+    envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
 
     -- set new environments
     local cflags   = package:config("cflags")
@@ -61,6 +63,16 @@ function _enter_envs(package)
     end
     if asflags then
         os.addenv("ASFLAGS", asflags)
+    end
+    for _, dep in ipairs(package:orderdeps()) do
+        local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            os.addenv("PKG_CONFIG_PATH", pkgconfig)
+        end
+        local aclocal = path.join(dep:installdir(), "share", "aclocal")
+        if os.isdir(aclocal) then
+            os.addenv("ACLOCAL_PATH", aclocal)
+        end
     end
     return envs
 end

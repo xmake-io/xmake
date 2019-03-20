@@ -28,6 +28,62 @@ import("core.project.target")
 import("test")
 import(".utils.filter")
 
+-- patch pkgconfig if not exists
+function _patch_pkgconfig(package)
+
+    -- get lib/pkgconfig/*.pc file
+    local pcfile = path.join(package:installdir(), "lib", "pkgconfig", package:name() .. ".pc")
+    if os.isfile(pcfile) then
+        return 
+    end
+
+    -- trace
+    vprint("patching %s ..", pcfile)
+
+    -- fetch package
+    local fetchinfo = package:fetchdeps()
+    if not fetchinfo then
+        return 
+    end
+
+    -- get libs
+    local libs = ""
+    for _, linkdir in ipairs(fetchinfo.linkdirs) do
+        libs = libs .. "-L" .. linkdir
+    end
+    libs = libs .. " -L${libdir}"
+    for _, link in ipairs(fetchinfo.links) do
+        libs = libs .. " -l" .. link
+    end
+    for _, link in ipairs(fetchinfo.syslinks) do
+        libs = libs .. " -l" .. link
+    end
+
+    -- cflags 
+    local cflags = ""
+    for _, includedir in ipairs(fetchinfo.includedirs) do
+        cflags = cflags .. "-I" .. includedir
+    end
+    cflags = cflags .. " -I${includedir}"
+
+    -- patch a *.pc file
+    local file = io.open(pcfile, 'w')
+    if file then
+        file:print("prefix=%s", package:installdir())
+        file:print("exec_prefix=${prefix}")
+        file:print("libdir=${exec_prefix}/lib")
+        file:print("includedir=${prefix}/include")
+        file:print("")
+        file:print("Name: %s", package:name())
+        file:print("Description: %s", package:description())
+        file:print("Version: %s", package:version_str())
+        file:print("Libs: %s", libs)
+        file:print("Libs.private: ")
+        file:print("Cflags: %s", cflags)
+        file:close()
+    end
+end
+
 -- install the given package
 function main(package)
 
@@ -79,7 +135,7 @@ function main(package)
             local installtask = function () 
 
                 -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
-                local need_test = false
+                local installed_now = false
                 if package:is3rd() then
                     local script = package:script("install")
                     if script ~= nil then
@@ -113,7 +169,7 @@ function main(package)
 
                         -- save the package info to the manifest file
                         package:manifest_save()
-                        need_test = true
+                        installed_now = true
                     end
                 end
 
@@ -127,8 +183,13 @@ function main(package)
                 end
                 assert(fetchinfo, "fetch %s failed!", tipname)
 
-                -- test it
-                if need_test then
+                -- this package is installed now
+                if installed_now then
+
+                    -- patch pkg-config files for package
+                    _patch_pkgconfig(package)
+
+                    -- test it
                     test(package)
                 end
 
