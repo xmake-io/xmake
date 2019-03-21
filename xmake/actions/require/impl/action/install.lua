@@ -35,7 +35,7 @@ function _patch_pkgconfig(package)
     -- get lib/pkgconfig/*.pc file
     local pkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
     local pcfile = os.isdir(pkgconfigdir) and find_file("*.pc", pkgconfigdir) or nil
-    if not pcfile then
+    if pcfile then
         return 
     end
 
