@@ -242,6 +242,12 @@ function main(package)
         }
     }
 
+    -- clean the empty package directory
+    local installdir = package:installdir()
+    if os.emptydir(installdir) then
+        os.tryrm(installdir)
+    end
+
     -- leave source codes directory
     os.cd(oldir)
 end
