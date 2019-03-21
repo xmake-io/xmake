@@ -29,6 +29,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("list")
+import("scan")
 import("info")
 import("clean")
 import("search")
@@ -76,7 +77,7 @@ function main()
     -- clean all installed packages cache
     if option.get("clean") then
 
-        clean(option.get("global"))
+        clean(option.get("requires"))
 
     -- search for the given packages from repositories
     elseif option.get("search") then
@@ -93,10 +94,15 @@ function main()
 
         info(option.get("requires"))
 
-    -- list all package dependencies
+    -- list all package dependencies in project
     elseif option.get("list") then
 
         list()
+
+    -- scan the given or all packages
+    elseif option.get("scan") then
+
+        scan(option.get("requires"))
 
     -- install and update all outdated package dependencies by default if no arguments
     else

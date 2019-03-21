@@ -45,7 +45,10 @@ task("require")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k",  nil,       "Clear all package caches and uninstall all not-referenced packages." }
+                    {'c', "clean",      "k",  nil,       "Clear all package caches and uninstall all not-referenced packages.",
+                                                         "e.g.",
+                                                         "    $ xmake require --clean",
+                                                         "    $ xmake require --clean zlib tbox pcr*"                          }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                        }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies in project.",
                                                          "e.g.",
@@ -53,7 +56,7 @@ task("require")
                 ,   {nil, "scan",       "k",  nil,       "Scan the given or all installed packages.",
                                                          "e.g.",
                                                          "    $ xmake require --scan",
-                                                         "    $ xmake require --scan zlib tbox"                                }
+                                                         "    $ xmake require --scan zlib tbox pcr*"                           }
                 ,   {                                                                                                          }
                 ,   {nil, "info",       "k",  nil,       "Show the given package info.",
                                                          "e.g.",

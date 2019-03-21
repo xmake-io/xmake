@@ -2,7 +2,7 @@
 --
 -- Licensed to the Apache Software Foundation (ASF) under one
 -- or more contributor license agreements.  See the NOTICE file
--- distributed with this work for additional information
+-- distributed with this work for additional scanrmation
 -- regarding copyright ownership.  The ASF licenses this file
 -- to you under the Apache License, Version 2.0 (the
 -- "License"); you may not use this file except in compliance
@@ -19,21 +19,23 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        clean.lua
+-- @file        scan.lua
 --
 
 -- imports
 import("core.base.option")
-import("core.project.cache")
 import("core.package.package")
 
--- clear the unused or invalid package directories
-function _clear_packagedirs(packagedir)
+-- scan local package
+function _scan_package(packagedir)
 
-    -- clear them
+    -- show packages
     local package_name = path.filename(packagedir)
     for _, versiondir in ipairs(os.dirs(path.join(packagedir, "*"))) do
         local version = path.filename(versiondir)
+        cprint("${magenta}%s-%s${clear}:", package_name, version)
+
+        -- show package hash
         for _, hashdir in ipairs(os.dirs(path.join(versiondir, "*"))) do
             local hash = path.filename(hashdir)
             local references_file = path.join(hashdir, "references.txt")
@@ -48,71 +50,40 @@ function _clear_packagedirs(packagedir)
                 end
             end
             local manifest_file = path.join(hashdir, "manifest.txt")
-            local status = nil
+            local manifest = os.isfile(manifest_file) and io.load(manifest_file) or nil
+            cprintf("  -> ${yellow}%s${clear}:", hash)
             if os.emptydir(hashdir) then
-                status = "empty"
+                cprintf(" ${red}empty${clear}")
             elseif not referenced then
-                status = "unused"
-            elseif not os.isfile(manifest_file) then
-                status = "invalid"
+                cprintf(" ${red}unused${clear}")
+            elseif not manifest then
+                cprintf(" ${red}invalid${clear}")
             end
-            if status then
-                local confirm = option.get("yes")
-                if confirm == nil then
-
-                    -- show tips
-                    cprint("${bright color.warning}note: ${clear}remove this ${magenta}%s-%s${clear}/${yellow}%s${clear} (${red}%s${clear}) (pass -y to skip confirm)?", package_name, version, hash, status)
-                    cprint("please input: y (y/n)")
-
-                    -- get answer
-                    io.flush()
-                    local answer = io.read()
-                    if answer == 'y' or answer == '' then
-                        confirm = true
-                    end
-                end
-                if confirm then
-                    os.rm(hashdir)
-                end
+            print("")
+            if manifest and manifest.configs then
+                print("    -> %s", string.serialize(manifest.configs, true))
             end
         end
-        if os.emptydir(versiondir) then
-            os.rm(versiondir)
-        end
-    end
-    if os.emptydir(packagedir) then
-        os.rm(packagedir)
     end
 end
 
--- clean the given or all package caches
+-- scan local packages
 function main(package_names)
 
     -- trace
-    print("clearing caches ..")
+    print("scanning packages ..")
 
-    -- clear cache directory
-    os.rm(package.cachedir())
-
-    -- clear require cache
-    local require_cache = cache("local.require")
-    require_cache:clear()
-    require_cache:flush()
-
-    -- trace
-    print("clearing packages ..")
-
-    -- clear all unused packages
+    -- scan packages
     local installdir = package.installdir()
     if package_names then
         for _, package_name in ipairs(package_names) do
             for _, packagedir in ipairs(os.dirs(path.join(installdir, package_name:sub(1, 1), package_name))) do
-                _clear_packagedirs(packagedir)
+                _scan_package(packagedir)
             end
         end
     else
         for _, packagedir in ipairs(os.dirs(path.join(installdir, "*", "*"))) do
-            _clear_packagedirs(packagedir)
+            _scan_package(packagedir)
         end
     end
 end
