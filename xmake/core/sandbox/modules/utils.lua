@@ -145,14 +145,14 @@ end
 
 -- print the verbose information 
 function sandbox_utils.vprint(format, ...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         sandbox_utils.print(format, ...)
     end
 end
 
 -- print the verbose information without newline
 function sandbox_utils.vprintf(format, ...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         sandbox_utils.printf(format, ...)
     end
 end

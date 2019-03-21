@@ -124,7 +124,7 @@ end
 
 -- copy file or directory with the verbose info
 function sandbox_os.vcp(...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         local srcfile, dstfile = ...
         if srcfile and dstfile then
             utils.cprint("${dim}> copy %s to %s ..", srcfile, dstfile)
@@ -135,7 +135,7 @@ end
 
 -- move file or directory with the verbose info
 function sandbox_os.vmv(...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         local srcfile, dstfile = ...
         if srcfile and dstfile then
             utils.cprint("${dim}> move %s to %s ..", srcfile, dstfile)
@@ -146,7 +146,7 @@ end
 
 -- remove file or directory with the verbose info
 function sandbox_os.vrm(...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         local file = ...
         if file then
             utils.cprint("${dim}> remove %s ..", file)
@@ -157,7 +157,7 @@ end
 
 -- link file or directory with the verbose info
 function sandbox_os.vln(...)
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         local srcfile, dstfile = ...
         if srcfile and dstfile then
             utils.cprint("${dim}> link %s to %s ..", srcfile, dstfile)
@@ -316,24 +316,24 @@ end
 function sandbox_os.vrun(cmd, ...)
 
     -- echo command
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         print(vformat(cmd, ...))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose") or option.get("diagnosis"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
+    utils.ifelse(option.get("verbose"), sandbox_os.exec, sandbox_os.run)(cmd, ...)  
 end
 
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
 function sandbox_os.vrunv(program, argv, opt)
 
     -- echo command
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         print(vformat(program), table.concat(argv, " "))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose") or option.get("diagnosis"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
+    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
 end
 
 -- run command and return output and error data
