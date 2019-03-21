@@ -735,6 +735,11 @@ function _instance:fetchdeps()
             end
         end
     end
+    if fetchinfo then
+        for name, values in pairs(fetchinfo) do
+            fetchinfo[name] = table.unwrap(table.unique(table.wrap(values)))
+        end
+    end
     return fetchinfo
 end
 

@@ -25,6 +25,7 @@
 -- imports
 import("core.base.option")
 import("core.project.target")
+import("lib.detect.find_file")
 import("test")
 import(".utils.filter")
 
@@ -32,12 +33,14 @@ import(".utils.filter")
 function _patch_pkgconfig(package)
 
     -- get lib/pkgconfig/*.pc file
-    local pcfile = path.join(package:installdir(), "lib", "pkgconfig", package:name() .. ".pc")
-    if os.isfile(pcfile) then
+    local pkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
+    local pcfile = os.isdir(pkgconfigdir) and find_file("*.pc", pkgconfigdir) or nil
+    if not pcfile then
         return 
     end
 
     -- trace
+    pcfile = path.join(pkgconfigdir, package:name() .. ".pc")
     vprint("patching %s ..", pcfile)
 
     -- fetch package

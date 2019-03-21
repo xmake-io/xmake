@@ -56,7 +56,7 @@ function main(package_names)
     local requires = {}
     for _, name in ipairs(package_names) do
         for _, require_str in ipairs(project_requires) do
-            if require_str:split(' ')[1]:lower():find(name:lower()) then
+            if require_str:split(' ')[1]:lower() == name:lower() then
                 table.insert(requires, require_str)
             end
         end
