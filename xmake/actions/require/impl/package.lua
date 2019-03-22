@@ -406,13 +406,22 @@ function _get_confirm(packages)
 
         -- get packages for each repositories
         local packages_repo = {}
+        local packages_group = {}
         for _, package in ipairs(packages) do
+            -- achive packages by repository
             local reponame = package:repo() and package:repo():name() or (package:isSys() and "system" or "")
             if package:is3rd() then
                 reponame = package:name():lower():split("::")[1]
             end
             packages_repo[reponame] = packages_repo[reponame] or {}
             table.insert(packages_repo[reponame], package)
+
+            -- achive packages by group
+            local group = package:group()
+            if group then
+                packages_group[group] = packages_group[group] or {}
+                table.insert(packages_group[group], package)
+            end
         end
 
         -- show tips
@@ -421,8 +430,21 @@ function _get_confirm(packages)
             if reponame ~= "" then
                 print("in %s:", reponame)
             end
+            local packages_showed = {}
             for _, package in ipairs(packages) do
-                print("  -> %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+                if not packages_showed[tostring(package)] then
+                    local group = package:group()
+                    if group and packages_group[group] and #packages_group[group] > 1 then
+                        for idx, package_in_group in ipairs(packages_group[group]) do
+                            cprint("  %s ${magenta}%s-%s${clear} %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", package_in_group:debug() and "(debug)" or "")
+                            packages_showed[tostring(package_in_group)] = true
+                        end
+                        packages_group[group] = nil
+                    else
+                        cprint("  -> ${magenta}%s-%s${clear} %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+                        packages_showed[tostring(package)] = true
+                    end
+                end
             end
         end
         cprint("please input: y (y/n)")
@@ -548,10 +570,10 @@ function _install_packages(packages_install, packages_download)
         cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
         cprintf("\r${yellow}  => ${clear}")
         if #downloading > 0 then
-            cprintf("downloading ${yellow}%s${clear}", table.concat(downloading, ", "))
+            cprintf("downloading ${magenta}%s${clear}", table.concat(downloading, ", "))
         end
         if #installing > 0 then
-            cprintf("%sinstalling ${yellow}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
+            cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s", waitchars[waitindex + 1])
         io.flush()
