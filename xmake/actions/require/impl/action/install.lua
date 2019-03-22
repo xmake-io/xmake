@@ -29,6 +29,20 @@ import("lib.detect.find_file")
 import("test")
 import(".utils.filter")
 
+-- empty chars
+function _emptychars()
+
+    -- get left width
+    local width = os.getwinsize()["width"] or 64
+
+    -- make empty chars
+    local emptychars = ""
+    for i = 1, width do
+        emptychars = emptychars .. " "
+    end
+    return emptychars
+end
+
 -- patch pkgconfig if not exists
 function _patch_pkgconfig(package)
 
@@ -115,12 +129,6 @@ function main(package)
         tipname = tipname .. "-" .. package:version_str()
     end
 
-    -- trace
-    cprintf("${yellow}  => ${clear}installing %s .. ", tipname)
-    if option.get("verbose") or option.get("diagnosis") then
-        print("")
-    end
-
     -- install it
     try
     {
@@ -134,81 +142,71 @@ function main(package)
             ,   package:script("install_after") 
             }
 
-            -- create the install task
-            local installtask = function () 
-
-                -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
-                local installed_now = false
-                if package:is3rd() then
-                    local script = package:script("install")
-                    if script ~= nil then
-                        filter.call(script, package)
-                    end
-                else
-
-                    -- build and install package to the install directory
-                    if option.get("force") or not package:manifest_load() then
-
-                        -- clean install directory first
-                        os.tryrm(package:installdir())
-
-                        -- enter the environments of all package dependencies
-                        for _, dep in ipairs(package:orderdeps()) do
-                            dep:envs_enter()
-                        end
-
-                        -- do install
-                        for i = 1, 3 do
-                            local script = scripts[i]
-                            if script ~= nil then
-                                filter.call(script, package)
-                            end
-                        end
-
-                        -- leave the environments of all package dependencies
-                        for _, dep in irpairs(package:orderdeps()) do
-                            dep:envs_leave()
-                        end
-
-                        -- save the package info to the manifest file
-                        package:manifest_save()
-                        installed_now = true
-                    end
+            -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+            local installed_now = false
+            if package:is3rd() then
+                local script = package:script("install")
+                if script ~= nil then
+                    filter.call(script, package)
                 end
-
-                -- enter the package environments
-                package:envs_enter()
-
-                -- fetch package and force to flush the cache
-                local fetchinfo = package:fetch({force = true})
-                if option.get("verbose") or option.get("diagnosis") then
-                    print(fetchinfo)  
-                end
-                assert(fetchinfo, "fetch %s failed!", tipname)
-
-                -- this package is installed now
-                if installed_now then
-
-                    -- patch pkg-config files for package
-                    _patch_pkgconfig(package)
-
-                    -- test it
-                    test(package)
-                end
-
-                -- leave the package environments
-                package:envs_leave()
-            end
-
-            -- install package
-            if option.get("verbose") or option.get("diagnosis") then
-                installtask()
             else
-                process.asyncrun(installtask)
+
+                -- build and install package to the install directory
+                if option.get("force") or not package:manifest_load() then
+
+                    -- clean install directory first
+                    os.tryrm(package:installdir())
+
+                    -- enter the environments of all package dependencies
+                    for _, dep in ipairs(package:orderdeps()) do
+                        dep:envs_enter()
+                    end
+
+                    -- do install
+                    for i = 1, 3 do
+                        local script = scripts[i]
+                        if script ~= nil then
+                            filter.call(script, package)
+                        end
+                    end
+
+                    -- leave the environments of all package dependencies
+                    for _, dep in irpairs(package:orderdeps()) do
+                        dep:envs_leave()
+                    end
+
+                    -- save the package info to the manifest file
+                    package:manifest_save()
+                    installed_now = true
+                end
             end
+
+            -- enter the package environments
+            package:envs_enter()
+
+            -- fetch package and force to flush the cache
+            local fetchinfo = package:fetch({force = true})
+            if option.get("verbose") or option.get("diagnosis") then
+                print(fetchinfo)  
+            end
+            assert(fetchinfo, "fetch %s failed!", tipname)
+
+            -- this package is installed now
+            if installed_now then
+
+                -- patch pkg-config files for package
+                _patch_pkgconfig(package)
+
+                -- test it
+                test(package)
+            end
+
+            -- leave the package environments
+            package:envs_leave()
 
             -- trace
-            cprint("${color.success}${text.success}")
+            printf("\r" .. _emptychars())
+            cprint("\r${yellow}  => ${clear}install %s-%s .. ${color.success}${text.success}", package:name(), package:version_str())
         end,
 
         catch
@@ -221,7 +219,8 @@ function main(package)
                 end
 
                 -- trace
-                cprint("${color.failure}${text.failure}")
+                printf("\r" .. _emptychars())
+                cprint("\r${yellow}  => ${clear}install %s-%s .. ${color.failure}${text.failure}", package:name(), package:version_str())
 
                 -- leave the package environments
                 package:envs_leave()

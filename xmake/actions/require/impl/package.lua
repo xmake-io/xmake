@@ -439,19 +439,88 @@ function _get_confirm(packages)
     return confirm
 end
 
--- download packages
-function _download_packages(packages)
+-- install packages
+function _install_packages(packages_install, packages_download)
 
     local waitindex = 0
     local waitchars = {'\\', '|', '/', '-'}
+    local packages_installing = {}
+    local packages_downloading = {}
+    local packages_pending = table.copy(packages_install)
+    local packages_in_group = {}
     process.runjobs(function (index)
 
-        local package = packages[index]
-        if package then
-            action.download(package)
-        end
+        -- fetch a new package 
+        local package = nil
+        while package == nil and #packages_pending > 0 do
+            for idx, pkg in ipairs(packages_pending) do
 
-    end, #packages, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices) 
+                -- all dependences has been installed? we install it now
+                local ready = true
+                for _, dep in ipairs(pkg:orderdeps()) do
+                    if not dep:exists() then
+                        ready = false
+                    end
+                end
+                local group = pkg:group()
+                if ready and group then
+                    -- this group has been installed? skip it
+                    local group_status = packages_in_group[group]
+                    if group_status == 1 then
+                        table.remove(packages_pending, idx)
+                        break
+                    -- this group is installing? wait it
+                    elseif group_status == 0 then
+                        ready = false
+                    end
+                end
+
+                -- get a package with the ready status
+                if ready then
+                    package = pkg
+                    table.remove(packages_pending, idx)
+                    break
+                end
+            end
+            if package == nil and #packages_pending > 0 then
+                local curdir = os.curdir()
+                coroutine.yield()
+                os.cd(curdir)
+            end
+        end
+        if package then
+
+            -- only install the first package in same group
+            local group = package:group()
+            if not group or not packages_in_group[group] then
+
+                -- mark this group as 'installing'
+                if group then
+                    packages_in_group[group] = 0
+                end
+
+                -- download this package first
+                if packages_download[tostring(package)] then
+                    packages_downloading[index] = package
+                    action.download(package)
+                    packages_downloading[index] = nil
+                end
+            
+                -- install this package
+                packages_installing[index] = package
+                action.install(package)
+                packages_installing[index] = nil
+
+                -- mark this group as 'installed' or 'failed'
+                if group then
+                    packages_in_group[group] = package:exists() and 1 or -1
+                end
+            end
+        end
+        packages_installing[index] = nil
+        packages_downloading[index] = nil
+
+    end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") then
@@ -461,35 +530,32 @@ function _download_packages(packages)
         -- update waitchar index
         waitindex = ((waitindex + 1) % #waitchars)
 
-        -- make downloading packages list
+        -- make installing and downloading packages list
+        local installing = {}
         local downloading = {}
         for _, index in ipairs(indices) do
-            local package = packages[index]
+            local package = packages_installing[index]
+            if package then
+                table.insert(installing, package:name())
+            end
+            local package = packages_downloading[index]
             if package then
                 table.insert(downloading, package:name())
             end
         end
        
         -- trace
-        cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
+        cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
+        cprintf("\r${yellow}  => ${clear}")
+        if #downloading > 0 then
+            cprintf("downloading ${yellow}%s${clear}", table.concat(downloading, ", "))
+        end
+        if #installing > 0 then
+            cprintf("%sinstalling ${yellow}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
+        end
+        cprintf(" .. %s", waitchars[waitindex + 1])
         io.flush()
     end)
-end
-
--- install packages
-function _install_packages(packages)
-    local installed_in_group = {}
-    for _, package in ipairs(packages) do
-
-        -- only install the first package in same group
-        local group = package:group()
-        if not group or not installed_in_group[group] then
-            action.install(package)
-            if group then
-                installed_in_group[group] = true
-            end
-        end
-    end
 end
 
 -- the cache directory
@@ -578,7 +644,7 @@ function install_packages(requires, opt)
         if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then
             if package:supported() then
                 if #package:urls() > 0 then
-                    table.insert(packages_download, package)
+                    packages_download[tostring(package)] = package
                 end
                 table.insert(packages_install, package)
             elseif not package:optional() then
@@ -605,11 +671,8 @@ function install_packages(requires, opt)
     -- sort package urls
     _sort_packages_urls(packages_download)
 
-    -- download remote packages
-    _download_packages(packages_download)
-
     -- install all required packages from repositories
-    _install_packages(packages_install)
+    _install_packages(packages_install, packages_download)
 
     -- ok
     return packages
