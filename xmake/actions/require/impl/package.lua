@@ -436,12 +436,12 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  %s ${bright}%s-%s${clear} %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", package_in_group:debug() and "(debug)" or "")
+                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", package_in_group:debug() and "(debug)" or "")
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  -> ${bright}%s-%s${clear} %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+                        cprint("  ${yellow}->${clear} %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
                         packages_showed[tostring(package)] = true
                     end
                 end
@@ -570,10 +570,10 @@ function _install_packages(packages_install, packages_download)
         cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
         cprintf("\r${yellow}  => ${clear}")
         if #downloading > 0 then
-            cprintf("downloading ${yellow}%s${clear}", table.concat(downloading, ", "))
+            cprintf("downloading ${magenta}%s${clear}", table.concat(downloading, ", "))
         end
         if #installing > 0 then
-            cprintf("%sinstalling ${yellow}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
+            cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s", waitchars[waitindex + 1])
         io.flush()
