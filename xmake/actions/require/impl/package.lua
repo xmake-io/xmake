@@ -439,6 +439,59 @@ function _get_confirm(packages)
     return confirm
 end
 
+-- download packages
+function _download_packages(packages)
+
+    local waitindex = 0
+    local waitchars = {'\\', '|', '/', '-'}
+    process.runjobs(function (index)
+
+        local package = packages[index]
+        if package then
+            action.download(package)
+        end
+
+    end, #packages, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices) 
+
+        -- do not print progress info if be verbose 
+        if option.get("verbose") then
+            return 
+        end
+ 
+        -- update waitchar index
+        waitindex = ((waitindex + 1) % #waitchars)
+
+        -- make downloading packages list
+        local downloading = {}
+        for _, index in ipairs(indices) do
+            local package = packages[index]
+            if package then
+                table.insert(downloading, package:name())
+            end
+        end
+       
+        -- trace
+        cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
+        io.flush()
+    end)
+end
+
+-- install packages
+function _install_packages(packages)
+    local installed_in_group = {}
+    for _, package in ipairs(packages) do
+
+        -- only install the first package in same group
+        local group = package:group()
+        if not group or not installed_in_group[group] then
+            action.install(package)
+            if group then
+                installed_in_group[group] = true
+            end
+        end
+    end
+end
+
 -- the cache directory
 function cachedir()
     return path.join(global.directory(), "cache", "packages")
@@ -553,52 +606,10 @@ function install_packages(requires, opt)
     _sort_packages_urls(packages_download)
 
     -- download remote packages
-    local waitindex = 0
-    local waitchars = {'\\', '|', '/', '-'}
-    process.runjobs(function (index)
-
-        local package = packages_download[index]
-        if package then
-            action.download(package)
-        end
-
-    end, #packages_download, ifelse((option.get("verbose") or option.get("diagnosis")), 1, 4), 300, function (indices) 
-
-        -- do not print progress info if be verbose 
-        if option.get("verbose") or option.get("diagnosis") then
-            return 
-        end
- 
-        -- update waitchar index
-        waitindex = ((waitindex + 1) % #waitchars)
-
-        -- make downloading packages list
-        local downloading = {}
-        for _, index in ipairs(indices) do
-            local package = packages_download[index]
-            if package then
-                table.insert(downloading, package:name())
-            end
-        end
-       
-        -- trace
-        cprintf("\r${yellow}  => ${clear}downloading %s .. %s", table.concat(downloading, ", "), waitchars[waitindex + 1])
-        io.flush()
-    end)
+    _download_packages(packages_download)
 
     -- install all required packages from repositories
-    local installed_in_group = {}
-    for _, package in ipairs(packages_install) do
-
-        -- only install the first package in same group
-        local group = package:group()
-        if not group or not installed_in_group[group] then
-            action.install(package)
-            if group then
-                installed_in_group[group] = true
-            end
-        end
-    end
+    _install_packages(packages_install)
 
     -- ok
     return packages
