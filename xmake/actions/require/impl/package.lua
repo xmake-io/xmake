@@ -392,6 +392,18 @@ function _select_packages_version(packages)
     end
 end
 
+-- get package status string
+function _get_package_status_str(package)
+    local status = {}
+    if package:debug() then
+        table.insert(status, "debug")
+    end
+    if package:optional() then
+        table.insert(status, "optional")
+    end
+    return #status > 0 and "(" .. table.concat(status, ", ") .. ")" or ""
+end
+
 -- get user confirm
 function _get_confirm(packages)
 
@@ -436,12 +448,12 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", package_in_group:debug() and "(debug)" or "")
+                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", _get_package_status_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  ${yellow}->${clear} %s %s %s", package:name(), package:version_str() or "", package:debug() and "(debug)" or "")
+                        cprint("  ${yellow}->${clear} %s %s %s", package:name(), package:version_str() or "", _get_package_status_str(package))
                         packages_showed[tostring(package)] = true
                     end
                 end
@@ -687,7 +699,19 @@ function install_packages(requires, opt)
 
     -- get user confirm
     if not _get_confirm(packages_install) then
-        return 
+        local packages_must = {}
+        for _, package in ipairs(packages_install) do
+            if not package:optional() then
+                table.insert(packages_must, package:name())
+            end
+        end
+
+        if #packages_must > 0 then
+            raise("packages(%s): must be installed!", table.concat(packages_must, ", "))
+        else
+            -- continue other actions
+            return 
+        end
     end
 
     -- sort package urls
