@@ -302,12 +302,12 @@ end
 function _sort_packages_urls(packages)
 
     -- add all urls to fasturl and prepare to sort them together
-    for _, package in ipairs(packages) do
+    for _, package in pairs(packages) do
         fasturl.add(package:urls())
     end
 
     -- sort and update urls
-    for _, package in ipairs(packages) do
+    for _, package in pairs(packages) do
         package:urls_set(fasturl.sort(package:urls()))
     end
 end
