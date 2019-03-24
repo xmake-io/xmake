@@ -705,7 +705,6 @@ function install_packages(requires, opt)
                 table.insert(packages_must, package:name())
             end
         end
-
         if #packages_must > 0 then
             raise("packages(%s): must be installed!", table.concat(packages_must, ", "))
         else
