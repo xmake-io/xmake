@@ -11,18 +11,9 @@ package("patch")
     else
         add_urls("https://ftp.gnu.org/gnu/patch/patch-$(version).tar.bz2", {alias = "gnuftp"})
         add_urls("https://github.com/xmake-mirror/patch/archive/v$(version).tar.gz", {alias = "github"})
-        add_urls("https://github.com/xmake-mirror/patch.git",
-                 "https://gitlab.com/xmake-mirror/patch.git",
-                 "https://gitee.com/xmake-mirror/patch.git")
         add_versions("gnuftp:2.7.6", "3d1d001210d76c9f754c12824aa69f25de7cb27bb6765df63455b77601a0dcc9")
         add_versions("github:2.7.6", "33d5a86bad9813b27dbbe890123d0b88fbcc74d5d997aeadde60c670a2bd0eb9")
-        add_versions("2.7.6", "v2.7.6")
     end
-
-    --[[
-    if is_plat("macosx", "linux") then
-        add_deps("autoconf", "automake")
-    end]]
 
     on_install("windows", function (package)
         os.cp("bin/*", package:installdir("bin"))
