@@ -183,6 +183,17 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
+-- add deps
+function _instance:deps_add(...)
+    for _, dep in ipairs({...}) do
+        self:add("deps", dep:name())
+        self._DEPS = self._DEPS or {}
+        self._DEPS[dep:name()] = dep
+        self._ORDERDEPS = self._ORDERDEPS or {}
+        table.insert(self._ORDERDEPS, dep)
+    end
+end
+
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
 
@@ -743,6 +754,27 @@ function _instance:fetchdeps()
     return fetchinfo
 end
 
+-- get the patches of the current version
+function _instance:patches()
+    local patches = self._PATCHES
+    if patches == nil then
+        local patchinfos = self:get("patches")
+        if patchinfos then
+            local version_str = self:version_str()
+            patchinfos = patchinfos[version_str]
+            if patchinfos then
+                patches = {}
+                patchinfos = table.wrap(patchinfos)
+                for idx = 1, #patchinfos, 2 do
+                    table.insert(patches , {patchinfos[idx], patchinfos[idx + 1]})
+                end
+            end
+        end
+        self._PATCHES = patches or false
+    end
+    return patches and patches or nil
+end
+
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
@@ -846,6 +878,11 @@ function package.apis()
             -- package.before_xxx
         ,   "package.after_install"
         ,   "package.after_test"
+        }
+    ,   keyvalues = 
+        {
+            -- package.add_xxx
+            "package.add_patches"
         }
     ,   dictionary = 
         {

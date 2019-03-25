@@ -473,6 +473,34 @@ function _get_confirm(packages)
     return confirm
 end
 
+-- patch some dependent builtin packages 
+function _patch_packages(packages_install, packages_download)
+
+    -- add package(patch)
+    local patched_package = nil
+    for _, package in ipairs(packages_install) do
+        if package:patches() then
+            patched_package = package
+            break
+        end
+    end
+    if patched_package then
+        local packages = load_packages("patch")
+        if packages and #packages > 0 then
+            local package = packages[1]
+            if not package:fetch() then
+            
+                -- add this package
+                packages_download[tostring(package)] = package
+                table.insert(packages_install, 1, package)
+
+                -- add dependences to ensure to be installed first
+                patched_package:deps_add(package)
+            end
+        end
+    end
+end
+
 -- install packages
 function _install_packages(packages_install, packages_download)
 
@@ -696,6 +724,9 @@ function install_packages(requires, opt)
         end
         raise()
     end
+
+    -- patch some dependent builtin packages 
+    _patch_packages(packages_install, packages_download)
 
     -- get user confirm
     if not _get_confirm(packages_install) then
