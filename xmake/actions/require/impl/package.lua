@@ -473,9 +473,12 @@ function _get_confirm(packages)
     return confirm
 end
 
--- patch some dependent builtin packages 
+-- patch some builtin dependent packages 
 function _patch_packages(packages_install, packages_download)
 
+    -- @NOTE use git.apply instead of patch
+    -- we can add some builtin packages like this
+    --[[
     -- add package(patch)
     local patched_package = nil
     for _, package in ipairs(packages_install) do
@@ -497,6 +500,7 @@ function _patch_packages(packages_install, packages_download)
             patched_package:deps_add(package)
         end
     end
+    ]]
 end
 
 -- install packages

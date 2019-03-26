@@ -23,13 +23,16 @@
 --
 
 -- imports
-import("lib.detect.find_tool")
 import("core.base.option")
 import("net.http")
+import("devel.git")
 
--- download patch file
-function _dowload_patch_file(package, patch_url, patch_hash)
-        
+-- do patch
+function _patch(package, patch_url, patch_hash)
+
+    -- trace
+    vprint("patching %s to %s-%s ..", patch_url, package:name(), package:version_str())
+ 
     -- get the patch file
     local patch_file = path.join(os.tmpdir(), "patches", package:name(), package:version_str(), path.filename(patch_url))
 
@@ -65,25 +68,9 @@ function _dowload_patch_file(package, patch_url, patch_hash)
             raise("patch(%s): unmatched checksum!", patch_url)
         end
     end
-    return patch_file
-end
-
--- apply patch file
-function _apply_patch_file(package, patch, patch_file)
-    os.vrunv(patch.program, {"-p1", "-t", "-i", patch_file})
-end
-
--- do patch
-function _patch(package, patch, patch_url, patch_hash)
-
-    -- trace
-    vprint("patching %s to %s-%s ..", patch_url, package:name(), package:version_str())
-
-    -- download the patch file
-    local patch_file = _dowload_patch_file(package, patch_url, patch_hash)
 
     -- apply the patch file
-    _apply_patch_file(package, patch, patch_file)
+    git.apply(patch_file)
 end
 
 -- patch the given package
@@ -95,11 +82,8 @@ function main(package)
         return
     end
 
-    -- find patch tool
-    local patch = assert(find_tool("patch"), "patch not found!")
-
     -- do all patches
     for _, patchinfo in ipairs(patches) do
-        _patch(package, patch, patchinfo[1], patchinfo[2])
+        _patch(package, patchinfo[1], patchinfo[2])
     end
 end
