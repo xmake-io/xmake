@@ -44,10 +44,11 @@ local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info)
+function _instance.new(name, info, scriptdir)
     local instance = table.inherit(_instance)
     instance._NAME = name
     instance._INFO = info
+    instance._SCRIPTDIR = scriptdir
     return instance
 end
 
@@ -239,6 +240,11 @@ function _instance:installdir(...)
         os.mkdir(dir)
     end
     return dir
+end
+
+-- get the script directory
+function _instance:scriptdir()
+    return self._SCRIPTDIR
 end
 
 -- get the references info of this package
@@ -1051,7 +1057,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packageinfo)
+    local instance, errors = _instance.new(packagename, packageinfo, path.directory(scriptpath))
     if not instance then
         return nil, errors
     end

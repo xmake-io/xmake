@@ -487,16 +487,14 @@ function _patch_packages(packages_install, packages_download)
     if patched_package then
         local packages = load_packages("patch")
         if packages and #packages > 0 then
+            -- install patch package
             local package = packages[1]
             if not package:fetch() then
-            
-                -- add this package
                 packages_download[tostring(package)] = package
                 table.insert(packages_install, 1, package)
-
-                -- add dependences to ensure to be installed first
-                patched_package:deps_add(package)
             end
+            -- add dependences to ensure to be installed first
+            patched_package:deps_add(package)
         end
     end
 end

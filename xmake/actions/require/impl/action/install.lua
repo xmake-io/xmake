@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.project.target")
 import("lib.detect.find_file")
 import("test")
+import("patch")
 import(".utils.filter")
 
 -- empty chars
@@ -161,6 +162,9 @@ function main(package)
                     for _, dep in ipairs(package:orderdeps()) do
                         dep:envs_enter()
                     end
+
+                    -- patch it first 
+                    patch(package)
 
                     -- do install
                     for i = 1, 3 do

@@ -103,7 +103,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         cached = false
 
         -- attempt to remove package file first
-        os.rm(packagefile)
+        os.tryrm(packagefile)
 
         -- download package file
         http.download(url, packagefile)
