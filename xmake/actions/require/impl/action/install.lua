@@ -47,6 +47,11 @@ end
 -- patch pkgconfig if not exists
 function _patch_pkgconfig(package)
 
+    -- only binary? need not pkgconfig
+    if package:kind() == "binary" then
+        return 
+    end
+
     -- get lib/pkgconfig/*.pc file
     local pkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
     local pcfile = os.isdir(pkgconfigdir) and find_file("*.pc", pkgconfigdir) or nil
