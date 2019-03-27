@@ -34,7 +34,10 @@ import(".utils.filter")
 function _emptychars()
 
     -- get left width
-    local width = os.getwinsize()["width"] or 64
+    local width = os.getwinsize()["width"] - 1
+    if not width or width <= 0 then
+        width = 64
+    end
 
     -- make empty chars
     local emptychars = ""
