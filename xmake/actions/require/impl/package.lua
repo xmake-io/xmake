@@ -168,53 +168,6 @@ function _load_package_from_repository(packagename, reponame)
     end
 end
 
--- load required packages
-function _load_package(packagename, requireinfo)
-
-    -- attempt to get it from cache first
-    local packages = _g._PACKAGES or {}
-    local package = packages[packagename]
-    if package then
-
-        -- satisfy required version? 
-        local version_str = package:version_str()
-        if version_str and not semver.satisfies(version_str, requireinfo.version) then
-            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, version_str, requireinfo.version)
-        end
-
-        -- ok
-        return package
-    end
-
-    -- load package from project first
-    if os.isfile(os.projectfile()) then
-        package = _load_package_from_project(packagename)
-    end
-        
-    -- load package from repositories
-    if not package then
-        package = _load_package_from_repository(packagename, requireinfo.reponame)
-    end
-
-    -- load package from system
-    if not package then
-        package = _load_package_from_system(packagename)
-    end
-
-    -- check
-    assert(package, "package(%s) not found!", packagename)
-
-    -- save require info to package
-    package:requireinfo_set(requireinfo)
-
-    -- save this package package to cache
-    packages[packagename] = package
-    _g._PACKAGES = packages
-
-    -- ok
-    return package
-end
-
 -- search packages from repositories
 function _search_packages(name)
 
@@ -246,8 +199,8 @@ function _sort_packagedeps(package)
     return orderdeps
 end
 
--- add some builtin configs to package
-function _add_package_configs(package)
+-- add some builtin configurations to package
+function _add_package_configurations(package)
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
@@ -256,8 +209,131 @@ function _add_package_configs(package)
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
 end
 
+-- select package version
+function _select_package_version(package, requireinfo)
+
+    -- exists urls? otherwise be phony package (only as package group)
+    if #package:urls() > 0 then
+
+        -- has git url?
+        local has_giturl = false
+        for _, url in ipairs(package:urls()) do
+            if git.checkurl(url) then
+                has_giturl = true
+                break
+            end
+        end
+
+        -- select package version
+        local source = nil
+        local version = nil
+        local require_version = requireinfo.version
+        if #package:versions() > 0 and (require_version == "lastest" or require_version:find('.', 1, true)) then -- select version?
+            version, source = semver.select(require_version, package:versions())
+        elseif has_giturl then -- select branch?
+            version, source = require_version ~= "lastest" and require_version or "master", "branches"
+        else
+            raise("package(%s %s): not found!", package:name(), require_version)
+        end
+        return version, source
+    end
+end
+
+-- check the configurations of packages
+--
+-- package("pcre2")
+--      add_configs("bitwidth", {description = "Set the code unit width.", default = "8", values = {"8", "16", "32"}})
+--      add_configs("bitwidth", {type = "number", values = {8, 16, 32}})
+--      add_configs("bitwidth", {restrict = function(value) if tonumber(value) < 100 then return true end})
+--
+function _check_package_configurations(package)
+    local configs_defined = {}
+    for _, name in ipairs(package:get("configs")) do
+        configs_defined[name] = package:extraconf("configs", name) or {}
+    end
+    for name, value in pairs(package:configs()) do
+        local conf = configs_defined[name]
+        if conf then
+            local config_type = conf.type or "string"
+            if type(value) ~= config_type then
+                raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
+            end
+            if conf.values then
+                local found = false
+                for _, config_value in ipairs(conf.values) do
+                    if tostring(value) == tostring(config_value) then
+                        found = true
+                        break
+                    end
+                end
+                if not found then
+                    raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
+                end
+            end
+            if conf.restrict then
+                if not conf.restrict(value) then
+                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
+                end
+            end
+        else
+            raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
+        end
+    end
+end
+
+-- load required packages
+function _load_package(packagename, requireinfo)
+
+    -- attempt to get it from cache first
+    local packages = _g._PACKAGES or {}
+    local package = packages[packagename]
+    if package then
+
+        -- satisfy required version? 
+        local version_required = _select_package_version(package, requireinfo)
+        if version_required and version_required ~= package:version_str() then
+            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, package:version_str(), requireinfo.version)
+        end
+        return package
+    end
+
+    -- load package from project first
+    if os.isfile(os.projectfile()) then
+        package = _load_package_from_project(packagename)
+    end
+        
+    -- load package from repositories
+    if not package then
+        package = _load_package_from_repository(packagename, requireinfo.reponame)
+    end
+
+    -- load package from system
+    if not package then
+        package = _load_package_from_system(packagename)
+    end
+
+    -- check
+    assert(package, "package(%s) not found!", packagename)
+
+    -- select package version
+    local version, source = _select_package_version(package, requireinfo)
+    if version then
+        package:version_set(version, source)
+    end
+
+    -- save require info to package
+    package:requireinfo_set(requireinfo)
+
+    -- save this package package to cache
+    packages[packagename] = package
+    _g._PACKAGES = packages
+
+    -- ok
+    return package
+end
+
 -- load all required packages
-function _load_packages(requires, opt)
+function _load_packages(requires, unique, opt)
 
     -- no requires?
     if not requires or #requires == 0 then
@@ -274,27 +350,40 @@ function _load_packages(requires, opt)
         -- maybe package not found and optional
         if package then
 
-            -- load dependent packages and save them first of this package
-            local deps = package:get("deps")
-            if deps and opt.nodeps ~= true then
-                local packagedeps = {}
-                for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
-                    table.insert(packages, dep)
-                    packagedeps[dep:name()] = dep
+            -- remove repeat packages with same the package name and version 
+            local key = package:name() .. (package:version_str() or "")
+            if not unique[key] then
+
+                -- add some builtin configurations to package
+                _add_package_configurations(package)
+
+                -- check package configurations
+                _check_package_configurations(package)
+
+                -- do load for package
+                local on_load = package:script("load")
+                if on_load then
+                    on_load(package)
                 end
-                package._DEPS = packagedeps
-                package._ORDERDEPS = table.unique(_sort_packagedeps(package))
+
+                -- load dependent packages and save them first of this package
+                local deps = package:get("deps")
+                if deps and opt.nodeps ~= true then
+                    local packagedeps = {}
+                    for _, dep in ipairs(_load_packages(deps, unique, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
+                        table.insert(packages, dep)
+                        packagedeps[dep:name()] = dep
+                    end
+                    package._DEPS = packagedeps
+                    package._ORDERDEPS = table.unique(_sort_packagedeps(package))
+                end
+
+                -- save this package package
+                table.insert(packages, package)
+                unique[key] = true
             end
-
-            -- add some builtin configs to package
-            _add_package_configs(package)
-
-            -- save this package package
-            table.insert(packages, package)
         end
     end
-
-    -- ok?
     return packages
 end
 
@@ -311,87 +400,7 @@ function _sort_packages_urls(packages)
         package:urls_set(fasturl.sort(package:urls()))
     end
 end
-  
--- check the configurations of packages
---
--- package("pcre2")
---      add_configs("bitwidth", {description = "Set the code unit width.", default = "8", values = {"8", "16", "32"}})
---      add_configs("bitwidth", {type = "number", values = {8, 16, 32}})
---      add_configs("bitwidth", {restrict = function(value) if tonumber(value) < 100 then return true end})
---
-function _check_packages_configs(packages)
-    for _, package in ipairs(packages) do
-        local configs_defined = {}
-        for _, name in ipairs(package:get("configs")) do
-            configs_defined[name] = package:extraconf("configs", name) or {}
-        end
-        for name, value in pairs(package:configs()) do
-            local conf = configs_defined[name]
-            if conf then
-                local config_type = conf.type or "string"
-                if type(value) ~= config_type then
-                    raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
-                end
-                if conf.values then
-                    local found = false
-                    for _, config_value in ipairs(conf.values) do
-                        if tostring(value) == tostring(config_value) then
-                            found = true
-                            break
-                        end
-                    end
-                    if not found then
-                        raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
-                    end
-                end
-                if conf.restrict then
-                    if not conf.restrict(value) then
-                        raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
-                    end
-                end
-            else
-                raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
-            end
-        end
-    end
-end
-
--- select packages version
-function _select_packages_version(packages)
-
-    -- sort and update urls
-    for _, package in ipairs(packages) do
-
-        -- exists urls? otherwise be phony package (only as package group)
-        if #package:urls() > 0 then
-
-            -- has git url?
-            local has_giturl = false
-            for _, url in ipairs(package:urls()) do
-                if git.checkurl(url) then
-                    has_giturl = true
-                    break
-                end
-            end
-
-            -- select package version
-            local source = nil
-            local version = nil
-            local require_version = package:requireinfo().version
-            if #package:versions() > 0 and (require_version == "lastest" or require_version:find('.', 1, true)) then -- select version?
-                version, source = semver.select(require_version, package:versions())
-            elseif has_giturl then -- select branch?
-                version, source = require_version ~= "lastest" and require_version or "master", "branches"
-            else
-                raise("package(%s %s): not found!", package:name(), require_version)
-            end
-
-            -- save version to package
-            package:version_set(version, source)
-        end
-    end
-end
-
+ 
 -- get package status string
 function _get_package_status_str(package)
     local status = {}
@@ -647,38 +656,8 @@ end
 
 -- load all required packages
 function load_packages(requires, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- laod all required packages recursively
-    local packages = _load_packages(requires, opt)
-
-    -- select packages version
-    _select_packages_version(packages)
-
-    -- check the configurations of packages
-    _check_packages_configs(packages)
-
-    -- remove repeat packages with same the package name and version
-    local unique = {}
-    local results = {}
-    for _, package in ipairs(packages) do
-        local key = package:name() .. (package:version_str() or "")
-        if not unique[key] then
-
-            -- do load for package
-            local on_load = package:script("load")
-            if on_load then
-                on_load(package)
-            end
-
-            -- add package
-            table.insert(results, package)
-            unique[key] = true
-        end
-    end
-    return results
+    return _load_packages(requires, {}, opt)
 end
 
 -- install packages
