@@ -75,11 +75,10 @@ function _instance:_api_handle(values)
         if self._ENABLE_FILTER then
             values = interp:_filter(values)
         end
-
-        -- unwrap it if be only one
-        values = table.unwrap(values)
     end
-    return values
+
+    -- unwrap it if be only one
+    return table.unwrap(values)
 end
 
 -- save api source info, .e.g call api() in sourcefile:linenumber

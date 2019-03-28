@@ -565,6 +565,11 @@ function _instance:supported()
     return self:script("install") ~= nil
 end
 
+-- support parallelize for installation?
+function _instance:parallelize()
+    return self:get("parallelize") ~= false
+end
+
 -- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
 -- we need install and find package by third-party package manager directly
 --
@@ -864,6 +869,7 @@ function package.apis()
         ,   "package.set_kind"
         ,   "package.set_homepage"
         ,   "package.set_description"
+        ,   "package.set_parallelize"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
@@ -967,14 +973,17 @@ function package.load_from_system(packagename)
     instance._isSys = true
     instance._is3rd = is3rd
 
-    -- add configurations for the 3rd package
     if is3rd then
+        -- add configurations for the 3rd package
         local install_package = sandbox_module.import("package.manager." .. packagename:split("::")[1]:lower() .. ".install_package", {try = true, anonymous = true})
         if install_package and install_package.configurations then
             for name, conf in pairs(install_package.configurations()) do
                 instance:add("configs", name, conf)
             end
         end
+
+        -- disable parallelize for installation
+        instance:set("parallelize", false)
     end
 
     -- save instance to the cache

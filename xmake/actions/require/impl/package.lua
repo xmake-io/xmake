@@ -521,6 +521,8 @@ function _install_packages(packages_install, packages_download)
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
     local packages_in_group = {}
+    local installing_count = 0
+    local parallelize = true
     process.runjobs(function (index)
 
         -- fetch a new package 
@@ -567,6 +569,19 @@ function _install_packages(packages_install, packages_download)
             local group = package:group()
             if not group or not packages_in_group[group] then
 
+                -- disable parallelize?
+                if not package:parallelize() then
+                    parallelize = false
+                end
+                if not parallelize then
+                    while installing_count > 0 do
+                        local curdir = os.curdir()
+                        coroutine.yield()
+                        os.cd(curdir)
+                    end
+                end
+                installing_count = installing_count + 1
+
                 -- mark this group as 'installing'
                 if group then
                     packages_in_group[group] = 0
@@ -588,6 +603,9 @@ function _install_packages(packages_install, packages_download)
                 if group then
                     packages_in_group[group] = package:exists() and 1 or -1
                 end
+
+                -- enable parallelize
+                parallelize = true
             end
         end
         packages_installing[index] = nil
@@ -616,6 +634,7 @@ function _install_packages(packages_install, packages_download)
                 table.insert(downloading, package:name())
             end
         end
+        installing_count = #installing
        
         -- trace
         cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
