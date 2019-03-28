@@ -218,7 +218,7 @@ function main(package)
 
             -- trace
             printf("\r" .. _emptychars())
-            cprint("\r${yellow}  => ${clear}install %s-%s .. ${color.success}${text.success}", package:name(), package:version_str())
+            cprint("\r${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:name(), package:version_str() or "")
         end,
 
         catch
@@ -232,7 +232,7 @@ function main(package)
 
                 -- trace
                 printf("\r" .. _emptychars())
-                cprint("\r${yellow}  => ${clear}install %s-%s .. ${color.failure}${text.failure}", package:name(), package:version_str())
+                cprint("\r${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:name(), package:version_str() or "")
 
                 -- leave the package environments
                 package:envs_leave()

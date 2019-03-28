@@ -58,6 +58,19 @@ xmake
     ]]):format(name, table.concat(options, "\n"), table.concat(imports, "\n"), table.concat(build_requires, "\n")))
 end
 
+-- get configurations 
+function configurations(package)
+    return 
+    {
+        build          = {description = "use it to choose if you want to build from sources.", default = "all", values = {"all", "never", "missing", "outdated"}},
+        remote         = {description = "Set the conan remote server."},
+        options        = {description = "Set the options values, e.g. OpenSSL:shared=True"},
+        imports        = {description = "Set the imports for conan."},
+        settings       = {description = "Set the build settings for conan."},
+        build_requires = {description = "Set the build requires for conan."}
+    }
+end
+
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 

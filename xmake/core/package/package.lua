@@ -967,6 +967,16 @@ function package.load_from_system(packagename)
     instance._isSys = true
     instance._is3rd = is3rd
 
+    -- add configurations for the 3rd package
+    if is3rd then
+        local install_package = sandbox_module.import("package.manager." .. packagename:split("::")[1]:lower() .. ".install_package", {try = true, anonymous = true})
+        if install_package and install_package.configurations then
+            for name, conf in pairs(install_package.configurations()) do
+                instance:add("configs", name, conf)
+            end
+        end
+    end
+
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
 
