@@ -85,6 +85,16 @@ function main(name, opt)
         end
     end
     if found then
+        for _, linkdir in ipairs(result.linkdirs) do
+            if not os.isdir(linkdir) then
+                return 
+            end
+        end
+        for _, includedir in ipairs(result.includedirs) do
+            if not os.isdir(includedir) then
+                return 
+            end
+        end
         return result
     end
 end
