@@ -26,6 +26,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
+import("devel.git")
 
 -- get build directory
 function _conan_get_build_directory(name)
@@ -58,8 +59,17 @@ xmake
     ]]):format(name, table.concat(options, "\n"), table.concat(imports, "\n"), table.concat(build_requires, "\n")))
 end
 
+-- install xmake generator
+function _conan_install_xmake_generator(conan)
+    local xmake_generator_localdir = path.join(config.directory(), "conan", "xmake_generator")
+    if not os.isdir(xmake_generator_localdir) then
+        git.clone("https://github.com/xmake-io/conan-xmake_generator.git", {depth = 1, branch = "0.1.0/testing", outputdir = xmake_generator_localdir})
+        os.vrunv(conan.program, {"export", xmake_generator_localdir, "bincrafters/testing"})
+    end
+end
+
 -- get configurations 
-function configurations(package)
+function configurations()
     return 
     {
         build          = {description = "use it to choose if you want to build from sources.", default = "all", values = {"all", "never", "missing", "outdated"}},
@@ -99,6 +109,9 @@ function main(name, opt)
 
     -- enter build directory
     local oldir = os.cd(buildir)
+
+    -- install xmake generator
+    _conan_install_xmake_generator(conan)
 
     -- generate conanfile.txt
     _conan_generate_conanfile(name, opt)
