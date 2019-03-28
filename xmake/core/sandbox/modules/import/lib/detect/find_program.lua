@@ -248,7 +248,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
     opt = opt or {}
 
     -- init cachekey
-    local cachekey = "find_program"
+    local cachekey = "find_program_" .. os.host() .. "_" .. os.arch()
     if opt.cachekey then
         cachekey = cachekey .. "_" .. opt.cachekey
     end
