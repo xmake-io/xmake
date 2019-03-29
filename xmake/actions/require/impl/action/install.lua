@@ -225,9 +225,13 @@ function main(package)
         {
             function (errors)
 
-                -- verbose?
-                if (option.get("verbose") or option.get("diagnosis")) and errors then
-                    cprint("${dim color.error}error: ${clear}%s", errors)
+                -- show or save the last errors
+                if errors then
+                    if (option.get("verbose") or option.get("diagnosis")) then
+                        cprint("${dim color.error}error: ${clear}%s", errors)
+                    else
+                        io.writefile(path.join(package:installdir("logs"), "install.txt"), errors)
+                    end
                 end
 
                 -- trace
