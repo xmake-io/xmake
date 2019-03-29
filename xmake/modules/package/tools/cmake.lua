@@ -63,11 +63,21 @@ function _enter_envs(package)
     
     -- get old environments
     local envs = {}
-    envs.CMAKE_PREFIX_PATH = os.getenv("CMAKE_PREFIX_PATH")
+    envs.CMAKE_PREFIX_PATH  = os.getenv("CMAKE_PREFIX_PATH")
+    envs.CMAKE_INCLUDE_PATH = os.getenv("CMAKE_INCLUDE_PATH")
+    envs.CMAKE_LIBRARY_PATH = os.getenv("CMAKE_LIBRARY_PATH")
 
     -- set new environments
     for _, dep in ipairs(package:orderdeps()) do
-        os.addenv("CMAKE_PREFIX_PATH", dep:installdir())
+        if dep:isSys() then
+            local fetchinfo = dep:fetch()
+            if fetchinfo then
+                os.addenv("CMAKE_LIBRARY_PATH", unpack(table.wrap(fetchinfo.linkdirs)))
+                os.addenv("CMAKE_INCLUDE_PATH", unpack(table.wrap(fetchinfo.includedirs)))
+            end
+        else
+            os.addenv("CMAKE_PREFIX_PATH", dep:installdir())
+        end
     end
     return envs
 end
