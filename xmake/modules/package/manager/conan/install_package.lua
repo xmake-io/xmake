@@ -27,6 +27,7 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 import("devel.git")
+import("net.fasturl")
 
 -- get build directory
 function _conan_get_build_directory(name)
@@ -63,8 +64,25 @@ end
 function _conan_install_xmake_generator(conan)
     local xmake_generator_localdir = path.join(config.directory(), "conan", "xmake_generator")
     if not os.isdir(xmake_generator_localdir) then
-        git.clone("https://github.com/xmake-io/conan-xmake_generator.git", {depth = 1, branch = "0.1.0/testing", outputdir = xmake_generator_localdir})
-        os.vrunv(conan.program, {"export", xmake_generator_localdir, "bincrafters/testing"})
+
+        -- sort main urls
+        local mainurls = {"https://github.com/xmake-io/conan-xmake_generator.git", 
+                          "https://gitlab.com/tboox/conan-xmake_generator.git", 
+                          "https://gitee.com/tboox/conan-xmake_generator.git"}
+        fasturl.add(mainurls)
+        mainurls = fasturl.sort(mainurls)
+
+        -- clone xmake generator repository
+        local ok = false
+        for _, url in ipairs(mainurls) do
+            ok = try { function () git.clone(url, {depth = 1, branch = "0.1.0/testing", outputdir = xmake_generator_localdir}); return true end }
+            if ok then
+                break
+            end
+        end
+        if ok then
+            os.vrunv(conan.program, {"export", xmake_generator_localdir, "bincrafters/testing"})
+        end
     end
 end
 

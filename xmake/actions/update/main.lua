@@ -228,7 +228,9 @@ function main()
     environment.enter()
 
     -- sort main urls
-    local mainurls = {"https://github.com/xmake-io/xmake.git", "https://gitlab.com/tboox/xmake.git", "https://gitee.com/tboox/xmake.git"}
+    local mainurls = {"https://github.com/xmake-io/xmake.git",
+                      "https://gitlab.com/tboox/xmake.git", 
+                      "https://gitee.com/tboox/xmake.git"}
     fasturl.add(mainurls)
     mainurls = fasturl.sort(mainurls)
 
