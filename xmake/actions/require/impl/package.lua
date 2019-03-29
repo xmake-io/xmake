@@ -606,6 +606,7 @@ function _install_packages(packages_install, packages_download)
 
                 -- enable parallelize
                 parallelize = true
+                installing_count = installing_count - 1
             end
         end
         packages_installing[index] = nil
@@ -634,7 +635,6 @@ function _install_packages(packages_install, packages_download)
                 table.insert(downloading, package:name())
             end
         end
-        installing_count = #installing
        
         -- trace
         cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
