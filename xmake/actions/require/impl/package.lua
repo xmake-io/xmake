@@ -324,6 +324,18 @@ function _load_package(packagename, requireinfo)
     -- save require info to package
     package:requireinfo_set(requireinfo)
 
+    -- add some builtin configurations to package
+    _add_package_configurations(package)
+
+    -- check package configurations
+    _check_package_configurations(package)
+
+    -- do load for package
+    local on_load = package:script("load")
+    if on_load then
+        on_load(package)
+    end
+
     -- save this package package to cache
     packages[packagename] = package
     _g._PACKAGES = packages
@@ -333,7 +345,7 @@ function _load_package(packagename, requireinfo)
 end
 
 -- load all required packages
-function _load_packages(requires, unique, opt)
+function _load_packages(requires, opt)
 
     -- no requires?
     if not requires or #requires == 0 then
@@ -350,38 +362,22 @@ function _load_packages(requires, unique, opt)
         -- maybe package not found and optional
         if package then
 
-            -- remove repeat packages with same the package name and version 
-            local key = package:name() .. (package:version_str() or "")
-            if not unique[key] then
-
-                -- add some builtin configurations to package
-                _add_package_configurations(package)
-
-                -- check package configurations
-                _check_package_configurations(package)
-
-                -- do load for package
-                local on_load = package:script("load")
-                if on_load then
-                    on_load(package)
-                end
-
-                -- load dependent packages and save them first of this package
+            -- load dependent packages and save them first of this package
+            if not package._DEPS then
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, unique, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
+                    for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
                     end
                     package._DEPS = packagedeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
                 end
-
-                -- save this package package
-                table.insert(packages, package)
-                unique[key] = true
             end
+
+            -- save this package package
+            table.insert(packages, package)
         end
     end
     return packages
@@ -676,7 +672,17 @@ end
 -- load all required packages
 function load_packages(requires, opt)
     opt = opt or {}
-    return _load_packages(requires, {}, opt)
+    local unique = {}
+    local packages = {}
+    for _, package in ipairs(_load_packages(requires, opt)) do
+        -- remove repeat packages with same the package name and version 
+        local key = package:name() .. (package:version_str() or "")
+        if not unique[key] then
+            table.insert(packages, package)
+            unique[key] = true
+        end
+    end
+    return packages
 end
 
 -- install packages
