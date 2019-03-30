@@ -18,6 +18,7 @@
 * [#361](https://github.com/xmake-io/xmake/issues/361): Support vs2019 preview
 * [#368](https://github.com/xmake-io/xmake/issues/368): Support `private, public, interface` to improve dependency inheritance like cmake
 * [#284](https://github.com/xmake-io/xmake/issues/284): Add passing user configs description for `package()`
+* [#319](https://github.com/xmake-io/xmake/issues/319): Add `add_headerfiles` to improve to set header files and directories
 
 ### Changes
 
@@ -28,7 +29,6 @@
 * [#322](https://github.com/xmake-io/xmake/issues/322): Add `option.add_features`, `option.add_cxxsnippets` and `option.add_csnippets`
 * Remove some deprecated interfaces of xmake 1.x, e.g. `add_option_xxx`
 * [#327](https://github.com/xmake-io/xmake/issues/327): Support conan package manager for `lib.detect.find_package` 
-* [#319](https://github.com/xmake-io/xmake/issues/319): Add `add_headerfiles` and `add_headerdirs` to improve to set header files and directories
 * Improve `lib.detect.find_package` and add builtin `find_packages("zlib 1.x", "openssl", {xxx = ...})` api
 * Mark `set_modes()` as deprecated, we use `add_rules("mode.debug", "mode.release")` instead of it
 * [#353](https://github.com/xmake-io/xmake/issues/353): Improve `target:set`, `target:add` and add `target:del` to modify target configuration
@@ -575,6 +575,7 @@
 * [#361](https://github.com/xmake-io/xmake/issues/361): 增加对vs2019 preview的支持
 * [#368](https://github.com/xmake-io/xmake/issues/368): 支持`private, public, interface`属性设置去继承target配置
 * [#284](https://github.com/xmake-io/xmake/issues/284): 通过`add_configs()`添加和传递用户自定义配置到`package()`
+* [#319](https://github.com/xmake-io/xmake/issues/319): 添加`add_headerfiles`接口去改进头文件的设置
 
 ### 改进
 
@@ -585,7 +586,6 @@
 * [#322](https://github.com/xmake-io/xmake/issues/322): 添加`option.add_features`, `option.add_cxxsnippets` 和 `option.add_csnippets`
 * 移除xmake 1.x的一些废弃接口, 例如：`add_option_xxx`
 * [#327](https://github.com/xmake-io/xmake/issues/327): 改进`lib.detect.find_package`增加对conan包管理器的支持
-* [#319](https://github.com/xmake-io/xmake/issues/319): 添加`add_headerfiles`和`add_headerdirs`接口去改进头文件的设置
 * 改进`lib.detect.find_package`并且添加内建的`find_packages("zlib 1.x", "openssl", {xxx = ...})`接口
 * 标记`set_modes()`作为废弃接口， 我们使用`add_rules("mode.debug", "mode.release")`来替代它
 * [#353](https://github.com/xmake-io/xmake/issues/353): 改进`target:set`, `target:add` 并且添加`target:del`去动态修改target配置
