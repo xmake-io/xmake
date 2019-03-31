@@ -246,10 +246,11 @@ target("console")
 add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
 add_requires("tbox >1.6.1", {optional = true, debug = true})
 add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
+add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl"}) 
 target("test")
     set_kind("shared")
     add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib", "pcre2")
+    add_packages("libuv", "ffmpeg", "tbox", "zlib", "pcre2", "openssl")
 ```
 
 查找和使用本地已安装的包：
@@ -259,7 +260,7 @@ target("test")
     set_kind("shared")
     add_files("src/*.c")
     on_load(function (target)
-        target:add(find_package("zlib", "openssl", "brew::pcre2/libpcre2-8"))
+        target:add(find_packages("zlib", "openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
     end)
 ```
 
