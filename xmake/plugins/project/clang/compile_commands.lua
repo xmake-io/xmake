@@ -53,7 +53,7 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
   "directory": "%s",
   "arguments": ["%s"],
   "file": "%s"
-}]], ifelse(_g.firstline, "", ",\n"), os.projectdir(), table.concat(arguments_escape, "\", \""), sourcefile)
+}]], ifelse(_g.firstline, "", ",\n"), os.args(os.projectdir()), table.concat(arguments_escape, "\", \""), os.args(sourcefile))
 
     -- clear first line marks
     _g.firstline = false
