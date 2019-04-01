@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.2.5
+
 ### New features
 
 * Add `string.serialize` and `string.deserialize` to serialize and deserialize object, function and others.
@@ -559,6 +561,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.2.5
 
 ### 新特性
 

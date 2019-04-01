@@ -22,12 +22,12 @@ target("luajit")
 	set_languages("gnu99")
     end
 
-    -- add headers
+    -- add header files
     add_headerfiles("src/(*.h)")
-    add_headerdirs("src")
 
     -- add include directories
-    add_includedirs("src", autogendir)
+    add_includedirs(autogendir)
+    add_includedirs("src", {public = true})
 
     -- add the common source files
     add_files("src/*.c|ljamalg.c|luajit.c") 
