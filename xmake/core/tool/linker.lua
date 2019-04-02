@@ -78,8 +78,13 @@ function linker:_add_flags_from_compiler(flags, target, targetkind)
         end
     end
 
-    -- add flags
-    table.join2(flags, flags_of_compiler)
+    -- check the compiler flags in linker and add them
+    for _, flag in ipairs(flags_of_compiler) do
+        -- we need check flags first, see https://github.com/xmake-io/xmake/issues/379
+        if self:has_flags(flag) then
+            table.insert(flags, flag)
+        end
+    end
 end
 
 -- add flags from the linker 

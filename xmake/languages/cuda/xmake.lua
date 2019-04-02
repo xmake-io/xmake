@@ -131,6 +131,9 @@ language("cuda")
                 ,   {nil, "cu-ar",      "kv", nil,          "The Cuda Static Library Archiver"  }
                 ,   {nil, "cu-sh",      "kv", nil,          "The Cuda Shared Library Linker"    }
 
+                ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"   }
+                ,   {nil, "cuflags",    "kv", nil,          "The Cuda Compiler Flags"           }
+
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"    }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                }
                 ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"         }

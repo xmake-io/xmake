@@ -34,8 +34,7 @@ function init(self)
 
     -- init flags
     if not is_plat("windows") then
-        self:set("shflags", "-shared", "-fPIC")
-        self:set("shared.cuflags", "-fPIC")
+        self:set("shared.cuflags", "-Xcompiler -fPIC")
     end
 
     -- init flags map
@@ -180,12 +179,15 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
     local flags_extra = {}
     if targetkind == "shared" and targetfile:endswith(".dylib") then
+        table.insert(flags_extra, "-Xlinker")
         table.insert(flags_extra, "-install_name")
+        table.insert(flags_extra, "-Xlinker")
         table.insert(flags_extra, "@rpath/" .. path.filename(targetfile))
     end
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and config.plat() == "mingw" then
+        table.insert(flags_extra, "-Xlinker")
         table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")))
     end
 
