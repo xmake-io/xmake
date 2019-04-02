@@ -31,6 +31,11 @@ function init(self)
     -- init super
     _super.init(self)
 
+    -- add -fPIC for shared
+    if not is_plat("windows", "mingw") then
+        self:add("clang.shflags", "-fPIC") -- only for clang
+    end
+
     -- suppress warning 
     self:add("cxflags", "-Qunused-arguments")
     self:add("mxflags", "-Qunused-arguments")

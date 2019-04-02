@@ -43,7 +43,7 @@ local compiler  = require("tool/compiler")
 -- add flags from the platform 
 function linker:_add_flags_from_platform(flags, targetkind)
 
-    -- attempt to add special lanugage flags first for target kind, .e.g binary.gc-ldflags, static.dc-arflags
+    -- attempt to add special lanugage flags first for target kind, .e.g binary.go.gc-ldflags, static.dc-arflags
     if targetkind then
         local toolkind = self:kind()
         local toolname = self:name()
@@ -60,6 +60,7 @@ function linker:_add_flags_from_compiler(flags, target, targetkind)
     -- make flags 
     local flags_of_compiler = {}
     local toolkind = self:kind()
+    local toolname = self:name()
     for _, sourcekind in ipairs(self._SOURCEKINDS) do
 
         -- load compiler
@@ -67,24 +68,19 @@ function linker:_add_flags_from_compiler(flags, target, targetkind)
         if instance then
             for _, flagkind in ipairs(self:_flagkinds()) do
 
-                -- attempt to add special lanugage flags first, e.g. gc-ldflags, dc-arflags
-                table.join2(flags_of_compiler, instance:get(toolkind .. 'flags') or instance:get(flagkind))
+                -- attempt to add special lanugage flags first, e.g. gcc.ldflags, gc-ldflags, dc-arflags
+                local toolflags = instance:get(toolname .. '.' .. toolkind .. 'flags') or instance:get(toolname .. '.' .. flagkind)
+                table.join2(flags_of_compiler, toolflags or instance:get(toolkind .. 'flags') or instance:get(flagkind))
 
-                -- attempt to add special lanugage flags first for target kind, e.g. targetkind.gc-ldflags, targetkind.dc-arflags
+                -- attempt to add special lanugage flags first for target kind, e.g. targetkind.gcc.ldflags, targetkind.gc-ldflags, targetkind.dc-arflags
                 if targetkind then
-                    table.join2(flags_of_compiler, instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
+                    toolflags = instance:get(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. toolname .. '.' .. flagkind)
+                    table.join2(flags_of_compiler, toolflags or instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
                 end
             end
         end
     end
-
-    -- check the compiler flags in linker and add them
-    for _, flag in ipairs(flags_of_compiler) do
-        -- we need check flags first, see https://github.com/xmake-io/xmake/issues/379
-        if self:has_flags(flag) then
-            table.insert(flags, flag)
-        end
-    end
+    table.join2(flags, flags_of_compiler)
 end
 
 -- add flags from the linker 
