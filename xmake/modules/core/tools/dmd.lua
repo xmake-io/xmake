@@ -31,10 +31,10 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    self:set("arflags", "-lib")
+    self:set("dc-arflags", "-lib")
 
     -- init shflags
-    self:set("shflags", "-shared", "-fPIC")
+    self:set("dc-shflags", "-shared", "-fPIC")
 
     -- init dcflags for the kind: shared
     self:set("shared.dcflags", "-fPIC")

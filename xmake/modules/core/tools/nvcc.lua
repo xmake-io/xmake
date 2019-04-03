@@ -32,6 +32,9 @@ import("detect.tools.find_ccache")
 -- init it
 function init(self)
 
+    -- init shflags
+    self:set("cu-shflags", "-shared")
+
     -- init flags
     if not is_plat("windows") then
         self:set("shared.cuflags", "-Xcompiler -fPIC")

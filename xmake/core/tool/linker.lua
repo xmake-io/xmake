@@ -54,35 +54,6 @@ function linker:_add_flags_from_platform(flags, targetkind)
     end
 end
 
--- add flags from the compiler 
-function linker:_add_flags_from_compiler(flags, target, targetkind)
-
-    -- make flags 
-    local flags_of_compiler = {}
-    local toolkind = self:kind()
-    local toolname = self:name()
-    for _, sourcekind in ipairs(self._SOURCEKINDS) do
-
-        -- load compiler
-        local instance, errors = compiler.load(sourcekind, target)
-        if instance then
-            for _, flagkind in ipairs(self:_flagkinds()) do
-
-                -- attempt to add special lanugage flags first, e.g. gcc.ldflags, gc-ldflags, dc-arflags
-                local toolflags = instance:get(toolname .. '.' .. toolkind .. 'flags') or instance:get(toolname .. '.' .. flagkind)
-                table.join2(flags_of_compiler, toolflags or instance:get(toolkind .. 'flags') or instance:get(flagkind))
-
-                -- attempt to add special lanugage flags first for target kind, e.g. targetkind.gcc.ldflags, targetkind.gc-ldflags, targetkind.dc-arflags
-                if targetkind then
-                    toolflags = instance:get(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. toolname .. '.' .. flagkind)
-                    table.join2(flags_of_compiler, toolflags or instance:get(targetkind .. '.' .. toolkind .. 'flags') or instance:get(targetkind .. '.' .. flagkind))
-                end
-            end
-        end
-    end
-    table.join2(flags, flags_of_compiler)
-end
-
 -- add flags from the linker 
 function linker:_add_flags_from_linker(flags)
 
@@ -204,9 +175,6 @@ function linker.load(targetkind, sourcekinds, target)
     -- init target kind
     instance._TARGETKIND = targetkind
 
-    -- init source kinds
-    instance._SOURCEKINDS = sourcekinds
-
     -- init flag kinds
     instance._FLAGKINDS = {linkerinfo.linkerflag}
 
@@ -278,10 +246,11 @@ function linker:linkflags(opt)
     -- add flags from the platform 
     self:_add_flags_from_platform(flags, targetkind)
 
+    --[[
     -- add flags from the compiler 
     if target then
         self:_add_flags_from_compiler(flags, target, targetkind)
-    end
+    end]]
 
     -- add flags from the linker 
     self:_add_flags_from_linker(flags)

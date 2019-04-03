@@ -45,7 +45,7 @@ function init(self)
 
     -- add -fPIC for shared
     if not is_plat("windows", "mingw") then
-        self:add("gcc.shflags", "-fPIC") -- only for gcc 
+        self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
 
