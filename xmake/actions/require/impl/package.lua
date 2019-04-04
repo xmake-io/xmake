@@ -633,7 +633,6 @@ function _install_packages(packages_install, packages_download)
         end
        
         -- trace
-        cprintf("\r${yellow}  => ${clear}installing %s .. %s", table.concat(installing, ", "), waitchars[waitindex + 1])
         cprintf("\r${yellow}  => ${clear}")
         if #downloading > 0 then
             cprintf("downloading ${magenta}%s${clear}", table.concat(downloading, ", "))
