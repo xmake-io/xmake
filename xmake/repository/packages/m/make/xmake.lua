@@ -1,4 +1,4 @@
-package("gnumake")
+package("make")
 
     set_kind("binary")
     set_homepage("https://www.gnu.org/software/make/")
@@ -11,7 +11,6 @@ package("gnumake")
 
     on_install("windows", function(package)
         os.vrun("build_w32.bat")
-        os.cp("WinRel/gnumake.exe", package:installdir("bin"))
         os.cp("WinRel/gnumake.exe", path.join(package:installdir("bin"), "make.exe"))
     end)
 
