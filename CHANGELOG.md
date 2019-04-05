@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#380](https://github.com/xmake-io/xmake/pull/380): Add support to export compile_flags.txt 
+
 ## v2.2.5
 
 ### New features
@@ -561,6 +565,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#380](https://github.com/xmake-io/xmake/pull/380): 添加导出compile_flags.txt 
 
 ## v2.2.5
 
