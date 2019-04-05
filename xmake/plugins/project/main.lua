@@ -38,6 +38,7 @@ import("vstudio.vs2013")
 import("vstudio.vs2015")
 import("vstudio.vs2017")
 import("vstudio.vs2019")
+import("clang.compile_flags")
 import("clang.compile_commands")
 
 -- make project
@@ -58,6 +59,7 @@ function _make(kind)
     ,   vs2015           = vs2015.make
     ,   vs2017           = vs2017.make
     ,   vs2019           = vs2019.make
+    ,   compile_flags = compile_flags.make
     ,   compile_commands = compile_commands.make
     }
     assert(maps[kind], "the project kind(%s) is not supported!", kind)
