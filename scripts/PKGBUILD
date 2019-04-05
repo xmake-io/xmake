@@ -22,7 +22,7 @@ package() {
     mkdir -p "${pkgdir}/usr/share"
     cp -r "./xmake" "${pkgdir}/usr/share/"
     install -Dm755 ./core/src/demo/demo.b "${pkgdir}/usr/share/xmake/xmake"
-    echo "#/!bin/bash
+    echo "#!/bin/bash
 export XMAKE_PROGRAM_DIR=/usr/share/xmake
 /usr/share/xmake/xmake \"\$@\"
 " > ./xmake.sh
