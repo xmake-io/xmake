@@ -25,6 +25,7 @@
 -- imports
 import("lib.detect.cache")
 import("detect.tools.find_ping")
+import("detect.tools.find_nmap")
 
 -- send ping to hosts
 --
@@ -52,61 +53,62 @@ function main(hosts, opt)
 
     -- run tasks
     local results = {}
+    hosts = table.wrap(hosts)
     process.runjobs(function (index)
         local host = hosts[index]
         if host then
-            try
-            {
-                function ()
 
-                    -- get time value from cache first
-                    local timeval = nil
-                    if cacheinfo then
-                        timeval = cacheinfo[host]
+            -- get time value from cache first
+            local timeval = nil
+            if cacheinfo then
+                timeval = cacheinfo[host]
+            end
+            if timeval then
+                results[host] = timeval
+            else
+                -- ping it, timeout: 1s
+                local data = nil
+                if is_host("windows") then
+                    data = try { function () return os.iorun("%s -n 1 -w 1000 %s", ping, host) end }
+                elseif is_host("macosx") then
+                    data = try { function () return os.iorun("%s -c 1 -t 1 %s", ping, host) end }
+                else
+                    data = try { function () return os.iorun("%s -c 1 -W 1 %s", ping, host) end }
+                end
+
+                -- find time
+                local timeval = "65535"
+                if data then
+                    timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535" 
+                end
+                if timeval == "65535" then
+                    local nmap = find_nmap()
+                    if nmap then
+                        data = try { function() return os.iorun("%s -T5 --max-retries 1 -p 80 --max-rtt-timeout 1 %s", nmap, host) end }  
+                        if data then
+                            local timeval_s = data:match("in ([%d%.]-) seconds")
+                            if timeval_s then
+                                timeval_s = tonumber(timeval_s:trim()) * 1000
+                                if timeval_s > 0 then
+                                    timeval = tostring(timeval_s)
+                                end
+                            end
+                        end
                     end
-                    if timeval then
-                        results[host] = timeval
-                    else
-                        -- ping it, timeout: 1s
-                        local data = nil
-                        if is_host("windows") then
-                            data = os.iorun("%s -n 1 -w 1000 %s", ping, host)
-                        elseif is_host("macosx") then
-                            data = os.iorun("%s -c 1 -t 1 %s", ping, host)
-                        else
-                            data = os.iorun("%s -c 1 -W 1 %s", ping, host)
-                        end
+                end
 
-                        -- find time
-                        local timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535"
-                        if timeval then
-                            timeval = tonumber(timeval:trim())
-                        end
-                        results[host] = timeval
-                        if cacheinfo then
-                            cacheinfo[host] = timeval
-                        end
+                -- save results
+                if timeval then
+                    timeval = tonumber(timeval:trim())
+                end
+                results[host] = timeval
+                if cacheinfo then
+                    cacheinfo[host] = timeval
+                end
 
-                        -- trace
-                        vprint("pinging for the host(%s) ... %d ms", host, timeval)
-                    end
-                end, 
-                catch 
-                {
-                    function (errors)
-
-                        -- no network
-                        local timeval = 65535
-                        results[host] = timeval
-                        if cacheinfo then
-                            cacheinfo[host] = timeval
-                        end
-
-                        -- trace
-                        vprint("pinging for the host(%s) ... %d ms", host, timeval)
-                    end
-                }
-            }
+                -- trace
+                vprint("pinging for the host(%s) ... %d ms", host, timeval)
+            end
         end
     end, #hosts)
 
