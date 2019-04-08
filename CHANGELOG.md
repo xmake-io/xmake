@@ -5,6 +5,7 @@
 ### New features
 
 * [#380](https://github.com/xmake-io/xmake/pull/380): Add support to export compile_flags.txt 
+* [#382](https://github.com/xmake-io/xmake/issues/382): Simplify simple scope settings
 
 ## v2.2.5
 
@@ -569,6 +570,7 @@
 ### 新特性
 
 * [#380](https://github.com/xmake-io/xmake/pull/380): 添加导出compile_flags.txt 
+* [#382](https://github.com/xmake-io/xmake/issues/382): 简化域设置语法
 
 ## v2.2.5
 

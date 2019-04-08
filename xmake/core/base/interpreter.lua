@@ -915,35 +915,11 @@ function interpreter:api_register_scope(...)
     assert(self)
 
     -- define implementation
-    local implementation = function (self, scopes, scope_kind, scope_name)
+    local implementation = function (self, scopes, scope_kind, scope_name, scope_info)
 
         -- init scope for kind
         local scope_for_kind = scopes[scope_kind] or {}
         scopes[scope_kind] = scope_for_kind
-
-        -- is dictionary mode?
-        --
-        -- .e.g 
-        -- target
-        -- {
-        --    name = "tbox"
-        --    kind = "static",
-        --    files =
-        --    {
-        --        "src/*.c",
-        --        "*.cpp"
-        --    }
-        --}
-        local scope_info = nil
-        if type(scope_name) == "table" and scope_name["name"] ~= nil then
-
-            -- get the scope info
-            scope_info = scope_name
-
-            -- get the scope name from the dictionary
-            scope_name = scope_name["name"]
-        end
-
 
         -- enter the given scope
         if scope_name ~= nil then
@@ -972,9 +948,13 @@ function interpreter:api_register_scope(...)
             scopes._ROOT[scope_kind .. "@@" .. scope_name] = {}
         end
 
-        -- translate scope info 
-        if scope_info then
-            scope_info["name"] = nil
+        -- with scope info? translate it
+        --
+        -- .e.g 
+        -- option("text", {showmenu = true, default = true, description = "test option"})
+        -- target("tbox", {kind = "static", files = {"src/*.c", "*.cpp"}})
+        --
+        if scope_info and table.is_dictionary(scope_info) then
             for name, values in pairs(scope_info) do
                 local apifunc = self:api_func("set_" .. name) or self:api_func("add_" .. name) or self:api_func("on_" .. name) or self:api_func(name)
                 if apifunc then
@@ -983,6 +963,10 @@ function interpreter:api_register_scope(...)
                     os.raise("unknown %s for %s(\"%s\")", name, scope_kind, scope_name)
                 end
             end
+
+            -- enter root scope
+            scopes._CURRENT = nil
+            scopes._CURRENT_KIND = nil
         end
     end
 
