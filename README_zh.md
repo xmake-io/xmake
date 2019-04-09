@@ -56,22 +56,14 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 不仅如此，它还提供了许多更加高级的特性，例如插件扩展、脚本宏记录、批量打包、自动文档生成等等。。
 
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+
 如果你想要了解更多，请参考：
 
 * [在线文档](https://xmake.io/#/zh/)
 * [项目主页](https://xmake.io/cn)
 * [Github](https://github.com/xmake-io/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
-
-```
-                         _        
-    __  ___ __  __  __ _| | ______ 
-    \ \/ / |  \/  |/ _  | |/ / __ \
-     >  <  | \__/ | /_| |   <  ___/
-    /_/\_\_|_|  |_|\__ \|_|\_\____| 
-
-                         by ruki, tboox.org
-```
 
 ## 安装
 
@@ -170,8 +162,17 @@ $ xmake f --menu
 * Qt应用程序
 * WDK驱动程序
 * WinSDK应用程序
+* MFC应用程序
 
 ## 内置插件
+
+#### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+$ xmake project -k cmakelists
+$ xmake project -k compile_commands
+```
 
 #### 宏记录脚本和回放插件
 
@@ -191,12 +192,6 @@ $ xmake m .                         # 回放命令
 $ xmake l ./test.lua
 $ xmake l -c "print('hello xmake!')"
 $ xmake l lib.detect.find_tool gcc
-```
-
-#### 生成IDE工程文件插件（makefile, vs2002 - vs2017, ...）
-
-```bash
-$ xmake project -k vs2017 -m "debug,release"
 ```
 
 #### 生成doxygen文档插件
@@ -240,17 +235,26 @@ target("console")
     end
 ```
 
-下载和使用远程依赖包：
+下载和使用在[xmake-repo](https://github.com/xmake-io/xmake-repo)的依赖包：
 
 ```lua
 add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
 add_requires("tbox >1.6.1", {optional = true, debug = true})
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    add_packages("libuv", "ffmpeg", "tbox", "zlib")
+```
+
+下载和使用第三方包管理器的依赖包：
+
+```lua
 add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
 add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl"}) 
 target("test")
     set_kind("shared")
     add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib", "pcre2", "openssl")
+    add_packages("pcre2", "openssl")
 ```
 
 查找和使用本地已安装的包：

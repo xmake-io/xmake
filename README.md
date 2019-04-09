@@ -50,22 +50,14 @@ xmake is a cross-platform build utility based on lua.
 The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
 
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+
 If you want to known more, please refer to:
 
 * [Documents](https://xmake.io/#/home)
 * [HomePage](https://xmake.io)
 * [Github](https://github.com/xmake-io/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
-
-```
-                         _        
-    __  ___ __  __  __ _| | ______ 
-    \ \/ / |  \/  |/ _  | |/ / __ \
-     >  <  | \__/ | /_| |   <  ___/
-    /_/\_\_|_|  |_|\__ \|_|\_\____| 
-
-                         by ruki, tboox.org
-```
 
 ## Installation
 
@@ -165,8 +157,17 @@ $ xmake f --menu
 * Qt Application
 * WDK Driver (umdf/kmdf/wdm)
 * WinSDK Application
+* MFC Application
 
 ## Builtin Plugins
+
+#### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
+
+```bash
+$ xmake project -k vs2017 -m "debug,release"
+$ xmake project -k cmakelists
+$ xmake project -k compile_commands
+```
 
 #### Macros script plugin
 
@@ -186,12 +187,6 @@ $ xmake m .                         # playback commands
 $ xmake l ./test.lua
 $ xmake l -c "print('hello xmake!')"
 $ xmake l lib.detect.find_tool gcc
-```
-
-#### Generate IDE project file plugin（makefile, vs2002 - vs2017 .. ）
-
-```bash
-$ xmake project -k vs2017 -m "debug,release"
 ```
 
 #### Generate doxygen document plugin
@@ -235,17 +230,26 @@ target("console")
     end
 ```
 
-Download and use remote packages:
+Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo):
 
 ```lua
 add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
 add_requires("tbox >1.6.1", {optional = true, debug = true})
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    add_packages("libuv", "ffmpeg", "tbox", "zlib")
+```
+
+Download and use packages in third-party package manager:
+
+```lua
 add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
 add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl"}) 
 target("test")
     set_kind("shared")
     add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib", "pcre2", "openssl")
+    add_packages("pcre2", "openssl")
 ```
 
 Find and use local packages:
