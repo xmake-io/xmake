@@ -47,12 +47,12 @@
 
 xmake is a cross-platform build utility based on lua. 
 
-The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), 
-so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.
+The project focuses on making development and building easier and provides many features (e.g package, install, plugin, macro, action, option, task ...), 
+so that any developer can quickly pick it up and enjoy a productivity boost when developing and building projects.
 
 <img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
 
-If you want to known more, please refer to:
+If you want to know more, please refer to:
 
 * [Documents](https://xmake.io/#/home)
 * [HomePage](https://xmake.io)
