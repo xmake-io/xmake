@@ -51,6 +51,9 @@ function main(name, opt)
             arch = "x64"
         end
     end
+    if plat == "linux" and arch == "x86_64" then
+        arch = "x64"
+    end
 
     -- check architecture
     if opt.arch ~= os.arch() then

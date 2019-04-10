@@ -52,6 +52,9 @@ function main(name, opt)
             arch = "x64"
         end
     end
+    if plat == "linux" and arch == "x86_64" then
+        arch = "x64"
+    end
 
     -- get the vcpkg installed directory
     local installdir = path.join(vcpkgdir, "installed")
