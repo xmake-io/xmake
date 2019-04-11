@@ -93,8 +93,9 @@ end
 function install(package, configs)
 
     -- enter build directory
-    os.mkdir("build/install")
-    local oldir = os.cd("build")
+    local buildir = "build_" .. hash.uuid():split('%-')[1]
+    os.mkdir(path.join(buildir, "install"))
+    local oldir = os.cd(buildir)
 
     -- init arguments
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install")}
