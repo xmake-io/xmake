@@ -47,9 +47,9 @@ function main(name, opt)
     local mode = opt.mode 
     if plat == "macosx" then
         plat = "osx"
-        if arch == "x86_64" then
-            arch = "x64"
-        end
+    end
+    if arch == "x86_64" then
+        arch = "x64"
     end
 
     -- check architecture
