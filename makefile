@@ -39,6 +39,9 @@ endif
 
 endif
 
+# map architecture amd64 to x86_64
+ARCH 		:=$(if $(findstring amd64,$(ARCH)),x86_64,$(ARCH))
+
 xmake_dir_install   :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 xmake_core_install  :=$(xmake_dir_install)/xmake
