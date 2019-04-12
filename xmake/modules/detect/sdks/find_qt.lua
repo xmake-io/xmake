@@ -54,6 +54,7 @@ function _find_sdkdir(sdkdir, sdkver)
     end
     table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
     table.insert(subdirs, path.join("*", "bin"))
+    table.insert(subdirs, "bin")
 
     -- init the search directories
     local pathes = {}
