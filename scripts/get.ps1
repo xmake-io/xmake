@@ -49,6 +49,7 @@ try{
 }
 Write-Host "Start downloading https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe .."
 try{
+    [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
     Invoke-Webrequest "https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe" -OutFile "$outfile"
 }catch{
     writeErrorTip 'Download failed!'
