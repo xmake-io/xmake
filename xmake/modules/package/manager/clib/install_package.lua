@@ -24,7 +24,7 @@ import("core.project.config")
 import("lib.detect.find_tool")
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
--- @param opt   the options, .e.g { verbose = true, out_dir = "myDir",
+-- @param opt   the options, .e.g { verbose = true, out_dir = "clib",
 --                                  save = false, save_dev = false }
 --
 -- @return      true or false
@@ -39,7 +39,7 @@ function main(name, opt)
     -- default options
     local all_opts = {
         verbose = true,
-        out_dir = path.join(".xmake", "cache", "packages", ".clib"),
+        out_dir = "clib",
         save = false,
         save_dev = false
     }
