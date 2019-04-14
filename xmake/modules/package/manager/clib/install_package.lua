@@ -23,8 +23,8 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 -- install package
--- @param name  the package name, e.g. clib::clibs/buffer@0.4.0
--- @param opt   the options, .e.g { verbose = true, out_dir = "deps",
+-- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
+-- @param opt   the options, .e.g { verbose = true, out_dir = "myDir",
 --                                  save = false, save_dev = false }
 --
 -- @return      true or false
@@ -35,10 +35,11 @@ function main(name, opt)
     if not clib then
         raise("clib not found!")
     end
+
     -- default options
     local all_opts = {
         verbose = true,
-        out_dir = "deps",
+        out_dir = path.join(".xmake", "cache", "packages", ".clib"),
         save = false,
         save_dev = false
     }
@@ -51,7 +52,7 @@ function main(name, opt)
 
     local argv = {"install", name}
 
-    local abs_out = all_opts.out_dir
+    local abs_out = path.join(os.projectdir(), all_opts.out_dir)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
@@ -67,4 +68,13 @@ function main(name, opt)
 
     -- do install
     os.vrunv(clib.program, argv)
+
+    -- add a package marker file with install directory
+    local cache_dir = path.join(os.projectdir(), ".xmake", "cache", "packages")
+    local marker_filename = string.gsub(name, "%/", "=")
+    local marker_path = path.join(cache_dir, marker_filename)
+    dprint("writing clib marker file for %s to %s", name, marker_filename)
+    local marker_file = io.open(marker_path, "w")
+    marker_file:write(abs_out)
+    marker_file:close()
 end

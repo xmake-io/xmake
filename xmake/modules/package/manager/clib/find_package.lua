@@ -23,5 +23,25 @@ import("core.base.option")
 import("core.project.config")
 
 function main(name, opt)
--- TODO: Implement clib package search
+    -- check if a package marker file with install directory exists
+    local cache_dir = path.join(os.projectdir(), ".xmake", "cache", "packages")
+    local marker_filename = string.gsub(name, "%/", "=")
+    local marker_path = path.join(cache_dir, marker_filename)
+    dprint("reading clib marker file for %s from %s", name, marker_filename)
+
+    if not io.exists(marker_filename) then
+        return
+    end
+
+    local marker_file = io.open(marker_path, "r")
+    if marker_file then
+        local install_path = marker_file:read("*all")
+        marker_file:close()
+        dprint("%s is installed to %s", name, install_path)
+
+        return {
+            headerdirs = { install_path },
+            includedirs = { install_path }
+        }
+    end
 end
