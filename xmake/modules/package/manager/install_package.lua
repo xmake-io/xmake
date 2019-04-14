@@ -31,7 +31,7 @@ function _install_package(manager_name, package_name, opt)
     end
 
     -- get suitable package managers
-    local managers = {}
+    local managers = {"clib"}
     if is_host("windows") then
         table.insert(managers, "pacman") -- msys/mingw
     elseif is_host("linux") then
