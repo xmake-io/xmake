@@ -41,7 +41,7 @@ local history       = require("project/history")
 local menu =
 {
     -- title
-    title = "${bright}xmake v" .. xmake._VERSION .. ", A cross-platform build utility based on Lua${clear}"
+    title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on Lua${clear}"
 
     -- copyright
 ,   copyright = "Copyright (C) 2015-2019 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
