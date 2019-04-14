@@ -27,7 +27,7 @@ local semver = require("base/semver")
 -- get xmake version
 function xmake.version()
     if xmake._VERSION_CACHE == nil then
-        xmake._VERSION_CACHE = semver.new(_VERSION_SHORT) or false
+        xmake._VERSION_CACHE = semver.new(xmake._VERSION) or false
     end
     return xmake._VERSION_CACHE or nil
 end

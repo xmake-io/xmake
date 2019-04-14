@@ -579,7 +579,7 @@ xm_machine_ref_t xm_machine_init()
 
         // init version string
         tb_char_t version_cstr[256] = {0};
-        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u.%llu", version->major, version->minor, version->alter, version->build);
+        tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u+%llu", version->major, version->minor, version->alter, version->build);
         lua_pushstring(machine->lua, version_cstr);
         lua_setglobal(machine->lua, "_VERSION");
 
