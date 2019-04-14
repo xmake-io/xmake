@@ -27,7 +27,6 @@ function main(name, opt)
     local cache_dir = path.join(os.projectdir(), ".xmake", "cache", "packages")
     local marker_filename = string.gsub(name, "%/", "=")
     local marker_path = path.join(cache_dir, marker_filename)
-    dprint("reading clib marker file for %s from %s", name, marker_filename)
 
     if not io.exists(marker_filename) then
         return
@@ -40,7 +39,6 @@ function main(name, opt)
         dprint("%s is installed to %s", name, install_path)
 
         return {
-            headerdirs = { install_path },
             includedirs = { install_path }
         }
     end
