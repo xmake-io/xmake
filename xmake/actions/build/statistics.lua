@@ -123,8 +123,8 @@ function main()
     local releasefile = outputdir .. ".release"
     if not os.isfile(releasefile) then
         import("net.http.download")
-        local version = os.versioninfo().version
-        download(format("https://github.com/xmake-io/xmake-stats/releases/download/v%d.%d.%d/%s", version.major, version.minor, version.alter, os.host()), releasefile)
+        local xmakever = xmake.version()
+        download(format("https://github.com/xmake-io/xmake-stats/releases/download/v%d.%d.%d/%s", xmakever:major(), xmakever:minor(), xmakever:patch(), os.host()), releasefile)
         print("post to releases ok!")
     end
 

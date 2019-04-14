@@ -40,7 +40,6 @@ xmake_C_FILES 			+= \
 						os/strerror \
 						os/filesize \
 						os/getwinsize \
-						os/versioninfo \
 						os/uid \
 						os/gid \
 						os/getown \

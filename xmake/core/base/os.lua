@@ -37,7 +37,6 @@ os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
 os._setenv      = os._setenv or os.setenv
 os._readlink    = os._readlink or os.readlink
-os._versioninfo = os._versioninfo or os.versioninfo
 
 -- copy single file or directory 
 function os._cp(src, dst)
@@ -976,12 +975,6 @@ end
 -- get the project file
 function os.projectfile()
     return xmake._PROJECT_FILE
-end
-
--- get version info
-function os.versioninfo()
-    os._VERSIONINFO = os._VERSIONINFO or os._versioninfo()
-    return os._VERSIONINFO
 end
 
 -- return module

@@ -43,8 +43,7 @@ function sandbox_core_sandbox.interactive()
 
     -- load repl history
     local replhistory = nil
-    local enable_readline = os.versioninfo().features.readline
-    if enable_readline then
+    if readline then
 
         -- clear history
         readline.clear_history()
@@ -60,7 +59,7 @@ function sandbox_core_sandbox.interactive()
     sandbox.interactive(instance._PUBLIC) 
 
     -- save repl history if readline is enabled
-    if enable_readline then
+    if readline then
 
         -- save to history
         local entries = readline.history_list()
