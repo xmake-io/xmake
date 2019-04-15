@@ -43,7 +43,6 @@ function _install_package(manager_name, package_name, opt)
         table.insert(managers, "vcpkg")
         table.insert(managers, "brew")
     end
-    table.insert(managers, "clib")
     assert(#managers > 0, "no suitable package manager!")
 
     -- install package from the given package managers
