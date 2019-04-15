@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      Adel Vilkov (aka RaZeR-RBI)
@@ -22,10 +22,23 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
+
+-- get configurations
+function configurations()
+    return
+    {
+        verbose = {description = "enable verbose output", default = "true", values = {"true", "false"}},
+        save = {description = "save dependency in project's package.json", default = "false", values = {"true", "false"}},
+        save_dev = {description = "save as development dependency in project's package.json", default = "false", values = {"true", "false"}},
+        out_dir = {description = "package installation directory relative to project root", default = "clib"},
+    }
+end
+
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
--- @param opt   the options, .e.g { verbose = true, out_dir = "clib",
---                                  save = false, save_dev = false }
+-- @param opt   the options, .e.g { verbose = true, mode = "release", plat = , arch = ,
+--                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
+--                                  settings = {verbose = "false", out_dir = "deps", save = "true", save_dev = "false"}}
 --
 -- @return      true or false
 --
@@ -36,45 +49,35 @@ function main(name, opt)
         raise("clib not found!")
     end
 
-    -- default options
-    local all_opts = {
-        verbose = true,
-        out_dir = "clib",
-        save = false,
-        save_dev = false
-    }
-    -- copy specified options
-    if opt then
-        for k, v in ipairs(opt) do
-            all_opts[k] = v
-        end
-    end
-
     local argv = {"install", name}
-
-    local abs_out = path.join(os.projectdir(), all_opts.out_dir)
+    local abs_out = path.join(os.projectdir(), opt.out_dir)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
-    if not all_opts.verbose then
+    if opt.verbose ~= "true" then
         table.insert(argv, "-q")
     end
-    if all_opts.save then
+    if opt.save == "true" then
         table.insert(argv, "--save")
     end
-    if all_opts.save_dev then
+    if opt.save_dev == "true" then
         table.insert(argv, "--save-dev")
     end
+
+    -- save previous directory and cd to project directory
+    local old_dir = os.curdir()
+    os.cd(os.projectdir())
 
     -- do install
     os.vrunv(clib.program, argv)
 
+    -- restore old directory
+    os.cd(old_dir)
+
     -- add a package marker file with install directory
-    local cache_dir = path.join(os.projectdir(), ".xmake", "cache", "packages")
+    local cache_dir = path.join(config.directory(), "clib", "cache", "packages")
     local marker_filename = string.gsub(name, "%/", "=")
     local marker_path = path.join(cache_dir, marker_filename)
-    dprint("writing clib marker file for %s to %s", name, marker_filename)
-    local marker_file = io.open(marker_path, "w")
-    marker_file:write(abs_out)
-    marker_file:close()
+    dprint("writing clib marker file for %s to %s", name, marker_path)
+    io.writefile(marker_path, abs_out)
 end

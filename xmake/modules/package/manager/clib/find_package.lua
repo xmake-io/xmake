@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      Adel Vilkov (aka RaZeR-RBI)
@@ -24,22 +24,17 @@ import("core.project.config")
 
 function main(name, opt)
     -- check if a package marker file with install directory exists
-    local cache_dir = path.join(os.projectdir(), ".xmake", "cache", "packages")
+    local cache_dir = path.join(config.directory(), "clib", "cache", "packages")
     local marker_filename = string.gsub(name, "%/", "=")
     local marker_path = path.join(cache_dir, marker_filename)
+    dprint("looking for marker file for %s at %s", name, marker_path)
 
-    if not io.exists(marker_filename) then
+    if not os.isfile(marker_path) then
+        dprint("no marker file found for %s", name)
         return
     end
 
-    local marker_file = io.open(marker_path, "r")
-    if marker_file then
-        local install_path = marker_file:read("*all")
-        marker_file:close()
-        dprint("%s is installed to %s", name, install_path)
-
-        return {
-            includedirs = { install_path }
-        }
-    end
+    local install_path = io.readfile(marker_path)
+    dprint("%s is installed to %s", name, install_path)
+    return {includedirs = { install_path }}
 end

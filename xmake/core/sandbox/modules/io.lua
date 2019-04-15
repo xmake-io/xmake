@@ -77,16 +77,6 @@ function sandbox_io.gsub(filepath, pattern, replace)
     return data, count
 end
 
--- check if file exists
-function sandbox_io.exists(filepath)
-    local file, _ = io.open(filepath, "r")
-    if file then
-        file:close()
-        return true
-    end
-    return false
-end
-
 -- open file
 function sandbox_io.open(filepath, mode)
  
