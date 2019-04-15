@@ -29,14 +29,14 @@ function configurations()
     {
         save = {description = "save dependency in project's package.json", default = false, type = "boolean"},
         save_dev = {description = "save as development dependency in project's package.json", default = false, type = "boolean"},
-        out_dir = {description = "package installation directory relative to project root", default = "clib"},
+        outputdir = {description = "package installation directory relative to project root", default = "clib"},
     }
 end
 
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
 -- @param opt   the options, .e.g { verbose = true,
---                                  settings = {out_dir = "clib", save = false, save_dev = false}}
+--                                  settings = {outputdir = "clib", save = false, save_dev = false}}
 --
 -- @return      true or false
 --
@@ -48,7 +48,7 @@ function main(name, opt)
     end
 
     local argv = {"install", name}
-    local abs_out = path.join(os.projectdir(), opt.out_dir)
+    local abs_out = path.join(os.projectdir(), opt.outputdir)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
@@ -77,5 +77,5 @@ function main(name, opt)
     local marker_filename = string.gsub(name, "%/", "=")
     local marker_path = path.join(cache_dir, marker_filename)
     dprint("writing clib marker file for %s to %s", name, marker_path)
-    io.writefile(marker_path, abs_out)
+    io.save(marker_path, {includedirs = { abs_out }})
 end

@@ -35,6 +35,6 @@ function main(name, opt)
     end
 
     local install_path = io.readfile(marker_path)
-    dprint("%s is installed to %s", name, install_path)
-    return {includedirs = { install_path }}
+    dprint("found marker file for %s", name)
+    return io.load(marker_path)
 end
