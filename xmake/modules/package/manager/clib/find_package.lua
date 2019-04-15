@@ -34,7 +34,6 @@ function main(name, opt)
         return
     end
 
-    local install_path = io.readfile(marker_path)
     dprint("found marker file for %s", name)
     return io.load(marker_path)
 end
