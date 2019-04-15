@@ -27,18 +27,16 @@ import("lib.detect.find_tool")
 function configurations()
     return
     {
-        verbose = {description = "enable verbose output", default = "true", values = {"true", "false"}},
-        save = {description = "save dependency in project's package.json", default = "false", values = {"true", "false"}},
-        save_dev = {description = "save as development dependency in project's package.json", default = "false", values = {"true", "false"}},
+        save = {description = "save dependency in project's package.json", default = false, type = "boolean"},
+        save_dev = {description = "save as development dependency in project's package.json", default = false, type = "boolean"},
         out_dir = {description = "package installation directory relative to project root", default = "clib"},
     }
 end
 
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
--- @param opt   the options, .e.g { verbose = true, mode = "release", plat = , arch = ,
---                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
---                                  settings = {verbose = "false", out_dir = "deps", save = "true", save_dev = "false"}}
+-- @param opt   the options, .e.g { verbose = true,
+--                                  settings = {out_dir = "clib", save = false, save_dev = false}}
 --
 -- @return      true or false
 --
@@ -54,13 +52,13 @@ function main(name, opt)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
-    if opt.verbose ~= "true" then
+    if not option.get("verbose") then
         table.insert(argv, "-q")
     end
-    if opt.save == "true" then
+    if opt.save then
         table.insert(argv, "--save")
     end
-    if opt.save_dev == "true" then
+    if opt.save_dev then
         table.insert(argv, "--save-dev")
     end
 
