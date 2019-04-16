@@ -37,22 +37,22 @@ function _package_library(target)
     local targetname = target:name()
 
     -- copy the library file to the output directory
-    os.cp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/lib/%s", outputdir, targetname, path.filename(target:targetfile()))) 
+    os.cp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
 
     -- copy the symbol file to the output directory
     local symbolfile = target:symbolfile()
     if os.isfile(symbolfile) then
-        os.cp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/lib/%s", outputdir, targetname, path.filename(symbolfile))) 
+        os.cp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile))) 
     end
 
     -- copy the config.h to the output directory (deprecated)
     local configheader = target:configheader()
     if configheader then
-        os.cp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/include/%s", outputdir, targetname, path.filename(configheader))) 
+        os.cp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader))) 
     end
 
     -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/include", outputdir, targetname))
+    local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/$(plat)/$(arch)/include", outputdir, targetname))
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
@@ -71,8 +71,8 @@ function _package_library(target)
         file:print("    set_showmenu(true)")
         file:print("    set_category(\"package\")")
         file:print("    add_links(\"%s\")", target:basename())
-        file:write("    add_linkdirs(\"$(plat)/$(arch)/$(mode)/lib\")\n")
-        file:write("    add_includedirs(\"$(plat)/$(arch)/$(mode)/include\")\n")
+        file:write("    add_linkdirs(\"$(plat)/$(arch)/lib/$(mode)\")\n")
+        file:write("    add_includedirs(\"$(plat)/$(arch)/include\")\n")
         local languages = target:get("languages")
         if languages then
             file:print("    set_languages(\"%s\")", table.concat(table.wrap(languages), "\", \""))

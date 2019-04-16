@@ -86,7 +86,7 @@ function main(argv)
 
             -- get all modes
             local modes = {}
-            for _, modedir in ipairs(os.dirs(format("%s/%s.pkg/*/*/*", outputdir, target:name()))) do
+            for _, modedir in ipairs(os.dirs(format("%s/%s.pkg/*/*/lib/*", outputdir, target:name()))) do
                 table.insert(modes, path.basename(modedir))
             end
             for _, mode in ipairs(table.unique(modes)) do
@@ -94,7 +94,7 @@ function main(argv)
                 -- make lipo arguments
                 local lipoargs = nil
                 for _, arch in ipairs(archs) do
-                    local archfile = format("%s/%s.pkg/%s/%s/%s/lib/%s", outputdir, target:name(), plat, arch:trim(), mode, path.filename(target:targetfile())) 
+                    local archfile = format("%s/%s.pkg/%s/%s/lib/%s/%s", outputdir, target:name(), plat, arch:trim(), mode, path.filename(target:targetfile())) 
                     if os.isfile(archfile) then
                         lipoargs = format("%s -arch %s %s", lipoargs or "", arch, archfile) 
                     end
@@ -102,10 +102,10 @@ function main(argv)
                 if lipoargs then
 
                     -- make full lipo arguments
-                    lipoargs = format("-create %s -output %s/%s.pkg/%s/universal/%s/lib/%s", lipoargs, outputdir, target:name(), plat, mode, path.filename(target:targetfile()))
+                    lipoargs = format("-create %s -output %s/%s.pkg/%s/universal/lib/%s/%s", lipoargs, outputdir, target:name(), plat, mode, path.filename(target:targetfile()))
 
                     -- make universal directory
-                    os.mkdir(format("%s/%s.pkg/%s/universal/%s/lib", outputdir, target:name(), plat, mode))
+                    os.mkdir(format("%s/%s.pkg/%s/universal/lib/%s", outputdir, target:name(), plat, mode))
 
                     -- package all archs
                     os.execv("xmake", {"l", "lipo", lipoargs})
