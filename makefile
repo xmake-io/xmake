@@ -39,7 +39,12 @@ endif
 
 endif
 
-# map architecture amd64 to x86_64
+# conditionally map ARCH from amd64 to x86_64 if set from the outside
+#
+# Some OS provide a definition for $(ARCH) through an environment
+# variable. It might be set to amd64 which implies x86_64. Since e.g.
+# luajit expects either i386 or x86_64, the value amd64 is transformed
+# to match a directory for a platform dependent implementation.
 ARCH 		:=$(if $(findstring amd64,$(ARCH)),x86_64,$(ARCH))
 
 xmake_dir_install   :=$(prefix)/share/xmake
