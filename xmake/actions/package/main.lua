@@ -37,22 +37,22 @@ function _package_library(target)
     local targetname = target:name()
 
     -- copy the library file to the output directory
-    os.cp(target:targetfile(), format("%s/%s.pkg/lib/$(mode)/$(plat)/$(arch)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
+    os.cp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/lib/%s", outputdir, targetname, path.filename(target:targetfile()))) 
 
     -- copy the symbol file to the output directory
     local symbolfile = target:symbolfile()
     if os.isfile(symbolfile) then
-        os.cp(symbolfile, format("%s/%s.pkg/lib/$(mode)/$(plat)/$(arch)/%s", outputdir, targetname, path.filename(symbolfile))) 
+        os.cp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/lib/%s", outputdir, targetname, path.filename(symbolfile))) 
     end
 
-    -- copy the config.h to the output directory
+    -- copy the config.h to the output directory (deprecated)
     local configheader = target:configheader()
     if configheader then
-        os.cp(configheader, format("%s/%s.pkg/inc/$(plat)/%s", outputdir, targetname, path.filename(configheader))) 
+        os.cp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/include/%s", outputdir, targetname, path.filename(configheader))) 
     end
 
     -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/inc", outputdir, targetname))
+    local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/$(plat)/$(arch)/$(mode)/include", outputdir, targetname))
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
@@ -67,44 +67,16 @@ function _package_library(target)
     -- make xmake.lua 
     local file = io.open(format("%s/%s.pkg/xmake.lua", outputdir, targetname), "w")
     if file then
-
-        -- the xmake.lua content
-        local content = [[ 
--- the [targetname] package
-option("[targetname]")
-
-    -- show menu
-    set_showmenu(true)
-
-    -- set category
-    set_category("package")
-
-    -- set description
-    set_description("The [targetname] package")
-
-    -- set language: c99, c++11
-    set_languages("c99", "cxx11")
-
-    -- add defines to config.h if checking ok
-    add_defines_h("$(prefix)_PACKAGE_HAVE_[TARGETNAME]")
-
-    -- add links for checking
-    add_links("[targetname]")
-
-    -- add link directories
-    add_linkdirs("lib/$(mode)/$(plat)/$(arch)")
-
-    -- add c includes for checking
-    add_cincludes("[targetname]/[targetname].h")
-
-    -- add include directories
-    add_includedirs("inc/$(plat)", "inc")
-]]
-
-        -- save file
-        file:write((content:gsub("%[targetname%]", targetname):gsub("%[TARGETNAME%]", targetname:upper())))
-
-        -- exit file
+        file:print("option(\"%s\")", targetname)
+        file:print("    set_showmenu(true)")
+        file:print("    set_category(\"package\")")
+        file:print("    add_links(\"%s\")", target:basename())
+        file:write("    add_linkdirs(\"$(plat)/$(arch)/$(mode)/lib\")\n")
+        file:write("    add_includedirs(\"$(plat)/$(arch)/$(mode)/include\")\n")
+        local languages = target:get("languages")
+        if languages then
+            file:print("    set_languages(\"%s\")", table.concat(table.wrap(languages), "\", \""))
+        end
         file:close()
     end
 end
