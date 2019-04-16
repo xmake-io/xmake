@@ -71,8 +71,18 @@ function main(target, opt)
     target:add("mxflags", "-fPIC")
     target:add("asflags", "-fPIC")
 
-    -- need c++11
-    target:set("languages", "cxx11")
+    -- need c++11 at least
+    local languages = target:get("languages")
+    local cxxlang = false
+    for _, lang in ipairs(languages) do
+        if lang:startswith("cxx") or lang:startswith("c++") then
+            cxxlang = true
+            break
+        end
+    end
+    if not cxxlang then
+        target:add("languages", "cxx11")
+    end
 
     -- add defines for the compile mode
     if is_mode("debug") then

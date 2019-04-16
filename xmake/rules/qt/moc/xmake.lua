@@ -25,7 +25,7 @@ rule("qt.moc")
     add_deps("qt.env")
 
     -- set extensions
-    set_extensions(".h")
+    set_extensions(".h", ".hpp")
 
     -- before load
     before_load(function (target)

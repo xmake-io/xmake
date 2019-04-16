@@ -8,6 +8,10 @@
 * [#382](https://github.com/xmake-io/xmake/issues/382): Simplify simple scope settings
 * [#397](https://github.com/xmake-io/xmake/issues/397): Add clib package manager support
 
+### Bugs fixed
+
+* [#400](https://github.com/xmake-io/xmake/issues/400): fix c++ languages bug for qt rules
+
 ## v2.2.5
 
 ### New features
@@ -573,6 +577,10 @@
 * [#380](https://github.com/xmake-io/xmake/pull/380): 添加导出compile_flags.txt 
 * [#382](https://github.com/xmake-io/xmake/issues/382): 简化域设置语法
 * [#397](https://github.com/xmake-io/xmake/issues/397): 添加clib包集成支持
+
+### Bugs修复
+
+* [#400](https://github.com/xmake-io/xmake/issues/400): 修复qt项目c++语言标准设置无效问题
 
 ## v2.2.5
 
