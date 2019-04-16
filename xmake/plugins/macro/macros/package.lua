@@ -89,7 +89,6 @@ function main(argv)
             for _, modedir in ipairs(os.dirs(format("%s/%s.pkg/*/*/*", outputdir, target:name()))) do
                 table.insert(modes, path.basename(modedir))
             end
-            print(modes)
             for _, mode in ipairs(table.unique(modes)) do
 
                 -- make lipo arguments
