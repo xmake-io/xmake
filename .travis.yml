@@ -22,7 +22,6 @@ script:
   - scripts/get.sh __local__
   - source ~/.xmake/profile
   - xmake --version
-  - xmake f -m coverage -P core 
   - xmake -v -P core 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake --version
