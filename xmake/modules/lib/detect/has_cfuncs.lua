@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("lib.detect.check_cxsnippets")
+import("lib.detect.check_csnippets")
 
 -- has the given c funcs?
 --
@@ -44,13 +44,10 @@ import("lib.detect.check_cxsnippets")
 function main(funcs, opt)
 
     -- init options
-    opt = opt or {}
-
-    -- init funcs
-    opt.sourcekind = "cc"
-    opt.funcs      = funcs
+    opt       = opt or {}
+    opt.funcs = funcs
     
     -- has funcs?
     local name = opt.name or "has_cfuncs"
-    return check_cxsnippets({[name] = ""}, opt)
+    return check_csnippets({[name] = ""}, opt)
 end

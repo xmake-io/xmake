@@ -15,18 +15,20 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        has_cxxfuncs.lua
+-- @file        check_cxxsnippets.lua
 --
 
 -- imports
-import("lib.detect.check_cxxsnippets")
+import("lib.detect.check_cxsnippets")
 
--- has the given c++ funcs?
+-- check the given c++ snippets?
 --
--- @param funcs     the funcs
+-- @param snippets  the snippets
 -- @param opt       the argument options
 --                  .e.g 
---                  { verbose = false, target = [target|option], includes = "", configs = {linkdirs = .., links = .., defines = .., ..}}
+--                  { verbose = false, target = [target|option]
+--                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
+--                  , configs = {defines = "xx", cxflags = ""}}
 --
 -- funcs:
 --      sigsetjmp
@@ -37,17 +39,12 @@ import("lib.detect.check_cxxsnippets")
 -- @return          true or false
 --
 -- @code
--- local ok = has_cxxfuncs("setjmp")
--- local ok = has_cxxfuncs({"sigsetjmp((void*)0, 0)", "setjmp"}, {includes = "setjmp.h"})
+-- local ok = check_cxxsnippets("void test() {}")
+-- local ok = check_cxxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok = check_cxxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- @endcode
 --
-function main(funcs, opt)
-
-    -- init options
-    opt       = opt or {}
-    opt.funcs = funcs
-    
-    -- has funcs?
-    local name = opt.name or "has_cxxfuncs"
-    return check_cxxsnippets({[name] = ""}, opt)
+function main(snippets, opt)
+    return check_cxsnippets(snippets, table.join(table.wrap(opt), {sourcekind = "cxx"}))
 end
+
