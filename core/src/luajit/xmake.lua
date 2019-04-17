@@ -18,8 +18,6 @@ target("luajit")
     -- disable c99(/TP) for windows
     if is_plat("windows") then
         set_languages("c89")
-    else
-	set_languages("gnu99")
     end
 
     -- add header files

@@ -13,6 +13,9 @@ set_warnings("all", "error")
 -- set language: c99, c++11
 set_languages("c99", "cxx11")
 
+-- add release and debug modes
+add_rules("mode.release", "mode.debug")
+
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-error=nullability-completeness")
 
