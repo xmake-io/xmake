@@ -73,7 +73,7 @@ function _instance:_do_check()
     self._check_cxsnippets = self._check_cxsnippets or sandbox_module.import("lib.detect.check_cxsnippets", {anonymous = true})
 
     -- check for c and c++
-    local passed = false
+    local passed = nil
     for _, kind in ipairs({"c", "cxx"}) do
 
         -- get conditions
@@ -107,6 +107,8 @@ function _instance:_do_check()
             -- passed?
             if results_or_errors then
                 passed = true
+            else
+                passed = false
                 break
             end
         end
