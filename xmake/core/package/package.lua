@@ -231,7 +231,11 @@ end
 -- get the installed directory of this package
 function _instance:installdir(...)
     local name = self:name():lower():gsub("::", "_")
-    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name, self:version_str(), self:buildhash(), ...)
+    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+    if self:version_str() then
+        dir = path.join(dir, self:version_str())
+    end
+    dir = path.join(dir, self:buildhash(), ...)
     if not os.isdir(dir) then
         os.mkdir(dir)
     end

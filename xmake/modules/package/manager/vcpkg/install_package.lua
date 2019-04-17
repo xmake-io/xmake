@@ -48,11 +48,6 @@ function main(name, opt)
         arch = "x64"
     end
 
-    -- check architecture
-    if opt.arch ~= os.arch() then
-        raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
-    end
-
     -- init argv
     local argv = {"install", string.format("%s:%s-%s", name, arch, plat)}
 
