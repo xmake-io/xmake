@@ -791,7 +791,7 @@ end
 --
 function _instance:has_cfuncs(funcs, opt)
     opt = opt or {}
-    opt.configs = self:fetchdeps()
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
 end
 
@@ -804,8 +804,34 @@ end
 --
 function _instance:has_cxxfuncs(funcs, opt)
     opt = opt or {}
-    opt.configs = self:fetchdeps()
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
+end
+
+-- check the given c snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:check_csnippets(snippets, opt)
+    opt = opt or {}
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
+end
+
+-- check the given c++ snippets?
+--
+-- @param snippets  the snippets
+-- @param opt       the argument options, .e.g { includes = ""}
+--
+-- @return          true or false
+--
+function _instance:check_cxxsnippets(snippets, opt)
+    opt = opt or {}
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end
 
 -- the current mode is belong to the given modes?
