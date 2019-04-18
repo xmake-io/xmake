@@ -46,7 +46,15 @@ function _find_sdkdir(sdkdir, sdkver)
     elseif is_plat("mingw") then
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "mingw*_64" or "mingw*_32", "bin"))
     elseif is_plat("android") then
-        table.insert(subdirs, path.join(sdkver or "*", "android_*", "bin"))
+        local subdir = "android_*"
+        if is_arch("arm64-v8a") then
+            subdir = "android_arm64_v8a"
+        elseif is_arch("armv7-a") then
+            subdir = "android_armv7"
+        elseif is_arch("i386") then
+            subdir = "android_x86"
+        end
+        table.insert(subdirs, path.join(sdkver or "*", subdir, "bin"))
     end
     table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
     table.insert(subdirs, path.join("*", "bin"))

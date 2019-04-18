@@ -197,6 +197,12 @@ function main(target, opt)
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-g++"))
         target:add("linkdirs", qt.linkdirs)
         target:add("links", "mingw32")
+    elseif is_plat("android") then
+        target:set("frameworks", nil)
+        target:add("includedirs", path.join(qt.sdkdir, "include"))
+        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/android-clang"))
+        target:add("rpathdirs", qt.linkdirs)
+        target:add("linkdirs", qt.linkdirs)
     end
 
     -- add some static third-party links if exists

@@ -85,6 +85,19 @@ function main(platform)
     local ndk_sdkver = config.get("ndk_sdkver")
     if ndk and ndk_sdkver then
 
+        -- the sysroot archs
+        local sysroot_archs = 
+        {
+            ["armv5te"]     = "arch-arm"
+        ,   ["armv7-a"]     = "arch-arm"
+        ,   ["arm64-v8a"]   = "arch-arm64"
+        ,   i386            = "arch-x86"
+        ,   x86_64          = "arch-x86_64"
+        ,   mips            = "arch-mips"
+        ,   mips64          = "arch-mips64"
+        }
+        local sysroot_arch = sysroot_archs[arch]
+
         -- add sysroot
         --
         -- @see https://android.googlesource.com/platform/ndk/+/master/docs/UnifiedHeaders.md
@@ -111,8 +124,10 @@ function main(platform)
                 ["armv5te"]     = "arm-linux-androideabi"
             ,   ["armv7-a"]     = "arm-linux-androideabi"
             ,   ["arm64-v8a"]   = "aarch64-linux-android"
-            ,   ["i386"]        = "i686-linux-android"
-            ,   ["x86_64"]      = "x86_64-linux-android"
+            ,   i386            = "i686-linux-android"
+            ,   x86_64          = "x86_64-linux-android"
+            ,   mips            = "mips-linux-android"
+            ,   mips64          = "mips64-linux-android"
             }
             platform:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
             platform:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
@@ -123,22 +138,15 @@ function main(platform)
             platform:add("cxxflags","-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
             platform:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
         else
-            if arch:startswith("arm64") then
-                platform:add("cflags",   format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-                platform:add("cxxflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-                platform:add("asflags",  format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-            else
-                platform:add("cflags",   format("--sysroot=%s/arch-arm", ndk_sdkdir))
-                platform:add("cxxflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
-                platform:add("asflags",  format("--sysroot=%s/arch-arm", ndk_sdkdir))
+            if sysroot_arch then
+                platform:add("cflags",   format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                platform:add("cxxflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                platform:add("asflags",  format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
             end
         end
-        if arch:startswith("arm64") then
-            platform:add("ldflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-            platform:add("shflags", format("--sysroot=%s/arch-arm64", ndk_sdkdir))
-        else
-            platform:add("ldflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
-            platform:add("shflags", format("--sysroot=%s/arch-arm", ndk_sdkdir))
+        if sysroot_arch then
+            platform:add("ldflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+            platform:add("shflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
         end
 
         -- add "-fPIE -pie" to ldflags
@@ -160,6 +168,10 @@ function main(platform)
                 ["armv5te"]     = "armeabi"
             ,   ["armv7-a"]     = "armeabi-v7a"
             ,   ["arm64-v8a"]   = "arm64-v8a"
+            ,   i386            = "x86"
+            ,   x86_64          = "x86_64"
+            ,   mips            = "mips"
+            ,   mips64          = "mips64"
             }
 
             -- add search directories for c++ stl
@@ -194,7 +206,7 @@ function main(platform)
     end
 
     -- init targets for rust
-    local targets = 
+    local targets_rust = 
     {
         ["armv5te"]     = "arm-linux-androideabi"
     ,   ["armv7-a"]     = "arm-linux-androideabi"
@@ -202,7 +214,9 @@ function main(platform)
     }
 
     -- init flags for rust
-    platform:add("rcflags", "--target=" .. targets[arch])
+    if targets_rust[arch] then
+        platform:add("rcflags", "--target=" .. targets_rust[arch])
+    end
     platform:add("rc-shflags", "-C link-args=\"" .. (table.concat(platform:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
     platform:add("rc-ldflags", "-C link-args=\"" .. (table.concat(platform:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
     local sh = config.get("sh")
