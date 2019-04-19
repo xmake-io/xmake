@@ -393,45 +393,53 @@ end
 
 -- get the given build environment variable
 function _instance:build_getenv(name)
-    return self:build_envs()[name]
+    return self:build_envs(true)[name]
 end
 
 -- set the given build environment variable
 function _instance:build_setenv(name, ...)
-    self:build_envs()[name] = table.unwrap({...})
+    self:build_envs(true)[name] = table.unwrap({...})
 end
 
 -- add the given build environment variable
 function _instance:build_addenv(name, ...)
-    self:build_envs()[name] = table.unwrap(table.join(table.wrap(self:build_envs()[name]), ...))
+    self:build_envs(true)[name] = table.unwrap(table.join(table.wrap(self:build_envs()[name]), ...))
 end
 
 -- get the build environments
-function _instance:build_envs()
+function _instance:build_envs(lazy_loading)
     local build_envs = self._BUILD_ENVS
     if build_envs == nil then
-
-        -- get build environments from the project configurations
+        -- lazy loading the given environment value and cache it
         build_envs = {}
-
-        for _, opt in ipairs(table.join(language_menu.options("config"), platform_menu.options("config"))) do
-            local optname = opt[2]
-            if type(optname) == "string" then
-                local value = config.get(optname)
-                if value == nil then
-                    value = platform.get(optname, self:plat())
-                end
-                if value == nil then
-                    value = platform.tool(optname, self:plat())
-                end
-                if value ~= nil then
-                    build_envs[optname] = value
-                end
+        setmetatable(build_envs, { __index = function (tbl, key)
+            local value = config.get(key)
+            if value == nil then
+                value = platform.get(key, self:plat())
             end
-        end
+            if value == nil then
+                value = platform.tool(key, self:plat())
+            end
+            if value ~= nil then
+                rawset(tbl, key, value)
+                return value
+            end
+            return rawget(tbl, key)
+        end}) 
 
         -- save build environments
         self._BUILD_ENVS = build_envs
+    end
+
+    -- force to load all values if need
+    if not lazy_loading then
+        for _, opt in ipairs(table.join(language_menu.options("config"), platform_menu.options("config"))) do
+            local optname = opt[2]
+            if type(optname) == "string" then
+                -- we need only index it to force load it's value
+                local value = build_envs[optname]
+            end
+        end
     end
     return build_envs
 end
