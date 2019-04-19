@@ -34,7 +34,9 @@ local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local platform       = require("platform/platform")
+local platform_menu  = require("platform/menu")
 local language       = require("language/language")
+local language_menu  = require("language/menu")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
@@ -389,7 +391,52 @@ function _instance:addenv(name, ...)
     self:envs()[name] = table.join(self:envs()[name] or {}, ...)
 end
 
--- get user private data
+-- get the given build environment variable
+function _instance:build_getenv(name)
+    return self:build_envs()[name]
+end
+
+-- set the given build environment variable
+function _instance:build_setenv(name, ...)
+    self:build_envs()[name] = table.unwrap({...})
+end
+
+-- add the given build environment variable
+function _instance:build_addenv(name, ...)
+    self:build_envs()[name] = table.unwrap(table.join(table.wrap(self:build_envs()[name]), ...))
+end
+
+-- get the build environments
+function _instance:build_envs()
+    local build_envs = self._BUILD_ENVS
+    if build_envs == nil then
+
+        -- get build environments from the project configurations
+        build_envs = {}
+
+        for _, opt in ipairs(table.join(language_menu.options("config"), platform_menu.options("config"))) do
+            local optname = opt[2]
+            if type(optname) == "string" then
+                local value = config.get(optname)
+                if value == nil then
+                    value = platform.get(optname, self:plat())
+                end
+                if value == nil then
+                    value = platform.tool(optname, self:plat())
+                end
+                if value ~= nil then
+                    build_envs[optname] = value
+                end
+            end
+        end
+
+        -- save build environments
+        self._BUILD_ENVS = build_envs
+    end
+    return build_envs
+end
+
+-- get the user private data
 function _instance:data(name)
     return self._DATA and self._DATA[name] or nil
 end

@@ -308,7 +308,7 @@ end
 --
 -- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
-function platform.tool(toolkind)
+function platform.tool(toolkind, plat)
 
     -- attempt to get program from config first
     local program = config.get(toolkind)
@@ -316,7 +316,7 @@ function platform.tool(toolkind)
     if program == nil then 
 
         -- get the current platform 
-        local instance, errors = platform.load()
+        local instance, errors = platform.load(plat)
         if not instance then
             os.raise(errors)
         end
