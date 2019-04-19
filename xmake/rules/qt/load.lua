@@ -61,11 +61,6 @@ function main(target, opt)
         major = qt.sdkver:split('%.')[1]
     end
 
-    -- set kind
-    if opt.kind then
-        target:set("kind", opt.kind)
-    end
-
     -- add -fPIC
     target:add("cxflags", "-fPIC")
     target:add("mxflags", "-fPIC")

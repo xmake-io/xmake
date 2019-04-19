@@ -333,7 +333,7 @@ function platform.tool(toolkind)
     end
 
     -- contain toolname? parse it, .e.g 'gcc@xxxx.exe'
-    if program then
+    if program and type(program) == "string" then
         local pos = program:find('@', 1, true)
         if pos then
             toolname = program:sub(1, pos - 1)

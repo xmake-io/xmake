@@ -24,9 +24,14 @@ rule("qt.static")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", "static")
+    end)
+
     -- after load
     after_load(function (target)
-        import("load")(target, {kind = "static", frameworks = {"QtCore"}})
+        import("load")(target, {frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt shared library
@@ -35,9 +40,14 @@ rule("qt.shared")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", "shared")
+    end)
+
     -- after load
     after_load(function (target)
-        import("load")(target, {kind = "shared", frameworks = {"QtCore"}})
+        import("load")(target, {frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt console
@@ -46,9 +56,14 @@ rule("qt.console")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", "binary")
+    end)
+
     -- after load
     after_load(function (target)
-        import("load")(target, {kind = "binary", frameworks = {"QtCore"}})
+        import("load")(target, {frameworks = {"QtCore"}})
     end)
 
 -- define rule: qt application
@@ -57,11 +72,16 @@ rule("qt.application")
     -- add rules
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", "binary")
+    end)
+
     -- after load
     after_load(function (target)
 
         -- load common flags to target
-        import("load")(target, {kind = "binary", frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})
+        import("load")(target, {frameworks = {"QtGui", "QtQml", "QtNetwork", "QtCore"}})
 
         -- add -subsystem:windows for windows platform
         if is_plat("windows") then

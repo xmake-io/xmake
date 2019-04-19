@@ -613,7 +613,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
 
     -- find suitable linkers
     local results = {}
-    for _, linkerinfo in pairs(linkerinfos[targetkind]) do
+    for _, linkerinfo in pairs(table.wrap(linkerinfos[targetkind])) do
 
         -- match all source kinds?
         local count = 0
