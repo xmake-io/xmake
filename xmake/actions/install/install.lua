@@ -97,6 +97,15 @@ end
 -- do install target
 function _do_install_target(target)
 
+    -- get install directory
+    local installdir = target:installdir()
+    if not installdir then
+        return 
+    end
+
+    -- trace
+    print("installing to %s ...", installdir)
+
     -- the scripts
     local scripts =
     {
@@ -123,14 +132,8 @@ function _on_install_target(target)
         return 
     end
 
-    -- get install directory
-    local installdir = target:installdir()
-    if not installdir then
-        return 
-    end
-
     -- trace
-    print("installing %s to %s ...", target:name(), installdir)
+    print("installing %s ...", target:name())
 
     -- build target with rules
     local done = false
