@@ -323,16 +323,6 @@ function _instance:manifest_save()
     end
 end
 
--- TODO: set the given variable, deprecated
-function _instance:setvar(name, ...)
-    self:set(name, ...)
-end
-
--- TODO add the given variable, deprecated
-function _instance:addvar(name, ...)
-    self:add(name, ...)
-end
-
 -- get the exported environments
 function _instance:envs()
     local envs = self._ENVS
