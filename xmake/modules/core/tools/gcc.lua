@@ -323,52 +323,42 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- get compile info
---
--- e.g.
---
--- ! xxx.gch
--- . xxx.h
--- .. xxx.h
--- ... xxx.h
--- In file included from src/xxx.c:43:
--- src/main.c:2:9 warning: xczx
---   ..
---
--- . xxx.h
--- Multiple include guards may be useful for:
--- /usr/include/bits/long-double.h
--- /usr/include/bits/sigaction.h
--- /usr/include/string
---
-function _get_compile_info(outdata)
-
-    -- filter dependent header info and get compile output 
-    local results = {}
-    for _, line in ipairs(outdata:split("\n")) do
-        if not line:startswith("!") and -- ! xxx.h
-           not line:startswith(".") and -- ... xxx.h
-           not (path.is_absolute(line) and not line:find(':', 3, true)) and -- /usr/xxx/string, C:\xx\string
-           not line:find("%.%a+$") and -- src/xxx.[h|hpp|c|..]
-           not (line:endswith(':') and not line:find("%d")) then -- Multiple include guards may be useful for:
-            table.insert(results, line)
-        end
-    end
-    return results
-end
-
 -- get include deps
+--
+-- strcpy.o: src/tbox/libc/string/strcpy.c src/tbox/libc/string/string.h \
+--  src/tbox/libc/string/prefix.h src/tbox/libc/string/../prefix.h \
+--  src/tbox/libc/string/../../prefix.h \
+--  src/tbox/libc/string/../../prefix/prefix.h \
+--  src/tbox/libc/string/../../prefix/config.h \
+--  src/tbox/libc/string/../../prefix/../config.h \
+--  build/iphoneos/x86_64/release/tbox.config.h \
+--
 function _get_include_deps(outdata)
 
     -- translate it
     local results = {}
     local uniques = {}
+    local spacech = false
     for _, line in ipairs(outdata:split("\n")) do
-
-        -- get includefile, e.g. '! xxx.gch' or '... xxx.h'
-        if line:startswith("!") or line:startswith(".") then
-            local includefile = line:split("%s")[2]
-            if includefile then
+        local p = line:find(':', 1, true)
+        if p then
+            line = line:sub(p + 1)
+        end
+        if line:endswith('\\') then
+            line = line:sub(1, -2)
+        end
+        line = line:trim()
+        spacech = false
+        if line:find(' ', 1, true) then
+            line = line:gsub("\\ ", "__spacechar__")
+            spacech = true
+        end
+        for _, includefile in ipairs(line:split("%s+")) do
+            if spacech then
+                includefile = includefile:gsub("__spacechar__", " ")
+            end
+            includefile = includefile:trim()
+            if #includefile > 0 then
 
                 -- get the relative
                 includefile = path.relative(includefile, project.directory())
@@ -457,19 +447,20 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    local outdata, errdata = try
+    local depfile = dependinfo and os.tmpfile() or nil
+    try
     {
         function ()
 
-            -- support -H? some old gcc does not support it at same time
-            if _g._HAS_H == nil then
-                _g._HAS_H = self:has_flags("-H", "cxflags")
+            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
+            if _g._HAS_MMD_MF == nil then
+                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", depfile}, "cxflags")
             end
 
             -- generate includes file
             local compflags = flags
-            if dependinfo and _g._HAS_H then
-                compflags = table.join(flags, "-H")
+            if dependinfo and _g._HAS_MMD_MF then
+                compflags = table.join(flags, "-MMD", "-MF", depfile)
             end
 
             -- do compile
@@ -483,7 +474,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- parse and strip errors
-                local lines = _get_compile_info(errors)
+                local lines = errors and errors:split('\n') or {}
                 if not option.get("verbose") then
 
                     -- find the start line of error
@@ -501,6 +492,11 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                 end
 
+                -- remove the temporary dependent file
+                if depfile then
+                    os.tryrm(depfile)
+                end
+
                 -- raise compiling errors
                 raise(#lines > 0 and table.concat(lines, "\n") or "")
             end
@@ -511,7 +507,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- show warnings?
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
-                    local lines = _get_compile_info(errdata)
+                    local lines = errdata:split('\n')
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
                         cprint("${color.warning}%s", warnings)
@@ -522,10 +518,15 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     }
 
     -- generate the dependent includes
-    local depdata = errdata
-    if dependinfo and self:kind() ~= "as" and depdata then
-        dependinfo.files = dependinfo.files or {}
-        table.join2(dependinfo.files, _get_include_deps(depdata))
+    if depfile and os.isfile(depfile) then
+        local depdata = io.readfile(depfile)
+        if dependinfo and self:kind() ~= "as" and depdata then
+            dependinfo.files = dependinfo.files or {}
+            table.join2(dependinfo.files, _get_include_deps(depdata))
+        end
+
+        -- remove the temporary dependent file
+        os.tryrm(depfile)
     end
 end
 
