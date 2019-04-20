@@ -453,13 +453,13 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         function ()
 
             -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
-            if _g._HAS_MMD_MF == nil then
-                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", depfile}, "cxflags")
+            if depfile and _g._HAS_MMD_MF == nil then
+                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cxflags") or false
             end
 
             -- generate includes file
             local compflags = flags
-            if dependinfo and _g._HAS_MMD_MF then
+            if depfile and _g._HAS_MMD_MF then
                 compflags = table.join(flags, "-MMD", "-MF", depfile)
             end
 
