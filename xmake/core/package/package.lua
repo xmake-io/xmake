@@ -420,8 +420,9 @@ function _instance:build_envs(lazy_loading)
             if value == nil then
                 value = platform.tool(key, self:plat())
             end
-            if value ~= nil then
-                rawset(tbl, key, value)
+            value = table.unique(table.join(table.wrap(value), self:config(key)))
+            if #value > 0 then
+                rawset(tbl, key, os.args(value))
                 return value
             end
             return rawget(tbl, key)

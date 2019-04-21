@@ -30,36 +30,31 @@ function _enter_envs(package)
     
     -- get old environments
     local envs           = {}
+    envs.CC              = os.getenv("CC")
+    envs.LD              = os.getenv("LD")
+    envs.AR              = os.getenv("AR")
+    envs.SH              = os.getenv("SH")
     envs.CFLAGS          = os.getenv("CFLAGS")
     envs.CXXFLAGS        = os.getenv("CXXFLAGS")
     envs.ASFLAGS         = os.getenv("ASFLAGS")
+    envs.LDFLAGS         = os.getenv("LDFLAGS")
+    envs.ARFLAGS         = os.getenv("ARFLAGS")
+    envs.SHFLAGS         = os.getenv("SHFLAGS")
     envs.ACLOCAL_PATH    = os.getenv("ACLOCAL_PATH")
     envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
 
     -- set new environments
-    local cflags   = package:config("cflags")
-    local cxflags  = package:config("cxflags")
-    local cxxflags = package:config("cxxflags")
-    local asflags  = package:config("asflags")
-    if package:plat() == "windows" then
-        local vs_runtime = package:config("vs_runtime")
-        if vs_runtime then
-            cxflags = (cxflags or "") .. " /" .. vs_runtime .. (package:debug() and "d" or "")
-        end
-    end
-    if cflags then
-        os.addenv("CFLAGS", cflags)
-    end
-    if cxflags then
-        os.addenv("CFLAGS", cxflags)
-        os.addenv("CXXFLAGS", cxflags)
-    end
-    if cxxflags then
-        os.addenv("CXXFLAGS", cxxflags)
-    end
-    if asflags then
-        os.addenv("ASFLAGS", asflags)
-    end
+    os.addenvp("CC",       package:build_getenv("cc"), ' ')
+    os.addenvp("AR",       package:build_getenv("ar"), ' ')
+    os.addenvp("LD",       package:build_getenv("ld"), ' ')
+    os.addenvp("SH",       package:build_getenv("sh"), ' ')
+    os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
+    os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
+    os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
+    os.addenvp("CXXFLAGS", package:build_getenv("cxxflags"), ' ')
+    os.addenvp("ASFLAGS",  package:build_getenv("asflags"), ' ')
+    os.addenvp("LDFLAGS",  package:build_getenv("ldflags"), ' ')
+    os.addenvp("SHFLAGS",  package:build_getenv("shflags"), ' ')
     for _, dep in ipairs(package:orderdeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then

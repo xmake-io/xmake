@@ -901,22 +901,36 @@ end
 
 -- set values to environment variable 
 function os.setenv(name, ...)
-
-    -- get separator
     local seperator = os.host() == "windows" and ';' or ':'
-    
-    -- append values
     return os._setenv(name, table.concat({...}, seperator))
 end
 
 -- add values to environment variable 
 function os.addenv(name, ...)
-
-    -- get separator
     local seperator = os.host() == "windows" and ';' or ':'
-    
-    -- append values
-    return os.setenv(name, table.concat({...}, seperator) .. seperator ..  (os.getenv(name) or ""))
+    local values = {...}
+    if #values > 0 then
+        return os._setenv(name, table.concat(values, seperator) .. seperator ..  (os.getenv(name) or ""))
+    else
+        return os.getenv(name)
+    end
+end
+
+-- set values to environment variable with the given seperator 
+function os.setenvp(name, values, seperator)
+    seperator = seperator or (os.host() == "windows" and ';' or ':')
+    return os._setenv(name, table.concat(table.wrap(values), seperator))
+end
+
+-- add values to environment variable with the given seperator 
+function os.addenvp(name, values, seperator)
+    seperator = seperator or (os.host() == "windows" and ';' or ':')
+    values = table.wrap(values)
+    if #values > 0 then
+        return os._setenv(name, table.concat(values, seperator) .. seperator ..  (os.getenv(name) or ""))
+    else
+        return os.getenv(name)
+    end
 end
 
 -- read string data from pasteboard
