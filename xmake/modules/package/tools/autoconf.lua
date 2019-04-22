@@ -31,9 +31,11 @@ function _enter_envs(package)
     -- get old environments
     local envs           = {}
     envs.CC              = os.getenv("CC")
-    envs.LD              = os.getenv("LD")
+    envs.AS              = os.getenv("AS")
     envs.AR              = os.getenv("AR")
-    envs.SH              = os.getenv("SH")
+    envs.LD              = os.getenv("LD")
+    envs.LDSHARED        = os.getenv("LDSHARED")
+    envs.RANLIB          = os.getenv("RANLIB")
     envs.CFLAGS          = os.getenv("CFLAGS")
     envs.CXXFLAGS        = os.getenv("CXXFLAGS")
     envs.ASFLAGS         = os.getenv("ASFLAGS")
@@ -44,17 +46,28 @@ function _enter_envs(package)
     envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
 
     -- set new environments
-    os.addenvp("CC",       package:build_getenv("cc"), ' ')
-    os.addenvp("AR",       package:build_getenv("ar"), ' ')
-    os.addenvp("LD",       package:build_getenv("ld"), ' ')
-    os.addenvp("SH",       package:build_getenv("sh"), ' ')
-    os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
-    os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
-    os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
-    os.addenvp("CXXFLAGS", package:build_getenv("cxxflags"), ' ')
-    os.addenvp("ASFLAGS",  package:build_getenv("asflags"), ' ')
-    os.addenvp("LDFLAGS",  package:build_getenv("ldflags"), ' ')
-    os.addenvp("SHFLAGS",  package:build_getenv("shflags"), ' ')
+    if package:plat() == os.host() then
+        os.addenvp("CFLAGS",   package:config("cflags"), ' ')
+        os.addenvp("CFLAGS",   package:config("cxflags"), ' ')
+        os.addenvp("CXXFLAGS", package:config("cxflags"), ' ')
+        os.addenvp("CXXFLAGS", package:config("cxxflags"), ' ')
+        os.addenvp("ASFLAGS",  package:config("asflags"), ' ')
+    else
+        os.setenv("RANLIB",   "")
+        os.addenvp("CC",       package:build_getenv("cc"), ' ')
+        os.addenvp("AS",       package:build_getenv("as"), ' ')
+        os.addenvp("AR",       package:build_getenv("ar"), ' ')
+        os.addenvp("LD",       package:build_getenv("ld"), ' ')
+        os.addenvp("LDSHARED", package:build_getenv("sh"), ' ')
+        os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
+        os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
+        os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
+        os.addenvp("CXXFLAGS", package:build_getenv("cxxflags"), ' ')
+        os.addenvp("ASFLAGS",  package:build_getenv("asflags"), ' ')
+        os.addenvp("ARFLAGS",  package:build_getenv("arflags"), ' ')
+        os.addenvp("LDFLAGS",  package:build_getenv("ldflags"), ' ')
+        os.addenvp("SHFLAGS",  package:build_getenv("shflags"), ' ')
+    end
     for _, dep in ipairs(package:orderdeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
@@ -76,7 +89,7 @@ function _leave_envs(package, envs)
 end
 
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
 
     -- generate configure file
     if not os.isfile("configure") then
@@ -105,6 +118,11 @@ function install(package, configs)
 
     -- do configure
     os.vrunv("./configure", argv)
+
+    -- do before_build()
+    if opt and opt.before_build then
+        opt.before_build()
+    end
 
     -- do make and install
     os.vrun("make -j4")

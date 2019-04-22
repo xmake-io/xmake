@@ -422,7 +422,8 @@ function _instance:build_envs(lazy_loading)
             end
             value = table.unique(table.join(table.wrap(value), self:config(key)))
             if #value > 0 then
-                rawset(tbl, key, os.args(value))
+                value = table.unwrap(value)
+                rawset(tbl, key, value)
                 return value
             end
             return rawget(tbl, key)
