@@ -34,6 +34,7 @@ function _enter_envs(package)
     envs.AS              = os.getenv("AS")
     envs.AR              = os.getenv("AR")
     envs.LD              = os.getenv("LD")
+    envs.CPP             = os.getenv("CPP")
     envs.LDSHARED        = os.getenv("LDSHARED")
     envs.RANLIB          = os.getenv("RANLIB")
     envs.CFLAGS          = os.getenv("CFLAGS")
@@ -54,11 +55,12 @@ function _enter_envs(package)
         os.addenvp("ASFLAGS",  package:config("asflags"), ' ')
     else
         os.setenv("RANLIB",   "")
-        os.addenvp("CC",       package:build_getenv("cc"), ' ')
-        os.addenvp("AS",       package:build_getenv("as"), ' ')
-        os.addenvp("AR",       package:build_getenv("ar"), ' ')
-        os.addenvp("LD",       package:build_getenv("ld"), ' ')
-        os.addenvp("LDSHARED", package:build_getenv("sh"), ' ')
+        os.setenvp("CC",       package:build_getenv("cc"), ' ')
+        os.setenvp("AS",       package:build_getenv("as"), ' ')
+        os.setenvp("AR",       package:build_getenv("ar"), ' ')
+        os.setenvp("LD",       package:build_getenv("ld"), ' ')
+        os.setenvp("LDSHARED", package:build_getenv("sh"), ' ')
+        os.setenvp("CPP",      package:build_getenv("cpp"), ' ')
         os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
         os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
         os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
@@ -88,8 +90,8 @@ function _leave_envs(package, envs)
     end
 end
 
--- install package
-function install(package, configs, opt)
+-- configure package
+function configure(package, configs)
 
     -- generate configure file
     if not os.isfile("configure") then
@@ -119,16 +121,17 @@ function install(package, configs, opt)
     -- do configure
     os.vrunv("./configure", argv)
 
-    -- do before_build()
-    if opt and opt.before_build then
-        opt.before_build()
-    end
-
-    -- do make and install
-    os.vrun("make -j4")
-    os.vrun("make install")
-
     -- leave environments
     _leave_envs(package, envs)
+end
+
+-- install package
+function install(package, configs)
+
+    -- do configure
+    configure(package, configs)
+
+    -- do make and install
+    os.vrun("make install -j4")
 end
 
