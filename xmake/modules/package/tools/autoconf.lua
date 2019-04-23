@@ -22,6 +22,28 @@
 function _get_configs(package, configs)
     local configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
+    if package:is_plat("iphoneos") then
+        local hosts = { arm64 = "aarch64-apple-darwin",
+                        arm64e = "aarch64-apple-darwin",
+                        armv7  = "armv7-apple-darwin",
+                        armv7s = "armv7s-apple-darwin",
+                        i386   = "i386-apple-darwin",
+                        x86_64 = "x86_64-apple-darwin"}
+        table.insert(configs, "--host=" .. (hosts[package:arch()] or "aarch64-apple-darwin"))
+    elseif package:is_plat("android") then
+        -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
+        local triples = 
+        {
+            ["armv5te"]     = "arm-linux-androideabi"
+        ,   ["armv7-a"]     = "armv7a-linux-androideabi"
+        ,   ["arm64-v8a"]   = "aarch64-linux-android"
+        ,   i386            = "i686-linux-android"
+        ,   x86_64          = "x86_64-linux-android"
+        ,   mips            = "mips-linux-android"
+        ,   mips64          = "mips64-linux-android"
+        }
+        table.insert(configs, "--host=" .. (triples[package:arch()] or "armv7a-linux-androideabi"))
+    end
     return configs
 end
 
@@ -47,7 +69,7 @@ function _enter_envs(package)
     envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
 
     -- set new environments
-    if package:plat() == os.host() then
+    if package:is_plat(os.host()) then
         os.addenvp("CFLAGS",   package:config("cflags"), ' ')
         os.addenvp("CFLAGS",   package:config("cxflags"), ' ')
         os.addenvp("CXXFLAGS", package:config("cxflags"), ' ')

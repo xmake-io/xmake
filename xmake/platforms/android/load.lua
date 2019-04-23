@@ -122,7 +122,7 @@ function main(platform)
             local triples = 
             {
                 ["armv5te"]     = "arm-linux-androideabi"
-            ,   ["armv7-a"]     = "arm-linux-androideabi"
+            ,   ["armv7-a"]     = "armv7a-linux-androideabi"
             ,   ["arm64-v8a"]   = "aarch64-linux-android"
             ,   i386            = "i686-linux-android"
             ,   x86_64          = "x86_64-linux-android"

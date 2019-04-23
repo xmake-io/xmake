@@ -244,7 +244,7 @@ function config.is_plat(...)
     return config.is_value("plat", ...)
 end
 
--- the current platform is belong to the given architectures?
+-- the current architecture is belong to the given architectures?
 function config.is_arch(...)
     return config.is_value("arch", ...)
 end
