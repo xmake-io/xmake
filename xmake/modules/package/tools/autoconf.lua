@@ -23,32 +23,39 @@ import("core.project.config")
 
 -- get configs
 function _get_configs(package, configs)
+
+    -- add prefix
     local configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
-    if package:is_plat("iphoneos") then
-        local hosts = { arm64 = "aarch64-apple-darwin",
-                        arm64e = "aarch64-apple-darwin",
-                        armv7  = "armv7-apple-darwin",
-                        armv7s = "armv7s-apple-darwin",
-                        i386   = "i386-apple-darwin",
-                        x86_64 = "x86_64-apple-darwin"}
-        table.insert(configs, "--host=" .. (hosts[package:arch()] or "aarch64-apple-darwin"))
-    elseif package:is_plat("android") then
-        -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
-        local triples = 
-        {
-            ["armv5te"]     = "arm-linux-androideabi"
-        ,   ["armv7-a"]     = "armv7a-linux-androideabi"
-        ,   ["arm64-v8a"]   = "aarch64-linux-android"
-        ,   i386            = "i686-linux-android"
-        ,   x86_64          = "x86_64-linux-android"
-        ,   mips            = "mips-linux-android"
-        ,   mips64          = "mips64-linux-android"
-        }
-        table.insert(configs, "--host=" .. (triples[package:arch()] or "armv7a-linux-androideabi"))
-    elseif package:is_plat("cross") then
-    else
-        raise("autoconf: unknown platform(%s)!", package:plat())
+
+    -- add host for cross-complation
+    if not configs.host and not package:is_plat(os.host()) then
+        if package:is_plat("iphoneos") then
+            local hosts = { arm64 = "aarch64-apple-darwin",
+                            arm64e = "aarch64-apple-darwin",
+                            armv7  = "armv7-apple-darwin",
+                            armv7s = "armv7s-apple-darwin",
+                            i386   = "i386-apple-darwin",
+                            x86_64 = "x86_64-apple-darwin"}
+            table.insert(configs, "--host=" .. (hosts[package:arch()] or "aarch64-apple-darwin"))
+        elseif package:is_plat("android") then
+            -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
+            local triples = 
+            {
+                ["armv5te"]     = "arm-linux-androideabi"
+            ,   ["armv7-a"]     = "arm-linux-androideabi"
+            ,   ["arm64-v8a"]   = "aarch64-linux-android"
+            ,   i386            = "i686-linux-android"
+            ,   x86_64          = "x86_64-linux-android"
+            ,   mips            = "mips-linux-android"
+            ,   mips64          = "mips64-linux-android"
+            }
+            table.insert(configs, "--host=" .. (triples[package:arch()] or "arm-linux-androideabi"))
+        elseif package:is_plat("cross") then
+            -- TODO
+        else
+            raise("autoconf: unknown platform(%s)!", package:plat())
+        end
     end
     return configs
 end
@@ -147,12 +154,12 @@ function configure(package, configs)
     local argv = {}
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
-        if type(name) == "number" then
-            if value ~= "" then
+        if value ~= "" then
+            if type(name) == "number" then
                 table.insert(argv, value)
+            else
+                table.insert(argv, "--" .. name .. "=" .. value)
             end
-        else
-            table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
 
