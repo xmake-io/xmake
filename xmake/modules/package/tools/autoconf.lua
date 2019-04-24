@@ -18,6 +18,9 @@
 -- @file        autoconf.lua
 --
 
+-- imports
+import("core.project.config")
+
 -- get configs
 function _get_configs(package, configs)
     local configs = configs or {}
@@ -43,6 +46,9 @@ function _get_configs(package, configs)
         ,   mips64          = "mips64-linux-android"
         }
         table.insert(configs, "--host=" .. (triples[package:arch()] or "armv7a-linux-androideabi"))
+    elseif package:is_plat("cross") then
+    else
+        raise("autoconf: unknown platform(%s)!", package:plat())
     end
     return configs
 end
@@ -65,6 +71,7 @@ function _enter_envs(package)
     envs.LDFLAGS         = os.getenv("LDFLAGS")
     envs.ARFLAGS         = os.getenv("ARFLAGS")
     envs.SHFLAGS         = os.getenv("SHFLAGS")
+    envs.TOOLCHAIN       = os.getenv("TOOLCHAIN")
     envs.ACLOCAL_PATH    = os.getenv("ACLOCAL_PATH")
     envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
 
@@ -76,13 +83,13 @@ function _enter_envs(package)
         os.addenvp("CXXFLAGS", package:config("cxxflags"), ' ')
         os.addenvp("ASFLAGS",  package:config("asflags"), ' ')
     else
-        os.setenv("RANLIB",   "")
-        os.setenvp("CC",       package:build_getenv("cc"), ' ')
-        os.setenvp("AS",       package:build_getenv("as"), ' ')
-        os.setenvp("AR",       package:build_getenv("ar"), ' ')
-        os.setenvp("LD",       package:build_getenv("ld"), ' ')
-        os.setenvp("LDSHARED", package:build_getenv("sh"), ' ')
-        os.setenvp("CPP",      package:build_getenv("cpp"), ' ')
+        os.setenvp("CC",       package:build_getenv("cc"))
+        os.setenvp("AS",       package:build_getenv("as"))
+        os.setenvp("AR",       package:build_getenv("ar"))
+        os.setenvp("LD",       package:build_getenv("ld"))
+        os.setenvp("LDSHARED", package:build_getenv("sh"))
+        os.setenvp("CPP",      package:build_getenv("cpp"))
+        os.setenvp("RANLIB",   package:build_getenv("ranlib"))
         os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
         os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
         os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
@@ -91,6 +98,18 @@ function _enter_envs(package)
         os.addenvp("ARFLAGS",  package:build_getenv("arflags"), ' ')
         os.addenvp("LDFLAGS",  package:build_getenv("ldflags"), ' ')
         os.addenvp("SHFLAGS",  package:build_getenv("shflags"), ' ')
+        if package:is_plat("android") then
+            local gcc_toolchain = config.get("gcc_toolchain")
+            if not gcc_toolchain then
+                local bindir = config.get("bindir")
+                if bindir then
+                    gcc_toolchain = path.directory(bindir)
+                end
+            end
+            if gcc_toolchain and os.isdir(gcc_toolchain) then
+                os.setenv("TOOLCHAIN", gcc_toolchain)
+            end
+        end
     end
     for _, dep in ipairs(package:orderdeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")

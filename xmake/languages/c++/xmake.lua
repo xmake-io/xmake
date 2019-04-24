@@ -163,6 +163,7 @@ language("c++")
                 ,   {nil, "ld",            "kv", nil,          "The Linker"                                         }
                 ,   {nil, "ar",            "kv", nil,          "The Static Library Linker"                          }
                 ,   {nil, "sh",            "kv", nil,          "The Shared Library Linker"                          }
+                ,   {nil, "ranlib",        "kv", nil,          "The Static Library Index Generator"                 }
 
                 ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"                       }
                 ,   {nil, "cflags",        "kv", nil,          "The C Compiler Flags"                               }

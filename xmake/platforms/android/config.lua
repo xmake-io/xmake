@@ -56,12 +56,13 @@ function _toolchains()
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
+    local ranlib     = toolchain("the static library index generator")
     local as         = toolchain("the assember")
     local rc         = toolchain("the rust compiler")
     local rc_ld      = toolchain("the rust linker")
     local rc_sh      = toolchain("the rust shared library linker")
     local rc_ar      = toolchain("the rust static library archiver")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, 
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar}
 
     -- init the c compiler
@@ -88,6 +89,14 @@ function _toolchains()
 
     -- init the static library extractor
     ex:add({name = "ar", cross = cross}, "llvm-ar")
+
+    -- init the static library index generator
+    local gcc_toolchain_bin = nil
+    local gcc_toolchain = config.get("gcc_toolchain")
+    if gcc_toolchain then
+        gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
+    end
+    ranlib:add({name = "ranlib", cross = cross, pathes = gcc_toolchain_bin}, "ranlib")
 
     -- init the rust compiler and linker
     rc:add("$(env RC)", "rustc")
