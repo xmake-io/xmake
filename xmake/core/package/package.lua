@@ -1129,7 +1129,9 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- load repository first for checking the xmake minimal version
-    repo:load()
+    if repo then
+        repo:load()
+    end
 
     -- find the package script path
     local scriptpath = packagefile
