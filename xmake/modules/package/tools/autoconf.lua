@@ -101,7 +101,7 @@ function _enter_envs(package)
         if package:is_plat("android") then
             local gcc_toolchain = config.get("gcc_toolchain")
             if not gcc_toolchain then
-                local bindir = config.get("bindir")
+                local bindir = config.get("bin")
                 if bindir then
                     gcc_toolchain = path.directory(bindir)
                 end

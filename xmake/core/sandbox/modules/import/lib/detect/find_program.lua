@@ -103,7 +103,7 @@ function sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
             end
 
             -- the program path
-            if program_path and os.isexec(program_path) then
+            if program_path and (os.isexec(program_path) or os.isexec(program_path:split("%s+")[1])) then
                 -- check it
                 if sandbox_lib_detect_find_program._check(program_path, opt) then
                     return program_path

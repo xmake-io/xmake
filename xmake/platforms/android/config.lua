@@ -49,9 +49,17 @@ function _toolchains()
     -- get cross
     local cross = config.get("cross") 
 
+    -- get gcc toolchain bin directory
+    local gcc_toolchain_bin = nil
+    local gcc_toolchain = config.get("gcc_toolchain")
+    if gcc_toolchain then
+        gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
+    end
+
     -- init toolchains
     local cc         = toolchain("the c compiler")
     local cxx        = toolchain("the c++ compiler")
+    local cpp        = toolchain("the c preprocessor")
     local ld         = toolchain("the linker")
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
@@ -62,7 +70,7 @@ function _toolchains()
     local rc_ld      = toolchain("the rust linker")
     local rc_sh      = toolchain("the rust shared library linker")
     local rc_ar      = toolchain("the rust static library archiver")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, 
+    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, 
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar}
 
     -- init the c compiler
@@ -70,6 +78,10 @@ function _toolchains()
 
     -- init the c++ compiler
     cxx:add({name = "g++", cross = cross}, "clang++")
+
+    -- init the c preprocessor
+--    cpp:add({name = "cpp", cross = cross, pathes = gcc_toolchain_bin}, "cpp")
+    cpp:add({name = "gcc -E", cross = cross}, "clang -E")
 
     -- init the assember
     as:add({name = "gcc", cross = cross}, "clang")
@@ -91,11 +103,6 @@ function _toolchains()
     ex:add({name = "ar", cross = cross}, "llvm-ar")
 
     -- init the static library index generator
-    local gcc_toolchain_bin = nil
-    local gcc_toolchain = config.get("gcc_toolchain")
-    if gcc_toolchain then
-        gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
-    end
     ranlib:add({name = "ranlib", cross = cross, pathes = gcc_toolchain_bin}, "ranlib")
 
     -- init the rust compiler and linker

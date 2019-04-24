@@ -31,12 +31,10 @@ import("private.platform.check_toolchain")
 function _toolchains()
 
     -- init cross
-    local arch = config.get("arch") or os.arch()
     local cross = "xcrun -sdk macosx "
 
     -- init toolchains
     local cc         = toolchain("the c compiler")
-    local cpp        = toolchain("the c preprocessor")
     local cxx        = toolchain("the c++ compiler")
     local ld         = toolchain("the linker")
     local sh         = toolchain("the shared library linker")
@@ -62,7 +60,7 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_sh      = toolchain("the cuda shared library linker")
-    local toolchains = {cc = cc, cpp = cpp, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh,
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
@@ -71,9 +69,6 @@ function _toolchains()
 
     -- init the c compiler
     cc:add("$(env CC)", {name = "clang", cross = cross}, "clang", "gcc")
-
-    -- init the c preprocessor
-    cpp:add("$(env CPP)", {name = "clang -arch " .. arch .. " -E", cross = cross}, "clang -arch " .. arch .. " -E")
 
     -- init the c++ compiler
     cxx:add("$(env CXX)")
