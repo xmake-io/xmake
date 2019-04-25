@@ -26,6 +26,7 @@ local os                = require("base/os")
 local path              = require("base/path")
 local utils             = require("base/utils")
 local table             = require("base/table")
+local config            = require("project/config")
 local target            = require("project/target")
 local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
@@ -63,6 +64,11 @@ function sandbox_lib_detect_find_library.main(names, pathes, opt)
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
             local filepath = find_file(target.filename(name, kind), pathes, opt)
+            if not filepath and config.is_plat("mingw") then
+                -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
+                local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
+                filepath = find_file(target.filename(name, kind, formats[kind]), pathes, opt)
+            end
             if filepath then
                 local filename = path.filename(filepath)
                 return {kind = kind, filename = filename, linkdir = path.directory(filepath), link = target.linkname(filename)}
