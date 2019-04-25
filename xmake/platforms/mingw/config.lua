@@ -58,13 +58,15 @@ function _toolchains()
     -- init toolchains
     local cc         = toolchain("the c compiler")
     local cxx        = toolchain("the c++ compiler")
+    local cpp        = toolchain("the c preprocessor")
     local ld         = toolchain("the linker")
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
+    local ranlib     = toolchain("the static library index generator")
     local as         = toolchain("the assember")
     local mrc        = toolchain("the resource compiler")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, mrc = mrc}
+    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, mrc = mrc}
 
     -- init the c compiler
     cc:add("$(env CC)", {name = "gcc", cross = cross})
@@ -73,6 +75,9 @@ function _toolchains()
     cxx:add("$(env CXX)")
     cxx:add({name = "gcc", cross = cross})
     cxx:add({name = "g++", cross = cross})
+
+    -- init the c preprocessor
+    cpp:add("$(env CPP)", {name = "gcc -E", cross = cross})
 
     -- init the assember
     as:add("$(env AS)", {name = "gcc", cross = cross})
@@ -92,6 +97,9 @@ function _toolchains()
 
     -- init the static library extractor
     ex:add("$(env AR)", {name = "ar", cross = cross})
+
+    -- init the static library extractor
+    ranlib:add("$(env RANLIB)", {name = "ranlib", cross = cross})
 
     -- init the resource compiler
     mrc:add({name = "windres", cross = cross})
