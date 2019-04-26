@@ -36,6 +36,7 @@ os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
 os._setenv      = os._setenv or os.setenv
+os._getenvs     = os._getenvs or os.getenvs
 os._readlink    = os._readlink or os.readlink
 
 -- copy single file or directory 
@@ -897,6 +898,22 @@ function os.fscase()
         end
     end
     return os._FSCASE
+end
+
+-- get all current environment variables
+function os.getenvs()
+    local envs = {}
+    for _, line in ipairs(os._getenvs()) do
+        local p = line:find('=', 1, true)
+        if p then
+            local key = line:sub(1, p - 1):trim()
+            local values = line:sub(p + 1):trim()
+            if #key > 0 then
+                envs[key] = values
+            end
+        end
+    end
+    return envs
 end
 
 -- set values to environment variable 
