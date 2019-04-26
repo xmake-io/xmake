@@ -62,14 +62,59 @@ tb_int_t xm_os_getenvs(lua_State* lua)
     lua_newtable(lua);
 
 #ifdef TB_CONFIG_OS_WINDOWS
+    tb_wchar_t const* p = (tb_wchar_t const*)tb_kernel32()->GetEnvironmentStringsW();
+    if (p)
+    {
+        tb_int_t    i = 0;
+        tb_char_t*  data = tb_null;
+        tb_size_t   maxn = 0;
+        tb_char_t   line[TB_PATH_MAXN];
+        tb_size_t   n = 0;
+        while (*p)
+        {
+            n = tb_wcslen(p);
+            if (n + 1 <  tb_arrayn(line))
+            {
+                if (tb_wtoa(line, p, tb_arrayn(line)) >= 0)
+                {
+                    lua_pushstring(lua, line);
+                    lua_rawseti(lua, -2, i++);
+                }
+            }
+            else
+            {
+                if (!data)
+                {
+                    maxn = n + 1;
+                    data = (tb_char_t*)tb_malloc(maxn);
+                }
+                else if (n >= maxn)
+                {
+                    maxn = n + TB_PATH_MAXN + 1;
+                    data = (tb_char_t*)tb_ralloc(data, maxn);
+                }
+                tb_assert_and_check_break(data);
+
+                if (tb_wtoa(data, p, maxn) >= 0)
+                {
+                    lua_pushstring(lua, data);
+                    lua_rawseti(lua, -2, i++);
+                }
+            }
+            p += n + 1;
+        }
+        if (data && data != line) tb_free(data);
+        data = tb_null;
+    }
 #else
     tb_char_t const** p = (tb_char_t const**)environ;
     if (p) 
     {
-        tb_int_t i = 0;
+        tb_int_t  i = 0;
+        tb_size_t n = 0;
         while (*p) 
         {
-            tb_size_t n = tb_strlen(*p);
+            n = tb_strlen(*p);
             if (n) 
             {
                 lua_pushstring(lua, *p);

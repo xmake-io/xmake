@@ -907,6 +907,9 @@ function os.getenvs()
         local p = line:find('=', 1, true)
         if p then
             local key = line:sub(1, p - 1):trim()
+            if os.host() == "windows" then
+                key = key:upper()
+            end
             local values = line:sub(p + 1):trim()
             if #key > 0 then
                 envs[key] = values
