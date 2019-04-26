@@ -579,7 +579,7 @@ end
 -- @param program     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
 --        filename    "clang", "xcrun"", "~/dir/test\ xxx/clang"
 -- @param argv        the arguments 
--- @param opt         the option, .e.g {wildcards = false, stdout = outfile, stderr = errfile}
+-- @param opt         the options, .e.g {wildcards = false, stdout = outfile, stderr = errfile, envs = {"PATH=xxx;xx", "CFLAGS=xx"}}
 --
 function os.execv(program, argv, opt)
 
@@ -609,7 +609,7 @@ function os.execv(program, argv, opt)
 
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, opt.stdout, opt.stderr)
+    local proc = process.openv(filename, argv, opt.stdout, opt.stderr, opt.envs)
     if proc ~= nil then
 
         -- wait process

@@ -34,13 +34,13 @@
  * implementation
  */
 
-// p = process.openv(shellname, argv, outfile, errfile) 
+// p = process.openv(shellname, argv, outfile, errfile, envs) 
 tb_int_t xm_process_openv(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // check table
+    // check argv
     if (!lua_istable(lua, 2))
     {
         // error
@@ -54,6 +54,47 @@ tb_int_t xm_process_openv(lua_State* lua)
     tb_char_t const* outfile    = lua_tostring(lua, 3);
     tb_char_t const* errfile    = lua_tostring(lua, 4);
     tb_check_return_val(shellname, 0);
+
+    // get environments
+    tb_char_t const* envs[256] = {0};
+    tb_size_t envn = 0;
+    if (lua_istable(lua, 5))
+    {
+        // get environment variables count
+        envn = (tb_size_t)lua_objlen(lua, 5);
+
+        // get all passed environment variables
+        tb_size_t i;
+        for (i = 0; i < envn; i++)
+        {
+            // get envs[i]
+            lua_pushinteger(lua, i + 1);
+            lua_gettable(lua, 5);
+
+            // is string?
+            if (lua_isstring(lua, -1))
+            {
+                // add this environment value
+                if (i + 1 < tb_arrayn(envs)) 
+                    envs[i] = lua_tostring(lua, -1);
+                else
+                {
+                    // error
+                    lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
+                    lua_error(lua);
+                }
+            }
+            else
+            {
+                // error
+                lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
+                lua_error(lua);
+            }
+
+            // pop it
+            lua_pop(lua, 1);
+        }
+    }
 
     // get the arguments count
     tb_long_t argn = lua_objlen(lua, 2);
@@ -91,6 +132,9 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // init attributes
     tb_process_attr_t attr = {0};
+
+    // set the new environments
+    if (envn > 0) attr.envp = envs;
 
     // redirect stdout?
     if (outfile)
