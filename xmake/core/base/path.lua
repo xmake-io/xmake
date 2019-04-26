@@ -93,8 +93,13 @@ function path.split(p)
 end
 
 -- get the path seperator
-function path.seperator()
+function path.sep()
     return xmake._HOST == "windows" and '\\' or '/'
+end
+
+-- get the path seperator of environment variable
+function path.envsep()
+    return xmake._HOST == "windows" and ';' or ':'
 end
 
 -- the last character is the path seperator?

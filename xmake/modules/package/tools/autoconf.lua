@@ -68,27 +68,12 @@ function _get_configs(package, configs)
     return configs
 end
 
--- enter environments
-function _enter_envs(package, opt)
+-- get the build environments
+function _get_build_envs(package, opt)
     
+    -- TODO construct environments 
     -- get old environments
-    local envs           = {}
-    envs.CC              = os.getenv("CC")
-    envs.AS              = os.getenv("AS")
-    envs.AR              = os.getenv("AR")
-    envs.LD              = os.getenv("LD")
-    envs.CPP             = os.getenv("CPP")
-    envs.LDSHARED        = os.getenv("LDSHARED")
-    envs.RANLIB          = os.getenv("RANLIB")
-    envs.CFLAGS          = os.getenv("CFLAGS")
-    envs.CXXFLAGS        = os.getenv("CXXFLAGS")
-    envs.ASFLAGS         = os.getenv("ASFLAGS")
-    envs.LDFLAGS         = os.getenv("LDFLAGS")
-    envs.ARFLAGS         = os.getenv("ARFLAGS")
-    envs.SHFLAGS         = os.getenv("SHFLAGS")
-    envs.TOOLCHAIN       = os.getenv("TOOLCHAIN")
-    envs.ACLOCAL_PATH    = os.getenv("ACLOCAL_PATH")
-    envs.PKG_CONFIG_PATH = os.getenv("PKG_CONFIG_PATH")
+    local envs = {}
 
     -- set new environments
     if package:is_plat(os.host()) then
@@ -127,13 +112,6 @@ function _enter_envs(package, opt)
     return envs
 end
 
--- leave environments
-function _leave_envs(package, envs)
-    for k, v in pairs(envs) do
-        os.setenv(k, v)
-    end
-end
-
 -- configure package
 function configure(package, configs, opt)
 
@@ -162,14 +140,8 @@ function configure(package, configs, opt)
         end
     end
 
-    -- enter environments
-    local envs = _enter_envs(package, opt)
-
     -- do configure
-    os.vrunv("./configure", argv)
-
-    -- leave environments
-    _leave_envs(package, envs)
+    os.vrunv("./configure", argv, {envs = _get_build_envs(package, opt)})
 end
 
 -- install package

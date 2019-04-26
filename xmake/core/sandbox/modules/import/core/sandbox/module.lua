@@ -43,9 +43,9 @@ function core_sandbox_module._modulepath(name)
     local modulepath = name:gsub(".", function(c)
         if c == '.' then
             if startdots then
-                return ".." .. path.seperator()
+                return ".." .. path.sep()
             else
-                return path.seperator()
+                return path.sep()
             end
         else
             startdots = false
