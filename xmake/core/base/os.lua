@@ -935,33 +935,32 @@ end
 
 -- set values to environment variable 
 function os.setenv(name, ...)
-    local seperator = os.host() == "windows" and ';' or ':'
-    return os._setenv(name, table.concat({...}, seperator))
+    return os._setenv(name, table.concat({...}, path.envsep()))
 end
 
 -- add values to environment variable 
 function os.addenv(name, ...)
-    local seperator = os.host() == "windows" and ';' or ':'
+    local sep = path.envsep()
     local values = {...}
     if #values > 0 then
-        return os._setenv(name, table.concat(values, seperator) .. seperator ..  (os.getenv(name) or ""))
+        return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
     else
         return os.getenv(name)
     end
 end
 
 -- set values to environment variable with the given seperator 
-function os.setenvp(name, values, seperator)
-    seperator = seperator or (os.host() == "windows" and ';' or ':')
-    return os._setenv(name, table.concat(table.wrap(values), seperator))
+function os.setenvp(name, values, sep)
+    sep = sep or path.envsep()
+    return os._setenv(name, table.concat(table.wrap(values), sep))
 end
 
 -- add values to environment variable with the given seperator 
-function os.addenvp(name, values, seperator)
-    seperator = seperator or (os.host() == "windows" and ';' or ':')
+function os.addenvp(name, values, sep)
+    sep = sep or path.envsep()
     values = table.wrap(values)
     if #values > 0 then
-        return os._setenv(name, table.concat(values, seperator) .. seperator ..  (os.getenv(name) or ""))
+        return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
     else
         return os.getenv(name)
     end
