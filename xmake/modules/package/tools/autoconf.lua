@@ -69,7 +69,7 @@ function _get_configs(package, configs)
 end
 
 -- enter environments
-function _enter_envs(package)
+function _enter_envs(package, opt)
     
     -- get old environments
     local envs           = {}
@@ -135,7 +135,10 @@ function _leave_envs(package, envs)
 end
 
 -- configure package
-function configure(package, configs)
+function configure(package, configs, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- generate configure file
     if not os.isfile("configure") then
@@ -160,7 +163,7 @@ function configure(package, configs)
     end
 
     -- enter environments
-    local envs = _enter_envs(package)
+    local envs = _enter_envs(package, opt)
 
     -- do configure
     os.vrunv("./configure", argv)
@@ -170,10 +173,10 @@ function configure(package, configs)
 end
 
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
 
     -- do configure
-    configure(package, configs)
+    configure(package, configs, opt)
 
     -- do make and install
     os.vrun("make install -j4")
