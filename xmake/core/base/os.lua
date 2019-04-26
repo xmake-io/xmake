@@ -580,7 +580,8 @@ end
 -- @param program     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
 --        filename    "clang", "xcrun"", "~/dir/test\ xxx/clang"
 -- @param argv        the arguments 
--- @param opt         the options, .e.g {wildcards = false, stdout = outfile, stderr = errfile, envs = {"PATH=xxx;xx", "CFLAGS=xx"}}
+-- @param opt         the options, .e.g {wildcards = false, stdout = outfile, stderr = errfile, 
+--                                       envs = {PATH = "xxx;xx", CFLAGS = "xx"}}
 --
 function os.execv(program, argv, opt)
 
@@ -608,9 +609,18 @@ function os.execv(program, argv, opt)
         end
     end
 
+    -- uses the given environments?
+    local envs = nil
+    if opt.envs then
+        envs = {}
+        for k, v in pairs(opt.envs) do
+            table.insert(envs, k .. '=' .. v)
+        end
+    end
+
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, opt.stdout, opt.stderr, opt.envs)
+    local proc = process.openv(filename, argv, opt.stdout, opt.stderr, envs)
     if proc ~= nil then
 
         -- wait process
