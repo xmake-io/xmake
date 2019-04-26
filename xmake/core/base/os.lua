@@ -612,8 +612,12 @@ function os.execv(program, argv, opt)
     -- uses the given environments?
     local envs = nil
     if opt.envs then
-        envs = {}
+        local envars = os.getenvs()
         for k, v in pairs(opt.envs) do
+            envars[k] = v
+        end
+        envs = {}
+        for k, v in pairs(envars) do
             table.insert(envs, k .. '=' .. v)
         end
     end
