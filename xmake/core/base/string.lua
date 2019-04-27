@@ -177,29 +177,6 @@ function string:rtrim()
     return self:sub(1, n)
 end
 
--- append a substring with a given separator
-function string:append(substr, separator)
-
-    -- check
-    assert(self)
-
-    -- not substr? return self
-    if not substr then
-        return self
-    end
-
-    -- append it
-    local s = self
-    if #s == 0 then
-        s = substr
-    else
-        s = string.format("%s%s%s", s, separator or "", substr)
-    end
-    
-    -- ok
-    return s
-end
-
 -- encode: ' ', '=', '\"', '<'
 function string:encode()
 
@@ -218,25 +195,6 @@ function string:decode()
 
     -- done
     return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
-end
-
--- join array to string with the given separator
-function string.join(items, sep)
-
-    -- join them
-    local str = ""
-    local index = 1
-    local count = #items
-    for _, item in ipairs(items) do
-        str = str .. item
-        if index ~= count and sep ~= nil then
-            str = str .. sep
-        end
-        index = index + 1
-    end
-
-    -- ok?
-    return str
 end
 
 -- try to format

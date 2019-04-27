@@ -69,46 +69,45 @@ function _get_configs(package, configs)
 end
 
 -- get the build environments
-function _get_build_envs(package, opt)
-    
-    -- TODO construct environments 
-    -- get old environments
+function buildenvs(package)
     local envs = {}
-
-    -- set new environments
     if package:is_plat(os.host()) then
-        os.addenvp("CFLAGS",   package:config("cflags"), ' ')
-        os.addenvp("CFLAGS",   package:config("cxflags"), ' ')
-        os.addenvp("CXXFLAGS", package:config("cxflags"), ' ')
-        os.addenvp("CXXFLAGS", package:config("cxxflags"), ' ')
-        os.addenvp("ASFLAGS",  package:config("asflags"), ' ')
+        local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
+        local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
+        envs.CFLAGS    = table.concat(cflags, ' ')
+        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
     else
-        os.setenvp("CC",       package:build_getenv("cc"))
-        os.setenvp("AS",       package:build_getenv("as"))
-        os.setenvp("AR",       package:build_getenv("ar"))
-        os.setenvp("LD",       package:build_getenv("ld"))
-        os.setenvp("LDSHARED", package:build_getenv("sh"))
-        os.setenvp("CPP",      package:build_getenv("cpp"))
-        os.setenvp("RANLIB",   package:build_getenv("ranlib"))
-        os.addenvp("CFLAGS",   package:build_getenv("cflags"), ' ')
-        os.addenvp("CFLAGS",   package:build_getenv("cxflags"), ' ')
-        os.addenvp("CXXFLAGS", package:build_getenv("cxflags"), ' ')
-        os.addenvp("CXXFLAGS", package:build_getenv("cxxflags"), ' ')
-        os.addenvp("ASFLAGS",  package:build_getenv("asflags"), ' ')
-        os.addenvp("ARFLAGS",  package:build_getenv("arflags"), ' ')
-        os.addenvp("LDFLAGS",  package:build_getenv("ldflags"), ' ')
-        os.addenvp("SHFLAGS",  package:build_getenv("shflags"), ' ')
+        local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
+        local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+        envs.CC        = package:build_getenv("cc")
+        envs.AS        = package:build_getenv("as")
+        envs.AR        = package:build_getenv("ar")
+        envs.LD        = package:build_getenv("ld")
+        envs.LDSHARED  = package:build_getenv("sh")
+        envs.CPP       = package:build_getenv("cpp")
+        envs.RANLIB    = package:build_getenv("ranlib")
+        envs.CFLAGS    = table.concat(cflags, ' ')
+        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.ASFLAGS   = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+        envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
+        envs.LDFLAGS   = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
+        envs.SHFLAGS   = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
     end
+    local ACLOCAL_PATH = {}
+    local PKG_CONFIG_PATH = {}
     for _, dep in ipairs(package:orderdeps()) do
         local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
-            os.addenv("PKG_CONFIG_PATH", pkgconfig)
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
         local aclocal = path.join(dep:installdir(), "share", "aclocal")
         if os.isdir(aclocal) then
-            os.addenv("ACLOCAL_PATH", aclocal)
+            table.insert(ACLOCAL_PATH, aclocal)
         end
     end
+    envs.ACLOCAL_PATH    = table.concat(ACLOCAL_PATH, path.envsep())
+    envs.PKG_CONFIG_PATH = table.concat(PKG_CONFIG_PATH, path.envsep())
     return envs
 end
 
@@ -141,7 +140,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("./configure", argv, {envs = _get_build_envs(package, opt)})
+    os.vrunv("./configure", argv, {envs = opt.envs or buildenvs(package)})
 end
 
 -- install package
