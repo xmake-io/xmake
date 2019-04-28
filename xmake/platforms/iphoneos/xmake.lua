@@ -28,7 +28,7 @@ platform("iphoneos")
     set_hosts("macosx")
 
     -- set archs
-    set_archs("armv7", "armv7s", "arm64", "i386", "x86_64")
+    set_archs("arm64", "arm64e", "armv7", "armv7s", "i386", "x86_64")
 
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
