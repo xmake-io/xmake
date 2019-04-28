@@ -667,14 +667,16 @@ function _instance:script(name, generic)
         local pattern = plat .. '|' .. arch
         for _pattern, _script in pairs(script) do
             local hosts = {}
+            local hosts_spec = false
             _pattern = _pattern:gsub("@(.+)", function (v) 
                 -- get and remove hosts for `android|armv7-a@macosx,linux`
                 for _, host in ipairs(v:split(',')) do
                     hosts[host] = true
+                    hosts_spec = true
                 end
                 return "" 
             end)
-            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') and (#hosts == 0 or hosts[os.host()]) then
+            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') and (not hosts_spec or hosts[os.host()]) then
                 result = _script
                 break
             end
@@ -684,14 +686,16 @@ function _instance:script(name, generic)
         if result == nil then
             for _pattern, _script in pairs(script) do
                 local hosts = {}
+                local hosts_spec = false
                 _pattern = _pattern:gsub("@(.+)", function (v) 
                     -- get and remove hosts for `android@macosx,linux`
                     for _, host in ipairs(v:split(',')) do
                         hosts[host] = true
+                        hosts_spec = true
                     end
                     return "" 
                 end)
-                if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') and (#hosts == 0 or hosts[os.host()]) then
+                if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') and (not hosts_spec or hosts[os.host()]) then
                     result = _script
                     break
                 end
