@@ -22,7 +22,7 @@ script:
   - scripts/get.sh __local__
   - source ~/.xmake/profile
   - xmake --version
-  - xmake -v -P core 
+  - xmake -P core 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
   - core/build/xmake --version
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
