@@ -1,5 +1,5 @@
 -- version
-set_xmakever("2.2.2")
+set_xmakever("2.2.5")
 
 -- set warning all as error
 set_warnings("all", "error")
