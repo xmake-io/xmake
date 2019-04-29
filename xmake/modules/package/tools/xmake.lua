@@ -54,7 +54,7 @@ end
 function install(package, configs)
 
     -- inherit builtin configs
-    local argv = {"f", "-y"}
+    local argv = {"f", "-y", "-c"}
     local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
     for _, name in ipairs(names) do
         local value = get_config(name)
