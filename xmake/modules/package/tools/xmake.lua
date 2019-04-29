@@ -28,7 +28,7 @@ function _get_configs(package, configs)
     local cxflags  = package:config("cxflags")
     local cxxflags = package:config("cxxflags")
     local asflags  = package:config("asflags")
-    if package:plat() == "windows" then
+    if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
             cxflags = (cxflags or "") .. " /" .. vs_runtime .. (package:debug() and "d" or "")
@@ -36,16 +36,16 @@ function _get_configs(package, configs)
     end
     table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
     if cflags then
-        table.insert(configs, '--cflags="' .. cflags .. '"')
+        table.insert(configs, "--cflags=" .. cflags)
     end
     if cxflags then
-        table.insert(configs, '--cxflags="' .. cxflags .. '"')
+        table.insert(configs, "--cxflags=" .. cxflags)
     end
     if cxxflags then
-        table.insert(configs, '--cxxflags="' .. cxxflags .. '"')
+        table.insert(configs, "--cxxflags=" .. cxxflags)
     end
     if asflags then
-        table.insert(configs, '--asflags="' .. asflags .. '"')
+        table.insert(configs, "--asflags=" .. asflags)
     end
     return configs
 end
