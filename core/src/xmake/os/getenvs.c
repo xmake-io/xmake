@@ -29,6 +29,9 @@
  * includes
  */
 #include "prefix.h"
+#ifdef TB_CONFIG_OS_WINDOWS
+#   include <windows.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
@@ -62,7 +65,7 @@ tb_int_t xm_os_getenvs(lua_State* lua)
     lua_newtable(lua);
 
 #ifdef TB_CONFIG_OS_WINDOWS
-    tb_wchar_t const* p = (tb_wchar_t const*)tb_kernel32()->GetEnvironmentStringsW();
+    tb_wchar_t const* p = (tb_wchar_t const*)GetEnvironmentStringsW();
     if (p)
     {
         tb_int_t    i = 0;
