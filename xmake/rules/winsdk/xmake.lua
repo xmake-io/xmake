@@ -21,14 +21,13 @@
 -- define rule: application
 rule("win.sdk.application")
 
-    -- add deps
-    add_deps("win.sdk.dotnet")
+    -- before load
+    before_load(function (target)
+        target:set("kind", "binary")
+    end)
 
     -- after load
     after_load(function (target)
-
-        -- set kind: binary
-        target:set("kind", "binary")
 
         -- set subsystem: windows
         local subsystem = false
