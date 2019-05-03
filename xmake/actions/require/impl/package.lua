@@ -580,15 +580,18 @@ function _install_packages(packages_install, packages_download)
                 end
 
                 -- download this package first
+                local downloaded = true
                 if packages_download[tostring(package)] then
                     packages_downloading[index] = package
-                    action.download(package)
+                    downloaded = action.download(package)
                     packages_downloading[index] = nil
                 end
             
                 -- install this package
                 packages_installing[index] = package
-                action.install(package)
+                if downloaded then
+                    action.install(package)
+                end
                 packages_installing[index] = nil
 
                 -- mark this group as 'installed' or 'failed'

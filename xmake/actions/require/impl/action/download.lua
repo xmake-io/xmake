@@ -173,6 +173,7 @@ function main(package)
     assert(#urls > 0, "cannot get url of package(%s)", package:name())
 
     -- download package from urls
+    local ok = false
     for idx, url in ipairs(urls) do
 
         -- get url alias
@@ -185,7 +186,7 @@ function main(package)
         url = filter.handle(url, package)
 
         -- download url
-        local ok = try
+        ok = try
         {
             function ()
 
@@ -205,12 +206,8 @@ function main(package)
                 function (errors)
 
                     -- show or save the last errors
-                    if errors then
-                        if (option.get("verbose") or option.get("diagnosis")) then
-                            cprint("${dim color.error}error: ${clear}%s", errors)
-                        else
-                            io.writefile(path.join(package:installdir("logs"), "download.txt"), errors)
-                        end
+                    if errors and (option.get("verbose") or option.get("diagnosis")) then
+                        cprint("${dim color.error}error: ${clear}%s", errors)
                     end
 
                     -- trace
@@ -222,7 +219,7 @@ function main(package)
                     end
 
                     -- failed? break it
-                    if idx == #urls and not package:requireinfo().optional then
+                    if idx == #urls and not package:optional() then
                         raise("download failed!")
                     end
                 end
@@ -235,6 +232,7 @@ function main(package)
 
     -- leave working directory
     os.cd(oldir)
+    return ok
 end
 
 
