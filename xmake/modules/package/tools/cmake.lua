@@ -54,39 +54,34 @@ function _get_configs(package, configs)
     return configs
 end
 
--- enter environments
-function _enter_envs(package)
-    
-    -- get old environments
-    local envs = {}
-    envs.CMAKE_PREFIX_PATH  = os.getenv("CMAKE_PREFIX_PATH")
-    envs.CMAKE_INCLUDE_PATH = os.getenv("CMAKE_INCLUDE_PATH")
-    envs.CMAKE_LIBRARY_PATH = os.getenv("CMAKE_LIBRARY_PATH")
-
-    -- set new environments
+-- get build environments
+function buildenvs(package)
+    local envs               = {}
+    local CMAKE_LIBRARY_PATH = {}
+    local CMAKE_INCLUDE_PATH = {}
+    local CMAKE_PREFIX_PATH  = {}
     for _, dep in ipairs(package:orderdeps()) do
         if dep:isSys() then
             local fetchinfo = dep:fetch()
             if fetchinfo then
-                os.addenv("CMAKE_LIBRARY_PATH", unpack(table.wrap(fetchinfo.linkdirs)))
-                os.addenv("CMAKE_INCLUDE_PATH", unpack(table.wrap(fetchinfo.includedirs)))
+                table.join2(CMAKE_LIBRARY_PATH, fetchinfo.linkdirs)
+                table.join2(CMAKE_INCLUDE_PATH, fetchinfo.includedirs)
             end
         else
-            os.addenv("CMAKE_PREFIX_PATH", dep:installdir())
+            table.join2(CMAKE_PREFIX_PATH, dep:installdir())
         end
     end
+    envs.CMAKE_LIBRARY_PATH = table.concat(CMAKE_LIBRARY_PATH, path.envsep())
+    envs.CMAKE_INCLUDE_PATH = table.concat(CMAKE_INCLUDE_PATH, path.envsep())
+    envs.CMAKE_PREFIX_PATH  = table.concat(CMAKE_PREFIX_PATH, path.envsep())
     return envs
 end
 
--- leave environments
-function _leave_envs(package, envs)
-    for k, v in pairs(envs) do
-        os.setenv(k, v)
-    end
-end
-
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- enter build directory
     local buildir = "build_" .. hash.uuid():split('%-')[1]
@@ -113,11 +108,8 @@ function install(package, configs)
     end
     table.insert(argv, '..')
 
-    -- enter environments
-    local envs = _enter_envs(package)
-
     -- generate build file
-    os.vrunv("cmake", argv)
+    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build and install
     if is_host("windows") then
@@ -139,9 +131,6 @@ function install(package, configs)
         os.cp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end
-
-    -- leave environments
-    _leave_envs(package, envs)
     os.cd(oldir)
 end
 
