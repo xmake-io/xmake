@@ -25,7 +25,7 @@ import("lib.detect.find_file")
 -- get configs
 function _get_configs(package, configs)
     local configs = configs or {}
-    if package:plat() == "windows" then
+    if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
             table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')

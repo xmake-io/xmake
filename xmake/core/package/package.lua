@@ -153,35 +153,17 @@ end
 
 -- get the alias of url, @note need raw url
 function _instance:url_alias(url)
-    local urls_extra = self:get("__extra_urls")
-    if urls_extra then
-        local urlextra = urls_extra[url]
-        if urlextra then
-            return urlextra.alias
-        end
-    end
+    return self:extraconf("urls", url, "alias")
 end
 
 -- get the version filter of url, @note need raw url
 function _instance:url_version(url)
-    local urls_extra = self:get("__extra_urls")
-    if urls_extra then
-        local urlextra = urls_extra[url]
-        if urlextra then
-            return urlextra.version
-        end
-    end
+    return self:extraconf("urls", url, "version")
 end
 
 -- get the excludes list of url for the archive extractor, @note need raw url
 function _instance:url_excludes(url)
-    local urls_extra = self:get("__extra_urls")
-    if urls_extra then
-        local urlextra = urls_extra[url]
-        if urlextra then
-            return urlextra.excludes
-        end
-    end
+    return self:extraconf("urls", url, "excludes")
 end
 
 -- get the given dependent package
