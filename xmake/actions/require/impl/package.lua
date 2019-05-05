@@ -332,6 +332,9 @@ function _load_package(packagename, requireinfo)
         on_load(package)
     end
 
+    -- load environments from the manifest
+    package:envs_load()
+
     -- save this package package to cache
     packages[packagename] = package
     _g._PACKAGES = packages
@@ -697,7 +700,9 @@ function install_packages(requires, opt)
         process.runjobs(function (index)
             local package = packages[index]
             if package then
+                package:envs_enter()
                 package:fetch()
+                package:envs_leave()
             end
         end, #packages)
     end

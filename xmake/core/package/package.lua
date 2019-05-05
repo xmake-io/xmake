@@ -270,16 +270,19 @@ end
 
 -- load the manifest file of this package
 function _instance:manifest_load()
-    local manifest_file = self:manifest_file()
-    if os.isfile(manifest_file) then
-        
-        -- load manifest
-        local manifest, errors = io.load(manifest_file)
-        if not manifest then
-            os.raise(errors)
+    local manifest = self._MANIFEST
+    if not manifest then
+        local manifest_file = self:manifest_file()
+        if os.isfile(manifest_file) then
+            local errors = nil
+            manifest, errors = io.load(manifest_file)
+            if not manifest then
+                os.raise(errors)
+            end
+            self._MANIFEST = manifest
         end
-        return manifest
     end
+    return manifest
 end
 
 -- save the manifest file of this package
@@ -338,6 +341,17 @@ function _instance:envs()
         self._ENVS = envs
     end
     return envs
+end
+
+-- load the package environments from the manifest
+function _instance:envs_load()
+    local manifest = self:manifest_load()
+    if manifest then
+        local envs = self:envs()
+        for name, values in pairs(manifest.envs) do
+            envs[name] = values
+        end
+    end
 end
 
 -- enter the package environments
