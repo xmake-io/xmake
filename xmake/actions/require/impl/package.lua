@@ -332,7 +332,7 @@ function _load_package(packagename, requireinfo)
         on_load(package)
     end
 
-    -- load environments from the manifest
+    -- load environments from the manifest to enable the environments of on_install()
     package:envs_load()
 
     -- save this package package to cache
