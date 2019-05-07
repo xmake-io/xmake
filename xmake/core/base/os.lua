@@ -945,7 +945,7 @@ function os.addenv(name, ...)
     if #values > 0 then
         return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
     else
-        return os.getenv(name)
+        return true
     end
 end
 
@@ -962,7 +962,7 @@ function os.addenvp(name, values, sep)
     if #values > 0 then
         return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
     else
-        return os.getenv(name)
+        return true
     end
 end
 
