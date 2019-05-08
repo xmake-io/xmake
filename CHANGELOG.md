@@ -9,6 +9,10 @@
 * [#397](https://github.com/xmake-io/xmake/issues/397): Add clib package manager support
 * [#404](https://github.com/xmake-io/xmake/issues/404): Support Qt for android
 
+### Changes
+
+* Improve remote package manager
+
 ### Bugs fixed
 
 * [#400](https://github.com/xmake-io/xmake/issues/400): fix c++ languages bug for qt rules
@@ -579,6 +583,10 @@
 * [#382](https://github.com/xmake-io/xmake/issues/382): 简化域设置语法
 * [#397](https://github.com/xmake-io/xmake/issues/397): 添加clib包集成支持
 * [#404](https://github.com/xmake-io/xmake/issues/404): 增加Qt/Android编译支持
+
+### 改进
+
+* 改进远程依赖包管理，丰富包仓库
 
 ### Bugs修复
 
