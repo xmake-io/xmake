@@ -60,19 +60,19 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
-    if package:version_from("branches") then
+    if package:branch() then
 
         -- only shadow clone this branch 
-        git.clone(url, {depth = 1, branch = package:version_str(), outputdir = packagedir})
+        git.clone(url, {depth = 1, branch = package:branch(), outputdir = packagedir})
 
-    -- download package from revision, tag or version?
+    -- download package from revision or tag?
     else
 
         -- clone whole history and tags
         git.clone(url, {outputdir = packagedir})
 
         -- attempt to checkout the given version
-        git.checkout(package:revision(url_alias) or package:version_str(), {repodir = packagedir})
+        git.checkout(package:revision(url_alias) or package:tag(), {repodir = packagedir})
     end
  
     -- move to source directory
@@ -149,7 +149,7 @@ function _urls(package)
             table.insert(urls[2], url)
         end
     end
-    if package:version_from("tags", "branches") then
+    if package:gitref() then
         return table.join(urls[1], urls[2]) 
     else
         return table.join(urls[2], urls[1])

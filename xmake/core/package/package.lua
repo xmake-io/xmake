@@ -29,6 +29,7 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
+local semver         = require("base/semver")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
@@ -515,37 +516,48 @@ end
 
 -- get the version  
 function _instance:version()
-    return self._VERSION or {}
+    return self._VERSION
 end
 
 -- get the version string 
 function _instance:version_str()
-    return self:version().raw or self:version().version
+    return self._VERSION_STR
 end
 
--- the verson from tags, branches or versions?
-function _instance:version_from(...)
-
-    -- from source?
-    for _, source in ipairs({...}) do
-        if self:version().source == source then
-            return true
-        end
-    end
+-- get branch version 
+function _instance:branch()
+    return self._BRANCH
 end
 
--- set the version
+-- get tag version 
+function _instance:tag()
+    return self._TAG
+end
+
+-- is git ref?
+function _instance:gitref()
+    return self:branch() or self:tag()
+end
+
+-- set the version, source: branches, tags, versions
 function _instance:version_set(version, source)
 
-    -- init package version
-    if type(version) == "string" then
-        version = {version = version, source = source}
-    else
-        version.source = source
+    -- save the semver version
+    local sv = semver.new(version)
+    if sv then
+        self._VERSION = sv
     end
 
-    -- save version
-    self._VERSION = version
+    -- save branch and tag
+    if source == "branches" then
+        self._BRANCH = version
+    elseif source == "tags" then
+        self._TAG = version
+    end
+
+    -- save source and version string
+    self._SOURCE      = source
+    self._VERSION_STR = version
 end
 
 -- get the require info 
