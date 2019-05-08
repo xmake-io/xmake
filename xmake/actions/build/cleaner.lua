@@ -20,7 +20,9 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.project.config")
+import("core.package.package")
 import("core.platform.platform")
 import("core.platform.environment")
 
@@ -62,7 +64,7 @@ end
 -- the main function
 function main()
 
-    -- clean up the temporary files at last 30 days
+    -- clean up the temporary files at last 30 days, @see os.tmpdir()
     local parentdir = path.directory(os.tmpdir())
     for day = 1, 30 do
         local tmpdir = path.join(parentdir, os.date("%y%m%d", os.time() - day * 24 * 3600))
@@ -70,5 +72,12 @@ function main()
             print("cleanup %s ..", tmpdir)
             os.tryrm(tmpdir)
         end
+    end
+
+    -- clean up the previous month package cache files, @see package.cachedir()
+    local cachedir = path.join(global.directory(), "cache", "packages", os.date("%y%m", os.time() - 31 * 24 * 3600))
+    if os.isdir(cachedir) and cachedir ~= package.cachedir() then
+        print("cleanup %s ..", cachedir)
+        os.tryrm(cachedir)
     end
 end

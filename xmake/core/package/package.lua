@@ -1035,7 +1035,7 @@ end
 
 -- the cache directory
 function package.cachedir()
-    return path.join(global.directory(), "cache", "packages")
+    return path.join(global.directory(), "cache", "packages", os.date("%y%m"))
 end
 
 -- the install directory
