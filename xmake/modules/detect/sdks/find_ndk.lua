@@ -168,7 +168,7 @@ function main(sdkdir, opt)
     local arch = opt.arch or config.get("arch") or "armv7-a"
        
     -- find ndk
-    local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk") or config.get("sdk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
+    local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
     if ndk and ndk.sdkdir then
 
         -- save to config
