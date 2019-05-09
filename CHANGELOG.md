@@ -8,6 +8,7 @@
 * [#382](https://github.com/xmake-io/xmake/issues/382): Simplify simple scope settings
 * [#397](https://github.com/xmake-io/xmake/issues/397): Add clib package manager support
 * [#404](https://github.com/xmake-io/xmake/issues/404): Support Qt for android and deploy android apk
+* Add some qt empty project templates, e.g. `widgetapp_qt`, `quickapp_qt_static` and `widgetapp_qt_static`
 
 ### Changes
 
@@ -583,6 +584,7 @@
 * [#382](https://github.com/xmake-io/xmake/issues/382): 简化域设置语法
 * [#397](https://github.com/xmake-io/xmake/issues/397): 添加clib包集成支持
 * [#404](https://github.com/xmake-io/xmake/issues/404): 增加Qt/Android编译支持，并且支持android apk生成和部署
+* 添加一些Qt空工程模板，例如：`widgetapp_qt`, `quickapp_qt_static` and `widgetapp_qt_static`
 
 ### 改进
 
