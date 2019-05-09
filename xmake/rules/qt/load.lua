@@ -25,7 +25,12 @@ import("core.project.target")
 -- make link for framework
 function _link(framework, major)
     if major and framework:startswith("Qt") then
-        local debug_suffix = is_plat("windows") and "d" or "_debug"
+        local debug_suffix = "_debug"
+        if is_plat("windows") then
+            debug_suffix = "d"
+        elseif is_plat("android") then
+            debug_suffix = ""
+        end
         framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
     end
     return framework
@@ -34,7 +39,12 @@ end
 -- find the static links from the given qt link directories, e.g. libqt*.a
 function _find_static_links(linkdirs, libpattern)
     local links = {}
-    local debug_suffix = is_plat("windows") and "d" or "_debug"
+    local debug_suffix = "_debug"
+    if is_plat("windows") then
+        debug_suffix = "d"
+    elseif is_plat("android") then
+        debug_suffix = ""
+    end
     for _, linkdir in ipairs(linkdirs) do
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
