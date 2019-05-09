@@ -43,18 +43,20 @@ platform("android")
     set_menu {
                 config = 
                 {   
-                    {category = "Android NDK Configuration"                                 }
-                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"         }
-                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"   }
-                ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory" }
+                    {category = "Android Configuration"                                                 }
+                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"                     }
+                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"               }
+                ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory"             }
+                ,   {nil, "build_toolver",  "kv", nil,          "The Build Tool Version of Android SDK" }
                 }
 
             ,   global = 
                 {   
-                    {category = "Android NDK Configuration"                                 }
-                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"         }
-                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"   }
-                ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory" }
+                    {category = "Android Configuration"                                                 }
+                ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"                     }
+                ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"               }
+                ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory"             }
+                ,   {nil, "build_toolver",  "kv", nil,          "The Build Tool Version of Android SDK" }
                 }
             }
 

@@ -20,6 +20,7 @@
 
 -- imports
 import("lib.detect.cache")
+import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -42,8 +43,24 @@ function _find_android_sdkdir(sdkdir)
     end
 end
 
+-- find the build-tools version of sdk
+function _find_sdk_build_toolver(sdkdir)
+
+    -- find the max version
+    local toolver_max = "0"
+    for _, dir in ipairs(os.dirs(path.join(sdkdir, "build-tools", "*"))) do
+        local toolver = path.filename(dir)
+        if semver.compare(toolver, toolver_max) > 0 then
+            toolver_max = toolver
+        end
+    end
+
+    -- get the max sdk version
+    return toolver_max ~= "0" and tostring(toolver_max) or nil
+end
+
 -- find the android sdk 
-function _find_android_sdk(sdkdir)
+function _find_android_sdk(sdkdir, build_toolver)
 
     -- find sdk root directory
     sdkdir = _find_android_sdkdir(sdkdir)
@@ -51,16 +68,19 @@ function _find_android_sdk(sdkdir)
         return {}
     end
 
+    -- find the build-tools version of sdk
+    build_toolver = build_toolver or _find_sdk_build_toolver(sdkdir)
+
     -- ok?    
-    return {sdkdir = sdkdir}
+    return {sdkdir = sdkdir, build_toolver = build_toolver}
 end
 
 -- find android sdk directory
 --
 -- @param sdkdir    the android sdk directory
--- @param opt       the argument options, e.g. {force = true} 
+-- @param opt       the argument options, e.g. {force = true, build_toolver = "28.0.3"} 
 --
--- @return          the sdk toolchains. .e.g {sdkdir = ..}
+-- @return          the sdk toolchains. .e.g {sdkdir = .., build_toolver = "28.0.3"} 
 --
 -- @code 
 --
@@ -81,15 +101,17 @@ function main(sdkdir, opt)
     end
 
     -- find sdk
-    local sdk = _find_android_sdk(sdkdir or config.get("android_sdk") or global.get("android_sdk"))
+    local sdk = _find_android_sdk(sdkdir or config.get("android_sdk") or global.get("android_sdk"), opt.build_toolver or config.get("build_toolver"))
     if sdk and sdk.sdkdir then
 
         -- save to config
         config.set("android_sdk", sdk.sdkdir, {force = true, readonly = true})
+        config.set("build_toolver", sdk.build_toolver, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for the Android SDK directory ... ${color.success}%s", sdk.sdkdir)
+            cprint("checking for the Build Tools Version of Android SDK ... ${color.success}%s", sdk.build_toolver)
         end
     else
 

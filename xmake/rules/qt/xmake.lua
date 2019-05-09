@@ -147,6 +147,9 @@ rule("qt.application")
         -- get android sdk directory
         local android_sdkdir = path.translate(assert(config.get("android_sdk"), "please run `xmake f --android_sdk=xxx` to set the android sdk directory!"))
 
+        -- get android build-tools version
+        local android_build_toolver = assert(config.get("build_toolver"), "please run `xmake f --build_toolver=xxx` to set the android build-tools version!")
+
         -- get the target architecture
         local target_archs = 
         {
@@ -170,9 +173,6 @@ rule("qt.application")
         local ndk_toolchains_ver = config.get("ndk_toolchains_ver") or "4.9"
 
         -- generate android-deployment-settings.json file
-        --
-        -- TODO "sdkBuildToolsRevision": "28.0.3",
-        --
         local android_deployment_settings = path.join(workdir, "android-deployment-settings.json")
         io.writefile(android_deployment_settings, format([[
         {
@@ -180,6 +180,7 @@ rule("qt.application")
            "qt": "%s",
            "sdk": "%s",
            "ndk": "%s",
+           "sdkBuildToolsRevision": "%s",
            "toolchain-prefix": "llvm",
            "tool-prefix": "llvm",
            "toolchain-version": "%s",
@@ -189,7 +190,7 @@ rule("qt.application")
            "stdcpp-path": "%s",
            "useLLVM": true,
            "application-binary": "%s"
-        }]], qt.sdkdir, android_sdkdir, ndk, ndk_toolchains_ver, ndk_host, target_arch, os.projectdir(), stdcpp_path, target:targetfile()))
+        }]], qt.sdkdir, android_sdkdir, ndk, android_build_toolver, ndk_toolchains_ver, ndk_host, target_arch, os.projectdir(), stdcpp_path, target:targetfile()))
 
         -- do deploy
         local argv = {"--input", android_deployment_settings,
