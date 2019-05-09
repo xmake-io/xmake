@@ -22,6 +22,7 @@
 import("core.project.config")
 import("core.base.singleton")
 import("detect.sdks.find_ndk")
+import("detect.sdks.find_android_sdk")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
 import("private.platform.check_toolchain")
@@ -40,6 +41,14 @@ function _check_ndk()
         cprint("    - xmake config --ndk=xxx")
         cprint("or  - xmake global --ndk=xxx")
         raise()
+    end
+end
+
+-- check the android sdk
+function _check_android_sdk()
+    local sdk = find_android_sdk(config.get("android_sdk"), {force = true, verbose = true})
+    if sdk then
+        config.set("sdk", sdk.sdkdir, {force = true, readonly = true}) -- maybe to global
     end
 end
 
@@ -80,7 +89,6 @@ function _toolchains()
     cxx:add({name = "g++", cross = cross}, "clang++")
 
     -- init the c preprocessor
---    cpp:add({name = "cpp", cross = cross, pathes = gcc_toolchain_bin}, "cpp")
     cpp:add({name = "gcc -E", cross = cross}, "clang -E")
 
     -- init the assember
@@ -130,6 +138,9 @@ function main(platform, name)
 
         -- check ndk
         _check_ndk()
+
+        -- check android sdk
+        _check_android_sdk()
 
         -- check ld and sh, @note toolchains must be initialized after calling check_ndk()
         local toolchains = singleton.get("android.toolchains", _toolchains)
