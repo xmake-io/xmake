@@ -64,3 +64,25 @@ function buildenvs(package)
     return envs
 end
 
+-- build package 
+function build(package, configs, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- pass configurations
+    local argv = {"-j4"}
+    for name, value in pairs(configs) do
+        value = tostring(value):trim()
+        if value ~= "" then
+            if type(name) == "number" then
+                table.insert(argv, value)
+            else
+                table.insert(argv, name .. "=" .. value)
+            end
+        end
+    end
+
+    -- do configure
+    os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
+end
