@@ -47,7 +47,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
-    if os.isdir(packagedir) and not option.get("force") then
+    if os.isdir(packagedir) and (not option.get("force") or option.get("shallow")) then
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
@@ -96,7 +96,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- the package file have been downloaded?
     local cached = true
-    if option.get("force") or not os.isfile(packagefile) or sourcehash ~= hash.sha256(packagefile) then
+    if (option.get("force") and not option.get("shallow")) or not os.isfile(packagefile) or sourcehash ~= hash.sha256(packagefile) then
 
         -- no cached
         cached = false
