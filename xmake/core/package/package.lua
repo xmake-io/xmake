@@ -196,6 +196,19 @@ function _instance:deps_add(...)
     end
 end
 
+-- get parents
+function _instance:parents()
+    return self._PARENTS
+end
+
+-- add parents
+function _instance:parents_add(...)
+    for _, parent in ipairs({...}) do
+        self._PARENTS = self._PARENTS or {}
+        self._PARENTS[parent:name()] = parent
+    end
+end
+
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
 

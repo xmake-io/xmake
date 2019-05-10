@@ -362,11 +362,12 @@ function _load_packages(requires, opt)
         if package then
 
             -- load dependent packages and save them first of this package
-            if not package._DEPS and not option.get("shallow") then
+            if not package._DEPS then
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
                     local packagedeps = {}
                     for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
+                        dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
                     end
@@ -696,23 +697,21 @@ function install_packages(requires, opt)
     local packages = load_packages(requires, opt)
 
     -- fetch packages (with system) from local first
-    if not option.get("force") then 
-        process.runjobs(function (index)
-            local package = packages[index]
-            if package then
-                package:envs_enter()
-                package:fetch()
-                package:envs_leave()
-            end
-        end, #packages)
-    end
+    process.runjobs(function (index)
+        local package = packages[index]
+        if package and (not option.get("force") or (option.get("shallow") and package:parents())) then
+            package:envs_enter()
+            package:fetch()
+            package:envs_leave()
+        end
+    end, #packages)
 
     -- filter packages
     local packages_install = {}
     local packages_download = {}
     local packages_unsupported = {}
     for _, package in ipairs(packages) do
-        if (option.get("force") or not package:exists()) and (#package:urls() > 0 or package:script("install")) then
+        if not package:exists() and (#package:urls() > 0 or package:script("install")) then
             if package:supported() then
                 if #package:urls() > 0 then
                     packages_download[tostring(package)] = package
