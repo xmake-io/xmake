@@ -362,7 +362,7 @@ function _load_packages(requires, opt)
         if package then
 
             -- load dependent packages and save them first of this package
-            if not package._DEPS then
+            if not package._DEPS and not option.get("shallow") then
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
                     local packagedeps = {}
