@@ -26,16 +26,16 @@ package("git")
         end
     end
 
-    on_load("windows", function (package)
+    on_load("@windows", function (package)
         package:addenv("PATH", path.join("share", "MinGit", "mingw32", "bin"))
         package:addenv("PATH", path.join("share", "MinGit", "cmd"))
     end)
 
-    on_install("macosx", "linux", function (package)
+    on_install("@macosx", "@linux", function (package)
         import("package.manager.install_package")("git")
     end)
 
-    on_install("windows", function (package)
+    on_install("@windows", function (package)
         os.cp("*", package:installdir("share/MinGit"))
     end)
 

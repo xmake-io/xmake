@@ -240,23 +240,30 @@ function rule:script(name, generic)
         result = script
     elseif type(script) == "table" then
 
-        -- match script for special plat and arch
-        local plat = (config.get("plat") or "")
-        local pattern = plat .. '|' .. (config.get("arch") or "")
+        -- get plat and arch
+        local plat = config.get("plat") or ""
+        local arch = config.get("arch") or ""
+
+        -- match pattern
+        --
+        -- `@macosx,linux`
+        -- `android@macosx,linux`
+        -- `android|armv7-a@macosx,linux`
+        --
         for _pattern, _script in pairs(script) do
-            if not _pattern:startswith("__") and pattern:find('^' .. _pattern .. '$') then
+            local hosts = {}
+            local hosts_spec = false
+            _pattern = _pattern:gsub("@(.+)", function (v) 
+                for _, host in ipairs(v:split(',')) do
+                    hosts[host] = true
+                    hosts_spec = true
+                end
+                return "" 
+            end)
+            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host()])  
+            and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
                 result = _script
                 break
-            end
-        end
-
-        -- match script for special plat
-        if result == nil then
-            for _pattern, _script in pairs(script) do
-                if not _pattern:startswith("__") and plat:find('^' .. _pattern .. '$') then
-                    result = _script
-                    break
-                end
             end
         end
 
