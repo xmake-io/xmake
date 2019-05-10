@@ -13,6 +13,7 @@
 ### Changes
 
 * Improve remote package manager
+* Improve `target:on_xxx` scripts to support to match `android|armv7-a@macosx,linux|x86_64` pattern
 
 ### Bugs fixed
 
@@ -589,6 +590,7 @@
 ### 改进
 
 * 改进远程依赖包管理，丰富包仓库
+* 改进`target:on_xxx`自定义脚本，去支持匹配`android|armv7-a@macosx,linux|x86_64`模式
 
 ### Bugs修复
 

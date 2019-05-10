@@ -673,9 +673,13 @@ function _instance:script(name, generic)
 
         -- match pattern
         --
+        -- `@linux`
+        -- `@linux|x86_64`
         -- `@macosx,linux`
         -- `android@macosx,linux`
         -- `android|armv7-a@macosx,linux`
+        -- `android|armv7-a@macosx,linux|x86_64`
+        -- `android|armv7-a@linux|x86_64`
         --
         for _pattern, _script in pairs(script) do
             local hosts = {}
@@ -687,7 +691,7 @@ function _instance:script(name, generic)
                 end
                 return "" 
             end)
-            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host()])  
+            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])  
             and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
                 result = _script
                 break
