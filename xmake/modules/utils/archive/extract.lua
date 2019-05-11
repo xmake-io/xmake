@@ -119,7 +119,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
 
     -- continue to extract *.tar file
     if outputdir_old then
-        local tarfile = find_file("*.tar", outputdir)
+        local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
             return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
@@ -176,7 +176,7 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
 
     -- continue to extract *.tar file
     if outputdir_old then
-        local tarfile = find_file("*.tar", outputdir)
+        local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
             return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
@@ -233,7 +233,7 @@ function _extract_using_xz(archivefile, outputdir, extension, opt)
 
     -- continue to extract *.tar file
     if outputdir_old then
-        local tarfile = find_file("*.tar", outputdir)
+        local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
             return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
@@ -288,7 +288,7 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
 
     -- continue to extract *.tar file
     if outputdir_old then
-        local tarfile = find_file("*.tar", outputdir)
+        local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
             return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
         end
@@ -359,8 +359,8 @@ function main(archivefile, outputdir, opt)
     ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
     ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
-    ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_gzip, _extract_using_7z}
-    ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_xz, _extract_using_7z}
+    ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_gzip}
+    ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
     ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
     }
     
