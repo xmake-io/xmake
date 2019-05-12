@@ -92,6 +92,10 @@ function _instance:plat()
     if self:kind() == "binary" then
         return os.host()
     end
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.plat then
+        return requireinfo.plat
+    end
     return config.get("plat") or os.host()
 end
 
@@ -100,6 +104,10 @@ function _instance:arch()
     -- @note we uses os.arch() instead of them for the binary package
     if self:kind() == "binary" then
         return os.arch()
+    end
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.arch then
+        return requireinfo.arch
     end
     return config.get("arch") or os.arch()
 end
@@ -890,6 +898,10 @@ end
 -- @return          true or false
 --
 function _instance:has_cfuncs(funcs, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
     opt = opt or {}
     opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
@@ -903,6 +915,10 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxfuncs(funcs, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
     opt = opt or {}
     opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
@@ -916,6 +932,10 @@ end
 -- @return          true or false
 --
 function _instance:check_csnippets(snippets, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
     opt = opt or {}
     opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
@@ -929,6 +949,10 @@ end
 -- @return          true or false
 --
 function _instance:check_cxxsnippets(snippets, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
     opt = opt or {}
     opt.configs = table.join(self:fetchdeps(), opt.configs)
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
