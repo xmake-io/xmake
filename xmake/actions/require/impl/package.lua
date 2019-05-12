@@ -117,6 +117,12 @@ function _parse_require(require_str, requires_extra, parentinfo)
         require_build_configs.debug = true
     end
 
+    -- require packge in the current host platform
+    if require_extra.host then
+        require_extra.plat = os.host()
+        require_extra.arch = os.arch()
+    end
+
     -- init required item
     local required = {}
     parentinfo = parentinfo or {}
