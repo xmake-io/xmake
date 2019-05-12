@@ -56,8 +56,10 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- set outputdir
-    table.insert(argv, "-C")
-    table.insert(argv, outputdir)
+    if not is_host("windows") then
+        table.insert(argv, "-C")
+        table.insert(argv, outputdir)
+    end
 
     -- excludes files
     if opt.excludes then
@@ -68,7 +70,13 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- extract it
-    os.vrunv(program, argv)
+    if is_host("windows") then
+        local oldir = os.cd(outputdir)
+        os.vrunv(program, argv)
+        os.cd(oldir)
+    else
+        os.vrunv(program, argv)
+    end
 
     -- ok
     return true
@@ -121,7 +129,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     if outputdir_old then
         local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
         end
     end
 
@@ -178,7 +186,7 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
     if outputdir_old then
         local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
         end
     end
 
@@ -235,7 +243,7 @@ function _extract_using_xz(archivefile, outputdir, extension, opt)
     if outputdir_old then
         local tarfile = find_file("**.tar", outputdir)
         if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
         end
     end
 
