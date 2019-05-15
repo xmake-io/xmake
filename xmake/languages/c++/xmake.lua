@@ -22,7 +22,7 @@
 language("c++")
 
     -- set source file kinds
-    set_sourcekinds {cc = ".c", cxx = {".cc", ".cpp", ".cxx"}}   
+    set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx"}}   
 
     -- set source file flags
     set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}   
