@@ -60,12 +60,13 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_sh      = toolchain("the cuda shared library linker")
+    local cu_cxx     = toolchain("the cuda host c++ compiler")
     local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh,
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
-                        cu = cu, ["cu-ld"] = cu_ld, ["cu-sh"] = cu_sh}
+                        cu = cu, ["cu-ld"] = cu_ld, ["cu-sh"] = cu_sh, ["cu-cxx"] = cu_cxx}
 
     -- init the c compiler
     cc:add("$(env CC)", {name = "clang", cross = cross}, "clang", "gcc")
@@ -132,6 +133,7 @@ function _toolchains()
     cu:add("nvcc")
     cu_ld:add("nvcc")
     cu_sh:add("nvcc")
+    cu_cxx:add("$(env CXX)", "$(env CC)", "clang", "gcc")
 
     return toolchains
 end
@@ -155,6 +157,12 @@ function main(platform, name)
 
         -- check cuda
         check_cuda(config)
+
+        -- check cu-cxx after checking arch
+        if config.get("cuda") then
+            local toolchains = singleton.get("macosx.toolchains." .. (config.get("arch") or os.arch()), _toolchains)
+            check_toolchain(config, "cu-cxx", toolchains["cu-cxx"])
+        end
     end
 end
 

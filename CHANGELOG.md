@@ -9,6 +9,7 @@
 * [#397](https://github.com/xmake-io/xmake/issues/397): Add clib package manager support
 * [#404](https://github.com/xmake-io/xmake/issues/404): Support Qt for android and deploy android apk
 * Add some qt empty project templates, e.g. `widgetapp_qt`, `quickapp_qt_static` and `widgetapp_qt_static`
+* [#415](https://github.com/xmake-io/xmake/issues/415): Add `--cu-cxx` config arguments to `nvcc/-ccbin`
 
 ### Changes
 
@@ -586,6 +587,7 @@
 * [#397](https://github.com/xmake-io/xmake/issues/397): 添加clib包集成支持
 * [#404](https://github.com/xmake-io/xmake/issues/404): 增加Qt/Android编译支持，并且支持android apk生成和部署
 * 添加一些Qt空工程模板，例如：`widgetapp_qt`, `quickapp_qt_static` and `widgetapp_qt_static`
+* [#415](https://github.com/xmake-io/xmake/issues/415): 添加`--cu-cxx`配置参数到`nvcc/-ccbin`
 
 ### 改进
 

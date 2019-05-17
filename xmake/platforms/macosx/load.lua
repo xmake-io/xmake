@@ -102,5 +102,9 @@ function main(platform)
         platform:add("cu-shflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
         platform:add("cu-ldflags", "-Xlinker -rpath -Xlinker " .. os.args(path.join(cuda_dir, "lib")))
     end
+    local cu_cxx = config.get("cu-cxx")
+    if cu_cxx then
+        platform:add("cuflags", "-ccbin", os.args(cu_cxx))
+    end
 end
 
