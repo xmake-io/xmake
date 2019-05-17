@@ -99,7 +99,12 @@ function _check_try_running(flags, opt, islinker)
     end
 
     -- check flags
-    return _try_running(opt.program, table.join(flags, "-o", os.nuldev(), sourcefile))
+    local objectfile = is_plat("windows") and sourcefile .. ".o" or os.nuldev()
+    if islinker then
+        return _try_running(opt.program, table.join(flags, "-o", objectfile, sourcefile))
+    else
+        return _try_running(opt.program, table.join(flags, "-c", "-o", objectfile, sourcefile))
+    end
 end
 
 -- has_flags(flags)?
