@@ -38,7 +38,6 @@ end
 
 -- try running 
 function _try_running(...)
-
     local argv = {...}
     local errors = nil
     return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
@@ -48,13 +47,22 @@ end
 function _check_from_arglist(flags, opt, islinker)
 
     -- check for the builtin flags
-    local builtin_flags = {["-code"] = true, ["--gpu-code"] = true, ["-gencode"] = true, ["--generate-code"] = true, ["-arch"] = true, ["--gpu-architecture"] = true, ["-cudart=none"] = true, ["--cudart=none"] = true}
+    local builtin_flags = {["-code"] = true, 
+                           ["--gpu-code"] = true, 
+                           ["-gencode"] = true, 
+                           ["--generate-code"] = true, 
+                           ["-arch"] = true, 
+                           ["--gpu-architecture"] = true, 
+                           ["-cudart=none"] = true, 
+                           ["--cudart=none"] = true}
     if builtin_flags[flags[1]] then
         return true
     end
 
-    local cudart_flags = {["none"] = true, ["shared"] = true, ["static"] = true}
-    local builtin_flags_pair = {["-cudart"] = cudart_flags, ["--cudart"] = cudart_flags}
+    -- check for the builtin flag=value
+    local cudart_flags = {none = true, shared = true, static = true}
+    local builtin_flags_pair = {["-cudart"] = cudart_flags, 
+                                ["--cudart"] = cudart_flags}
     if #flags > 1 and builtin_flags_pair[flags[1]] and builtin_flags_pair[flags[1]][flags[2]] then
         return true
     end
