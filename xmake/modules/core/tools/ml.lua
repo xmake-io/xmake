@@ -18,6 +18,8 @@
 -- @file        ml.lua
 --
 
+-- https://docs.microsoft.com/en-us/cpp/assembler/masm/ml-and-ml64-command-line-reference
+
 -- init it
 function init(self)
    
@@ -36,10 +38,12 @@ function init(self)
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
-    ,   ["-Wall"]                   = "-W3" -- = "-Wall" will enable too more warnings
     ,   ["-W1"]                     = "-W1"
     ,   ["-W2"]                     = "-W2"
     ,   ["-W3"]                     = "-W3"
+    ,   ["-Wall"]                   = "-W3" -- /W level 	Sets the warning level, where level = 0, 1, 2, or 3.
+    ,   ["-Wextra"]                 = "-W3"
+    ,   ["-Weverything"]            = "-W3"
     ,   ["-Werror"]                 = "-WX"
     ,   ["%-Wno%-error=.*"]         = ""
 
@@ -61,11 +65,13 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-W3"
-    ,   error = "-WX"
+        none         = "-w"
+    ,   less         = "-W1"
+    ,   more         = "-W3"
+    ,   all          = "-W3"
+    ,   extra        = "-W3"
+    ,   everything   = "-W3"
+    ,   error        = "-WX"
     }
 
     -- make it

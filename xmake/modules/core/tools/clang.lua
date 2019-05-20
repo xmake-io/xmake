@@ -31,6 +31,20 @@ function init(self)
     self:add("cxflags", "-Qunused-arguments")
     self:add("mxflags", "-Qunused-arguments")
     self:add("asflags", "-Qunused-arguments")
+
+    -- init flags map
+    self:set("mapflags",
+    {
+        -- warnings
+        ["-W1"] = "-Wall"
+    ,   ["-W2"] = "-Wall"
+    ,   ["-W3"] = "-Wall"
+
+         -- strip
+    ,   ["-s"]  = "-s"
+    ,   ["-S"]  = "-S"
+    })
+
 end
 
 -- make the optimize flag
@@ -49,4 +63,23 @@ function nf_optimize(self, level)
 
     -- make it
     return maps[level] 
+end
+
+-- make the warning flag
+function nf_warning(self, level)
+
+    -- the maps
+    local maps = 
+    {   
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall"
+    ,   extra      = "-Wextra"
+    ,   everything = "-Weverything"
+    ,   error      = "-Werror"
+    }
+
+    -- make it
+    return maps[level]
 end
