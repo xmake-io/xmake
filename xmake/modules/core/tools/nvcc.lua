@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import("core.tool.tool")
+import("core.tool.compiler")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -72,15 +72,17 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-Wall"
-    ,   error = "-Werror"
+        none       = "-w"
+    ,   less       = ""
+    ,   more       = ""
+    ,   all        = ""
+    ,   extra      = "-Wreorder"
+    ,   everything = "-Wreorder"
+    ,   error      = "-Werror"
     }
 
     local cu_cxx = config.get("cu-cxx")
-    local cu_cxx_tool = nil tool.load("cxx")
+    local cu_cxx_tool = nil 
     if is_plat("windows") or not cu_cxx then
         cu_cxx_tool = tool.load("cxx")
     elseif cu_cxx then
