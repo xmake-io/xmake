@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.tool")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -76,23 +77,18 @@ function nf_warning(self, level)
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
     }
-    
-    local warning = maps[level]
-    if not warning then
-        -- for cl.exe
-        if is_plat("windows") then
-            maps.less = "-Xcompiler -W1"
-            maps.more = "-Xcompiler -W3"
-            maps.all  = "-Xcompiler -W3"
-        -- for gcc/clang 
-        elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
-            maps.less = "-Xcompiler -Wall"
-            maps.more = "-Xcompiler -Wall"
-            maps.all  = "-Xcompiler -Wall"
-        end
-        warning = maps[level]
+
+    local cu_cxx = config.get("cu-cxx")
+    local cu_cxx_tool = nil tool.load("cxx")
+    if is_plat("windows") or not cu_cxx then
+        cu_cxx_tool = tool.load("cxx")
+    elseif cu_cxx then
+        cu_cxx_tool = tool.load("cxx", cu_cxx)
     end
-    return warning
+
+    local cu_cxx_tool_warning = cu_cxx_tool.nf_warning(level)
+    -- make it
+    return maps[level] .. ' -Xcompiler "' .. cu_cxx_tool_warning .. '" -Xlinker "' .. cu_cxx_tool_warning ..'"'
 end
 
 -- make the optimize flag
