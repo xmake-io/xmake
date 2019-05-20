@@ -48,8 +48,14 @@ end
 function _check_from_arglist(flags, opt, islinker)
 
     -- check for the builtin flags
-    local builtin_flags = {["-code"] = true, ["--gpu-code"] = true, ["-gencode"] = true, ["--generate-code"] = true, ["-arch"] = true, ["--gpu-architecture"] = true}
+    local builtin_flags = {["-code"] = true, ["--gpu-code"] = true, ["-gencode"] = true, ["--generate-code"] = true, ["-arch"] = true, ["--gpu-architecture"] = true, ["-cudart=none"] = true, ["--cudart=none"] = true}
     if builtin_flags[flags[1]] then
+        return true
+    end
+
+    local cudart_flags = {["none"] = true, ["shared"] = true, ["static"] = true}
+    local builtin_flags_pair = {["-cudart"] = cudart_flags, ["--cudart"] = cudart_flags}
+    if #flags > 1 and builtin_flags_pair[flags[1]] and builtin_flags_pair[flags[1]][flags[2]] then
         return true
     end
 
