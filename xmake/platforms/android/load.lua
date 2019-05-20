@@ -26,14 +26,13 @@ function main(platform)
 
     -- init flags
     local arch = config.get("arch")
-    if arch:startswith("arm64") then
-        platform:add("ldflags", "-llog")
-        platform:add("shflags", "-llog")
-    else
+    platform:add("ldflags", "-llog")
+    platform:add("shflags", "-llog")
+    if arch and (arch == "armv5te" or arch == "armv7-a") then
         platform:add("cxflags", "-mthumb")
         platform:add("asflags", "-mthumb")
-        platform:add("ldflags", "-llog", "-mthumb")
-        platform:add("shflags", "-llog", "-mthumb")
+        platform:add("ldflags", "-mthumb")
+        platform:add("shflags", "-mthumb")
     end
 
     -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
