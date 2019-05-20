@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.tool")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -78,8 +79,17 @@ function nf_warning(self, level)
     ,   error = "-Werror"
     }
 
+    local cu_cxx = config.get("cu-cxx")
+    local cu_cxx_tool = nil tool.load("cxx")
+    if is_plat("windows") or not cu_cxx then
+        cu_cxx_tool = tool.load("cxx")
+    elseif cu_cxx then
+        cu_cxx_tool = tool.load("cxx", cu_cxx)
+    end
+
+    local cu_cxx_tool_warning = cu_cxx_tool.nf_warning(level)
     -- make it
-    return maps[level]
+    return maps[level] .. ' -Xcompiler "' .. cu_cxx_tool_warning .. '" -Xlinker "' .. cu_cxx_tool_warning ..'"'
 end
 
 -- make the optimize flag
