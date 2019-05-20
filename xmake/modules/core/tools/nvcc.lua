@@ -71,15 +71,28 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-Wall"
-    ,   error = "-Werror"
+        none       = "-w"
+    ,   extra      = "-Wreorder"
+    ,   everything = "-Wreorder"
+    ,   error      = "-Werror"
     }
-
-    -- make it
-    return maps[level]
+    
+    local warning = maps[level]
+    if not warning then
+        -- for cl.exe
+        if is_plat("windows") then
+            maps.less = "-Xcompiler -W1"
+            maps.more = "-Xcompiler -W3"
+            maps.all  = "-Xcompiler -W3"
+        -- for gcc/clang 
+        elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
+            maps.less = "-Xcompiler -Wall"
+            maps.more = "-Xcompiler -Wall"
+            maps.all  = "-Xcompiler -Wall"
+        end
+        warning = maps[level]
+    end
+    return warning
 end
 
 -- make the optimize flag
