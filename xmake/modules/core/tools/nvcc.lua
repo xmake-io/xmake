@@ -40,9 +40,9 @@ function init(self)
     self:set("mapflags",
     {
         -- warnings
-        ["-W1"] = "-Wall"
-    ,   ["-W2"] = "-Wall"
-    ,   ["-W3"] = "-Wall"
+        ["-W4"]            = "-Wreorder"
+    ,   ["-Wextra"]        = "-Wreorder"
+    ,   ["-Weverything"]   = "-Wreorder"
     })
 
     -- init buildmodes
@@ -72,27 +72,56 @@ function nf_warning(self, level)
     local maps = 
     {   
         none       = "-w"
+    ,   less       = nil
+    ,   more       = nil
+    ,   all        = nil
     ,   extra      = "-Wreorder"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
     }
+
+    -- for cl.exe on windows
+    local cl_maps =
+    {   
+        none       = "-W0"
+    ,   less       = "-W1"
+    ,   more       = "-W3"
+    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
+    ,   extra      = "-W4"
+    ,   everything = "-Wall"
+    ,   error      = "-WX"
+    }
     
+    -- for gcc & clang on linux, may be work for other gnu compatible compilers such as icc
+    local gcc_clang_maps =
+    {   
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall" 
+    ,   extra      = "-Wextra"
+    -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
+    -- no warning will emit for unsupoorted `-W` flags by clang/gcc
+    ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
+    ,   error      = "-Werror"
+    }
+
     local warning = maps[level]
-    if not warning then
-        -- for cl.exe
-        if is_plat("windows") then
-            maps.less = "-Xcompiler -W1"
-            maps.more = "-Xcompiler -W3"
-            maps.all  = "-Xcompiler -W3"
-        -- for gcc/clang 
-        elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
-            maps.less = "-Xcompiler -Wall"
-            maps.more = "-Xcompiler -Wall"
-            maps.all  = "-Xcompiler -Wall"
-        end
-        warning = maps[level]
+
+    local host_warning = nil
+    -- for cl.exe on windows, it is the only supported host compiler on the platform
+    if is_plat("windows") then
+        host_warning = cl_maps[level]
+    -- for gcc/clang, or any gnu compatible compiler on *nix
+    else
+        host_warning = gcc_clang_maps[level]
+    end
+
+    if host_warning then
+        warning = ((warning or "") .. ' -Xcompiler "' .. host_warning .. '"'):trim()
     end
     return warning
+
 end
 
 -- make the optimize flag
