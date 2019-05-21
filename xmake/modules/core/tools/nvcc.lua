@@ -107,8 +107,8 @@ function nf_warning(self, level)
     ,   error      = "-Werror"
     }
     
-    local warning = maps[level] or ""
-    
+    local warning = maps[level]
+
     local host_warning = nil
     -- for cl.exe on windows, it is the only supported host compiler on the platform
     if is_plat("windows") then
@@ -121,11 +121,15 @@ function nf_warning(self, level)
         end
     end
 
-    if host_warning then
-        warning = warning .. ' -Xcompiler "' .. host_warning .. '"'
+    if warning and host_warning then
+        return warning .. ' -Xcompiler "' .. host_warning .. '"'
+    elseif warning then
+        return warning
+    elseif host_warning then
+        return '-Xcompiler "' .. host_warning .. '"'
+    else
+        return nil
     end
-
-    return warning
 end
 
 -- make the optimize flag
