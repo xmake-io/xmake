@@ -115,10 +115,7 @@ function nf_warning(self, level)
         host_warning = cl_maps[level]
     -- for gcc/clang, or any gnu compatible compiler on *nix
     else
-        local gcc_clang_warning = gcc_clang_maps[level]
-        if gcc_clang_warning and self:has_flags(' -Xcompiler "' .. gcc_clang_warning .. '"', "cxflags") then
-            host_warning = gcc_clang_warning
-        end
+        host_warning = gcc_clang_maps[level]
     end
 
     if warning and host_warning then
