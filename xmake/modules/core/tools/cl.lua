@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.project")
 import("core.language.language")
 
@@ -408,6 +409,26 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                 end
                 os.raise(results)
+            end
+        },
+        finally
+        {
+            function (ok, outdata, errdata)
+                -- show warnings?
+                if ok and ((outdata and #outdata > 0) or (errdata and #errdata > 0)) and (option.get("diagnosis") or option.get("warning")) then
+
+                    local lines = table.join2(outdata:split("\r\n"), errdata:split("\r\n"))
+                    local warnings = {}
+                    for _, line in ipairs(lines) do
+                        if string.match(line, "warning %a+[0-9]+%s*:") then
+                            table.insert(warnings, line)
+                        end
+                    end
+                    if #warnings > 0 then
+                        local warning = table.concat(table.slice(warnings, 1, ifelse(#warnings > 8, 8, #warnings)), "\n")
+                        cprint("${color.warning}%s", warning)
+                    end
+                end
             end
         }
     }
