@@ -96,6 +96,8 @@ function nf_warning(self, level)
     ,   less        = "-w"
     ,   more        = "-w -wi"
     ,   all         = "-w -wi"
+    ,   extra       = "-w -wi"
+    ,   everything  = "-w -wi"
     ,   error       = "-de"
     }
 

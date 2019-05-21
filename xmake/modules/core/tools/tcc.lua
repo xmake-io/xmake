@@ -49,6 +49,7 @@ function init(self)
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
     ,   ["-W3"] = "-Wall"
+    ,   ["-W4"] = "-Wall -Wunsupported"
 
          -- strip
     ,   ["-s"]  = "-s"
@@ -96,11 +97,13 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-Wall"
-    ,   error = "-Werror"
+        none       = "-w"
+    ,   less       = "-W1"
+    ,   more       = "-W3"
+    ,   all        = "-Wall"
+    ,   extra      = "-Wunsupported"
+    ,   everything = "-Wall -Wunsupported -Wwrite-strings"
+    ,   error      = "-Werror"
     }
 
     -- make it

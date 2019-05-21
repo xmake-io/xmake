@@ -46,9 +46,11 @@ function init(self)
     self:set("mapflags",
     {
         -- warnings
-        ["-W1"] = "-Wall"
-    ,   ["-W2"] = "-Wall"
-    ,   ["-W3"] = "-Wall"
+        ["-W1"]          = "-Wall"
+    ,   ["-W2"]          = "-Wall"
+    ,   ["-W3"]          = "-Wall"
+    ,   ["-W4"]          = "-Wall -Wextra"
+    ,   ["-Weverything"] = "-Wall -Wextra"
 
          -- strip
     ,   ["-s"]  = "-s"
@@ -95,12 +97,14 @@ function nf_warning(self, level)
 
     -- the maps
     local maps = 
-    {   
-        none  = "-w"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-Wall"
-    ,   error = "-Werror"
+    {
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall"
+    ,   extra      = "-Wextra"
+    ,   everything = "-Wextra -Wall"
+    ,   error      = "-Werror"
     }
 
     -- make it

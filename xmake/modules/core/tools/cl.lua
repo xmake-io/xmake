@@ -43,6 +43,8 @@ function init(self)
     ,   ["-fvisibility=.*"]         = ""
 
         -- warnings
+    ,   ["-Weverything"]            = "-Wall"
+    ,   ["-Wextra"]                 = "-W4"
     ,   ["-Wall"]                   = "-W3" -- = "-Wall" will enable too more warnings
     ,   ["-W1"]                     = "-W1"
     ,   ["-W2"]                     = "-W2"
@@ -119,11 +121,13 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-W0"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-W3" -- = "-Wall" will enable too more warnings
-    ,   error = "-WX"
+        none       = "-W0"
+    ,   less       = "-W1"
+    ,   more       = "-W3"
+    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
+    ,   extra      = "-W4"
+    ,   everything = "-Wall"
+    ,   error      = "-WX"
     }
 
     -- make it
