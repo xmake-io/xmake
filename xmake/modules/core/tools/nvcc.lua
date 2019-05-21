@@ -107,14 +107,24 @@ function nf_warning(self, level)
     ,   error      = "-Werror"
     }
     
-    local warning = maps[level]
+    local warning = maps[level] or ""
+    
+    local host_warning = nil
     -- for cl.exe on windows, it is the only supported host compiler on the platform
     if is_plat("windows") then
-        warning = warning .. ' -Xcompiler "' .. cl_maps[level] .. '"'
+        host_warning = cl_maps[level]
     -- for gcc/clang, or any gnu compatible compiler on *nix
-    elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
-        warning = warning .. ' -Xcompiler "' .. gcc_clang_maps[level] .. '"'
+    else
+        local gcc_clang_warning = gcc_clang_maps[level]
+        if gcc_clang_warning and self:has_flags(' -Xcompiler "' .. gcc_clang_warning .. '"', "cxflags") then
+            host_warning = gcc_clang_warning
+        end
     end
+
+    if host_warning then
+        warning = warning .. ' -Xcompiler "' .. host_warning .. '"'
+    end
+
     return warning
 end
 
