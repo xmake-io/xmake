@@ -72,9 +72,6 @@ function nf_warning(self, level)
     local maps = 
     {   
         none       = "-w"
-    ,   less       = nil
-    ,   more       = nil
-    ,   all        = nil
     ,   extra      = "-Wreorder"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
@@ -93,6 +90,10 @@ function nf_warning(self, level)
     }
     
     -- for gcc & clang on linux, may be work for other gnu compatible compilers such as icc
+    --
+    -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
+    -- no warning will emit for unsupoorted `-W` flags by clang/gcc
+    --
     local gcc_clang_maps =
     {   
         none       = "-w"
@@ -100,23 +101,24 @@ function nf_warning(self, level)
     ,   more       = "-Wall"
     ,   all        = "-Wall" 
     ,   extra      = "-Wextra"
-    -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
-    -- no warning will emit for unsupoorted `-W` flags by clang/gcc
     ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
     ,   error      = "-Werror"
     }
 
+    -- get warning for nvcc
     local warning = maps[level]
 
-    local host_warning = nil
+    -- add host warning
+    --
     -- for cl.exe on windows, it is the only supported host compiler on the platform
+    -- for gcc/clang, or any gnu compatible compiler on *nix
+    --
+    local host_warning = nil
     if is_plat("windows") then
         host_warning = cl_maps[level]
-    -- for gcc/clang, or any gnu compatible compiler on *nix
     else
         host_warning = gcc_clang_maps[level]
     end
-
     if host_warning then
         warning = ((warning or "") .. ' -Xcompiler "' .. host_warning .. '"'):trim()
     end
