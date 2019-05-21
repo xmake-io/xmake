@@ -40,9 +40,10 @@ function init(self)
     self:set("mapflags",
     {
         -- warnings
-        ["-W1"] = "-Wall"
-    ,   ["-W2"] = "-Wall"
-    ,   ["-W3"] = "-Wall"
+        ["-W1"]   = ""
+    ,   ["-W2"]   = ""
+    ,   ["-W3"]   = ""
+    ,   ["-W4"]   = "-Wreorder"
     })
 
     -- init buildmodes
@@ -72,25 +73,43 @@ function nf_warning(self, level)
     local maps = 
     {   
         none       = "-w"
+    ,   less       = ""
+    ,   more       = ""
+    ,   all        = ""
     ,   extra      = "-Wreorder"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
     }
+
+    local cl_maps =
+    {   
+        none       = "-W0"
+    ,   less       = "-W1"
+    ,   more       = "-W3"
+    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
+    ,   extra      = "-W4"
+    ,   everything = "-Wall"
+    ,   error      = "-WX"
+    }
+
+    local gcc_clang_maps =
+    {   
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall" 
+    ,   extra      = "-Wextra"
+    ,   everything = "-Weverything -Wall -Wextra -Weffc++" -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
+    ,   error      = "-Werror"
+    }
     
     local warning = maps[level]
-    if not warning then
         -- for cl.exe
-        if is_plat("windows") then
-            maps.less = "-Xcompiler -W1"
-            maps.more = "-Xcompiler -W3"
-            maps.all  = "-Xcompiler -W3"
-        -- for gcc/clang 
-        elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
-            maps.less = "-Xcompiler -Wall"
-            maps.more = "-Xcompiler -Wall"
-            maps.all  = "-Xcompiler -Wall"
-        end
-        warning = maps[level]
+    if is_plat("windows") then
+        warning = warning .. ' -Xcompiler "' .. cl_maps[level] .. '"'
+    -- for gcc/clang 
+    elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
+        warning = warning .. ' -Xcompiler "' .. gcc_clang_maps[level] .. '"'
     end
     return warning
 end
