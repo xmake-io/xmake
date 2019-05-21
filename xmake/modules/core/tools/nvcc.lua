@@ -73,9 +73,9 @@ function nf_warning(self, level)
     local maps = 
     {   
         none       = "-w"
-    ,   less       = ""
-    ,   more       = ""
-    ,   all        = ""
+    ,   less       = nil
+    ,   more       = nil
+    ,   all        = nil
     ,   extra      = "-Wreorder"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
