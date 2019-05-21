@@ -35,6 +35,8 @@ function init(self)
     ,   ["-w"]                      = "-suppress-warnings"
     ,   ["-W%d*"]                   = "-warn-swift3-objc-inference-minimal"
     ,   ["-Wall"]                   = "-warn-swift3-objc-inference-complete"
+    ,   ["-Wextra"]                 = "-warn-swift3-objc-inference-complete"
+    ,   ["-Weverything"]            = "-warn-swift3-objc-inference-complete"
     ,   ["-Werror"]                 = "-warnings-as-errors"
 
         -- optimize
@@ -94,11 +96,13 @@ function nf_warning(self, level)
     -- the maps
     local maps = 
     {   
-        none  = "-suppress-warnings"
-    ,   less  = "-warn-swift3-objc-inference-minimal"
-    ,   more  = "-warn-swift3-objc-inference-minimal"
-    ,   all   = "-warn-swift3-objc-inference-complete"
-    ,   error = "-warnings-as-errors"
+        none       = "-suppress-warnings"
+    ,   less       = "-warn-swift3-objc-inference-minimal"
+    ,   more       = "-warn-swift3-objc-inference-minimal"
+    ,   all        = "-warn-swift3-objc-inference-complete"
+    ,   extra      = "-warn-swift3-objc-inference-complete"
+    ,   everything = "-warn-swift3-objc-inference-complete"
+    ,   error      = "-warnings-as-errors"
     }
 
     -- make it
