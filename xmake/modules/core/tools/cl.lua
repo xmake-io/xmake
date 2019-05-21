@@ -386,7 +386,6 @@ end
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
-    flags = _clean_up_flags(flags)
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
@@ -410,15 +409,15 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     local outdata = try
     {
         function ()
+            local compflags = _clean_up_flags(flags)
 
             -- generate includes file
-            local compflags = flags
             if dependinfo then
                 compflags = table.join(flags, "-showIncludes")
             end
             return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
         end,
-        
+
         catch
         {
             function (errors)
