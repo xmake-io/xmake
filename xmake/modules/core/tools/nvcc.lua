@@ -119,14 +119,11 @@ function nf_warning(self, level)
     end
 
     if warning and host_warning then
-        return warning .. ' -Xcompiler "' .. host_warning .. '"'
-    elseif warning then
-        return warning
+        warning = warning .. ' -Xcompiler "' .. host_warning .. '"'
     elseif host_warning then
-        return '-Xcompiler "' .. host_warning .. '"'
-    else
-        return nil
+        warning = '-Xcompiler "' .. host_warning .. '"'
     end
+    return warning
 end
 
 -- make the optimize flag
