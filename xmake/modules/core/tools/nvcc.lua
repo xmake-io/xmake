@@ -72,7 +72,6 @@ function nf_warning(self, level)
     local maps = 
     {   
         none       = "-w"
-    ,   extra      = "-Wreorder"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
     }
@@ -84,7 +83,6 @@ function nf_warning(self, level)
     ,   less       = "-W1"
     ,   more       = "-W3"
     ,   all        = "-W3" -- = "-Wall" will enable too more warnings
-    ,   extra      = "-W4"
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
@@ -100,7 +98,6 @@ function nf_warning(self, level)
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall" 
-    ,   extra      = "-Wextra"
     ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
     ,   error      = "-Werror"
     }
