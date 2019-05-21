@@ -40,10 +40,9 @@ function init(self)
     self:set("mapflags",
     {
         -- warnings
-        ["-W1"]   = ""
-    ,   ["-W2"]   = ""
-    ,   ["-W3"]   = ""
-    ,   ["-W4"]   = "-Wreorder"
+        ["-W4"]            = "-Wreorder"
+    ,   ["-Wextra"]        = "-Wreorder"
+    ,   ["-Weverything"]   = "-Wreorder"
     })
 
     -- init buildmodes
