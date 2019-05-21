@@ -337,6 +337,30 @@ function _include_deps(self, outdata)
     return results
 end
 
+function _clean_up_flags(flags)
+
+    local out_flags = {}
+
+    local warning_level_flag = -1 -- suppress warning D9025, use only one /W[num] flags
+
+    for _, flag in ipairs(flags) do
+        if flag:match("%s*[-/]W[0-4]%s*") then
+            local level = tonumber(flag:sub(3))
+            if level and level > warning_level_flag then
+                warning_level_flag = level
+            end
+        else
+            table.insert(out_flags, flag)
+        end
+    end
+
+    if warning_level_flag >= 0 then
+        table.insert(out_flags, string.format("/W%d", warning_level_flag))
+    end
+
+    return out_flags
+end
+
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
@@ -362,6 +386,7 @@ end
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
+    flags = _clean_up_flags(flags)
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
