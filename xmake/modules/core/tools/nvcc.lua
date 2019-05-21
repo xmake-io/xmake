@@ -81,6 +81,7 @@ function nf_warning(self, level)
     ,   error      = "-Werror"
     }
 
+    -- for cl.exe on windows
     local cl_maps =
     {   
         none       = "-W0"
@@ -91,7 +92,8 @@ function nf_warning(self, level)
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
-
+    
+    -- for gcc & clang on linux, may be work for other gnu compatible compilers such as icc
     local gcc_clang_maps =
     {   
         none       = "-w"
@@ -99,15 +101,17 @@ function nf_warning(self, level)
     ,   more       = "-Wall"
     ,   all        = "-Wall" 
     ,   extra      = "-Wextra"
-    ,   everything = "-Weverything -Wall -Wextra -Weffc++" -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
+    -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
+    -- no warning will emit for unsupoorted `-W` flags by clang/gcc
+    ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
     ,   error      = "-Werror"
     }
     
     local warning = maps[level]
-        -- for cl.exe
+    -- for cl.exe on windows, it is the only supported host compiler on the platform
     if is_plat("windows") then
         warning = warning .. ' -Xcompiler "' .. cl_maps[level] .. '"'
-    -- for gcc/clang 
+    -- for gcc/clang, or any gnu compatible compiler on *nix
     elseif self:has_flags("-Xcompiler -Wall", "cxflags") then
         warning = warning .. ' -Xcompiler "' .. gcc_clang_maps[level] .. '"'
     end
