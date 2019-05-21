@@ -106,7 +106,7 @@ function nf_warning(self, level)
     ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
     ,   error      = "-Werror"
     }
-    
+
     local warning = maps[level]
 
     local host_warning = nil
@@ -118,12 +118,11 @@ function nf_warning(self, level)
         host_warning = gcc_clang_maps[level]
     end
 
-    if warning and host_warning then
-        warning = warning .. ' -Xcompiler "' .. host_warning .. '"'
-    elseif host_warning then
-        warning = '-Xcompiler "' .. host_warning .. '"'
+    if host_warning then
+        warning = ((warning or "") .. ' -Xcompiler "' .. host_warning .. '"'):trim()
     end
     return warning
+
 end
 
 -- make the optimize flag
