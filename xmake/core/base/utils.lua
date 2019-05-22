@@ -179,5 +179,35 @@ function utils.ifelse(a, b, c)
     if a then return b else return c end
 end
 
+-- try to call script
+function utils.trycall(script, traceback, ...)
+    return xpcall(script, function (errors)
+
+            -- get traceback
+            traceback = traceback or debug.traceback
+
+            -- decode it if errors is encoded table string
+            if errors then
+                local _, pos = errors:find("[@encode(error)]: ", 1, true)
+                if pos then
+                    local deserrs
+                    local rawerrs = errors:sub(pos + 1)
+                    errors, deserrs = rawerrs:deserialize()
+                    if not errors then
+                        errors = deserrs
+                    end
+                    if type(errors) == "table" then
+                        setmetatable(errors, { __tostring = function (self)
+                                return rawerrs
+                            end
+                        })
+                    end
+                    return errors
+                end
+            end
+            return traceback(errors)
+        end, ...)
+end
+
 -- return module
 return utils

@@ -48,6 +48,7 @@ platform("android")
                 ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"               }
                 ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory"             }
                 ,   {nil, "build_toolver",  "kv", nil,          "The Build Tool Version of Android SDK" }
+                ,   {nil, "ndk_stdcxx",     "kv", true,         "Use stdc++ library for NDK"            }
                 }
 
             ,   global = 

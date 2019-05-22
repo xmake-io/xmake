@@ -121,7 +121,7 @@ function sandbox._new()
             if script then
 
                 -- load module
-                local ok, results = xpcall(script, debug.traceback)
+                local ok, results = utils.trycall(script)
                 if not ok then
                     os.raise(results)
                 end
@@ -177,7 +177,7 @@ end
 
 -- load script in the sandbox
 function sandbox.load(script, ...)
-    return xpcall(script, sandbox._traceback, ...)
+    return utils.trycall(script, sandbox._traceback, ...)
 end
 
 -- bind self instance to the given script or envirnoment

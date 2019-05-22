@@ -97,7 +97,7 @@ function sandbox_try.try(block)
     local funcs = table.join(block[2] or {}, block[3] or {})
 
     -- try to call it
-    local ok, errors_or_r1, r2, r3, r4, r5, r6 = xpcall(try, sandbox_try._traceback)
+    local ok, errors_or_r1, r2, r3, r4, r5, r6 = utils.trycall(try, sandbox_try._traceback)
     if not ok then
 
         -- run the catch function

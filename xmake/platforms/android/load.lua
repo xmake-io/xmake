@@ -159,7 +159,7 @@ function main(platform)
         end
 
         -- only for c++ stl
-        if cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
+        if config.get("ndk_stdcxx") and cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
 
             -- the toolchains archs
             local toolchains_archs = 

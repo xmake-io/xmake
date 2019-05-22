@@ -658,7 +658,7 @@ function interpreter.new()
             if script then
 
                 -- load module
-                local ok, results = xpcall(script, debug.traceback)
+                local ok, results = utils.trycall(script)
                 if not ok then
                     os.raise(results)
                 end

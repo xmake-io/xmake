@@ -38,7 +38,7 @@ function _find_ndkdir(sdkdir)
 
     -- get ndk directory
     if sdkdir and os.isdir(sdkdir) then
-        return sdkdir
+        return path.translate(sdkdir)
     end
 end
 

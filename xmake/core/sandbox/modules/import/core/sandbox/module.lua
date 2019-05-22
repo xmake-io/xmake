@@ -89,7 +89,7 @@ function core_sandbox_module._loadfile(filepath, instance)
     end
 
     -- load module without sandbox
-    local ok, result = xpcall(script, debug.traceback)
+    local ok, result = utils.trycall(script)
     if not ok then
         return nil, result
     end

@@ -711,8 +711,15 @@ function os.raise(msg, ...)
     io.flush()
 
     -- raise it
-    if msg then
+    if type(msg) == "string" then
         error(string.tryformat(msg, ...))
+    elseif type(msg) == "table" then
+        local errobjstr, errors = string.serialize(msg, true)
+        if errobjstr then
+            error("[@encode(error)]: " .. errobjstr)
+        else
+            error(errors)
+        end
     else
         error()
     end

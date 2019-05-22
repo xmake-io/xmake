@@ -20,6 +20,7 @@
 
 -- load modules
 local os        = require("base/os")
+local utils     = require("base/utils")
 local log       = require("ui/log")
 local rect      = require("ui/rect")
 local event     = require("ui/event")
@@ -104,7 +105,7 @@ function application:run(...)
     end
 
     -- run application
-    local ok, errors = xpcall(runner, debug.traceback)
+    local ok, errors = utils.trycall(runner)
 
     -- exit curses
     if not ok then
