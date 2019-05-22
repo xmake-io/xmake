@@ -205,7 +205,7 @@ function string.tryformat(format, ...)
     if ok then
         return str
     else
-        return format
+        return tostring(format)
     end
 end
 

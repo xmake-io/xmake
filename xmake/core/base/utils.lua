@@ -190,15 +190,14 @@ function utils.trycall(script, traceback, ...)
             if errors then
                 local _, pos = errors:find("[@encode(error)]: ", 1, true)
                 if pos then
-                    local deserrs
-                    local rawerrs = errors:sub(pos + 1)
-                    errors, deserrs = rawerrs:deserialize()
+                    local errs = errors:sub(pos + 1)
+                    errors, errs = errs:deserialize()
                     if not errors then
-                        errors = deserrs
+                        errors = errs
                     end
                     if type(errors) == "table" then
                         setmetatable(errors, { __tostring = function (self)
-                                return rawerrs
+                                return string.serialize(self)
                             end
                         })
                     end
