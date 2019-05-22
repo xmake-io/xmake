@@ -100,7 +100,6 @@ function nf_warning(self, level)
     ,   less       = "-warn-swift3-objc-inference-minimal"
     ,   more       = "-warn-swift3-objc-inference-minimal"
     ,   all        = "-warn-swift3-objc-inference-complete"
-    ,   extra      = "-warn-swift3-objc-inference-complete"
     ,   everything = "-warn-swift3-objc-inference-complete"
     ,   error      = "-warnings-as-errors"
     }

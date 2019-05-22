@@ -69,7 +69,6 @@ function nf_warning(self, level)
     ,   less         = "-W1"
     ,   more         = "-W3"
     ,   all          = "-W3"
-    ,   extra        = "-W3"
     ,   everything   = "-W3"
     ,   error        = "-WX"
     }
