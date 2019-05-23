@@ -49,6 +49,13 @@ platform("android")
                 ,   {nil, "android_sdk",    "kv", nil,          "The Android SDK Directory"             }
                 ,   {nil, "build_toolver",  "kv", nil,          "The Build Tool Version of Android SDK" }
                 ,   {nil, "ndk_stdcxx",     "kv", true,         "Use stdc++ library for NDK"            }
+                ,   {nil, "ndk_cxxstl",     "kv", nil,          "The stdc++ stl library for NDK",
+                                                                "    - gnustl_shared",
+                                                                "    - gnustl_static",
+                                                                "    - llvmstl_shared",
+                                                                "    - llvmstl_static",
+                                                                "    - stlport_shared",
+                                                                "    - stlport_static"                  }
                 }
 
             ,   global = 

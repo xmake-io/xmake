@@ -152,10 +152,38 @@ function main(platform)
         platform:add("ldflags", "-fPIE")
         platform:add("ldflags", "-pie")
 
+        -- get llvm c++ stl sdk directory
+        local cxxstl_sdkdir_llvmstl = path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk))
+
+        -- get gnu c++ stl sdk directory
+        local cxxstl_sdkdir_gnustl = nil
+        if config.get("ndk_toolchains_ver") then
+            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver"))) 
+        end
+
+        -- get stlport c++ sdk directory
+        local cxxstl_sdkdir_stlport = path.translate(format("%s/sources/cxx-stl/stlport", ndk))
+
         -- get c++ stl sdk directory
-        local cxxstl_sdkdir = isllvm and path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk)) or nil
-        if (cxxstl_sdkdir == nil or not os.isdir(cxxstl_sdkdir)) and config.get("ndk_toolchains_ver") then -- <= ndk r16
-            cxxstl_sdkdir = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver"))) 
+        local cxxstl_sdkdir = nil
+        local ndk_cxxstl = config.get("ndk_cxxstl")
+        if ndk_cxxstl then
+            if ndk_cxxstl:startswith("llvmstl") then
+                cxxstl_sdkdir = cxxstl_sdkdir_llvmstl
+            elseif ndk_cxxstl:startswith("gnustl") then
+                cxxstl_sdkdir = cxxstl_sdkdir_gnustl
+            elseif ndk_cxxstl:startswith("stlport") then
+                cxxstl_sdkdir = cxxstl_sdkdir_stlport
+            end
+        else
+            if isllvm then
+                ndk_cxxstl = "llvmstl_static"
+                cxxstl_sdkdir = cxxstl_sdkdir_llvmstl
+            end
+            if (cxxstl_sdkdir == nil or not os.isdir(cxxstl_sdkdir)) and cxxstl_sdkdir_gnustl then -- <= ndk r16
+                ndk_cxxstl = "gnustl_static"
+                cxxstl_sdkdir = cxxstl_sdkdir_gnustl
+            end
         end
 
         -- only for c++ stl
@@ -172,35 +200,56 @@ function main(platform)
             ,   mips            = "mips"
             ,   mips64          = "mips64"
             }
+            local toolchains_arch = toolchains_archs[arch]
 
-            -- add search directories for c++ stl
-            platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
-            if toolchains_archs[arch] then
-                platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_archs[arch]))
-                platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
-                platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_archs[arch]))
-                
-                -- link to c++ std library
-                if cxxstl_sdkdir:find("llvm-libc++", 1, true) then
-                    platform:add("ldflags", "-lc++_static", "-lc++abi")
-                    platform:add("shflags", "-lc++_static", "-lc++abi")
-                else
-                    platform:add("ldflags", "-lgnustl_static")
-                    platform:add("shflags", "-lgnustl_static")
-                end
-                
-                -- include abi directory
-                if cxxstl_sdkdir:find("llvm-libc++", 1, true) then
-                    local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
-                    local before_r13 = path.join(abi_path, "libcxxabi")
-                    local after_r13 = path.join(abi_path, "include")
-                    if os.isdir(before_r13) then
-                        platform:add("cxxflags", "-I" .. before_r13)
-                    elseif os.isdir(after_r13) then
-                        platform:add("cxxflags", "-I" .. after_r13)
-                    end
-                end
+            -- add c++ stl include and link directories
+            if toolchains_arch then
+                platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
+                platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
+            if ndk_cxxstl:startswith("llvmstl") then
+                platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                if toolchains_arch then
+                    platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                end
+                local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
+                local before_r13 = path.join(abi_path, "libcxxabi")
+                local after_r13 = path.join(abi_path, "include")
+                if os.isdir(before_r13) then
+                    platform:add("cxxflags", "-I" .. before_r13)
+                elseif os.isdir(after_r13) then
+                    platform:add("cxxflags", "-I" .. after_r13)
+                end
+            elseif ndk_cxxstl:startswith("gnustl") then
+                platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                if toolchains_arch then
+                    platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                end
+            elseif ndk_cxxstl:startswith("stlport") then
+                platform:add("cxxflags", format("-I%s/stlport", cxxstl_sdkdir))
+            end
+
+            -- add c++ stl links
+            if ndk_cxxstl == "llvmstl_static" then
+                platform:add("ldflags", "-lc++_static", "-lc++abi")
+                platform:add("shflags", "-lc++_static", "-lc++abi")
+            elseif ndk_cxxstl == "llvmstl_shared" then
+                platform:add("ldflags", "-lc++_shared", "-lc++")
+                platform:add("shflags", "-lc++_shared", "-lc++")
+            elseif ndk_cxxstl == "gnustl_static" then
+                platform:add("ldflags", "-lgnustl_static")
+                platform:add("shflags", "-lgnustl_static")
+            elseif ndk_cxxstl == "gnustl_shared" then
+                platform:add("ldflags", "-lgnustl_shared")
+                platform:add("shflags", "-lgnustl_shared")
+            elseif ndk_cxxstl == "stlport_static" then
+                platform:add("ldflags", "-lstlport_static")
+                platform:add("shflags", "-lstlport_static")
+            elseif ndk_cxxstl == "stlport_shared" then
+                platform:add("ldflags", "-lstlport_shared")
+                platform:add("shflags", "-lstlport_shared")
+            end
+            
         end
     end
 
