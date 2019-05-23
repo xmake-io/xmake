@@ -431,7 +431,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     if #output:trim() > 0 then
                         local lines = {}
                         for _, line in ipairs(output:split("\r\n")) do
-                            if not _include_note(self, line) then 
+                            if line:match("warning %a+[0-9]+%s*:") then
                                 table.insert(lines, line)
                             end
                         end
@@ -471,5 +471,4 @@ function compile(self, sourcefiles, objectfile, dependinfo, flags)
     -- for only single source file
     _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
-
 
