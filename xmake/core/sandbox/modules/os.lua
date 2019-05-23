@@ -347,8 +347,7 @@ function sandbox_os.iorun(cmd, ...)
         if #errors:trim() == 0 then
             errors = outdata or ""
         end
-        os.raise(errors)
---        os.raise({errors = errors, stderr = errdata, stdout = outdata})
+        os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
 
     -- ok
@@ -368,8 +367,7 @@ function sandbox_os.iorunv(program, argv, opt)
         if #errors:trim() == 0 then
             errors = outdata or ""
         end
-        os.raise(errors)
---        os.raise({errors = errors, stderr = errdata, stdout = outdata})
+        os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
 
     -- ok

@@ -228,7 +228,7 @@ function main(snippets, opt)
             cprint("${dim}> checking for the %s snippet(%s)", kind, name)
         end
     end
-    if errors and #errors > 0 and option.get("diagnosis") then
+    if errors and option.get("diagnosis") and #tostring(errors) > 0 then
         cprint("${color.warning}checkinfo:${clear dim} %s", errors)
     end
 

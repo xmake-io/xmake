@@ -478,7 +478,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- parse and strip errors
-                local lines = errors and errors:split('\n') or {}
+                local lines = errors and tostring(errors):split('\n') or {}
                 if not option.get("verbose") then
 
                     -- find the start line of error

@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.project")
 import("core.language.language")
 
@@ -391,22 +392,55 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
             return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
         end,
-        
         catch
         {
             function (errors)
+
+                -- use cl/stdout as errors first from os.iorunv()
+                if type(errors) == "table" then
+                    local errs = errors.stdout or ""
+                    if #errs:trim() == 0 then
+                        errs = errors.stderr or ""
+                    end
+                    errors = errs
+                end
 
                 -- try removing the old object file for forcing to rebuild this source file
                 os.tryrm(objectfile)
 
                 -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                 local results = ""
-                for _, line in ipairs(errors:split("\r\n")) do
+                for _, line in ipairs(tostring(errors):split("\r\n")) do
                     if not _include_note(self, line) then 
                         results = results .. line .. "\r\n"
                     end
                 end
                 os.raise(results)
+            end
+        },
+        finally
+        {
+            function (ok, outdata, errdata)
+
+                -- show warnings?
+                if ok and (option.get("diagnosis") or option.get("warning")) then
+                    local output = outdata or ""
+                    if #output:trim() == 0 then
+                        output = errdata or ""
+                    end
+                    if #output:trim() > 0 then
+                        local lines = {}
+                        for _, line in ipairs(output:split("\r\n")) do
+                            if not _include_note(self, line) then 
+                                table.insert(lines, line)
+                            end
+                        end
+                        if #lines > 0 then
+                            local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\r\n")
+                            cprint("${color.warning}%s", warnings)
+                        end
+                    end
+                end
             end
         }
     }

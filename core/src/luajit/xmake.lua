@@ -40,5 +40,11 @@ target("luajit")
         add_defines("LUAJIT_DISABLE_JIT")
     end
 
+    -- enable lua5.2 compat, @see http://luajit.org/extensions.html
+    --[[
+    add_defines("LUAJIT_ENABLE_LUA52COMPAT")
+    if not is_plat("windows") then
+        add_cflags("-Wno-error=unused-function")
+    end]]
 
        

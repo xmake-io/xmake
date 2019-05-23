@@ -120,8 +120,8 @@ function main(name, flags, opt)
             cprint("${dim}> %s %s", path.filename(tool.program), table.concat(checkflags, " "))
         end
     end
-    if errors and #errors > 0 and option.get("diagnosis") then
-        cprint("${color.warning}checkinfo:${clear dim} %s", errors:trim())
+    if errors and option.get("diagnosis")  and #tostring(errors) > 0 then
+        cprint("${color.warning}checkinfo:${clear dim} %s", tostring(errors):trim())
     end
 
     -- save result to cache

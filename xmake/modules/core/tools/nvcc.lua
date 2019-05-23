@@ -295,7 +295,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- find the start line of error
-                local lines = errors:split("\n")
+                local lines = tostring(errors):split("\n")
                 local start = 0
                 for index, line in ipairs(lines) do
                     if line:find("error:", 1, true) or line:find("错误：", 1, true) then
