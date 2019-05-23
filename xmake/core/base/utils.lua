@@ -196,11 +196,16 @@ function utils.trycall(script, traceback, ...)
                         errors = errs
                     end
                     if type(errors) == "table" then
-                        setmetatable(errors, { __tostring = function (self)
+                        setmetatable(errors, 
+                        { 
+                            __tostring = function (self)
                                 if self.errors then
                                     return self.errors
                                 end
                                 return string.serialize(self)
+                            end,
+                            __concat = function (self, other)
+                                return tostring(self) .. tostring(other)
                             end
                         })
                     end
