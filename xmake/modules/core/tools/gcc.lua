@@ -233,7 +233,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
+    return "-I" .. os.args(path.translate(dir))
 end
 
 -- make the link flag
@@ -248,11 +248,12 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(dir)
+    return "-L" .. os.args(path.translate(dir))
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
+    dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
         return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
@@ -270,7 +271,7 @@ end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. os.args(frameworkdir)
+    return "-F " .. os.args(path.translate(frameworkdir))
 end
 
 -- make the c precompiled header flag

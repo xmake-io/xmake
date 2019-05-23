@@ -234,7 +234,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
+    return "-I" .. os.args(path.translate(dir))
 end
 
 -- make the c precompiled header flag

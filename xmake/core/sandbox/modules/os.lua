@@ -348,6 +348,7 @@ function sandbox_os.iorun(cmd, ...)
             errors = outdata or ""
         end
         os.raise(errors)
+--        os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
 
     -- ok
@@ -368,6 +369,7 @@ function sandbox_os.iorunv(program, argv, opt)
             errors = outdata or ""
         end
         os.raise(errors)
+--        os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
 
     -- ok

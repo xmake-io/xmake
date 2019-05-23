@@ -86,7 +86,28 @@ function sandbox_try._traceback(errors)
     return results
 end
 
--- try 
+-- local ok = try 
+-- {
+--   function ()
+--      raise("errors")
+--      raise({errors = "xxx", xxx = "", yyy = ""})
+--      return true
+--   end,
+--   catch 
+--   {
+--      function (errors)
+--          print(errors)
+--          if errors then
+--              print(errors.xxx)
+--          end
+--      end
+--   },
+--   finally
+--   {
+--      function (ok, result_or_errors)
+--      end
+--   }
+-- }
 function sandbox_try.try(block)
 
     -- get the try function
