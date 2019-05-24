@@ -98,6 +98,42 @@ function sandbox._api_register_builtin(self, name, func)
     self._PUBLIC[name] = func
 end
 
+-- get builtin modules
+function sandbox._builtin_modules()
+    local builtin_modules = sandbox._BUILTIN_MODULES
+    if builtin_modules == nil then
+        builtin_modules = {}
+        local builtin_module_files = os.match(path.join(os.programdir(), "core/sandbox/modules/*.lua"))
+        if builtin_module_files then
+            for _, builtin_module_file in ipairs(builtin_module_files) do
+
+                -- the module name
+                local module_name = path.basename(builtin_module_file)
+                assert(module_name)
+
+                -- load script
+                local script, errors = loadfile(builtin_module_file)
+                if script then
+
+                    -- load module
+                    local ok, results = utils.trycall(script)
+                    if not ok then
+                        os.raise(results)
+                    end
+
+                    -- save module
+                    builtin_modules[module_name] = results
+                else
+                    -- error
+                    os.raise(errors)
+                end
+            end
+        end
+        sandbox._BUILTIN_MODULES = builtin_modules
+    end
+    return builtin_modules
+end
+
 -- new a sandbox instance
 function sandbox._new()
 
@@ -107,32 +143,10 @@ function sandbox._new()
     -- inherit the interfaces of sandbox
     table.inherit2(instance, sandbox)
 
-    -- load builtin module files
-    local builtin_module_files = os.match(path.join(os.programdir(), "core/sandbox/modules/*.lua"))
-    if builtin_module_files then
-        for _, builtin_module_file in ipairs(builtin_module_files) do
-
-            -- the module name
-            local module_name = path.basename(builtin_module_file)
-            assert(module_name)
-
-            -- load script
-            local script, errors = loadfile(builtin_module_file)
-            if script then
-
-                -- load module
-                local ok, results = utils.trycall(script)
-                if not ok then
-                    os.raise(results)
-                end
-
-                -- register module
-                instance:_api_register_builtin(module_name, results)
-            else
-                -- error
-                os.raise(errors)
-            end
-        end
+    -- register the builtin modules
+    instance:_api_register_builtin("_g", {})
+    for module_name, module in pairs(sandbox._builtin_modules()) do
+        instance:_api_register_builtin(module_name, module)
     end
 
     -- bind instance to the public script envirnoment
