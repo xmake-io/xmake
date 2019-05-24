@@ -34,13 +34,21 @@ xmake._PROJECT_FILE     = "xmake.lua"
 local _loadfile = _loadfile or loadfile
 local _loadcache = {}
 function loadfile(filepath)
-    local errors = nil
-    local script = _loadcache[filepath]
-    if script == nil then
-        script, errors = _loadfile(filepath)
-        if script and filepath:startswith(_PROGRAM_DIR) then
-            _loadcache[filepath] = script
+
+    -- attempt to load script from cache first
+    local mtime = nil
+    local cache = _loadcache[filepath]
+    if cache and cache.script then
+        mtime = os.mtime(filepath)
+        if mtime > 0 and cache.mtime == mtime then
+            return cache.script, nil
         end
+    end
+
+    -- load script from file
+    local script, errors = _loadfile(filepath)
+    if script then
+        _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
     return script, errors
 end
