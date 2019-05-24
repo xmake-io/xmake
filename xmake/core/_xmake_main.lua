@@ -30,7 +30,7 @@ xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 
--- init script loader
+-- init loadfile
 local _loadfile = _loadfile or loadfile
 local _loadcache = {}
 function loadfile(filepath)
