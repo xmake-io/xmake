@@ -30,6 +30,21 @@ xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 
+-- init script loader
+local _loadfile = _loadfile or loadfile
+local _loadcache = {}
+function loadfile(filepath)
+    local errors = nil
+    local script = _loadcache[filepath]
+    if script == nil then
+        script, errors = _loadfile(filepath)
+        if script and filepath:startswith(_PROGRAM_DIR) then
+            _loadcache[filepath] = script
+        end
+    end
+    return script, errors
+end
+
 -- init package path
 package.path = xmake._PROGRAM_DIR .. "/core/?.lua;" .. package.path
 
