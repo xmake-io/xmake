@@ -35,6 +35,9 @@ local _loadfile = _loadfile or loadfile
 local _loadcache = {}
 function loadfile(filepath)
 
+    -- get absolute path
+    filepath = path.absolute(filepath)
+
     -- attempt to load script from cache first
     local mtime = nil
     local cache = _loadcache[filepath]
