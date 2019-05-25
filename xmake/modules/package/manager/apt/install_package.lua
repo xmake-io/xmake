@@ -50,23 +50,9 @@ function main(name, opt)
     -- install with administrator permission?
     elseif sudo.has() then
 
-        -- get confirm
-        local confirm = option.get("yes")
-        if confirm == nil then
-
-            -- show tips
-            cprint("${bright color.warning}note: ${clear}try installing %s with administrator permission?", name)
-            cprint("please input: y (y/n)")
-
-            -- get answer
-            io.flush()
-            local answer = io.read()
-            if answer == 'y' or answer == '' then
-                confirm = true
-            end
-        end
-
         -- install it if be confirmed
+        local description = format("try installing %s with administrator permission", name)
+        local confirm = utils.confirm({default = true, description = description})
         if confirm then
             sudo.vrunv(apt.program, argv)
         end

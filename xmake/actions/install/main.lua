@@ -123,23 +123,8 @@ function main()
                 -- continue to install with administrator permission?
                 if sudo.has() then
 
-                    -- get confirm
-                    local confirm = option.get("yes")
-                    if confirm == nil then
-
-                        -- show tips
-                        cprint("${bright color.warning}note: ${clear}try continue to install with administrator permission again?")
-                        cprint("please input: y (y/n)")
-
-                        -- get answer
-                        io.flush()
-                        local answer = io.read()
-                        if answer == 'y' or answer == '' then
-                            confirm = true
-                        end
-                    end
-
                     -- confirm to install?
+                    local confirm = utils.confirm({default = true, description = "try continue to install with administrator permission again"})
                     if confirm then
 
                         -- install target with administrator permission

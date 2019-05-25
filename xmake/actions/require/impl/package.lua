@@ -426,8 +426,7 @@ function _get_confirm(packages)
     end
 
     -- get confirm
-    local confirm = option.get("yes")
-    if confirm == nil then
+    local confirm = utils.confirm({default = true, description = function ()
 
         -- get packages for each repositories
         local packages_repo = {}
@@ -472,17 +471,7 @@ function _get_confirm(packages)
                 end
             end
         end
-        cprint("please input: y (y/n)")
-
-        -- get answer
-        io.flush()
-        local answer = io.read()
-        if answer == 'y' or answer == '' then
-            confirm = true
-        end
-    end
-
-    -- ok?
+    end})
     return confirm
 end
 

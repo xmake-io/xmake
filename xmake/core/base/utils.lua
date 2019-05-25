@@ -253,7 +253,11 @@ function utils.confirm(opt)
     if confirm == nil then
 
         -- show tips
-        utils.cprint("${bright color.warning}note: ${clear}%s (pass -y or --confirm=y/n/d to skip confirm)?", description)
+        if type(description) == "function" then
+            description()
+        else
+            utils.cprint("${bright color.warning}note: ${clear}%s (pass -y or --confirm=y/n/d to skip confirm)?", description)
+        end
         utils.cprint("please input: %s (y/n)", default and "y" or "n")
 
         -- get answer

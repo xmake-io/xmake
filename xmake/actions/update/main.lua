@@ -73,23 +73,8 @@ function _sudo(cmd)
                 -- continue to install with administrator permission?
                 if sudo.has() then
 
-                    -- get confirm
-                    local confirm = option.get("yes")
-                    if confirm == nil then
-
-                        -- show tips
-                        cprint("\r${bright color.warning}note: ${clear}try continue to run `%s` with administrator permission again?", cmd)
-                        cprint("\rplease input: y (y/n)")
-
-                        -- get answer
-                        io.flush()
-                        local answer = io.read()
-                        if answer == 'y' or answer == '' then
-                            confirm = true
-                        end
-                    end
-
                     -- confirm to install?
+                    local confirm = utils.confirm({default = true, description = "try continue to run `%s` with administrator permission again"})
                     if confirm then
                         sudo.vrun(cmd)
                         return true

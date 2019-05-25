@@ -53,20 +53,8 @@ function _clear_packagedirs(packagedir)
                 status = "invalid"
             end
             if status then
-                local confirm = option.get("yes")
-                if confirm == nil then
-
-                    -- show tips
-                    cprint("${bright color.warning}note: ${clear}remove this ${magenta}%s-%s${clear}/${yellow}%s${clear} (${red}%s${clear}) (pass -y to skip confirm)?", package_name, version, hash, status)
-                    cprint("please input: y (y/n)")
-
-                    -- get answer
-                    io.flush()
-                    local answer = io.read()
-                    if answer == 'y' or answer == '' then
-                        confirm = true
-                    end
-                end
+                local description = string.format("remove this ${magenta}%s-%s${clear}/${yellow}%s${clear} (${red}%s${clear})", package_name, version, hash, status)
+                local confirm = utils.confirm({default = true, description = description})
                 if confirm then
                     os.rm(hashdir)
                 end
