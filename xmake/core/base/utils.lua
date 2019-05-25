@@ -216,5 +216,55 @@ function utils.trycall(script, traceback, ...)
         end, ...)
 end
 
+-- get confirm result
+--
+-- @code
+-- if utils.confirm({description = "xmake.lua not found, try generating it", default = true}) then
+--    TODO  
+-- end
+-- @endcode
+--
+function utils.confirm(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get default 
+    local default = opt.default
+    if default == nil then
+        default = false
+    end
+
+    -- get description
+    local description = opt.description or ""
+
+    -- get confirm result
+    local confirm = option.get("yes") or option.get("confirm")
+    if type(confirm) == "string" then
+        confirm = confirm:lower()
+        if confirm == "d" or confirm == "def" then
+            confirm = default
+        else
+            confirm = nil
+        end
+    end
+
+    -- get user confirm
+    if confirm == nil then
+
+        -- show tips
+        utils.cprint("${bright color.warning}note: ${clear}%s (pass -y or --confirm=y/n/d to skip confirm)?", description)
+        utils.cprint("please input: %s (y/n)", default and "y" or "n")
+
+        -- get answer
+        io.flush()
+        confirm = option.boolean(io.read():trim())
+        if type(confirm) ~= "boolean" then
+            confirm = default
+        end
+    end
+    return confirm
+end
+
 -- return module
 return utils

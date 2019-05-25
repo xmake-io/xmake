@@ -725,8 +725,8 @@ end
 
 -- get the boolean value
 function option.boolean(value)
-
     if type(value) == "string" then
+        value = value:lower()
         if value == "true" or value == "yes" or value == "y" then value = true
         elseif value == "false" or value == "no" or value == "n" then value = false
         end

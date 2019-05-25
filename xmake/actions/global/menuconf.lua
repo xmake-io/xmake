@@ -75,10 +75,9 @@ function app:_filter_option(name)
     ,   root        = true
     ,   yes         = true
     ,   quiet       = true
-    ,   profile     = true
+    ,   confirm     = true  
     ,   project     = true
     ,   verbose     = true
-    ,   backtrace   = true
     ,   diagnosis   = true
     ,   version     = true
     ,   help        = true

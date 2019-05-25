@@ -40,7 +40,7 @@ function cleanup()
 
     -- init argument list
     local argv = {"lua", path.join(os.scriptdir(), "cleaner.lua")}
-    for _, name in ipairs({"root", "file", "project", "diagnosis", "verbose", "quiet", "yes"}) do
+    for _, name in ipairs({"root", "file", "project", "diagnosis", "verbose", "quiet", "yes", "confirm"}) do
         local value = option.get(name)
         if type(value) == "string" then
             table.insert(argv, "--" .. name .. "=" .. value)

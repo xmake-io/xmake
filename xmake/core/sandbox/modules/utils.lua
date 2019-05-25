@@ -183,6 +183,11 @@ function sandbox_utils.assert(value, format, ...)
     return value
 end
 
+-- get user confirm 
+function sandbox_utils.confirm(opt)
+    return utils.confirm(opt)
+end
+
 -- return module
 return sandbox_utils
 

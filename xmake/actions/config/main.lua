@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("core.project.config")
 import("core.base.global")
+import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
@@ -41,7 +41,7 @@ function _option_filter(name)
     ,   root        = true
     ,   yes         = true
     ,   quiet       = true
-    ,   profile     = true
+    ,   confirm     = true
     ,   project     = true
     ,   verbose     = true
     ,   diagnosis   = true
@@ -148,28 +148,13 @@ function main()
     -- scan project and generate it if xmake.lua not exists
     if not os.isfile(project.file()) then
 
-        -- need some tips?
-        local autogen = true
-        if not option.get("quiet") and not option.get("yes") then
-
-            -- show tips
-            cprint("${bright color.warning}note: ${clear}xmake.lua not found, try generating it (pass -y to skip confirm)?")
-            cprint("please input: n (y/n)")
-
-            -- get answer
-            io.flush()
-            if io.read() ~= 'y' then
-                autogen = false
-            end
-        end
-
-        -- do not generate it
-        if not autogen then
+        -- scan and generate it automatically
+        local autogen = utils.confirm({default = false, description = "xmake.lua not found, try generating it"})
+        if autogen then
+            scangen()
+        else
             os.exit() 
         end
-
-        -- scan and generate it automatically
-        scangen()
     end
 
     -- enter menu config

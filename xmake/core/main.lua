@@ -28,7 +28,6 @@ local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
 local global        = require("base/global")
-local profiler      = require("base/profiler")
 local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
@@ -36,6 +35,7 @@ local colors        = require("base/colors")
 local theme         = require("theme/theme")
 local project       = require("project/project")
 local history       = require("project/history")
+--local profiler      = require("base/profiler")
 
 -- init the option menu
 local menu =
@@ -195,15 +195,8 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         end
     end
 
-    -- check deprecated options, TODO it will be removed after v2.3.0
-    if option.get("backtrace") then
-        deprecated.add("-D or --diagnosis", "--backtrace")
-    end
-
     -- start profiling
-    if option.get("profile") then
-        profiler:start()
-    end
+    -- profiler:start()
 
     -- load global configuration
     ok, errors = global.load()
@@ -249,9 +242,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     deprecated.dump()
 
     -- stop profiling
-    if option.get("profile") then
-        profiler:stop()
-    end
+    -- profiler:stop()
 
     -- close log
     log:close()
