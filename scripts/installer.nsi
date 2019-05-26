@@ -14,7 +14,7 @@
 ;--------------------------------
 
 ; The name of the installer
-Name "xmake-v2.2.5"
+Name "xmake-v2.2.6"
 
 ; The file to write
 OutFile "xmake.exe"
@@ -60,13 +60,13 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "2.2.5.0401"
+VIProductVersion "2.2.6.0526"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: https://xmake.io"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2015-2019 tboox.org"
 VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "A cross-platform build utility based on Lua"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.2.5"
+VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.2.6"
 
 ;--------------------------------
 

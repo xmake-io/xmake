@@ -4,7 +4,7 @@
 
 param (
     [string]$branch = "master", 
-    [string]$version = "v2.2.5"
+    [string]$version = "v2.2.6"
 )
 
 & {
