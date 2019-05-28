@@ -10,7 +10,7 @@ url="https://github.com/xmake-io/xmake"
 license=('Apache')
 makedepends=()
 source=("$pkgname.zip::https://github.com/xmake-io/xmake/archive/v${pkgver}.zip")
-sha256sums=('8823d8f60c34ffe77c5b9b0a3a522fc5a0fb1a32dcb9de0f3c927a99ecb6fd8a')
+sha256sums=('0629a1d48289dfca1eaedfab97bc070a5446346a9473f1ed42bbcba9abbabbb0')
 
 build() {
     cd "$srcdir/${pkgname}-${pkgver}"
