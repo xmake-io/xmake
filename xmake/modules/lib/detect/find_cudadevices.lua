@@ -240,7 +240,7 @@ function _order_by_flops(devices)
     return devices
 end
 
--- find cuda devices on the host
+-- find cuda devices of the host
 --
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, cachekey = "xxxx", min_sm_arch = 35, skip_compute_mode_prohibited = false, order_by_flops = true }
