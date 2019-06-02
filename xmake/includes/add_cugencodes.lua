@@ -41,7 +41,7 @@
 
 
 -- define rule
-rule("cuda.add_gencodes")
+rule("cuda.add_cugencodes")
     before_load(function (target)
 
         local function set (list)
@@ -55,12 +55,11 @@ rule("cuda.add_gencodes")
         local knownRArchs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
 
         local function nf_cugencode(archs)
+
             if type(archs) ~= 'string' then
                 return nil
             end
-
             archs = archs:trim():lower()
-
             if archs == 'native' then
                 import("lib.detect.find_cudadevices")
                 local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_flops = true })[1]
@@ -105,7 +104,6 @@ rule("cuda.add_gencodes")
                     end
                     vArch = tempVArch
                 end
-
                 if not (tempRArch or tempVArch) then
                     raise("Unknown architecture: " .. arch)
                 end
@@ -114,14 +112,12 @@ rule("cuda.add_gencodes")
             if vArch == nil and #rArchs == 0 then
                 return nil
             end
-            
             if #rArchs == 0 then
                 return '-gencode arch=compute_' .. vArch .. ',code=compute_' .. vArch
             end
 
             rArchs = table.unique(rArchs)
             vArch = vArch or math.min(unpack(rArchs))
-
             if #rArchs == 1 then
                 return '-gencode arch=compute_' .. vArch .. ',code=sm_' .. rArchs[1]
             else
@@ -141,8 +137,7 @@ rule_end()
 
 -- add cuda gencode to target
 function add_cugencodes(...)
-    -- apply rule
-    add_rules("cuda.add_gencodes")
+    add_rules("cuda.add_cugencodes")
     add_values("cuda.gencode", ...)
 end
 

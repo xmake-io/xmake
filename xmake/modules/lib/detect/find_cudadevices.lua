@@ -50,7 +50,6 @@ function _parse_value(value)
 
     if value:lower() == "true" then return true end
     if value:lower() == "false" then return false end
-
     if value:startswith('"') and value:endswith('"') then
         return value:sub(2, -2)
     end
@@ -111,6 +110,7 @@ end
 
 -- find devices
 function _find_devices(verbose)
+
     local nvcc = platform.tool("cu")
     if nvcc == nil then
         raise('nvcc not found')
@@ -122,13 +122,21 @@ function _find_devices(verbose)
 
     local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cu')
     local outfile = os.tmpfile()
-
     local compileerrors = nil
-    local results, errors = try { function () 
-        return os.iorunv(nvcc, { sourcefile, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
-    end, catch {function (errs) compileerrors = tostring(errs) end} }
+    local results, errors = try 
+    { 
+        function () 
+            return os.iorunv(nvcc, { sourcefile, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
+        end, 
+        catch 
+        {
+            function (errs) 
+                compileerrors = tostring(errs) 
+            end
+        } 
+    }
 
-    if compileerrors ~=nil then
+    if compileerrors then
         if not option.get("diagnosis") then
             compileerrors = compileerrors:split('\n')[1]
         end
@@ -137,12 +145,11 @@ function _find_devices(verbose)
     end
 
     -- clean up
-    os.rm(outfile)
-    os.rm(outfile .. '.*')
+    os.tryrm(outfile)
+    os.tryrm(outfile .. '.*')
 
     local results_lines = _get_lines(results)
     local errors_lines = _get_lines(errors)
-
     if #errors_lines ~= 0 then
         utils.warning("failed to find cuda devices: " .. table.concat(errors_lines, '\n'))
         return nil
@@ -161,6 +168,7 @@ end
 
 -- get devices array form cache or via _find_devices
 function _get_devices(opt)
+
     -- init cachekey
     local cachekey = "find_cudadevices"
     if opt.cachekey then
@@ -175,7 +183,6 @@ function _get_devices(opt)
 
     local verbose = opt.verbose or option.get("verbose") or option.get("diagnosis")
     local devices = _find_devices(verbose)
-
     if devices then
         cachedata = { succeed = true, data = devices }
     else
@@ -250,6 +257,7 @@ end
 --              keys might be differ as your cuda version varies
 --
 function main(opt)
+
     -- init options
     opt = opt or {}
 
