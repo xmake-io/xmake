@@ -15,7 +15,7 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      OpportunityLiu
--- @file        add_cugencode.lua
+-- @file        add_cugencodes.lua
 --
 
 -- add cuda `-gencode` flags to target
@@ -32,16 +32,16 @@
 --                                    @seealso xmake/modules/lib/detect/find_cudadevices
 --
 -- e.g.
--- includes("add_cugencode.lua")
+-- includes("add_cugencodes.lua")
 -- target("test")
 --    set_kind("binary")
 --    add_files("src/*.cu")
---    add_cugencode("native", "compute_50,sm_50", "compute_70")
+--    add_cugencodes("native", "compute_50,sm_50", "compute_70")
 --
 
 
 -- define rule
-rule("cuda.add_gencode")
+rule("cuda.add_gencodes")
     before_load(function (target)
 
         local function set (list)
@@ -140,9 +140,9 @@ rule("cuda.add_gencode")
 rule_end()
 
 -- add cuda gencode to target
-function add_cugencode(...)
+function add_cugencodes(...)
     -- apply rule
-    add_rules("cuda.add_gencode")
+    add_rules("cuda.add_gencodes")
     add_values("cuda.gencode", ...)
 end
 
