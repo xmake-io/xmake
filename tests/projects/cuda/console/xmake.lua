@@ -1,3 +1,6 @@
+
+includes('add_cugencode.lua')
+
 -- define target
 target("cuda_console")
 
@@ -11,14 +14,9 @@ target("cuda_console")
     add_files("src/*.cu")
 
     -- generate SASS code for each SM architecture
-    for _, sm in ipairs({"30", "35", "37", "50", "52", "60", "61", "70"}) do
-        add_cuflags("-gencode arch=compute_" .. sm .. ",code=sm_" .. sm)
-        add_ldflags("-gencode arch=compute_" .. sm .. ",code=sm_" .. sm)
-    end
+    add_cugencode("sm_30", "sm_35", "sm_37", "sm_50", "sm_52", "sm_60", "sm_61", "sm_70")
 
     -- generate PTX code from the highest SM architecture to guarantee forward-compatibility
-    sm = "70"
-    add_cuflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
-    add_ldflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
- 
+    add_cugencode("compute_70")
+
     
