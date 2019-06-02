@@ -63,7 +63,7 @@ rule("cuda.add_gencode")
 
             if archs == 'native' then
                 import("lib.detect.find_cudadevices")
-                local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_gflops = true })[1]
+                local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_flops = true })[1]
                 if device then
                     return nf_cugencode('sm_' .. device.major .. device.minor)
                 end

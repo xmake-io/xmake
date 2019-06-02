@@ -209,7 +209,7 @@ function _min_sm_arch(devices, min_sm_arch)
     return results
 end
 
-function _order_by_gflops(devices)
+function _order_by_flops(devices)
     local nGpuArchCoresPerSM = {
         [30] =    192
     ,   [32] =    192
@@ -243,7 +243,7 @@ end
 -- find cuda devices on the host
 --
 -- @param opt   the options
---              e.g. { verbose = false, force = false, cachekey = "xxxx", min_sm_arch = 35, skip_compute_mode_prohibited = false, order_by_gflops = true }
+--              e.g. { verbose = false, force = false, cachekey = "xxxx", min_sm_arch = 35, skip_compute_mode_prohibited = false, order_by_flops = true }
 --
 -- @return      { { ['$id'] = 0, name = "GeForce GTX 960M", major = 5, minor = 0, ... }, ... }
 --              for all keys, see https://docs.nvidia.com/cuda/cuda-runtime-api/structcudaDeviceProp.html#structcudaDeviceProp
@@ -263,8 +263,8 @@ function main(opt)
     if opt.skip_compute_mode_prohibited then
         devices = _skip_compute_mode_prohibited(devices)
     end
-    if opt.order_by_gflops then
-        devices = _order_by_gflops(devices)
+    if opt.order_by_flops then
+        devices = _order_by_flops(devices)
     end
 
     return devices
