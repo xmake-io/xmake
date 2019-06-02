@@ -1,23 +1,27 @@
+
+-- add modes: debug and release
+add_rules("mode.debug", "mode.release")
+
+-- add helper function add_cugencodes
+includes('add_cugencodes.lua')
+
 -- define target
 target("[targetname]")
 
     -- set kind
     set_kind("binary")
 
-    -- add include directories
-    add_includedirs("inc")
-
     -- add files
     add_files("src/*.cu")
 
-    -- generate SASS code for each SM architecture
-    for _, sm in ipairs({"30", "35", "37", "50", "52", "60", "61", "70"}) do
-        add_cuflags("-gencode arch=compute_" .. sm .. ",code=sm_" .. sm)
-        add_ldflags("-gencode arch=compute_" .. sm .. ",code=sm_" .. sm)
-    end
+    -- generate SASS code for SM architecture of current host
+    add_cugencodes("native")
 
-    -- generate PTX code from the highest SM architecture to guarantee forward-compatibility
-    sm = "70"
-    add_cuflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
-    add_ldflags("-gencode arch=compute_" .. sm .. ",code=compute_" .. sm)
+    -- generate PTX code for the virtual architecture to guarantee compatibility
+    add_cugencodes("compute_30")
 
+    -- -- generate SASS code for each SM architecture
+    -- add_cugencodes("sm_30", "sm_35", "sm_37", "sm_50", "sm_52", "sm_60", "sm_61", "sm_70", "sm_75")
+
+    -- -- generate PTX code from the highest SM architecture to guarantee forward-compatibility
+    -- add_cugencodes("compute_75")
