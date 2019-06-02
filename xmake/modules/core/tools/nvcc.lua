@@ -24,6 +24,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("detect.tools.find_ccache")
+import("private.tools.parse_deps")
 
 -- init it
 function init(self)
@@ -58,7 +59,7 @@ function nf_symbol(self, level)
     -- the maps
     local maps = 
     {   
-        debug  = "-g"
+        debug  = "-g -G"
     }
 
     -- make it
@@ -127,8 +128,8 @@ end
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -138,7 +139,7 @@ function nf_optimize(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the language flag
@@ -281,9 +282,22 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
+    local depfile = dependinfo and os.tmpfile() or nil
     try
     {
         function ()
+            -- support `-M -MF depfile.d`? 
+            if depfile and _g._HAS_M_MF == nil then
+                _g._HAS_M_MF = self:has_flags({"-M", "-MF", os.nuldev()}, "cuflags") or false
+            end
+
+            -- generate includes file
+            if depfile and _g._HAS_M_MF then
+                local compflags = table.join(flags, "-M", "-MF", depfile)
+                -- since -MD is not supported, run nvcc twice
+                os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+            end
+
             local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
@@ -321,6 +335,19 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 -- print some warnings
                 if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning")) then
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                end
+
+                -- generate the dependent includes
+                if depfile and os.isfile(depfile) then
+                    local depdata = io.readfile(depfile)
+                    if dependinfo and self:kind() ~= "as" and depdata then
+                        local files = dependinfo.files or {}
+                        table.join2(files, parse_deps(depdata))
+                        dependinfo.files = table.unique(files)
+                    end
+
+                    -- remove the temporary dependent file
+                    os.tryrm(depfile)
                 end
             end
         }

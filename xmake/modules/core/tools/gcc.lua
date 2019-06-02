@@ -24,6 +24,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("detect.tools.find_ccache")
+import("private.tools.parse_deps")
 
 -- init it
 function init(self)
@@ -327,60 +328,6 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- get include deps
---
--- strcpy.o: src/tbox/libc/string/strcpy.c src/tbox/libc/string/string.h \
---  src/tbox/libc/string/prefix.h src/tbox/libc/string/../prefix.h \
---  src/tbox/libc/string/../../prefix.h \
---  src/tbox/libc/string/../../prefix/prefix.h \
---  src/tbox/libc/string/../../prefix/config.h \
---  src/tbox/libc/string/../../prefix/../config.h \
---  build/iphoneos/x86_64/release/tbox.config.h \
---
-function _get_include_deps(outdata)
-
-    -- translate it
-    local results = {}
-    local uniques = {}
-    local spacech = false
-    for _, line in ipairs(outdata:split("\n")) do
-        local p = line:find(':', 1, true)
-        if p then
-            line = line:sub(p + 1)
-        end
-        if line:endswith('\\') then
-            line = line:sub(1, -2)
-        end
-        line = line:trim()
-        spacech = false
-        if line:find(' ', 1, true) then
-            line = line:gsub("\\ ", "__spacechar__")
-            spacech = true
-        end
-        for _, includefile in ipairs(line:split("%s+")) do
-            if spacech then
-                includefile = includefile:gsub("__spacechar__", " ")
-            end
-            includefile = includefile:trim()
-            if #includefile > 0 then
-
-                -- get the relative
-                includefile = path.relative(includefile, project.directory())
-
-                -- save it if belong to the project
-                if path.absolute(includefile):startswith(os.projectdir()) then
-
-                    -- insert it and filter repeat
-                    if not uniques[includefile] then
-                        table.insert(results, includefile)
-                        uniques[includefile] = true
-                    end
-                end
-            end
-        end
-    end
-    return results
-end
 
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
@@ -496,11 +443,6 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                 end
 
-                -- remove the temporary dependent file
-                if depfile then
-                    os.tryrm(depfile)
-                end
-
                 -- raise compiling errors
                 raise(#lines > 0 and table.concat(lines, "\n") or "")
             end
@@ -508,7 +450,6 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         finally
         {
             function (ok, outdata, errdata)
-
                 -- show warnings?
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
                     local lines = errdata:split('\n')
@@ -517,21 +458,22 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                         cprint("${color.warning}%s", warnings)
                     end
                 end
+
+                -- generate the dependent includes
+                if depfile and os.isfile(depfile) then
+                    local depdata = io.readfile(depfile)
+                    if dependinfo and self:kind() ~= "as" and depdata then
+                        local files = dependinfo.files or {}
+                        table.join2(files, parse_deps(depdata))
+                        dependinfo.files = table.unique(files)
+                    end
+
+                    -- remove the temporary dependent file
+                    os.tryrm(depfile)
+                end
             end
         }
     }
-
-    -- generate the dependent includes
-    if depfile and os.isfile(depfile) then
-        local depdata = io.readfile(depfile)
-        if dependinfo and self:kind() ~= "as" and depdata then
-            dependinfo.files = dependinfo.files or {}
-            table.join2(dependinfo.files, _get_include_deps(depdata))
-        end
-
-        -- remove the temporary dependent file
-        os.tryrm(depfile)
-    end
 end
 
 -- make the complie arguments list
