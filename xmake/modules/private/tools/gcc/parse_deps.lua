@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,7 +22,7 @@
 import("core.project.project")
 
 -- a placeholder for spaces in path
-local space_placeholder = "\001*\002"
+local space_placeholder = "\001"
 
 -- normailize path of a dependecy
 function _normailize_dep(dep)
