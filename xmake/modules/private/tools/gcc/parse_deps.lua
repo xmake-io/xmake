@@ -15,14 +15,14 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        gcc.lua
+-- @file        parse_deps.lua
 --
 
 -- imports
 import("core.project.project")
 
 -- a placeholder for spaces in path
-local spacePlaceHolder = "\001*\002"
+local space_placeholder = "\001*\002"
 
 -- normailize path of a dependecy
 function _normailize_dep(dep)
@@ -65,9 +65,9 @@ function main(depsdata)
         local p = line:find(':', 1, true)
         if p ~= nil then
             line = line:sub(p + 1)
-            line = line:gsub("\\ ", spacePlaceHolder)
+            line = line:gsub("\\ ", space_placeholder)
             for _, includefile in ipairs(line:split("%s")) do
-                includefile = includefile:gsub(spacePlaceHolder, " ")
+                includefile = includefile:gsub(space_placeholder, " ")
                 includefile = _normailize_dep(includefile)
                 if includefile then
                     table.insert(results, includefile)

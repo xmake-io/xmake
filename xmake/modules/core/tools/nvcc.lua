@@ -24,7 +24,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("detect.tools.find_ccache")
-import("private.tools.gcc.parse_deps")
+import("private.tools.nvcc.parse_deps")
 
 -- init it
 function init(self)
