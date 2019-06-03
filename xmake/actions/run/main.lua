@@ -32,11 +32,14 @@ import("devel.debugger")
 function _do_run_target(target)
     if target:targetkind() == "binary" then
 
+        -- get the work directory of target
+        local workdir = option.get("workdir") or path.directory(target:targetfile())
+
         -- get the absolute target file path
         local targetfile = path.absolute(target:targetfile())
 
-        -- enter the target directory
-        local oldir = os.cd(path.directory(target:targetfile()))
+        -- enter the work directory
+        local oldir = os.cd(workdir)
 
         -- add search directories for all dependent shared libraries on windows
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
@@ -78,7 +81,7 @@ function _on_run_target(target)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        return 
+        return
     end
 
     -- build target with rules
