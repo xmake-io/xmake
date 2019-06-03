@@ -95,18 +95,30 @@ function winos.version()
 
     -- get it from cache first
     if winos._VERSION ~= nil then
-        return winos._VERSION 
+        return winos._VERSION
     end
 
     -- get winver
     local winver = nil
     local ok, verstr = os.iorun("cmd /c ver")
     if ok and verstr then
-        winver = verstr:match("%[.-(%d+%.%d+%.%d+)]")
+        winver = verstr:match("%[.-([%d%.]+)]")
         if winver then
             winver = winver:trim()
         end
-        winver = semver.new(winver)
+        local sem_winver = nil
+        local seg = 0
+        for num in winver:gmatch("%d+") do
+            if seg == 0 then
+                sem_winver = num
+            elseif seg == 3 then
+                sem_winver = sem_winver .. "+" .. num
+            else
+                sem_winver = sem_winver .. "." .. num
+            end
+            seg = seg + 1
+        end
+        winver = semver.new(sem_winver)
     end
 
     -- rewrite comparator
