@@ -26,17 +26,20 @@ local space_placeholder = "\001"
 
 -- normailize path of a dependecy
 function _normailize_dep(dep)
+    
+    -- check
     dep = dep:trim()
     if #dep == 0 then
         return nil
     end
+    
+    -- tranlate dep path
     dep = path.relative(dep, project.directory())
     dep = path.absolute(dep, project.directory())
+
     -- save it if belong to the project
     if dep:startswith(os.projectdir()) then
-        -- get the relative
-        dep = path.relative(dep, project.directory())
-        return dep
+        return path.relative(dep, project.directory())
     end
 end
 
@@ -52,18 +55,18 @@ end
 --  build/iphoneos/x86_64/release/tbox.config.h \
 --
 function main(depsdata)
+
+    -- check
     if not depsdata or #depsdata == 0 then
         return {}
     end
 
+    -- parse results
     local results = {}
-
-    -- translate it
     local data = depsdata:gsub("\\\n", "")
-
     for _, line in ipairs(data:split("\n")) do
         local p = line:find(':', 1, true)
-        if p ~= nil then
+        if p then
             line = line:sub(p + 1)
             line = line:gsub("\\ ", space_placeholder)
             for _, includefile in ipairs(line:split("%s")) do

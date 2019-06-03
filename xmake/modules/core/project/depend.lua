@@ -20,7 +20,10 @@
 
 -- load dependent info from the given file (.d) 
 function load(dependfile)
-    return os.isfile(dependfile) and io.load(dependfile) or nil
+    if os.isfile(dependfile) then
+        -- may be the depend file has been incomplete when if the compilation process is abnormally interrupted
+        return try { function() return io.load(dependfile) end }
+    end
 end
 
 -- save dependent info to file
