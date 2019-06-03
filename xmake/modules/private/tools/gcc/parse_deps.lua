@@ -66,7 +66,7 @@ function main(depsdata)
         if p ~= nil then
             line = line:sub(p + 1)
             line = line:gsub("\\ ", spacePlaceHolder)
-            for _, includefile in ipairs(line:split("%s+")) do
+            for _, includefile in ipairs(line:split("%s")) do
                 includefile = includefile:gsub(spacePlaceHolder, " ")
                 includefile = _normailize_dep(includefile)
                 if includefile then
