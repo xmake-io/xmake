@@ -41,12 +41,15 @@ task("run")
                 -- options
             ,   options = 
                 {
-                    {'d', "debug",      "k",  nil,          "Run and debug the given target."                               }
-                ,   {'a', "all",        "k",  nil,          "Run all targets."                                              }
-
+                    {'d', "debug",      "k",   nil,          "Run and debug the given target."                                    }
+                ,   {'a', "all",        "k",   nil,          "Run all targets."                                                   }
+                ,   {'w', "workdir",    "kv",  nil,          "Work directory of runing targets, default is folder of targetfile",
+                                                             "e.g.",
+                                                             "    --workdir=.",
+                                                             "    --workdir=`pwd`"                                                }
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Run the given target."                                         }      
-                ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                          }
+                ,   {nil, "target",     "v",   nil,          "Run the given target."                                              }
+                ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                                }
                 }
             }
 
