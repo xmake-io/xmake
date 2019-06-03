@@ -122,7 +122,7 @@ function _find_devices(verbose)
 
     local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cu')
     local outfile = os.tmpfile()
-    local compileerrors = nil
+    local compile_errors = nil
     local results, errors = try 
     { 
         function () 
@@ -131,16 +131,16 @@ function _find_devices(verbose)
         catch 
         {
             function (errs) 
-                compileerrors = tostring(errs) 
+                compile_errors = tostring(errs) 
             end
         } 
     }
 
-    if compileerrors then
+    if compile_errors then
         if not option.get("diagnosis") then
-            compileerrors = compileerrors:split('\n')[1]
+            compile_errors = compile_errors:split('\n')[1]
         end
-        utils.warning("failed to find cuda devices: " .. compileerrors)
+        utils.warning("failed to find cuda devices: " .. compile_errors)
         return nil
     end
 
@@ -148,6 +148,7 @@ function _find_devices(verbose)
     os.tryrm(outfile)
     os.tryrm(outfile .. '.*')
 
+    -- get results
     local results_lines = _get_lines(results)
     local errors_lines = _get_lines(errors)
     if #errors_lines ~= 0 then
@@ -197,9 +198,9 @@ end
 
 function _skip_compute_mode_prohibited(devices)
     local results = {}
-    local cudaComputeModeProhibited = 2
+    local cuda_compute_mode_prohibited = 2
     for _, dev in ipairs(devices) do
-        if dev.computeMode ~= cudaComputeModeProhibited then
+        if dev.computeMode ~= cuda_compute_mode_prohibited then
             table.insert(results, dev)
         end
     end
@@ -217,7 +218,7 @@ function _min_sm_arch(devices, min_sm_arch)
 end
 
 function _order_by_flops(devices)
-    local nGpuArchCoresPerSM = {
+    local ngpu_arch_cores_per_sm = {
         [30] =    192
     ,   [32] =    192
     ,   [35] =    192
@@ -238,7 +239,7 @@ function _order_by_flops(devices)
         if dev.major == 9999 and dev.minor == 9999 then
             sm_per_multiproc = 1
         else
-            sm_per_multiproc = nGpuArchCoresPerSM[dev.major * 10 + dev.minor] or 64;
+            sm_per_multiproc = ngpu_arch_cores_per_sm[dev.major * 10 + dev.minor] or 64;
         end
         dev['$flops'] = dev.multiProcessorCount * sm_per_multiproc * dev.clockRate
     end
