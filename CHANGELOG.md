@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Changes
+
+* [#430](https://github.com/xmake-io/xmake/pull/430): Add `includes("add_cucodegens.lua")` to improve set codegen for cuda
+* [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file 
+
 ## v2.2.6
 
 ### New features
@@ -583,6 +588,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#430](https://github.com/xmake-io/xmake/pull/430): 添加`includes("add_cucodegens.lua")`为cuda改进设置codegen
+* [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测
 
 ## v2.2.6
 
