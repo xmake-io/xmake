@@ -162,7 +162,7 @@ function _instance:nameflags()
         for _, namedflag in ipairs(nameflags) do
 
             -- split it by '.'
-            local splitinfo = namedflag:split('.')
+            local splitinfo = namedflag:split('.', {plain = true})
             assert(#splitinfo == 2)
 
             -- get flag scope

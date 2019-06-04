@@ -114,7 +114,7 @@ function sandbox_core_package_repository.repositories(is_global)
     --
     if not is_global then
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
-            local repoinfo = repo:split(' ')
+            local repoinfo = repo:split('%s')
             if #repoinfo <= 3 then
                 local repo = repository.load(repoinfo[1], repoinfo[2], repoinfo[3], is_global)
                 if repo then

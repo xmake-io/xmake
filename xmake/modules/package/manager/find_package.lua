@@ -159,7 +159,7 @@ function main(name, opt)
     opt.mode = opt.mode or config.mode() or "release"
 
     -- get package manager name
-    local manager_name, package_name = unpack(name:split("::", true))
+    local manager_name, package_name = unpack(name:split("::", {plain = true, strict = true}))
     if package_name == nil then
         package_name = manager_name
         manager_name = nil
@@ -169,7 +169,7 @@ function main(name, opt)
 
     -- get package name and require version
     local require_version = nil
-    package_name, require_version = unpack(package_name:trim():split("%s+"))
+    package_name, require_version = unpack(package_name:trim():split("%s"))
     opt.version = require_version or opt.version
 
     -- find package

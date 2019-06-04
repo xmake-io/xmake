@@ -313,7 +313,7 @@ function _include_deps(self, outdata)
     -- translate it
     local results = {}
     local uniques = {}
-    for _, line in ipairs(outdata:split("\r\n")) do
+    for _, line in ipairs(outdata:split("\r\n", {plain = true})) do
 
         -- get includefile
         local includefile = _include_note(self, line)
@@ -410,7 +410,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                 local results = ""
-                for _, line in ipairs(tostring(errors):split("\r\n")) do
+                for _, line in ipairs(tostring(errors):split("\r\n", {plain = true})) do
                     if not _include_note(self, line) then 
                         results = results .. line .. "\r\n"
                     end
@@ -430,7 +430,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                     if #output:trim() > 0 then
                         local lines = {}
-                        for _, line in ipairs(output:split("\r\n")) do
+                        for _, line in ipairs(output:split("\r\n", {plain = true})) do
                             if line:match("warning %a+[0-9]+%s*:") then
                                 table.insert(lines, line)
                             end

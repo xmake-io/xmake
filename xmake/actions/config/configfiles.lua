@@ -181,7 +181,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             -- is ${define variable}?
             local isdefine = false
             if variable:startswith("define ") then
-                variable = variable:split("%s+")[2]
+                variable = variable:split("%s")[2]
                 isdefine = true
             end
 
@@ -189,7 +189,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             local default = nil
             local isdefault = false
             if variable:startswith("default ") then
-                local varinfo = variable:split("%s+")
+                local varinfo = variable:split("%s")
                 variable  = varinfo[2]
                 default   = varinfo[3]
                 isdefault = true

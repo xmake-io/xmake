@@ -65,7 +65,7 @@ function info(name, opt)
 
         -- init result
         result = {}
-        for _, flag in ipairs(flags:split('%s*')) do
+        for _, flag in ipairs(flags:split('%s')) do
 
             -- get links
             local link = flag:match("%-l(.*)") 

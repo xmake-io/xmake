@@ -143,19 +143,42 @@ function string:find_last(pattern, plain)
     end
 end
 
--- split string with the given characters
+-- split string with the given substring/characters
 --
+-- pattern match and ignore empty string
 -- ("1\n\n2\n3"):split('\n') => 1, 2, 3
--- ("1\n\n2\n3"):split('\n', true) => 1, , 2, 3
+-- ("abc123123xyz123abc"):split('123') => abc, xyz, abc
+-- ("abc123123xyz123abc"):split('[123]+') => abc, xyz, abc
 --
-function string:split(delimiter, strict)
+-- plain match and ignore empty string
+-- ("1\n\n2\n3"):split('\n', {plain = true}) => 1, 2, 3
+-- ("abc123123xyz123abc"):split('123', {plain = true}) => abc, xyz, abc
+--
+-- pattern match and contains empty string
+-- ("1\n\n2\n3"):split('\n', {strict = true}) => 1, , 2, 3
+-- ("abc123123xyz123abc"):split('123', {strict = true}) => abc, , xyz, abc
+-- ("abc123123xyz123abc"):split('[123]+', {strict = true}) => abc, xyz, abc
+--
+-- plain match and contains empty string
+-- ("1\n\n2\n3"):split('\n', {plain = true, strict = true}) => 1, , 2, 3
+-- ("abc123123xyz123abc"):split('123', {plain = true, strict = true}) => abc, , xyz, abc
+--
+function string:split(delimiter, opt)
     local result = {}
-    if strict then
-        for match in (self .. delimiter):gmatch("(.-)" .. delimiter) do
-            table.insert(result, match)
+    local start = 1
+    local pos, epos = self:find(delimiter, start, opt and opt.plain) 
+    while pos do
+        local substr = self:sub(start, pos - 1)
+        if #substr > 0 then
+            table.insert(result, substr)
+        elseif opt and opt.strict then
+            table.insert(result, substr)
         end
-    else
-        self:gsub("[^" .. delimiter .."]+", function(v) table.insert(result, v) end)
+        start = epos + 1
+        pos, epos = self:find(delimiter, start, opt and opt.plain) 
+    end
+    if start <= #self then
+        table.insert(result, self:sub(start))
     end
     return result
 end

@@ -309,7 +309,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- find the start line of error
-                local lines = tostring(errors):split("\n")
+                local lines = tostring(errors):split("\n", {plain = true})
                 local start = 0
                 for index, line in ipairs(lines) do
                     if line:find("error:", 1, true) or line:find("错误：", 1, true) then
@@ -334,7 +334,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- print some warnings
                 if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning")) then
-                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
+                    cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n', {plain = true}), 1, 8), '\n'))
                 end
 
                 -- generate the dependent includes

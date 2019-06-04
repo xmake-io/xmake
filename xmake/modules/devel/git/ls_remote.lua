@@ -58,7 +58,7 @@ function main(reftype, url)
     for _, line in ipairs(data:split('\n')) do
 
         -- parse commit and ref
-        local refinfo = line:split('%s+')
+        local refinfo = line:split('%s')
 
         -- get commit 
         local commit = refinfo[1]

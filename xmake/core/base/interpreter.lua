@@ -119,7 +119,7 @@ function interpreter._fetch_root_scope(root)
     for scope_kind_and_name, _ in pairs(root or {}) do
         
         -- is scope_kind@@scope_name?
-        scope_kind_and_name = scope_kind_and_name:split("@@")
+        scope_kind_and_name = scope_kind_and_name:split("@@", {plain = true})
         if #scope_kind_and_name == 2 then
             local scope_kind = scope_kind_and_name[1] 
             local scope_name = scope_kind_and_name[2]
@@ -1413,7 +1413,7 @@ function interpreter:api_define(apis)
             -- get api function 
             local apiscope = nil
             local funcname = nil
-            apifunc = apifunc:split('.')
+            apifunc = apifunc:split('.', {plain = true})
             assert(apifunc)
             if #apifunc == 2 then
                 apiscope = apifunc[1]
@@ -1470,7 +1470,7 @@ function interpreter:api_builtin_set_xmakever(minver)
     end
 
     -- parse minimum version
-    local minvers = minver:split('.')
+    local minvers = minver:split('.', {plain = true})
     if not minvers or #minvers ~= 3 then
         os.raise("[nobacktrace]: set_xmakever(\"%s\"): invalid version format!", minver)
     end
@@ -1479,7 +1479,7 @@ function interpreter:api_builtin_set_xmakever(minver)
     local minvers_num = minvers[1] * 100 + minvers[2] * 10 + minvers[3]
 
     -- parse current version
-    local curvers = xmake._VERSION_SHORT:split('.')
+    local curvers = xmake._VERSION_SHORT:split('.', {plain = true})
 
     -- make current numerical version
     local curvers_num = curvers[1] * 100 + curvers[2] * 10 + curvers[3]

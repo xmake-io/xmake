@@ -64,7 +64,7 @@ function main(depsdata)
     -- parse results
     local results = {}
     local data = depsdata:gsub("\\\n", "")
-    for _, line in ipairs(data:split("\n")) do
+    for _, line in ipairs(data:split("\n", {plain = true})) do
         local p = line:find(':', 1, true)
         if p then
             line = line:sub(p + 1)

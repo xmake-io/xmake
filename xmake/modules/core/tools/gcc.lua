@@ -425,7 +425,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- parse and strip errors
-                local lines = errors and tostring(errors):split('\n') or {}
+                local lines = errors and tostring(errors):split('\n', {plain = true}) or {}
                 if not option.get("verbose") then
 
                     -- find the start line of error
@@ -452,7 +452,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             function (ok, outdata, errdata)
                 -- show warnings?
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
-                    local lines = errdata:split('\n')
+                    local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
                         cprint("${color.warning}%s", warnings)
