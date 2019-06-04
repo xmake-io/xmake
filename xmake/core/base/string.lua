@@ -163,11 +163,18 @@ end
 -- ("1\n\n2\n3"):split('\n', {plain = true, strict = true}) => 1, , 2, 3
 -- ("abc123123xyz123abc"):split('123', {plain = true, strict = true}) => abc, , xyz, abc
 --
+-- limit split count
+-- ("1\n\n2\n3"):split('\n', {limit = 2}) => 1, 2\n3
+-- ("1.2.3.4.5"):split('%.', {limit = 3}) => 1, 2, 3.4.5
+--
 function string:split(delimiter, opt)
     local result = {}
     local start = 1
     local pos, epos = self:find(delimiter, start, opt and opt.plain) 
     while pos do
+        if opt and opt.limit and opt.limit > 0 and #result + 1 >= opt.limit then
+            break
+        end
         local substr = self:sub(start, pos - 1)
         if #substr > 0 then
             table.insert(result, substr)

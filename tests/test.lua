@@ -22,6 +22,8 @@ end
 -- main entry
 function main(name)
 
+    assert(false, "dadasd%s", "3")
+
     -- disable statistics
     os.setenv("XMAKE_STATS", "false")
 
