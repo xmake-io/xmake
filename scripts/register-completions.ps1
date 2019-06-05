@@ -2,7 +2,12 @@
 
 Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock {
     param($commandName, $wordToComplete, $cursorPosition)
-    xmake lua private.utils.complete "$cursorPosition" "$wordToComplete" | ForEach-Object {
+    $complete = "$wordToComplete"
+    if (-not $commandName) {
+        $complete = $complete + " "
+    }
+    xmake lua private.utils.complete "0" "$complete" | ForEach-Object {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
 }
+

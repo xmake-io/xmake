@@ -95,9 +95,9 @@ end
 function main(position, ...)
     word = table.concat({...}, " ") or ""
     position = tonumber(position) or 0
-    if position > #word then
-        word = word .. " "
-    end
+    local has_space = word:endswith(" ") or position > #word
+    word = word:trim()
+
     if word:lower():startswith("xmake ") then
         word = word:sub(#"xmake " + 1)
     end
@@ -107,7 +107,7 @@ function main(position, ...)
 
     local segs = word:split("%s")
     local task = table.remove(segs, 1) or ""
-    if #segs == 0 and not word:endswith(" ") then
+    if #segs == 0 and not has_space then
         if _complete_task(task) then return end
     end
 
@@ -116,6 +116,6 @@ function main(position, ...)
         table.insert(segs, 1, task)
         task = "run"
     end
-    _complete_option(option.taskmenu(task).options, word:endswith(" ") and "" or segs[#segs])
+    _complete_option(option.taskmenu(task).options, has_space and "" or segs[#segs])
     return
 end
