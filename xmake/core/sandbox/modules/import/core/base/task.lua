@@ -54,7 +54,7 @@ function sandbox_core_base_task.run(taskname, options, ...)
 
     -- get task instance
     local taskname = option.taskname() or "build"
-    local taskinst = project.task(taskname) or task.task(taskname) 
+    local taskinst = project.task(taskname) or task.task(taskname)
     if not taskinst then
         raise("do unknown task(%s)!", taskname)
     end
@@ -67,6 +67,16 @@ function sandbox_core_base_task.run(taskname, options, ...)
 
     -- restore the previous option context
     option.restore()
+end
+
+
+function sandbox_core_base_task.tasks()
+    local tasks = {}
+    for k, _ in pairs(task.tasks()) do
+        local menu = option.taskmenu(k)
+        tasks[k] = menu
+    end
+    return task.tasks()
 end
 
 -- return module

@@ -73,13 +73,15 @@ task("lua")
                         break
                     end
                 end
+                local result = nil
                 if object then
                     -- run builtin modules (xmake lua core.xxx.xxx)
-                    print(object(unpack(option.get("arguments") or {})))
+                    result = object(unpack(option.get("arguments") or {}))
                 else
                     -- run imported modules (xmake lua core.xxx.xxx)
-                    print(import(script, {anonymous = true})(unpack(option.get("arguments") or {})))
+                    result = import(script, {anonymous = true})(unpack(option.get("arguments") or {}))
                 end
+                if result ~= nil then print(result) end
             end
         else
             -- enter interactive mode
