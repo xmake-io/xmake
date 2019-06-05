@@ -22,16 +22,6 @@
 import("core.base.option")
 import("core.base.task")
 
-local tasks = {}
-local shortnames = {}
-for _, v in ipairs(task.tasks()) do
-    local menu = option.taskmenu(v)
-    tasks[v] = menu
-    if menu.shortname then
-        shortnames[menu.shortname] = v
-    end
-end
-
 function _print_candidate(...)
     local candidate = format(...)
     if candidate and #candidate ~= 0 then
@@ -39,7 +29,7 @@ function _print_candidate(...)
     end
 end
 
-function _complete_task(name)
+function _complete_task(tasks, name)
     local has_candidate = false
     for k, _ in pairs(tasks) do
         if k:startswith(name) then
@@ -100,7 +90,7 @@ function _complete_option(options, name)
 end
 
 function main(position, ...)
-    word = table.concat({...}, " ") or ""
+    local word = table.concat({...}, " ") or ""
     position = tonumber(position) or 0
     local has_space = word:endswith(" ") or position > #word
     word = word:trim()
@@ -113,16 +103,26 @@ function main(position, ...)
     end
 
     local segs = word:split("%s")
-    local task = table.remove(segs, 1) or ""
-    if #segs == 0 and not has_space then
-        if _complete_task(task) then return end
+    local task_name = table.remove(segs, 1) or ""
+
+    local tasks = {}
+    local shortnames = {}
+    for _, v in ipairs(task.tasks()) do
+        local menu = option.taskmenu(v)
+        tasks[v] = menu
+        if menu.shortname then
+            shortnames[menu.shortname] = v
+        end
     end
 
-    if shortnames[task] then task = shortnames[task] end
-    if not tasks[task] then
-        table.insert(segs, 1, task)
-        task = "run"
+    if #segs == 0 and not has_space then
+        if _complete_task(tasks, task_name) then return end
     end
-    _complete_option(tasks[task].options, has_space and "" or segs[#segs])
-    return
+
+    if shortnames[task_name] then task_name = shortnames[task_name] end
+    if not tasks[task_name] then
+        table.insert(segs, 1, task_name)
+        task_name = "run"
+    end
+    _complete_option(tasks[task_name].options, has_space and "" or segs[#segs])
 end
