@@ -73,10 +73,9 @@ end
 function sandbox_core_base_task.tasks()
     local tasks = {}
     for k, _ in pairs(task.tasks()) do
-        local menu = option.taskmenu(k)
-        tasks[k] = menu
+        table.insert(tasks, k)
     end
-    return task.tasks()
+    return tasks
 end
 
 -- return module

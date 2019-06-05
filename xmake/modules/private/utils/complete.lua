@@ -22,11 +22,13 @@
 import("core.base.option")
 import("core.base.task")
 
-local tasks = task.tasks()
+local tasks = {}
 local shortnames = {}
-for k, v in pairs(tasks) do
-    if v.shortname then
-        shortnames[menu.shortname] = k
+for _, v in ipairs(task.tasks()) do
+    local menu = option.taskmenu(v)
+    tasks[v] = menu
+    if menu.shortname then
+        shortnames[menu.shortname] = v
     end
 end
 
@@ -82,6 +84,11 @@ function _complete_option(options, name)
             _print_candidate((v[3] == "k") and "-%s" or "-%s ", v[1])
         end
     end
+
+    if name == "" then
+        return
+    end
+
     for _, v in ipairs(opcandi) do
         -- not startswith
         if (state == 2 or state == 0) and v[2]:find(name, 2, true) then
@@ -116,6 +123,6 @@ function main(position, ...)
         table.insert(segs, 1, task)
         task = "run"
     end
-    _complete_option(option.taskmenu(task).options, has_space and "" or segs[#segs])
+    _complete_option(tasks[task].options, has_space and "" or segs[#segs])
     return
 end
