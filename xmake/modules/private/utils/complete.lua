@@ -98,8 +98,20 @@ function main(position, ...)
     if word:lower():startswith("xmake ") then
         word = word:sub(#"xmake " + 1)
     end
+
+    local tasks = {}
+    local shortnames = {}
+    for _, v in ipairs(task.tasks()) do
+        local menu = option.taskmenu(v)
+        tasks[v] = menu
+        if menu.shortname then
+            shortnames[menu.shortname] = v
+        end
+    end
+
     if word:lower() == "xmake" then
-        return _complete_task("")
+        _complete_task(tasks, "")
+        return
     end
 
     local segs = word:split("%s")
