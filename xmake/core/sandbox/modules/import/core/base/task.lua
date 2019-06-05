@@ -70,12 +70,12 @@ function sandbox_core_base_task.run(taskname, options, ...)
 end
 
 
-function sandbox_core_base_task.tasks()
-    local tasks = {}
+function sandbox_core_base_task.names()
+    local names = {}
     for k, _ in pairs(task.tasks()) do
-        table.insert(tasks, k)
+        table.insert(names, k)
     end
-    return tasks
+    return names
 end
 
 -- return module

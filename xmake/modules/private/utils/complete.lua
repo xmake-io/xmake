@@ -101,7 +101,7 @@ function main(position, ...)
 
     local tasks = {}
     local shortnames = {}
-    for _, v in ipairs(task.tasks()) do
+    for _, v in ipairs(task.names()) do
         local menu = option.taskmenu(v)
         tasks[v] = menu
         if menu.shortname then
@@ -116,16 +116,6 @@ function main(position, ...)
 
     local segs = word:split("%s")
     local task_name = table.remove(segs, 1) or ""
-
-    local tasks = {}
-    local shortnames = {}
-    for _, v in ipairs(task.tasks()) do
-        local menu = option.taskmenu(v)
-        tasks[v] = menu
-        if menu.shortname then
-            shortnames[menu.shortname] = v
-        end
-    end
 
     if #segs == 0 and not has_space then
         if _complete_task(tasks, task_name) then return end
