@@ -736,6 +736,11 @@ function _instance:configdir()
     return self:get("configdir") or config.buildir()
 end
 
+-- get run directory
+function _instance:rundir()
+    return baseoption.get("workdir") or self:get("rundir") or path.directory(self:targetfile())
+end
+
 -- get install directory
 function _instance:installdir()
 
@@ -1552,6 +1557,7 @@ function target.apis()
         ,   "target.set_dependir"
         ,   "target.set_configdir"
         ,   "target.set_installdir"
+        ,   "target.set_rundir"
             -- target.add_xxx
         ,   "target.add_files"
         ,   "target.add_configfiles"

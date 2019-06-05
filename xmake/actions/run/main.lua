@@ -32,14 +32,14 @@ import("devel.debugger")
 function _do_run_target(target)
     if target:targetkind() == "binary" then
 
-        -- get the work directory of target
-        local workdir = option.get("workdir") or path.directory(target:targetfile())
+        -- get the run directory of target
+        local rundir = target:rundir()
 
         -- get the absolute target file path
         local targetfile = path.absolute(target:targetfile())
 
-        -- enter the work directory
-        local oldir = os.cd(workdir)
+        -- enter the run directory
+        local oldir = os.cd(rundir)
 
         -- add search directories for all dependent shared libraries on windows
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
