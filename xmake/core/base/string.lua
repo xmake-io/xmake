@@ -172,13 +172,11 @@ function string:split(delimiter, opt)
     local start = 1
     local pos, epos = self:find(delimiter, start, opt and opt.plain) 
     while pos do
-        if opt and opt.limit and opt.limit > 0 and #result + 1 >= opt.limit then
-            break
-        end
         local substr = self:sub(start, pos - 1)
-        if #substr > 0 then
-            table.insert(result, substr)
-        elseif opt and opt.strict then
+        if (#substr > 0) or (opt and opt.strict) then
+            if opt and opt.limit and opt.limit > 0 and #result + 1 >= opt.limit then
+                break
+            end
             table.insert(result, substr)
         end
         start = epos + 1
