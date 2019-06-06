@@ -5,6 +5,7 @@
 ### New features
 
 * [#440](https://github.com/xmake-io/xmake/issues/440): Add `set_rundir()` and `add_runenvs()` api for target/run
+* [#443](https://github.com/xmake-io/xmake/pull/443): Add tab completion support
 
 ### Changes
 
@@ -596,6 +597,7 @@
 ### 新特性
 
 * [#440](https://github.com/xmake-io/xmake/issues/440): 为target/run添加`set_rundir()`和`add_runenvs()`接口设置
+* [#443](https://github.com/xmake-io/xmake/pull/443): 添加命令行tab自动完成支持
 
 ### 改进
 
