@@ -17,20 +17,23 @@ build_script:
       Get-Command xmake
       xmake --version
       xmake build --project=core
-      .\core\build\xmake.exe --version
       Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Join-Path $(Get-Location) "xmake")
-      Copy-Item -Force core\build\xmake.exe $HOME\xmake
+      .\core\build\xmake.exe --version
+      Copy-Item -Force core\build\xmake.exe $(Get-Command xmake).Source
 
 after_build:
   - ps: |
       Copy-Item .\core\build\xmake.exe .\xmake
       Copy-Item .\*.md .\xmake
-      Compress-Archive -Path .\xmake -DestinationPath .\archive.zip
+      Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
       Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-$($env:PLATFORM)"
 
 test_script:
   - ps: |
-      Get-Command xmake
       xmake --version
-      xmake lua --verbose --diagnosis tests\test.lua
+      Add-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome Running
+      $time = Measure-Command { 
+        $stdout = Invoke-Expression "xmake lua --verbose --diagnosis tests\test.lua" -ErrorVariable stderr
+      }
+      Update-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome Passed -Duration $time.Milliseconds -StdOut $stdout -StdErr $stderr
 

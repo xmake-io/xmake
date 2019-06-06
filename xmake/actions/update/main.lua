@@ -301,7 +301,7 @@ function main()
 
     -- the download task
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
-    vprint("prepared to downlaod to temp dir %s ..", sourcedir)
+    vprint("prepared to download to temp dir %s ..", sourcedir)
 
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
