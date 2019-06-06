@@ -10,13 +10,13 @@ platform:
 
 install:
   - ps: |
-      Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
+      ./scripts/get.ps1 "dev"
 
 build_script:
   - ps: |
       Get-Command xmake
       xmake --version
-      xmake run --project=core
+      xmake build --project=core
       .\core\build\xmake.exe --version
       Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Join-Path $(Get-Location) "xmake")
       Copy-Item -Force core\build\xmake.exe $HOME\xmake

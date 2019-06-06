@@ -190,5 +190,7 @@ if (-not $env:CI) {
         xmakeSelfBuild
     } catch { } # continue
     registerTabCompletion
+} else {
+    Write-Host "Self bulid and tab completion registration has been skipped"
 }
 
