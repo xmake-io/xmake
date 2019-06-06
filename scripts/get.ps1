@@ -8,10 +8,6 @@ param (
     [string]$installdir = $(Join-Path $(if($env:HOME) { $env:HOME } else { "C:\" }) 'xmake')
 )
 
-echo $branch
-echo $version
-echo $installdir
-
 function myExit($code) {
     if ($code -is [int] -and $code -ne 0) {
         throw $Error[0]
