@@ -22,10 +22,17 @@
 import("core.base.option")
 import("core.base.task")
 
-function _print_candidate(...)
+local use_spaces = true
+
+function _print_candidate(is_complate, ...)
     local candidate = format(...)
     if candidate and #candidate ~= 0 then
-        print(candidate)
+        printf(candidate)
+        if use_spaces and is_complate then
+            print(" ")
+        else
+            print("")
+        end
     end
 end
 
@@ -33,14 +40,14 @@ function _complete_task(tasks, name)
     local has_candidate = false
     for k, _ in pairs(tasks) do
         if k:startswith(name) then
-            _print_candidate(k)
+            _print_candidate(true, "%s", k)
             has_candidate = true
         end
     end
     for k, _ in pairs(tasks) do
         -- not startswith
         if k:find(name, 2, true) then
-            _print_candidate(k)
+            _print_candidate(true, "%s", k)
             has_candidate = true
         end
     end
@@ -69,9 +76,9 @@ function _complete_option(options, name)
 
     for _, v in ipairs(opcandi) do
         if (state == 2 or state == 0) and v[2]:startswith(name) then
-            _print_candidate((v[3] == "k") and "--%s" or "--%s=", v[2])
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
         elseif (state == 1 or state == 0) and v[1] and v[1]:startswith(name) then
-            _print_candidate((v[3] == "k") and "-%s" or "-%s ", v[1])
+            _print_candidate(true, "-%s", v[1])
         end
     end
 
@@ -82,15 +89,22 @@ function _complete_option(options, name)
     for _, v in ipairs(opcandi) do
         -- not startswith
         if (state == 2 or state == 0) and v[2]:find(name, 2, true) then
-            _print_candidate((v[3] == "k") and "--%s" or "--%s=", v[2])
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
         elseif (state == 1 or state == 0) and v[1] and v[1]:find(name, 2, true) then
-            _print_candidate((v[3] == "k") and "-%s" or "-%s ", v[1])
+            _print_candidate(true, "-%s", v[1])
         end
     end
 end
 
-function main(position, ...)
-    local word = table.concat({...}, " ") or ""
+function main(position, config_use_spaces, ...)
+    local words = {...}
+    if config_use_spaces == "nospace" then
+        use_spaces = false
+    else
+        table.insert(words, 1, config_use_spaces)
+    end
+
+    local word = table.concat(words, " ") or ""
     position = tonumber(position) or 0
     local has_space = word:endswith(" ") or position > #word
     word = word:trim()

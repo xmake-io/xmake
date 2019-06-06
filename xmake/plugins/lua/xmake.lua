@@ -39,7 +39,7 @@ task("lua")
             for _, file in ipairs(files) do
                 print("    " .. path.basename(file))
             end
-            return 
+            return
         end
 
         -- run command?
@@ -50,7 +50,7 @@ task("lua")
             script = tmpfile
         end
 
-        -- get script 
+        -- get script
         if script then
 
             -- import and run script

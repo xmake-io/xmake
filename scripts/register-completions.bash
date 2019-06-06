@@ -13,4 +13,4 @@ _xmake_bash_complete()
   COMPREPLY=( $(compgen -W "$completions" -- "$word") )
 }
 
-complete -f -F _xmake_bash_complete xmake
+complete -o default -o nospace -F _xmake_bash_complete xmake
