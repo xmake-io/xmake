@@ -200,6 +200,14 @@ end
 function _install_script(sourcedir)
     cprintf("\r${yellow}  => ${clear}install script to %s .. ", os.programdir())
 
+    local source = path.join(sourcedir, "xmake")
+    local dirname = path.filename(os.programdir())
+    if dirname ~= "xmake" then
+        local target = path.join(sourcedir, dirname)
+        os.mv(source, target)
+        source = target
+    end
+
     local ok = try
     {
         function ()
@@ -207,14 +215,13 @@ function _install_script(sourcedir)
                 local script_original = path.join(os.programdir(), "scripts", "update-script.bat")
                 local script = os.tmpfile() .. ".bat"
                 os.cp(script_original, script)
-                local params = { "/c", script, os.programdir(), path.join(sourcedir, "xmake") }
+                local params = { "/c", script, os.programdir(),  source }
                 os.tryrm(script_original .. ".bak")
-                local access = os.trycp(script_original, script_original .. ".bak")
+                local access = os.trymv(script_original, script_original .. ".bak")
                 return _run_win_v("cmd", params, not access)
             else
-                os.cd(sourcedir)
-                os.vrun("./scripts/get.sh __local__ __install_only__")
-                return true
+                local script = path.join(os.programdir(), "scripts", "update-script.sh")
+                return _sudo_v("sh", { script, os.programdir(), source })
             end
         end,
         catch
