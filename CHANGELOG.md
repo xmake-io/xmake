@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#440](https://github.com/xmake-io/xmake/issues/440): Add `set_rundir()` and `add_runenvs()` api for target/run
+
 ### Changes
 
 * [#430](https://github.com/xmake-io/xmake/pull/430): Add `includes("add_cucodegens.lua")` to improve set codegen for cuda
@@ -588,6 +592,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#440](https://github.com/xmake-io/xmake/issues/440): 为target/run添加`set_rundir()`和`add_runenvs()`接口设置
 
 ### 改进
 

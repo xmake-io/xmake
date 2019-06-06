@@ -41,6 +41,14 @@ function _do_run_target(target)
         -- enter the run directory
         local oldir = os.cd(rundir)
 
+        -- add run environments
+        local runenvs = target:get("runenvs")
+        if runenvs then
+            for name, values in pairs(runenvs) do
+                os.addenv(name, unpack(table.wrap(values)))
+            end
+        end
+
         -- add search directories for all dependent shared libraries on windows
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
             local searchdirs = {}

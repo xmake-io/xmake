@@ -1548,6 +1548,7 @@ function target.apis()
         ,   "target.set_configvar"
             -- target.add_xxx
         ,   "target.add_values"
+        ,   "target.add_runenvs"
         }
     ,   pathes = 
         {
