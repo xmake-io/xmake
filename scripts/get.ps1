@@ -5,8 +5,12 @@
 param (
     [string]$branch = "master", 
     [string]$version = "v2.2.6",
-    [string]$installdir = $(Join-Path $env:HOME 'xmake')
+    [string]$installdir = $(Join-Path $(if($env:HOME) { $env:HOME } else { "C:\" }) 'xmake')
 )
+
+echo $branch
+echo $version
+echo $installdir
 
 function myExit($code) {
     if ($code -is [int] -and $code -ne 0) {
@@ -191,6 +195,6 @@ if (-not $env:CI) {
     } catch { } # continue
     registerTabCompletion
 } else {
-    Write-Host "Self bulid and tab completion registration has been skipped"
+    Write-Host "Self bulid and tab completion registration has been skipped for CI"
 }
 

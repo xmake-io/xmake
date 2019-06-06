@@ -10,7 +10,7 @@ platform:
 
 install:
   - ps: |
-      ./scripts/get.ps1 "dev"
+      ./scripts/get.ps1 -branch $env:APPVEYOR_REPO_BRANCH
 
 build_script:
   - ps: |
@@ -24,7 +24,9 @@ build_script:
 after_build:
   - ps: |
       Copy-Item .\core\build\xmake.exe .\xmake
-      Push-AppveyorArtifact .\xmake -FileName xmake.zip -DeploymentName "xmake-$($env:PLATFORM)"
+      Copy-Item .\*.md .\xmake
+      Compress-Archive -Path .\xmake -DestinationPath .\archive.zip
+      Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-$($env:PLATFORM)"
 
 test_script:
   - ps: |
