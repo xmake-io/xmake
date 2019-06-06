@@ -46,7 +46,7 @@ function checkTempAccess {
     } catch {
         writeErrorTip 'Cannot write to temp path'
         writeErrorTip 'Please set environment var "TMP" to another path'
-        myExit 1
+        throw
     }
 }
 
@@ -58,7 +58,7 @@ function xmakeInstall {
     } catch {
         writeErrorTip 'Download failed!'
         writeErrorTip 'Check your network or... the news of S3 break'
-        myExit 1
+        throw
     }
     Write-Host 'Start installation... Hope your antivirus doesn''t trouble'
     $installdir = Join-Path $env:HOME 'xmake'
@@ -68,7 +68,7 @@ function xmakeInstall {
     } catch {
         writeErrorTip 'Install failed!'
         writeErrorTip 'Close your antivirus then try again'
-        myExit 1
+        throw
     } finally {
         Remove-Item $outfile -ErrorAction SilentlyContinue
     }
@@ -80,7 +80,7 @@ function xmakeInstall {
     } catch {
         writeErrorTip 'Everything is showing installation has finished'
         writeErrorTip 'But xmake could not run... Why?'
-        myExit 1
+        throw
     }
 }
 
@@ -92,7 +92,7 @@ function xmakeSelfBuild {
     } catch {
         writeErrorTip 'Pull Failed!'
         writeErrorTip 'xmake is now available but may not be newest'
-        myExit
+        throw
     }
     Write-Host 'Expanding archive...'
     $oldpwd = Get-Location
@@ -110,6 +110,7 @@ function xmakeSelfBuild {
     } catch {
         writeErrorTip 'Update Failed!'
         writeErrorTip 'xmake is now available but may not be newest'
+        throw
     } finally {
         Set-Location $oldpwd -ErrorAction SilentlyContinue
         Remove-Item $outfile -ErrorAction SilentlyContinue
@@ -176,11 +177,18 @@ function registerTabCompletion {
     }
 }
 
-checkTempAccess
-xmakeInstall
+try {
+    checkTempAccess
+    xmakeInstall  
+} catch {
+    myExit 1
+}
+
 
 if (-not $env:CI) {
-    xmakeSelfBuild
+    try {
+        xmakeSelfBuild
+    } catch { } # continue
     registerTabCompletion
 }
 
