@@ -21,7 +21,8 @@
 -- imports
 import("checkurl")
 
-local custom_protocol = {
+local custom_protocol = 
+{
     ["github:"]     = "https://github.com"
 ,   ["gitlab:"]     = "https://gitlab.com"
 ,   ["gitee:"]      = "https://gitee.com"
@@ -36,6 +37,8 @@ local custom_protocol = {
 --
 
 function main(url)
+
+    -- check 
     url = url:trim()
     assert(#url > 0)
 
