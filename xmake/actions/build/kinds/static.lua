@@ -26,11 +26,8 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("object")
 
--- build target from objects
-function _build_from_objects(target, buildinfo)
-
-    -- build objects
-    object.build(target, buildinfo)
+-- do link target 
+function _do_link_target(target, opt)
 
     -- load linker instance
     local linkinst = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
@@ -83,7 +80,7 @@ function _build_from_objects(target, buildinfo)
     local verbose = option.get("verbose")
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
     if verbose then
         cprint("${dim color.build.target}archiving.$(mode) %s", path.filename(targetfile))
     else
@@ -105,6 +102,72 @@ function _build_from_objects(target, buildinfo)
     dependinfo.files  = depfiles
     dependinfo.values = depvalues
     depend.save(dependinfo, dependfile)
+end
+
+-- on link the given target
+function _on_link_target(target, opt)
+
+    -- link target with rules
+    local done = false
+    for _, r in ipairs(target:orderules()) do
+        local on_link = r:script("link")
+        if on_link then
+            on_link(target, opt)
+            done = true
+        end
+    end
+    if done then return end
+
+    -- do link
+    _do_link_target(target, opt)
+end
+
+-- link target
+function _link_target(target, opt)
+
+    -- do before link for target
+    local before_link = target:script("link_before")
+    if before_link then
+        before_link(target, opt)
+    end
+
+    -- do before link for rules
+    for _, r in ipairs(target:orderules()) do
+        local before_link = r:script("link_before")
+        if before_link then
+            before_link(target, opt)
+        end
+    end
+
+    -- on link
+    target:script("link", _on_link_target)(target, table.join(opt, {origin = _do_link_target}))
+
+    -- do after link for target
+    local after_link = target:script("link_after")
+    if after_link then
+        after_link(target, opt)
+    end
+
+    -- do after link for rules
+    for _, r in ipairs(target:orderules()) do
+        local after_link = r:script("link_after")
+        if after_link then
+            after_link(target, opt)
+        end
+    end
+end
+
+-- build target from objects
+function _build_from_objects(target, buildinfo)
+
+    -- build objects
+    object.build(target, buildinfo)
+
+    -- get progress
+    local progress = (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount
+
+    -- link target
+    _link_target(target, {progress = progress})
 end
 
 -- build target from sources

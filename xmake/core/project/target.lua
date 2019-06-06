@@ -1577,6 +1577,7 @@ function target.apis()
             -- target.on_xxx
             "target.on_run"
         ,   "target.on_load"
+        ,   "target.on_link"
         ,   "target.on_build"
         ,   "target.on_build_file"
         ,   "target.on_build_files"
@@ -1586,6 +1587,7 @@ function target.apis()
         ,   "target.on_uninstall"
             -- target.before_xxx
         ,   "target.before_run"
+        ,   "target.before_link"
         ,   "target.before_build"
         ,   "target.before_build_file"
         ,   "target.before_build_files"
@@ -1595,6 +1597,7 @@ function target.apis()
         ,   "target.before_uninstall"
             -- target.after_xxx
         ,   "target.after_run"
+        ,   "target.after_link"
         ,   "target.after_build"
         ,   "target.after_build_file"
         ,   "target.after_build_files"

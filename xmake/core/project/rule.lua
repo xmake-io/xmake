@@ -163,6 +163,7 @@ function rule.apis()
             -- rule.on_xxx
             "rule.on_run"
         ,   "rule.on_load"
+        ,   "rule.on_link"
         ,   "rule.on_build"
         ,   "rule.on_build_file"
         ,   "rule.on_build_files"
@@ -173,6 +174,7 @@ function rule.apis()
             -- rule.before_xxx
         ,   "rule.before_run"
         ,   "rule.before_load"
+        ,   "rule.before_link"
         ,   "rule.before_build"
         ,   "rule.before_build_file"
         ,   "rule.before_build_files"
@@ -183,6 +185,7 @@ function rule.apis()
             -- rule.after_xxx
         ,   "rule.after_run"
         ,   "rule.after_load"
+        ,   "rule.after_link"
         ,   "rule.after_build"
         ,   "rule.after_build_file"
         ,   "rule.after_build_files"
