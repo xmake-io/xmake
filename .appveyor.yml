@@ -34,7 +34,8 @@ test_script:
       Add-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome Running
       $time = Measure-Command { 
         $stdout = xmake lua --verbose --diagnosis tests\test.lua 2>&1
+        Write-Host $stdout
         $outcome = if ($?) { "Passed" } else { "Failed" }
       }
-      Update-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome $outcome -Duration $time.Milliseconds -StdOut $stdout
+      Update-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
 
