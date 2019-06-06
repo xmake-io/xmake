@@ -4,7 +4,8 @@
 
 param (
     [string]$branch = "master", 
-    [string]$version = "v2.2.6"
+    [string]$version = "v2.2.6",
+    [string]$installdir = $(Join-Path $env:HOME 'xmake')
 )
 
 function myExit($code) {
@@ -61,7 +62,6 @@ function xmakeInstall {
         throw
     }
     Write-Host 'Start installation... Hope your antivirus doesn''t trouble'
-    $installdir = Join-Path $env:HOME 'xmake'
     Write-Host "Install to $installdir"
     try {
         Start-Process -FilePath $outfile -ArgumentList "/S /D=$installdir" -Wait
