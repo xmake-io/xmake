@@ -14,10 +14,11 @@ install:
 
 build_script:
   - ps: |
+      Get-Command xmake
       xmake --version
-      xmake -P core
-      $env:XMAKE_PROGRAM_DIR = Join-Path $(Get-Location) "xmake"
+      xmake run --project=core
       .\core\build\xmake.exe --version
+      Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Join-Path $(Get-Location) "xmake")
       Copy-Item -Force core\build\xmake.exe $HOME\xmake
 
 after_build:
@@ -29,5 +30,5 @@ test_script:
   - ps: |
       Get-Command xmake
       xmake --version
-      xmake lua -v -D tests\test.lua
+      xmake lua --verbose --diagnosis tests\test.lua
 

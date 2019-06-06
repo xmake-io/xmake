@@ -169,6 +169,7 @@ param (
         Remove-Item "$repodir" -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    registerTabCompletion
-
+    if (-not $env:CI) {
+        registerTabCompletion
+    }
 }
