@@ -35,7 +35,7 @@ if ($PSVersionTable.PSVersion.Major -lt 5) {
     writeErrorTip 'Sorry but PowerShell v5+ is required'
     throw 'PowerShell''s version too low'
 }
-$temppath = ($null -ne $env:TMP, $env:TEMP, '.')[0]
+$temppath = ($env:TMP, $env:TEMP, '.' -ne $null)[0]
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
 
 function checkTempAccess {
