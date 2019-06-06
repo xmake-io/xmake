@@ -22,7 +22,7 @@
 rule("cuda.static")
 
     -- add rules
-    add_deps("cuda.device_link")
+    add_deps("cuda.device_link", "cuda.gencodes")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
@@ -33,7 +33,7 @@ rule("cuda.static")
 rule("cuda.shared")
 
     -- add rules
-    add_deps("cuda.device_link")
+    add_deps("cuda.device_link", "cuda.gencodes")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
@@ -44,7 +44,7 @@ rule("cuda.shared")
 rule("cuda.console")
 
     -- add rules
-    add_deps("cuda.device_link")
+    add_deps("cuda.device_link", "cuda.gencodes")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
