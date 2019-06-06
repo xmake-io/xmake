@@ -9,23 +9,25 @@ platform:
   - Win64
 
 install:
-  - cmd: echo %CI%
+  - ps: |
+      Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
 
 build_script:
-  - ps: Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
-  - cmd: xmake --version
-  - cmd: xmake -P core 
-  - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
-  - cmd: core\build\xmake --version
-  - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
-  - cmd: xmake lua -D tests\test.lua
-
-#on_success:
-#  - ps: $env:XMAKE_PROGRAM_DIR=$null
-#  - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
+  - ps: |
+      xmake --version
+      xmake -P core
+      $env:XMAKE_PROGRAM_DIR = Join-Path $(Get-Location) "xmake"
+      .\core\build\xmake.exe --version
+      Copy-Item -Force core\build\xmake.exe $HOME\xmake
 
 after_build:
-  - ps: Copy-Item core\build\xmake.exe .
+  - ps: |
+      Copy-Item .\core\build\xmake.exe .\xmake
+      Push-AppveyorArtifact .\xmake -FileName xmake.zip -DeploymentName "xmake-$($env:PLATFORM)"
 
-artifacts:
-  - path: xmake.exe
+test_script:
+  - ps: |
+      Get-Command xmake
+      xmake --version
+      xmake lua -v -D tests\test.lua
+
