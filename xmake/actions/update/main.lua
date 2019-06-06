@@ -76,7 +76,7 @@ function _sudo_v(program, params)
                 if sudo.has() then
 
                     -- confirm to install?
-                    local confirm = utils.confirm({default = true, description = "try continue to run `%s` with administrator permission again"})
+                    local confirm = utils.confirm({ default = true, description = format("try continue to run `%s` with administrator permission again", command) })
                     if confirm then
                         sudo.vrunv(program, params)
                         return true
