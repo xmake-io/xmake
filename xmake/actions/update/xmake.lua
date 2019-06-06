@@ -30,7 +30,7 @@ task("update")
     -- set menu
     set_menu {
                 -- usage
-                usage = "xmake update [options] [version]"
+                usage = "xmake update [options] [xmakever]"
 
                 -- description
             ,   description = "Update and uninstall the xmake program."
@@ -38,9 +38,17 @@ task("update")
                 -- options
             ,   options = 
                 {
-                    {nil, "uninstall",  "k",  nil,    "Uninstall the current xmake program."                }
-                ,   {                                                                                       }
-                ,   {nil, "xmakever",    "v",  nil,   "The given xmake version. (e.g. ~2.2.3, dev, master)" }
+                    {nil, "uninstall",   "k",   nil,   "Uninstall the current xmake program."                     }
+                ,   {                                                                                             }
+                ,   {'s', "scriptonly",  "k",   nil,   "Update script only"                                       }
+                ,   {nil, "xmakever",    "v",   nil,   "The given xmake version, or a git source (and branch). ",
+                                                       "e.g.",
+                                                       "    from official source: ",
+                                                       "        lastest, ~2.2.3, dev, master", 
+                                                       "    from custom source:", 
+                                                       "        https://github.com/xmake-io/xmake", 
+                                                       "        github:xmake-io/xmake#~2.2.3",
+                                                       "        git://github.com/xmake-io/xmake.git#master"       }
                 }
             }
 

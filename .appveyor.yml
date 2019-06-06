@@ -9,23 +9,33 @@ platform:
   - Win64
 
 install:
-  - cmd: echo %CI%
+  - ps: ./scripts/get.ps1 -branch $env:APPVEYOR_REPO_BRANCH
 
 build_script:
-  - ps: Invoke-Command -ScriptBlock ([ScriptBlock]::Create((Invoke-Webrequest "https://raw.githubusercontent.com/xmake-io/xmake/dev/scripts/get.ps1" -UseBasicParsing).Content)) -ArgumentList "dev"
-  - cmd: xmake --version
-  - cmd: xmake -P core 
-  - cmd: set XMAKE_PROGRAM_DIR=%cd%\xmake
-  - cmd: core\build\xmake --version
-  - ps: Copy-Item -Force core\build\xmake.exe $HOME\xmake
-  - cmd: xmake lua -D tests\test.lua
-
-#on_success:
-#  - ps: $env:XMAKE_PROGRAM_DIR=$null
-#  - ps: Invoke-Expression (Get-Content scripts\getpb.ps1 | Out-String)
+  - ps: Get-Command xmake
+  - ps: xmake --version
+  - ps: xmake build --project=core
+  - ps: |-
+      Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Join-Path $(Get-Location) "xmake")
+      .\core\build\xmake.exe --version
+      Copy-Item -Force core\build\xmake.exe $(Get-Command xmake).Source
 
 after_build:
-  - ps: Copy-Item core\build\xmake.exe .
+  - ps: |-
+      Copy-Item .\core\build\xmake.exe .\xmake
+      Copy-Item .\*.md .\xmake
+      Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
+      Push-AppveyorArtifact .\xmake\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
+      Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
 
-artifacts:
-  - path: xmake.exe
+test_script:
+  - ps: xmake --version
+  - ps: |-
+      Add-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome Running
+      $time = Measure-Command { 
+        $results = xmake lua --verbose --diagnosis tests\test.lua 2>&1
+        $outcome = if ($?) { "Passed" } else { "Failed" }
+        $stdout = [string]::Join("`n", $results)
+      }
+      Update-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
+

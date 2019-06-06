@@ -28,15 +28,16 @@ import("net.fasturl")
 import("core.base.privilege")
 import("privilege.sudo")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
+import("get_version")
 
--- run cmd with privilege
-function _sudo(cmd)
+-- run program with privilege
+function _sudo_v(program, params)
 
     -- attempt to install directly
-    try
+    return try
     {
         function ()
-            os.vrun(cmd)
+            os.vrunv(program, params)
             return true
         end,
 
@@ -53,7 +54,7 @@ function _sudo(cmd)
                     local ok = try
                     {
                         function ()
-                            os.vrun(cmd)
+                            os.vrunv(program, params)
                             return true
                         end
                     }
@@ -62,21 +63,22 @@ function _sudo(cmd)
                     privilege.store()
 
                     -- ok?
-                    if ok then 
-                        return true 
+                    if ok then
+                        return true
                     end
                 end
 
                 -- show tips
-                cprint("\r${bright color.error}error: ${clear}run `%s` failed, may permission denied!", cmd)
+                local command = program .. " " ..os.args(params)
+                cprint("\r${bright color.error}error: ${clear}run `%s` failed, may permission denied!", command)
 
                 -- continue to install with administrator permission?
                 if sudo.has() then
 
                     -- confirm to install?
-                    local confirm = utils.confirm({default = true, description = "try continue to run `%s` with administrator permission again"})
+                    local confirm = utils.confirm({ default = true, description = format("try continue to run `%s` with administrator permission again", command) })
                     if confirm then
-                        sudo.vrun(cmd)
+                        sudo.vrunv(program, params)
                         return true
                     end
                 end
@@ -85,34 +87,40 @@ function _sudo(cmd)
     }
 end
 
+-- run program witn admin user
+function _run_win_v(program, commands, admin)
+    local sudo_vbs = path.join(os.programdir(), "scripts", "run.vbs")
+    local temp_vbs = os.tmpfile() .. ".vbs"
+    os.cp(sudo_vbs, temp_vbs)
+    local params = table.join("/Nologo", temp_vbs, "W" .. (admin and "A" or "N") , program, commands)
+    local proc = process.openv("cscript", params)
+    if proc then process.close(proc) end
+    return proc ~= nil
+end
+
 -- do uninstall
 function _uninstall()
     if is_host("windows") then
         local uninstaller = path.join(os.programdir(), "uninstall.exe")
         if os.isfile(uninstaller) then
             -- UAC on win7
+            local params = option.get("quiet") and { "/S" } or {}
             if winos:version():gt("winxp") then
-                local proc = process.openv("cscript", {path.join(os.programdir(), "scripts", "sudo.vbs"), uninstaller})
-                if proc ~= nil then
-                    process.close(proc)
-                end
+                _run_win_v(uninstaller, params, true)
             else
-                local proc = process.open(uninstaller)
-                if proc ~= nil then
-                    process.close(proc)
-                end
+                _run_win_v(uninstaller, params, false)
             end
         else
             raise("the uninstaller(%s) not found!", uninstaller)
         end
     else
         if os.programdir():startswith("/usr/") then
-            _sudo("rm -rf " .. os.programdir())
+            _sudo_v("xmake", {"lua", "rm", os.programdir() })
             if os.isfile("/usr/local/bin/xmake") then
-                _sudo("rm -f /usr/local/bin/xmake")
+                _sudo_v("xmake", {"lua", "rm", "/usr/local/bin/xmake" })
             end
             if os.isfile("/usr/bin/xmake") then
-                _sudo("rm -f /usr/bin/xmake")
+                _sudo_v("xmake", {"lua", "rm", "/usr/bin/xmake" })
             end
         else
             os.rm(os.programdir())
@@ -133,26 +141,23 @@ function _install(sourcedir, version)
 
         -- trace
         cprintf("\r${yellow}  => ${clear}installing to %s ..  ", installdir)
-        local ok = try 
+        local ok = try
         {
             function ()
 
-                -- install it 
+                -- install it
                 os.cd(sourcedir)
                 if is_host("windows") then
                     local installer = "xmake-" .. version .. ".exe"
                     if os.isfile(installer) then
+                        -- /D sets the default installation directory ($INSTDIR), overriding InstallDir and InstallDirRegKey. It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces. Only absolute paths are supported.
+                        local params = ("/D=" .. os.programdir()):split("%s", { strict = true })
+                        if option.get("quiet") then table.insert(params, 1, "/S") end
                         -- need UAC?
                         if winos:version():gt("winxp") then
-                            local proc = process.openv("cscript", {path.join(os.programdir(), "scripts", "sudo.vbs"), installer})
-                            if proc ~= nil then
-                                process.close(proc)
-                            end
+                            _run_win_v(installer, params, true)
                         else
-                            local proc = process.open(installer)
-                            if proc ~= nil then
-                                process.close(proc)
-                            end
+                            _run_win_v(installer, params, false)
                         end
                     else
                         raise("the installer(%s) not found!", installer)
@@ -169,7 +174,7 @@ function _install(sourcedir, version)
                 end
             }
         }
-            
+
         -- trace
         if ok then
             cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok    ", installdir)
@@ -191,6 +196,49 @@ function _install(sourcedir, version)
     end
 end
 
+-- do install script
+function _install_script(sourcedir)
+    cprintf("\r${yellow}  => ${clear}install script to %s .. ", os.programdir())
+
+    local source = path.join(sourcedir, "xmake")
+    local dirname = path.filename(os.programdir())
+    if dirname ~= "xmake" then
+        local target = path.join(sourcedir, dirname)
+        os.mv(source, target)
+        source = target
+    end
+
+    local ok = try
+    {
+        function ()
+            if is_host("windows") then
+                local script_original = path.join(os.programdir(), "scripts", "update-script.bat")
+                local script = os.tmpfile() .. ".bat"
+                os.cp(script_original, script)
+                local params = { "/c", script, os.programdir(),  source }
+                os.tryrm(script_original .. ".bak")
+                local access = os.trymv(script_original, script_original .. ".bak")
+                return _run_win_v("cmd", params, not access)
+            else
+                local script = path.join(os.programdir(), "scripts", "update-script.sh")
+                return _sudo_v("sh", { script, os.programdir(), source })
+            end
+        end,
+        catch
+        {
+            function (errors)
+                vprint(errors)
+            end
+        }
+    }
+    -- trace
+    if ok then
+        cprint("${color.success}${text.success}")
+    else
+        cprint("${color.failure}${text.failure}")
+    end
+end
+
 -- main
 function main()
 
@@ -202,42 +250,28 @@ function main()
 
         -- trace
         cprint("${bright}uninstall ok!")
-        return 
+        return
     end
 
-    -- enter environment 
+    -- enter environment
     environment.enter()
 
-    -- sort main urls
-    local mainurls = {"https://github.com/xmake-io/xmake.git",
-                      "https://gitlab.com/tboox/xmake.git", 
-                      "https://gitee.com/tboox/xmake.git"}
-    fasturl.add(mainurls)
-    mainurls = fasturl.sort(mainurls)
-
-    -- get version
-    local tags = nil
-    local branches = nil
-    local version = nil
-    for _, url in ipairs(mainurls) do
-        tags, branches = git.refs(url)
-        if tags or branches then
-            version = semver.select(option.get("xmakever") or "lastest", tags or {}, tags or {}, branches or {})
-            break
-        end
-    end
-    if not version then
-        version = "master"
-    end
+    local is_official, mainurls, version, tags, branches = get_version(option.get("xmakever"))
 
     -- has been installed?
-    if os.xmakever():eq(version) then
+    if is_official and xmake.version():eq(version) then
         cprint("${bright}xmake %s has been installed!", version)
         return
     end
 
+    local script_only = option.get("scriptonly")
+
     -- get urls on windows
-    if is_host("windows") then
+    if is_host("windows") and not script_only then
+        if not is_official then
+            raise("not support to update from unofficial source on windows, missing '--scriptonly' flag?")
+        end
+
         if version:find('.', 1, true) then
             mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", version, version),
                         format("https://qcloud.coding.net/u/waruqi/p/xmake-releases/git/raw/master/xmake-%s.exe", version),
@@ -259,10 +293,16 @@ function main()
     end
 
     -- trace
-    print("update version: %s ..", version)
+    if is_official then
+        cprint("update version ${green}%s${clear} from official source ..", version)
+    else
+        cprint("update version ${green}%s${clear} from ${underline}%s${clear} ..", version, mainurls[1])
+    end
 
     -- the download task
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
+    vprint("prepared to download to temp dir %s ..", sourcedir)
+
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
             cprintf("\r${yellow}  => ${clear}downloading %s ..  ", url)
@@ -270,7 +310,8 @@ function main()
             {
                 function ()
                     os.tryrm(sourcedir)
-                    if not git.checkurl(url) then
+                    -- all user provided urls are considered as git url since check has been performed in get_version
+                    if is_official and not git.checkurl(url) then
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, path.filename(url)))
                     else
@@ -309,10 +350,14 @@ function main()
         process.asyncrun(download_task)
     end
 
-    -- leave environment 
+    -- leave environment
     environment.leave()
 
     -- do install
-    _install(sourcedir, version)
+    if script_only then
+        _install_script(sourcedir)
+    else
+        _install(sourcedir, version)
+    end
 end
 
