@@ -24,21 +24,9 @@ import("detect.sdks.find_cuda")
 
 -- check the cuda sdk toolchains
 function main(config)
-
-    -- get the cuda directory
-    local cuda_dir = config.get("cuda")
-    if not cuda_dir then
-
-        -- check ok? update it
-        local toolchains = find_cuda()
-        if toolchains then
-
-            -- save it
-            config.set("cuda", toolchains.cudadir)
-
-            -- trace
-            cprint("checking for the Cuda SDK directory ... ${green}%s", toolchains.cudadir)
-        end
+    local cuda = find_cuda(config.get("cuda"), {verbose = true})
+    if cuda then
+        config.set("cuda", cuda.sdkdir, {force = true, readonly = true})
     end
 end
 

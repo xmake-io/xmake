@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.global")
-import("private.platform.check_cuda")
 
 -- check it
 function main(platform, name)
@@ -29,8 +28,5 @@ function main(platform, name)
     if name then
         raise("we cannot check global." .. name)
     end
-
-    -- check cuda
-    check_cuda(global)
 end
 
