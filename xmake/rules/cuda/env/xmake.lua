@@ -23,9 +23,16 @@ rule("cuda.env")
 
     -- before load
     before_load(function (target)
-
-        -- find cuda
-        -- TODO
-        print("find cuda..")
+        if not target:data("cuda") then
+            local cuda = get_config("cuda")
+            if not cuda then
+                -- TODO improve find_cuda + cache 
+                local toolchain = import("detect.sdks.find_cuda")()
+                if toolchain then
+                    cuda = toolchain.cudadir
+                end
+            end
+            target:data_set("cuda", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))
+        end
     end)
 
