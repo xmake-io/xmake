@@ -157,6 +157,14 @@ function main()
         end
     end
 
+    -- enter the project directory
+    if os.isdir(os.projectdir()) then
+        if path.translate(os.projectdir()) ~= path.translate(os.workingdir()) then
+            utils.warning([[You are working in the project directory(%s) and you can also 
+force to build in current directory via run `xmake -P .`]], os.projectdir())
+        end
+    end
+
     -- enter menu config
     if option.get("menu") then
         menuconf_show()

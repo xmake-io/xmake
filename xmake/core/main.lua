@@ -150,10 +150,6 @@ function main._init()
 
     -- enter the project directory
     if os.isdir(os.projectdir()) then
-        if path.translate(os.projectdir()) ~= path.translate(os.curdir()) then
-            utils.warning([[You are working in the project directory(%s) and you can also 
-force to build in current directory via run `xmake -P .`]], os.projectdir())
-        end
         xmake._WORKING_DIR = os.cd(os.projectdir())
     else
         xmake._WORKING_DIR = os.curdir()
