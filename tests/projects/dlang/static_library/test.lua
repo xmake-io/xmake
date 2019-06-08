@@ -1,11 +1,8 @@
--- imports
-import("...build")
-
 -- main entry
-function main()
+function main(t)
 
     -- build project
     if os.host() == "macosx" then
-        build()
+        t:build()
     end
 end

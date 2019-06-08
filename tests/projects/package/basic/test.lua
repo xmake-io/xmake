@@ -1,10 +1,7 @@
--- imports
-import("...build")
-
 -- main entry
-function main()
+function main(t)
 
     -- TODO
     -- build project
---    build()
+--    t:build()
 end

@@ -5,7 +5,7 @@
 param (
     [string]$branch = "master", 
     [string]$version = "v2.2.6",
-    [string]$installdir = $(Join-Path $(if($env:HOME) { $env:HOME } else { "C:\" }) 'xmake')
+    [string]$installdir = $(Join-Path $(if($HOME) { $HOME } else { "C:\" }) 'xmake')
 )
 
 function myExit($code) {
@@ -24,13 +24,15 @@ function writeLogoLine($msg) {
     Write-Host $msg -BackgroundColor White -ForegroundColor DarkBlue
 }
 
-writeLogoLine '                         _                      '
-writeLogoLine '    __  ___ __  __  __ _| | ______              '
-writeLogoLine '    \ \/ / |  \/  |/ _  | |/ / __ \             '
-writeLogoLine '     >  <  | \__/ | /_| |   <  ___/             '
-writeLogoLine '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
-writeLogoLine '                                                '
-writeLogoLine '                                                '
+if (-not $env:CI) {
+    writeLogoLine '                         _                      '
+    writeLogoLine '    __  ___ __  __  __ _| | ______              '
+    writeLogoLine '    \ \/ / |  \/  |/ _  | |/ / __ \             '
+    writeLogoLine '     >  <  | \__/ | /_| |   <  ___/             '
+    writeLogoLine '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
+    writeLogoLine '                                                '
+    writeLogoLine '                                                '
+}
 
 if ($PSVersionTable.PSVersion.Major -lt 5) {
     writeErrorTip 'Sorry but PowerShell v5+ is required'
