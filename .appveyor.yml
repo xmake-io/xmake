@@ -85,7 +85,7 @@ test_script:
           $filename = $_.filename
           Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome Running
           $time = Measure-Command { 
-              $results = xmake lua --verbose --diagnosis runner.lua $_.fullname 2>&1
+              $results = xmake lua --verbose --diagnosis runner.lua $_.fullname
               $outcome = if ($?) { "Passed" } else {  $all_success = $false; "Failed" }
               $stdout = [string]::Join("`n", $results)
           }
