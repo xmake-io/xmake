@@ -21,12 +21,76 @@
 -- define rule: device-link
 rule("cuda.device_link")
 
-    -- add rule: cuda environment
-    add_deps("cuda.env")
+    -- before link
+    before_link(function (target, opt)
 
-    -- on link
-    on_link(function (target, opt)
-        -- TODO
-        print("cuda: link ..")
+        -- imports
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.platform.platform")
+
+        -- get nvcc
+        local nvcc = assert(platform.tool("cu"), "nvcc not found!")
+
+        -- get link flags
+        local linkflags = {"-dlink"}
+
+        -- get target file
+        local targetfile = target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu"))
+
+        -- get object files
+        local objectfiles = nil
+        for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcekind == "cu" then
+                objectfiles = sourcebatch.objectfiles
+            end
+        end
+        if not objectfiles then
+            return
+        end
+
+        -- insert gpucode.o to the object files
+        table.insert(target:objectfiles(), targetfile)
+
+        -- load dependent info 
+        local dependfile = target:dependfile(targetfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+        -- need build this target?
+        local depfiles = objectfiles
+        local depvalues = {nvcc, linkflags}
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
+            return 
+        end
+
+        -- is verbose?
+        local verbose = option.get("verbose")
+
+        -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+        if verbose then
+            cprint("${dim color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
+        else
+            cprint("${color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
+        end
+
+        -- ensure the target directory
+        local targetdir = path.directory(targetfile)
+        if not os.isdir(targetdir) then
+            os.mkdir(targetdir)
+        end
+
+        -- flush io buffer to update progress info
+        io.flush()
+
+        -- link it
+        os.vrunv(nvcc, table.join(linkflags, objectfiles, "-o", targetfile))
+
+        -- update files and values to the dependent file
+        dependinfo.files  = depfiles
+        dependinfo.values = depvalues
+        depend.save(dependinfo, dependfile)
     end)
 

@@ -21,9 +21,6 @@
 -- define rule: gencodes
 rule("cuda.gencodes")
 
-    -- add rule: cuda environment
-    add_deps("cuda.env")
-
     -- add cuda `-gencode` flags to target
     --
     -- the gpu arch format syntax
