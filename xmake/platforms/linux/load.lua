@@ -81,14 +81,9 @@ function main(platform)
     -- init flags for cuda
     local cu_archs = { i386 = "-m32 -Xcompiler -m32", x86_64 = "-m64 -Xcompiler -m64" }
     platform:add("cuflags", cu_archs[arch] or "")
-    platform:add("cu-shflags", cu_archs[arch] or "")
-    platform:add("cu-ldflags", cu_archs[arch] or "")
     local cuda_dir = config.get("cuda")
     if cuda_dir then
         platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
-        platform:add("cu-ldflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
-        platform:add("cu-shflags", "-L" .. os.args(path.join(cuda_dir, "lib")))
-        platform:add("cu-ldflags", "-Xlinker -rpath=" .. os.args(path.join(cuda_dir, "lib")))
     end
     local cu_cxx = config.get("cu-cxx")
     if cu_cxx then

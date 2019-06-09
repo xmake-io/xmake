@@ -28,10 +28,10 @@ language("cuda")
     set_sourceflags {cu = "cuflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "cu-ld", static = "cu-ar", shared = "cu-sh"}
+    set_targetkinds {gpucode = "cu-ld", binary = "ld", static = "ar", shared = "sh"}
 
     -- set target flags
-    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_targetflags {gpucode = "culdflags", binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- set language kinds
     set_langkinds {cu = "cu"}
@@ -112,6 +112,11 @@ language("cuda")
         {
             "target.strip"
         ,   "target.symbols"
+        }
+    ,   gpucode = 
+        {
+            "target.culdflags"
+        ,   "option.culdflags"
         }
     }
 

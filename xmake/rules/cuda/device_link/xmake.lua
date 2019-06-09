@@ -21,6 +21,18 @@
 -- define rule: device-link
 rule("cuda.device_link")
 
+    -- after load
+    after_load(function (target)
+
+        -- get cuda directory 
+        local cuda_dir = assert(get_config("cuda"), "Cuda SDK directory not found!")
+
+        -- add links
+        target:add("links", "cudart")
+        target:add("linkdirs", path.join(cuda_dir, "lib"))
+        target:add("rpathdirs", path.join(cuda_dir, "lib"))
+    end)
+
     -- before link
     before_link(function (target, opt)
 
@@ -29,13 +41,13 @@ rule("cuda.device_link")
         import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
-        import("core.platform.platform")
+        import("core.tool.linker")
 
-        -- get nvcc
-        local nvcc = assert(platform.tool("cu-ld"), "nvcc not found!")
+        -- load linker instance
+        local linkinst = linker.load("gpucode", "cu", {target = target})
 
         -- get link flags
-        local linkflags = {"-dlink"}
+        local linkflags = linkinst:linkflags({target = target, configs = {force = {culdflags = "-dlink"}}})
 
         -- get target file
         local targetfile = target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu"))
@@ -76,17 +88,16 @@ rule("cuda.device_link")
             cprint("${color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
         end
 
-        -- ensure the target directory
-        local targetdir = path.directory(targetfile)
-        if not os.isdir(targetdir) then
-            os.mkdir(targetdir)
+        -- trace verbose info
+        if verbose then
+            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
         -- flush io buffer to update progress info
         io.flush()
 
         -- link it
-        os.vrunv(nvcc, table.join(linkflags, objectfiles, "-o", targetfile))
+        assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
 
         -- update files and values to the dependent file
         dependinfo.files  = depfiles
