@@ -41,4 +41,4 @@ core/.config.mak
 winenv
 xmake-ppa
 !xmake/actions/build
-.vscode/
+.vscode

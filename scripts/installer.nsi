@@ -11,19 +11,49 @@
 !include "WordFunc.nsh"
 !include "WinMessages.nsh"
 
+; xmake version Information
+!ifndef MAJOR
+    !define MAJOR 2
+!endif
+!ifndef MINOR
+    !define MINOR 2
+!endif
+!ifndef ALTER
+    !define ALTER 6
+!endif
+!ifndef BUILD
+    !define BUILD 201906070000
+!endif
+
+!define VERSION ${MAJOR}.${MINOR}.${ALTER}
+!define VERSION_FULL ${VERSION}+${BUILD}
+
+!ifdef x64
+  !define ARCH x64
+!else
+  !define ARCH x86
+!endif
+
 ;--------------------------------
 
 ; The name of the installer
-Name "xmake-v2.2.6"
+Name "XMake - v${VERSION}"
 
 ; The file to write
 OutFile "xmake.exe"
 
 ; The default installation directory
-InstallDir $PROGRAMFILES\xmake
+!ifdef x64
+  InstallDir $PROGRAMFILES64\XMake
+!else
+  InstallDir $PROGRAMFILES\XMake
+!endif
 
 ; Request application privileges for Windows Vista
 RequestExecutionLevel admin
+
+; Set DPI Aware
+ManifestDPIAware true
 
 ;--------------------------------
 ; Interface Settings
@@ -60,13 +90,17 @@ RequestExecutionLevel admin
 ;--------------------------------
 ; Version Information
 
-VIProductVersion "2.2.6.0526"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "ProductName" "XMake"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "Comments" "website: https://xmake.io"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "CompanyName" "The TBOOX Open Source Group"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "LegalCopyright" "Copyright 2015-2019 tboox.org"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileDescription" "A cross-platform build utility based on Lua"
-VIAddVersionKey /LANG=${LANG_ENGLISH} "FileVersion" "2.2.6"
+
+VIProductVersion ${VERSION}.0
+VIFileVersion ${VERSION}.0
+VIAddVersionKey /LANG=0 ProductName XMake
+VIAddVersionKey /LANG=0 Comments "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
+VIAddVersionKey /LANG=0 CompanyName "The TBOOX Open Source Group"
+VIAddVersionKey /LANG=0 LegalCopyright "Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+VIAddVersionKey /LANG=0 FileDescription "XMake Installer - v${VERSION}"
+VIAddVersionKey /LANG=0 OriginalFilename "xmake-${ARCH}.exe"
+VIAddVersionKey /LANG=0 FileVersion ${VERSION_FULL}
+VIAddVersionKey /LANG=0 ProductVersion ${VERSION_FULL}
 
 ;--------------------------------
 

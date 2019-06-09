@@ -1,11 +1,8 @@
--- imports
-import("...build")
-
 -- main entry
-function main()
+function main(t)
 
     -- build project
     if os.host() == "macosx" then
-        build({iphoneos = true})
+        t:build({iphoneos = true})
     end
 end

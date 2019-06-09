@@ -1,52 +1,36 @@
-function main()
+
+local inftimeout = 5000
+
+function test_single_process(t)
 
     -- single process test
-    local inftimeout = 5000
     local stdout = os.tmpfile()
     local stderr = os.tmpfile()
     for i = 1, 2 do
         local pro = process.open("echo -n awd", stdout, stderr)
         process.wait(pro, inftimeout)
         process.close(pro)
-        assert(io.readfile(stdout) == "awd")
+        t:are_equal(io.readfile(stdout), "awd")
     end
+end
 
+function test_hack(t)
     -- hack test
-    local ok = try
-    {
-        function ()
-            process.wait("awd", inftimeout)
-            return true
-        end
-    }
-    assert(ok == nil)
+    t:will_raise(function ()
+        process.wait("awd", inftimeout)
+    end)
 
-    assert(process.close("awd") == nil)
+    t:require_not(process.close("awd"))
 
-    ok = try
-    {
-        function ()
-            process.waitlist("awd", inftimeout)
-            return true
-        end
-    }
-    assert(ok == nil)
+    t:will_raise(function ()
+        process.waitlist("awd", inftimeout)
+    end)
 
-    ok = try
-    {
-        function ()
-            process.waitlist({}, inftimeout)
-            return true
-        end
-    }
-    assert(ok == nil)
+    t:will_raise(function ()
+        process.waitlist({}, inftimeout)
+    end)
 
-    ok = try
-    {
-        function ()
-            process.waitlist({"awd"}, inftimeout)
-            return true
-        end
-    }
-    assert(ok == nil)
+    t:will_raise(function ()
+        process.waitlist({"awd"}, inftimeout)
+    end)
 end

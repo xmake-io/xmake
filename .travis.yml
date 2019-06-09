@@ -28,5 +28,5 @@ script:
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
   - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake --version
-  - travis_wait 60 xmake lua -D tests/test.lua
+  - travis_wait 60 xmake lua -v -D tests/run.lua
 

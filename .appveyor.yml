@@ -5,37 +5,91 @@ os:
   - Visual Studio 2017
 
 platform:
-  - Win32
-  - Win64
+  - x86
+  - x64
 
 install:
+  # prepare tools
+  - ps: Push-Location C:/
+  - ps: New-Item ./winenv/bin -ItemType Directory
+  #   NSIS
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
+  - ps: Expand-Archive ./nsis.zip -DestinationPath ./nsis
+  - ps: Move-Item ./nsis/*/* ./nsis
+  #   unzip
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+  - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
+  - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
+  #   curl
+  - ps: Invoke-WebRequest "https://curl.haxx.se/windows/dl-7.65.1/curl-7.65.1-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
+  - ps: Expand-Archive ./curl.zip -DestinationPath ./curl
+  - ps: Move-Item ./curl/*/* ./curl
+  - ps: Copy-Item ./curl/bin/curl.exe ./winenv/bin
+  - ps: Copy-Item ./curl/bin/curl-ca-bundle.crt ./winenv/bin
+  # 
+  - ps: Pop-Location
+  # install xmake
   - ps: ./scripts/get.ps1 -branch $env:APPVEYOR_REPO_BRANCH
 
+before_build:
+  - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
+
 build_script:
-  - ps: Get-Command xmake
-  - ps: xmake --version
-  - ps: xmake build --project=core
-  - ps: |-
-      Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Join-Path $(Get-Location) "xmake")
-      .\core\build\xmake.exe --version
-      Copy-Item -Force core\build\xmake.exe $(Get-Command xmake).Source
+  # self build
+  - ps: Push-Location ./core
+  - ps: xmake config --arch=$env:platform
+  - ps: xmake build
+  - ps: Pop-Location
+  # use new xmake
+  - ps: Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Resolve-Path ./xmake)
+  - ps: Copy-Item -Force .\core\build\xmake.exe $(Get-Command xmake).Path
+  - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
 
 after_build:
-  - ps: |-
-      Copy-Item .\core\build\xmake.exe .\xmake
-      Copy-Item .\*.md .\xmake
-      Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
-      Push-AppveyorArtifact .\xmake\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
-      Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
+  # publish exe
+  - ps: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
+  # compose & publish installer
+  - ps: Copy-Item C:\winenv\ . -Recurse
+  - ps: $version = (Get-Command xmake).FileVersionInfo
+  - ps: C:\nsis\makensis.exe
+          /DMAJOR=$($version.ProductMajorPart)
+          /DMINOR=$($version.ProductMinorPart)
+          /DALTER=$($version.ProductBuildPart)
+          /DBUILD=$($($version.ProductVersion -split '\+')[1])
+          /D$($env:platform)
+          .\scripts\installer.nsi
+  - ps: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
+  # publish zip archive
+  - ps: Copy-Item .\*.md .\xmake
+  - ps: Copy-Item C:\winenv\ .\xmake -Recurse
+  - ps: Copy-Item .\core\build\xmake.exe .\xmake
+  - ps: Compress-Archive -Path .\xmake\* -DestinationPath .\archive.zip -CompressionLevel Optimal
+  - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
 
 test_script:
   - ps: xmake --version
+  - ps: Push-Location ./tests
   - ps: |-
-      Add-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome Running
-      $time = Measure-Command { 
-        $results = xmake lua --verbose --diagnosis tests\test.lua 2>&1
-        $outcome = if ($?) { "Passed" } else { "Failed" }
-        $stdout = [string]::Join("`n", $results)
+      $tests = Get-ChildItem test.lua -Recurse | ForEach-Object {
+          $testname = "$(Resolve-Path $_.Directory -Relative)"
+          $filename = "$(Resolve-Path $_ -Relative)"
+          $fullname = "$($_.FullName)"
+          Add-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome None
+          return @{ testname = $testname; filename = $filename; fullname = $fullname }
       }
-      Update-AppveyorTest -Name "tests" -Framework "xmake-test" -FileName ./tests/test.lua -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
+  - ps: $all_success = $true
+  - ps: |-
+      $tests | ForEach-Object {
+          $testname = $_.testname
+          $filename = $_.filename
+          Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome Running
+          $time = Measure-Command { 
+              $results = xmake lua --verbose --diagnosis runner.lua $_.fullname
+              $outcome = if ($?) { "Passed" } else {  $all_success = $false; "Failed" }
+              $stdout = [string]::Join("`n", $results)
+          }
+          Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
+      }
+  - ps: Pop-Location
+  - ps: if ($all_success) { Write-Host "All tests passed!" } else { Write-Error "Some tests failed!" }
 
