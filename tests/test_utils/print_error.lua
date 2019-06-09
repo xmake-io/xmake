@@ -24,7 +24,7 @@ function main(t, message, funcs_or_filename, abort_reason)
     cprint(">>     ${red}test failed:${reset} %s", message)
     for _, func in ipairs(funcs) do
         local line = (func.currentline >= 0) and func.currentline or func.linedefined
-        local name = (func.func == t.func) and t.funcname or func.name
+        local name = (func.func == t.func) and t.funcname or func.name or "(anonymous)"
         cprint(">>       function %s ${underline}%s${reset}:${bright}%d${reset}", name, func.source, line)
     end
     raise("aborting because of ${red}%s${reset} ...", abort_reason or "failed assertion")

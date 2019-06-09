@@ -49,5 +49,10 @@ function test_will_raise(t)
     t:will_raise(function ()
         raise("")
     end)
+
+    t:will_raise(function ()
+        print("A test failed message will be printed")
+        t:will_raise(function() end)
+    end, "aborting because of ${red}failed assertion${reset}")
 end
 

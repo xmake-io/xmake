@@ -9,8 +9,8 @@ function main(script)
         script = path.join(script, "test.lua")
     end
     script = path.absolute(script)
-    assert(path.filename(script) == "test.lua")
-    assert(os.isfile(script))
+    assert(path.filename(script) == "test.lua", "file should named `test.lua`")
+    assert(os.isfile(script), "should be a file")
 
     -- disable statistics
     os.setenv("XMAKE_STATS", "false")
@@ -32,16 +32,16 @@ function main(script)
     -- trace
     cprint(">> testing %s ...", path.relative(root))
 
-    -- enter script directory
-    local old_dir = os.cd(root)
-
     -- get test functions
-    local data = import("test", { anonymous = true })
+    local data = import("test", { rootdir = root, anonymous = true })
 
     if data.main then
         -- ignore everthing when we found a main function
         data = { test_main = data.main }
     end
+
+    -- enter script directory
+    local old_dir = os.cd(root)
 
     -- run test
     local succeed_count = 0
