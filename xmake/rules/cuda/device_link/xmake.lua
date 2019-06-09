@@ -32,7 +32,7 @@ rule("cuda.device_link")
         import("core.platform.platform")
 
         -- get nvcc
-        local nvcc = assert(platform.tool("cu"), "nvcc not found!")
+        local nvcc = assert(platform.tool("cu-ld"), "nvcc not found!")
 
         -- get link flags
         local linkflags = {"-dlink"}
