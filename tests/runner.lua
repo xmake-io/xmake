@@ -36,7 +36,7 @@ function main(script)
     local old_dir = os.cd(root)
 
     -- get test functions
-    local data = import("test", { root_dir = root })
+    local data = import("test", { anonymous = true })
 
     if data.main then
         -- ignore everthing when we found a main function
@@ -50,11 +50,13 @@ function main(script)
             if verbose then print(">>     running %s ...", k) end
             context.func = v
             context.funcname = k
-            try{
+            try
+            {
                 function ()
                     v(context)
                 end,
-                catch{
+                catch
+                {
                     function (error)
                         if not error:find("aborting because of ") then
                             print_error(error, v, "unhandled error")
@@ -67,7 +69,7 @@ function main(script)
             succeed_count = succeed_count + 1
         end
     end
-    if verbose then print(">>   finined %d test method(s) ...", succeed_count) end
+    if verbose then print(">>   finished %d test method(s) ...", succeed_count) end
 
     -- leave script directory
     os.cd(old_dir)

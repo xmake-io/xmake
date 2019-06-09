@@ -51,7 +51,7 @@ function test_assert:will_raise(func, message_pattern)
         finally{
             function (ok, error)
                 if ok then
-                    self:print_error("expected raise but finined successfully", func)
+                    self:print_error("expected raise but finished successfully", func)
                 elseif message_pattern and not string.find(error, message_pattern) then
                     self:print_error(format("expected raise with message ${green}%s${reset} but got ${red}%s${reset}", message_pattern, error), func)
                 end
