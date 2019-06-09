@@ -59,7 +59,7 @@ function main(script)
                 {
                     function (error)
                         if not error:find("aborting because of ") then
-                            print_error(error, v, "unhandled error")
+                            context:print_error(error, v, "unhandled error")
                         else
                             raise(error)
                         end

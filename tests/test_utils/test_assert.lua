@@ -45,19 +45,23 @@ function test_assert:are_not_equal(actual, expacted)
     end
 end
 
+test_assert._will_raise_stack = {}
 function test_assert:will_raise(func, message_pattern)
+    table.insert(self._will_raise_stack, 1, debug.getinfo(2).func)
     try{
         func,
         finally{
             function (ok, error)
+                local funcs = { func, unpack(self._will_raise_stack) }
                 if ok then
-                    self:print_error("expected raise but finished successfully", func)
+                    self:print_error("expected raise but finished successfully", funcs)
                 elseif message_pattern and not string.find(error, message_pattern) then
-                    self:print_error(format("expected raise with message ${green}%s${reset} but got ${red}%s${reset}", message_pattern, error), func)
+                    self:print_error(format("expected raise with message ${green}%s${reset} but got ${red}%s${reset}", message_pattern, error), funcs)
                 end
             end
         }
     }
+    table.remove(self._will_raise_stack, 1)
 end
 
 function main(context)
