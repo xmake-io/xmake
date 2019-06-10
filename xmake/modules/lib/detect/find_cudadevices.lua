@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.platform.platform")
+import("core.project.config")
 import("lib.detect.cache")
 
 -- a magic string to filter output
@@ -120,13 +121,15 @@ function _find_devices(verbose)
         cprint("${dim}checking for cuda devices")
     end
 
-    local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cu')
+    local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cpp')
     local outfile = os.tmpfile()
     local compile_errors = nil
     local results, errors = try 
     { 
-        function () 
-            return os.iorunv(nvcc, { sourcefile, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
+        function ()
+            local archs = { i386 = "-m32", x86 = "-m32", x86_64 = "-m64", x64 = "-m64" }
+            local arch = archs[config.get("arch")] or ""
+            return os.iorunv(nvcc, { sourcefile, arch, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
         end, 
         catch 
         {
