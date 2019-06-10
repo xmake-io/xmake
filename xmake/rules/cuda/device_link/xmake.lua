@@ -24,25 +24,19 @@ rule("cuda.device_link")
     -- after load
     after_load(function (target)
 
-        -- get cuda directory 
-        local cuda_dir = assert(get_config("cuda"), "Cuda SDK directory not found!")
+        -- imports
+        import("detect.sdks.find_cuda")
+
+        -- get cuda
+        local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK directory not found!")
 
         -- add links
         target:add("links", "cudadevrt", "cudart_static")
         if is_plat("linux") then
             target:add("links", "rt", "pthread", "dl")
         end
-        if is_plat("windows") then
-            local subdir = is_arch("x64") and "x64" or "Win32"
-            target:add("linkdirs", path.join(cuda_dir, "lib", subdir))
-            target:add("rpathdirs", path.join(cuda_dir, "lib", subdir))
-        elseif is_plat("linux") and is_arch("x86_64") then
-            target:add("linkdirs", path.join(cuda_dir, "lib64"))
-            target:add("rpathdirs", path.join(cuda_dir, "lib64"))
-        else
-            target:add("linkdirs", path.join(cuda_dir, "lib"))
-            target:add("rpathdirs", path.join(cuda_dir, "lib"))
-        end
+        target:add("linkdirs", cuda.linkdirs)
+        target:add("rpathdirs", cuda.linkdirs)
     end)
 
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
