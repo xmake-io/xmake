@@ -28,12 +28,12 @@ rule("cuda.env")
         target:data_set("cuda", cuda)
 
         -- add arch
-        if is_arch("x86_64", "x64") then
-            target:add("cuflags", "-m64", {force = true})
-            target:add("culdflags", "-m64", {force = true})
-        else
+        if is_arch("i386", "x86") then
             target:add("cuflags", "-m32", {force = true})
             target:add("culdflags", "-m32", {force = true})
+        else
+            target:add("cuflags", "-m64", {force = true})
+            target:add("culdflags", "-m64", {force = true})
         end
 
         -- add -ccbin
