@@ -39,6 +39,9 @@ language("cuda")
     -- set mixing kinds
     set_mixingkinds("cu", "cc", "cxx", "as")
 
+    -- add rules
+    add_rules("cuda")
+
     -- on load
     on_load("load")
 

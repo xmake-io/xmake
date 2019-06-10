@@ -264,38 +264,6 @@ function deprecated_project._api_is_option(interp, ...)
     return config.has(...)
 end
 
--- patch target rules
-function deprecated_project._patch_target_rules(target)
-
-    -- TODO patch rules for the deprecated cuda link mode
-    -- we will remove this code in the future
-    local files = target:get("files")
-    if files and not target:rule("cuda.device_link") then
-        for _, sourcefile in ipairs(table.wrap(files)) do
-            if sourcefile:lower():endswith(".cu") then
-                local rules = {binary = "cuda.console", shared = "cuda.shared", static = "cuda.static"}
-                local rulename = rules[target:targetkind()]
-                if rulename then
-                    local r = rule.rule(rulename)
-                    if r then
-                        target._RULES[rulename] = r
-                        for _, deprule in ipairs(r:orderdeps()) do
-                            local name = deprule:name()
-                            if not target._RULES[name] then
-                                target._RULES[name] = deprule
-                                table.insert(target._ORDERULES, deprule) 
-                            end
-                        end
-                        table.insert(target._ORDERULES, r)
-                        deprecated.add("add_rules(\"" .. rulename .. "\")", "set_kind(\"" .. target:targetkind() .. "\") for cuda")
-                    end
-                end
-                break
-            end
-        end
-    end
-end
-
 -- register api
 function deprecated_project.api_register(interp)
 

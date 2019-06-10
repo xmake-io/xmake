@@ -18,36 +18,9 @@
 -- @file        xmake.lua
 --
 
--- define rule: cuda static library
-rule("cuda.static")
+-- define rule: cuda
+rule("cuda")
 
     -- add rules
     add_deps("cuda.device_link", "cuda.gencodes")
-
-    -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", "static")
-    end)
-
--- define rule: cuda shared library
-rule("cuda.shared")
-
-    -- add rules
-    add_deps("cuda.device_link", "cuda.gencodes")
-
-    -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", "shared")
-    end)
-
--- define rule: cuda console
-rule("cuda.console")
-
-    -- add rules
-    add_deps("cuda.device_link", "cuda.gencodes")
-
-    -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", "binary")
-    end)
 
