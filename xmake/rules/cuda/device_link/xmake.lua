@@ -36,6 +36,9 @@ rule("cuda.device_link")
             local subdir = is_arch("x64") and "x64" or "Win32"
             target:add("linkdirs", path.join(cuda_dir, "lib", subdir))
             target:add("rpathdirs", path.join(cuda_dir, "lib", subdir))
+        elseif is_plat("linux") and is_arch("x86_64") then
+            target:add("linkdirs", path.join(cuda_dir, "lib64"))
+            target:add("rpathdirs", path.join(cuda_dir, "lib64"))
         else
             target:add("linkdirs", path.join(cuda_dir, "lib"))
             target:add("rpathdirs", path.join(cuda_dir, "lib"))
