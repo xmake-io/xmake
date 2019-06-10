@@ -19,10 +19,19 @@ inline void check(cudaError_t result)
     }
 }
 
-inline void print_value(size_t value)
+inline void print_value(unsigned long long value)
 {
-    // in case we don't have '%zu'
-    printf("%llu", (unsigned long long)value);
+    printf("%llu", value);
+}
+
+inline void print_value(unsigned long value)
+{
+    printf("%lu", value);
+}
+
+inline void print_value(unsigned int value)
+{
+    printf("%u", value);
 }
 
 inline void print_value(bool value)
@@ -46,11 +55,6 @@ inline void print_value(const T (&value)[len])
     }
     print_value(value[len - 1]);
     printf(")");
-}
-
-inline void print_value(unsigned int value)
-{
-    printf("%u", value);
 }
 
 inline void print_value(const void *value)
