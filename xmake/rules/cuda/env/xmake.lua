@@ -25,7 +25,6 @@ rule("cuda.env")
         -- get cuda sdk
         import("detect.sdks.find_cuda")
         local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK not found!")
-        target:data_set("cuda", cuda)
 
         -- add arch
         if is_arch("i386", "x86") then
@@ -42,6 +41,24 @@ rule("cuda.env")
             target:add("cuflags", "-ccbin", os.args(cu_ccbin), {force = true})
             target:add("culdflags", "-ccbin", os.args(cu_ccbin), {force = true})
         end
+
+        -- add links
+        target:add("syslinks", "cudadevrt")
+        local cudart = false
+        for _, link in ipairs(table.join(target:get("links") or {}, target:get("syslinks"))) do
+            if link == "cudart" or link == "cudart_static" then
+                cudart = true
+                break
+            end
+        end
+        if not cudart then
+            target:add("syslinks", "cudart_static")
+        end
+        if is_plat("linux") then
+            target:add("syslinks", "rt", "pthread", "dl")
+        end
+        target:add("linkdirs", cuda.linkdirs)
+        target:add("rpathdirs", cuda.linkdirs)
 
         -- add includedirs
         target:add("includedirs", cuda.includedirs)

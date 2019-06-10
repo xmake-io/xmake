@@ -24,23 +24,14 @@ rule("cuda.device_link")
     -- add rule: cuda environment
     add_deps("cuda.env")
 
-    -- after load
-    after_load(function (target)
-
-        -- get cuda
-        local cuda = assert(target:data("cuda"))
-
-        -- add links
-        target:add("links", "cudadevrt", "cudart_static")
-        if is_plat("linux") then
-            target:add("links", "rt", "pthread", "dl")
-        end
-        target:add("linkdirs", cuda.linkdirs)
-        target:add("rpathdirs", cuda.linkdirs)
-    end)
-
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
+
+        -- only for binary/shared
+        local targetkind = target:targetkind()
+        if targetkind ~= "binary" and targetkind ~= "shared" then
+            return 
+        end
 
         -- imports
         import("core.base.option")
