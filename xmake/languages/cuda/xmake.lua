@@ -118,8 +118,18 @@ language("cuda")
         }
     ,   gpucode = 
         {
-            "target.culdflags"
-        ,   "option.culdflags"
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
         }
     }
 

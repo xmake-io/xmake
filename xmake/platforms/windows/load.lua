@@ -39,6 +39,7 @@ function main(platform)
     -- init flags for cuda
     local cu_archs = { x86 = "-m32", x64 = "-m64" }
     platform:add("cuflags", cu_archs[arch] or "")
+    platform:add("cu-ldflags", cu_archs[arch] or "")
     local cuda_dir = config.get("cuda")
     if cuda_dir then
         platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))

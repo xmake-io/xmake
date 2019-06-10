@@ -28,9 +28,18 @@ rule("cuda.device_link")
         local cuda_dir = assert(get_config("cuda"), "Cuda SDK directory not found!")
 
         -- add links
-        target:add("links", "cudart")
-        target:add("linkdirs", path.join(cuda_dir, "lib"))
-        target:add("rpathdirs", path.join(cuda_dir, "lib"))
+        target:add("links", "cudadevrt", "cudart_static")
+        if is_plat("linux") then
+            target:add("links", "rt", "pthread", "dl")
+        end
+        if is_plat("windows") then
+            local subdir = is_arch("x64") and "x64" or "Win32"
+            target:add("linkdirs", path.join(cuda_dir, "lib", subdir))
+            target:add("rpathdirs", path.join(cuda_dir, "lib", subdir))
+        else
+            target:add("linkdirs", path.join(cuda_dir, "lib"))
+            target:add("rpathdirs", path.join(cuda_dir, "lib"))
+        end
     end)
 
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
@@ -46,8 +55,11 @@ rule("cuda.device_link")
         -- load linker instance
         local linkinst = linker.load("gpucode", "cu", {target = target})
 
+        -- init culdflags
+        local culdflags = {"-dlink"}
+
         -- get link flags
-        local linkflags = linkinst:linkflags({target = target, configs = {force = {culdflags = "-dlink"}}})
+        local linkflags = linkinst:linkflags({target = target, configs = {force = {culdflags = culdflags}}})
 
         -- get target file
         local targetfile = target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu"))

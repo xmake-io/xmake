@@ -119,7 +119,7 @@ rule("cuda.gencodes")
 
         local cugencodes = table.wrap(target:get("cugencodes"))
         for _, opt in ipairs(target:orderopts()) do
-            table.join2(gencodes, opt:get("cugencodes"))
+            table.join2(cugencodes, opt:get("cugencodes"))
         end
         for _, v in ipairs(cugencodes) do
             local flag = nf_cugencode(v)
