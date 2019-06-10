@@ -33,7 +33,7 @@ rule("cuda.device_link")
         target:add("rpathdirs", path.join(cuda_dir, "lib"))
     end)
 
-    -- before link
+    -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
 
         -- imports
