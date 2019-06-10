@@ -84,7 +84,7 @@ rule("cuda.device_link")
 
         -- need build this target?
         local depfiles = objectfiles
-        local depvalues = {nvcc, linkflags}
+        local depvalues = {linkinst:program(), linkflags}
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
             return 
         end
