@@ -523,6 +523,7 @@ function project._load_targets()
                 table.insert(t._ORDERULES, r)
             end
         end
+        deprecated_project._patch_target_rules(t)
 
         -- laod packages
         t._PACKAGES = t._PACKAGES or {}
