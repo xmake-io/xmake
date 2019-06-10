@@ -139,7 +139,7 @@ language("cuda")
                 {   
                     {category = "Cross Complation Configuration/Compiler Configuration"         }
                 ,   {nil, "cu",         "kv", nil,          "The Cuda Compiler"                 }
-                ,   {nil, "cu-cxx",     "kv", nil,          "The Cuda Host C++ Compiler"        }
+                ,   {nil, "cu-ccbin",   "kv", nil,          "The Cuda Host C++ Compiler"        }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"           }
                 ,   {nil, "cu-ld",      "kv", nil,          "The Cuda Linker"                   }

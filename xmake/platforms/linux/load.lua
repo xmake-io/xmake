@@ -86,9 +86,10 @@ function main(platform)
     if cuda_dir then
         platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
     end
-    local cu_cxx = config.get("cu-cxx")
-    if cu_cxx then
-        platform:add("cuflags", "-ccbin", os.args(cu_cxx))
+    local cu_ccbin = config.get("cu-ccbin")
+    if cu_ccbin then
+        platform:add("cuflags", "-ccbin", os.args(cu_ccbin))
+        platform:add("cu-ldflags", "-ccbin", os.args(cu_ccbin))
     end
 end
 
