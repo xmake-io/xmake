@@ -2,9 +2,6 @@
 -- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
--- add helper function add_cugencodes
-includes('add_cugencodes.lua')
-
 -- define target
 target("[targetname]")
 
