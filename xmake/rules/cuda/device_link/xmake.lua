@@ -21,14 +21,14 @@
 -- define rule: device-link
 rule("cuda.device_link")
 
+    -- add rule: cuda environment
+    add_deps("cuda.env")
+
     -- after load
     after_load(function (target)
 
-        -- imports
-        import("detect.sdks.find_cuda")
-
         -- get cuda
-        local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK directory not found!")
+        local cuda = assert(target:data("cuda"))
 
         -- add links
         target:add("links", "cudadevrt", "cudart_static")

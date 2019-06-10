@@ -88,19 +88,5 @@ function main(platform)
     -- init flags for rust
     platform:set("rc-shflags", "")
     platform:set("rc-ldflags", "")
-
-    -- init flags for cuda
-    local cu_archs = { i386 = "-m32", x86_64 = "-m64" }
-    platform:add("cuflags", cu_archs[arch] or "")
-    platform:add("cu-ldflags", cu_archs[arch] or "")
-    local cuda_dir = config.get("cuda")
-    if cuda_dir then
-        platform:add("cuflags", "-I" .. os.args(path.join(cuda_dir, "include")))
-    end
-    local cu_ccbin = config.get("cu-ccbin")
-    if cu_ccbin then
-        platform:add("cuflags", "-ccbin", os.args(cu_ccbin))
-        platform:add("cu-ldflags", "-ccbin", os.args(cu_ccbin))
-    end
 end
 
