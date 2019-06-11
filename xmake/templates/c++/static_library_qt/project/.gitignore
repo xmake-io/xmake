@@ -3,3 +3,6 @@
 # build result files
 build/
 
+.DS_Store/
+
+
