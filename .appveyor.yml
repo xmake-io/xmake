@@ -9,7 +9,7 @@ platform:
   - Win64
 
 install:
-  - ps: ./scripts/get.ps1 -branch master
+  - ps: ./scripts/get.ps1 -branch $env:APPVEYOR_REPO_BRANCH
 
 build_script:
   - ps: Get-Command xmake
