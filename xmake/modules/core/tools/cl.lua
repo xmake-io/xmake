@@ -313,10 +313,10 @@ function _include_deps(self, outdata)
     -- translate it
     local results = {}
     local uniques = {}
-    for _, line in ipairs(outdata:split("\r\n", {plain = true})) do
+    for _, line in ipairs(outdata:split("\n", {plain = true})) do
 
         -- get includefile
-        local includefile = _include_note(self, line)
+        local includefile = _include_note(self, line:trim())
         if includefile then
 
             -- get the relative
