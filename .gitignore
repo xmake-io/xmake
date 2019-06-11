@@ -22,5 +22,8 @@ winenv/
 # Makefile generation
 /core/xmake.config.h
 /core/.config.mak
+/core/**/*.o
+/core/**/*.b
+/core/**/*.a
 
 !/xmake/actions/build/

@@ -24,6 +24,12 @@ rule("cuda.device_link")
     -- add rule: cuda environment
     add_deps("cuda.env")
 
+    -- clean files
+    after_clean(function (target)
+        os.tryrm(target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu")))
+        os.tryrm(target:dependfile(targetfile))
+    end)
+
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
 
