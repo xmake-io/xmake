@@ -53,9 +53,6 @@ rule("cuda.device_link")
         local culdflags = {"-dlink"}
         if targetkind == "shared" then
             table.insert(culdflags, "-shared")
-            if not is_plat("windows") then
-                table.insert(culdflags, "-Xcompiler -fPIC")
-            end
         end
 
         -- get link flags
