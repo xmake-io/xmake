@@ -4,12 +4,16 @@ build/
 winenv/
 xmake-ppa/
 .vscode/
+
 /*.exe
 /*.zip
 /xmake/*.exe
 /xmake/*.zip
 /scripts/*.exe
 /scripts/*.zip
+
 install.log
+/core/xmake.config.h
+/core/.config.mak
 
 !/xmake/actions/build/
