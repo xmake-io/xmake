@@ -1,8 +1,0 @@
-# xmake temp files
-.xmake/
-# build result files
-build/
-
-.DS_Store/
-
-

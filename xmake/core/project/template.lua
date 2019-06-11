@@ -280,13 +280,16 @@ function template.create(language, templateid, targetname)
     -- append FAQ to xmake.lua
     local projectfile = path.join(projectdir, "xmake.lua")
     if os.isfile(projectfile) then
-        local file = io.open("xmake.lua", "a+")
+        local file = io.open(projectfile, "a+")
         if file then
             file:print("")
             file:print(template.faq())
             file:close()
         end
     end
+
+    -- generate .gitignore
+    os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
 
     -- ok
     return true

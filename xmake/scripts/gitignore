@@ -1,8 +1,8 @@
-# xmake temp files
+# Xmake cache
 .xmake/
-# build result files
 build/
 
-.DS_Store/
+# MacOS Cache
+.DS_Store
 
 
