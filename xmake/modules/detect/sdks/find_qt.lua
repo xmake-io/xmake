@@ -153,9 +153,9 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_qt." .. (sdkdir or "")
+    local key = "detect.sdks.find_qt"
     local cacheinfo = cache.load(key)
-    if not opt.force and cacheinfo.qt then
+    if not opt.force and cacheinfo.qt and cacheinfo.qt.sdkdir and os.isdir(cacheinfo.qt.sdkdir) then
         return cacheinfo.qt
     end
        

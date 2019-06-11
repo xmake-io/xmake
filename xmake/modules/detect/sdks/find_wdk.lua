@@ -160,9 +160,9 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_wdk." .. (sdkdir or "")
+    local key = "detect.sdks.find_wdk"
     local cacheinfo = cache.load(key)
-    if not opt.force and cacheinfo.wdk then
+    if not opt.force and cacheinfo.wdk and cacheinfo.wdk.sdkdir and os.isdir(cacheinfo.wdk.sdkdir) then
         return cacheinfo.wdk
     end
        
