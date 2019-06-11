@@ -103,6 +103,11 @@ function _instance:extensions()
     return extensions
 end
 
+-- get the rules
+function _instance:rules()
+    return self._INFO:get("rules")
+end
+
 -- get the source kinds
 function _instance:sourcekinds()
     return self._INFO:get("sourcekinds")
@@ -221,6 +226,8 @@ function language._interpreter()
         {
             -- language.set_xxx
             "language.set_mixingkinds"
+            -- language.add_xxx
+        ,   "language.add_rules"
         }
     ,   script =
         {

@@ -1,22 +1,8 @@
-*.a
-*.o
-*.exe
-*.obj
-*.dll
-*.lib
-*.out
-*.suo
-*~
-*.swp
-*.swo
-*.bak
-*.orig
-*.pdb
-*.idb
-.svn
+# Xmake cache
+.xmake/
+build/
+
+# MacOS Cache
 .DS_Store
-.xmake
-*.gch
-*.gch.d
-gmon.out
-build
+
+

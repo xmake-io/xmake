@@ -2,14 +2,16 @@
 -- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
--- add helper function add_cugencodes
-includes('add_cugencodes.lua')
-
 -- define target
 target("[targetname]")
 
     -- set kind
     set_kind("binary")
+
+    -- generate relocatable device code for device linker of dependents
+    -- if no __device__ and __global__ functions will be called cross file,
+    -- this instruction could be omitted
+    -- add_cuflags("-rdc=true")
 
     -- add files
     add_files("src/*.cu")

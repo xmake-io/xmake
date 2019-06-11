@@ -498,7 +498,7 @@ function project._load_targets()
         t._ORDERDEPS = t._ORDERDEPS or {}
         project._load_deps(t, targets, t._DEPS, t._ORDERDEPS)
 
-        -- load rules
+        -- load rules from target and language
         --
         -- .e.g 
         --
@@ -509,7 +509,15 @@ function project._load_targets()
         --
         t._RULES      = t._RULES or {}
         t._ORDERULES  = t._ORDERULES or {}
-        for _, rulename in ipairs(table.wrap(t:get("rules"))) do
+        local rulenames = {}
+        table.join2(rulenames, t:get("rules"))
+        for _, sourcefile in ipairs(table.wrap(t:get("files"))) do
+            local lang = language.load_ex(path.extension(sourcefile))
+            if lang and lang:rules() then
+                table.join2(rulenames, lang:rules())
+            end
+        end
+        for _, rulename in ipairs(rulenames) do
             local r = project.rule(rulename) or rule.rule(rulename)
             if r then
                 t._RULES[rulename] = r

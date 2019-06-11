@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.global")
-import("private.platform.check_cuda")
 import("private.platform.check_xcode")
 
 -- check it
@@ -33,8 +32,5 @@ function main(platform, name)
 
     -- check xcode 
     check_xcode(global, true)
-
-    -- check cuda
-    check_cuda(global)
 end
 

@@ -327,7 +327,7 @@ function sandbox_os.vrunv(program, argv, opt)
 
     -- echo command
     if option.get("verbose") then
-        print(vformat(program), table.concat(argv, " "))
+        print(vformat(program) .. " " .. table.concat(argv, " "))
     end
 
     -- run it

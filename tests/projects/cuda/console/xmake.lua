@@ -1,6 +1,4 @@
 
-includes('add_cugencodes.lua')
-
 -- define target
 target("cuda_console")
 

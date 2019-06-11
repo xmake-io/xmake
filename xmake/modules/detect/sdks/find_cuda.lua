@@ -19,10 +19,14 @@
 --
 
 -- imports
+import("lib.detect.cache")
 import("lib.detect.find_file")
+import("core.base.option")
+import("core.base.global")
+import("core.project.config")
 
 -- find cuda sdk directory
-function _find_cudadir()
+function _find_sdkdir()
 
     -- init the search directories
     local pathes = {}
@@ -42,11 +46,50 @@ function _find_cudadir()
 end
 
 -- find cuda sdk toolchains
+function _find_cuda(sdkdir)
+
+    -- find cuda directory
+    if not sdkdir or not os.isdir(sdkdir) then
+        sdkdir = _find_sdkdir()
+    end
+
+    -- not found?
+    if not sdkdir or not os.isdir(sdkdir) then
+        return nil
+    end
+
+    -- get the bin directory 
+    local bindir = path.join(sdkdir, "bin")
+    if not os.isexec(path.join(bindir, "nvcc")) then
+        return nil
+    end
+
+    -- get linkdirs
+    local linkdirs = {}
+    if is_plat("windows") then
+        local subdir = is_arch("x64") and "x64" or "Win32"
+        table.insert(linkdirs, path.join(sdkdir, "lib", subdir))
+    elseif is_plat("linux") and is_arch("x86_64") then
+        table.insert(linkdirs, path.join(sdkdir, "lib64", "stubs"))
+        table.insert(linkdirs, path.join(sdkdir, "lib64"))
+    else
+        table.insert(linkdirs, path.join(sdkdir, "lib", "stubs"))
+        table.insert(linkdirs, path.join(sdkdir, "lib"))
+    end
+
+    -- get includedirs
+    local includedirs = {path.join(sdkdir, "include")}
+
+    -- get toolchains
+    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
+end
+
+-- find cuda sdk toolchains
 --
--- @param cudadir   the cuda directory
+-- @param sdkdir    the cuda sdk directory
 -- @param opt       the argument options 
 --
--- @return          the cuda sdk toolchains. .e.g {cudadir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the cuda sdk toolchains. .e.g {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
 -- @code 
 --
@@ -54,33 +97,41 @@ end
 -- 
 -- @endcode
 --
-function main(cudadir, opt)
+function main(sdkdir, opt)
 
     -- init arguments
     opt = opt or {}
 
-    -- find cuda directory
-    if not cudadir or not os.isdir(cudadir) then
-        cudadir = _find_cudadir()
+    -- attempt to load cache first
+    local key = "detect.sdks.find_cuda"
+    local cacheinfo = cache.load(key)
+    if not opt.force and cacheinfo.cuda and cacheinfo.cuda.sdkdir and os.isdir(cacheinfo.cuda.sdkdir) then
+        return cacheinfo.cuda
+    end
+       
+    -- find cuda
+    local cuda = _find_cuda(sdkdir or config.get("cuda") or global.get("cuda") or config.get("sdk"))
+    if cuda then
+
+        -- save to config
+        config.set("cuda", cuda.sdkdir, {force = true, readonly = true})
+
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the Cuda SDK directory ... ${color.success}%s", cuda.sdkdir)
+        end
+    else
+
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            cprint("checking for the Cuda SDK directory ... ${color.nothing}${text.nothing}")
+        end
     end
 
-    -- not found?
-    if not cudadir or not os.isdir(cudadir) then
-        return nil
-    end
+    -- save to cache
+    cacheinfo.cuda = cuda or false
+    cache.save(key, cacheinfo)
 
-    -- get the bin directory 
-    local bindir = path.join(cudadir, "bin")
-    if not os.isexec(path.join(bindir, "nvcc")) then
-        return nil
-    end
-
-    -- get linkdirs
-    local linkdirs = {path.join(cudadir, "lib")}
-
-    -- get includedirs
-    local includedirs = {path.join(cudadir, "include")}
-
-    -- get toolchains
-    return {cudadir = cudadir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs}
+    -- ok?
+    return cuda
 end

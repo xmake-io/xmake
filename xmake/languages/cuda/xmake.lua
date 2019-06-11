@@ -28,16 +28,19 @@ language("cuda")
     set_sourceflags {cu = "cuflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "cu-ld", static = "cu-ar", shared = "cu-sh"}
+    set_targetkinds {gpucode = "cu-ld", binary = "ld", static = "ar", shared = "sh"}
 
     -- set target flags
-    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_targetflags {gpucode = "culdflags", binary = "ldflags", static = "arflags", shared = "shflags"}
 
     -- set language kinds
     set_langkinds {cu = "cu"}
 
     -- set mixing kinds
     set_mixingkinds("cu", "cc", "cxx", "as")
+
+    -- add rules
+    add_rules("cuda")
 
     -- on load
     on_load("load")
@@ -113,6 +116,21 @@ language("cuda")
             "target.strip"
         ,   "target.symbols"
         }
+    ,   gpucode = 
+        {
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "option.linkdirs"
+        ,   "platform.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "option.links"
+        ,   "platform.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "option.syslinks"
+        ,   "platform.syslinks"
+        }
     }
 
     -- set menu
@@ -121,7 +139,7 @@ language("cuda")
                 {   
                     {category = "Cross Complation Configuration/Compiler Configuration"         }
                 ,   {nil, "cu",         "kv", nil,          "The Cuda Compiler"                 }
-                ,   {nil, "cu-cxx",     "kv", nil,          "The Cuda Host C++ Compiler"        }
+                ,   {nil, "cu-ccbin",   "kv", nil,          "The Cuda Host C++ Compiler"        }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"           }
                 ,   {nil, "cu-ld",      "kv", nil,          "The Cuda Linker"                   }
