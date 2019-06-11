@@ -1,14 +1,23 @@
 .DS_Store/
+
+# Xmake cache
 .xmake/
 build/
-winenv/
-xmake-ppa/
+
+# for VS Code
 .vscode/
 
+# for vim
+*.swp
+*.swo
+/tags
+
+# Ignore packaging files
+winenv/
 *.exe
 *.zip
 
-install.log
+# Makefile generation
 /core/xmake.config.h
 /core/.config.mak
 
