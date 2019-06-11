@@ -1,3 +1,4 @@
+# MacOS Cache
 .DS_Store/
 
 # Xmake cache
@@ -10,7 +11,8 @@ build/
 # for vim
 *.swp
 *.swo
-/tags
+tags
+!tags/
 
 # Ignore packaging files
 winenv/
