@@ -103,9 +103,9 @@ function main(sdkdir, opt)
     opt = opt or {}
 
     -- attempt to load cache first
-    local key = "detect.sdks.find_cuda." .. (sdkdir or "")
+    local key = "detect.sdks.find_cuda"
     local cacheinfo = cache.load(key)
-    if not opt.force and cacheinfo.cuda then
+    if not opt.force and cacheinfo.cuda and cacheinfo.cuda.sdkdir and os.isdir(cacheinfo.cuda.sdkdir) then
         return cacheinfo.cuda
     end
        
