@@ -2,8 +2,6 @@
 -- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
-add_includedirs("inc")
-
 -- generate PTX code for the virtual architecture to guarantee compatibility
 add_cugencodes("compute_30")
 
@@ -14,6 +12,8 @@ target("lib")
     set_kind("static")
 
     add_cuflags("-rdc=true")
+
+    add_includedirs("inc", {public = true})
 
     -- add files
     add_files("src/lib.cu")
