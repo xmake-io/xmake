@@ -6,7 +6,13 @@ add_rules("mode.debug", "mode.release")
 target("[targetname]")
 
     -- set kind
-    set_kind("binary")
+    set_kind("shared")
+
+    -- add modes: debug and release
+    add_rules("mode.debug", "mode.release")
+
+    -- add include dirs
+    add_includedirs("inc")
 
     -- generate relocatable device code for device linker of dependents
     -- if no __device__ and __global__ functions will be called cross file,
@@ -14,7 +20,7 @@ target("[targetname]")
     -- add_cuflags("-rdc=true")
 
     -- add files
-    add_files("src/*.cu")
+    add_files("src/**.cu")
 
     -- generate SASS code for SM architecture of current host
     add_cugencodes("native")
