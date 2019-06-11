@@ -1,8 +1,8 @@
 -- set name
-set_name("static")
+set_name("shared")
 
 -- set description
-set_description("The Static Library")
+set_description("The Shared Library")
 
 -- set project directory
 set_projectdir("project")
