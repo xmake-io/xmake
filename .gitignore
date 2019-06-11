@@ -5,12 +5,8 @@ winenv/
 xmake-ppa/
 .vscode/
 
-/*.exe
-/*.zip
-/xmake/*.exe
-/xmake/*.zip
-/scripts/*.exe
-/scripts/*.zip
+*.exe
+*.zip
 
 install.log
 /core/xmake.config.h
