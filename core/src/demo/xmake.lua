@@ -39,7 +39,13 @@ target("demo")
     end
 
     -- enable xp compatibility mode
-    add_ldflags("/subsystem:console,\"5.01\"")
+    if is_plat("windows") then
+        if is_arch("x86") then
+            add_ldflags("/subsystem:console,\"5.01\"")
+        else
+            add_ldflags("/subsystem:console,\"5.02\"")
+        end
+    end
 
     -- copy target to the build directory
     after_build(function (target)
