@@ -48,9 +48,11 @@ end
 test_assert._will_raise_stack = {}
 function test_assert:will_raise(func, message_pattern)
     table.insert(self._will_raise_stack, 1, debug.getinfo(2).func)
-    try{
+    try
+    {
         func,
-        finally{
+        finally
+        {
             function (ok, error)
                 local funcs = { func, unpack(self._will_raise_stack) }
                 if ok then
