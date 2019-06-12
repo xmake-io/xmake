@@ -67,9 +67,6 @@ rule("qt.qrc")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
-        -- add clean files
-        target:data_add("qt.cleanfiles", {sourcefile_cpp, objectfile})
-
         -- load dependent info 
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})

@@ -83,7 +83,6 @@ rule("wdk.man")
         if headerfile then
             table.insert(args, "-o")
             table.insert(args, headerfile)
-            target:data_add("wdk.cleanfiles", headerfile)
         else
             raise("please call `set_values(\"wdk.man.header\", \"header.h\")` to set the provider header file name!")
         end
@@ -101,7 +100,6 @@ rule("wdk.man")
         if counter_headerfile then
             table.insert(args, "-ch")
             table.insert(args, counter_headerfile)
-            target:data_add("wdk.cleanfiles", counter_headerfile)
         end
 
         -- add resource file
@@ -110,7 +108,6 @@ rule("wdk.man")
         if resourcefile then
             table.insert(args, "-rc")
             table.insert(args, resourcefile)
-            target:data_add("wdk.cleanfiles", resourcefile)
         end
 
         -- need build this object?

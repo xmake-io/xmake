@@ -108,9 +108,6 @@ rule("wdk.sign")
             return 
         end
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", {tempfile, dependfile})
-
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then

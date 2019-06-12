@@ -39,9 +39,7 @@ rule("qt.env")
 
     -- clean files
     after_clean(function (target)
-        for _, file in ipairs(target:data("qt.cleanfiles")) do
-            os.rm(file)
-        end
-        target:data_set("qt.cleanfiles", nil)
+        import("core.project.config")
+        import("private.action.clean.remove_files")
+        remove_files(path.join(config.buildir(), ".qt"))
     end)
-

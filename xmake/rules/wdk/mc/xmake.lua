@@ -88,7 +88,6 @@ rule("wdk.mc")
         if headerfile then
             table.insert(args, "-z")
             table.insert(args, path.basename(headerfile))
-            target:data_add("wdk.cleanfiles", headerfile)
         else
             headerfile = path.join(outputdir, path.basename(sourcefile) .. ".h")
         end

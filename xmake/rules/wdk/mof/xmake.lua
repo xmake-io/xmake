@@ -99,10 +99,6 @@ rule("wdk.mof")
         local outputdir_htm      = path.join(outputdir, "htm")
         local targetfile_vbs     = path.join(outputdir, path.basename(sourcefile) .. ".vbs")
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", {headerfile, sourcefile_mof, targetfile_mfl, targetfile_mof})
-        target:data_add("wdk.cleanfiles", {targetfile_mfl_mof, targetfile_bmf, outputdir_htm, targetfile_vbs})
-
         -- need build this object?
         local dependfile = target:dependfile(headerfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})

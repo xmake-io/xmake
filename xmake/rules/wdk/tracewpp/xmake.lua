@@ -87,9 +87,6 @@ rule("wdk.tracewpp")
         -- add includedirs
         target:add("includedirs", outputdir)
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", outputdir)
-
         -- need build this object?
         local targetfile = path.join(outputdir, path.basename(sourcefile) .. ".tmh")
         local dependfile = target:dependfile(targetfile)

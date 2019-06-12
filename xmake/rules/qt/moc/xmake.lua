@@ -64,9 +64,6 @@ rule("qt.moc")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
-        -- add clean files
-        target:data_add("qt.cleanfiles", {sourcefile_moc, objectfile})
-
         -- load dependent info 
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
@@ -102,4 +99,3 @@ rule("qt.moc")
         table.insert(dependinfo.files, headerfile_moc)
         depend.save(dependinfo, dependfile)
     end)
-

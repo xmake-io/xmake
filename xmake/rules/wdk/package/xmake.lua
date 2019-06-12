@@ -46,9 +46,6 @@ rule("wdk.package.cab")
         -- the .ddf file
         local ddfile = os.tmpfile(target:targetfile()) .. ".ddf"
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", ddfile)
-
         -- trace progress info
         if option.get("verbose") then
             cprint("${dim magenta}packaging %s", packagefile)

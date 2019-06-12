@@ -57,9 +57,6 @@ rule("qt.ui")
         -- add includedirs
         target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
 
-        -- add clean files
-        target:data_add("qt.cleanfiles", headerfile_ui)
-
         -- need build this object?
         local dependfile = target:dependfile(headerfile_ui)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
@@ -87,4 +84,3 @@ rule("qt.ui")
         dependinfo.files = {sourcefile_ui}
         depend.save(dependinfo, dependfile)
     end)
-

@@ -58,9 +58,6 @@ rule("wdk.inf")
         -- the target file
         local targetfile = path.join(target:targetdir(), path.basename(sourcefile) .. ".inf")
 
-        -- add clean files
-        target:data_add("wdk.cleanfiles", targetfile)
-
         -- save this target file for signing (wdk.sign.*, wdk.package.* rules)
         target:data_set("wdk.sign.inf", targetfile)
 
