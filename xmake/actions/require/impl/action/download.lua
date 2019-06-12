@@ -104,8 +104,12 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         -- attempt to remove package file first
         os.tryrm(packagefile)
 
-        -- download package file
-        http.download(url, packagefile)
+        -- download or copy package file
+        if os.isfile(url) then
+            os.cp(url, packagefile)
+        else
+            http.download(url, packagefile)
+        end
 
         -- check hash
         if sourcehash and sourcehash ~= hash.sha256(packagefile) then
