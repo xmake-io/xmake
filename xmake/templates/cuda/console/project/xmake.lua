@@ -8,9 +8,10 @@ target("[targetname]")
     -- set kind
     set_kind("binary")
 
-    -- generate relocatable device code for device linker of dependents
-    -- if no __device__ and __global__ functions will be called cross file,
-    -- this instruction could be omitted
+    -- generate relocatable device code for device linker of dependents.
+    -- if __device__ or __global__ functions will be called cross file,
+    -- or dynamic parallelism will be used,
+    -- this instruction should be opted in.
     -- add_cuflags("-rdc=true")
 
     -- add files
