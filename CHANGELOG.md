@@ -10,7 +10,7 @@
 
 ### Changes
 
-* [#430](https://github.com/xmake-io/xmake/pull/430): Add `includes("add_cucodegens.lua")` to improve set codegen for cuda
+* [#430](https://github.com/xmake-io/xmake/pull/430): Add `add_cucodegens()` api to improve set codegen for cuda
 * [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file 
 * [#437](https://github.com/xmake-io/xmake/issues/437): Support explict git source for xmake update, `xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): Support to only update scripts, `xmake update --scriptonly dev`
@@ -607,7 +607,7 @@
 
 ### 改进
 
-* [#430](https://github.com/xmake-io/xmake/pull/430): 添加`includes("add_cucodegens.lua")`为cuda改进设置codegen
+* [#430](https://github.com/xmake-io/xmake/pull/430): 添加`add_cucodegens()`api为cuda改进设置codegen
 * [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测
 * [#437](https://github.com/xmake-io/xmake/issues/437): 支持指定更新源，`xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): 支持仅更新脚本，`xmake update --scriptonly dev`
