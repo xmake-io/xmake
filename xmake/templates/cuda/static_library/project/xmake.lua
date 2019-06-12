@@ -14,9 +14,10 @@ target("[targetname]")
     -- add include dirs
     add_includedirs("inc")
 
-    -- generate relocatable device code for device linker of dependents
-    -- if no __device__ and __global__ functions will be called cross file or be exported,
-    -- this instruction could be omitted
+    -- generate relocatable device code for device linker of dependents.
+    -- if neither __device__ and __global__ functions will be called cross file or be exported,
+    -- nor dynamic parallelism will be used,
+    -- this instruction could be omitted.
     add_cuflags("-rdc=true")
 
     -- add files
