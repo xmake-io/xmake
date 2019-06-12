@@ -18,8 +18,14 @@
 -- @file        xmake.lua
 --
 
--- define rule: device-link
-rule("cuda.device_link")
+-- define rule: disable the default device-link
+rule("cuda.nodevlink")
+    before_load(function (target)
+        target:data_set("cuda.nodevlink", true)
+    end)
+
+-- define rule: device-link (default)
+rule("cuda.devlink")
 
     -- add rule: cuda environment
     add_deps("cuda.env")
@@ -32,6 +38,11 @@ rule("cuda.device_link")
 
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
+
+        -- disable devlink?
+        if target:data("cuda.nodevlink") then
+            return 
+        end
 
         -- only for binary/shared
         local targetkind = target:targetkind()

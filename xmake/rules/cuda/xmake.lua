@@ -22,5 +22,5 @@
 rule("cuda")
 
     -- add rules
-    add_deps("cuda.device_link", "cuda.gencodes")
+    add_deps("cuda.devlink", "cuda.gencodes")
 
