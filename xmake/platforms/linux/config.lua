@@ -78,7 +78,7 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_sh      = toolchain("the cuda shared library linker")
-    local cu_ccbin     = toolchain("the cuda host c++ compiler")
+    local cu_ccbin   = toolchain("the cuda host c++ compiler")
     local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         mm = mm, mxx = mxx,
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
