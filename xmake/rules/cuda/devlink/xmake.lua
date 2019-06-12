@@ -18,13 +18,7 @@
 -- @file        xmake.lua
 --
 
--- define rule: disable the default device-link
-rule("cuda.nodevlink")
-    before_load(function (target)
-        target:data_set("cuda.nodevlink", true)
-    end)
-
--- define rule: device-link (default)
+-- define rule: device-link 
 rule("cuda.devlink")
 
     -- add rule: cuda environment
@@ -40,7 +34,7 @@ rule("cuda.devlink")
     before_link(function (target, opt)
 
         -- disable devlink?
-        if target:data("cuda.nodevlink") then
+        if target:values("cuda.devlink") == false then
             return 
         end
 

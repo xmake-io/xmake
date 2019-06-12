@@ -333,7 +333,12 @@ function _instance:values(name, sourcefile)
 
     -- get values from target
     table.join2(values, self:get("values." .. name))
-    return #values > 0 and table.unwrap(values) or nil
+    if #values > 0 then
+        values = table.unwrap(values) 
+    else
+        values = nil
+    end
+    return values
 end
 
 -- set values
