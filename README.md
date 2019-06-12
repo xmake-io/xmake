@@ -293,7 +293,7 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
-* [OpportunityLiu](https://github.com/OpportunityLiu): improve xmake and add some new features
+* [OpportunityLiu](https://github.com/OpportunityLiu): improve cuda, tests and ci
 
 ## Backers
 

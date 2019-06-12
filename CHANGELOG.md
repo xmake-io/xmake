@@ -14,6 +14,8 @@
 * [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file 
 * [#437](https://github.com/xmake-io/xmake/issues/437): Support explict git source for xmake update, `xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): Support to only update scripts, `xmake update --scriptonly dev`
+* [#433](https://github.com/xmake-io/xmake/issues/433): Improve cuda to support device-link
+* [#442](https://github.com/xmake-io/xmake/issues/442): Improve test library
 
 ## v2.2.6
 
@@ -609,6 +611,8 @@
 * [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测
 * [#437](https://github.com/xmake-io/xmake/issues/437): 支持指定更新源，`xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): 支持仅更新脚本，`xmake update --scriptonly dev`
+* [#433](https://github.com/xmake-io/xmake/issues/433): 改进cuda构建支持device-link设备代码链接
+* [#442](https://github.com/xmake-io/xmake/issues/442): 改进tests测试框架
 
 ## v2.2.6
 

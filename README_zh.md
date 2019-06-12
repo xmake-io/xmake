@@ -300,7 +300,7 @@ target("test")
 
 * [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本
 * [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)
-* [OpportunityLiu](https://github.com/OpportunityLiu): 改进xmake，并且添加了一些新特性支持
+* [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci
 
 ## 支持项目
 
