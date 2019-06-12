@@ -200,9 +200,7 @@ end
 
 -- trim the right spaces
 function string:rtrim()
-    local n = #self
-    while n > 0 and s:find("^%s", n) do n = n - 1 end
-    return self:sub(1, n)
+    return (self:gsub("%s*$", ""))
 end
 
 -- encode: ' ', '=', '\"', '<'

@@ -13,6 +13,30 @@ function test_startswith(t)
     t:require_not(("  aaaccc"):startswith("%s"))
 end
 
+function test_trim(t)
+    t:are_equal(("   aaa ccc   "):trim(), "aaa ccc")
+    t:are_equal(("aaa ccc   "):trim(), "aaa ccc")
+    t:are_equal(("   aaa ccc"):trim(), "aaa ccc")
+    t:are_equal(("aaa ccc"):trim(), "aaa ccc")
+    t:are_equal(("\t\naaa ccc\r\n"):trim(), "aaa ccc")
+end
+
+function test_ltrim(t)
+    t:are_equal(("   aaa ccc   "):ltrim(), "aaa ccc   ")
+    t:are_equal(("aaa ccc   "):ltrim(), "aaa ccc   ")
+    t:are_equal(("   aaa ccc"):ltrim(), "aaa ccc")
+    t:are_equal(("aaa ccc"):ltrim(), "aaa ccc")
+    t:are_equal(("\t\naaa ccc\r\n"):ltrim(), "aaa ccc\r\n")
+end
+
+function test_rtrim(t)
+    t:are_equal(("   aaa ccc   "):rtrim(), "   aaa ccc")
+    t:are_equal(("aaa ccc   "):rtrim(), "aaa ccc")
+    t:are_equal(("   aaa ccc"):rtrim(), "   aaa ccc")
+    t:are_equal(("aaa ccc"):rtrim(), "aaa ccc")
+    t:are_equal(("\t\naaa ccc\r\n"):rtrim(), "\t\naaa ccc")
+end
+
 function test_split(t)
     -- pattern match and ignore empty string
     t:are_equal(("1\n\n2\n3"):split('\n'), {"1", "2", "3"})

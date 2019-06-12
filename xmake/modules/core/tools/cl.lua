@@ -410,7 +410,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                 local results = ""
-                for _, line in ipairs(tostring(errors):split("\r\n", {plain = true})) do
+                for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
+                    line = line:rtrim()
                     if not _include_note(self, line) then 
                         results = results .. line .. "\r\n"
                     end
@@ -430,7 +431,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                     if #output:trim() > 0 then
                         local lines = {}
-                        for _, line in ipairs(output:split("\r\n", {plain = true})) do
+                        for _, line in ipairs(output:split("\n", {plain = true})) do
+                            line = line:rtrim()
                             if line:match("warning %a+[0-9]+%s*:") then
                                 table.insert(lines, line)
                             end
