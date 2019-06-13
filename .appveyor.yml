@@ -23,11 +23,10 @@ install:
   - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
   - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
   #   curl
-  - ps: Invoke-WebRequest "https://curl.haxx.se/windows/dl-7.65.1/curl-7.65.1-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
-  - ps: Expand-Archive ./curl.zip -DestinationPath ./curl
-  - ps: Move-Item ./curl/*/* ./curl
-  - ps: Copy-Item ./curl/bin/curl.exe ./winenv/bin
-  - ps: Copy-Item ./curl/bin/curl-ca-bundle.crt ./winenv/bin
+  - ps: Invoke-WebRequest "https://github.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
+  - ps: Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
+  - ps: Copy-Item ./curl.exe ./winenv/bin
+  - ps: Copy-Item ./curl-ca-bundle.crt ./winenv/bin
   # 
   - ps: Pop-Location
   # install xmake
