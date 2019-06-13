@@ -1,45 +1,65 @@
+#! /usr/bin/pwsh
+#Requires -version 5
+
 # xmake getter
 # usage: (in powershell)
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
 param (
-    [string]$branch = "master", 
-    [string]$version = "v2.2.6",
-    [string]$installdir = $(Join-Path $(if($HOME) { $HOME } else { "C:\" }) 'xmake')
+    [string]$branch = "master",
+    [string]$installdir = ""
 )
-
-function myExit($code) {
-    if ($code -is [int] -and $code -ne 0) {
-        throw $Error[0]
-    } else {
-        break
-    }
-}
 
 function writeErrorTip($msg) {
     Write-Host $msg -BackgroundColor Red -ForegroundColor White
 }
 
-function writeLogoLine($msg) {
-    Write-Host $msg -BackgroundColor White -ForegroundColor DarkBlue
-}
-
 if (-not $env:CI) {
-    writeLogoLine '                         _                      '
-    writeLogoLine '    __  ___ __  __  __ _| | ______              '
-    writeLogoLine '    \ \/ / |  \/  |/ _  | |/ / __ \             '
-    writeLogoLine '     >  <  | \__/ | /_| |   <  ___/             '
-    writeLogoLine '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
-    writeLogoLine '                                                '
-    writeLogoLine '                                                '
+    $logo = @(
+        '                         _                      '
+        '    __  ___ __  __  __ _| | ______              '
+        '    \ \/ / |  \/  |/ _  | |/ / __ \             '
+        '     >  <  | \__/ | /_| |   <  ___/             '
+        '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
+        '                                                '
+        '                                                ')
+    Write-Host $([string]::Join("`n", $logo)) -BackgroundColor White -ForegroundColor DarkBlue
 }
 
-if ($PSVersionTable.PSVersion.Major -lt 5) {
-    writeErrorTip 'Sorry but PowerShell v5+ is required'
-    throw 'PowerShell''s version too low'
+if ($IsLinux -or $IsMacOS) {
+    writeErrorTip 'Install on *nix is not supported, try ' 
+    writeErrorTip '(Use curl) "bash <(curl -fsSL https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh)"'
+    writeErrorTip 'or' 
+    writeErrorTip '(Use wget) "bash <(wget https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh -O -)"'
+    throw 'Unsupported platform'
 }
+
 $temppath = ($env:TMP, $env:TEMP, '.' -ne $null)[0]
 [Net.ServicePointManager]::SecurityProtocol = "tls12, tls11, tls"
+
+if ($null -eq $installdir -or $installdir -match '^\s*$') {
+    $installdir = & {
+        # Install to old xmake path
+        $oldXmake = Get-Command xmake -CommandType Application -ErrorAction SilentlyContinue
+        if ($oldXmake) {
+            return Split-Path $oldXmake.Path -Parent
+        }
+        if ($HOME) {
+            return Join-Path $HOME 'xmake'
+        }
+        if ($env:APPDATA) {
+            return Join-Path $env:APPDATA 'xmake'
+        }
+        if ($env:ProgramFiles) {
+            return Join-Path $env:ProgramFiles 'xmake'
+        }
+        return 'C:\xmake'
+    }
+}
+
+if ($null -eq $branch -or $branch -match '^\s*$') {
+    $branch = 'master'
+}
 
 function checkTempAccess {
     $outfile = Join-Path $temppath "$pid.tmp"
@@ -55,9 +75,12 @@ function checkTempAccess {
 
 function xmakeInstall {
     $outfile = Join-Path $temppath "$pid-xmake-installer.exe"
-    Write-Host "Start downloading https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe .."
+    $x64arch = @('AMD64', 'IA64', 'ARM64')
+    $arch = if ($env:PROCESSOR_ARCHITECTURE -in $x64arch -or $env:PROCESSOR_ARCHITEW6432 -in $x64arch) { 'x64' } else { 'x86' }
+    $url = "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=$branch&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch"
+    Write-Host "Start downloading $url .."
     try {
-        Invoke-Webrequest "https://github.com/xmake-io/xmake/releases/download/$version/xmake-$branch.exe" -OutFile $outfile
+        Invoke-Webrequest $url -OutFile $outfile -UseBasicParsing
     } catch {
         writeErrorTip 'Download failed!'
         writeErrorTip 'Check your network or... the news of S3 break'
@@ -86,40 +109,6 @@ function xmakeInstall {
     }
 }
 
-function xmakeSelfBuild {
-    Write-Host "Pulling xmake from branch $branch"
-    $outfile = Join-Path $temppath "$pid-xmake-repo.zip"
-    try {
-        Invoke-Webrequest "https://github.com/xmake-io/xmake/archive/$branch.zip" -OutFile $outfile
-    } catch {
-        writeErrorTip 'Pull Failed!'
-        writeErrorTip 'xmake is now available but may not be newest'
-        throw
-    }
-    Write-Host 'Expanding archive...'
-    $oldpwd = Get-Location
-    $repodir = New-Item -Path $temppath -Name "$pid-xmake-repo" -ItemType Directory -Force
-    try {
-        Expand-Archive -Path $outfile -DestinationPath $repodir -Force
-        Write-Host 'Self-building...'
-        Set-Location $(Join-Path $repodir "\xmake-$branch\core")
-        xmake
-        Write-Host 'Copying new files...'
-        Copy-Item -Path '.\build\xmake.exe' -Destination $installdir -Force
-        Set-Location '..\xmake'
-        Copy-Item -Path * -Destination $installdir -Recurse -Force
-        xmake --version
-    } catch {
-        writeErrorTip 'Update Failed!'
-        writeErrorTip 'xmake is now available but may not be newest'
-        throw
-    } finally {
-        Set-Location $oldpwd -ErrorAction SilentlyContinue
-        Remove-Item $outfile -ErrorAction SilentlyContinue
-        Remove-Item $repodir -Recurse -Force -ErrorAction SilentlyContinue
-    }
-}
-
 function registerTabCompletion {
 
     function writeDataToFile($file) {
@@ -133,12 +122,13 @@ function registerTabCompletion {
             $sr.Close() | Out-Null 
 
             if ($(Get-Content $file) -imatch "Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock") {
-                Write-Host "Seems the tab completion of xmake has installed here..."
+                Write-Host "Seems the tab completion of xmake has installed here... skipped"
                 return
             }
         }
 
         try {
+            New-Item $(Split-Path $file -Parent) -ItemType Directory -Force | Out-Null
             [IO.File]::AppendAllText($file, "`n", $encoding)
         } catch {
             writeErrorTip "Failed to append to profile!"
@@ -154,6 +144,8 @@ function registerTabCompletion {
         }
         [IO.File]::AppendAllText($file, $content, $encoding)
         [IO.File]::AppendAllText($file, "`n", $encoding)
+        . $file
+        Write-Host "Tab completion installed"
     }
     $message = 'Tab completion service'
     $question = 'Would you like to install tab completion service of xmake to your profile?'
@@ -179,20 +171,12 @@ function registerTabCompletion {
     }
 }
 
-try {
-    checkTempAccess
-    xmakeInstall  
-} catch {
-    myExit 1
-}
-
+checkTempAccess
+xmakeInstall
 
 if (-not $env:CI) {
-    try {
-        xmakeSelfBuild
-    } catch { } # continue
     registerTabCompletion
 } else {
-    Write-Host "Self bulid and tab completion registration has been skipped for CI"
+    Write-Host "Tab completion registration has been skipped for CI"
 }
 

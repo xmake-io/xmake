@@ -30,6 +30,8 @@ import("privilege.sudo")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 import("get_version")
 
+local win_installer_name = "xmake-installer.exe"
+
 -- run program with privilege
 function _sudo_v(program, params)
 
@@ -131,7 +133,7 @@ function _uninstall()
 end
 
 -- do install
-function _install(sourcedir, version)
+function _install(sourcedir)
 
     -- the install task
     local install_task = function ()
@@ -148,26 +150,25 @@ function _install(sourcedir, version)
                 -- install it
                 os.cd(sourcedir)
                 if is_host("windows") then
-                    local installer = "xmake-" .. version .. ".exe"
-                    if os.isfile(installer) then
+                    if os.isfile(win_installer_name) then
                         -- /D sets the default installation directory ($INSTDIR), overriding InstallDir and InstallDirRegKey. It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces. Only absolute paths are supported.
                         local params = ("/D=" .. os.programdir()):split("%s", { strict = true })
-                        if option.get("quiet") then table.insert(params, 1, "/S") end
+                        if not option.get("verbose") then table.insert(params, 1, "/S") end
                         -- need UAC?
                         if winos:version():gt("winxp") then
-                            _run_win_v(installer, params, true)
+                            _run_win_v(win_installer_name, params, true)
                         else
-                            _run_win_v(installer, params, false)
+                            _run_win_v(win_installer_name, params, false)
                         end
                     else
-                        raise("the installer(%s) not found!", installer)
+                        raise("the installer(%s) not found!", win_installer_name)
                     end
                 else
                     os.vrun("./scripts/get.sh __local__")
                 end
                 return true
             end,
-            catch 
+            catch
             {
                 function (errors)
                     vprint(errors)
@@ -277,14 +278,8 @@ function main()
                         format("https://qcloud.coding.net/u/waruqi/p/xmake-releases/git/raw/master/xmake-%s.exe", version),
                         format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe", version)}
         else
-            local lastest = semver.select("lastest", tags or {}, tags or {}, {})
-            if lastest then
-                mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", lastest, version),
-                            format("https://qcloud.coding.net/u/waruqi/p/xmake-releases/git/raw/master/xmake-%s.exe", version),
-                            format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe", version)}
-            else
-                raise("not support to update %s on windows!", version)
-            end
+            -- regard as a git branch, fetch from ci
+            mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch())}
         end
 
         -- re-sort mainurls
@@ -313,7 +308,7 @@ function main()
                     -- all user provided urls are considered as git url since check has been performed in get_version
                     if is_official and not git.checkurl(url) then
                         os.mkdir(sourcedir)
-                        http.download(url, path.join(sourcedir, path.filename(url)))
+                        http.download(url, path.join(sourcedir, win_installer_name))
                     else
                         if version:find('.', 1, true) then
                             git.clone(url, {outputdir = sourcedir})
@@ -357,7 +352,7 @@ function main()
     if script_only then
         _install_script(sourcedir)
     else
-        _install(sourcedir, version)
+        _install(sourcedir)
     end
 end
 
