@@ -11,7 +11,7 @@ platform:
 install:
   # prepare tools
   - ps: Push-Location C:/
-  - ps: New-Item ./winenv/bin -ItemType Directory
+  - ps: (New-Item ./winenv/bin -ItemType Directory).FullName
   #   NSIS
   - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
   - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
@@ -30,7 +30,7 @@ install:
   # 
   - ps: Pop-Location
   # install xmake
-  - ps: ./scripts/get.ps1 -branch $env:APPVEYOR_REPO_BRANCH
+  - ps: ./scripts/get.ps1 -branch master
 
 before_build:
   - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
