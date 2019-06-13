@@ -41,9 +41,9 @@ target("demo")
     -- enable xp compatibility mode
     if is_plat("windows") then
         if is_arch("x86") then
-            add_ldflags("/subsystem:console,\"5.01\"")
+            add_ldflags("/subsystem:console,5.01")
         else
-            add_ldflags("/subsystem:console,\"5.02\"")
+            add_ldflags("/subsystem:console,5.02")
         end
     end
 
