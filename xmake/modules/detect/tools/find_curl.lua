@@ -45,7 +45,7 @@ function main(opt)
 
     -- find program version
     local version = nil
-    if opt and opt.version then
+    if program and opt and opt.version then
         version = find_programver(program, opt)
     end
 
