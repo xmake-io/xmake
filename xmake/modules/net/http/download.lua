@@ -88,6 +88,14 @@ function _wget_download(tool, url, outputfile)
     os.vrunv(tool.program, argv)
 end
 
+-- download url using xmlhttp
+function _vbs_download(url, outputfile)
+    local folder = path.directory(outputfile)
+    os.mkdir(folder)
+    local script = path.join(os.programdir(), "scripts", "xmlhttp.vbs")
+    os.vrunv("cscript", {"/NoLogo", script, url, outputfile })
+end
+
 -- download url
 --
 -- @param url           the input url
@@ -98,7 +106,9 @@ function main(url, outputfile)
 
     -- init output file
     outputfile = outputfile or path.filename(url)
-    
+
+    return _vbs_download(url, outputfile)
+    --[[
     -- attempt to download url using curl first
     local tool = find_tool("curl", {version = true})
     if tool then
@@ -110,4 +120,5 @@ function main(url, outputfile)
     if tool then
         return _wget_download(tool, url, outputfile)
     end
+    --]]
 end
