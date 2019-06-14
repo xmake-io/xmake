@@ -18,6 +18,7 @@ Function readFromRegistry (strRegistryKey, strDefault)
 End Function
 
 Set ServerXMLHTTP = CreateObject("MSXML2.ServerXMLHTTP")
+ServerXMLHTTP.SetOption 2, 0
 Proxy = readFromRegistry("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ProxyServer", "")
 If Proxy <> "" Then
     WScript.Echo "Using proxy: " & Proxy

@@ -122,7 +122,7 @@ Section "xmake (required)" Installer
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
   File "..\*.md"
   File "..\core\build\xmake.exe"
-  File /r /x ".DS_Store" "..\winenv" ; put bin\unzip\
+  File /r /x ".DS_Store" "..\winenv"
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\NSIS_xmake "Install_Dir" "$INSTDIR"
