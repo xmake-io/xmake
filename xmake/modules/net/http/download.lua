@@ -97,7 +97,7 @@ end
 function main(url, outputfile)
 
     -- init output file
-    outputfile = outputfile or path.filename(url)
+    outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
     
     -- attempt to download url using curl first
     local tool = find_tool("curl", {version = true})
