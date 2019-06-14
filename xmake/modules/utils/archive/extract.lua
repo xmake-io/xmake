@@ -306,39 +306,6 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
     return true
 end
 
-
--- extract archivefile using vbs
-function _extract_using_vbs(archivefile, outputdir, extension, opt)
-
-    local script = path.join(os.programdir(), "scripts", "unzip.vbs")
-
-    -- extract to *.tar file first
-    local outputdir_old = nil
-    if extension:startswith(".tar.") then
-        outputdir_old = outputdir
-        outputdir = os.tmpfile() .. ".tar"
-    end
-
-    -- ensure output directory
-    if not os.isdir(outputdir) then
-        os.mkdir(outputdir)
-    end
-
-    -- extract it
-    os.vrunv("cscript", { "/NoLogo", script, path.absolute(archivefile), path.absolute(outputdir) })
-
-    -- continue to extract *.tar file
-    if outputdir_old then
-        local tarfile = find_file("**.tar", outputdir)
-        if tarfile and os.isfile(tarfile) then
-            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_tar, _extract_using_7z}, opt)
-        end
-    end
-
-    -- ok
-    return true
-end
-
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
 
@@ -393,7 +360,7 @@ function main(archivefile, outputdir, opt)
     -- init extractors
     local extractors =
     {
-        [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z, _extract_using_vbs}
+        [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z}
     ,   [".7z"]         = {_extract_using_7z}
     ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
     ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}

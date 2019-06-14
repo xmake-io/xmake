@@ -18,6 +18,10 @@ install:
   - ps: Expand-Archive ./nsis.zip -DestinationPath ./nsis
   - ps: Move-Item ./nsis/*/* ./nsis
   - ps: Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
+  #   unzip
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+  - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
+  - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
   # 
   - ps: Pop-Location
   # install xmake
