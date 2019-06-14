@@ -20,10 +20,12 @@ End Function
 Set ServerXMLHTTP = CreateObject("MSXML2.ServerXMLHTTP")
 Proxy = readFromRegistry("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ProxyServer", "")
 If Proxy <> "" Then
+    WScript.Echo "Using proxy: " & Proxy
     ServerXMLHTTP.SetProxy 2, Proxy
 End If
 ServerXMLHTTP.Open "GET", url, false
 If WScript.Arguments.Count >= 3 Then
+    WScript.Echo "Using User-Agent: " & WScript.Arguments(2)
     ServerXMLHTTP.SetRequestHeader "User-Agent", WScript.Arguments(2)
 End If
 ServerXMLHTTP.Send
