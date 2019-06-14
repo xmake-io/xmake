@@ -22,11 +22,6 @@ install:
   - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
   - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
   - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
-  #   curl
-  - ps: Invoke-WebRequest "https://github.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
-  - ps: Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
-  - ps: Copy-Item ./curl.exe ./winenv/bin
-  - ps: Copy-Item ./curl-ca-bundle.crt ./winenv/bin
   # 
   - ps: Pop-Location
   # install xmake

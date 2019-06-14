@@ -12,27 +12,30 @@
 !include "WinMessages.nsh"
 
 ; xmake version Information
+; define these values via command line
+; eg. makensis /DMAJOR=2 /DMINOR=2 /DALTER=6 /DBUILD=201906141532 /Dx64 installer.msi
+
 !ifndef MAJOR
-    !define MAJOR 2
+    !define MAJOR 65535
 !endif
 !ifndef MINOR
-    !define MINOR 2
+    !define MINOR 65535
 !endif
 !ifndef ALTER
-    !define ALTER 6
+    !define ALTER 65535
 !endif
 !ifndef BUILD
-    !define BUILD 201906070000
+    !define BUILD 999912312359
 !endif
-
-!define VERSION ${MAJOR}.${MINOR}.${ALTER}
-!define VERSION_FULL ${VERSION}+${BUILD}
 
 !ifdef x64
   !define ARCH x64
 !else
   !define ARCH x86
 !endif
+
+!define VERSION ${MAJOR}.${MINOR}.${ALTER}
+!define VERSION_FULL ${VERSION}+${BUILD}
 
 ;--------------------------------
 
@@ -119,7 +122,7 @@ Section "xmake (required)" Installer
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
   File "..\*.md"
   File "..\core\build\xmake.exe"
-  File /r /x ".DS_Store" "..\winenv" ; put bin\unzip, bin\curl
+  File /r /x ".DS_Store" "..\winenv" ; put bin\unzip\
   
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\NSIS_xmake "Install_Dir" "$INSTDIR"
