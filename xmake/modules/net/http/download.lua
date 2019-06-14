@@ -111,17 +111,17 @@ function main(url, outputfile)
     -- init output file
     outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
 
-    -- attempt to download url using curl first
-    local tool = find_tool("curl", {version = true})
-    if tool then
-        return _curl_download(tool, url, outputfile)
-    end
+    -- -- attempt to download url using curl first
+    -- local tool = find_tool("curl", {version = true})
+    -- if tool then
+    --     return _curl_download(tool, url, outputfile)
+    -- end
 
-    -- download url using wget
-    tool = find_tool("wget", {version = true})
-    if tool then
-        return _wget_download(tool, url, outputfile)
-    end
+    -- -- download url using wget
+    -- tool = find_tool("wget", {version = true})
+    -- if tool then
+    --     return _wget_download(tool, url, outputfile)
+    -- end
 
     -- download url using vbs script
     if is_host("windows") then
