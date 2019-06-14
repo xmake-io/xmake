@@ -1,8 +1,31 @@
 url = WScript.Arguments(0)
 destfile = WScript.Arguments(1)
 
+Function readFromRegistry (strRegistryKey, strDefault)
+    Dim WSHShell, value
+
+    On Error Resume Next
+    Set WSHShell = CreateObject("WScript.Shell")
+    value = WSHShell.RegRead( strRegistryKey )
+
+    if err.number <> 0 then
+        readFromRegistry= strDefault
+    else
+        readFromRegistry=value
+    end if
+
+    set WSHShell = nothing
+End Function
+
 Set ServerXMLHTTP = CreateObject("MSXML2.ServerXMLHTTP")
-ServerXMLHTTP.Open "GET", WScript.Arguments(0), false
+Proxy = readFromRegistry("HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ProxyServer", "")
+If Proxy <> "" Then
+    ServerXMLHTTP.SetProxy 2, Proxy
+End If
+ServerXMLHTTP.Open "GET", url, false
+If WScript.Arguments.Count >= 3 Then
+    ServerXMLHTTP.SetRequestHeader "User-Agent", WScript.Arguments(2)
+End If
 ServerXMLHTTP.Send
 
 Set Fs = CreateObject("Scripting.FileSystemObject")

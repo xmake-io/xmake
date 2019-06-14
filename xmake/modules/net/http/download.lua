@@ -93,7 +93,8 @@ function _vbs_download(url, outputfile)
     local folder = path.directory(outputfile)
     os.mkdir(folder)
     local script = path.join(os.programdir(), "scripts", "xmlhttp.vbs")
-    os.vrunv("cscript", {"/NoLogo", script, url, outputfile })
+    local user_agent = os.user_agent()
+    os.vrunv("cscript", {"/NoLogo", script, url, outputfile, user_agent or "" })
 end
 
 -- download url
