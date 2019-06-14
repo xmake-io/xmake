@@ -378,7 +378,13 @@ function builder:_add_flags_from_language(flags, target, getters)
     --
     local getters = getters or
     {
-        config      =   config.get
+        config      =   function (name)
+                            local values = config.get(name)
+                            if values and name:endswith("dirs") then 
+                                values = values:split(path.envsep(), {plain = true})
+                            end
+                            return values
+                        end
     ,   platform    =   platform.get
     ,   target      =   function (name) 
 

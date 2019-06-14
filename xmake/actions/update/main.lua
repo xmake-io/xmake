@@ -30,6 +30,7 @@ import("privilege.sudo")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 import("get_version")
 
+-- the installer filename for windows
 local win_installer_name = "xmake-installer.exe"
 
 -- run program with privilege
@@ -199,6 +200,8 @@ end
 
 -- do install script
 function _install_script(sourcedir)
+
+    -- trace
     cprintf("\r${yellow}  => ${clear}install script to %s .. ", os.programdir())
 
     local source = path.join(sourcedir, "xmake")
@@ -257,17 +260,15 @@ function main()
     -- enter environment
     environment.enter()
 
-    local is_official, mainurls, version, tags, branches = get_version(option.get("xmakever"))
-
     -- has been installed?
+    local is_official, mainurls, version, tags, branches = get_version(option.get("xmakever"))
     if is_official and xmake.version():eq(version) then
         cprint("${bright}xmake %s has been installed!", version)
         return
     end
 
-    local script_only = option.get("scriptonly")
-
     -- get urls on windows
+    local script_only = option.get("scriptonly")
     if is_host("windows") and not script_only then
         if not is_official then
             raise("not support to update from unofficial source on windows, missing '--scriptonly' flag?")
