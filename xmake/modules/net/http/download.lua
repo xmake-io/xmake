@@ -109,10 +109,8 @@ end
 function main(url, outputfile)
 
     -- init output file
-    outputfile = outputfile or path.filename(url)
+    outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
 
-    return _vbs_download(url, outputfile)
-    --[[
     -- attempt to download url using curl first
     local tool = find_tool("curl", {version = true})
     if tool then
@@ -124,5 +122,9 @@ function main(url, outputfile)
     if tool then
         return _wget_download(tool, url, outputfile)
     end
-    --]]
+
+    -- download url using vbs script
+    if is_host("windows") then
+        return _vbs_download(url, outputfile)
+    end
 end
