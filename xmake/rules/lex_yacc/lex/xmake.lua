@@ -26,4 +26,20 @@ rule("lex")
 
     -- load lex/flex
     before_load(function (target)
+        import("core.project.config")
+        import("lib.detect.find_tool")
+        local lex = config.get("lex")
+        if not lex then
+            lex = find_tool("flex") or find_tool("lex")
+            if lex and lex.program then
+                config.set("lex", lex.program)
+                cprint("checking for the Lex ... ${color.success}%s", lex.program)
+            else
+                cprint("checking for the Lex ... ${color.nothing}${text.nothing}")
+            end
+        end
+    end)
+
+    -- build lex file
+    on_build_file(function (target, sourcefile_lex, opt)
     end)

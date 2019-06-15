@@ -26,4 +26,16 @@ rule("yacc")
 
     -- load yacc/bison
     before_load(function (target)
+        import("core.project.config")
+        import("lib.detect.find_tool")
+        local yacc = config.get("yacc")
+        if not yacc then
+            yacc = find_tool("bison") or find_tool("yacc")
+            if yacc and yacc.program then
+                config.set("yacc", yacc.program)
+                cprint("checking for the Yacc ... ${color.success}%s", yacc.program)
+            else
+                cprint("checking for the Yacc ... ${color.nothing}${text.nothing}")
+            end
+        end
     end)
