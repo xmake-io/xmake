@@ -21,25 +21,95 @@
 -- define rule: lex 
 rule("lex")
 
-    -- set externsion
+    -- set extension
     set_extensions(".l", ".ll")
 
     -- load lex/flex
     before_load(function (target)
         import("core.project.config")
         import("lib.detect.find_tool")
-        local lex = config.get("lex")
+        local lex = config.get("__lex")
         if not lex then
             lex = find_tool("flex") or find_tool("lex")
             if lex and lex.program then
-                config.set("lex", lex.program)
+                config.set("__lex", lex.program)
                 cprint("checking for the Lex ... ${color.success}%s", lex.program)
             else
                 cprint("checking for the Lex ... ${color.nothing}${text.nothing}")
+                raise("lex/flex not found!")
             end
         end
     end)
 
     -- build lex file
     on_build_file(function (target, sourcefile_lex, opt)
+
+        -- imports
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.tool.compiler")
+
+        -- get lex
+        local lex = assert(config.get("__lex"), "lex not found!")
+
+        -- get extension: .l/.ll
+        local extension = path.extension(sourcefile_lex)
+
+        -- get c/c++ source file for lex
+        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", "lex", target:name(), path.basename(sourcefile_lex) .. (extension == ".ll" and ".cpp" or ".c"))
+        local sourcefile_dir = path.directory(sourcefile_cx)
+
+        -- get object file
+        local objectfile = target:objectfile(sourcefile_cx)
+
+        -- load compiler 
+        local compinst = compiler.load((extension == ".ll" and "cxx" or "cc"), {target = target})
+
+        -- get compile flags
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
+
+        -- add objectfile
+        table.insert(target:objectfiles(), objectfile)
+
+        -- load dependent info 
+        local dependfile = target:dependfile(objectfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+        -- need build this object?
+        local depvalues = {compinst:program(), compflags}
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+            return 
+        end
+
+        -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+        if option.get("verbose") then
+            cprint("${dim color.build.object}compiling.lex %s", sourcefile_lex)
+        else
+            cprint("${color.build.object}compiling.lex %s", sourcefile_lex)
+        end
+
+        -- ensure the source file directory
+        if not os.isdir(sourcefile_dir) then
+            os.mkdir(sourcefile_dir)
+        end
+
+        -- compile lex 
+        os.vrunv(lex, {"-o", sourcefile_cx, sourcefile_lex})
+
+        -- trace
+        if option.get("verbose") then
+            print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
+        end
+
+        -- compile c++ source file for qrc
+        dependinfo.files = {}
+        compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags})
+
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.insert(dependinfo.files, sourcefile_lex)
+        depend.save(dependinfo, dependfile)
     end)
