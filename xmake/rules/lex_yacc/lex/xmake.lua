@@ -104,7 +104,7 @@ rule("lex")
             print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
         end
 
-        -- compile c++ source file for qrc
+        -- compile c/c++ source file for lex
         dependinfo.files = {}
         assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
