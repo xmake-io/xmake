@@ -100,7 +100,7 @@ rule("qt.qrc")
 
         -- compile c++ source file for qrc
         dependinfo.files = {}
-        compinst:compile(sourcefile_cpp, objectfile, {dependinfo = dependinfo, compflags = compflags})
+        assert(compinst:compile(sourcefile_cpp, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues

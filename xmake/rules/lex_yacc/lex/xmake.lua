@@ -58,7 +58,7 @@ rule("lex")
         local extension = path.extension(sourcefile_lex)
 
         -- get c/c++ source file for lex
-        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", "lex", target:name(), path.basename(sourcefile_lex) .. (extension == ".ll" and ".cpp" or ".c"))
+        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", target:name(), path.basename(sourcefile_lex) .. (extension == ".ll" and ".cpp" or ".c"))
         local sourcefile_dir = path.directory(sourcefile_cx)
 
         -- get object file
@@ -68,7 +68,7 @@ rule("lex")
         local compinst = compiler.load((extension == ".ll" and "cxx" or "cc"), {target = target})
 
         -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx, configs = {includedirs = sourcefile_dir}})
 
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
@@ -106,10 +106,16 @@ rule("lex")
 
         -- compile c++ source file for qrc
         dependinfo.files = {}
-        compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags})
+        assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
         table.insert(dependinfo.files, sourcefile_lex)
         depend.save(dependinfo, dependfile)
+    end)
+
+    -- clean files
+    after_clean(function (target)
+        import("core.project.config")
+        os.tryrm(path.join(config.buildir(), ".lex_yacc", target:name()))
     end)

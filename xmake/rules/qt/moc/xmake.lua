@@ -92,7 +92,7 @@ rule("qt.moc")
 
         -- compile c++ source file for moc
         dependinfo.files = {}
-        compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags})
+        assert(compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues

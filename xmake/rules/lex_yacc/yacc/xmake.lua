@@ -42,7 +42,7 @@ rule("yacc")
     end)
 
     -- build yacc file
-    on_build_file(function (target, sourcefile_yacc, opt)
+    before_build_file(function (target, sourcefile_yacc, opt)
 
         -- imports
         import("core.base.option")
@@ -58,7 +58,7 @@ rule("yacc")
         local extension = path.extension(sourcefile_yacc)
 
         -- get c/c++ source file for yacc
-        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", "yacc", target:name(), path.basename(sourcefile_yacc) .. (extension == ".yy" and ".cpp" or ".c"))
+        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", target:name(), path.basename(sourcefile_yacc) .. ".tab" .. (extension == ".yy" and ".cpp" or ".c"))
         local sourcefile_dir = path.directory(sourcefile_cx)
 
         -- get object file
@@ -97,7 +97,7 @@ rule("yacc")
         end
 
         -- compile yacc 
-        os.vrunv(yacc, {"-o", sourcefile_cx, sourcefile_yacc})
+        os.vrunv(yacc, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
 
         -- trace
         if option.get("verbose") then
@@ -106,10 +106,16 @@ rule("yacc")
 
         -- compile c++ source file for qrc
         dependinfo.files = {}
-        compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags})
+        assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
         table.insert(dependinfo.files, sourcefile_yacc)
         depend.save(dependinfo, dependfile)
+    end)
+
+    -- clean files
+    after_clean(function (target)
+        import("core.project.config")
+        os.tryrm(path.join(config.buildir(), ".lex_yacc", target:name()))
     end)
