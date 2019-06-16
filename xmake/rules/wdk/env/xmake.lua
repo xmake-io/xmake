@@ -81,13 +81,6 @@ rule("wdk.env")
         end
     end)
 
-    -- clean files
-    after_clean(function (target)
-        import("core.project.config")
-        import("private.action.clean.remove_files")
-        remove_files(path.join(config.buildir(), ".wdk"))
-    end)
-
 -- define rule: umdf 
 rule("wdk.env.umdf")
 
