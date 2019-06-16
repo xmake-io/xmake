@@ -61,9 +61,6 @@ rule("wdk.mof")
         -- save mofcomp and wmimofck
         target:data_set("wdk.mofcomp", mofcomp)
         target:data_set("wdk.wmimofck", wmimofck)
-
-        -- save output directory
-        target:data_set("wdk.mof.outputdir", path.join(config.buildir(), ".wdk", "mof", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
     end)
 
     -- before build file
@@ -81,7 +78,7 @@ rule("wdk.mof")
         local wmimofck = target:data("wdk.wmimofck")
 
         -- get output directory
-        local outputdir = target:data("wdk.mof.outputdir")
+        local outputdir = path.join(target:autogendir(), "rules", "wdk", "mof")
 
         -- add includedirs
         target:add("includedirs", outputdir)

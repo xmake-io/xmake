@@ -48,9 +48,6 @@ rule("wdk.man")
         
         -- save ctrpp
         target:data_set("wdk.ctrpp", ctrpp)
-
-        -- save output directory
-        target:data_set("wdk.ctrpp.outputdir", path.join(config.buildir(), ".wdk", "man", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
     end)
 
     -- before build file
@@ -65,7 +62,7 @@ rule("wdk.man")
         local ctrpp = target:data("wdk.ctrpp")
 
         -- get output directory
-        local outputdir = target:data("wdk.ctrpp.outputdir")
+        local outputdir = path.join(target:autogendir(), "rules", "wdk", "man")
 
         -- init args
         local args = {sourcefile}

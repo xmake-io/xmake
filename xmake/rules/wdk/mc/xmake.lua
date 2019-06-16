@@ -48,9 +48,6 @@ rule("wdk.mc")
         
         -- save mc
         target:data_set("wdk.mc", mc)
-
-        -- save output directory
-        target:data_set("wdk.mc.outputdir", path.join(config.buildir(), ".wdk", "mc", config.get("mode") or "generic", config.get("arch") or os.arch(), target:name()))
     end)
 
     -- before build file
@@ -65,7 +62,7 @@ rule("wdk.mc")
         local mc = target:data("wdk.mc")
 
         -- get output directory
-        local outputdir = target:data("wdk.mc.outputdir")
+        local outputdir = path.join(target:autogendir(), "rules", "wdk", "mc")
 
         -- init args
         local args = {}
