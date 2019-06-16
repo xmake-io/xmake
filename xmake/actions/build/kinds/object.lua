@@ -249,7 +249,7 @@ function _build_pcheaderfiles(target)
             -- init sourcefile, objectfile and dependfile
             local sourcefile = pcheaderfile
             local objectfile = target:pcoutputfile(langkind)
-            local dependfile = objectfile .. ".d"
+            local dependfile = target:dependfile(objectfile)
             local sourcekind = language.langkinds()[langkind]
 
             -- init source batch

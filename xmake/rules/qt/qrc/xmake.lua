@@ -52,7 +52,7 @@ rule("qt.qrc")
         local rcc = target:data("qt.rcc")
 
         -- get c++ source file for qrc
-        local sourcefile_cpp = path.join(config.buildir(), ".qt", "qrc", target:name(), path.basename(sourcefile_qrc) .. ".cpp")
+        local sourcefile_cpp = path.join(target:autogendir(), "rules", "qt", "qrc", path.basename(sourcefile_qrc) .. ".cpp")
         local sourcefile_dir = path.directory(sourcefile_cpp)
 
         -- get object file

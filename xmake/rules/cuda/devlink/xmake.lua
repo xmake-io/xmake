@@ -58,7 +58,7 @@ rule("cuda.devlink")
         local linkflags = linkinst:linkflags({target = target, configs = {force = {culdflags = culdflags}}})
 
         -- get target file
-        local targetfile = target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu"))
+        local targetfile = target:objectfile(path.join("rules", "cuda", "devlink", target:basename() .. "_gpucode.cu"))
 
         -- get object files
         local objectfiles = nil
@@ -113,9 +113,3 @@ rule("cuda.devlink")
         depend.save(dependinfo, dependfile)
     end)
 
-    -- clean files
-    after_clean(function (target)
-        import("private.action.clean.remove_files")
-        remove_files(target:objectfile(path.join(".cuda", "devlink", target:basename() .. "_gpucode.cu")))
-        remove_files(target:dependfile(targetfile))
-    end)

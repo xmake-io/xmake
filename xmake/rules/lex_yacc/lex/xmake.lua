@@ -58,7 +58,7 @@ rule("lex")
         local extension = path.extension(sourcefile_lex)
 
         -- get c/c++ source file for lex
-        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", target:name(), path.basename(sourcefile_lex) .. (extension == ".ll" and ".cpp" or ".c"))
+        local sourcefile_cx = path.join(target:autogendir(), "rules", "lex_yacc", path.basename(sourcefile_lex) .. (extension == ".ll" and ".cpp" or ".c"))
         local sourcefile_dir = path.directory(sourcefile_cx)
 
         -- get object file
@@ -114,8 +114,3 @@ rule("lex")
         depend.save(dependinfo, dependfile)
     end)
 
-    -- clean files
-    after_clean(function (target)
-        import("core.project.config")
-        os.tryrm(path.join(config.buildir(), ".lex_yacc", target:name()))
-    end)

@@ -50,7 +50,7 @@ rule("qt.moc")
         import("core.project.depend")
 
         -- get c++ source file for moc
-        local sourcefile_moc = path.join(config.buildir(), ".qt", "moc", target:name(), "moc_" .. path.basename(headerfile_moc) .. ".cpp")
+        local sourcefile_moc = path.join(target:autogendir(), "rules", "qt", "moc", "moc_" .. path.basename(headerfile_moc) .. ".cpp")
 
         -- get object file
         local objectfile = target:objectfile(sourcefile_moc)

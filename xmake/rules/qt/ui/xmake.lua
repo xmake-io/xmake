@@ -51,7 +51,7 @@ rule("qt.ui")
         local uic = target:data("qt.uic")
 
         -- get c++ header file for ui
-        local headerfile_ui = path.join(config.buildir(), ".qt", "ui", target:name(), "ui_" .. path.basename(sourcefile_ui) .. ".h")
+        local headerfile_ui = path.join(target:autogendir(), "rules", "qt", "ui", "ui_" .. path.basename(sourcefile_ui) .. ".h")
         local headerfile_dir = path.directory(headerfile_ui)
 
         -- add includedirs

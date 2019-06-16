@@ -604,49 +604,104 @@ function _instance:pkgconfig(pkgname)
 end
 
 -- get the object files directory
-function _instance:objectdir(onlyroot)
+function _instance:objectdir(opt)
 
     -- the object directory
     local objectdir = self:get("objectdir")
     if not objectdir then
-        objectdir = path.join(config.buildir(), ".objs", self:name())
+        objectdir = path.join(config.buildir(), ".objs")
+    end
+    objectdir = path.join(objectdir, self:name())
+
+    -- get root directory of target
+    if opt and opt.root then
+        return objectdir
     end
 
-    -- only in the root directory?
-    if not onlyroot then
-
-        -- append plat sub-directory
-        local plat = config.get("plat")
-        if plat then
-            objectdir = path.join(objectdir, plat)
-        end
-
-        -- append arch sub-directory
-        local arch = config.get("arch")
-        if arch then
-            objectdir = path.join(objectdir, arch)
-        end
-
-        -- append mode sub-directory
-        local mode = config.get("mode")
-        if mode then
-            objectdir = path.join(objectdir, mode)
-        end
+    -- append plat sub-directory
+    local plat = config.get("plat")
+    if plat then
+        objectdir = path.join(objectdir, plat)
     end
 
-    -- ok?
+    -- append arch sub-directory
+    local arch = config.get("arch")
+    if arch then
+        objectdir = path.join(objectdir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        objectdir = path.join(objectdir, mode)
+    end
     return objectdir
 end
 
 -- get the dependent files directory
-function _instance:dependir()
+function _instance:dependir(opt)
 
     -- init the dependent directory
     local dependir = self:get("dependir")
     if not dependir then
-        dependir = path.join(config.buildir(), ".deps", self:name())
+        dependir = path.join(config.buildir(), ".deps")
+    end
+    dependir = path.join(dependir, self:name())
+
+    -- get root directory of target
+    if opt and opt.root then
+        return dependir
+    end
+
+    -- append plat sub-directory
+    local plat = config.get("plat")
+    if plat then
+        dependir = path.join(dependir, plat)
+    end
+
+    -- append arch sub-directory
+    local arch = config.get("arch")
+    if arch then
+        dependir = path.join(dependir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        dependir = path.join(dependir, mode)
     end
     return dependir
+end
+
+-- get the autogen files directory
+function _instance:autogendir(opt)
+
+    -- the autogen directory
+    local autogendir = path.join(config.buildir(), ".gens", self:name())
+
+    -- get root directory of target
+    if opt and opt.root then
+        return autogendir
+    end
+
+    -- append plat sub-directory
+    local plat = config.get("plat")
+    if plat then
+        autogendir = path.join(autogendir, plat)
+    end
+
+    -- append arch sub-directory
+    local arch = config.get("arch")
+    if arch then
+        autogendir = path.join(autogendir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        autogendir = path.join(autogendir, mode)
+    end
+    return autogendir
 end
 
 -- get the target kind
@@ -655,7 +710,7 @@ function _instance:targetkind()
 end
 
 -- get the target directory
-function _instance:targetdir(onlyroot)
+function _instance:targetdir()
 
     -- the target directory
     local targetdir = self:get("targetdir") 
@@ -663,25 +718,23 @@ function _instance:targetdir(onlyroot)
 
         -- get build directory
         targetdir = config.buildir()
-        if not onlyroot then
 
-            -- append plat sub-directory
-            local plat = config.get("plat")
-            if plat then
-                targetdir = path.join(targetdir, plat)
-            end
+        -- append plat sub-directory
+        local plat = config.get("plat")
+        if plat then
+            targetdir = path.join(targetdir, plat)
+        end
 
-            -- append arch sub-directory
-            local arch = config.get("arch")
-            if arch then
-                targetdir = path.join(targetdir, arch)
-            end
+        -- append arch sub-directory
+        local arch = config.get("arch")
+        if arch then
+            targetdir = path.join(targetdir, arch)
+        end
 
-            -- append mode sub-directory
-            local mode = config.get("mode")
-            if mode then
-                targetdir = path.join(targetdir, mode)
-            end
+        -- append mode sub-directory
+        local mode = config.get("mode")
+        if mode then
+            targetdir = path.join(targetdir, mode)
         end
     end
 
@@ -957,6 +1010,19 @@ function _instance:objectfile(sourcefile)
     -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
     sourcefile = sourcefile:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
+    -- get relative directory in the autogen directory
+    local relativedir = nil
+    local origindir  = path.directory(path.absolute(sourcefile))
+    local autogendir = path.absolute(self:autogendir())
+    if origindir:startswith(autogendir) then
+        relativedir = path.join("gens", path.relative(origindir, autogendir))
+    end
+
+    -- get relative directory in the source directory
+    if not relativedir then
+        relativedir = path.directory(sourcefile)
+    end
+
     -- translate path
     --
     -- .e.g 
@@ -969,15 +1035,14 @@ function _instance:objectfile(sourcefile)
     --
     -- we need replace '..' to '__' in this case
     --
-    local sourcedir = path.directory(sourcefile)
-    if path.is_absolute(sourcedir) and os.host() == "windows" then
-        sourcedir = sourcedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+    if path.is_absolute(relativedir) and os.host() == "windows" then
+        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
     end
-    sourcedir = sourcedir:gsub("%.%.", "__")
+    relativedir = relativedir:gsub("%.%.", "__")
 
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
-    return path.join(self:objectdir(), sourcedir, target.filename(path.filename(sourcefile), "object"))
+    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files
@@ -1129,11 +1194,52 @@ end
 function _instance:dependfile(objectfile)
 
     -- get the dependent original file and directory, @note relative to the root directory
-    local originfile = objectfile and objectfile or self:targetfile(true)
-    local origindir  = objectfile and self:objectdir(true) or self:targetdir(true)
+    local originfile = path.absolute(objectfile and objectfile or self:targetfile())
+    local origindir  = path.directory(originfile)
 
-    -- get the relative directory
-    local relativedir = path.directory(path.relative(originfile, origindir))
+    -- get relative directory in the object directory
+    local relativedir = nil
+    local objectdir = path.absolute(self:objectdir())
+    if origindir:startswith(objectdir) then
+        relativedir = path.relative(origindir, objectdir)
+    end
+
+    -- get relative directory in the target directory
+    if not relativedir then
+        local targetdir = path.absolute(self:targetdir())
+        if origindir:startswith(targetdir) then
+            relativedir = path.relative(origindir, targetdir)
+        end
+    end
+
+    -- get relative directory in the autogen directory
+    if not relativedir then
+        local autogendir = path.absolute(self:autogendir())
+        if origindir:startswith(autogendir) then
+            relativedir = path.join("gens", path.relative(origindir, autogendir))
+        end
+    end
+
+    -- get relative directory in the build directory
+    if not relativedir then
+        local buildir = path.absolute(config.buildir())
+        if origindir:startswith(buildir) then
+            relativedir = path.join("build", path.relative(origindir, buildir))
+        end
+    end
+
+    -- get relative directory in the project directory
+    if not relativedir then
+        local projectdir = os.projectdir()
+        if origindir:startswith(projectdir) then
+            relativedir = path.relative(origindir, projectdir)
+        end
+    end
+
+    -- get the relative directory from the origin file
+    if not relativedir then
+        relativedir = origindir
+    end
     if path.is_absolute(relativedir) and os.host() == "windows" then
         relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
     end

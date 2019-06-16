@@ -58,7 +58,7 @@ rule("yacc")
         local extension = path.extension(sourcefile_yacc)
 
         -- get c/c++ source file for yacc
-        local sourcefile_cx = path.join(config.buildir(), ".lex_yacc", target:name(), path.basename(sourcefile_yacc) .. ".tab" .. (extension == ".yy" and ".cpp" or ".c"))
+        local sourcefile_cx = path.join(target:autogendir(), "rules", "lex_yacc", path.basename(sourcefile_yacc) .. ".tab" .. (extension == ".yy" and ".cpp" or ".c"))
         local sourcefile_dir = path.directory(sourcefile_cx)
 
         -- get object file
@@ -114,8 +114,3 @@ rule("yacc")
         depend.save(dependinfo, dependfile)
     end)
 
-    -- clean files
-    after_clean(function (target)
-        import("core.project.config")
-        os.tryrm(path.join(config.buildir(), ".lex_yacc", target:name()))
-    end)

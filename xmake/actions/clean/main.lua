@@ -39,21 +39,12 @@ function _do_clean_target(target)
     -- remove the target file 
     remove_files(target:targetfile()) 
 
-    -- remove the target dependent file if exists
-    remove_files(target:dependfile()) 
-
     -- remove the symbol file 
     remove_files(target:symbolfile()) 
 
     -- remove the c/c++ precompiled header file 
     remove_files(target:pcoutputfile("c")) 
     remove_files(target:pcoutputfile("cxx")) 
-
-    -- remove the object files 
-    remove_files(target:objectfiles())
-
-    -- remove the depend files 
-    remove_files(target:dependfiles())
 
     -- TODO remove the header files (deprecated)
     local _, dstheaders = target:headers()
@@ -64,6 +55,25 @@ function _do_clean_target(target)
 
         -- TODO remove the config.h file (deprecated)
         remove_files(target:configheader()) 
+
+        -- remove all dependent files for each platform
+        remove_files(target:dependir({root = true}))
+
+        -- remove all object files for each platform
+        remove_files(target:objectdir({root = true}))
+
+        -- remove all autogen files for each platform
+        remove_files(target:autogendir({root = true}))
+    else
+
+        -- remove dependent files for the current platform
+        remove_files(target:dependir())
+
+        -- remove object files for the current platform
+        remove_files(target:objectdir())
+
+        -- remove autogen files for the current platform
+        remove_files(target:autogendir())
     end
 end
 
