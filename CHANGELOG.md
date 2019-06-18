@@ -4,6 +4,7 @@
 
 ### New features
 
+* [#455](https://github.com/xmake-io/xmake/pull/455): support clang as cuda compiler, try `xmake f --cu=clang`
 * [#440](https://github.com/xmake-io/xmake/issues/440): Add `set_rundir()` and `add_runenvs()` api for target/run
 * [#443](https://github.com/xmake-io/xmake/pull/443): Add tab completion support
 * Add `on_link`, `before_link` and `after_link` for rule and target
@@ -12,7 +13,7 @@
 ### Changes
 
 * [#430](https://github.com/xmake-io/xmake/pull/430): Add `add_cucodegens()` api to improve set codegen for cuda
-* [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file 
+* [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file (for CUDA 10.1+)
 * [#437](https://github.com/xmake-io/xmake/issues/437): Support explict git source for xmake update, `xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): Support to only update scripts, `xmake update --scriptonly dev`
 * [#433](https://github.com/xmake-io/xmake/issues/433): Improve cuda to support device-link
@@ -602,6 +603,7 @@
 
 ### 新特性
 
+* [#455](https://github.com/xmake-io/xmake/pull/455): 支持使用 clang 作为 cuda 编译器，`xmake f --cu=clang`
 * [#440](https://github.com/xmake-io/xmake/issues/440): 为target/run添加`set_rundir()`和`add_runenvs()`接口设置
 * [#443](https://github.com/xmake-io/xmake/pull/443): 添加命令行tab自动完成支持
 * 为rule/target添加`on_link`,`before_link`和`after_link`阶段自定义脚本支持
@@ -610,7 +612,7 @@
 ### 改进
 
 * [#430](https://github.com/xmake-io/xmake/pull/430): 添加`add_cucodegens()`api为cuda改进设置codegen
-* [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测
+* [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测（仅支持 CUDA 10.1+）
 * [#437](https://github.com/xmake-io/xmake/issues/437): 支持指定更新源，`xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): 支持仅更新脚本，`xmake update --scriptonly dev`
 * [#433](https://github.com/xmake-io/xmake/issues/433): 改进cuda构建支持device-link设备代码链接
