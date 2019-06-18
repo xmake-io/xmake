@@ -1,8 +1,8 @@
 
-import("print_error")
+
 import("check")
 
-local test_assert = { print_error = print_error.main }
+local test_assert = { print_error = import("print_error", { anonymous = true }).main }
 
 function test_assert:require(value)
     if not value then
@@ -66,7 +66,6 @@ function test_assert:will_raise(func, message_pattern)
     table.remove(self._will_raise_stack, 1)
 end
 
-function main(context)
-    table.join2(context, test_assert)
-    return context
+function main()
+    return test_assert
 end

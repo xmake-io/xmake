@@ -4,5 +4,7 @@ function main(t)
     -- build project
     if os.host() == "macosx" then
         t:build()
+    else
+        return t:skip("wrong host platform")
     end
 end

@@ -1,8 +1,9 @@
 -- imports
 import("privilege.sudo")
 
--- main entry
-function main(argv)
+local test_build = {}
+
+function test_build:build(argv)
 
     -- check global config
     os.exec("xmake g -c")
@@ -34,4 +35,8 @@ function main(argv)
             os.exec("xmake m package -p iphoneos")
         end
     end
+end
+
+function main()
+    return test_build
 end

@@ -1,6 +1,6 @@
 function test_splitenv_win(t)
     if not is_host("windows") then
-        return
+        return t:skip("wrong host platform")
     end
     t:are_equal(path.splitenv(""), {})
     t:are_equal(path.splitenv("a"), {'a'})
@@ -14,7 +14,7 @@ end
 
 function test_splitenv_unix(t)
     if is_host("windows") then
-        return
+        return t:skip("wrong host platform")
     end
     t:are_equal(path.splitenv(""), {})
     t:are_equal(path.splitenv("a"), {'a'})
