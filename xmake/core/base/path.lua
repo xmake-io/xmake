@@ -27,6 +27,10 @@ local string    = require("base/string")
 
 -- get the directory of the path
 function path.directory(p)
+
+    -- check
+    assert(p)
+
     local i = p:find_last("[/\\]")
     if i then
         if i > 1 then i = i - 1 end
@@ -38,6 +42,10 @@ end
 
 -- get the filename of the path
 function path.filename(p)
+
+    -- check
+    assert(p)
+
     local i = p:find_last("[/\\]")
     if i then
         return p:sub(i + 1)
@@ -48,6 +56,10 @@ end
 
 -- get the basename of the path
 function path.basename(p)
+
+    -- check
+    assert(p)
+
     local name = path.filename(p)
     local i = name:find_last(".", true)
     if i then
@@ -89,6 +101,10 @@ end
 
 -- split path by the separator
 function path.split(p)
+
+    -- check
+    assert(p)
+
     return p:split("/\\")
 end
 
@@ -104,13 +120,17 @@ end
 
 -- the last character is the path seperator?
 function path.islastsep(p)
+
+    -- check
+    assert(p)
+
     local sep = p:sub(#p, #p)
     return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
 
 -- convert path pattern to a lua pattern
 function path.pattern(pattern)
-    
+
     -- translate wildcards, .e.g *, **
     pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
     pattern = pattern:gsub("%*%*", "\001")

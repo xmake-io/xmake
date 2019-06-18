@@ -26,16 +26,21 @@ rule("cuda.devlink")
 
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
+        import("core.platform.platform")
 
         -- disable devlink?
+        -- local cu_tool, cu_toolname = platform.tool("cu")
+        -- if (cu_toolname or path.basename(cu_tool)) ~= "nvcc" then
+        --     return
+        -- end
         if target:values("cuda.devlink") == false then
-            return 
+            return
         end
 
         -- only for binary/shared
         local targetkind = target:targetkind()
         if targetkind ~= "binary" and targetkind ~= "shared" then
-            return 
+            return
         end
 
         -- imports
@@ -50,6 +55,8 @@ rule("cuda.devlink")
 
         -- init culdflags
         local culdflags = {"-dlink"}
+
+        -- add shared flag
         if targetkind == "shared" then
             table.insert(culdflags, "-shared")
         end

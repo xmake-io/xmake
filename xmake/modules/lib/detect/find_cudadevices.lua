@@ -23,6 +23,8 @@ import("core.base.option")
 import("core.platform.platform")
 import("core.project.config")
 import("lib.detect.cache")
+import("lib.detect.find_tool")
+import("detect.sdks.find_cuda")
 
 -- a magic string to filter output
 local _PRINT_SUFFIX = "<find_cudadevices>"
@@ -112,7 +114,9 @@ end
 -- find devices
 function _find_devices(verbose)
 
-    local nvcc = platform.tool("cu")
+    local cuda = find_cuda(get_config("cuda"))
+    local nvcc = find_tool("nvcc", { program = path.join(cuda.bindir, "nvcc") })
+
     if nvcc == nil then
         raise('nvcc not found')
     end
@@ -124,19 +128,19 @@ function _find_devices(verbose)
     local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cpp')
     local outfile = os.tmpfile()
     local compile_errors = nil
-    local results, errors = try 
-    { 
+    local results, errors = try
+    {
         function ()
             local archs = { i386 = "-m32", x86 = "-m32", x86_64 = "-m64", x64 = "-m64" }
             local arch = archs[config.get("arch")] or ""
-            return os.iorunv(nvcc, { sourcefile, arch, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
-        end, 
-        catch 
+            return os.iorunv(nvcc.program, { sourcefile, arch, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' })
+        end,
+        catch
         {
-            function (errs) 
-                compile_errors = tostring(errs) 
+            function (errs)
+                compile_errors = tostring(errs)
             end
-        } 
+        }
     }
 
     if compile_errors then

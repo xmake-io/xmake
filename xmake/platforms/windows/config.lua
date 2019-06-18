@@ -61,7 +61,7 @@ function _toolchains()
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
-                        cu = cu, ["cu-ld"] = cu_ld, ["cu-sh"] = cu_sh}
+                        cu = cu, ["cu-ld"] = cu_ld}
 
     -- init the c compiler
     cc:add("cl.exe")

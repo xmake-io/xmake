@@ -35,11 +35,10 @@ rule("cuda.env")
             target:add("culdflags", "-m64", {force = true})
         end
 
-        -- add -ccbin
+        -- add ccbin
         local cu_ccbin = get_config("cu-ccbin")
         if cu_ccbin then
-            target:add("cuflags", "-ccbin", os.args(cu_ccbin), {force = true})
-            target:add("culdflags", "-ccbin", os.args(cu_ccbin), {force = true})
+            target:add("culdflags", "-ccbin=" .. os.args(cu_ccbin), {force = true})
         end
 
         -- add links

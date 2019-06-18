@@ -36,6 +36,9 @@ rule("cuda.gencodes")
     --
     before_load(function (target)
 
+        import("core.platform.platform")
+        import("lib.detect.find_cudadevices")
+
         local function set (list)
             local result = {}
             for _, l in ipairs(list) do result[l] = true end
@@ -43,17 +46,15 @@ rule("cuda.gencodes")
         end
 
         -- sm_20 and compute_20 is supported until CUDA 8
-        local knownVArchs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
-        local knownRArchs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
+        local known_v_archs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
+        local known_r_archs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
 
         local function nf_cugencode(archs)
-
             if type(archs) ~= 'string' then
                 return nil
             end
             archs = archs:trim():lower()
             if archs == 'native' then
-                import("lib.detect.find_cudadevices")
                 local device = find_cudadevices({ skip_compute_mode_prohibited = true, order_by_flops = true })[1]
                 if device then
                     return nf_cugencode('sm_' .. device.major .. device.minor)
@@ -61,10 +62,10 @@ rule("cuda.gencodes")
                 return nil
             end
 
-            local vArch = nil
-            local rArchs = {}
+            local v_arch = nil
+            local r_archs = {}
 
-            local function parse_arch(value, prefix, knowList)
+            local function parse_arch(value, prefix, know_list)
                 if not value:startswith(prefix) then
                     return nil
                 end
@@ -72,8 +73,8 @@ rule("cuda.gencodes")
                 if arch == nil then
                     raise("Unknown architecture: " .. value)
                 end
-                if not knowList[arch] then
-                    if arch <= table.maxn(knowList) then
+                if not know_list[arch] then
+                    if arch <= table.maxn(know_list) then
                         raise("Unknown architecture: " .. prefix .. "_" .. arch)
                     else
                         utils.warning("Unknown architecture: " .. prefix .. "_" .. arch)
@@ -84,37 +85,55 @@ rule("cuda.gencodes")
 
             for _, v in ipairs(archs:split(',')) do
                 local arch = v:trim()
-                local tempRArch = parse_arch(arch, 'sm', knownRArchs)
-                if tempRArch then
-                    table.insert(rArchs, tempRArch)
+                local temp_r_arch = parse_arch(arch, 'sm', known_r_archs)
+                if temp_r_arch then
+                    table.insert(r_archs, temp_r_arch)
                 end
 
-                local tempVArch = parse_arch(arch, 'compute', knownVArchs)
-                if tempVArch then
-                    if vArch ~= nil then
-                        raise("More than one virtual architecture is defined in one gpu gencode option: compute_" .. vArch .. " and compute_" .. tempVArch)
+                local temp_v_arch = parse_arch(arch, 'compute', known_v_archs)
+                if temp_v_arch then
+                    if v_arch ~= nil then
+                        raise("More than one virtual architecture is defined in one gpu gencode option: compute_" .. v_arch .. " and compute_" .. temp_v_arch)
                     end
-                    vArch = tempVArch
+                    v_arch = temp_v_arch
                 end
-                if not (tempRArch or tempVArch) then
+                if not (temp_r_arch or temp_v_arch) then
                     raise("Unknown architecture: " .. arch)
                 end
             end
 
-            if vArch == nil and #rArchs == 0 then
+            local result = { clang = {}, nvcc = {} }
+            if v_arch == nil and #r_archs == 0 then
                 return nil
             end
-            if #rArchs == 0 then
-                return '-gencode arch=compute_' .. vArch .. ',code=compute_' .. vArch
+
+            if #r_archs == 0 then
+                return {
+                    clang = '--cuda-gpu-arch=sm_' .. v_arch
+                ,   nvcc = '-gencode arch=compute_' .. v_arch .. ',code=compute_' .. v_arch }
             end
 
-            rArchs = table.unique(rArchs)
-            vArch = vArch or math.min(unpack(rArchs))
-            if #rArchs == 1 then
-                return '-gencode arch=compute_' .. vArch .. ',code=sm_' .. rArchs[1]
-            else
-                return '-gencode arch=compute_' .. vArch .. ',code=[sm_' .. table.concat(rArchs, ',sm_') .. ']'
+            if v_arch then
+                table.insert(r_archs, v_arch)
             end
+            r_archs = table.unique(r_archs)
+            local clang_flags = {}
+            for _, r_arch in ipairs(r_archs) do
+                table.insert(clang_flags, '--cuda-gpu-arch=sm_' .. r_arch)
+            end
+
+            r_archs = table.unique(r_archs)
+            v_arch = v_arch or math.min(unpack(r_archs))
+            local nvcc_flags = nil
+            if #r_archs == 1 then
+                nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=sm_' .. r_archs[1]
+            else
+                nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=[sm_' .. table.concat(r_archs, ',sm_') .. ']'
+            end
+
+            return {
+                clang = clang_flags
+            ,   nvcc = nvcc_flags }
         end
 
         local cugencodes = table.wrap(target:get("cugencodes"))
@@ -124,8 +143,13 @@ rule("cuda.gencodes")
         for _, v in ipairs(cugencodes) do
             local flag = nf_cugencode(v)
             if flag then
-                target:add('cuflags', flag)
-                target:add('culdflags', flag)
+                local tool, toolname = platform.tool("cu")
+                if (toolname or path.basename(tool)) == "nvcc" then
+                    target:add('cuflags', flag.nvcc)
+                else
+                    target:add('cuflags', flag.clang)
+                end
+                target:add('culdflags', flag.nvcc)
             end
         end
     end)

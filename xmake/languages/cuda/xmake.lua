@@ -140,14 +140,11 @@ language("cuda")
                     {category = "Cross Complation Configuration/Compiler Configuration"         }
                 ,   {nil, "cu",         "kv", nil,          "The Cuda Compiler"                 }
                 ,   {nil, "cu-ccbin",   "kv", nil,          "The Cuda Host C++ Compiler"        }
-
-                ,   {category = "Cross Complation Configuration/Linker Configuration"           }
                 ,   {nil, "cu-ld",      "kv", nil,          "The Cuda Linker"                   }
-                ,   {nil, "cu-ar",      "kv", nil,          "The Cuda Static Library Archiver"  }
-                ,   {nil, "cu-sh",      "kv", nil,          "The Cuda Shared Library Linker"    }
 
                 ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"   }
                 ,   {nil, "cuflags",    "kv", nil,          "The Cuda Compiler Flags"           }
+                ,   {nil, "culdflags",  "kv", nil,          "The Cuda Linker Flags"             }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"    }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                }
