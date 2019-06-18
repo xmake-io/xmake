@@ -24,7 +24,32 @@ local sandbox_core_sandbox = sandbox_core_sandbox or {}
 -- load modules
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
+local try       = require("sandbox/modules/try")
+local catch     = require("sandbox/modules/catch")
+local utils     = require("base/utils")
 local history   = require("project/history")
+
+-- print variables for interactive mode
+function sandbox_core_sandbox._interactive_print(format, ...)
+
+    if type(format) == "string" and format:find("%", 1, true) then
+        local args = {...}
+        try
+        {
+            function ()
+                utils._print(string.format(format, unpack(args)))
+            end,
+            catch 
+            {
+                function (errors)
+                    utils._print(format, unpack(args))
+                end
+            }
+        }
+    else
+        utils._print(format, ...)
+    end
+end
 
 -- enter interactive mode
 function sandbox_core_sandbox.interactive()
@@ -54,6 +79,9 @@ function sandbox_core_sandbox.interactive()
             readline.add_history(ln)
         end
     end
+
+    -- register print function for interactive mode
+    instance._PUBLIC.print = sandbox_core_sandbox._interactive_print
 
     -- enter interactive mode with this new sandbox
     sandbox.interactive(instance._PUBLIC) 
