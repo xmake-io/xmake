@@ -37,6 +37,7 @@ function _find_sdkdir()
     else
         table.insert(pathes, "/usr/local/cuda*/bin")
     end
+    table.insert(pathes, "$(env PATH)")
 
     -- attempt to find nvcc
     local nvcc = find_file(os.host() == "windows" and "nvcc.exe" or "nvcc", pathes)

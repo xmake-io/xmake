@@ -118,6 +118,47 @@ function path.envsep()
     return xmake._HOST == "windows" and ';' or ':'
 end
 
+-- split environment variable with `path.envsep()`,
+-- also handles more speical cases such as posix flags and windows quoted pathes
+function path.splitenv(env_path)
+
+    -- check
+    assert(env_path)
+
+    local result = {}
+    if xmake._HOST == "windows" then
+        while #env_path > 0 do
+            if env_path:startswith(path.envsep()) then
+                env_path = env_path:sub(2)
+            elseif env_path:startswith('"') then
+                -- path quoted with, can contain `;`
+                local p_end = env_path:find('"' .. path.envsep(), 2, true) or env_path:find('"$', 2) or (#env_path + 1)
+                table.insert(result, env_path:sub(2, p_end - 1))
+                env_path = env_path:sub(p_end + 1)
+            else
+                local p_end = env_path:find(path.envsep(), 2, true) or (#env_path + 1)
+                table.insert(result, env_path:sub(1, p_end - 1))
+                env_path = env_path:sub(p_end)
+            end
+        end
+    else
+        -- see https://git.kernel.org/pub/scm/utils/dash/dash.git/tree/src/exec.c?h=v0.5.9.1&id=afe0e0152e4dc12d84be3c02d6d62b0456d68580#n173
+        -- no escape sequences, so `:` and `%` is invalid in environment variable
+        for _, v in ipairs(env_path:split(path.envsep(), { plain = true })) do
+            -- flag for shells, style `<path>%<flag>`
+            local flag = v:find("%", 1, true)
+            if flag then
+                v = v:sub(1, flag - 1)
+            end
+            if #v > 0 then
+                table.insert(result, v)
+            end
+        end
+    end
+
+    return result
+end
+
 -- the last character is the path seperator?
 function path.islastsep(p)
 

@@ -29,11 +29,8 @@ import("private.tools.nvcc.parse_deps")
 -- init it
 function init(self)
 
-    -- init culdflags
-    self:set("shared.culdflags", "-shared")
-
     -- init cuflags
-    if not is_plat("windows") then
+    if not is_plat("windows", "mingw") then
         self:set("shared.cuflags", "-Xcompiler -fPIC")
     end
 

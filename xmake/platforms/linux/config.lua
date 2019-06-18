@@ -77,7 +77,6 @@ function _toolchains()
     local rc_ar      = toolchain("the rust static library archiver")
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
-    local cu_sh      = toolchain("the cuda shared library linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
     local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         mm = mm, mxx = mxx,
@@ -147,9 +146,8 @@ function _toolchains()
     rc_ar:add("$(env RC)", "rustc")
 
     -- init the cuda compiler and linker
-    cu:add("nvcc")
+    cu:add("nvcc", "clang++", "clang")
     cu_ld:add("nvcc")
-    cu_sh:add("nvcc")
     if not cross or cross == "" then
         cu_ccbin:add("$(env CXX)", "$(env CC)", "gcc", "clang", "g++", "clang++")
     end

@@ -29,10 +29,6 @@ rule("cuda.devlink")
         import("core.platform.platform")
 
         -- disable devlink?
-        -- local cu_tool, cu_toolname = platform.tool("cu")
-        -- if (cu_toolname or path.basename(cu_tool)) ~= "nvcc" then
-        --     return
-        -- end
         if target:values("cuda.devlink") == false then
             return
         end
