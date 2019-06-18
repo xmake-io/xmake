@@ -43,9 +43,8 @@ function main(opt)
     opt       = opt or {}
     opt.parse = opt.parse or "V(%d+%.?%d*%.?%d*.-)%s"
 
-    local program = nil
-
     -- find program
+    local program = nil
     if opt.program then
         program = find_program(opt.program, opt)
     end

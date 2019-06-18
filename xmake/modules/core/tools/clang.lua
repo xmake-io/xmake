@@ -27,6 +27,7 @@ function init(self)
     -- init super
     _super.init(self)
 
+    -- add cuflags
     if not is_plat("windows", "mingw") then
         self:add("shared.cuflags", "-fPIC")
     end
@@ -37,6 +38,7 @@ function init(self)
     self:add("mxflags", "-Qunused-arguments")
     self:add("asflags", "-Qunused-arguments")
 
+    -- add cuda path 
     local cuda = get_config("cuda")
     if cuda then
         local cuda_path = "--cuda-path=" .. os.args(path.translate(cuda))

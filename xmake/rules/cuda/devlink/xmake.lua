@@ -26,6 +26,13 @@ rule("cuda.devlink")
 
     -- @see https://devblogs.nvidia.com/separate-compilation-linking-cuda-device-code/
     before_link(function (target, opt)
+
+        -- imports
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.config")
+        import("core.project.depend")
+        import("core.tool.linker")
         import("core.platform.platform")
 
         -- disable devlink?
@@ -38,13 +45,6 @@ rule("cuda.devlink")
         if targetkind ~= "binary" and targetkind ~= "shared" then
             return
         end
-
-        -- imports
-        import("core.base.option")
-        import("core.theme.theme")
-        import("core.project.config")
-        import("core.project.depend")
-        import("core.tool.linker")
 
         -- load linker instance
         local linkinst = linker.load("gpucode", "cu", {target = target})

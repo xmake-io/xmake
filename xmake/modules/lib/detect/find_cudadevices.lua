@@ -40,13 +40,14 @@ function _get_lines(str)
     return result
 end
 
-
 -- parse a single value
+--
 -- format:
 -- 1. a number:     `2048`
 -- 2. an array:     `(65536, 2048, 2048)`
 -- 3. bool value:   `true` or `false`
 -- 4. string:       `"string"`
+--
 function _parse_value(value)
     local num = tonumber(value)
     if num then return num end
@@ -71,8 +72,10 @@ end
 
 
 -- parse single line
+--
 -- format:
 --     key = value
+--
 function _parse_line(line, device)
     local key = line:match("%s+(%g+) = .+")
     local value = line:match("%s+%g+ = (.+)")
@@ -84,9 +87,9 @@ function _parse_line(line, device)
     end
 end
 
-
 -- parse filtered lines
 function _parse_result(lines, verbose)
+
     if #lines == 0 then
         -- not a failure, returns {} rather than nil
         utils.warning("no cuda devices was found")
@@ -110,23 +113,25 @@ function _parse_result(lines, verbose)
     return devices
 end
 
-
 -- find devices
 function _find_devices(verbose)
+
+    -- find nvcc
     local nvcc = assert(find_tool("nvcc"), "nvcc not found")
 
+    -- trace
     if verbose then
         cprint("${dim}checking for cuda devices")
     end
 
+    -- get cuda devices
     local sourcefile = path.join(os.programdir(), "scripts", "find_cudadevices.cpp")
     local outfile = os.tmpfile()
-    local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
-
     local compile_errors = nil
     local results, errors = try
     {
         function ()
+            local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
             return os.iorunv(nvcc.program, args)
         end,
         catch
@@ -166,7 +171,6 @@ function _find_devices(verbose)
     end
     return devices
 end
-
 
 -- get devices array form cache or via _find_devices
 function _get_devices(opt)
@@ -219,7 +223,9 @@ function _min_sm_arch(devices, min_sm_arch)
 end
 
 function _order_by_flops(devices)
-    local ngpu_arch_cores_per_sm = {
+
+    local ngpu_arch_cores_per_sm = 
+    {
         [30] =    192
     ,   [32] =    192
     ,   [35] =    192

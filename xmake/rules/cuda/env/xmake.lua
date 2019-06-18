@@ -22,8 +22,10 @@
 rule("cuda.env")
     after_load(function (target)
 
-        -- get cuda sdk
+        -- imports
         import("detect.sdks.find_cuda")
+
+        -- get cuda sdk
         local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK not found!")
 
         -- add arch
