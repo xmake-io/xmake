@@ -6,7 +6,7 @@
 #  Invoke-Expression (Invoke-Webrequest <my location> -UseBasicParsing).Content
 
 param (
-    [string]$branch = "master",
+    [string]$version = "master",
     [string]$installdir = ""
 )
 
@@ -57,10 +57,15 @@ if ($null -eq $installdir -or $installdir -match '^\s*$') {
     }
 }
 
-if ($null -eq $branch -or $branch -match '^\s*$') {
-    $branch = 'master'
+if ($null -eq $version -or $version -match '^\s*$') {
+    $v = 'master'
+} else {
+    $v = $version.Trim()
+    if ($v.Contains('.')) {
+        $v = [version]::Parse($version)
+        $v = New-Object -TypeName version -ArgumentList $v.Major, $v.Minor, $v.Build
+    }
 }
-
 function checkTempAccess {
     $outfile = Join-Path $temppath "$pid.tmp"
     try {
@@ -77,7 +82,15 @@ function xmakeInstall {
     $outfile = Join-Path $temppath "$pid-xmake-installer.exe"
     $x64arch = @('AMD64', 'IA64', 'ARM64')
     $arch = if ($env:PROCESSOR_ARCHITECTURE -in $x64arch -or $env:PROCESSOR_ARCHITEW6432 -in $x64arch) { 'x64' } else { 'x86' }
-    $url = "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=$branch&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch"
+    $url = if ($v -is [version]) {
+        if ($v -gt "2.2.6") {
+            "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=v$v&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch" 
+        } else {
+            "https://github.com/xmake-io/xmake/releases/download/v$v/xmake-v$v.exe"
+        }
+    } else {
+        "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=$v&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch"
+    }
     Write-Host "Start downloading $url .."
     try {
         Invoke-Webrequest $url -OutFile $outfile -UseBasicParsing
