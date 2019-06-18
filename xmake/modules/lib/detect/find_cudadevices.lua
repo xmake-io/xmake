@@ -23,6 +23,8 @@ import("core.base.option")
 import("core.platform.platform")
 import("core.project.config")
 import("lib.detect.cache")
+import("lib.detect.find_tool")
+import("detect.sdks.find_cuda")
 
 -- a magic string to filter output
 local _PRINT_SUFFIX = "<find_cudadevices>"
@@ -30,7 +32,7 @@ local _PRINT_SUFFIX = "<find_cudadevices>"
 -- filter stdout and stderr with _PRINT_SUFFIX
 function _get_lines(str)
     local result = {}
-    for _, l in ipairs(str:split('\n')) do
+    for _, l in ipairs(str:split("\n")) do
         if l:startswith(_PRINT_SUFFIX) then
             table.insert(result, l:sub(#_PRINT_SUFFIX + 1))
         end
@@ -55,8 +57,8 @@ function _parse_value(value)
         return value:sub(2, -2)
     end
 
-    if value:startswith('(') and value:endswith(')') then
-        local values = value:sub(2, -2):split(',')
+    if value:startswith("(") and value:endswith(")") then
+        local values = value:sub(2, -2):split(",")
         local result = {}
         for _, v in ipairs(values) do
             table.insert(result, _parse_value(v:trim()))
@@ -77,7 +79,7 @@ function _parse_line(line, device)
     if key and value then
         key = key:trim()
         value = value:trim()
-        assert(not device[key], 'duplicate key: ' .. key)
+        assert(not device[key], "duplicate key: " .. key)
         device[key] = _parse_value(value)
     end
 end
@@ -99,7 +101,7 @@ function _parse_result(lines, verbose)
         end
         local devId = tonumber(l:match("%s*DEVICE #(%d+)"))
         if devId then
-            currentDevice = { ['$id'] = devId }
+            currentDevice = { ["$id"] = devId }
             table.insert(devices, currentDevice)
         elseif currentDevice then
             _parse_line(l, currentDevice)
@@ -111,32 +113,28 @@ end
 
 -- find devices
 function _find_devices(verbose)
-
-    local nvcc = platform.tool("cu")
-    if nvcc == nil then
-        raise('nvcc not found')
-    end
+    local nvcc = assert(find_tool("nvcc"), "nvcc not found")
 
     if verbose then
         cprint("${dim}checking for cuda devices")
     end
 
-    local sourcefile = path.join(os.programdir(), 'scripts', 'find_cudadevices.cpp')
+    local sourcefile = path.join(os.programdir(), "scripts", "find_cudadevices.cpp")
     local outfile = os.tmpfile()
+    local args = { sourcefile, "-run", "-o", outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }
+
     local compile_errors = nil
-    local results, errors = try 
-    { 
+    local results, errors = try
+    {
         function ()
-            local archs = { i386 = "-m32", x86 = "-m32", x86_64 = "-m64", x64 = "-m64" }
-            local arch = archs[config.get("arch")] or ""
-            return os.iorunv(nvcc, { sourcefile, arch, '-run', '-o', outfile , '-DPRINT_SUFFIX="' .. _PRINT_SUFFIX .. '"' }) 
-        end, 
-        catch 
+            return os.iorunv(nvcc.program, args)
+        end,
+        catch
         {
-            function (errs) 
-                compile_errors = tostring(errs) 
+            function (errs)
+                compile_errors = tostring(errs)
             end
-        } 
+        }
     }
 
     if compile_errors then
@@ -149,13 +147,13 @@ function _find_devices(verbose)
 
     -- clean up
     os.tryrm(outfile)
-    os.tryrm(outfile .. '.*')
+    os.tryrm(outfile .. ".*")
 
     -- get results
     local results_lines = _get_lines(results)
     local errors_lines = _get_lines(errors)
     if #errors_lines ~= 0 then
-        utils.warning("failed to find cuda devices: " .. table.concat(errors_lines, '\n'))
+        utils.warning("failed to find cuda devices: " .. table.concat(errors_lines, "\n"))
         return nil
     end
 
@@ -163,7 +161,7 @@ function _find_devices(verbose)
     local devices = _parse_result(results_lines, option.get("diagnosis"))
     if verbose then
         for _, v in ipairs(devices) do
-            cprint("${dim}> found device #%d: ${green bright}%s${reset dim} with compute ${bright}%d.%d${reset dim} capability", v['$id'], v.name, v.major, v.minor)
+            cprint("${dim}> found device #%d: ${green bright}%s${reset dim} with compute ${bright}%d.%d${reset dim} capability", v["$id"], v.name, v.major, v.minor)
         end
     end
     return devices
@@ -244,10 +242,10 @@ function _order_by_flops(devices)
         else
             sm_per_multiproc = ngpu_arch_cores_per_sm[dev.major * 10 + dev.minor] or 64;
         end
-        dev['$flops'] = dev.multiProcessorCount * sm_per_multiproc * dev.clockRate
+        dev["$flops"] = dev.multiProcessorCount * sm_per_multiproc * dev.clockRate
     end
 
-    table.sort(devices, function (a,b) return a['$flops'] > b['$flops'] end)
+    table.sort(devices, function (a,b) return a["$flops"] > b["$flops"] end)
     return devices
 end
 
@@ -256,7 +254,7 @@ end
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, cachekey = "xxxx", min_sm_arch = 35, skip_compute_mode_prohibited = false, order_by_flops = true }
 --
--- @return      { { ['$id'] = 0, name = "GeForce GTX 960M", major = 5, minor = 0, ... }, ... }
+-- @return      { { ["$id"] = 0, name = "GeForce GTX 960M", major = 5, minor = 0, ... }, ... }
 --              for all keys, see https://docs.nvidia.com/cuda/cuda-runtime-api/structcudaDeviceProp.html#structcudaDeviceProp
 --              keys might be differ as your cuda version varies
 --

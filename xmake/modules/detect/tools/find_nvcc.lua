@@ -43,8 +43,12 @@ function main(opt)
     opt       = opt or {}
     opt.parse = opt.parse or "V(%d+%.?%d*%.?%d*.-)%s"
 
+    local program = nil
+
     -- find program
-    local program = find_program(opt.program or "nvcc", opt)
+    if opt.program then
+        program = find_program(opt.program, opt)
+    end
 
     -- not found? attempt to find program from cuda toolchains
     if not program then
@@ -54,9 +58,14 @@ function main(opt)
         end
     end
 
+    -- not found? attempt to find program from PATH
+    if not program then
+        program = find_program("nvcc", opt)
+    end
+
     -- find program version
     local version = nil
-    if program and opt and opt.version then
+    if program and opt.version then
         version = find_programver(program, opt)
     end
 

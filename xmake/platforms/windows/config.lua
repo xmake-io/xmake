@@ -56,12 +56,11 @@ function _toolchains()
     local rc_ar      = toolchain("the rust static library archiver")
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
-    local cu_sh      = toolchain("the cuda shared library linker")
     local toolchains = {cc = cc, cxx = cxx, mrc = mrc, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
-                        cu = cu, ["cu-ld"] = cu_ld, ["cu-sh"] = cu_sh}
+                        cu = cu, ["cu-ld"] = cu_ld}
 
     -- init the c compiler
     cc:add("cl.exe")
@@ -109,9 +108,8 @@ function _toolchains()
     rc_ar:add("$(env RC)", "rustc")
 
     -- init the cuda compiler and linker
-    cu:add("nvcc")
+    cu:add("nvcc", "clang")
     cu_ld:add("nvcc")
-    cu_sh:add("nvcc")
 
     return toolchains
 end

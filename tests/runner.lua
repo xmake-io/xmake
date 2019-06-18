@@ -1,7 +1,5 @@
 import("core.base.option")
-import("test_utils.test_assert")
-import("test_utils.print_error")
-import("test_utils.build", { alias = "test_build" })
+import("test_utils.context", { alias = "test_context" })
 
 function main(script)
 
@@ -16,14 +14,7 @@ function main(script)
     os.setenv("XMAKE_STATS", "false")
 
     -- init test context
-    local context =
-    {
-        filename = script
-    }
-    context = test_assert(context)
-    function context:build(argv)
-        test_build(argv)
-    end
+    local context = test_context(script)
 
     local root = path.directory(script)
 
@@ -50,10 +41,10 @@ function main(script)
             if verbose then print(">>     running %s ...", k) end
             context.func = v
             context.funcname = k
-            try
+            local result = try
             {
                 function ()
-                    v(context)
+                    return v(context)
                 end,
                 catch
                 {
@@ -66,6 +57,9 @@ function main(script)
                     end
                 }
             }
+            if context:is_skipped(result) then
+                print(">>     skipped %s : %s", k, result.reason)
+            end
             succeed_count = succeed_count + 1
         end
     end

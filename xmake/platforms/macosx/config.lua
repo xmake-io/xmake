@@ -59,14 +59,13 @@ function _toolchains()
     local rc_ar      = toolchain("the rust static library archiver")
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
-    local cu_sh      = toolchain("the cuda shared library linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
     local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
                         mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh,
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
-                        cu = cu, ["cu-ld"] = cu_ld, ["cu-sh"] = cu_sh, ["cu-ccbin"] = cu_ccbin}
+                        cu = cu, ["cu-ld"] = cu_ld, ["cu-ccbin"] = cu_ccbin}
 
     -- init the c compiler
     cc:add("$(env CC)", {name = "clang", cross = cross}, "clang", "gcc")
@@ -130,9 +129,8 @@ function _toolchains()
     rc_ar:add("$(env RC)", "rustc")
 
     -- init the cuda compiler and linker
-    cu:add("nvcc")
+    cu:add("nvcc", "clang")
     cu_ld:add("nvcc")
-    cu_sh:add("nvcc")
     cu_ccbin:add("$(env CXX)", "$(env CC)", "clang", "gcc")
 
     return toolchains

@@ -23,14 +23,25 @@ inherit("gcc")
 
 -- init it
 function init(self)
-    
+
     -- init super
     _super.init(self)
 
+    if not is_plat("windows", "mingw") then
+        self:add("shared.cuflags", "-fPIC")
+    end
+
     -- suppress warning 
     self:add("cxflags", "-Qunused-arguments")
+    self:add("cuflags", "-Qunused-arguments")
     self:add("mxflags", "-Qunused-arguments")
     self:add("asflags", "-Qunused-arguments")
+
+    local cuda = get_config("cuda")
+    if cuda then
+        local cuda_path = "--cuda-path=" .. os.args(path.translate(cuda))
+        self:add("cuflags", cuda_path)
+    end
 
     -- init flags map
     self:set("mapflags",
@@ -44,6 +55,16 @@ function init(self)
          -- strip
     ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
+
+        -- rdc
+    ,   ["-rdc=true"] = "-fcuda-rdc"
+    ,   ["-rdc true"] = "-fcuda-rdc"
+    ,   ["--relocatable-device-code=true"] = "-fcuda-rdc"
+    ,   ["--relocatable-device-code true"] = "-fcuda-rdc"
+    ,   ["-rdc=false"] = ""
+    ,   ["-rdc false"] = ""
+    ,   ["--relocatable-device-code=false"] = ""
+    ,   ["--relocatable-device-code false"] = ""
     })
 
 end

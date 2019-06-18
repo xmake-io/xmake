@@ -29,9 +29,15 @@ import("private.tools.nvcc.parse_deps")
 -- init it
 function init(self)
 
-    -- init flags
-    if not is_plat("windows") then
+    -- init cuflags
+    if not is_plat("windows", "mingw") then
         self:set("shared.cuflags", "-Xcompiler -fPIC")
+    end
+
+    -- add -ccbin
+    local cu_ccbin = get_config("cu-ccbin")
+    if cu_ccbin then
+        self:add("cuflags", "-ccbin=" .. os.args(cu_ccbin))
     end
 
     -- init flags map
