@@ -1,5 +1,5 @@
 #version: v2.1.8.{build}
-os:
+image:
   - Visual Studio 2013
   - Visual Studio 2015
   - Visual Studio 2017
