@@ -27,19 +27,30 @@ local raise     = require("sandbox/modules/raise")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local utils     = require("base/utils")
+local table     = require("base/table")
 local history   = require("project/history")
 local dump      = require("base/dump")
 
 -- print variables for interactive mode
-function sandbox_core_sandbox._interactive_dump(v0, ...)
-    local values = { v0, ... }
-    if #values <= 1 then
-        -- in case v0 is nil
-        dump(v0, "< ")
+function sandbox_core_sandbox._interactive_dump(...)
+    local values = table.pack(...)
+    -- do not use #values since nil might be included
+    local n = values.n
+    if n <= 1 then
+        dump(values[1], "< ")
         io.write("\n")
     else
-        for i, v in ipairs(values) do
-            dump(v, "<" .. ((i < 10) and (i .. "  ") or (i .. " ")))
+        local fmt = "< %d: "
+        if n >= 1000 then
+            -- try `unpack({}, 1, 5000)`, wish you happy!
+            fmt = "< %4d: "
+        elseif n >= 100 then
+            fmt = "< %3d: "
+        elseif n >= 10 then
+            fmt = "< %2d: "
+        end
+        for i = 1, n do
+            dump(values[i], string.format(fmt, i))
             io.write("\n")
         end
     end
