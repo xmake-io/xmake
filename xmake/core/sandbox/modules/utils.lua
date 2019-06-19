@@ -28,7 +28,6 @@ local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
 local raise     = require("sandbox/modules/raise")
-local dump      = require("base/dump")
 
 -- define module
 local sandbox_utils = sandbox_utils or {}
@@ -176,7 +175,7 @@ function sandbox_utils.assert(value, format, ...)
         if format ~= nil then
             raise(format, ...)
         else
-            raise("assertion failed!")  
+            raise("assertion failed!")
         end
     end
 
@@ -192,8 +191,7 @@ end
 -- dump value
 function sandbox_utils.dump(value, indent)
     if not option.get("quiet") then
-        dump(value, indent or "")
-        io.write("\n")
+        return utils.dump(value, indent)
     end
 end
 

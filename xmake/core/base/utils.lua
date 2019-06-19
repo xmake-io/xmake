@@ -25,9 +25,13 @@ local utils = utils or {}
 local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
-local table  = require("base/table")
 local log    = require("base/log")
 local dump   = require("base/dump")
+
+function utils.dump(value, indent)
+    dump(value, indent or "")
+    io.write("\n")
+end
 
 -- print string with newline
 function utils._print(...)
