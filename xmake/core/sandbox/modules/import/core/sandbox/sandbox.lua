@@ -31,10 +31,11 @@ local history   = require("project/history")
 local dump      = require("base/dump")
 
 -- print variables for interactive mode
-function sandbox_core_sandbox._interactive_dump(...)
-    local values = {...}
-    if #values == 1 then
-        dump(values[1], "< ")
+function sandbox_core_sandbox._interactive_dump(v0, ...)
+    local values = {v0, ...}
+    if #values <= 1 then
+        -- in case v0 is nil
+        dump(v0, "< ")
         io.write("\n")
     else
         for i, v in ipairs({...}) do
