@@ -10,7 +10,6 @@
 !include "MUI2.nsh"
 !include "WordFunc.nsh"
 !include "WinMessages.nsh"
-!include "EnvVarUpdate.nsh"
 
 ; xmake version Information
 !ifndef MAJOR
@@ -133,9 +132,11 @@ Section "xmake (required)" Installer
   WriteUninstaller "uninstall.exe"
 
   ; Remove the installation path from the $PATH environment variable first
-  ${EnvVarUpdate} $0 "PATH" "R" "HKLM" $INSTDIR
+  ReadRegStr $R0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+  ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
+
   ; Write the installation path into the $PATH environment variable
-  ${EnvVarUpdate} $0 "PATH" "A" "HKLM" $INSTDIR
+  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
   
 SectionEnd
 
@@ -164,6 +165,9 @@ Section "Uninstall"
   RMDir /r "$INSTDIR"
 
   ; Remove the installation path from the $PATH environment variable
-  ${un.EnvVarUpdate} $0 "PATH" "R" "HKLM" $INSTDIR
+  ReadRegStr $R0 HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+  ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
+  ; MessageBox MB_OK|MB_USERICON '$R0 - $INSTDIR - $R1 '
+  WriteRegExpandStr HKLM "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
 
 SectionEnd
