@@ -29,22 +29,22 @@ local table   = require("base/table")
 function dump._string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
-        io.write(colors.translate("${cyan}\""))
+        io.write(colors.translate("${color.dump.string}\""))
     end
-    io.write(colors.translate("${reset}${cyan bright}", { patch_reset = false }))
+    io.write(colors.translate("${reset}${color.dump.string bright}", { patch_reset = false }))
     io.write(str)
     io.write(colors.translate("${reset}", { patch_reset = false }))
     if quote then
-        io.write(colors.translate("${cyan}\""))
+        io.write(colors.translate("${color.dump.string}\""))
     end
 end
 
 function dump._keyword(keyword)
-    io.write(colors.translate("${blue}" .. tostring(keyword)))
+    io.write(colors.translate("${color.dump.keyword}" .. tostring(keyword)))
 end
 
 function dump._number(num)
-    io.write(colors.translate("${green}" .. num))
+    io.write(colors.translate("${color.dump.number}" .. num))
 end
 
 function dump._function(func, as_key)
@@ -56,7 +56,7 @@ function dump._function(func, as_key)
     if funcinfo.linedefined >= 0 then
         srcinfo = srcinfo .. ":" .. funcinfo.linedefined
     end
-    io.write(colors.translate("${red}function ${bright}" .. (funcinfo.name or "") .. "${reset}${dim}" .. srcinfo))
+    io.write(colors.translate("${color.dump.function}function ${bright}" .. (funcinfo.name or "") .. "${reset}${dim}" .. srcinfo))
 end
 
 function dump._default(value)

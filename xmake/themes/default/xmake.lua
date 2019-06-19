@@ -51,3 +51,9 @@ theme("default")
     -- the building target file
     set_color("build.target", "magenta")
 
+    -- color dump
+    set_color("dump.string", "cyan")
+    set_color("dump.keyword", "blue")
+    set_color("dump.number", "green")
+    set_color("dump.function", "red")
+
