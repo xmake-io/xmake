@@ -11,11 +11,11 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
--- @author      ruki
--- @file        utils.lua
+-- @author      OpportunityLiu
+-- @file        dump.lua
 --
 
 -- define module
@@ -29,13 +29,15 @@ local table   = require("base/table")
 function dump._string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
-        io.write(colors.translate("\""))
+        io.write(colors.translate("${reset}${color.dump.string_quote}\"${reset}${color.dump.string}", { patch_reset = false }))
+    else
+        io.write(colors.translate("${reset}${color.dump.string}", { patch_reset = false }))
     end
-    io.write(colors.translate("${reset}${color.dump.string}", { patch_reset = false }))
     io.write(str)
-    io.write(colors.translate("${reset}", { patch_reset = false }))
     if quote then
-        io.write(colors.translate("\""))
+        io.write(colors.translate("${reset}${color.dump.string_quote}\"${reset}", { patch_reset = false }))
+    else
+        io.write(colors.translate("${reset}", { patch_reset = false }))
     end
 end
 
@@ -60,9 +62,10 @@ function dump._function(func, as_key)
 end
 
 function dump._default(value)
-    io.write(colors.translate("${dim}<", { patch_reset = false }))
-    io.write(tostring(value))
-    io.write(colors.translate(">${reset}", { patch_reset = false }))
+    io.write(colors.translate("${color.dump.default}", { patch_reset = false }))
+    local fmt = colors.theme():get("text.dump.default_format") or "%s"
+    io.write(string.format(fmt, value))
+    io.write(colors.translate("${reset}", { patch_reset = false }))
 end
 
 function dump._scalar(value, as_key)
@@ -94,7 +97,7 @@ function dump._table(value, first_indent, remain_indent)
             io.write(",\n")
         end
         io.write(inner_indent)
-        if not is_arr then
+        if not is_arr or type(k) ~= "number" then
             dump._scalar(k, true)
             io.write(colors.translate("${dim} = "))
         end

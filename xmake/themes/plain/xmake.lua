@@ -52,7 +52,10 @@ theme("plain")
     set_color("build.target", "")
 
     -- color dump
+    set_text("dump.default_format", "<%s>")
+    set_color("dump.default", "")
     set_color("dump.string", "")
+    set_color("dump.string_quote", "")
     set_color("dump.keyword", "")
     set_color("dump.number", "")
     set_color("dump.function", "")
