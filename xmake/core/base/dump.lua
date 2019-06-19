@@ -1,32 +1,55 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        utils.lua
+--
+
+-- define module
+local dump = dump or {}
+
+-- load modules
 local colors  = require("base/colors")
 local table   = require("base/table")
 
-local _dump = {}
 
-function _dump._string(str, as_key)
+function dump._string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
         io.write(colors.translate("${cyan}\""))
     end
-    io.write(colors.translate("${reset}${cyan bright}", false))
+    io.write(colors.translate("${reset}${cyan bright}", { patch_reset = false }))
     io.write(str)
-    io.write(colors.translate("${reset}", false))
+    io.write(colors.translate("${reset}", { patch_reset = false }))
     if quote then
         io.write(colors.translate("${cyan}\""))
     end
 end
 
-function _dump._keyword(keyword)
+function dump._keyword(keyword)
     io.write(colors.translate("${blue}" .. tostring(keyword)))
 end
 
-function _dump._number(num)
+function dump._number(num)
     io.write(colors.translate("${green}" .. num))
 end
 
-function _dump._function(func, as_key)
+function dump._function(func, as_key)
     if as_key then
-        return _dump._default(func)
+        return dump._default(func)
     end
     local funcinfo = debug.getinfo(func)
     local srcinfo = funcinfo.short_src
@@ -36,27 +59,29 @@ function _dump._function(func, as_key)
     io.write(colors.translate("${red}function ${bright}" .. (funcinfo.name or "") .. "${reset}${dim}" .. srcinfo))
 end
 
-function _dump._default(value)
-    io.write(colors.translate("${dim}<", false) .. tostring(value) .. colors.translate(">${reset}", false))
+function dump._default(value)
+    io.write(colors.translate("${dim}<", { patch_reset = false }))
+    io.write(tostring(value))
+    io.write(colors.translate(">${reset}", { patch_reset = false }))
 end
 
-function _dump._scalar(value, as_key)
+function dump._scalar(value, as_key)
     if type(value) == "nil" then
-        _dump._keyword("nil")
+        dump._keyword("nil")
     elseif type(value) == "boolean" then
-        _dump._keyword(value)
+        dump._keyword(value)
     elseif type(value) == "number" then
-        _dump._number(value)
+        dump._number(value)
     elseif type(value) == "string" then
-        _dump._string(value, as_key)
+        dump._string(value, as_key)
     elseif type(value) == "function" then
-        _dump._function(value, as_key)
+        dump._function(value, as_key)
     else
-        _dump._default(value)
+        dump._default(value)
     end
 end
 
-function _dump._table(value, first_indent, remain_indent)
+function dump._table(value, first_indent, remain_indent)
     io.write(first_indent .. colors.translate("${dim}{"))
     local inner_indent = remain_indent .. "  "
     local is_arr = table.is_array(value)
@@ -70,13 +95,13 @@ function _dump._table(value, first_indent, remain_indent)
         end
         io.write(inner_indent)
         if not is_arr then
-            _dump._scalar(k, true)
+            dump._scalar(k, true)
             io.write(colors.translate("${dim} = "))
         end
         if type(v) == "table" then
-            _dump._table(v, "", inner_indent)
+            dump._table(v, "", inner_indent)
         else
-            _dump._scalar(v)
+            dump._scalar(v)
         end
     end
     if first_value then
@@ -86,15 +111,15 @@ function _dump._table(value, first_indent, remain_indent)
     end
 end
 
-function _dump.main(value, indent)
+function dump._print(value, indent)
     indent = indent or ""
 
     if type(value) == "table" then
-        _dump._table(value, indent, indent:gsub(".", " "))
+        dump._table(value, indent, indent:gsub(".", " "))
     else
         io.write(indent)
-        _dump._scalar(value)
+        dump._scalar(value)
     end
 end
 
-return _dump.main
+return dump._print

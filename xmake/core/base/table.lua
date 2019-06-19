@@ -24,7 +24,7 @@ local table = table or {}
 -- clear the table
 function table.clear(self)
     for k in next, self do
-        rawset(self, k, nil) 
+        rawset(self, k, nil)
     end
 end
 
@@ -176,23 +176,25 @@ function table.slice(self, first, last, step)
     return sliced
 end
 
-local function is_array(table)
-  local i = 0
-  for _ in pairs(table) do
-      i = i + 1
-      if table[i] == nil then return false end
-  end
-  return true
-end
-
 -- is array?
 function table.is_array(array)
-    return type(array) == "table" and is_array(array)
+    if type(array) == "table" then
+        local i = 0
+        for _ in pairs(array) do
+            i = i + 1
+            if array[i] == nil then
+                return false
+            end
+        end
+        return true
+    else
+        return false
+    end
 end
 
 -- is dictionary?
 function table.is_dictionary(dict)
-    return type(dict) == "table" and not is_array(dict)
+    return type(dict) == "table" and not table.is_array(dict)
 end
 
 -- unwrap object if be only one

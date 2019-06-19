@@ -258,7 +258,8 @@ end
 -- translate colors from the string
 --
 -- @param str          the string with colors
--- @param patch_reset  wrap input string with "${reset}"?
+-- @param opt          options
+--                       patch_reset: wrap str with `"${reset}"`?
 --
 -- 8 colors:
 --
@@ -295,23 +296,25 @@ end
 -- "${hello xmake}"
 -- "${hello xmake $beer}"
 --
-function colors.translate(str, patch_reset)
+function colors.translate(str, opt)
 
     -- check string
     if not str then
         return nil
     end
 
+    opt = opt or {}
+
     -- get theme
     local theme = colors.theme()
 
     -- patch reset
-    if patch_reset ~= false then
+    if opt.patch_reset ~= false then
         str = "${reset}" .. str .. "${reset}"
     end
 
     -- translate color blocks, e.g. ${red}, ${color.xxx}, ${emoji}
-    str = str:gsub("(%${(.-)})", function(_, word) 
+    str = str:gsub("(%${(.-)})", function(_, word)
 
         -- not supported? ignore it
         local nocolors = false
