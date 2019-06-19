@@ -178,23 +178,12 @@ end
 
 -- is array?
 function table.is_array(array)
-    if type(array) == "table" then
-        local i = 0
-        for _ in pairs(array) do
-            i = i + 1
-            if array[i] == nil then
-                return false
-            end
-        end
-        return true
-    else
-        return false
-    end
+    return type(array) == "table" and array[1] ~= nil
 end
 
 -- is dictionary?
 function table.is_dictionary(dict)
-    return type(dict) == "table" and not table.is_array(dict)
+    return type(dict) == "table" and dict[1] == nil
 end
 
 -- unwrap object if be only one
