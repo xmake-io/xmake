@@ -38,7 +38,7 @@ function sandbox_core_sandbox._interactive_dump(v0, ...)
         dump(v0, "< ")
         io.write("\n")
     else
-        for i, v in ipairs({...}) do
+        for i, v in ipairs(values) do
             dump(v, "<" .. (i<10 and (i .. "  ") or (i .. " ")))
             io.write("\n")
         end
