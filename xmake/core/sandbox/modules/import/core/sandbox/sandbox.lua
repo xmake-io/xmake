@@ -76,7 +76,7 @@ function sandbox_core_sandbox.interactive()
     end
 
     -- register dump function for interactive mode
-    instance._PUBLIC.interactive_dump = sandbox_core_sandbox._interactive_dump
+    instance._PUBLIC["$interactive_dump"] = sandbox_core_sandbox._interactive_dump
 
     -- enter interactive mode with this new sandbox
     sandbox.interactive(instance._PUBLIC)
