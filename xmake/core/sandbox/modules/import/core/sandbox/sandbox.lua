@@ -35,21 +35,21 @@ local dump      = require("base/dump")
 function sandbox_core_sandbox._interactive_dump(...)
     local values = table.pack(...)
     -- do not use #values since nil might be included
-    local n = values.n
-    if n <= 1 then
+    local len = values.len
+    if len <= 1 then
         dump(values[1], "< ")
         io.write("\n")
     else
         local fmt = "< %d: "
-        if n >= 1000 then
+        if len >= 1000 then
             -- try `unpack({}, 1, 5000)`, wish you happy!
             fmt = "< %4d: "
-        elseif n >= 100 then
+        elseif len >= 100 then
             fmt = "< %3d: "
-        elseif n >= 10 then
+        elseif len >= 10 then
             fmt = "< %2d: "
         end
-        for i = 1, n do
+        for i = 1, len do
             dump(values[i], string.format(fmt, i))
             io.write("\n")
         end

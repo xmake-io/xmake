@@ -25,8 +25,8 @@ local dump = dump or {}
 local colors  = require("base/colors")
 local table   = require("base/table")
 
-
-function dump._string(str, as_key)
+-- print string
+function dump._print_string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
         io.write(colors.translate("${reset}${color.dump.string_quote}\"${reset}${color.dump.string}", { patch_reset = false }))
@@ -41,17 +41,20 @@ function dump._string(str, as_key)
     end
 end
 
-function dump._keyword(keyword)
+-- print keyword
+function dump._print_keyword(keyword)
     io.write(colors.translate("${color.dump.keyword}" .. tostring(keyword)))
 end
 
-function dump._number(num)
+-- print number
+function dump._print_number(num)
     io.write(colors.translate("${color.dump.number}" .. tostring(num)))
 end
 
-function dump._function(func, as_key)
+-- print function
+function dump._print_function(func, as_key)
     if as_key then
-        return dump._default(func)
+        return dump._print_default(func)
     end
     local funcinfo = debug.getinfo(func)
     local srcinfo = funcinfo.short_src
@@ -61,30 +64,33 @@ function dump._function(func, as_key)
     io.write(colors.translate("${color.dump.function}function ${bright}" .. (funcinfo.name or "") .. "${reset}${dim}" .. srcinfo))
 end
 
-function dump._default(value)
+-- print value with default format
+function dump._print_default(value)
     io.write(colors.translate("${color.dump.default}", { patch_reset = false }))
     local fmt = colors.theme():get("text.dump.default_format") or "%s"
     io.write(string.format(fmt, value))
     io.write(colors.translate("${reset}", { patch_reset = false }))
 end
 
-function dump._scalar(value, as_key)
+-- print scalar value
+function dump._print_scalar(value, as_key)
     if type(value) == "nil" then
-        dump._keyword("nil")
+        dump._print_keyword("nil")
     elseif type(value) == "boolean" then
-        dump._keyword(value)
+        dump._print_keyword(value)
     elseif type(value) == "number" then
-        dump._number(value)
+        dump._print_number(value)
     elseif type(value) == "string" then
-        dump._string(value, as_key)
+        dump._print_string(value, as_key)
     elseif type(value) == "function" then
-        dump._function(value, as_key)
+        dump._print_function(value, as_key)
     else
-        dump._default(value)
+        dump._print_default(value)
     end
 end
 
-function dump._table(value, first_indent, remain_indent)
+-- print table
+function dump._print_table(value, first_indent, remain_indent)
     io.write(first_indent .. colors.translate("${dim}{"))
     local inner_indent = remain_indent .. "  "
     local is_arr = table.is_array(value)
@@ -98,13 +104,13 @@ function dump._table(value, first_indent, remain_indent)
         end
         io.write(inner_indent)
         if not is_arr or type(k) ~= "number" then
-            dump._scalar(k, true)
+            dump._print_scalar(k, true)
             io.write(colors.translate("${dim} = "))
         end
         if type(v) == "table" then
-            dump._table(v, "", inner_indent)
+            dump._print_table(v, "", inner_indent)
         else
-            dump._scalar(v)
+            dump._print_scalar(v)
         end
     end
     if first_value then
@@ -114,14 +120,14 @@ function dump._table(value, first_indent, remain_indent)
     end
 end
 
+-- print value
 function dump._print(value, indent)
     indent = indent or ""
-
     if type(value) == "table" then
-        dump._table(value, indent, indent:gsub(".", " "))
+        dump._print_table(value, indent, indent:gsub(".", " "))
     else
         io.write(indent)
-        dump._scalar(value)
+        dump._print_scalar(value)
     end
 end
 

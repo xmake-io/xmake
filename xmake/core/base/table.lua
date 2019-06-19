@@ -258,7 +258,7 @@ end
 
 -- pack arguments into a table
 function table.pack(...)
-    return { n = select("#", ...), ... }
+    return { len = select("#", ...), ... }
 end
 
 -- unpack table values
