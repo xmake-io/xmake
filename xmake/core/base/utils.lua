@@ -28,9 +28,12 @@ local string = require("base/string")
 local log    = require("base/log")
 local dump   = require("base/dump")
 
+-- dump value
 function utils.dump(value, indent)
-    dump(value, indent or "")
-    io.write("\n")
+    if not option.get("quiet") then
+        dump(value, indent or "")
+        io.write("\n")
+    end
 end
 
 -- print string with newline

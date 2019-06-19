@@ -190,9 +190,7 @@ end
 
 -- dump value
 function sandbox_utils.dump(value, indent)
-    if not option.get("quiet") then
-        return utils.dump(value, indent)
-    end
+    return utils.dump(value, indent)
 end
 
 -- return module
