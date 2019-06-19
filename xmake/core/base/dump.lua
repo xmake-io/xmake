@@ -4,7 +4,7 @@ local table   = require("base/table")
 local _dump = {}
 
 function _dump._string(str, as_key)
-    local quote = (not as_key) or str:match("%s")
+    local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
         io.write(colors.translate("${cyan}\""))
     end
