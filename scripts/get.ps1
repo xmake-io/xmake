@@ -112,7 +112,6 @@ function xmakeInstall {
     }
     Write-Host 'Adding to PATH... almost done'
     $env:Path += ";$installdir"
-    [Environment]::SetEnvironmentVariable("Path", [Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::User) + ";$installdir", [System.EnvironmentVariableTarget]::User)    # this step is optional because installer writes path to regedit
     try {
         xmake --version
     } catch {
