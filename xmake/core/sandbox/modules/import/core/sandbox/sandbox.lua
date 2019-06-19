@@ -32,14 +32,14 @@ local dump      = require("base/dump")
 
 -- print variables for interactive mode
 function sandbox_core_sandbox._interactive_dump(v0, ...)
-    local values = {v0, ...}
+    local values = { v0, ... }
     if #values <= 1 then
         -- in case v0 is nil
         dump(v0, "< ")
         io.write("\n")
     else
         for i, v in ipairs(values) do
-            dump(v, "<" .. (i<10 and (i .. "  ") or (i .. " ")))
+            dump(v, "<" .. ((i < 10) and (i .. "  ") or (i .. " ")))
             io.write("\n")
         end
     end
@@ -54,7 +54,8 @@ function sandbox_core_sandbox.interactive()
         raise("cannot get sandbox instance!")
     end
 
-    -- fork a new sandbox 
+    -- fork a new sandbox
+    local errors
     instance, errors = instance:fork()
     if not instance then
         raise(errors)
