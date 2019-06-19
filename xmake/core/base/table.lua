@@ -24,7 +24,7 @@ local table = table or {}
 -- clear the table
 function table.clear(self)
     for k in next, self do
-        rawset(self, k, nil) 
+        rawset(self, k, nil)
     end
 end
 
@@ -184,14 +184,6 @@ end
 -- is dictionary?
 function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
-end
-
--- dump table
-function table.dump(self, deflate)
-    local str = string.dump(self, deflate)
-    if str then
-        io.write(str)
-    end
 end
 
 -- unwrap object if be only one
