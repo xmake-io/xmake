@@ -176,22 +176,23 @@ function table.slice(self, first, last, step)
     return sliced
 end
 
+local function is_array(table)
+  local i = 0
+  for _ in pairs(table) do
+      i = i + 1
+      if table[i] == nil then return false end
+  end
+  return true
+end
+
 -- is array?
 function table.is_array(array)
-    return type(array) == "table" and array[1] ~= nil
+    return type(array) == "table" and is_array(array)
 end
 
 -- is dictionary?
 function table.is_dictionary(dict)
-    return type(dict) == "table" and dict[1] == nil
-end
-
--- dump table
-function table.dump(self, deflate)
-    local str = string.dump(self, deflate)
-    if str then
-        io.write(str)
-    end
+    return type(dict) == "table" and not is_array(dict)
 end
 
 -- unwrap object if be only one

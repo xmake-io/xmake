@@ -28,26 +28,19 @@ local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local utils     = require("base/utils")
 local history   = require("project/history")
+local dump      = require("base/dump")
 
 -- print variables for interactive mode
-function sandbox_core_sandbox._interactive_print(format, ...)
-
-    if type(format) == "string" and format:find("%", 1, true) then
-        local args = {...}
-        try
-        {
-            function ()
-                utils._print(string.format(format, unpack(args)))
-            end,
-            catch 
-            {
-                function (errors)
-                    utils._print(format, unpack(args))
-                end
-            }
-        }
+function sandbox_core_sandbox._interactive_dump(...)
+    local values = {...}
+    if #values == 1 then
+        dump(values[1], "< ")
+        io.write("\n")
     else
-        utils._print(format, ...)
+        for i, v in ipairs({...}) do
+            dump(v, "<" .. (i<10 and (i .. "  ") or (i .. " ")))
+            io.write("\n")
+        end
     end
 end
 
@@ -80,11 +73,11 @@ function sandbox_core_sandbox.interactive()
         end
     end
 
-    -- register print function for interactive mode
-    instance._PUBLIC.print = sandbox_core_sandbox._interactive_print
+    -- register dump function for interactive mode
+    instance._PUBLIC.interactive_dump = sandbox_core_sandbox._interactive_dump
 
     -- enter interactive mode with this new sandbox
-    sandbox.interactive(instance._PUBLIC) 
+    sandbox.interactive(instance._PUBLIC)
 
     -- save repl history if readline is enabled
     if readline then

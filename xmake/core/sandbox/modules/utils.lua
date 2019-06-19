@@ -28,6 +28,7 @@ local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
 local raise     = require("sandbox/modules/raise")
+local dump      = require("base/dump")
 
 -- define module
 local sandbox_utils = sandbox_utils or {}
@@ -186,6 +187,14 @@ end
 -- get user confirm 
 function sandbox_utils.confirm(opt)
     return utils.confirm(opt)
+end
+
+-- dump value
+function sandbox_utils.dump(value, indent)
+    if not option.get("quiet") then
+        dump(value, indent or "")
+        io.write("\n")
+    end
 end
 
 -- return module

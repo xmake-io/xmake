@@ -28,11 +28,11 @@ string._dump = string._dump or string.dump
 function string._makestr(object, deflate, serialize, level)
     if type(object) == "string" then
         return serialize and string.format("%q", object) or object
-    elseif type(object) == "boolean" or type(object) == "number" then  
+    elseif type(object) == "boolean" or type(object) == "number" then
         return tostring(object)
     elseif not serialize and type(object) == "table" and (getmetatable(object) or {}).__tostring then
         return tostring(object)
-    elseif type(object) == "table" then  
+    elseif type(object) == "table" then
 
         -- make head
         local s = ""

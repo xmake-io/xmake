@@ -329,15 +329,15 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
             // get results count 
             tb_int_t count = lua_gettop(lua) - top;
 
-            /* print errors
+            /* dump results
              *
              * stack: arg1(sandbox_scope) [results] -> ... 
-             * after: arg1(sandbox_scope) print [results] -> ... 
+             * after: arg1(sandbox_scope) interactive_dump [results] -> ... 
              */
-            lua_getfield(lua, 1, "print"); // load print() from sandbox_scope
+            lua_getfield(lua, 1, "interactive_dump"); // load interactive_dump() from sandbox_scope
             lua_insert(lua, -(count + 1));
             if (lua_pcall(lua, count, 0, 0) != 0)
-                tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("print") " (%s)", lua_tostring(lua, -1)));
+                tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("interactive_dump") " (%s)", lua_tostring(lua, -1)));
         }
     }
 

@@ -81,7 +81,7 @@ end
 
 -- dump this requireinfo
 function requireinfo:dump()
-    table.dump(self._INFO)
+    utils.dump(self._INFO)
 end
 
 -- get the require info
