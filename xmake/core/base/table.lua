@@ -256,5 +256,15 @@ function table.unique(array, barrier)
     return array
 end
 
+-- pack arguments into a table
+function table.pack(...)
+    return { n = select("#", ...), ... }
+end
+
+-- unpack table values
+function table.unpack(list, i, j)
+    return unpack(list, i, j)
+end
+
 -- return module: table
 return table
