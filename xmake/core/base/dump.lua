@@ -29,13 +29,13 @@ local table   = require("base/table")
 function dump._string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
-        io.write(colors.translate("${color.dump.string}\""))
+        io.write(colors.translate("\""))
     end
-    io.write(colors.translate("${reset}${color.dump.string bright}", { patch_reset = false }))
+    io.write(colors.translate("${reset}${color.dump.string}", { patch_reset = false }))
     io.write(str)
     io.write(colors.translate("${reset}", { patch_reset = false }))
     if quote then
-        io.write(colors.translate("${color.dump.string}\""))
+        io.write(colors.translate("\""))
     end
 end
 
@@ -44,7 +44,7 @@ function dump._keyword(keyword)
 end
 
 function dump._number(num)
-    io.write(colors.translate("${color.dump.number}" .. num))
+    io.write(colors.translate("${color.dump.number}" .. tostring(num)))
 end
 
 function dump._function(func, as_key)

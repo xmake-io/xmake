@@ -52,8 +52,8 @@ theme("dark")
     set_color("build.target", "magenta")
 
     -- color dump
-    set_color("dump.string", "cyan")
+    set_color("dump.string", "magenta")
     set_color("dump.keyword", "blue")
     set_color("dump.number", "green")
-    set_color("dump.function", "red")
+    set_color("dump.function", "cyan")
 
