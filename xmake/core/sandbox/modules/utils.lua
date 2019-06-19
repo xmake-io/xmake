@@ -175,7 +175,7 @@ function sandbox_utils.assert(value, format, ...)
         if format ~= nil then
             raise(format, ...)
         else
-            raise("assertion failed!")  
+            raise("assertion failed!")
         end
     end
 
@@ -186,6 +186,11 @@ end
 -- get user confirm 
 function sandbox_utils.confirm(opt)
     return utils.confirm(opt)
+end
+
+-- dump value
+function sandbox_utils.dump(value, indent)
+    return utils.dump(value, indent)
 end
 
 -- return module

@@ -25,8 +25,16 @@ local utils = utils or {}
 local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
-local table  = require("base/table")
 local log    = require("base/log")
+local dump   = require("base/dump")
+
+-- dump value
+function utils.dump(value, indent)
+    if not option.get("quiet") then
+        dump(value, indent or "")
+        io.write("\n")
+    end
+end
 
 -- print string with newline
 function utils._print(...)
@@ -39,8 +47,8 @@ function utils._print(...)
             if type(v) == "string" or type(v) == "boolean" or type(v) == "number" then
                 io.write(tostring(v))
             -- dump table
-            elseif type(v) == "table" then  
-                table.dump(v)
+            elseif type(v) == "table" then
+                dump(v)
             else
                 io.write("<" .. tostring(v) .. ">")
             end

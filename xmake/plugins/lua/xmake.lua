@@ -81,7 +81,7 @@ task("lua")
                     -- run imported modules (xmake lua core.xxx.xxx)
                     result = import(script, {anonymous = true})(unpack(option.get("arguments") or {}))
                 end
-                if result ~= nil then print(result) end
+                if result ~= nil then utils.dump(result) end
             end
         else
             -- enter interactive mode
