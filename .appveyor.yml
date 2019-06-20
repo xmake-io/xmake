@@ -10,72 +10,87 @@ platform:
 
 install:
   # prepare tools
-  - pwsh: Push-Location C:/
-  - pwsh: (New-Item ./winenv/bin -ItemType Directory).FullName
+  - ps: Push-Location C:/
+  - ps: (New-Item ./winenv/bin -ItemType Directory).FullName
   #   NSIS
-  - pwsh: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
-  - pwsh: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
-  - pwsh: Expand-Archive ./nsis.zip -DestinationPath ./nsis
-  - pwsh: Move-Item ./nsis/*/* ./nsis
-  - pwsh: Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
+  - ps: Expand-Archive ./nsis.zip -DestinationPath ./nsis
+  - ps: Move-Item ./nsis/*/* ./nsis
+  - ps: Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
   #   unzip
-  - pwsh: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
-  - pwsh: Expand-Archive ./unzip.zip -DestinationPath ./unzip
-  - pwsh: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
+  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+  - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
+  - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
   #   curl
-  - pwsh: Invoke-WebRequest "https://github.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
-  - pwsh: Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
-  - pwsh: Copy-Item ./curl.exe ./winenv/bin
-  - pwsh: Copy-Item ./curl-ca-bundle.crt ./winenv/bin
+  - ps: Invoke-WebRequest "https://github.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
+  - ps: Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win$(if ($env:platform -eq 'x64') { '64' } else { '32' })env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
+  - ps: Copy-Item ./curl.exe ./winenv/bin
+  - ps: Copy-Item ./curl-ca-bundle.crt ./winenv/bin
   # 
-  - pwsh: Pop-Location
+  - ps: Pop-Location
   # install xmake
-  - pwsh: ./scripts/get.ps1 -branch master
+  - ps: ./scripts/get.ps1 -branch master
 
 before_build:
-  - pwsh: (Get-Command xmake).FileVersionInfo.ProductVersion
+  - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
 
 build_script:
   # self build
-  - pwsh: Push-Location ./core
-  - pwsh: xmake config --arch=$env:platform
-  - pwsh: xmake build
-  - pwsh: Pop-Location
+  - ps: Push-Location ./core
+  - ps: xmake config --arch=$env:platform
+  - ps: xmake build
+  - ps: Pop-Location
   # use new xmake
-  - pwsh: Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Resolve-Path ./xmake)
-  - pwsh: Copy-Item -Force .\core\build\xmake.exe $(Get-Command xmake).Path
-  - pwsh: (Get-Command xmake).FileVersionInfo.ProductVersion
+  - ps: Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Resolve-Path ./xmake)
+  - ps: Copy-Item -Force .\core\build\xmake.exe $(Get-Command xmake).Path
+  - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
 
 after_build:
   # publish exe
-  - pwsh: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
-  - pwsh: (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash + " *xmake.exe" >> ./shafile
+  - ps: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
+  - ps: (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash + " *xmake.exe" >> ./shafile
   # compose & publish installer
-  - pwsh: Copy-Item C:\winenv\ . -Recurse
-  - pwsh: $version = (Get-Command xmake).FileVersionInfo
-  - pwsh: C:\nsis\makensis.exe
+  - ps: Copy-Item C:\winenv\ . -Recurse
+  - ps: $version = (Get-Command xmake).FileVersionInfo
+  - ps: C:\nsis\makensis.exe
           /DMAJOR=$($version.ProductMajorPart)
           /DMINOR=$($version.ProductMinorPart)
           /DALTER=$($version.ProductBuildPart)
           /DBUILD=$($($version.ProductVersion -split '\+')[1])
           /D$($env:platform)
           .\scripts\installer.nsi
-  - pwsh: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
-  - pwsh: (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash + " *xmake-installer.exe" >> ./shafile
+  - ps: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
+  - ps: (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash + " *xmake-installer.exe" >> ./shafile
   # publish zip archive
-  - pwsh: Copy-Item .\*.md .\xmake
-  - pwsh: Copy-Item C:\winenv\ .\xmake -Recurse
-  - pwsh: Copy-Item .\core\build\xmake.exe .\xmake
-  - pwsh: Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
-  - pwsh: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
-  - pwsh: (Get-FileHash .\archive.zip -Algorithm SHA256).Hash + " *xmake.zip" >> ./shafile
+  - ps: Copy-Item .\*.md .\xmake
+  - ps: Copy-Item C:\winenv\ .\xmake -Recurse
+  - ps: Copy-Item .\core\build\xmake.exe .\xmake
+  - ps: |-
+        Add-Type -AssemblyName System.Text.Encoding
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+
+        class FixedEncoder : System.Text.UTF8Encoding {
+            FixedEncoder() : base($true) { }
+
+            [byte[]] GetBytes([string] $s)
+            {
+                $s = $s.Replace("\", "/")
+                return ([System.Text.UTF8Encoding]$this).GetBytes($s)
+            }
+        }
+        Copy-Item .\xmake .\archive\xmake -Recurse
+
+        [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+  - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
+  - ps: (Get-FileHash .\archive.zip -Algorithm SHA256).Hash + " *xmake.zip" >> ./shafile
   # publish sha file
-  - pwsh: Push-AppveyorArtifact ./shafile -FileName xmake.sha256 -DeploymentName "xmake-shafile"
+  - ps: Push-AppveyorArtifact ./shafile -FileName xmake.sha256 -DeploymentName "xmake-shafile"
 
 test_script:
-  - pwsh: xmake --version
-  - pwsh: Push-Location ./tests
-  - pwsh: |-
+  - ps: xmake --version
+  - ps: Push-Location ./tests
+  - ps: |-
       $tests = Get-ChildItem test.lua -Recurse | ForEach-Object {
           $testname = "$(Resolve-Path $_.Directory -Relative)"
           $filename = "$(Resolve-Path $_ -Relative)"
@@ -83,8 +98,8 @@ test_script:
           Add-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome None
           return @{ testname = $testname; filename = $filename; fullname = $fullname }
       }
-  - pwsh: $all_success = $true
-  - pwsh: |-
+  - ps: $all_success = $true
+  - ps: |-
       $tests | ForEach-Object {
           $testname = $_.testname
           $filename = $_.filename
@@ -96,6 +111,6 @@ test_script:
           }
           Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
       }
-  - pwsh: Pop-Location
-  - pwsh: if ($all_success) { Write-Host "All tests passed!" } else { Write-Error "Some tests failed!" }
+  - ps: Pop-Location
+  - ps: if ($all_success) { Write-Host "All tests passed!" } else { Write-Error "Some tests failed!" }
 
