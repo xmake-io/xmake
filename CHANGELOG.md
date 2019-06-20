@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.2.7
+
 ### New features
 
 * [#455](https://github.com/xmake-io/xmake/pull/455): support clang as cuda compiler, try `xmake f --cu=clang`
@@ -600,6 +602,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.2.7
 
 ### 新特性
 
