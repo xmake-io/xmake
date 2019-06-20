@@ -25,7 +25,7 @@ param (
             '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
             '                                                '
             '                                                ')
-        Write-Host $([string]::Join("`n", $logo)) -BackgroundColor White -ForegroundColor DarkBlue
+        Write-Host $([string]::Join("`n", $logo)) -ForegroundColor Green
     }
 
     if ($IsLinux -or $IsMacOS) {
