@@ -46,11 +46,11 @@ OutFile "xmake.exe"
 
 ; The default installation directory
 !ifdef x64
-  InstallDir $PROGRAMFILES64\XMake
+  InstallDir $PROGRAMFILES64\xmake
   !define HKLM HKLM64
   !define HKCU HKCU64
 !else
-  InstallDir $PROGRAMFILES\XMake
+  InstallDir $PROGRAMFILES\xmake
   !define HKLM HKLM
   !define HKCU HKCU
 !endif
