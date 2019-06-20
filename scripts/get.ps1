@@ -102,7 +102,15 @@ function xmakeInstall {
     Write-Host 'Start installation... Hope your antivirus doesn''t trouble'
     Write-Host "Install to $installdir"
     try {
-        Start-Process -FilePath $outfile -ArgumentList "/S /D=$installdir" -Wait
+        $installdir = $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($installdir)
+        $adminflag = "/NOADMIN "
+        try {
+            $tempfolder = New-Item "$installdir-$PID-temp" -ItemType Directory
+            Remove-Item $tempfolder.FullName
+        } catch {
+            $adminflag = ""
+        }
+        Start-Process -FilePath $outfile -ArgumentList "$adminflag/S /D=$installdir" -Wait
     } catch {
         writeErrorTip 'Install failed!'
         writeErrorTip 'Close your antivirus then try again'

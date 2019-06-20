@@ -154,10 +154,14 @@ function _install(sourcedir)
                     if os.isfile(win_installer_name) then
                         -- /D sets the default installation directory ($INSTDIR), overriding InstallDir and InstallDirRegKey. It must be the last parameter used in the command line and must not contain any quotes, even if the path contains spaces. Only absolute paths are supported.
                         local params = ("/D=" .. os.programdir()):split("%s", { strict = true })
+                        local testfile = path.join(os.programdir(), "temp-install")
+                        local no_admin = os.trymv(path.join(os.programdir(), "scripts", "run.vbs"), testfile)
+                        os.tryrm(testfile)
+                        if no_admin then table.insert(params, 1, "/NOADMIN") end
                         if not option.get("verbose") then table.insert(params, 1, "/S") end
                         -- need UAC?
                         if winos:version():gt("winxp") then
-                            _run_win_v(win_installer_name, params, true)
+                            _run_win_v(win_installer_name, params, not no_admin)
                         else
                             _run_win_v(win_installer_name, params, false)
                         end
