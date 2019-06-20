@@ -64,7 +64,7 @@ after_build:
   - ps: Copy-Item .\*.md .\xmake
   - ps: Copy-Item C:\winenv\ .\xmake -Recurse
   - ps: Copy-Item .\core\build\xmake.exe .\xmake
-  - ps: Compress-Archive -Path .\xmake\* -DestinationPath .\archive.zip -CompressionLevel Optimal
+  - ps: Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
   - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
 
 test_script:
