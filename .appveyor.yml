@@ -49,6 +49,7 @@ build_script:
 after_build:
   # publish exe
   - ps: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
+  - ps: (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash + " *xmake.exe" >> ./shafile
   # compose & publish installer
   - ps: Copy-Item C:\winenv\ . -Recurse
   - ps: $version = (Get-Command xmake).FileVersionInfo
@@ -60,12 +61,16 @@ after_build:
           /D$($env:platform)
           .\scripts\installer.nsi
   - ps: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
+  - ps: (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash + " *xmake-installer.exe" >> ./shafile
   # publish zip archive
   - ps: Copy-Item .\*.md .\xmake
   - ps: Copy-Item C:\winenv\ .\xmake -Recurse
   - ps: Copy-Item .\core\build\xmake.exe .\xmake
   - ps: Compress-Archive -Path .\xmake -DestinationPath .\archive.zip -CompressionLevel Optimal
   - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
+  - ps: (Get-FileHash .\archive.zip -Algorithm SHA256).Hash + " *xmake.zip" >> ./shafile
+  # publish sha file
+  - ps: Push-AppveyorArtifact ./shafile -FileName xmake.sha256 -DeploymentName "xmake-shafile"
 
 test_script:
   - ps: xmake --version
