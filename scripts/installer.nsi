@@ -74,47 +74,48 @@ ManifestDPIAware true
 ; UAC helper
 
 !macro Init thing
-uac_tryagain:
-!insertmacro UAC_RunElevated
-${Switch} $0
-${Case} 0
-	${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
-	${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
-	${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
-		MessageBox mb_YesNo|mb_IconExclamation|mb_TopMost|mb_SetForeground "This ${thing} requires admin privileges, try again" /SD IDNO IDYES uac_tryagain IDNO 0
-	${EndIf}
-	;fall-through and die
-${Case} 1223
-	MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "This ${thing} requires admin privileges, aborting!"
-	Quit
-${Case} 1062
-	MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Logon service not running, aborting!"
-	Quit
-${Default}
-	MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Unable to elevate, error $0"
-	Quit
-${EndSwitch}
- 
-SetShellVarContext all
+  uac_tryagain:
+  !insertmacro UAC_RunElevated
+  ${Switch} $0
+  ${Case} 0
+    ${IfThen} $1 = 1 ${|} Quit ${|} ;we are the outer process, the inner process has done its work, we are done
+    ${IfThen} $3 <> 0 ${|} ${Break} ${|} ;we are admin, let the show go on
+    ${If} $1 = 3 ;RunAs completed successfully, but with a non-admin user
+      MessageBox mb_YesNo|mb_IconExclamation|mb_TopMost|mb_SetForeground "This ${thing} requires admin privileges, try again" /SD IDNO IDYES uac_tryagain IDNO 0
+    ${EndIf}
+    ;fall-through and die
+  ${Case} 1223
+    MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "This ${thing} requires admin privileges, aborting!"
+    Quit
+  ${Case} 1062
+    MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Logon service not running, aborting!"
+    Quit
+  ${Default}
+    MessageBox mb_IconStop|mb_TopMost|mb_SetForeground "Unable to elevate, error $0"
+    Quit
+  ${EndSwitch}
+  
+  SetShellVarContext all
 !macroend
  
 ;--------------------------------
-; Pages
+; Install Pages
 
+!insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "..\LICENSE.md"
 !insertmacro MUI_PAGE_COMPONENTS
 !insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
-
-!insertmacro MUI_UNPAGE_CONFIRM
-!insertmacro MUI_UNPAGE_INSTFILES
- 
-;--------------------------------
-; Finish Pages
-
 !define MUI_FINISHPAGE_LINK "Donate $$5"
 !define MUI_FINISHPAGE_LINK_LOCATION "https://xmake.io/pages/donation.html#donate"
 !insertmacro MUI_PAGE_FINISH
+
+;--------------------------------
+; Uninstall Pages
+
+!insertmacro MUI_UNPAGE_CONFIRM
+!insertmacro MUI_UNPAGE_INSTFILES
+!insertmacro MUI_UNPAGE_FINISH
 
 ;--------------------------------
 ; Languages
@@ -158,7 +159,7 @@ Function .onInit
   ${EndIf}
 FunctionEnd
 
-Section "xmake (required)" Installer
+Section "XMake (required)" InstallExeutable
 
   SectionIn RO
   
@@ -185,6 +186,7 @@ Section "xmake (required)" Installer
     ; Write the uninstall keys for Windows
     WriteRegStr ${RootKey} ${RegUninstall} "DisplayName" "XMake build utility"
     WriteRegStr ${RootKey} ${RegUninstall} "DisplayIcon" '"$INSTDIR\xmake.exe"'
+    WriteRegStr ${RootKey} ${RegUninstall} "Comments" "A cross-platform build utility based on Lua"
     WriteRegStr ${RootKey} ${RegUninstall} "Publisher" "The TBOOX Open Source Group"
     WriteRegStr ${RootKey} ${RegUninstall} "UninstallString" '"$INSTDIR\uninstall.exe"'
     WriteRegStr ${RootKey} ${RegUninstall} "QuiteUninstallString" '"$INSTDIR\uninstall.exe" /S'
@@ -202,13 +204,6 @@ Section "xmake (required)" Installer
     ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
     WriteRegDWORD ${RootKey} ${RegUninstall} "EstimatedSize" "$0"
-
-    ; Remove the installation path from the $PATH environment variable first
-    ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
-
-    ; Write the installation path into the $PATH environment variable
-    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
   !macroend
 
   ${If} $NOADMIN == "false"
@@ -219,15 +214,36 @@ Section "xmake (required)" Installer
   
 SectionEnd
 
+Section "Add to PATH" InstallPath
+
+  !macro AddRegPATH RootKey
+    ; Remove the installation path from the $PATH environment variable first
+    ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
+
+    ; Write the installation path into the $PATH environment variable
+    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
+  !macroend
+
+  ${If} $NOADMIN == "false"
+    !insertmacro AddRegPATH ${HKLM}
+  ${Else}
+    !insertmacro AddRegPATH ${HKCU}
+  ${EndIf}
+
+SectionEnd
+
 ;--------------------------------
 ; Descriptions
 
 ; Language strings
-LangString DESC_Installer ${LANG_ENGLISH} "A cross-platform build utility based on Lua"
+LangString DESC_InstallExeutable ${LANG_ENGLISH} "A cross-platform build utility based on Lua"
+LangString DESC_InstallPath ${LANG_ENGLISH} "Add xmake to PATH"
 
 ; Assign language strings to sections
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
-!insertmacro MUI_DESCRIPTION_TEXT ${Installer} $(DESC_Installer)
+!insertmacro MUI_DESCRIPTION_TEXT ${InstallExeutable} $(DESC_InstallExeutable)
+!insertmacro MUI_DESCRIPTION_TEXT ${InstallPath} $(DESC_InstallPath)
 !insertmacro MUI_FUNCTION_DESCRIPTION_END
 
 ;--------------------------------
