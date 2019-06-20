@@ -49,7 +49,9 @@ build_script:
 after_build:
   # publish exe
   - ps: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
-  - ps: (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash + " *xmake.exe" >> ./shafile
+  - ps: $Utf8NoBomEncoding = New-Object System.Text.UTF8Encoding $False
+  - ps: |-
+      [IO.File]::AppendAllText("$PWD/shafile", (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash.ToLower() + " *xmake.exe`n", $Utf8NoBomEncoding)
   # compose & publish installer
   - ps: Copy-Item C:\winenv\ . -Recurse
   - ps: $version = (Get-Command xmake).FileVersionInfo
@@ -61,7 +63,8 @@ after_build:
           /D$($env:platform)
           .\scripts\installer.nsi
   - ps: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
-  - ps: (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash + " *xmake-installer.exe" >> ./shafile
+  - ps: |-
+      [IO.File]::AppendAllText("$PWD/shafile", (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash.ToLower() + " *xmake-installer.exe`n", $Utf8NoBomEncoding)
   # publish zip archive
   - ps: Copy-Item .\*.md .\xmake
   - ps: Copy-Item C:\winenv\ .\xmake -Recurse
@@ -83,7 +86,8 @@ after_build:
 
         [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
   - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
-  - ps: (Get-FileHash .\archive.zip -Algorithm SHA256).Hash + " *xmake.zip" >> ./shafile
+  - ps: |-
+      [IO.File]::AppendAllText("$PWD/shafile", (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n", $Utf8NoBomEncoding)
   # publish sha file
   - ps: Push-AppveyorArtifact ./shafile -FileName xmake.sha256 -DeploymentName "xmake-shafile"
 
