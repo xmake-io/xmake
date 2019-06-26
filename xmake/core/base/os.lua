@@ -788,28 +788,30 @@ end
 -- get the system null device 
 function os.nuldev(input)
 
-    -- init the output nuldev
-    if xmake._NULDEV_OUTPUT == nil then
-        if os.host() == "windows" then
-            xmake._NULDEV_OUTPUT = "nul"
+    if os.host() == "windows" then
+        -- init the output nuldev
+        if xmake._NULDEV_OUTPUT == nil then
+            xmake._NULDEV_OUTPUT = os.tmpfile()
         else
-            xmake._NULDEV_OUTPUT = "/dev/null"
+            os.rm(xmake._NULDEV_OUTPUT)
         end
-    end
-
-    -- init the input nuldev
-    if xmake._NULDEV_INPUT == nil then
-        if os.host() == "windows" then
+        -- init the input nuldev
+        if xmake._NULDEV_INPUT == nil then
             -- create an empty file
             --
             -- for fix issue on mingw:
             -- $ gcc -fopenmp -S -o nul -xc nul
             -- gcc: fatal error：input file ‘nul’ is the same as output file
-            -- 
+            --
             local inputfile = os.tmpfile()
             io.writefile(inputfile, "")
             xmake._NULDEV_INPUT = inputfile
-        else
+        end
+    else
+        if xmake._NULDEV_OUTPUT == nil then
+            xmake._NULDEV_OUTPUT = "/dev/null"
+        end
+        if xmake._NULDEV_INPUT == nil then
             xmake._NULDEV_INPUT = "/dev/null"
         end
     end

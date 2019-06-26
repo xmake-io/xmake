@@ -57,6 +57,20 @@ function sandbox_core_base_option.defaults()
 end
 
 -- parse arguments with the given options
+function sandbox_core_base_option.raw_parse(argv, options)
+
+    -- check
+    assert(argv and options)
+
+    -- parse it
+    local results, errors = option.parse(argv, options)
+    if not results then
+        raise(errors)
+    end
+    return results
+end
+
+-- parse arguments with the given options
 function sandbox_core_base_option.parse(argv, options, ...)
 
     -- check
