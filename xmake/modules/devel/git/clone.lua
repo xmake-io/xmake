@@ -60,6 +60,11 @@ function main(url, opt)
         table.insert(argv, ifelse(type(opt.depth) == "number", tostring(opt.depth), opt.depth))
     end
 
+    -- recursive?
+    if opt.recursive then
+        table.insert(argv, "--recursive")
+    end
+
     -- set outputdir
     if opt.outputdir then
         table.insert(argv, path.translate(opt.outputdir))

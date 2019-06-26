@@ -15,28 +15,27 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        checkout.lua
+-- @file        update.lua
 --
 
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- checkout to given branch, tag or commit
+-- update submodule 
 --
--- @param commit    the commit, tag or branch
--- @param opt       the argument options
+-- @param opt       the argument options, e.g. repodir, init, remote, force, checkout, merge, rebase, recursive, reference, pathes
 --
 -- @code
 --
--- import("devel.git")
+-- import("devel.git.submodule")
 -- 
--- git.checkout("master", {repodir = "/tmp/xmake"})
--- git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
+-- submodule.update("master", {repodir = "/tmp/xmake", init = true, remote = true})
+-- submodule.update("v1.0.1", {repodir = "/tmp/xmake", recursive = true, reference = "xxx", pathes = "xxx"})
 --
 -- @endcode
 --
-function main(commit, opt)
+function main(opt)
 
     -- init options
     opt = opt or {}
@@ -48,7 +47,19 @@ function main(commit, opt)
     end
 
     -- init argv
-    local argv = {"checkout", commit}
+    local argv = {"submodule", "update"}
+    for _, name in ipairs({"init", "remote", "force", "checkout", "merge", "rebase", "recursive"}) do
+        if opt[name] then
+            table.insert(argv, "--" .. name)
+        end
+    end
+    if opt.reference then
+        table.insert(argv, "--reference")
+        table.insert(argv, opt.reference)
+    end
+    if opt.pathes then
+        table.join2(argv, opt.pathes)
+    end
 
     -- enter repository directory
     local oldir = nil
@@ -56,7 +67,7 @@ function main(commit, opt)
         oldir = os.cd(opt.repodir)
     end
 
-    -- checkout it
+    -- submodule it
     os.vrunv(git.program, argv)
 
     -- leave repository directory

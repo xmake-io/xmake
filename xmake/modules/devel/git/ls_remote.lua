@@ -50,8 +50,16 @@ function main(reftype, url)
     -- init reference type
     reftype = reftype or "refs"
 
+    -- init arguments
+    local argv = {"ls-remote", "--" .. reftype, url or "."}
+
+    -- trace
+    if option.get("verbose") then
+        print("%s %s", git.program, os.args(argv))
+    end
+
     -- get refs
-    local data = os.iorunv(git.program, {"ls-remote", "--" .. reftype, url or "."})
+    local data = os.iorunv(git.program, argv)
 
     -- get commmits and tags
     local refs = {}
