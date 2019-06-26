@@ -17,6 +17,7 @@ matrix:
 install:
   - if [ "$TRAVIS_OS_NAME" = "osx" ]; then brew update; brew install dmd rust; fi
   - echo $CI
+  - git submodule update
 
 script:
   - scripts/get.sh __local__

@@ -78,7 +78,7 @@ xmake_CXFLAGS 	   	    += $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG
 	
 # includes
 xmake_INC_DIRS 		    += \
-						../tbox/src \
+						../tbox/repo/src \
 						../tbox/inc/$(PLAT) \
 						../luajit/src \
                         ../sv/include
