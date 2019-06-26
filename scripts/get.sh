@@ -46,11 +46,6 @@ echo '     >  <  | \__/ | /_| |   <  ___/             '
 echo '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
 echo '                                                '
 
-if [ 'x__local__' != "x$1" ]
-then
-    brew --version >/dev/null 2>&1 && brew install --HEAD xmake && xmake --version && exit
-fi
-
 my_exit(){
     rv=$?
     if [ "x$1" != x ]
@@ -107,12 +102,13 @@ fi
 projectdir=$tmpdir
 if [ 'x__local__' != "x$branch" ]
 then
-    git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
-    if [ x != "x$2" ]
-    then
+    if [ x != "x$2" ]; then
+        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
+    else 
+        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 else
     projectdir=`pwd`

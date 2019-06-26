@@ -320,9 +320,11 @@ function main()
                         if version:find('.', 1, true) then
                             git.clone(url, {outputdir = sourcedir})
                             git.checkout(version, {repodir = sourcedir})
-                            submodule.update({repodir = sourcedir, init = true, recursive = true})
+                            if not script_only then
+                                submodule.update({repodir = sourcedir, init = true, recursive = true})
+                            end
                         else
-                            git.clone(url, {depth = 1, recursive = true, branch = version, outputdir = sourcedir})
+                            git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
                         end
                     end
                     return true
