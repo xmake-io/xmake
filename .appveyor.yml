@@ -33,6 +33,7 @@ install:
   # 
   - ps: Pop-Location
   # install xmake
+  - ps: git submodule -q update --init --recursive
   - ps: ./scripts/get.ps1 -branch master
 
 before_build:
