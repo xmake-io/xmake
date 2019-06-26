@@ -257,13 +257,41 @@ function table.unique(array, barrier)
 end
 
 -- pack arguments into a table
+-- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.pack
 function table.pack(...)
     return { n = select("#", ...), ... }
 end
 
 -- unpack table values
-function table.unpack(list, i, j)
-    return unpack(list, i, j)
+-- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.unpack
+table.unpack = unpack
+
+-- get keys of a table
+function table.keys(tab)
+
+    assert(tab)
+
+    local keyset = {}
+    local n = 0
+    for k, _ in pairs(tab) do
+        n = n + 1
+        keyset[n] = k
+    end
+    return keyset, n
+end
+
+-- get values of a table
+function table.values(tab)
+
+    assert(tab)
+
+    local valueset = {}
+    local n = 0
+    for _, v in pairs(tab) do
+        n = n + 1
+        valueset[n] = v
+    end
+    return valueset, n
 end
 
 -- return module: table

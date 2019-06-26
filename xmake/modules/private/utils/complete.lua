@@ -44,6 +44,11 @@ function _complete_task(tasks, name)
             has_candidate = true
         end
     end
+
+    if name == "" then
+        return has_candidate
+    end
+
     for k, _ in pairs(tasks) do
         -- not startswith
         if k:find(name, 2, true) then
@@ -54,7 +59,16 @@ function _complete_task(tasks, name)
     return has_candidate
 end
 
-function _complete_option(options, name)
+function _complete_option(options, segs, name)
+    local current_options = try
+    {
+        function()
+            return option.raw_parse(segs, options)
+        end
+    }
+    -- current options is invalid
+    if not current_options then return end
+
     local state = 0
     if name == "-" or name == "--" then
         name = ""
@@ -71,7 +85,9 @@ function _complete_option(options, name)
 
     local opcandi = {}
     for _, v in ipairs(options) do
-        if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
+        if current_options[v[2]] == nil then
+            if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
+        end
     end
 
     for _, v in ipairs(opcandi) do
@@ -109,6 +125,12 @@ function main(position, config_use_spaces, ...)
     local has_space = word:endswith(" ") or position > #word
     word = word:trim()
 
+    if is_host("windows") then
+        if word:lower():startswith("xmake.exe") then
+            word = "xmake" .. word:sub(#"xmake.exe" + 1)
+        end
+    end
+
     if word:lower():startswith("xmake ") then
         word = word:sub(#"xmake " + 1)
     end
@@ -140,5 +162,9 @@ function main(position, config_use_spaces, ...)
         table.insert(segs, 1, task_name)
         task_name = "run"
     end
-    _complete_option(tasks[task_name].options, has_space and "" or segs[#segs])
+
+    local incomplete_option = has_space and "" or segs[#segs]
+    if not has_space then segs[#segs] = nil end
+
+    _complete_option(tasks[task_name].options, segs, incomplete_option)
 end

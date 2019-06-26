@@ -71,11 +71,9 @@ end
 
 
 function sandbox_core_base_task.names()
-    local names = {}
-    for k, _ in pairs(task.tasks()) do
-        table.insert(names, k)
-    end
-    return names
+    local default_tasks = table.keys(task.tasks())
+    local project_tasks = table.keys(project.tasks())
+    return table.join(default_tasks, project_tasks)
 end
 
 -- return module
