@@ -111,7 +111,9 @@ then
         git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 else
-    git submodule update --init --recursive
+    if [ -d '.git' ]; then
+        git submodule update --init --recursive
+    fi
     projectdir=`pwd`
 fi
 if [ 'x__install_only__' != "x$2" ]
