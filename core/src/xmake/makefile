@@ -81,7 +81,7 @@ xmake_INC_DIRS 		    += \
 						../tbox/repo/src \
 						../tbox/inc/$(PLAT) \
 						../luajit/repo/src \
-                        ../sv/include
+                        ../sv/repo/include
 
 						
 # suffix

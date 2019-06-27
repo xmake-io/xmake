@@ -12,16 +12,16 @@ sv_CONFIG 				= n
 
 # core files
 sv_C_FILES 				+= \
-						src/comp \
-						src/id \
-						src/num \
-						src/range \
-						src/semvers \
-						src/utils \
-						src/version
+						repo/src/comp \
+						repo/src/id \
+						repo/src/num \
+						repo/src/range \
+						repo/src/semvers \
+						repo/src/utils \
+						repo/src/version
 
 # includes
-sv_INC_DIRS  			+= include
+sv_INC_DIRS  			+= repo/include
 
 										
 # suffix
