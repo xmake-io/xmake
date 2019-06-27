@@ -4,14 +4,11 @@ target("pdcurses")
     -- make as a static library
     set_kind("static")
 
-    -- set the object files directory
-    set_objectdir("$(buildir)/.objs")
-
     -- add includes directory
-    add_includedirs(".")
+    add_includedirs("repo", {public = true})
 
     -- add the common source files
-    add_files("**.c") 
+    add_files("repo/pdcurses/*.c", "repo/win32/*.c") 
 
     -- add defines
     add_defines("PDC_WIDE")

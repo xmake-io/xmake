@@ -7,3 +7,6 @@
 [submodule "core/src/sv/repo"]
 	path = core/src/sv/repo
 	url = ../../xmake-io/xmake-core-sv.git
+[submodule "core/src/pdcurses/repo"]
+	path = core/src/pdcurses/repo
+	url = ../../xmake-io/xmake-core-pdcurses.git
