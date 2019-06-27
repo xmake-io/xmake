@@ -17,7 +17,7 @@ lcurses_C_FILES 		+= lcurses
 lcurses_CXFLAGS 		+= $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG_API_HAVE_CURSES,)
 
 # includes
-lcurses_INC_DIRS  		+= ../luajit/src
+lcurses_INC_DIRS  		+= ../luajit/repo/src
 
 # suffix
 include $(PRO_DIR)/suffix.mak

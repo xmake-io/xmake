@@ -15,7 +15,7 @@ target("xmake")
     add_configfiles("xmake.config.h.in")
 
     -- add includes directory
-    add_includedirs("$(projectdir)", "$(buildir)/luajit")
+    add_includedirs("$(projectdir)")
     add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
 
     -- add the common source files
