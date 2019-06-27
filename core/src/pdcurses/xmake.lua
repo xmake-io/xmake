@@ -5,10 +5,10 @@ target("pdcurses")
     set_kind("static")
 
     -- add includes directory
-    add_includedirs("repo", {public = true})
+    add_includedirs("pdcurses", {public = true})
 
     -- add the common source files
-    add_files("repo/pdcurses/*.c", "repo/win32/*.c") 
+    add_files("pdcurses/pdcurses/*.c", "pdcurses/win32/*.c") 
 
     -- add defines
     add_defines("PDC_WIDE")

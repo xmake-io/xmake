@@ -1,12 +1,12 @@
-[submodule "core/src/tbox/repo"]
-	path = core/src/tbox/repo
+[submodule "core/src/tbox/tbox"]
+	path = core/src/tbox/tbox
 	url = ../../tboox/tbox.git
-[submodule "core/src/luajit/repo"]
-	path = core/src/luajit/repo
+[submodule "core/src/luajit/luajit"]
+	path = core/src/luajit/luajit
 	url = ../../xmake-io/xmake-core-luajit.git
-[submodule "core/src/sv/repo"]
-	path = core/src/sv/repo
+[submodule "core/src/sv/sv"]
+	path = core/src/sv/sv
 	url = ../../xmake-io/xmake-core-sv.git
-[submodule "core/src/pdcurses/repo"]
-	path = core/src/pdcurses/repo
+[submodule "core/src/pdcurses/pdcurses"]
+	path = core/src/pdcurses/pdcurses
 	url = ../../xmake-io/xmake-core-pdcurses.git

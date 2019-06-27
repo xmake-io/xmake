@@ -21,14 +21,14 @@ target("luajit")
     end
 
     -- add header files
-    add_headerfiles("repo/src/(*.h)")
+    add_headerfiles("luajit/src/(*.h)")
 
     -- add include directories
     add_includedirs(autogendir)
-    add_includedirs("repo/src", {public = true})
+    add_includedirs("luajit/src", {public = true})
 
     -- add the common source files
-    add_files("repo/src/*.c|ljamalg.c|luajit.c") 
+    add_files("luajit/src/*.c|ljamalg.c|luajit.c") 
     if is_plat("windows") then
         add_files(autogendir .. "/lj_vm.obj")
     else

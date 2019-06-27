@@ -1,4 +1,4 @@
-includes("repo")
+includes("tbox")
 
 -- enable hash, charset modules
 for _, name in ipairs({"hash", "charset"}) do
