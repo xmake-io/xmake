@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.task")
 import("net.http")
 import("devel.git")
+import("devel.git.submodule")
 import("net.fasturl")
 import("core.base.privilege")
 import("privilege.sudo")
@@ -319,8 +320,11 @@ function main()
                         if version:find('.', 1, true) then
                             git.clone(url, {outputdir = sourcedir})
                             git.checkout(version, {repodir = sourcedir})
+                            if not script_only then
+                                submodule.update({repodir = sourcedir, init = true, recursive = true})
+                            end
                         else
-                            git.clone(url, {depth = 1, branch = version, outputdir = sourcedir})
+                            git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
                         end
                     end
                     return true

@@ -37,6 +37,9 @@ import("lib.detect.find_tool")
 --
 function main(opt)
 
+    -- init options
+    opt = opt or {}
+
     -- find git
     local git = find_tool("git")
     if not git then

@@ -1,0 +1,3 @@
+[submodule "core/src/tbox/repo"]
+	path = core/src/tbox/repo
+	url = https://github.com/tboox/tbox.git
