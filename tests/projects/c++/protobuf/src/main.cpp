@@ -1,4 +1,5 @@
 #include <iostream>
+#include "test.pb.h"
 
 using namespace std;
 

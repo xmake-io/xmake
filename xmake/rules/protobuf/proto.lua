@@ -24,16 +24,38 @@ import("core.theme.theme")
 import("core.project.config")
 import("core.project.depend")
 import("core.tool.compiler")
+import("lib.detect.find_tool")
 
 -- build protobuf file
 function main(target, sourcekind, sourcefile_proto, opt)
 
+    -- find protoc
+    local protoc = target:data("protobuf.protoc")
+    if not protoc and sourcekind == "cxx" then
+        protoc = find_tool("protoc") 
+        if protoc and protoc.program then
+            target:data_set("protobuf.protoc", protoc.program)
+        end
+    end
+
+    -- find protoc-c
+    local protoc_c = target:data("protobuf.protoc-c")
+    if not protoc_c and sourcekind == "cc" then
+        protoc_c = find_tool("protoc-c") or protoc 
+        if protoc_c and protoc_c.program then
+            target:data_set("protobuf.protoc-c", protoc_c.program)
+        end
+    end
+
     -- get protoc
-    local protoc = assert(target:data("protobuf.protoc"), "protoc not found!")
+    protoc = assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
 
     -- get c/c++ source file for protobuf
-    local sourcefile_cx = path.join(target:autogendir(), "rules", "protobuf", "src", path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or ".c"))
+    local sourcefile_cx = path.join(target:autogendir(), "rules", "protobuf", path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c"))
     local sourcefile_dir = path.directory(sourcefile_cx)
+
+    -- add includedirs
+    target:add("includedirs", sourcefile_dir)
 
     -- get object file
     local objectfile = target:objectfile(sourcefile_cx)
@@ -75,7 +97,7 @@ function main(target, sourcekind, sourcefile_proto, opt)
     end
 
     -- compile protobuf 
-    os.vrunv(protoc, {sourcefile_proto, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
+    os.vrunv(protoc, {sourcefile_proto, "-I" .. os.args(path.directory(sourcefile_proto)), (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
 
     -- trace
     if option.get("verbose") then

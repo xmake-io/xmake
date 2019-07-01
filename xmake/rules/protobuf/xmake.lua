@@ -18,35 +18,14 @@
 -- @file        xmake.lua
 --
 
-
--- define rule: protobuf-cpp 
-rule("protobuf.env")
-
-    -- load protoc
-    before_load(function (target)
-        import("lib.detect.find_tool")
-        local protoc = target:data("protobuf.protoc")
-        if not protoc then
-            protoc = find_tool("protoc") 
-            if protoc and protoc.program then
-                target:data_set("protobuf.protoc", protoc.program)
-            else
-                raise("protoc not found!")
-            end
-        end
-    end)
-
 -- define rule: protobuf.cpp 
 rule("protobuf.cpp")
-
-    -- add deps
-    add_deps("protobuf.env")
 
     -- set extension
     set_extensions(".proto")
 
     -- build protobuf file
-    on_build_file(function (target, sourcefile_proto, opt)
+    before_build_file(function (target, sourcefile_proto, opt)
         import("proto")(target, "cxx", sourcefile_proto, opt)
     end)
 
@@ -54,13 +33,10 @@ rule("protobuf.cpp")
 -- define rule: protobuf.c 
 rule("protobuf.c")
 
-    -- add deps
-    add_deps("protobuf.env")
-
     -- set extension
     set_extensions(".proto")
 
     -- build protobuf file
-    on_build_file(function (target, sourcefile_proto, opt)
+    before_build_file(function (target, sourcefile_proto, opt)
         import("proto")(target, "cc", sourcefile_proto, opt)
     end)
