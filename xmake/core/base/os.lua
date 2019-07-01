@@ -531,11 +531,13 @@ end
 -- run command with arguments list
 function os.runv(program, argv, opt)
 
+    opt = opt or {}
+
     -- make temporary log file
     local log = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(program, argv, table.join(opt or {}, {stdout = log, stderr = log}))
+    local ok = os.execv(program, argv, table.join(opt, {stdout = log, stderr = log}))
     if ok ~= 0 then
 
         -- make errors
@@ -679,12 +681,14 @@ end
 -- run command with arguments and return output and error data
 function os.iorunv(program, argv, opt)
 
+    opt = opt or {}
+
     -- make temporary output and error file
     local outfile = os.tmpfile()
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(program, argv, table.join(opt or {}, {stdout = outfile, stderr = errfile})) 
+    local ok = os.execv(program, argv, table.join(opt, {stdout = outfile, stderr = errfile})) 
 
     -- get output and error data
     local outdata = io.readfile(outfile)
@@ -707,7 +711,7 @@ function os.raise(msg, ...)
     -- flush log
     log:flush()
 
-    -- flush io buffer 
+    -- flush io buffer
     io.flush()
 
     -- raise it
@@ -785,13 +789,16 @@ function os.is_arch(...)
     end
 end
 
--- get the system null device 
+-- get the system null device
 function os.nuldev(input)
 
     if os.host() == "windows" then
+        -- not every program supports windows NUL device
+        -- we use a disk file to simulate it
+
         -- init the output nuldev
         if xmake._NULDEV_OUTPUT == nil then
-            xmake._NULDEV_OUTPUT = os.tmpfile()
+            xmake._NULDEV_OUTPUT = path.join(path.directory(os.tmpdir()), "null")
         else
             os.rm(xmake._NULDEV_OUTPUT)
         end
@@ -803,7 +810,7 @@ function os.nuldev(input)
             -- $ gcc -fopenmp -S -o nul -xc nul
             -- gcc: fatal error：input file ‘nul’ is the same as output file
             --
-            local inputfile = os.tmpfile()
+            local inputfile = path.join(path.directory(os.tmpdir()), "nullin")
             io.writefile(inputfile, "")
             xmake._NULDEV_INPUT = inputfile
         end
@@ -829,7 +836,7 @@ function os.user_agent()
 
     -- init user agent
     if os._USER_AGENT == nil then
-        
+
         -- init systems
         local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows"}
 

@@ -315,7 +315,7 @@ function task._load(filepath)
 
     -- get interpreter
     local interp = task._interpreter()
-    assert(interp) 
+    assert(interp)
 
     -- load script
     local ok, errors = interp:load(filepath)

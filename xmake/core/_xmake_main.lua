@@ -48,8 +48,24 @@ function loadfile(filepath)
         end
     end
 
-    -- load script from file
-    local script, errors = _loadfile(filepath)
+    -- load script data from file
+    local data, rerrors = io.readfile(filepath)
+    if not data then
+        return nil, rerrors
+    end
+
+    -- init displaypath
+    local displaypath = filepath
+    if filepath:startswith(xmake._WORKING_DIR) then
+        displaypath = path.join(".", path.relative(filepath, xmake._WORKING_DIR))
+    elseif filepath:startswith(xmake._PROGRAM_DIR) then
+        displaypath = path.join("$(programdir)", path.relative(filepath, xmake._PROGRAM_DIR))
+    elseif filepath:startswith(xmake._PROJECT_DIR) then
+        displaypath = path.join("$(projectdir)", path.relative(filepath, xmake._PROJECT_DIR))
+    end
+
+    -- load script from string
+    local script, errors = load(data, "@" .. displaypath)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end

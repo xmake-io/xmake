@@ -26,6 +26,7 @@ local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
 local log    = require("base/log")
+local io     = require("base/io")
 local dump   = require("base/dump")
 
 -- dump value

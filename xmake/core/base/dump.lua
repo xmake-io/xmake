@@ -25,6 +25,12 @@ local dump = dump or {}
 local colors  = require("base/colors")
 local table   = require("base/table")
 
+function dump._format(fmtkey, fmtdefault, ...)
+    local theme = colors.theme()
+    local fmt = theme and theme:get(fmtkey) or fmtdefault
+    return string.format(fmt, ...)
+end
+
 -- print string
 function dump._print_string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
@@ -67,8 +73,7 @@ end
 -- print value with default format
 function dump._print_default(value)
     io.write(colors.translate("${color.dump.default}", { patch_reset = false }))
-    local fmt = colors.theme():get("text.dump.default_format") or "%s"
-    io.write(string.format(fmt, value))
+    io.write(dump._format("text.dump.default_format", "%s", value))
     io.write(colors.translate("${reset}", { patch_reset = false }))
 end
 
@@ -89,15 +94,39 @@ function dump._print_scalar(value, as_key)
     end
 end
 
+-- print anchor
+function dump._print_anchor(value)
+    io.write(colors.translate("${color.dump.anchor}", { patch_reset = false }))
+    io.write(dump._format("text.dump.anchor", "&%s", value))
+    io.write(colors.translate("${reset}", { patch_reset = false }))
+end
+-- print reference
+function dump._print_reference(value)
+    io.write(colors.translate("${color.dump.reference}", { patch_reset = false }))
+    io.write(dump._format("text.dump.reference", "*%s", value))
+    io.write(colors.translate("${reset}", { patch_reset = false }))
+end
+
 -- print table
-function dump._print_table(value, first_indent, remain_indent)
-    io.write(first_indent .. colors.translate("${dim}{"))
+function dump._print_table(value, first_indent, remain_indent, printed_set)
+
+    io.write(first_indent)
+    local __tostring = rawget(getmetatable(value) or {}, "__tostring")
+    if __tostring then
+        return dump._print_default(__tostring(value, value))
+    end
+    printed_set = printed_set or { len = 0 }
+    io.write(colors.translate("${dim}{"))
     local inner_indent = remain_indent .. "  "
     local is_arr = table.is_array(value)
     local first_value = true
     for k, v in pairs(value) do
         if first_value then
+            printed_set.len = printed_set.len + 1
+            io.write(" ")
+            dump._print_anchor(printed_set.len)
             io.write("\n")
+            printed_set[value] = printed_set.len
             first_value = false
         else
             io.write(",\n")
@@ -108,7 +137,11 @@ function dump._print_table(value, first_indent, remain_indent)
             io.write(colors.translate("${dim} = "))
         end
         if type(v) == "table" then
-            dump._print_table(v, "", inner_indent)
+            if printed_set[v] then
+                dump._print_reference(printed_set[v])
+            else
+                dump._print_table(v, "", inner_indent, printed_set)
+            end
         else
             dump._print_scalar(v)
         end
@@ -124,7 +157,7 @@ end
 function dump._print(value, indent)
     indent = indent or ""
     if type(value) == "table" then
-        dump._print_table(value, indent, indent:gsub(".", " "))
+        dump._print_table(value, indent, indent:gsub(".", " "), nil)
     else
         io.write(indent)
         dump._print_scalar(value)

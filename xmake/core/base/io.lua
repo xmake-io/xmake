@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -20,51 +20,43 @@
 
 -- define module
 local io    = io or {}
-local _file = _file or {}
+local _file = _file or io.file or {}
 
 -- load modules
 local path   = require("base/path")
 local table  = require("base/table")
-local utils  = require("base/utils")
 local string = require("base/string")
 
 -- save original apis
-io._open   = io._open or io.open
-io._isatty = io._isatty or io.isatty
+io._open    = io._open or io.open
 
--- seek file
-function _file:seek(...)
-    return self._FILE:seek(...)
+_file._read = _file._read or _file.read
+
+function _file:read(fmt, opt)
+    opt = opt or {}
+    return self:_read(fmt, opt.continuation)
 end
 
--- read file
-function _file:read(...)
-    return self._FILE:read(...)
-end
+function _file:lines(opt)
 
--- write file
-function _file:write(...)
-    return self._FILE:write(...)
+    opt = opt or {}
+    return function()
+        local l = self:read("l", opt)
+        if not l and opt.close_on_finished then
+            self:close()
+        end
+        return l
+    end
 end
 
 -- print file
 function _file:print(...)
-    return self._FILE:write(string.format(...) .. "\n")
+    return self:write(string.format(...), "\n")
 end
 
 -- printf file
 function _file:printf(...)
-    return self._FILE:write(string.format(...))
-end
-
--- get lines
-function _file:lines()
-    return self._FILE:lines()
-end
-
--- close file
-function _file:close()
-    return self._FILE:close()
+    return self:write(string.format(...))
 end
 
 -- save object
@@ -84,31 +76,73 @@ function _file:load()
     end
 end
 
--- read all data from file 
-function io.readfile(filepath)
+-- read all data from file
+function io.lines(filepath, opt)
+
+    opt = opt or {}
+
+    if opt.close_on_finished == nil then
+        opt.close_on_finished = true
+    end
 
     -- open file
-    local file = io.open(filepath, "r")
+    local file = io.open(filepath, "r", opt)
+    if not file then
+        -- error
+        return function() return nil end
+    end
+
+    return file:lines(opt)
+end
+
+function io.readfile(filepath, opt)
+
+    opt = opt or {}
+
+    -- open file
+    local file = io.open(filepath, "r", opt)
     if not file then
         -- error
         return nil, string.format("open %s failed!", filepath)
     end
 
     -- read all
-    local data = file:read("*all")
+    local data, err = file:read("*all", opt)
 
     -- exit file
     file:close()
 
     -- ok?
-    return data
+    return data, err
 end
 
--- write data to file 
-function io.writefile(filepath, data)
+function io.read(fmt, opt)
+    return io.stdin:read(fmt, opt)
+end
+
+function io.write(...)
+    io.stdout:write(...)
+end
+
+function io.print(...)
+    return io.stdout:print(...)
+end
+
+function io.printf(...)
+    return io.stdout:printf(...)
+end
+
+function io.flush()
+    return io.stdout:flush()
+end
+
+-- write data to file
+function io.writefile(filepath, data, opt)
+
+    opt = opt or {}
 
     -- open file
-    local file = io.open(filepath, "w")
+    local file = io.open(filepath, "w", opt)
     if not file then
         return false, string.format("open %s failed!", filepath)
     end
@@ -123,62 +157,52 @@ function io.writefile(filepath, data)
     return true
 end
 
--- replace the original isatty interface
+-- isatty
 function io.isatty(fd)
-    if io._ISATTY == nil then
-        io._ISATTY = io._isatty(fd or io.stdout)
-    end
-    return io._ISATTY
+    fd = fd or io.stdout
+    return fd:isatty()
 end
 
 -- replace the original open interface
-function io.open(filepath, mode)
+function io.open(filepath, mode, opt)
 
     -- check
     assert(filepath)
 
-    -- write file?
-    if mode == "w" then
-
-        -- get the file directory
-        local dir = path.directory(filepath)
-
-        -- ensure the file directory 
-        if not os.isdir(dir) then
-            os.mkdir(dir) 
-        end
-    end
-
-    -- init file instance
-    local file = table.inherit(_file)
+    mode = mode or "r"
+    opt = opt or {}
 
     -- open it
-    local handle, errors = io._open(path.translate(filepath), mode)
+    local handle = io._open(path.translate(filepath), mode .. (opt.encoding or ""))
     if not handle then
-        return nil, errors
+        return nil, string.format("failed to open %s", filepath)
     end
 
-    -- save file handle
-    file._FILE = handle
-
     -- ok?
-    return file, errors
+    return handle
+end
+
+-- close file
+function io.close(file)
+    return (file or io.stdout):close()
 end
 
 -- save object the the given filepath
-function io.save(filepath, object)
+function io.save(filepath, object, opt)
 
-    -- check 
+    -- check
     assert(filepath and object)
+
+    opt = opt or {}
 
     -- ensure directory
     local dir = path.directory(filepath)
     if not os.isdir(dir) then
         os.mkdir(dir)
     end
-    
+
     -- open the file
-    local file = io.open(filepath, "w")
+    local file = io.open(filepath, "w", opt)
     if not file then
         -- error
         return false, string.format("open %s failed!", filepath)
@@ -187,26 +211,28 @@ function io.save(filepath, object)
     -- save object to file
     local ok, errors = file:save(object)
     if not ok then
-        -- error 
+        -- error
         file:close()
         return false, string.format("save %s failed, %s!", filepath, errors)
     end
 
     -- close file
     file:close()
-   
+
     -- ok
     return true
 end
  
 -- load object from the given file
-function io.load(filepath)
+function io.load(filepath, opt)
 
     -- check
     assert(filepath)
 
+    opt = opt or {}
+
     -- open the file
-    local file = io.open(filepath, "r")
+    local file = io.open(filepath, "r", opt)
     if not file then
         -- error
         return nil, string.format("open %s failed!", filepath)
@@ -223,10 +249,12 @@ function io.load(filepath)
 end
 
 -- gsub the given file and return replaced data
-function io.gsub(filepath, pattern, replace)
+function io.gsub(filepath, pattern, replace, opt)
+
+    opt = opt or {}
 
     -- read all data from file
-    local data, errors = io.readfile(filepath)
+    local data, errors = io.readfile(filepath, opt)
     if not data then return nil, 0, errors end
 
     -- replace it
@@ -240,7 +268,7 @@ function io.gsub(filepath, pattern, replace)
     -- replace ok?
     if count ~= 0 then
         -- write all data to file
-        local ok, errors = io.writefile(filepath, data) 
+        local ok, errors = io.writefile(filepath, data, opt)
         if not ok then return nil, 0, errors end
     end
 
@@ -248,19 +276,21 @@ function io.gsub(filepath, pattern, replace)
     return data, count
 end
 
--- cat the given file 
-function io.cat(filepath, linecount)
+-- cat the given file
+function io.cat(filepath, linecount, opt)
+
+    opt = opt or {}
 
     -- open file
-    local file = io.open(filepath, "r")
+    local file = io.open(filepath, "r", opt)
     if file then
 
         -- show file
         local count = 1
-        for line in file:lines() do
+        for line in file:lines(opt) do
 
             -- show line
-            print(line)
+            io.print(line)
 
             -- end?
             if linecount and count >= linecount then
@@ -269,28 +299,30 @@ function io.cat(filepath, linecount)
 
             -- update the line count
             count = count + 1
-        end 
+        end
 
         -- exit file
-        file:close() 
+        file:close()
     end
 end
 
--- tail the given file 
-function io.tail(filepath, linecount)
+-- tail the given file
+function io.tail(filepath, linecount, opt)
+
+    opt = opt or {}
 
     -- all?
     if linecount < 0 then
-        return io.cat(filepath)
+        return io.cat(filepath, opt)
     end
 
     -- open file
-    local file = io.open(filepath, "r")
+    local file = io.open(filepath, "r", opt)
     if file then
 
         -- read lines
         local lines = {}
-        for line in file:lines() do
+        for line in file:lines(opt) do
             table.insert(lines, line)
         end
 
@@ -318,15 +350,16 @@ function io.tail(filepath, linecount)
             for index = #tails, 1, -1 do
 
                 -- show tail
-                print(tails[index])
+                io.print(tails[index])
 
             end
         end
 
         -- exit file
-        file:close() 
+        file:close()
     end
 end
+
 
 -- return module
 return io

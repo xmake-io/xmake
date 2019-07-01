@@ -280,7 +280,7 @@ end
 -- add flags from the option 
 function builder:_add_flags_from_option(flags, opt)
     for _, flagkind in ipairs(self:_flagkinds()) do
-        self:_add_flags_from_flagkind(targetflags, opt, flagkind)
+        self:_add_flags_from_flagkind(flags, opt, flagkind)
     end
 end
 

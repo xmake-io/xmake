@@ -37,11 +37,6 @@ function emoji.translate(str)
     -- translate it
     local chars = emoji.keys[str]
 
-    -- check supported?
-    if chars and xmake._HOST ~= "macosx" then
-        return ""
-    end
-
     -- ok?
     return chars
 end

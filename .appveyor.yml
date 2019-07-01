@@ -109,11 +109,10 @@ test_script:
           $filename = $_.filename
           Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome Running
           $time = Measure-Command { 
-              $results = xmake lua --verbose --diagnosis runner.lua $_.fullname
+              xmake lua --verbose --diagnosis runner.lua $_.fullname >stdout_file 2>stderr_file
               $outcome = if ($?) { "Passed" } else {  $all_success = $false; "Failed" }
-              $stdout = [string]::Join("`n", $results)
           }
-          Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut $stdout
+          Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut (Get-Content -Raw stdout_file) -StdErr (Get-Content -Raw stderr_file)
       }
   - ps: Pop-Location
   - ps: if ($all_success) { Write-Host "All tests passed!" } else { Write-Error "Some tests failed!" }

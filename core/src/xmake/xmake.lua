@@ -23,11 +23,15 @@ target("xmake")
     if is_plat("windows") then
         add_files("winos/*.c")
     end
-  
+
     -- add readline
-    add_options("readline")      
+    add_options("readline")
+
     if is_plat("windows") or has_config("curses") then
         add_defines("XM_CONFIG_API_HAVE_CURSES")
+    end
+    if is_plat("windows") then
+        add_defines("UNICODE", "_UNICODE")
     end
  
 

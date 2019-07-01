@@ -186,6 +186,31 @@ function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
 end
 
+-- read data from iterator, push them to an array
+-- usage: table.to_array(ipairs("a", "b")) -> {{1,"a",n=2},{2,"b",n=2}},2
+-- usage: table.to_array(io.lines("file")) -> {"line 1","line 2", ... , "line n"},n
+function table.to_array(iterator, state, var)
+
+    assert(iterator)
+
+    local result = {}
+    local count = 0
+    while true do
+        local data = table.pack(iterator(state, var))
+        if data[1] == nil then break end
+        var = data[1]
+
+        if data.n == 1 then
+            table.insert(result, var)
+        else
+            table.insert(result, data)
+        end
+        count = count + 1
+    end
+
+    return result, count
+end
+
 -- unwrap object if be only one
 function table.unwrap(object)
     if type(object) == "table" then

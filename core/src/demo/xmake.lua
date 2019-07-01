@@ -4,7 +4,7 @@ target("demo")
     -- add deps
     add_deps("xmake")
 
-    -- make as a binary 
+    -- make as a binary
     set_kind("binary")
 
     -- set basename of target file
@@ -28,8 +28,8 @@ target("demo")
     end
 
     -- add links
-    if is_plat("windows") then 
-        add_links("ws2_32", "advapi32")
+    if is_plat("windows") then
+        add_links("ws2_32", "advapi32", "shell32")
     elseif is_plat("android") then
         add_links("m", "c")
     elseif is_plat("macosx") then

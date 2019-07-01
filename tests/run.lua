@@ -13,28 +13,25 @@ function _run_test(script)
 
     assert(script:endswith("test.lua"))
 
-    local old_dir = os.cd(os.scriptdir())
-    os.execv("xmake", table.join("lua", params, "./runner.lua", script))
-    os.cd(old_dir)
-
+    os.execv("xmake", table.join("lua", params, path.join(os.scriptdir(), "runner.lua"), script))
 end
 
 -- run test with the given name
 function _run_test_filter(name)
 
     local tests = {}
-
+    local root = path.absolute(os.scriptdir())
     -- find the test script
-    for _, script in ipairs(os.files(path.join(os.scriptdir(), "**", name, "**", "test.lua"))) do
+    for _, script in ipairs(os.files(path.join(root, "**", name, "**", "test.lua"))) do
         table.insert(tests, path.absolute(script))
     end
-    for _, script in ipairs(os.files(path.join(os.scriptdir(), name, "**", "test.lua"))) do
+    for _, script in ipairs(os.files(path.join(root, name, "**", "test.lua"))) do
         table.insert(tests, path.absolute(script))
     end
-    for _, script in ipairs(os.files(path.join(os.scriptdir(), "**", name, "test.lua"))) do
+    for _, script in ipairs(os.files(path.join(root, "**", name, "test.lua"))) do
         table.insert(tests, path.absolute(script))
     end
-    for _, script in ipairs(os.files(path.join(os.scriptdir(), name, "test.lua"))) do
+    for _, script in ipairs(os.files(path.join(root, name, "test.lua"))) do
         table.insert(tests, path.absolute(script))
     end
 

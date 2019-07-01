@@ -61,10 +61,11 @@ option_end()
 -- suppress warnings
 if is_plat("windows") then
     add_defines("_CRT_SECURE_NO_WARNINGS")
+    add_cxflags("/utf-8")
 end
 
 -- add projects
-includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo") 
+includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
 if is_plat("windows") then
     includes("src/pdcurses")
 end

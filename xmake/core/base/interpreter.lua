@@ -704,7 +704,7 @@ function interpreter:load(file)
     -- clear first
     self:_clear()
 
-    -- init the current file 
+    -- init the current file
     self._PRIVATE._CURFILE = file
 
     -- init the root directory

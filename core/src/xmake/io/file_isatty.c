@@ -11,56 +11,49 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      ruki
- * @file        isatty.c
+ * @author      OpportunityLiu
+ * @file        file_isatty.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "isatty"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME "file_isatty"
+#define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
+#include "file.h"
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_WINDOWS
-#   include <io.h>
-#else
-#   include <unistd.h>
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* stdout: io.isatty()
- * stderr: io.isatty(io.stderr)
- * stdin:  io.isatty(io.stdin)
+/* file:isatty()
  */
-tb_int_t xm_io_isatty(lua_State* lua)
+tb_int_t xm_io_file_isatty(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get file pointer
-    FILE** fp = (FILE**)luaL_checkudata(lua, 1, LUA_FILEHANDLE);
+    xm_io_file* fp = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
 
-    // no arguments? default: stdout
-    tb_int_t answer = 1;
-#ifdef TB_CONFIG_OS_WINDOWS
-    if (fp) answer = _isatty(_fileno(*fp));
-#else
-    if (fp) answer = isatty(fileno(*fp));
-#endif
-
+    if (xm_io_file_is_file(fp))
+    {
+        lua_pushboolean(lua, tb_false);
+        // ok
+        return 1;
+    }
+    tb_bool_t istty = xm_io_file_is_tty(fp);
     // return answer
-	lua_pushboolean(lua, answer);
+    lua_pushboolean(lua, istty);
 
     // ok
     return 1;

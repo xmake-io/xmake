@@ -1,7 +1,7 @@
 includes("tbox")
 
--- enable hash, charset modules
-for _, name in ipairs({"hash", "charset"}) do
+-- enable hash, charset, utf8 modules
+for _, name in ipairs({ "hash", "charset", "force-utf8" }) do
     option(name)
         set_default(true)
         after_check(function (option)
