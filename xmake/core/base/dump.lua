@@ -110,10 +110,11 @@ end
 -- print table
 function dump._print_table(value, first_indent, remain_indent, printed_set)
 
+    local first_level = not printed_set
     io.write(first_indent)
-    local __tostring = rawget(getmetatable(value) or {}, "__tostring")
-    if __tostring then
-        return dump._print_default(__tostring(value, value))
+    local strrep = rawget(getmetatable(value) or {}, "__tostring") and tostring(value)
+    if not first_level and strrep then
+        return dump._print_default(strrep)
     end
     printed_set = printed_set or { len = 0 }
     io.write(colors.translate("${dim}{"))
@@ -128,6 +129,13 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
             io.write("\n")
             printed_set[value] = printed_set.len
             first_value = false
+            if strrep then
+                io.write(inner_indent)
+                dump._print_keyword("(tostring)")
+                io.write(colors.translate("${dim} = "))
+                dump._print_scalar(strrep)
+                io.write(",\n")
+            end
         else
             io.write(",\n")
         end
