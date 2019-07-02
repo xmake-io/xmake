@@ -60,26 +60,21 @@ tb_int_t xm_io_open(lua_State* lua)
     tb_file_ref_t file           = tb_file_init(path, tb_mode);
     tb_size_t     pathlen        = tb_strlen(path);
     tb_char_t*    savedfull      = tb_malloc_cstr(pathlen + 1);
+    tb_assert(savedfull);
     tb_strcpy(savedfull, path);
 
     if (file)
     {
-        tb_bool_t is_binary = mode[1] == 'b' || (update && mode[2] == 'b');
-        tb_bool_t is_utf8   = tb_strstr(mode, "utf8") || tb_strstr(mode, "utf-8");
-        tb_bool_t is_u16le  = tb_strstr(mode, "utf16le") || tb_strstr(mode, "utf-16le");
-        tb_bool_t is_u16be  = tb_strstr(mode, "utf16be") || tb_strstr(mode, "utf-16be");
-        tb_bool_t is_u16    = tb_strstr(mode, "utf16") || tb_strstr(mode, "utf-16");
-
         tb_size_t enc = XM_IO_FILE_ENCODING_UNKNOWN;
-        if (is_binary)
+        if (mode[1] == 'b' || (update && mode[2] == 'b'))
             enc = XM_IO_FILE_ENCODING_BINARY;
-        else if (is_utf8)
+        else if (tb_strstr(mode, "utf8") || tb_strstr(mode, "utf-8"))
             enc = TB_CHARSET_TYPE_UTF8;
-        else if (is_u16le)
+        else if (tb_strstr(mode, "utf16le") || tb_strstr(mode, "utf-16le"))
             enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
-        else if (is_u16be)
+        else if (tb_strstr(mode, "utf16be") || tb_strstr(mode, "utf-16be"))
             enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
-        else if (is_u16)
+        else if (tb_strstr(mode, "utf16") || tb_strstr(mode, "utf-16"))
             enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE;
 
         xm_io_file* xm_file = xm_io_newfile(lua);
