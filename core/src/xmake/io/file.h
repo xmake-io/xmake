@@ -98,7 +98,7 @@ typedef struct __xm_io_file
     do                                                                                                                 \
     {                                                                                                                  \
         lua_pushnil(lua);                                                                                              \
-        lua_pushliteral(lua, "error: file has been closed", reason);                                                   \
+        lua_pushliteral(lua, "error: file has been closed");                                                           \
         return 2;                                                                                                      \
     } while (0)
 

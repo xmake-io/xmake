@@ -46,9 +46,7 @@ tb_int_t xm_io_file_seek(lua_State* lua)
     xm_io_file*      file   = xm_io_getfile(lua);
     tb_char_t const* whence = luaL_optstring(lua, 2, "cur");
     tb_hong_t        offset = (tb_hong_t)luaL_optnumber(lua, 3, 0);
-
     tb_assert_and_check_return_val(file && whence, 0);
-
     if (xm_io_file_is_file(file))
     {
         if (xm_io_file_is_closed_file(file)) xm_io_file_error_closed(lua);

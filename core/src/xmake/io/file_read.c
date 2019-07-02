@@ -224,10 +224,10 @@ static tb_int_t buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t co
     tb_byte_t readbuf[512];
     tb_size_t conlen = tb_strlen(continuation);
 
-    tb_buffer_t readdata;
-    tb_assert_and_check_return_val(tb_buffer_init(&readdata), 0);
-    tb_buffer_t transdata;
-    tb_assert_and_check_return_val(tb_buffer_init(&transdata), 0);
+    tb_buffer_t readdata, transdata;
+    tb_bool_t   rok = tb_buffer_init(&readdata);
+    tb_bool_t   tok = tb_buffer_init(&transdata);
+    tb_assert_and_check_return_val(rok && tok, 0);
     // transcode is redundant, write to transdata directly
     tb_bool_t notrans = charset == TB_CHARSET_TYPE_UTF8 || binary;
     while (1)
@@ -425,7 +425,8 @@ static tb_int_t read_n(lua_State* lua, xm_io_file* file, tb_char_t const* contin
     else
     {
         tb_buffer_t buf;
-        tb_assert_and_check_return_val(tb_buffer_init(&buf), 0);
+        tb_bool_t   ok = tb_buffer_init(&buf);
+        tb_assert_and_check_return_val(ok, 0);
         tb_byte_t* bufptr = tb_buffer_resize(&buf, n + 1);
         tb_assert(bufptr);
         tb_long_t readsize = tb_file_read(file->file_ref, bufptr, n);
@@ -558,13 +559,13 @@ static tb_int_t std_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* co
     }
 #ifdef TB_CONFIG_OS_WINDOWS
     tb_buffer_t readbuf, transbuf;
-    tb_assert_and_check_return_val(tb_buffer_init(&readbuf), 0);
+    tb_bool_t   rok = tb_buffer_init(&readbuf);
+    tb_bool_t   tok = tb_buffer_init(&transbuf);
+    tb_assert_and_check_return_val(rok && tok, 0);
     tb_wchar_t* readbuf_ptr = (tb_wchar_t*)tb_buffer_resize(&readbuf, (tb_size_t)((n + 1) * sizeof(tb_wchar_t)));
     tb_assert(readbuf_ptr);
-
-    tb_size_t readcount    = fread(readbuf_ptr, sizeof(tb_wchar_t), n, file->std_ref);
-    readbuf_ptr[readcount] = L'\0'; // add null termination for tb_wcstombs
-    tb_assert_and_check_return_val(tb_buffer_init(&transbuf), 0);
+    tb_size_t readcount     = fread(readbuf_ptr, sizeof(tb_wchar_t), n, file->std_ref);
+    readbuf_ptr[readcount]  = L'\0'; // add null termination for tb_wcstombs
     tb_char_t* transbuf_ptr = (tb_char_t*)tb_buffer_resize(&transbuf, (tb_size_t)(n * 3));
     tb_assert(transbuf_ptr);
 
@@ -574,7 +575,8 @@ static tb_int_t std_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* co
     tb_buffer_exit(&transbuf);
 #else
     tb_buffer_t buf;
-    tb_assert_and_check_return_val(tb_buffer_init(&buf), 0);
+    tb_bool_t ok = tb_buffer_init(&buf);
+    tb_assert_and_check_return_val(ok, 0);
     tb_char_t* buf_ptr = (tb_char_t*)tb_buffer_resize(&buf, (tb_size_t)n);
     tb_assert(buf_ptr);
 

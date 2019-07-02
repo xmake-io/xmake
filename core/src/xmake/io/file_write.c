@@ -52,8 +52,8 @@ static tb_void_t transcode_write(xm_io_file* file, tb_char_t const* data, tb_siz
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     tb_buffer_t buf;
-    tb_assert_and_check_return(tb_buffer_init(&buf));
-
+    tb_bool_t   ok = tb_buffer_init(&buf);
+    tb_assert_and_check_return(ok);
     tb_byte_t* buf_ptr = tb_buffer_resize(&buf, (size + 1) * 2);
     tb_assert(buf_ptr);
     tb_long_t buf_size = tb_charset_conv_cstr(TB_CHARSET_TYPE_UTF8, file->encoding, data, buf_ptr, size * 2);
@@ -84,7 +84,8 @@ static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t si
     // write to the stdout
     DWORD       real = 0;
     tb_buffer_t wbuf;
-    tb_assert_and_check_return(tb_buffer_init(&wbuf));
+    tb_bool_t ok = tb_buffer_init(&wbuf);
+    tb_assert_and_check_return(ok);
     if (xm_io_file_is_tty(file))
     {
         // write to console

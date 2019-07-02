@@ -44,9 +44,7 @@ tb_int_t xm_io_file_path(lua_State* lua)
 
     // get file pointer
     xm_io_file* fp = xm_io_getfile(lua);
-
     if (xm_io_file_is_closed(fp)) xm_io_file_error_closed(lua);
-
     lua_pushstring(lua, fp->path);
     // ok
     return 1;
