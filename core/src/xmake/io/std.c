@@ -29,7 +29,7 @@
  * includes
  */
 #include "file.h"
-#include "prefix.h" 
+#include "prefix.h"
 #include <stdio.h>
 #ifdef TB_CONFIG_OS_WINDOWS
 #    include <io.h>
@@ -71,8 +71,9 @@ static void xm_init(lua_State* lua, tb_size_t type)
 {
     tb_assert_and_check_return(lua);
 
-    tb_char_t const *name, *path;
-    FILE*            fp;
+    tb_char_t const* name = tb_null;
+    tb_char_t const* path = tb_null;
+    FILE*            fp   = tb_null;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN:

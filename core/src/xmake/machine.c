@@ -167,12 +167,6 @@ tb_int_t xm_curses_register(lua_State* lua);
  * globals
  */
 
-// the global functions
-static luaL_Reg const g_functions[] = 
-{
-    { tb_null,          tb_null         }
-};
-
 // the os functions
 static luaL_Reg const g_os_functions[] = 
 {
@@ -638,12 +632,6 @@ xm_machine_ref_t xm_machine_init()
         xm_curses_register(machine->lua);
         lua_setglobal(machine->lua, "curses");
 #endif
-
-        // bind global functions
-        for (tb_size_t i = 0; g_functions[i].name != tb_null && g_functions[i].func != tb_null; i++)
-        {
-            lua_register(machine->lua, g_functions[i].name, g_functions[i].func);
-        }
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
