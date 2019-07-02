@@ -43,7 +43,7 @@ tb_int_t xm_io_file_isatty(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get file pointer
-    xm_io_file* fp = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    xm_io_file* fp = xm_io_getfile(lua);
 
     if (xm_io_file_is_file(fp))
     {

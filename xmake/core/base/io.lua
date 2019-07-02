@@ -32,11 +32,13 @@ io._open    = io._open or io.open
 
 _file._read = _file._read or _file.read
 
+-- read data from file
 function _file:read(fmt, opt)
     opt = opt or {}
     return self:_read(fmt, opt.continuation)
 end
 
+-- read all lines from a file
 function _file:lines(opt)
 
     opt = opt or {}
@@ -76,7 +78,7 @@ function _file:load()
     end
 end
 
--- read all data from file
+-- read all lines from file
 function io.lines(filepath, opt)
 
     opt = opt or {}
@@ -95,6 +97,7 @@ function io.lines(filepath, opt)
     return file:lines(opt)
 end
 
+-- read all data from file
 function io.readfile(filepath, opt)
 
     opt = opt or {}

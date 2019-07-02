@@ -28,13 +28,13 @@
 
 typedef enum __xm_io_file_type_e
 {
-    XM_IO_FILE_TYPE_FILE = 0, //!< disk file
+    XM_IO_FILE_TYPE_FILE   = 0, //!< disk file
 
     XM_IO_FILE_TYPE_STDIN  = 1,
     XM_IO_FILE_TYPE_STDOUT = 2,
     XM_IO_FILE_TYPE_STDERR = 3,
 
-    XM_IO_FILE_FLAG_TTY = 0x10, //!< mark tty std stream
+    XM_IO_FILE_FLAG_TTY    = 0x10, //!< mark tty std stream
 } xm_io_file_type_e;
 
 typedef enum __xm_io_file_encoding_e
@@ -42,13 +42,14 @@ typedef enum __xm_io_file_encoding_e
     XM_IO_FILE_ENCODING_BINARY  = -1,
     XM_IO_FILE_ENCODING_UNKNOWN = -2,
 #ifdef TB_CONFIG_OS_WINDOWS
-    XM_IO_FILE_ENCODING_ANSI = -3,
+    XM_IO_FILE_ENCODING_ANSI    = -3,
 #endif
 } xm_io_file_encoding_e;
 
 typedef struct __xm_io_file
 {
-    union {
+    union 
+    {
         tb_file_ref_t file_ref;
         FILE*         std_ref;
     };
@@ -61,7 +62,10 @@ typedef struct __xm_io_file
 } xm_io_file;
 
 #define xm_io_file_is_file(fileref) (fileref->type == XM_IO_FILE_TYPE_FILE)
-#define xm_io_file_is_closed_file(fileref) (fileref->type == XM_IO_FILE_TYPE_FILE && fileref->file_ref == tb_null)
+#define xm_io_file_is_closed_file(fileref) (fileref->type == XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
+#define xm_io_file_is_std(fileref) (fileref->type != XM_IO_FILE_TYPE_FILE)
+#define xm_io_file_is_closed_std(fileref) (fileref->type != XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
+#define xm_io_file_is_closed(fileref) (xm_io_file_is_closed_file(fileref) || xm_io_file_is_closed_std(fileref))
 #define xm_io_file_is_tty(fileref) (!!(fileref->type & XM_IO_FILE_FLAG_TTY))
 
 #define xm_io_file_udata "XM_IO_FILE*"
@@ -71,6 +75,7 @@ typedef struct __xm_io_file
     {                                                                                                                  \
         return 1;                                                                                                      \
     } while (0)
+
 #define xm_io_file_error(lua, reason)                                                                                  \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -83,10 +88,22 @@ typedef struct __xm_io_file
 
 static inline xm_io_file* xm_io_newfile(lua_State* lua)
 {
+    tb_assert_and_check_return_val(lua, tb_null);
+
     xm_io_file* file = (xm_io_file*)lua_newuserdata(lua, sizeof(xm_io_file));
+    tb_assert(file);
     luaL_getmetatable(lua, xm_io_file_udata);
     lua_setmetatable(lua, -2);
     tb_memset(file, 0, sizeof(xm_io_file));
+    return file;
+}
+
+static inline xm_io_file* xm_io_getfile(lua_State* lua)
+{
+    tb_assert_and_check_return_val(lua, tb_null);
+
+    xm_io_file* file = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    tb_assert(file);
     return file;
 }
 

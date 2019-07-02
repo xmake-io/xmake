@@ -43,8 +43,8 @@ tb_int_t xm_io_file_close(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file* file = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
-    if (xm_io_file_is_closed_file(file) || (!xm_io_file_is_file(file) && file->std_ref == tb_null))
+    xm_io_file* file = xm_io_getfile(lua);
+    if (xm_io_file_is_closed(file))
     {
         lua_pushboolean(lua, tb_true);
         xm_io_file_success();
@@ -53,9 +53,12 @@ tb_int_t xm_io_file_close(lua_State* lua)
     {
         if (!tb_file_exit(file->file_ref)) xm_io_file_error(lua, "failed to close file");
         file->file_ref = tb_null;
-        tb_free(file->path);
-        file->path = tb_null;
-        tb_strcpy(file->name, "file: (closed file)");
+        if (file->path)
+        {
+            tb_free(file->path);
+            file->path = tb_null;
+        }
+        tb_strlcpy(file->name, "file: (closed file)", tb_arrayn(file->name));
         lua_pushboolean(lua, tb_true);
         xm_io_file_success();
     }

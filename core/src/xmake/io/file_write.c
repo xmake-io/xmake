@@ -115,25 +115,29 @@ tb_int_t xm_io_file_write(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file* file = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    xm_io_file* file = xm_io_getfile(lua);
     tb_int_t    narg = lua_gettop(lua);
 
-    // set to utf-8 if not specified
-    if (file->encoding == XM_IO_FILE_ENCODING_UNKNOWN) file->encoding = TB_CHARSET_TYPE_UTF8;
-    tb_bool_t direct = file->encoding == TB_CHARSET_TYPE_UTF8 || file->encoding == XM_IO_FILE_ENCODING_BINARY;
-    if (xm_io_file_is_closed_file(file)) xm_io_file_error_closed(lua);
+    if (xm_io_file_is_closed(file)) xm_io_file_error_closed(lua);
 
-    for (tb_int_t i = 2; i <= narg; i++)
+    if (narg > 1)
     {
-        size_t           datasize;
-        tb_char_t const* data = luaL_checklstring(lua, i, &datasize);
+        // set to utf-8 if not specified
+        if (file->encoding == XM_IO_FILE_ENCODING_UNKNOWN) file->encoding = TB_CHARSET_TYPE_UTF8;
+        tb_bool_t direct = file->encoding == TB_CHARSET_TYPE_UTF8 || file->encoding == XM_IO_FILE_ENCODING_BINARY;
 
-        if (!xm_io_file_is_file(file))
-            std_write(file, data, (tb_size_t)datasize);
-        else if (direct)
-            direct_write(file, data, (tb_size_t)datasize);
-        else
-            transcode_write(file, data, (tb_size_t)datasize);
+        for (tb_int_t i = 2; i <= narg; i++)
+        {
+            size_t           datasize;
+            tb_char_t const* data = luaL_checklstring(lua, i, &datasize);
+
+            if (xm_io_file_is_std(file))
+                std_write(file, data, (tb_size_t)datasize);
+            else if (direct)
+                direct_write(file, data, (tb_size_t)datasize);
+            else
+                transcode_write(file, data, (tb_size_t)datasize);
+        }
     }
 
     lua_settop(lua, 1);

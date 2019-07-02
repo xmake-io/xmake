@@ -45,10 +45,10 @@ tb_int_t xm_io_file_flush(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file* file = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    xm_io_file* file = xm_io_getfile(lua);
 
-    if (xm_io_file_is_closed_file(file)) xm_io_file_error_closed(lua);
-    tb_bool_t succeed = xm_io_file_is_file(file) ? tb_file_sync(file->file_ref) : std_flush(file);
+    if (xm_io_file_is_closed(file)) xm_io_file_error_closed(lua);
+    tb_bool_t succeed = xm_io_file_is_file(file) ? tb_file_sync(file->file_ref) : !fflush(file->std_ref);
     if (succeed)
     {
         lua_pushboolean(lua, tb_true);

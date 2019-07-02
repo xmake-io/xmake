@@ -207,11 +207,11 @@ function sandbox_io.print(filepath, ...)
 end
 
 -- print string to file
-function sandbox_io.print(filepath, ...)
+function sandbox_io.printf(filepath, ...)
     sandbox_io.writefile(filepath, vformat(...))
 end
 
--- cat the given file 
+-- cat the given file
 function sandbox_io.cat(filepath, linecount, opt)
 
     -- check
@@ -224,7 +224,7 @@ function sandbox_io.cat(filepath, linecount, opt)
     io.cat(filepath, linecount, opt)
 end
 
--- tail the given file 
+-- tail the given file
 function sandbox_io.tail(filepath, linecount, opt)
 
     -- check

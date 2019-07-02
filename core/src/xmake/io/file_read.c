@@ -589,9 +589,11 @@ tb_int_t xm_io_file_read(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file*      file         = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    xm_io_file*      file         = xm_io_getfile(lua);
     tb_char_t const* mode         = luaL_optstring(lua, 2, "l");
     tb_char_t const* continuation = luaL_optstring(lua, 3, "");
+
+    tb_assert_and_check_return_val(file && mode && continuation, 0);
 
     tb_long_t count = -1;
     if (lua_isnumber(lua, 2))

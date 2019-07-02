@@ -69,6 +69,8 @@ static tb_size_t xm_isatty(tb_size_t type)
 
 static void xm_init(lua_State* lua, tb_size_t type)
 {
+    tb_check_return(lua);
+
     tb_char_t const *name, *path;
     FILE*            fp;
     switch (type)

@@ -42,6 +42,9 @@ tb_int_t xm_io_open(lua_State* lua)
 {
     tb_char_t const* path    = luaL_checkstring(lua, 1);
     tb_char_t const* mode    = luaL_optstring(lua, 2, "r");
+
+    tb_check_return_val(path && mode, 0);
+
     tb_size_t        tb_mode = TB_FILE_MODE_RW;
     switch (mode[0])
     {
