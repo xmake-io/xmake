@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,8 @@ local vformat   = require("sandbox/modules/vformat")
 
 -- define module
 local sandbox_io      = sandbox_io or {}
-local sandbox_io_file = sandbox_io_file or {}
+local sandbox_io_file = sandbox_io.file or {}
+sandbox_io.file = sandbox_io_file
 
 -- inherit some builtin interfaces
 sandbox_io.lines  = io.lines
@@ -35,19 +36,21 @@ sandbox_io.read   = io.read
 sandbox_io.isatty = io.isatty
 
 -- inherit matatable of file
-sandbox_io_file.__index = sandbox_io_file
-for k, v in pairs(io.file) do
-    if type(v) == "function" then
-        sandbox_io_file[k] = function(s, ...)
-            local result, err = v(s._FILE, ...)
-            if result == nil and err ~= nil then
-                raise(err)
+if sandbox_io_file.__index ~= sandbox_io_file then
+    sandbox_io_file.__index = sandbox_io_file
+    for k, v in pairs(io.file) do
+        if type(v) == "function" then
+            sandbox_io_file[k] = function(s, ...)
+                local result, err = v(s._FILE, ...)
+                if result == nil and err ~= nil then
+                    raise(err)
+                end
+                -- wrap to sandbox_file again
+                if result == s._FILE then
+                    result = s
+                end
+                return result
             end
-            -- wrap to sandbox_file again
-            if result == s._FILE then
-                result = s
-            end
-            return result
         end
     end
 end
