@@ -35,7 +35,15 @@
  * implementation
  */
 
-static tb_int_t xm_expand_cp(tb_int_t cp);
+static tb_int_t xm_expand_cp(tb_int_t cp)
+{
+    // check
+    tb_assert_and_check_return_val(cp >= 0 && cp <= 65535, 0);
+
+    if (cp == CP_OEMCP) return GetOEMCP();
+    if (cp == CP_ACP) return GetACP();
+    return cp;
+}
 
 tb_int_t xm_winos_console_cp(lua_State* lua)
 {
@@ -98,8 +106,10 @@ tb_int_t xm_winos_cp_info(lua_State* lua)
 
     lua_pushliteral(lua, "name");
     tb_char_t* namebuf = tb_malloc_cstr(sizeof(cp_info.CodePageName) * 2);
-    xm_wcstoutf8(namebuf, cp_info.CodePageName, sizeof(cp_info.CodePageName) * 2);
-    lua_pushstring(lua, namebuf);
+    tb_assert_and_check_return_val(namebuf, 0);
+    tb_size_t namelen = xm_wcstoutf8(namebuf, cp_info.CodePageName, sizeof(cp_info.CodePageName) * 2);
+    tb_assert_and_check_return_val(namelen < sizeof(cp_info.CodePageName) * 2, 0);
+    lua_pushlstring(lua, namebuf, namelen);
     tb_free(namebuf);
     lua_settable(lua, -3);
 
@@ -163,10 +173,7 @@ tb_int_t xm_winos_mbstoutf8(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     tb_int_t n = lua_gettop(lua);
-    if (n == 0)
-    {
-        return 0;
-    }
+    tb_check_return_val(n, 0);
     tb_int_t    cp    = 0;
     tb_int_t    r_len = 0;
     lua_Integer lcp   = luaL_optinteger(lua, 1, CP_ACP);
@@ -174,10 +181,13 @@ tb_int_t xm_winos_mbstoutf8(lua_State* lua)
     cp = (tb_int_t)lcp;
     for (tb_int_t i = 2; i <= n; i++)
     {
-        tb_char_t const* mbs      = lua_tostring(lua, i);
-        tb_size_t        utf8size = tb_strlen(mbs) * 4;
+        tb_size_t        mbslen   = 0;
+        tb_char_t const* mbs      = lua_tolstring(lua, i, &mbslen);
+        tb_size_t        utf8size = (mbslen + 1) * 4;
         tb_char_t*       utf8     = tb_malloc_cstr(utf8size);
-        utf8size                  = xm_mbstoutf8(utf8, mbs, utf8size, cp);
+        tb_assert(mbs && utf8);
+        utf8size = xm_mbstoutf8(utf8, mbs, utf8size, cp);
+        tb_assert(utf8size < (mbslen + 1) * 4);
         lua_pushlstring(lua, utf8, utf8size);
         tb_free(utf8);
         r_len++;
@@ -195,9 +205,9 @@ tb_size_t xm_wcstoutf8(tb_char_t* s1, tb_wchar_t const* s2, tb_size_t n)
         if (n > 0) *s1 = 0;
         return 0;
     }
-    tb_size_t size = (tb_size_t)WideCharToMultiByte(CP_UTF8, 0, s2, -1, s1, (tb_int_t)n, NULL, NULL);
+    tb_int_t size = WideCharToMultiByte(CP_UTF8, 0, s2, -1, s1, (tb_int_t)n, NULL, NULL);
     if (size > 0 && s1[size - 1] == 0) size--;
-    return size;
+    return (tb_size_t)size;
 }
 
 tb_size_t xm_utf8towcs(tb_wchar_t* s1, tb_char_t const* s2, tb_size_t n)
@@ -210,9 +220,9 @@ tb_size_t xm_utf8towcs(tb_wchar_t* s1, tb_char_t const* s2, tb_size_t n)
         if (n > 0) *s1 = 0;
         return 0;
     }
-    tb_size_t size = (tb_size_t)MultiByteToWideChar(CP_UTF8, 0, s2, -1, s1, (tb_int_t)n);
+    tb_int_t size = MultiByteToWideChar(CP_UTF8, 0, s2, -1, s1, (tb_int_t)n);
     if (size > 0 && s1[size - 1] == 0) size--;
-    return size;
+    return (tb_size_t)size;
 }
 
 tb_size_t xm_mbstoutf8(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t mbs_cp)
@@ -227,11 +237,12 @@ tb_size_t xm_mbstoutf8(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t
     }
     tb_int_t    u16buflen = MultiByteToWideChar(mbs_cp, 0, s2, -1, NULL, 0);
     tb_wchar_t* u16buf    = tb_nalloc_type(u16buflen, tb_wchar_t);
-    u16buflen             = MultiByteToWideChar(mbs_cp, 0, s2, -1, u16buf, u16buflen);
-    tb_size_t size        = (tb_size_t)WideCharToMultiByte(CP_UTF8, 0, u16buf, u16buflen, s1, (tb_int_t)n, NULL, NULL);
+    tb_assert(u16buf);
+    u16buflen     = MultiByteToWideChar(mbs_cp, 0, s2, -1, u16buf, u16buflen);
+    tb_int_t size = WideCharToMultiByte(CP_UTF8, 0, u16buf, u16buflen, s1, (tb_int_t)n, NULL, NULL);
     tb_free(u16buf);
     if (size > 0 && s1[size - 1] == 0) size--;
-    return size;
+    return (tb_size_t)size;
 }
 
 tb_size_t xm_utf8tombs(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t mbs_cp)
@@ -246,19 +257,10 @@ tb_size_t xm_utf8tombs(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t
     }
     tb_int_t    u16buflen = MultiByteToWideChar(CP_UTF8, 0, s2, -1, NULL, 0);
     tb_wchar_t* u16buf    = tb_nalloc_type(u16buflen, tb_wchar_t);
-    u16buflen             = MultiByteToWideChar(CP_UTF8, 0, s2, -1, u16buf, u16buflen);
-    tb_size_t size        = (tb_size_t)WideCharToMultiByte(mbs_cp, 0, u16buf, u16buflen, s1, (tb_int_t)n, NULL, NULL);
+    tb_assert(u16buf);
+    u16buflen     = MultiByteToWideChar(CP_UTF8, 0, s2, -1, u16buf, u16buflen);
+    tb_int_t size = WideCharToMultiByte(mbs_cp, 0, u16buf, u16buflen, s1, (tb_int_t)n, NULL, NULL);
     tb_free(u16buf);
     if (size > 0 && s1[size - 1] == 0) size--;
-    return size;
-}
-
-static tb_int_t xm_expand_cp(tb_int_t cp)
-{
-    // check
-    tb_assert_and_check_return_val(cp >= 0 && cp <= 65535, 0);
-
-    if (cp == CP_OEMCP) return GetOEMCP();
-    if (cp == CP_ACP) return GetACP();
-    return cp;
+    return (tb_size_t)size;
 }

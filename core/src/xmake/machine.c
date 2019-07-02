@@ -361,11 +361,10 @@ static tb_size_t xm_machine_get_program_file(xm_machine_t* machine, tb_char_t* p
         tb_wchar_t buf[TB_PATH_MAXN] = {0};
         tb_size_t  size              = (tb_size_t)GetModuleFileNameW(tb_null, buf, (DWORD)TB_PATH_MAXN);
         tb_assert_and_check_break(size < TB_PATH_MAXN);
-
         // end
         buf[size]  = L'\0';
         size       = tb_wcstombs(path, buf, maxn);
-
+        tb_assert_and_check_break(size < maxn);
         path[size] = '\0';
 
         // ok
