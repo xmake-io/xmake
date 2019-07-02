@@ -39,6 +39,9 @@ static tb_int_t xm_expand_cp(tb_int_t cp);
 
 tb_int_t xm_winos_console_cp(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_int_t n = lua_gettop(lua);
     if (n >= 1)
     {
@@ -59,6 +62,9 @@ tb_int_t xm_winos_console_cp(lua_State* lua)
 
 tb_int_t xm_winos_console_output_cp(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_int_t n = lua_gettop(lua);
     if (n >= 1)
     {
@@ -79,6 +85,9 @@ tb_int_t xm_winos_console_output_cp(lua_State* lua)
 
 tb_int_t xm_winos_cp_info(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_int_t    n  = lua_gettop(lua);
     lua_Integer cp = luaL_checkinteger(lua, 1);
     luaL_argcheck(lua, cp >= 0 && cp < 65536, 1, "invalid code page");
@@ -130,6 +139,9 @@ tb_int_t xm_winos_cp_info(lua_State* lua)
 
 tb_int_t xm_winos_ansi_cp(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_uint_t cp = GetACP();
     lua_pushinteger(lua, (lua_Integer)cp);
     return 1;
@@ -137,6 +149,9 @@ tb_int_t xm_winos_ansi_cp(lua_State* lua)
 
 tb_int_t xm_winos_oem_cp(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_uint_t cp = GetOEMCP();
     lua_pushinteger(lua, (lua_Integer)cp);
     return 1;
@@ -144,6 +159,9 @@ tb_int_t xm_winos_oem_cp(lua_State* lua)
 
 tb_int_t xm_winos_mbstoutf8(lua_State* lua)
 {
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_int_t n = lua_gettop(lua);
     if (n == 0)
     {
@@ -169,6 +187,9 @@ tb_int_t xm_winos_mbstoutf8(lua_State* lua)
 
 tb_size_t xm_wcstoutf8(tb_char_t* s1, tb_wchar_t const* s2, tb_size_t n)
 {
+    // check
+    tb_assert_and_check_return_val(s1 && s2, 0);
+
     if (*s2 == 0)
     {
         if (n > 0) *s1 = 0;
@@ -181,6 +202,9 @@ tb_size_t xm_wcstoutf8(tb_char_t* s1, tb_wchar_t const* s2, tb_size_t n)
 
 tb_size_t xm_utf8towcs(tb_wchar_t* s1, tb_char_t const* s2, tb_size_t n)
 {
+    // check
+    tb_assert_and_check_return_val(s1 && s2, 0);
+
     if (*s2 == 0)
     {
         if (n > 0) *s1 = 0;
@@ -193,6 +217,9 @@ tb_size_t xm_utf8towcs(tb_wchar_t* s1, tb_char_t const* s2, tb_size_t n)
 
 tb_size_t xm_mbstoutf8(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t mbs_cp)
 {
+    // check
+    tb_assert_and_check_return_val(s1 && s2, 0);
+
     if (*s2 == 0)
     {
         if (n > 0) *s1 = 0;
@@ -209,6 +236,9 @@ tb_size_t xm_mbstoutf8(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t
 
 tb_size_t xm_utf8tombs(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t mbs_cp)
 {
+    // check
+    tb_assert_and_check_return_val(s1 && s2, 0);
+
     if (*s2 == 0)
     {
         if (n > 0) *s1 = 0;
@@ -225,6 +255,9 @@ tb_size_t xm_utf8tombs(tb_char_t* s1, tb_char_t const* s2, tb_size_t n, tb_int_t
 
 static tb_int_t xm_expand_cp(tb_int_t cp)
 {
+    // check
+    tb_assert_and_check_return_val(cp >= 0 && cp <= 65535, 0);
+
     if (cp == CP_OEMCP) return GetOEMCP();
     if (cp == CP_ACP) return GetACP();
     return cp;

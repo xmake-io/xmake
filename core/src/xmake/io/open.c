@@ -40,10 +40,12 @@
  */
 tb_int_t xm_io_open(lua_State* lua)
 {
+    tb_assert_and_check_return_val(lua, 0);
+
     tb_char_t const* path    = luaL_checkstring(lua, 1);
     tb_char_t const* mode    = luaL_optstring(lua, 2, "r");
 
-    tb_check_return_val(path && mode, 0);
+    tb_assert_and_check_return_val(path && mode, 0);
 
     tb_size_t        tb_mode = TB_FILE_MODE_RW;
     switch (mode[0])
@@ -86,7 +88,7 @@ tb_int_t xm_io_open(lua_State* lua)
         xm_file->type       = XM_IO_FILE_TYPE_FILE;
         xm_file->encoding   = enc;
         xm_file->path       = savedfull;
-        tb_strcpy(xm_file->name, "file: ");
+        tb_strlcpy(xm_file->name, "file: ", tb_arrayn(xm_file->name));
         if (pathlen < tb_arrayn(xm_file->name) - tb_arrayn("file: "))
         {
             tb_strcat(xm_file->name, full);
@@ -101,7 +103,7 @@ tb_int_t xm_io_open(lua_State* lua)
     }
     else
     {
-        tb_free(savedfull);
+        if (savedfull) tb_free(savedfull);
         lua_pushnil(lua);
         lua_pushliteral(lua, "failed to open file.");
         return 2;

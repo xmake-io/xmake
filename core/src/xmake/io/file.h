@@ -26,6 +26,9 @@
  */
 #include "prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * types
+ */
 typedef enum __xm_io_file_type_e
 {
     XM_IO_FILE_TYPE_FILE   = 0, //!< disk file
@@ -61,12 +64,17 @@ typedef struct __xm_io_file
     tb_char_t const* path;
 } xm_io_file;
 
-#define xm_io_file_is_file(fileref) (fileref->type == XM_IO_FILE_TYPE_FILE)
-#define xm_io_file_is_closed_file(fileref) (fileref->type == XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
-#define xm_io_file_is_std(fileref) (fileref->type != XM_IO_FILE_TYPE_FILE)
-#define xm_io_file_is_closed_std(fileref) (fileref->type != XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
-#define xm_io_file_is_closed(fileref) (xm_io_file_is_closed_file(fileref) || xm_io_file_is_closed_std(fileref))
-#define xm_io_file_is_tty(fileref) (!!(fileref->type & XM_IO_FILE_FLAG_TTY))
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#define xm_io_file_is_file(fileref)          (fileref->type == XM_IO_FILE_TYPE_FILE)
+#define xm_io_file_is_std(fileref)           (fileref->type != XM_IO_FILE_TYPE_FILE)
+
+#define xm_io_file_is_closed_file(fileref)   (fileref->type == XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
+#define xm_io_file_is_closed_std(fileref)    (fileref->type != XM_IO_FILE_TYPE_FILE && !(fileref->file_ref))
+
+#define xm_io_file_is_tty(fileref)           (!!(fileref->type & XM_IO_FILE_FLAG_TTY))
+#define xm_io_file_is_closed(fileref)        (xm_io_file_is_closed_file(fileref) || xm_io_file_is_closed_std(fileref))
 
 #define xm_io_file_udata "XM_IO_FILE*"
 
@@ -86,6 +94,9 @@ typedef struct __xm_io_file
 
 #define xm_io_file_error_closed(lua) xm_io_file_error(lua, "file has been closed")
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
 static inline xm_io_file* xm_io_newfile(lua_State* lua)
 {
     tb_assert_and_check_return_val(lua, tb_null);

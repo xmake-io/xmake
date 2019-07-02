@@ -69,7 +69,7 @@ static tb_size_t xm_isatty(tb_size_t type)
 
 static void xm_init(lua_State* lua, tb_size_t type)
 {
-    tb_check_return(lua);
+    tb_assert_and_check_return(lua);
 
     tb_char_t const *name, *path;
     FILE*            fp;
@@ -105,11 +105,13 @@ static void xm_init(lua_State* lua, tb_size_t type)
     file->path            = path;
     file->std_ref         = fp;
     tb_char_t const* info = xm_io_file_is_tty(file) ? "" : " redirected";
-    tb_sprintf(file->name, "file: (%s%s)", name, info);
+    tb_snprintf(file->name, tb_arrayn(file->name), "file: (%s%s)", name, info);
 }
 
 tb_int_t xm_io_std(lua_State* lua)
 {
+    tb_assert_and_check_return_val(lua, 0);
+
     lua_getglobal(lua, "io");
     xm_init(lua, XM_IO_FILE_TYPE_STDIN);
     xm_init(lua, XM_IO_FILE_TYPE_STDOUT);

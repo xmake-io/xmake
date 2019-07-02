@@ -43,14 +43,20 @@
 
 static tb_void_t direct_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
+    tb_assert(file && data);
+
     tb_file_writ(file->file_ref, (tb_byte_t const*)data, size);
 }
 static tb_void_t transcode_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
+    tb_assert(file && data);
+
     tb_buffer_t buf;
-    tb_buffer_init(&buf);
-    tb_byte_t* buf_ptr  = tb_buffer_resize(&buf, (size + 1) * 2);
-    tb_long_t  buf_size = tb_charset_conv_cstr(TB_CHARSET_TYPE_UTF8, file->encoding, data, buf_ptr, size * 2);
+    tb_assert_and_check_return(tb_buffer_init(&buf));
+
+    tb_byte_t* buf_ptr = tb_buffer_resize(&buf, (size + 1) * 2);
+    tb_assert(buf_ptr);
+    tb_long_t buf_size = tb_charset_conv_cstr(TB_CHARSET_TYPE_UTF8, file->encoding, data, buf_ptr, size * 2);
     if (buf_size > 0) tb_file_writ(file->file_ref, buf_ptr, (tb_size_t)buf_size);
     tb_buffer_exit(&buf);
     return;
@@ -58,8 +64,10 @@ static tb_void_t transcode_write(xm_io_file* file, tb_char_t const* data, tb_siz
 
 static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
+    tb_assert(file && data);
+
     tb_size_t type = (file->type & ~XM_IO_FILE_FLAG_TTY);
-    tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
+    tb_assert_and_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
 #ifdef TB_CONFIG_OS_WINDOWS
     HANDLE handle = INVALID_HANDLE_VALUE;
@@ -68,7 +76,7 @@ static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t si
     case XM_IO_FILE_TYPE_STDOUT: handle = GetStdHandle(STD_OUTPUT_HANDLE); break;
     case XM_IO_FILE_TYPE_STDERR: handle = GetStdHandle(STD_ERROR_HANDLE); break;
     }
-    tb_check_return(handle != INVALID_HANDLE_VALUE);
+    tb_assert_and_check_return(handle != INVALID_HANDLE_VALUE);
 
     // write string to stdout
     tb_size_t writ = 0;
@@ -76,12 +84,13 @@ static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t si
     // write to the stdout
     DWORD       real = 0;
     tb_buffer_t wbuf;
-    tb_buffer_init(&wbuf);
+    tb_assert_and_check_return(tb_buffer_init(&wbuf));
     if (xm_io_file_is_tty(file))
     {
         // write to console
         tb_wchar_t* wdata = (tb_wchar_t*)tb_buffer_resize(&wbuf, (size + 1) * 2);
-        tb_size_t   wsize = tb_mbstowcs(wdata, data, size);
+        tb_assert(wdata);
+        tb_size_t wsize = tb_mbstowcs(wdata, data, size);
         while (writ < wsize)
         {
             if (!WriteConsoleW(handle, wdata + writ, (DWORD)(wsize - writ), &real, tb_null)) break;
@@ -93,7 +102,8 @@ static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t si
     {
         // write to redirected file
         tb_char_t* wdata = (tb_char_t*)tb_buffer_resize(&wbuf, (size + 1) * 4);
-        tb_size_t  wsize = xm_utf8tombs(wdata, data, size * 4, GetConsoleOutputCP());
+        tb_assert(wdata);
+        tb_size_t wsize = xm_utf8tombs(wdata, data, size * 4, GetConsoleOutputCP());
         while (writ < wsize)
         {
             if (!WriteFile(handle, wdata + writ, (DWORD)(wsize - writ), &real, tb_null)) break;
@@ -130,6 +140,8 @@ tb_int_t xm_io_file_write(lua_State* lua)
         {
             size_t           datasize;
             tb_char_t const* data = luaL_checklstring(lua, i, &datasize);
+            if (!datasize) continue;
+            tb_assert(data);
 
             if (xm_io_file_is_std(file))
                 std_write(file, data, (tb_size_t)datasize);
