@@ -105,6 +105,7 @@ tb_int_t xm_io_file_isatty(lua_State* lua);
 tb_int_t xm_io_file_path(lua_State* lua);
 tb_int_t xm_io_file___len(lua_State* lua);
 tb_int_t xm_io_file___tostring(lua_State* lua);
+tb_int_t xm_io_file___gc(lua_State* lua);
 
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
@@ -243,7 +244,7 @@ static luaL_Reg const g_io_file_functions[] =
 ,   { "isatty",        xm_io_file_isatty       }
 ,   { "path",          xm_io_file_path         }
 ,   { "close",         xm_io_file_close        }
-,   { "__gc",          xm_io_file_close        }
+,   { "__gc",          xm_io_file___gc         }
 ,   { "__len",         xm_io_file___len        }
 ,   { "__tostring",    xm_io_file___tostring   }
 ,   { tb_null,         tb_null                 }

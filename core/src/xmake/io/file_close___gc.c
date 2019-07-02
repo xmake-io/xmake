@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      OpportunityLiu
- * @file        file_close.c
+ * @file        file_close___gc.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file_close"
+#define TB_TRACE_MODULE_NAME "file_close___gc"
 #define TB_TRACE_MODULE_DEBUG (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -35,10 +35,7 @@
  * implementation
  */
 
-/*
- * file:close()
- */
-tb_int_t xm_io_file_close(lua_State* lua)
+static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_file)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -46,8 +43,12 @@ tb_int_t xm_io_file_close(lua_State* lua)
     xm_io_file* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file))
     {
-        lua_pushboolean(lua, tb_true);
-        xm_io_file_success();
+        if (allow_closed_file)
+        {
+            lua_pushboolean(lua, tb_true);
+            xm_io_file_success();
+        }else
+            xm_io_file_error_closed(lua);
     }
     if (xm_io_file_is_file(file))
     {
@@ -73,4 +74,30 @@ tb_int_t xm_io_file_close(lua_State* lua)
         lua_pushboolean(lua, tb_true);
         xm_io_file_success();
     }
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*
+ * file:close()
+ */
+tb_int_t xm_io_file_close(lua_State* lua)
+{
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
+    return xm_io_file_close_impl(lua, tb_false);
+}
+
+/*
+ * file:close()
+ */
+tb_int_t xm_io_file___gc(lua_State* lua)
+{
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
+    return xm_io_file_close_impl(lua, tb_true);
 }
