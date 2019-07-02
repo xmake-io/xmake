@@ -40,6 +40,8 @@ typedef enum __xm_io_file_type_e
     XM_IO_FILE_FLAG_TTY    = 0x10, //!< mark tty std stream
 } xm_io_file_type_e;
 
+// use negetive numbers for this enum, its a extension for tb_charset_type_e
+// before adding new values, make sure they have not conflicts with values in tb_charset_type_e
 typedef enum __xm_io_file_encoding_e
 {
     XM_IO_FILE_ENCODING_BINARY  = -1,
@@ -53,13 +55,13 @@ typedef struct __xm_io_file
 {
     union 
     {
-        tb_file_ref_t file_ref;
-        FILE*         std_ref;
+        tb_file_ref_t file_ref; // valid if type == XM_IO_FILE_TYPE_FILE
+        FILE*         std_ref;  // valid otherwise
     };
 
-    tb_size_t        mode;
-    tb_size_t        type;
-    tb_size_t        encoding; // value of xm_io_file_encoding_e or tb_charset_type_e
+    tb_size_t        mode;      // tb_file_mode_t
+    tb_size_t        type;      // xm_io_file_type_e
+    tb_size_t        encoding;  // value of xm_io_file_encoding_e or tb_charset_type_e
     tb_char_t        name[64];
     tb_char_t const* path;
 } xm_io_file;
@@ -84,15 +86,21 @@ typedef struct __xm_io_file
         return 1;                                                                                                      \
     } while (0)
 
-#define xm_io_file_error(lua, reason)                                                                                  \
+#define xm_io_file_error(lua, file, reason)                                                                            \
     do                                                                                                                 \
     {                                                                                                                  \
         lua_pushnil(lua);                                                                                              \
-        lua_pushliteral(lua, reason);                                                                                  \
+        lua_pushfstring(lua, "error: %s (%s)", reason, file->name);                                                    \
         return 2;                                                                                                      \
     } while (0)
 
-#define xm_io_file_error_closed(lua) xm_io_file_error(lua, "file has been closed")
+#define xm_io_file_error_closed(lua)                                                                                   \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        lua_pushnil(lua);                                                                                              \
+        lua_pushliteral(lua, "error: file has been closed", reason);                                                   \
+        return 2;                                                                                                      \
+    } while (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces

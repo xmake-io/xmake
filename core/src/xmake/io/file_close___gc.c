@@ -52,7 +52,7 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
     }
     if (xm_io_file_is_file(file))
     {
-        if (!tb_file_exit(file->file_ref)) xm_io_file_error(lua, "failed to close file");
+        if (!tb_file_exit(file->file_ref)) xm_io_file_error(lua, file, "failed to close file");
         file->file_ref = tb_null;
         if (file->path)
         {
@@ -67,7 +67,7 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
     {
         // should we support close std files?
 
-        // if (fclose(file->std_ref)) xm_io_file_error(lua, "failed to close file");
+        // if (fclose(file->std_ref)) xm_io_file_error(lua, file, "failed to close file");
         // file->std_ref = tb_null;
         // file->path    = tb_null;
         // tb_strcpy(file->name, "file: (closed file)");

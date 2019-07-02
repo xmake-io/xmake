@@ -52,5 +52,5 @@ tb_int_t xm_io_file___len(lua_State* lua)
         xm_io_file_success();
     }
     else
-        xm_io_file_error(lua, "getting file size for this file is invalid");
+        xm_io_file_error(lua, file, "getting file size for this file is invalid");
 }

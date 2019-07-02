@@ -65,7 +65,7 @@ tb_int_t xm_io_file_flush(lua_State* lua)
 
     tb_bool_t succeed = xm_io_file_is_file(file) ? xm_io_file_flush(file) : xm_io_std_flush(file);
 
-    if (!succeed) xm_io_file_error(lua, "failed to flush file");
+    if (!succeed) xm_io_file_error(lua, file, "failed to flush file");
     lua_pushboolean(lua, tb_true);
     xm_io_file_success();
 }

@@ -68,6 +68,6 @@ tb_int_t xm_io_file_seek(lua_State* lua)
     }
     else
     {
-        xm_io_file_error(lua, "seek is not supported on this file");
+        xm_io_file_error(lua, file, "seek is not supported on this file");
     }
 }
