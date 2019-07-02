@@ -211,6 +211,8 @@ typedef enum __pushline_state_e
 
 static tb_int_t buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+
     tb_size_t charset = file->encoding;
     tb_bool_t binary  = charset == XM_IO_FILE_ENCODING_BINARY || charset == XM_IO_FILE_ENCODING_UNKNOWN;
     if (binary)
@@ -353,7 +355,7 @@ static tb_int_t buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t co
 
 static tb_int_t read_all(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     luaL_Buffer sbuf, *buf = &sbuf;
     luaL_buffinit(lua, buf);
@@ -376,7 +378,7 @@ static tb_int_t read_all(lua_State* lua, xm_io_file* file, tb_char_t const* cont
 
 static tb_int_t read_line(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     luaL_Buffer sbuf, *buf = &sbuf;
     luaL_buffinit(lua, buf);
@@ -399,7 +401,7 @@ static tb_int_t read_line(lua_State* lua, xm_io_file* file, tb_char_t const* con
 
 static tb_int_t read_n(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_long_t n)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     if (*continuation != '\0') xm_io_file_error(lua, "continuation is not supported for read number of bytes");
     tb_size_t charset = file->encoding;
@@ -438,7 +440,7 @@ static tb_int_t read_n(lua_State* lua, xm_io_file* file, tb_char_t const* contin
 static tb_size_t std_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation,
                                      tb_bool_t keep_crlf)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     tb_char_t strbuf[8192];
     tb_size_t buflen = 0;
@@ -488,7 +490,7 @@ static tb_size_t std_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char
 
 static tb_int_t std_read_line(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     luaL_Buffer sbuf, *buf = &sbuf;
     luaL_buffinit(lua, buf);
@@ -511,7 +513,7 @@ static tb_int_t std_read_line(lua_State* lua, xm_io_file* file, tb_char_t const*
 
 static tb_int_t std_read_all(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     luaL_Buffer sbuf, *buf = &sbuf;
     luaL_buffinit(lua, buf);
@@ -534,7 +536,7 @@ static tb_int_t std_read_all(lua_State* lua, xm_io_file* file, tb_char_t const* 
 
 static tb_int_t std_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_long_t n)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     if (*continuation != '\0') xm_io_file_error(lua, "continuation is not supported for std streams");
     if (n == 0)
@@ -584,7 +586,7 @@ static tb_int_t std_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* co
 
 static tb_int_t std_read_num(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
 {
-    tb_assert(lua && file && continuation);
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     if (*continuation != '\0') xm_io_file_error(lua, "continuation is not supported for std streams");
     tb_double_t d;

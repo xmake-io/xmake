@@ -43,13 +43,13 @@
 
 static tb_void_t direct_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
-    tb_assert(file && data);
+    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     tb_file_writ(file->file_ref, (tb_byte_t const*)data, size);
 }
 static tb_void_t transcode_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
-    tb_assert(file && data);
+    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     tb_buffer_t buf;
     tb_assert_and_check_return(tb_buffer_init(&buf));
@@ -64,10 +64,10 @@ static tb_void_t transcode_write(xm_io_file* file, tb_char_t const* data, tb_siz
 
 static tb_void_t std_write(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
-    tb_assert(file && data);
+    tb_assert(file && data && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     tb_size_t type = (file->type & ~XM_IO_FILE_FLAG_TTY);
-    tb_assert_and_check_return(type != XM_IO_FILE_TYPE_STDIN);
+    tb_check_return(type != XM_IO_FILE_TYPE_STDIN);
 
 #ifdef TB_CONFIG_OS_WINDOWS
     HANDLE handle = INVALID_HANDLE_VALUE;

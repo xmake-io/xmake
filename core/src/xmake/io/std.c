@@ -98,6 +98,9 @@ static void xm_init(lua_State* lua, tb_size_t type)
     case XM_IO_FILE_TYPE_STDERR: path = "/dev/stderr"; break;
     }
 #endif
+
+    tb_assert(name && path && fp);
+
     xm_io_file* file = xm_io_newfile(lua);
     lua_setfield(lua, -2, name);
     file->encoding        = TB_CHARSET_TYPE_UTF8;
