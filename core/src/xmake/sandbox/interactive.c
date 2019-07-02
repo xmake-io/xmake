@@ -175,10 +175,12 @@ static tb_size_t xm_sandbox_readline(tb_char_t* data, tb_size_t maxn, tb_char_t 
     tb_print_sync();
 
 #   ifdef TB_CONFIG_OS_WINDOWS
-    tb_wchar_t buf[LUA_PROMPT_BUFSIZE];
     // get input buffer
-    if (fgetws(buf, (tb_int_t)(maxn / 3), stdin))
+    DWORD len = 0;
+    tb_wchar_t buf[LUA_PROMPT_BUFSIZE];
+    if (ReadConsoleW(GetStdHandle(STD_INPUT_HANDLE), buf, (DWORD)tb_min(maxn / 3, tb_arrayn(buf)), &len, tb_null) && len < tb_arrayn(buf))
     {
+        buf[len] = L'\0';
         xm_wcstoutf8(data, buf, maxn);
         return tb_strlen(data);
     }
