@@ -90,8 +90,8 @@ function _instance:_load_rules(suffix)
     return true
 end
 
--- do load target and rules
-function _instance:_load()
+-- load all
+function _instance:_load_all()
 
     -- do before_load with target rules
     local ok, errors = self:_load_rules("before")
@@ -119,8 +119,29 @@ function _instance:_load()
     if not ok then
         return false, errors
     end
+    return true
+end
 
-    -- ok
+-- do load target and rules
+function _instance:_load()
+
+    -- enter the environments of the target packages
+    local oldenvs = {}
+    for name, values in pairs(self:pkgenvs()) do
+        oldenvs[name] = os.getenv(name)
+        os.addenv(name, unpack(values))
+    end
+
+    -- load all
+    local ok, errors = self:_load_all()
+    if not ok then
+        return false, errors
+    end
+
+    -- leave the environments of the target packages
+    for name, values in pairs(oldenvs) do
+        os.setenv(name, values)
+    end
     return true
 end
 
