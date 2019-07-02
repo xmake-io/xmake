@@ -5,7 +5,7 @@
 ### New features
 
 * Add protobuf c/c++ rules
-* [#468](https://github.com/xmake-io/xmake/pull/468)Add utf-8 support for windows
+* [#468](https://github.com/xmake-io/xmake/pull/468): Add utf-8 support for windows
 
 ## v2.2.7
 
@@ -611,7 +611,7 @@
 ### 新特性
 
 * 添加protobuf c/c++构建规则
-* [#468](https://github.com/xmake-io/xmake/pull/468)添加对 Windows 的 UTF-8 支持
+* [#468](https://github.com/xmake-io/xmake/pull/468): 添加对 Windows 的 UTF-8 支持
 
 ## v2.2.7
 
