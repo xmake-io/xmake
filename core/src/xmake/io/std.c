@@ -67,8 +67,9 @@ static tb_size_t xm_isatty(tb_size_t type)
     return type;
 }
 
-static void xm_init(lua_State* lua, tb_size_t type)
+static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
 {
+    // check
     tb_assert_and_check_return(lua);
 
     tb_char_t const* name = tb_null;
@@ -99,8 +100,7 @@ static void xm_init(lua_State* lua, tb_size_t type)
     case XM_IO_FILE_TYPE_STDERR: path = "/dev/stderr"; break;
     }
 #endif
-
-    tb_assert(name && path && fp);
+    tb_assert_and_check_return(name && path && fp);
 
     xm_io_file* file = xm_io_newfile(lua);
     lua_setfield(lua, -2, name);
@@ -114,12 +114,13 @@ static void xm_init(lua_State* lua, tb_size_t type)
 
 tb_int_t xm_io_std(lua_State* lua)
 {
+    // check
     tb_assert_and_check_return_val(lua, 0);
 
     lua_getglobal(lua, "io");
-    xm_init(lua, XM_IO_FILE_TYPE_STDIN);
-    xm_init(lua, XM_IO_FILE_TYPE_STDOUT);
-    xm_init(lua, XM_IO_FILE_TYPE_STDERR);
+    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDIN);
+    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDOUT);
+    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDERR);
     lua_pop(lua, 1);
     return 0;
 }

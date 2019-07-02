@@ -29,7 +29,6 @@ local string = require("base/string")
 
 -- save original apis
 io._open    = io._open or io.open
-
 _file._read = _file._read or _file.read
 
 -- read data from file
@@ -40,7 +39,6 @@ end
 
 -- read all lines from a file
 function _file:lines(opt)
-
     opt = opt or {}
     return function()
         local l = self:read("l", opt)
