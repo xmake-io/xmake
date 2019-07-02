@@ -332,12 +332,12 @@ static tb_bool_t xm_machine_save_arguments(xm_machine_t* machine, tb_int_t argc,
     {
 #ifdef TB_CONFIG_OS_WINDOWS
         tb_char_t argvbuf[4096] = {0};
-        tb_wcstombs(argvbuf, argvw[i], 4096);
-        argv[i] = argvbuf;
-#endif
-
+        tb_wcstombs(argvbuf, argvw[i], tb_arrayn(argvbuf));
         // table_new[table.getn(table_new) + 1] = argv[i]
+        lua_pushstring(machine->lua, argvbuf);
+#else
         lua_pushstring(machine->lua, argv[i]);
+#endif
         lua_rawseti(machine->lua, -2, (int)lua_objlen(machine->lua, -2) + 1);
     }
 

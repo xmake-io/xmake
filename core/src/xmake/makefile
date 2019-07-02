@@ -46,7 +46,7 @@ xmake_C_FILES 			+= \
 						os/getown \
 						io/file___len \
 						io/file___tostring \
-						io/file_close \
+						io/file_close___gc \
 						io/file_flush \
 						io/file_isatty \
 						io/file_path \
