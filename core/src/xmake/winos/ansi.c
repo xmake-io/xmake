@@ -181,7 +181,7 @@ tb_int_t xm_winos_mbstoutf8(lua_State* lua)
     cp = (tb_int_t)lcp;
     for (tb_int_t i = 2; i <= n; i++)
     {
-        tb_size_t        mbslen   = 0;
+        size_t           mbslen   = 0;
         tb_char_t const* mbs      = lua_tolstring(lua, i, &mbslen);
         tb_size_t        utf8size = (mbslen + 1) * 4;
         tb_char_t*       utf8     = tb_malloc_cstr(utf8size);

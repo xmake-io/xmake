@@ -35,13 +35,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-static tb_bool_t xm_io_std_flush(xm_io_file* file)
+static tb_bool_t xm_io_std_flush_impl(xm_io_file* file)
 {
     tb_assert_and_check_return_val(xm_io_file_is_std(file) && !xm_io_file_is_closed(file), tb_false);
     return !fflush(file->std_ref);
 }
 
-static tb_bool_t xm_io_file_flush(xm_io_file* file)
+static tb_bool_t xm_io_file_flush_impl(xm_io_file* file)
 {
     tb_assert_and_check_return_val(xm_io_file_is_file(file) && !xm_io_file_is_closed(file), tb_false);
     return tb_file_sync(file->file_ref);
@@ -62,7 +62,7 @@ tb_int_t xm_io_file_flush(lua_State* lua)
     xm_io_file* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file)) xm_io_file_error_closed(lua);
 
-    tb_bool_t succeed = xm_io_file_is_file(file) ? xm_io_file_flush(file) : xm_io_std_flush(file);
+    tb_bool_t succeed = xm_io_file_is_file(file) ? xm_io_file_flush_impl(file) : xm_io_std_flush_impl(file);
     if (!succeed) xm_io_file_error(lua, file, "failed to flush file");
     lua_pushboolean(lua, tb_true);
     xm_io_file_success();
