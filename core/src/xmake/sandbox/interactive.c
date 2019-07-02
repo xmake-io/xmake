@@ -51,7 +51,7 @@
 #define LUA_PROMPT  "> "
 
 // continuation prompt
-#define LUA_PROMPT2 "≫ "
+#define LUA_PROMPT2 ">> "
 
 // buffer size for prompt
 #define LUA_PROMPT_BUFSIZE 4096
