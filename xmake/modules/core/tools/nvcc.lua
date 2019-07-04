@@ -57,16 +57,40 @@ function init(self)
 end
 
 -- make the symbol flag
-function nf_symbol(self, level)
+function nf_symbol(self, level, target)
 
-    -- the maps
-    local maps = 
-    {   
-        debug  = "-g -G"
-    }
+    -- debug? generate *.pdb file
+    local flags = nil
+    if level == "debug" then
+        flags = "-g -G"
+        if is_plat("windows") then
+            local host_flags = nil
+            local symbolfile = nil
+            if target and target.symbolfile then
+                symbolfile = target:symbolfile()
+            end
+            if symbolfile then
 
-    -- make it
-    return maps[level] 
+                -- ensure the object directory
+                local symboldir = path.directory(symbolfile)
+                if not os.isdir(symboldir) then
+                    os.mkdir(symboldir)
+                end
+
+                -- check and add symbol output file
+                host_flags = "-Zi -Fd" .. target:symbolfile()
+                if self:has_flags({'-Xcompiler "-Zi -FS -Fd'  .. os.tmpfile() .. '.pdb"'}, "cuflags") then
+                    host_flags = "-FS " .. host_flags
+                end
+            else
+                host_flags = "-Zi"
+            end
+            flags = flags .. ' -Xcompiler "' .. host_flags .. '"'
+        end
+    end
+
+    -- none
+    return flags
 end
 
 -- make the warning flag
