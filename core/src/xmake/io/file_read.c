@@ -81,7 +81,14 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
 {
     // check
     tb_assert(file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
-    tb_assert(file->encoding != XM_IO_FILE_ENCODING_BINARY);
+
+    // is binary? 
+    tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
+    if (is_binary)
+    {
+        continuation = "";
+        keep_crlf = tb_true;
+    }
 
     // init line buffer
     tb_buffer_t line;
@@ -116,7 +123,7 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
         else if (size > 1)
         {
             // crlf? => lf
-            if (data[size - 2] == '\r')
+            if (!is_binary && data[size - 2] == '\r')
             {
                 data[size - 2] = '\n';
                 size--;
