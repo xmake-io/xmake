@@ -453,15 +453,9 @@ static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file* file, tb_cha
     // read number
     tb_char_t strbuf[512];
     if (tb_stdfile_gets(file->std_ref, strbuf, tb_arrayn(strbuf)))
-    {
-        lua_pushnumber(lua, tb_s10tod(strbuf));
-        return 1;
-    }
-    else
-    {
-        lua_pushnil(lua);
-        return 0;
-    }
+        lua_pushnumber(lua, tb_s10tod(strbuf)); // TODO check invalid float number string and push nil
+    else lua_pushnil(lua);
+    return 1;
 }
 
 /*

@@ -40,6 +40,7 @@
 #ifdef XM_CONFIG_API_HAVE_READLINE
 #   include <readline/history.h>
 #   include <readline/readline.h>
+#   include <stdlib.h>
 #   include <stdio.h> // on some OS (like centos) required
 #endif
 
@@ -160,7 +161,7 @@ static tb_size_t xm_sandbox_readline(tb_char_t* data, tb_size_t maxn, tb_char_t 
         tb_size_t size = tb_strlcpy(data, line, maxn);
 
         // free line
-        tb_free(line);
+        free((void*)line);
 
         // truncated?
         if (size >= maxn) return 0;
