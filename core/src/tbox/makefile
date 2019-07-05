@@ -128,6 +128,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/stream/filter \
 						tbox/src/tbox/stream/impl/filter/cache \
 						tbox/src/tbox/stream/impl/filter/chunked \
+						tbox/src/tbox/stream/impl/filter/charset \
 						tbox/src/tbox/stream/impl/stream/data \
 						tbox/src/tbox/stream/impl/stream/file \
 						tbox/src/tbox/stream/impl/stream/filter \
@@ -199,6 +200,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/container/stack \
 						tbox/src/tbox/container/vector \
 						tbox/src/tbox/libm/impl/libm \
+						tbox/src/tbox/libm/exp \
 						tbox/src/tbox/libm/ilog2i \
 						tbox/src/tbox/libm/isqrti \
 						tbox/src/tbox/libm/idivi8 \
@@ -220,6 +222,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/path \
 						tbox/src/tbox/platform/poller \
 						tbox/src/tbox/platform/print \
+						tbox/src/tbox/platform/stdfile \
 						tbox/src/tbox/platform/process \
 						tbox/src/tbox/platform/processor \
 						tbox/src/tbox/platform/sched \

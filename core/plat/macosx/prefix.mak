@@ -27,7 +27,7 @@ PRE_				:= $(if $(BIN),$(BIN)/$(PRE),xcrun -sdk macosx )
 CC					= $(PRE_)clang
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-CXFLAGS_CHECK		:= $(call CC_CHECK,-ftrapv,) $(call CC_CHECK,-fsanitize=address,)
+CXFLAGS_CHECK		:= $(call CC_CHECK,-ftrapv,) 
 export CXFLAGS_CHECK
 endif
 
@@ -35,7 +35,7 @@ endif
 LD					= $(PRE_)clang
 ifeq ($(LDFLAGS_CHECK),)
 LD_CHECK			= ${shell if $(LD) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-LDFLAGS_CHECK		:= $(call LD_CHECK,-ftrapv,) $(call LD_CHECK,-fsanitize=address,) 
+LDFLAGS_CHECK		:= $(call LD_CHECK,-ftrapv,) 
 export LDFLAGS_CHECK
 endif
 
