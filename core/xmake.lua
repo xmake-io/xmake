@@ -22,15 +22,6 @@ add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-
 -- add defines
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
 
--- set the symbols visibility: hidden
-set_symbols("hidden")
-
--- strip all symbols
-set_strip("all")
-
--- fomit the frame pointer
-add_cxflags("-fomit-frame-pointer")
-
 -- for the windows platform (msvc)
 if is_plat("windows") then 
     add_cxflags("-MT") 
