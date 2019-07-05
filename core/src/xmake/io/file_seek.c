@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file_seek"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file_seek"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -47,9 +47,12 @@ tb_int_t xm_io_file_seek(lua_State* lua)
     tb_char_t const* whence = luaL_optstring(lua, 2, "cur");
     tb_hong_t        offset = (tb_hong_t)luaL_optnumber(lua, 3, 0);
     tb_assert_and_check_return_val(file && whence, 0);
+
     if (xm_io_file_is_file(file))
     {
-        if (xm_io_file_is_closed_file(file)) xm_io_file_error_closed(lua);
+        if (xm_io_file_is_closed_file(file))
+            xm_io_file_return_error_closed(lua);
+
         tb_size_t mode = TB_FILE_SEEK_CUR;
         switch (*whence)
         {
@@ -59,13 +62,12 @@ tb_int_t xm_io_file_seek(lua_State* lua)
         case 'e': // "end"
             mode = TB_FILE_SEEK_END;
             break;
+        default:
+            break;
         }
         offset = tb_file_seek(file->file_ref, offset, mode);
         lua_pushnumber(lua, (lua_Number)offset);
-        xm_io_file_success();
+        xm_io_file_return_success();
     }
-    else
-    {
-        xm_io_file_error(lua, file, "seek is not supported on this file");
-    }
+    else xm_io_file_return_error(lua, file, "seek is not supported on this file");
 }

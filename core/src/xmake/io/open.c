@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "open"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "open"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -36,71 +36,77 @@
  */
 
 /*
- * io.open(path, mode)
+ * io.open(path, modestr)
  */
 tb_int_t xm_io_open(lua_State* lua)
 {
+    // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get file path and mode
     tb_char_t const* path    = luaL_checkstring(lua, 1);
-    tb_char_t const* mode    = luaL_optstring(lua, 2, "r");
+    tb_char_t const* modestr = luaL_optstring(lua, 2, "r");
+    tb_assert_and_check_return_val(path && modestr, 0);
 
-    tb_assert_and_check_return_val(path && mode, 0);
-
-    tb_size_t        tb_mode = TB_FILE_MODE_RW;
-    switch (mode[0])
+    // get file mode value
+    tb_size_t mode = TB_FILE_MODE_RW;
+    switch (modestr[0])
     {
-    case 'w': tb_mode |= TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC; break;
-    case 'a': tb_mode |= TB_FILE_MODE_APPEND | TB_FILE_MODE_CREAT; break;
+    case 'w': mode |= TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC; break;
+    case 'a': mode |= TB_FILE_MODE_APPEND | TB_FILE_MODE_CREAT; break;
     default: break;
     }
-    tb_bool_t update             = !!tb_strchr(mode, '+');
-    tb_char_t full[TB_PATH_MAXN] = {0};
-    path                         = tb_path_absolute(path, full, TB_PATH_MAXN);
-    tb_file_ref_t file           = tb_file_init(path, tb_mode);
-    tb_size_t     pathlen        = tb_strlen(path);
-    tb_char_t*    savedfull      = tb_malloc_cstr(pathlen + 1);
-    tb_assert(savedfull);
-    tb_strcpy(savedfull, path);
 
-    if (file)
+    // open file
+    tb_file_ref_t file = tb_file_init(path, mode);
+    if (!file)
     {
-        tb_size_t enc = XM_IO_FILE_ENCODING_UNKNOWN;
-        if (mode[1] == 'b' || (update && mode[2] == 'b'))
-            enc = XM_IO_FILE_ENCODING_BINARY;
-        else if (tb_strstr(mode, "utf8") || tb_strstr(mode, "utf-8"))
-            enc = TB_CHARSET_TYPE_UTF8;
-        else if (tb_strstr(mode, "utf16le") || tb_strstr(mode, "utf-16le"))
-            enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
-        else if (tb_strstr(mode, "utf16be") || tb_strstr(mode, "utf-16be"))
-            enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
-        else if (tb_strstr(mode, "utf16") || tb_strstr(mode, "utf-16"))
-            enc = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE;
-
-        xm_io_file* xm_file = xm_io_newfile(lua);
-        xm_file->file_ref   = file;
-        xm_file->mode       = tb_mode;
-        xm_file->type       = XM_IO_FILE_TYPE_FILE;
-        xm_file->encoding   = enc;
-        xm_file->path       = savedfull;
-        tb_strlcpy(xm_file->name, "file: ", tb_arrayn(xm_file->name));
-        if (pathlen < tb_arrayn(xm_file->name) - tb_arrayn("file: "))
-        {
-            tb_strcat(xm_file->name, full);
-        }
-        else
-        {
-            tb_strcat(xm_file->name, "...");
-            tb_strcat(xm_file->name,
-                      full + (pathlen - tb_arrayn(xm_file->name) + tb_arrayn("file: ") + tb_arrayn("...")));
-        }
-        return 1;
-    }
-    else
-    {
-        if (savedfull) tb_free(savedfull);
         lua_pushnil(lua);
         lua_pushliteral(lua, "failed to open file.");
         return 2;
     }
+
+    // get file encoding
+    tb_bool_t update = !!tb_strchr(modestr, '+');
+    tb_size_t encoding = XM_IO_FILE_ENCODING_UNKNOWN;
+    if (modestr[1] == 'b' || (update && modestr[2] == 'b'))
+        encoding = XM_IO_FILE_ENCODING_BINARY;
+    else if (tb_strstr(modestr, "utf8") || tb_strstr(modestr, "utf-8"))
+        encoding = TB_CHARSET_TYPE_UTF8;
+    else if (tb_strstr(modestr, "utf16le") || tb_strstr(modestr, "utf-16le"))
+        encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
+    else if (tb_strstr(modestr, "utf16be") || tb_strstr(modestr, "utf-16be"))
+        encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
+    else if (tb_strstr(modestr, "utf16") || tb_strstr(modestr, "utf-16"))
+        encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE;
+
+    // get absolute file path
+    tb_char_t full[TB_PATH_MAXN] = {0};
+    path = tb_path_absolute(path, full, TB_PATH_MAXN);
+    tb_assert_and_check_return_val(path, 0);
+
+    // new file
+    xm_io_file* xm_file = xm_io_newfile(lua);
+    xm_file->file_ref   = file;
+    xm_file->mode       = mode;
+    xm_file->type       = XM_IO_FILE_TYPE_FILE;
+    xm_file->encoding   = encoding;
+
+    // save file path
+    tb_size_t pathlen = tb_strlen(path);
+    xm_file->path = tb_malloc_cstr(pathlen + 1);
+    if (xm_file->path)
+        tb_strncpy(xm_file->path, path, pathlen);
+
+    // save file name
+    tb_size_t name_maxn = tb_arrayn(xm_file->name);
+    tb_strlcpy(xm_file->name, "file: ", name_maxn);
+    if (pathlen < name_maxn - tb_arrayn("file: "))
+        tb_strlcat(xm_file->name, full, name_maxn);
+    else
+    {
+        tb_strlcat(xm_file->name, "...", name_maxn);
+        tb_strlcat(xm_file->name, full + (pathlen - name_maxn + tb_arrayn("file: ") + tb_arrayn("...")), name_maxn);
+    }
+    return 1;
 }

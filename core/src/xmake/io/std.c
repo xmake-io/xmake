@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "io_std"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "io_std"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -40,9 +40,9 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-static tb_size_t xm_isatty(tb_size_t type)
+static tb_size_t xm_io_std_isatty(tb_size_t type)
 {
-    tb_bool_t answer;
+    tb_bool_t answer = tb_false;
 #ifdef TB_CONFIG_OS_WINDOWS
     DWORD  mode;
     HANDLE console_handle;
@@ -62,7 +62,6 @@ static tb_size_t xm_isatty(tb_size_t type)
     }
 #endif
 
-    // return answer
     if (answer) type |= XM_IO_FILE_FLAG_TTY;
     return type;
 }
@@ -74,20 +73,20 @@ static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
 
     tb_char_t const* name = tb_null;
     tb_char_t const* path = tb_null;
-    FILE*            fp   = tb_null;
+    tb_stdfile_ref_t fp   = tb_null;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN:
         name = "stdin";
-        fp   = stdin;
+        fp   = tb_stdfile_input();
         break;
     case XM_IO_FILE_TYPE_STDOUT:
         name = "stdout";
-        fp   = stdout;
+        fp   = tb_stdfile_output();
         break;
     case XM_IO_FILE_TYPE_STDERR:
         name = "stderr";
-        fp   = stderr;
+        fp   = tb_stdfile_error();
         break;
     }
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -102,10 +101,14 @@ static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
 #endif
     tb_assert_and_check_return(name && path && fp);
 
+    // new file
     xm_io_file* file = xm_io_newfile(lua);
+    tb_assert_and_check_return(file);
     lua_setfield(lua, -2, name);
+
+    // init file
     file->encoding        = TB_CHARSET_TYPE_UTF8;
-    file->type            = xm_isatty(type);
+    file->type            = xm_io_std_isatty(type);
     file->path            = path;
     file->std_ref         = fp;
     tb_char_t const* info = xm_io_file_is_tty(file) ? "" : " redirected";
@@ -117,6 +120,7 @@ tb_int_t xm_io_std(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // init io.stdin, io.stdout and io.stderr
     lua_getglobal(lua, "io");
     xm_io_std_init(lua, XM_IO_FILE_TYPE_STDIN);
     xm_io_std_init(lua, XM_IO_FILE_TYPE_STDOUT);

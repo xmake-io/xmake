@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file_isatty"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file_isatty"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -42,19 +42,8 @@ tb_int_t xm_io_file_isatty(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file pointer
-    xm_io_file* fp = xm_io_getfile(lua);
-
-    if (xm_io_file_is_file(fp))
-    {
-        lua_pushboolean(lua, tb_false);
-        // ok
-        return 1;
-    }
-    tb_bool_t istty = xm_io_file_is_tty(fp);
-    // return answer
-    lua_pushboolean(lua, istty);
-
-    // ok
+    // is tty?
+    xm_io_file* file = xm_io_getfile(lua);
+    lua_pushboolean(lua, xm_io_file_is_tty(file));
     return 1;
 }

@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file___tostring"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file___tostring"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -43,6 +43,7 @@ tb_int_t xm_io_file___tostring(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get file name as string
     xm_io_file* file = xm_io_getfile(lua);
     lua_pushstring(lua, file->name);
     return 1;

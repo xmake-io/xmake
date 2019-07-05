@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file_path"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file_path"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -42,10 +42,14 @@ tb_int_t xm_io_file_path(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file pointer
-    xm_io_file* fp = xm_io_getfile(lua);
-    if (xm_io_file_is_closed(fp)) xm_io_file_error_closed(lua);
-    lua_pushstring(lua, fp->path);
-    // ok
-    return 1;
+    // this file has been closed?
+    xm_io_file* file = xm_io_getfile(lua);
+    if (xm_io_file_is_closed(file)) 
+        xm_io_file_return_error_closed(lua);
+    else 
+    {
+        // return file path
+        lua_pushstring(lua, file->path);
+        return 1;
+    }
 }

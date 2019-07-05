@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file___len"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file___len"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,8 +35,7 @@
  * implementation
  */
 
-/*
- * #file
+/* get file length, #file
  */
 tb_int_t xm_io_file___len(lua_State* lua)
 {
@@ -45,12 +44,12 @@ tb_int_t xm_io_file___len(lua_State* lua)
 
     xm_io_file* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file))
-        xm_io_file_error_closed(lua);
+        xm_io_file_return_error_closed(lua);
     else if (xm_io_file_is_file(file))
     {
+        tb_assert(file->file_ref);
         lua_pushnumber(lua, (lua_Number)tb_file_size(file->file_ref));
-        xm_io_file_success();
+        xm_io_file_return_success();
     }
-    else
-        xm_io_file_error(lua, file, "getting file size for this file is invalid");
+    else xm_io_file_return_error(lua, file, "getting file size for this file is invalid");
 }

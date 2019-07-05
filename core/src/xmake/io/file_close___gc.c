@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME "file_close___gc"
-#define TB_TRACE_MODULE_DEBUG (0)
+#define TB_TRACE_MODULE_NAME    "file_close___gc"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -46,33 +46,34 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
         if (allow_closed_file)
         {
             lua_pushboolean(lua, tb_true);
-            xm_io_file_success();
-        }else
-            xm_io_file_error_closed(lua);
+            xm_io_file_return_success();
+        }
+        else xm_io_file_return_error_closed(lua);
     }
     if (xm_io_file_is_file(file))
     {
-        if (!tb_file_exit(file->file_ref)) xm_io_file_error(lua, file, "failed to close file");
+        // close file
+        tb_assert(file->file_ref);
+        if (!tb_file_exit(file->file_ref)) 
+            xm_io_file_return_error(lua, file, "failed to close file");
         file->file_ref = tb_null;
+
+        // free file path
         if (file->path)
         {
             tb_free(file->path);
             file->path = tb_null;
         }
+
+        // mark this file as closed
         tb_strlcpy(file->name, "file: (closed file)", tb_arrayn(file->name));
         lua_pushboolean(lua, tb_true);
-        xm_io_file_success();
+        xm_io_file_return_success();
     }
     else
     {
-        // should we support close std files?
-
-        // if (fclose(file->std_ref)) xm_io_file_error(lua, file, "failed to close file");
-        // file->std_ref = tb_null;
-        // file->path    = tb_null;
-        // tb_strcpy(file->name, "file: (closed file)");
         lua_pushboolean(lua, tb_true);
-        xm_io_file_success();
+        xm_io_file_return_success();
     }
 }
 
@@ -85,9 +86,6 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
  */
 tb_int_t xm_io_file_close(lua_State* lua)
 {
-    // check
-    tb_assert_and_check_return_val(lua, 0);
-
     return xm_io_file_close_impl(lua, tb_false);
 }
 
@@ -96,8 +94,5 @@ tb_int_t xm_io_file_close(lua_State* lua)
  */
 tb_int_t xm_io_file___gc(lua_State* lua)
 {
-    // check
-    tb_assert_and_check_return_val(lua, 0);
-
     return xm_io_file_close_impl(lua, tb_true);
 }
