@@ -286,6 +286,8 @@ tb_int_t xm_io_open(lua_State* lua)
     // new file
     xm_io_file* xm_file = xm_io_newfile(lua);
     xm_file->file_ref   = file_ref;
+    xm_file->stream     = stream;
+    xm_file->fstream    = fstream;
     xm_file->mode       = mode;
     xm_file->type       = XM_IO_FILE_TYPE_FILE;
     xm_file->encoding   = encoding;

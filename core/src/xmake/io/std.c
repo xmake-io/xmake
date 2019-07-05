@@ -111,6 +111,8 @@ static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
     file->type            = xm_io_std_isatty(type);
     file->path            = path;
     file->std_ref         = fp;
+    file->stream          = tb_null;
+    file->fstream         = tb_null;
     tb_char_t const* info = xm_io_file_is_tty(file) ? "" : " redirected";
     tb_snprintf(file->name, tb_arrayn(file->name), "file: (%s%s)", name, info);
 }
