@@ -95,12 +95,11 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
         keep_crlf = tb_true;
     }
 
-    // init line buffer
-    tb_buffer_t line;
-    if (!tb_buffer_init(&line)) return PL_FAIL;
+    // clear line buffer
+    tb_buffer_clear(&file->line);
 
     // read line data
-    tb_long_t size = xm_io_file_buffer_readline(file->file_ref, &line);
+    tb_long_t size = xm_io_file_buffer_readline(file->file_ref, &file->line);
 
     // translate line data
     tb_int_t    result = PL_FAIL;
@@ -116,10 +115,10 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
         }
 
         // patch two '\0'
-        tb_buffer_memncat(&line, (tb_byte_t const*)"\0\0", 2);
+        tb_buffer_memncat(&file->line, (tb_byte_t const*)"\0\0", 2);
 
         // get line data
-        data = (tb_char_t*)tb_buffer_data(&line);
+        data = (tb_char_t*)tb_buffer_data(&file->line);
         tb_assert_and_check_break(data);
 
         // no lf found
@@ -158,9 +157,6 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
     // push line data
     if (data && size > 0 && (result == PL_FIN || result == PL_CONL))
         luaL_addlstring(buf, data, size);
-
-    // exit line buffer
-    tb_buffer_exit(&line);
 
     // return result
     return result;
@@ -286,19 +282,14 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file* file, tb_char_t co
     }
     else
     {
-        tb_buffer_t buf;
-        if (tb_buffer_init(&buf)) 
+        tb_byte_t* bufptr = tb_buffer_resize(&file->line, n + 1);
+        if (bufptr)
         {
-            tb_byte_t* bufptr = tb_buffer_resize(&buf, n + 1);
-            if (bufptr)
+            if (tb_stream_bread(file->file_ref, bufptr, n))
             {
-                if (tb_stream_bread(file->file_ref, bufptr, n))
-                {
-                    lua_pushlstring(lua, (tb_char_t const*)bufptr, n);
-                    ok = tb_true;
-                }
+                lua_pushlstring(lua, (tb_char_t const*)bufptr, n);
+                ok = tb_true;
             }
-            tb_buffer_exit(&buf);
         }
     }
     if (!ok) lua_pushnil(lua);
@@ -437,18 +428,13 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file* file, tb_char_
         return 1;
     }
 
-    // io.read(n)
-    tb_buffer_t buf;
-    if (tb_buffer_init(&buf))
-    {
-        tb_byte_t* buf_ptr = tb_buffer_resize(&buf, (tb_size_t)n);
-        tb_assert(buf_ptr);
+    // get line buffer
+    tb_byte_t* buf_ptr = tb_buffer_resize(&file->line, (tb_size_t)n);
+    tb_assert(buf_ptr);
 
-        if (tb_stdfile_read(file->std_ref, buf_ptr, (tb_size_t)n))
-            lua_pushlstring(lua, (tb_char_t const*)buf_ptr, (size_t)n);
-        else lua_pushnil(lua);
-        tb_buffer_exit(&buf);
-    }
+    // io.read(n)
+    if (tb_stdfile_read(file->std_ref, buf_ptr, (tb_size_t)n))
+        lua_pushlstring(lua, (tb_char_t const*)buf_ptr, (size_t)n);
     else lua_pushnil(lua);
     return 1;
 }

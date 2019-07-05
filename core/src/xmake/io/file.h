@@ -109,6 +109,7 @@ typedef struct __xm_io_file
     tb_size_t        encoding;  // value of xm_io_file_encoding_e or tb_charset_type_e
     tb_char_t        name[64];
     tb_char_t const* path;
+    tb_buffer_t      line;      // the read line buffer
 } xm_io_file;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
