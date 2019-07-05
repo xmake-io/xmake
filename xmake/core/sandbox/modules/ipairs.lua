@@ -46,13 +46,13 @@ function sandbox_ipairs(t, filter, ...)
     local has_filter = type(filter) == "function"
 
     -- init iterator
-    local args = {...}
+    local args = table.pack(...)
     local iter = function (t, i)
         i = i + 1
         local v = t[i]
-        if v then
+        if v ~= nil then
             if has_filter then
-                v = filter(v, unpack(args))
+                v = filter(v, table.unpack(args, 1, args.n))
             end
             return i, v
         end

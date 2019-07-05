@@ -118,23 +118,24 @@ function sandbox_try.try(block)
     local funcs = table.join(block[2] or {}, block[3] or {})
 
     -- try to call it
-    local ok, errors_or_r1, r2, r3, r4, r5, r6 = utils.trycall(try, sandbox_try._traceback)
+    local results = table.pack(utils.trycall(try, sandbox_try._traceback))
+    local ok = results[1]
     if not ok then
 
         -- run the catch function
         if funcs and funcs.catch then
-            funcs.catch(errors_or_r1)
+            funcs.catch(results[2])
         end
     end
 
     -- run the finally function
     if funcs and funcs.finally then
-        funcs.finally(ok, errors_or_r1, r2, r3, r4, r5, r6)
+        funcs.finally(ok, table.unpack(results, 2, results.n))
     end
 
     -- ok?
     if ok then
-        return errors_or_r1, r2, r3, r4, r5, r6
+        return table.unpack(results, 2, results.n)
     end
 end
 
