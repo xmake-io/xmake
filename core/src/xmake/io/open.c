@@ -295,8 +295,11 @@ tb_int_t xm_io_open(lua_State* lua)
     // save file path
     tb_size_t pathlen = tb_strlen(path);
     xm_file->path = tb_malloc_cstr(pathlen + 1);
-    if (xm_file->path)
+    if (xm_file->path) 
+    {
         tb_strncpy((tb_char_t*)xm_file->path, path, pathlen);
+        ((tb_char_t*)xm_file->path)[pathlen] = '\0';
+    }
 
     // save file name
     tb_size_t name_maxn = tb_arrayn(xm_file->name);

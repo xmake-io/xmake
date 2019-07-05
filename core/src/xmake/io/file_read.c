@@ -59,10 +59,15 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
 
     // read line and reserve crlf
     tb_char_t ch = 0;
+    tb_bool_t eof = tb_false;
     while (!tb_stream_beof(stream))
     {
         // read char
-        if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) break;
+        if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) 
+        {
+            eof = tb_true;
+            break;
+        }
 
         // append char to line
         tb_buffer_memncat(line, (tb_byte_t const*)&ch, 1);
@@ -75,7 +80,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     // ok?
     tb_size_t size = tb_buffer_size(line);
     if (size) return size;
-    else return tb_stream_beof(stream)? -1 : 0;
+    else return (tb_stream_beof(stream) || eof)? -1 : 0;
 }
 static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
@@ -196,9 +201,9 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t 
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
-    // is binary or no continuation? read all directly
+    // is binary? read all directly
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
-    if (is_binary || *continuation == '\0')
+    if (is_binary)
         return xm_io_file_read_all_directly(lua, file);
 
     // read all
