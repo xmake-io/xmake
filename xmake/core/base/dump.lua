@@ -107,53 +107,124 @@ function dump._print_reference(value)
     io.write(colors.translate("${reset}", { patch_reset = false }))
 end
 
+function dump._print_table_anchor(value, printed_set)
+    printed_set.len = printed_set.len + 1
+    io.write(" ")
+    dump._print_anchor(printed_set.len)
+    io.write("\n")
+    printed_set[value] = printed_set.len
+end
+
 -- print table
 function dump._print_table(value, first_indent, remain_indent, printed_set)
 
     local first_level = not printed_set
     io.write(first_indent)
-    local strrep = rawget(getmetatable(value) or {}, "__tostring") and tostring(value)
-    if not first_level and strrep then
-        return dump._print_default(strrep)
+    local metatable = getmetatable(value)
+    local tostringmethod = metatable and rawget(metatable, "__tostring")
+    if not first_level and tostringmethod then
+        local ok, strrep = pcall(tostringmethod, value, value)
+        if ok then
+            return dump._print_default(strrep)
+        end
     end
     printed_set = printed_set or { len = 0 }
-    io.write(colors.translate("${dim}{"))
     local inner_indent = remain_indent .. "  "
-    local is_arr = table.is_array(value)
+    local index_table = metatable and rawget(metatable, "__index")
+    if type(index_table) ~="table" then index_table = nil end
     local first_value = true
-    for k, v in pairs(value) do
+    -- print open brackets
+    io.write(colors.translate("${dim}{"))
+
+    local function print_newline()
         if first_value then
-            printed_set.len = printed_set.len + 1
-            io.write(" ")
-            dump._print_anchor(printed_set.len)
-            io.write("\n")
-            printed_set[value] = printed_set.len
+            dump._print_table_anchor(value, printed_set)
             first_value = false
-            if strrep then
-                io.write(inner_indent)
-                dump._print_keyword("(tostring)")
-                io.write(colors.translate("${dim} = "))
-                dump._print_scalar(strrep)
-                io.write(",\n")
-            end
         else
             io.write(",\n")
         end
         io.write(inner_indent)
-        if not is_arr or type(k) ~= "number" then
-            dump._print_scalar(k, true)
-            io.write(colors.translate("${dim} = "))
-        end
-        if type(v) == "table" then
-            if printed_set[v] then
-                dump._print_reference(printed_set[v])
-            else
-                dump._print_table(v, "", inner_indent, printed_set)
+    end
+
+    if first_level then
+        -- print metamethods
+        for k, v in pairs(metatable or {}) do
+            if k:startswith("__") and not (k == "__index" and type(v) == "table") then
+                print_newline()
+                local funcname = k:sub(3)
+                dump._print_keyword(funcname)
+                io.write(colors.translate("${dim} = "))
+                if funcname == "tostring" or funcname == "len" then
+                    local ok, result = pcall(v, value, value)
+                    if ok then
+                        dump._print_scalar(result)
+                        io.write(" (evaluated)")
+                    else
+                        dump._print_scalar(v)
+                    end
+                elseif v and printed_set[v] then
+                    dump._print_reference(printed_set[v])
+                else
+                    dump._print_scalar(v)
+                end
             end
-        else
-            dump._print_scalar(v)
+        end
+
+        -- print index methods
+        for k, v in pairs(index_table or {}) do
+            -- hide private interfaces
+            if type(k) ~= "string" or not k:startswith("_") then
+                print_newline()
+                dump._print_keyword("(")
+                dump._print_scalar(k, true)
+                dump._print_keyword(")")
+                io.write(colors.translate("${dim} = "))
+                if v and printed_set[v] then
+                    dump._print_reference(printed_set[v])
+                else
+                    dump._print_scalar(v)
+                end
+            end
         end
     end
+
+    -- print array items
+    local is_arr = table.is_array(value) and (table.maxn(value) < 2 * #value)
+    if is_arr then
+        for i = 1,table.maxn(value) do
+            print_newline()
+            local v = value[i]
+            if type(v) == "table" then
+                if printed_set[v] then
+                    dump._print_reference(printed_set[v])
+                else
+                    dump._print_table(v, "", inner_indent, printed_set)
+                end
+            else
+                dump._print_scalar(v)
+            end
+        end
+    end
+
+    -- print data
+    for k, v in pairs(value) do
+        if not is_arr or type(k) ~= "number" then
+            print_newline()
+            dump._print_scalar(k, true)
+            io.write(colors.translate("${dim} = "))
+            if type(v) == "table" then
+                if printed_set[v] then
+                    dump._print_reference(printed_set[v])
+                else
+                    dump._print_table(v, "", inner_indent, printed_set)
+                end
+            else
+                dump._print_scalar(v)
+            end
+        end
+    end
+
+    -- print close brackets
     if first_value then
         io.write(colors.translate(" ${dim}}"))
     else
@@ -163,7 +234,7 @@ end
 
 -- print value
 function dump._print(value, indent)
-    indent = indent or ""
+    indent = tostring(indent or "")
     if type(value) == "table" then
         dump._print_table(value, indent, indent:gsub(".", " "), nil)
     else
