@@ -189,9 +189,8 @@ function sandbox_utils.confirm(opt)
 end
 
 -- dump value
-function sandbox_utils.dump(value, indent)
-    return utils.dump(value, indent)
-end
+-- do not change to a function call to utils.dump since debug.getinfo is called in utils.dump to get caller info
+sandbox_utils.dump = utils.dump
 
 -- return module
 return sandbox_utils
