@@ -9,6 +9,9 @@ target("xmake")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
+    if is_mode("debug") then
+        add_defines("__tb_debug__", {public = true})
+    end
 
     -- set the auto-generated config.h
     set_configdir("$(buildir)/$(plat)/$(arch)/$(mode)")

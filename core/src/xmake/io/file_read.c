@@ -80,15 +80,8 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
 static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
-
-    // is binary? keep crlf
-    tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
-    if (is_binary)
-    {
-        continuation = "";
-        keep_crlf    = tb_true;
-    }
+    tb_assert(file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(file->encoding != XM_IO_FILE_ENCODING_BINARY);
 
     // init line buffer
     tb_buffer_t line;
@@ -123,7 +116,7 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
         else if (size > 1)
         {
             // crlf? => lf
-            if (!is_binary && data[size - 2] == '\r')
+            if (data[size - 2] == '\r')
             {
                 data[size - 2] = '\n';
                 size--;
@@ -160,11 +153,46 @@ static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, t
     // return result
     return result;
 }
+static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file* file)
+{
+    // check
+    tb_assert(lua && file && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
+    // read all
+    luaL_Buffer sbuf, *buf = &sbuf;
+    luaL_buffinit(lua, buf);
+    tb_long_t           read = 0;
+    tb_byte_t           data[TB_STREAM_BLOCK_MAXN];
+    tb_stream_ref_t     stream = file->file_ref;
+    while (!tb_stream_beof(stream))
+    {
+        tb_long_t real = tb_stream_read(stream, data, sizeof(data));    
+        if (real > 0) 
+        {
+            luaL_addlstring(buf, (tb_char_t const*)data, real);
+            read += real;
+        }
+        else if (!real)
+        {
+            real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
+            tb_check_break(real > 0);
+        }
+        else break;
+    }
+        
+    if (read > 0) luaL_pushresult(buf);
+    else lua_pushliteral(lua, "");
+    return 1;
+}
 static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+
+    // is binary or no continuation? read all directly
+    tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
+    if (is_binary || *continuation == '\0')
+        return xm_io_file_read_all_directly(lua, file);
 
     // read all
     luaL_Buffer sbuf, *buf = &sbuf;
@@ -175,8 +203,8 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t 
         switch (xm_io_file_buffer_pushline(buf, file, continuation, tb_true))
         {
         case PL_EOF:
-            luaL_pushresult(buf);
             if (!has_content) lua_pushliteral(lua, "");
+            else luaL_pushresult(buf);
             return 1;
         case PL_FIN:
         case PL_CONL: 
@@ -184,8 +212,7 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t 
             continue;
         case PL_FAIL:
         default:
-            luaL_pushresult(buf); 
-            xm_io_file_return_error(lua, file, "failed to readline");
+            xm_io_file_return_error(lua, file, "failed to read all");
             break;
         }
     }
@@ -205,14 +232,17 @@ static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file* file, tb_char_t
         switch (xm_io_file_buffer_pushline(buf, file, continuation, keep_crlf))
         {
         case PL_EOF:
-            luaL_pushresult(buf);
             if (!has_content) lua_pushnil(lua);
+            else luaL_pushresult(buf);
             return 1;
-        case PL_FIN: luaL_pushresult(buf); return 1;
-        case PL_CONL: has_content = tb_true; continue;
+        case PL_FIN: 
+            luaL_pushresult(buf); 
+            return 1;
+        case PL_CONL: 
+            has_content = tb_true;
+            continue;
         case PL_FAIL:
         default: 
-            luaL_pushresult(buf); 
             xm_io_file_return_error(lua, file, "failed to readline");
             break;
         }
@@ -266,7 +296,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file* file, tb_char_t co
 static tb_size_t xm_io_file_std_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
 
     // get input buffer
     tb_char_t strbuf[8192];
@@ -282,12 +312,26 @@ static tb_size_t xm_io_file_std_buffer_pushline(luaL_Buffer* buf, xm_io_file* fi
         // end of file, no lf found
         result = PL_FIN;
     }
-    else if (buflen > conlen)
+    else if (buflen > 1)
     {
-        tb_bool_t con_line = conlen && buflen >= conlen + 1 && tb_strncmp(continuation, (strbuf + buflen - conlen - 1), conlen) == 0;
-        if (!keep_crlf && !con_line) buflen--;
-        if (con_line) buflen -= conlen + 1;
-        result = con_line ? PL_CONL : PL_FIN;
+        // crlf? => lf
+        if (strbuf[buflen - 2] == '\r')
+        {
+            strbuf[buflen - 2] = '\n';
+            buflen--;
+        }
+
+        // has continuation?
+        tb_bool_t has_conline = conlen && buflen >= conlen + 1 && tb_strncmp(continuation, (strbuf + buflen - conlen - 1), conlen) == 0;
+
+        // do not keep crlf, strip the last lf
+        if (!keep_crlf && !has_conline) buflen--;
+         
+        // strip it if has continuation?
+        if (has_conline) buflen -= conlen + 1;
+            strbuf[buflen] = '\0';
+
+        result = has_conline? PL_CONL : PL_FIN;
     }
     else
     {
@@ -296,7 +340,8 @@ static tb_size_t xm_io_file_std_buffer_pushline(luaL_Buffer* buf, xm_io_file* fi
         result = PL_FIN;
     }
 
-    if (result == PL_FIN || result == PL_CONL) luaL_addlstring(buf, strbuf, buflen);
+    if (result == PL_FIN || result == PL_CONL)
+        luaL_addlstring(buf, strbuf, buflen);
     return result;
 }
 
@@ -314,8 +359,8 @@ static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file* file, tb_ch
         switch (xm_io_file_std_buffer_pushline(buf, file, continuation, keep_crlf))
         {
         case PL_EOF:
-            luaL_pushresult(buf);
             if (!has_content) lua_pushnil(lua);
+            else luaL_pushresult(buf);
             return 1;
         case PL_FIN: 
             luaL_pushresult(buf); 
@@ -325,7 +370,6 @@ static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file* file, tb_ch
             continue;
         case PL_FAIL:
         default: 
-            luaL_pushresult(buf); 
             xm_io_file_return_error(lua, file, "failed to readline");
             break;
         }
@@ -346,8 +390,8 @@ static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file* file, tb_cha
         switch (xm_io_file_std_buffer_pushline(buf, file, continuation, tb_true))
         {
         case PL_EOF:
-            luaL_pushresult(buf);
             if (!has_content) lua_pushliteral(lua, "");
+            else luaL_pushresult(buf);
             return 1;
         case PL_FIN:
         case PL_CONL: 
@@ -355,7 +399,6 @@ static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file* file, tb_cha
             continue;
         case PL_FAIL:
         default:
-            luaL_pushresult(buf); 
             xm_io_file_return_error(lua, file, "failed to readline");
             break;
         }
