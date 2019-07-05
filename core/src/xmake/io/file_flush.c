@@ -43,7 +43,7 @@ static tb_bool_t xm_io_std_flush_impl(xm_io_file* file)
 static tb_bool_t xm_io_file_flush_impl(xm_io_file* file)
 {
     tb_assert_and_check_return_val(xm_io_file_is_file(file) && !xm_io_file_is_closed(file), tb_false);
-    return tb_file_sync(file->file_ref);
+    return tb_stream_sync(file->file_ref, tb_false);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

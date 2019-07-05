@@ -47,8 +47,9 @@ tb_int_t xm_io_file___len(lua_State* lua)
         xm_io_file_return_error_closed(lua);
     else if (xm_io_file_is_file(file))
     {
-        tb_assert(file->file_ref);
-        lua_pushnumber(lua, (lua_Number)tb_file_size(file->file_ref));
+        // get size from raw file stream, because we cannot get size from fstream
+        tb_assert(file->stream);
+        lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
         xm_io_file_return_success();
     }
     else xm_io_file_return_error(lua, file, "getting file size for this file is invalid");

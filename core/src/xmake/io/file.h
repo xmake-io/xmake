@@ -40,13 +40,13 @@
 
 #define xm_io_file_udata "XM_IO_FILE*"
 
-#define xm_io_file_return_success()                                                                                           \
+#define xm_io_file_return_success()                                                                                    \
     do                                                                                                                 \
     {                                                                                                                  \
         return 1;                                                                                                      \
     } while (0)
 
-#define xm_io_file_return_error(lua, file, reason)                                                                            \
+#define xm_io_file_return_error(lua, file, reason)                                                                     \
     do                                                                                                                 \
     {                                                                                                                  \
         lua_pushnil(lua);                                                                                              \
@@ -54,7 +54,7 @@
         return 2;                                                                                                      \
     } while (0)
 
-#define xm_io_file_return_error_closed(lua)                                                                                   \
+#define xm_io_file_return_error_closed(lua)                                                                            \
     do                                                                                                                 \
     {                                                                                                                  \
         lua_pushnil(lua);                                                                                              \
@@ -67,13 +67,13 @@
  */
 typedef enum __xm_io_file_type_e
 {
-    XM_IO_FILE_TYPE_FILE   = 0, //!< disk file
+    XM_IO_FILE_TYPE_FILE   = 0      //!< disk file
 
-    XM_IO_FILE_TYPE_STDIN  = 1,
-    XM_IO_FILE_TYPE_STDOUT = 2,
-    XM_IO_FILE_TYPE_STDERR = 3,
+,   XM_IO_FILE_TYPE_STDIN  = 1
+,   XM_IO_FILE_TYPE_STDOUT = 2
+,   XM_IO_FILE_TYPE_STDERR = 3
 
-    XM_IO_FILE_FLAG_TTY    = 0x10, //!< mark tty std stream
+,   XM_IO_FILE_FLAG_TTY    = 0x10   //!< mark tty std stream
 
 } xm_io_file_type_e;
 
@@ -82,21 +82,28 @@ typedef enum __xm_io_file_type_e
  */
 typedef enum __xm_io_file_encoding_e
 {
-    XM_IO_FILE_ENCODING_BINARY  = -1,
-    XM_IO_FILE_ENCODING_UNKNOWN = -2,
-#ifdef TB_CONFIG_OS_WINDOWS
-    XM_IO_FILE_ENCODING_ANSI    = -3,
-#endif
+    XM_IO_FILE_ENCODING_UNKNOWN = -1
+,   XM_IO_FILE_ENCODING_BINARY  = -2
+
 } xm_io_file_encoding_e;
 
 typedef struct __xm_io_file
 {
     union 
     {
-        tb_file_ref_t       file_ref; // valid if type == XM_IO_FILE_TYPE_FILE
-        tb_stdfile_ref_t    std_ref;  // valid otherwise
+        /* the normal file for XM_IO_FILE_TYPE_FILE
+         *
+         * direct:    file_ref -> stream -> file
+         * transcode: file_ref -> fstream -> stream -> file
+         */
+        tb_stream_ref_t     file_ref;
+
+        // the standard io file
+        tb_stdfile_ref_t    std_ref;
     };
 
+    tb_stream_ref_t  stream;    // the file stream for XM_IO_FILE_TYPE_FILE
+    tb_stream_ref_t  fstream;   // the file charset stream filter
     tb_size_t        mode;      // tb_file_mode_t
     tb_size_t        type;      // xm_io_file_type_e
     tb_size_t        encoding;  // value of xm_io_file_encoding_e or tb_charset_type_e

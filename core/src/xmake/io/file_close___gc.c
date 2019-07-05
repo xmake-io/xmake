@@ -54,9 +54,17 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
     {
         // close file
         tb_assert(file->file_ref);
-        if (!tb_file_exit(file->file_ref)) 
+        if (!tb_stream_clos(file->file_ref)) 
             xm_io_file_return_error(lua, file, "failed to close file");
         file->file_ref = tb_null;
+
+        // exit fstream
+        if (file->fstream) tb_stream_exit(file->fstream);
+        file->fstream = tb_null;
+
+        // exit stream
+        if (file->stream) tb_stream_exit(file->stream);
+        file->stream = tb_null;
 
         // free file path
         if (file->path)

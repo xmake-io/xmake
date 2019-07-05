@@ -32,36 +32,16 @@
 #include "file.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
-
-static tb_void_t xm_io_file_write_direct(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     // write data to file
-    tb_file_writ(file->file_ref, (tb_byte_t const*)data, size);
+    tb_stream_bwrit(file->file_ref, (tb_byte_t const*)data, size);
 }
-static tb_void_t xm_io_file_write_transcode(xm_io_file* file, tb_char_t const* data, tb_size_t size)
-{
-    // check
-    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
-
-    tb_buffer_t buf;
-    if (tb_buffer_init(&buf))
-    {
-        tb_byte_t* buf_ptr = tb_buffer_resize(&buf, (size + 1) << 1);
-        tb_assert(buf_ptr);
-
-        tb_long_t buf_size = tb_charset_conv_cstr(TB_CHARSET_TYPE_UTF8, file->encoding, data, buf_ptr, size << 1);
-        if (buf_size > 0) 
-            tb_file_writ(file->file_ref, buf_ptr, (tb_size_t)buf_size);
-
-        tb_buffer_exit(&buf);
-    }
-}
-
 static tb_void_t xm_io_file_write_std(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
     // check
@@ -93,24 +73,19 @@ tb_int_t xm_io_file_write(lua_State* lua)
 
     if (narg > 1)
     {
-        // set to utf-8 if not specified
-        if (file->encoding == XM_IO_FILE_ENCODING_UNKNOWN) 
-            file->encoding = TB_CHARSET_TYPE_UTF8;
-
-        tb_bool_t is_direct = file->encoding == TB_CHARSET_TYPE_UTF8 || file->encoding == XM_IO_FILE_ENCODING_BINARY;
         for (tb_int_t i = 2; i <= narg; i++)
         {
+            // get data
             size_t datasize = 0;
             tb_char_t const* data = luaL_checklstring(lua, i, &datasize);
             tb_check_continue(datasize);
             tb_assert_and_check_break(data);
 
+            // write data to std or file
             if (xm_io_file_is_std(file))
                 xm_io_file_write_std(file, data, (tb_size_t)datasize);
-            else if (is_direct)
-                xm_io_file_write_direct(file, data, (tb_size_t)datasize);
             else
-                xm_io_file_write_transcode(file, data, (tb_size_t)datasize);
+                xm_io_file_write_file(file, data, (tb_size_t)datasize);
         }
     }
 

@@ -53,21 +53,29 @@ tb_int_t xm_io_file_seek(lua_State* lua)
         if (xm_io_file_is_closed_file(file))
             xm_io_file_return_error_closed(lua);
 
-        tb_size_t mode = TB_FILE_SEEK_CUR;
         switch (*whence)
         {
         case 's': // "set"
-            mode = TB_FILE_SEEK_BEG;
             break;
         case 'e': // "end"
-            mode = TB_FILE_SEEK_END;
+            {
+                tb_hong_t size = tb_stream_size(file->file_ref);
+                if (size > 0 && size + offset <= size)
+                    offset = size + offset;
+                else xm_io_file_return_error(lua, file, "seek failed, invalid offset!"); 
+            }
             break;
-        default:
+        default:  // "cur"
+            offset = tb_stream_offset(file->file_ref) + offset;
             break;
         }
-        offset = tb_file_seek(file->file_ref, offset, mode);
-        lua_pushnumber(lua, (lua_Number)offset);
-        xm_io_file_return_success();
+        
+        if (tb_stream_seek(file->file_ref, offset))
+        {
+            lua_pushnumber(lua, (lua_Number)offset);
+            xm_io_file_return_success();
+        }
+        else xm_io_file_return_error(lua, file, "seek failed!"); 
     }
     else xm_io_file_return_error(lua, file, "seek is not supported on this file");
 }
