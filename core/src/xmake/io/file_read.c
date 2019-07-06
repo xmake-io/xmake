@@ -54,10 +54,13 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     // read line and reserve crlf
     tb_char_t   ch = 0;
     tb_bool_t   eof = tb_false;
-    tb_size_t   need = 512;
     tb_byte_t*  p = tb_null;
-    while (!tb_stream_beof(stream))
+    tb_hong_t   size = tb_stream_size(stream);
+    tb_hize_t   offset = 0;
+    while (size < 0 || (offset = tb_stream_offset(stream)) < size)
     {
+        tb_hize_t left = size >= offset? size - offset : -1;
+        tb_size_t need = (tb_size_t)tb_min(left, 512);
         if (need && tb_stream_need(stream, &p, need) && p)
         {
             tb_char_t const* e = tb_strnchr((tb_char_t const*)p, need, '\n');
@@ -95,9 +98,9 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     }
 
     // ok?
-    tb_size_t size = tb_buffer_size(line);
-    if (size) return size;
-    else return (tb_stream_beof(stream) || eof)? -1 : 0;
+    tb_size_t linesize = tb_buffer_size(line);
+    if (linesize) return linesize;
+    else return (eof || tb_stream_beof(stream))? -1 : 0;
 }
 static tb_int_t xm_io_file_buffer_pushline(luaL_Buffer* buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
