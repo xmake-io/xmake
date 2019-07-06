@@ -62,8 +62,8 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
             tb_char_t const* e = tb_strnchr((tb_char_t const*)p, TB_STREAM_BLOCK_MAXN, '\n');
             if (e)
             {
-                if (!tb_stream_skip(stream, n)) return -1;
                 tb_size_t n = (tb_byte_t const*)e + 1 - p;
+                if (!tb_stream_skip(stream, n)) return -1;
                 tb_buffer_memncat(line, p, n);
                 return tb_buffer_size(line);
             }
