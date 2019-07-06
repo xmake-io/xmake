@@ -29,12 +29,6 @@
  * includes
  */
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_WINDOWS
-#    include "../winos/ansi.h"
-#    include <io.h>
-#else
-#    include <unistd.h>
-#endif
 #include "file.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -58,23 +52,43 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_assert_and_check_return_val(stream && line, -1);
 
     // read line and reserve crlf
-    tb_char_t ch = 0;
-    tb_bool_t eof = tb_false;
+    tb_char_t   ch = 0;
+    tb_bool_t   eof = tb_false;
+    tb_byte_t*  p = tb_null;
     while (!tb_stream_beof(stream))
     {
-        // read char
-        if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) 
+        if (tb_stream_need(stream, &p, TB_STREAM_BLOCK_MAXN) && p)
         {
-            eof = tb_true;
-            break;
+            tb_char_t const* e = tb_strnchr((tb_char_t const*)p, TB_STREAM_BLOCK_MAXN, '\n');
+            if (e)
+            {
+                if (!tb_stream_skip(stream, n)) return -1;
+                tb_size_t n = (tb_byte_t const*)e + 1 - p;
+                tb_buffer_memncat(line, p, n);
+                return tb_buffer_size(line);
+            }
+            else 
+            {
+                if (!tb_stream_skip(stream, TB_STREAM_BLOCK_MAXN)) return -1;
+                tb_buffer_memncat(line, p, TB_STREAM_BLOCK_MAXN);
+            }
         }
+        else
+        {
+            // read char
+            if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) 
+            {
+                eof = tb_true;
+                break;
+            }
 
-        // append char to line
-        tb_buffer_memncat(line, (tb_byte_t const*)&ch, 1);
+            // append char to line
+            tb_buffer_memncat(line, (tb_byte_t const*)&ch, 1);
 
-        // is line?
-        if (ch == '\n') 
-            return tb_buffer_size(line);
+            // is line?
+            if (ch == '\n') 
+                return tb_buffer_size(line);
+        }
     }
 
     // ok?

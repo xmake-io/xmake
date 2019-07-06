@@ -47,6 +47,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/libc/string/memset \
 						tbox/src/tbox/libc/string/strcat \
 						tbox/src/tbox/libc/string/strchr \
+						tbox/src/tbox/libc/string/strnchr \
 						tbox/src/tbox/libc/string/strcmp \
 						tbox/src/tbox/libc/string/strcpy \
 						tbox/src/tbox/libc/string/strdup \
