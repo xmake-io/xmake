@@ -54,27 +54,31 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     // read line and reserve crlf
     tb_char_t   ch = 0;
     tb_bool_t   eof = tb_false;
+    tb_size_t   need = 512;
     tb_byte_t*  p = tb_null;
     while (!tb_stream_beof(stream))
     {
-        if (tb_stream_need(stream, &p, TB_STREAM_BLOCK_MAXN) && p)
+        if (need && tb_stream_need(stream, &p, need) && p)
         {
-            tb_char_t const* e = tb_strnchr((tb_char_t const*)p, TB_STREAM_BLOCK_MAXN, '\n');
+            tb_char_t const* e = tb_strnchr((tb_char_t const*)p, need, '\n');
             if (e)
             {
                 tb_size_t n = (tb_byte_t const*)e + 1 - p;
                 if (!tb_stream_skip(stream, n)) return -1;
                 tb_buffer_memncat(line, p, n);
-                return tb_buffer_size(line);
+                break;
             }
             else 
             {
-                if (!tb_stream_skip(stream, TB_STREAM_BLOCK_MAXN)) return -1;
-                tb_buffer_memncat(line, p, TB_STREAM_BLOCK_MAXN);
+                if (!tb_stream_skip(stream, need)) return -1;
+                tb_buffer_memncat(line, p, need);
             }
         }
         else
         {
+            // disable need operation
+            need = 0;
+
             // read char
             if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) 
             {
@@ -86,8 +90,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
             tb_buffer_memncat(line, (tb_byte_t const*)&ch, 1);
 
             // is line?
-            if (ch == '\n') 
-                return tb_buffer_size(line);
+            if (ch == '\n') break; 
         }
     }
 
