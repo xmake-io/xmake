@@ -32,8 +32,8 @@
 #define xm_io_file_is_file(file)          ((file)->type == XM_IO_FILE_TYPE_FILE)
 #define xm_io_file_is_std(file)           ((file)->type != XM_IO_FILE_TYPE_FILE)
 
-#define xm_io_file_is_closed_file(file)   ((file)->type == XM_IO_FILE_TYPE_FILE && !((file)->file_ref))
-#define xm_io_file_is_closed_std(file)    ((file)->type != XM_IO_FILE_TYPE_FILE && !((file)->file_ref))
+#define xm_io_file_is_closed_file(file)   (xm_io_file_is_file(file) && !((file)->file_ref))
+#define xm_io_file_is_closed_std(file)    (xm_io_file_is_std(file) && !((file)->std_ref))
 
 #define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
 #define xm_io_file_is_closed(file)        (xm_io_file_is_closed_file(file) || xm_io_file_is_closed_std(file))

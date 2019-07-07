@@ -293,7 +293,8 @@ tb_int_t xm_io_open(lua_State* lua)
     xm_file->encoding   = encoding;
 
     // init the line buffer
-    if (!tb_buffer_init(&xm_file->line)) return 0;
+    tb_bool_t ok = tb_buffer_init(&xm_file->line); 
+    tb_assert(ok); tb_used(&ok);
 
     // save file path
     tb_size_t pathlen = tb_strlen(path);
