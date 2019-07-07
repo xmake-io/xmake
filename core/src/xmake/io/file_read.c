@@ -52,48 +52,42 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     tb_assert_and_check_return_val(stream && line, -1);
 
     // read line and reserve crlf
-    tb_char_t   ch = 0;
     tb_bool_t   eof = tb_false;
-    tb_byte_t*  p = tb_null;
-    tb_hong_t   size = tb_stream_size(stream);
     tb_hize_t   offset = 0;
+    tb_byte_t*  data = tb_null;
+    tb_hong_t   size = tb_stream_size(stream);
     while (size < 0 || (offset = tb_stream_offset(stream)) < size)
     {
-        tb_hize_t left = size >= offset? size - offset : -1;
-        tb_size_t need = (tb_size_t)tb_min(left, 512);
-        if (need && tb_stream_need(stream, &p, need) && p)
+        tb_long_t real = tb_stream_peek(stream, &data, TB_STREAM_BLOCK_MAXN);
+        if (real > 0)
         {
-            tb_char_t const* e = tb_strnchr((tb_char_t const*)p, need, '\n');
+            tb_char_t const* e = tb_strnchr((tb_char_t const*)data, real, '\n');
             if (e)
             {
-                tb_size_t n = (tb_byte_t const*)e + 1 - p;
+                tb_size_t n = (tb_byte_t const*)e + 1 - data;
                 if (!tb_stream_skip(stream, n)) return -1;
-                tb_buffer_memncat(line, p, n);
+                tb_buffer_memncat(line, data, n);
                 break;
             }
             else 
             {
-                if (!tb_stream_skip(stream, need)) return -1;
-                tb_buffer_memncat(line, p, need);
+                if (!tb_stream_skip(stream, real)) return -1;
+                tb_buffer_memncat(line, data, real);
             }
         }
-        else
+        else if (!real)
         {
-            // disable need operation
-            need = 0;
-
-            // read char
-            if (!tb_stream_bread_s8(stream, (tb_sint8_t*)&ch)) 
+            real = tb_stream_wait(stream, TB_STREAM_WAIT_READ, -1);
+            if (real <= 0)
             {
                 eof = tb_true;
                 break;
             }
-
-            // append char to line
-            tb_buffer_memncat(line, (tb_byte_t const*)&ch, 1);
-
-            // is line?
-            if (ch == '\n') break; 
+        }
+        else 
+        {
+            eof = tb_true;
+            break;
         }
     }
 
