@@ -103,8 +103,7 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
                 utf8_conf++;
             else if (data[i] >= 0xe0 && data[i] < 0xf0 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]))
                 utf8_conf++;
-            else if (data[i] >= 0xf0 && data[i] < 0xf8 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]) &&
-                     IS_UTF8_TAIL(data[i + 3]))
+            else if (data[i] >= 0xf0 && data[i] < 0xf8 && IS_UTF8_TAIL(data[i + 1]) && IS_UTF8_TAIL(data[i + 2]) && IS_UTF8_TAIL(data[i + 3]))
                 utf8_conf++;
             else
                 utf8_conf = TB_MINS16;
@@ -141,20 +140,20 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
     *data_ptr = data;
     return charset;
 }
-static tb_size_t xm_io_file_detect_encoding(tb_file_ref_t file, tb_long_t* pbomoff)
+static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t* pbomoff)
 {
     // check
-    tb_assert_and_check_return_val(file && pbomoff, XM_IO_FILE_ENCODING_BINARY);
+    tb_assert_and_check_return_val(stream && pbomoff, XM_IO_FILE_ENCODING_BINARY);
 
     // detect encoding
-    tb_byte_t           buffer[CHECK_SIZE];
-    tb_byte_t const*    buffer_ptr = buffer;
-    tb_size_t           encoding = XM_IO_FILE_ENCODING_BINARY;
-    tb_long_t size = tb_file_read(file, buffer, CHECK_SIZE);
+    tb_byte_t*  data = tb_null;
+    tb_size_t   encoding = XM_IO_FILE_ENCODING_BINARY;
+    tb_long_t   size = tb_stream_peek(stream, &data, CHECK_SIZE);
     if (size > 0)
     {
-        encoding = xm_io_file_detect_charset(&buffer_ptr, size);
-        *pbomoff = buffer_ptr - buffer; 
+        tb_byte_t const* p = data;
+        encoding = xm_io_file_detect_charset(&p, size);
+        *pbomoff = p - data; 
     }
     return encoding;
 }
@@ -186,9 +185,10 @@ tb_int_t xm_io_open(lua_State* lua)
     }
 
     // get file encoding
-    tb_long_t bomoff = 0;
-    tb_bool_t update = !!tb_strchr(modestr, '+');
-    tb_size_t encoding = XM_IO_FILE_ENCODING_UNKNOWN;
+    tb_long_t       bomoff = 0;
+    tb_stream_ref_t stream = tb_null;
+    tb_bool_t       update = !!tb_strchr(modestr, '+');
+    tb_size_t       encoding = XM_IO_FILE_ENCODING_UNKNOWN;
     if (modestr[1] == 'b' || (update && modestr[2] == 'b'))
         encoding = XM_IO_FILE_ENCODING_BINARY;
     else if (tb_strstr(modestr, "utf8") || tb_strstr(modestr, "utf-8"))
@@ -203,14 +203,12 @@ tb_int_t xm_io_open(lua_State* lua)
         encoding = TB_CHARSET_TYPE_UTF8;
     else if (modestr[0] == 'r') // detect encoding if not specified for the reading mode
     {
-        tb_file_ref_t file = tb_file_init(path, mode);
-        if (file)
-        {
-            encoding = xm_io_file_detect_encoding(file, &bomoff);
-            tb_file_exit(file);
-        }
+        stream = tb_stream_init_from_file(path, mode);
+        if (stream && tb_stream_open(stream))
+            encoding = xm_io_file_detect_encoding(stream, &bomoff);
         else
         {
+            if (stream) tb_stream_exit(stream);
             lua_pushnil(lua);
             lua_pushliteral(lua, "file not found!");
             return 2;
@@ -227,12 +225,11 @@ tb_int_t xm_io_open(lua_State* lua)
     // open file
     tb_bool_t       open_ok = tb_false;
     tb_stream_ref_t file_ref = tb_null;
-    tb_stream_ref_t stream = tb_null;
     tb_stream_ref_t fstream = tb_null;
     do
     {
         // init stream from file
-        stream = tb_stream_init_from_file(path, mode);
+        stream = stream? stream : tb_stream_init_from_file(path, mode);
         tb_assert_and_check_break(stream);
         
         // is transcode?
