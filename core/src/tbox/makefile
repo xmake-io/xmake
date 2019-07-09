@@ -234,6 +234,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/thread_local \
 						tbox/src/tbox/platform/time \
 						tbox/src/tbox/platform/timer \
+						tbox/src/tbox/platform/impl/charset \
 						tbox/src/tbox/platform/impl/sockdata \
 						tbox/src/tbox/platform/impl/dns \
 						tbox/src/tbox/platform/impl/platform \

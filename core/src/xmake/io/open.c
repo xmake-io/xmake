@@ -135,6 +135,10 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
             break;
         }
 
+#ifdef TB_CONFIG_OS_WINDOWS
+        charset = TB_CHARSET_TYPE_ANSI;
+#endif
+
     } while (0);
 
     *data_ptr = data;
