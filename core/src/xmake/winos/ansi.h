@@ -26,14 +26,4 @@
  */
 #include "prefix.h"
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-#ifdef TB_CONFIG_OS_WINDOWS
-tb_size_t xm_wcstoutf8(tb_char_t *s1, tb_wchar_t const *s2, tb_size_t n);
-tb_size_t xm_utf8towcs(tb_wchar_t *s1, tb_char_t const *s2, tb_size_t n);
-tb_size_t xm_mbstoutf8(tb_char_t *s1, tb_char_t const *s2, tb_size_t n, tb_int_t mbs_cp);
-tb_size_t xm_utf8tombs(tb_char_t *s1, tb_char_t const *s2, tb_size_t n, tb_int_t mbs_cp);
-#endif
-
 #endif

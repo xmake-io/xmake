@@ -48,15 +48,20 @@ typedef struct __xm_charset_entry_t
 // the charsets, @note: type & name is sorted
 static xm_charset_entry_t g_charsets[] =
 {
-    {TB_CHARSET_TYPE_ASCII,     "ascii"   }
-,   {TB_CHARSET_TYPE_GB2312,    "gb2312"  }
-,   {TB_CHARSET_TYPE_GBK,       "gbk"     }
-,   {TB_CHARSET_TYPE_ISO8859,   "iso8859" }
-,   {TB_CHARSET_TYPE_UCS2,      "ucs2"    }
-,   {TB_CHARSET_TYPE_UCS4,      "ucs4"    }
-,   {TB_CHARSET_TYPE_UTF16,     "utf16"   }
-,   {TB_CHARSET_TYPE_UTF32,     "utf32"   }
-,   {TB_CHARSET_TYPE_UTF8,      "utf8"    }
+    {TB_CHARSET_TYPE_ANSI,                          "ansi"    }
+,   {TB_CHARSET_TYPE_ASCII,                         "ascii"   }
+,   {TB_CHARSET_TYPE_GB2312,                        "gb2312"  }
+,   {TB_CHARSET_TYPE_GBK,                           "gbk"     }
+,   {TB_CHARSET_TYPE_ISO8859,                       "iso8859" }
+,   {TB_CHARSET_TYPE_UCS2,                          "ucs2"    }
+,   {TB_CHARSET_TYPE_UCS4,                          "ucs4"    }
+,   {TB_CHARSET_TYPE_UTF16,                         "utf16"   }
+,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE,    "utf16be" }
+,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE,    "utf16le" }
+,   {TB_CHARSET_TYPE_UTF32,                         "utf32"   }
+,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_BE,    "utf32be" }
+,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_LE,    "utf32le" }
+,   {TB_CHARSET_TYPE_UTF8,                          "utf8"    }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////

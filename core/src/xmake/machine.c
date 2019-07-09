@@ -119,7 +119,6 @@ tb_int_t xm_hash_sha256(lua_State* lua);
 
 // the windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-tb_int_t xm_winos_mbstoutf8(lua_State* lua);
 tb_int_t xm_winos_cp_info(lua_State* lua);
 tb_int_t xm_winos_console_cp(lua_State* lua);
 tb_int_t xm_winos_console_output_cp(lua_State* lua);
@@ -209,8 +208,7 @@ static luaL_Reg const g_os_functions[] =
 #ifdef TB_CONFIG_OS_WINDOWS
 static luaL_Reg const g_winos_functions[] = 
 {
-    { "mbstoutf8",           xm_winos_mbstoutf8         }
-,   { "cp_info",             xm_winos_cp_info           }
+    { "cp_info",             xm_winos_cp_info           }
 ,   { "console_cp",          xm_winos_console_cp        }
 ,   { "console_output_cp",   xm_winos_console_output_cp }
 ,   { "oem_cp",              xm_winos_oem_cp            }
