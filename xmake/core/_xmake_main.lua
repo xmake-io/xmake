@@ -57,7 +57,6 @@ function loadfile(filepath)
         readopt.encoding = "binary" -- read file by binary mode, will be faster
         displaypath = path.join("$(programdir)", path.relative(filepath, xmake._PROGRAM_DIR))
     elseif filepath:startswith(xmake._PROJECT_DIR) then
-        --readopt.encoding = "binary" -- read file by binary mode, will be faster
         displaypath = path.join("$(projectdir)", path.relative(filepath, xmake._PROJECT_DIR))
     end
 

@@ -13,16 +13,16 @@ install:
   - ps: Push-Location C:/
   - ps: (New-Item ./winenv/bin -ItemType Directory).FullName
   #   NSIS
-  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
-  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/nsis/NSIS 3/3.04/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
-  - ps: Invoke-WebRequest "https://nsis.sourceforge.io/mediawiki/images/8/8f/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
+  - ps: Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
+  - ps: Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
+  - ps: Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
   - ps: Expand-Archive ./nsis.zip -DestinationPath ./nsis
   - ps: Move-Item ./nsis/*/* ./nsis
   - ps: Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
   - ps: Expand-Archive ./nsis-uac.zip -DestinationPath ./nsis -Force
   - ps: Move-Item ./nsis/UAC.nsh ./nsis/Include/
   #   unzip
-  - ps: Invoke-WebRequest "https://svwh.dl.sourceforge.net/project/gnuwin32/unzip/5.51-1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+  - ps: Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
   - ps: Expand-Archive ./unzip.zip -DestinationPath ./unzip
   - ps: Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
   #   curl
