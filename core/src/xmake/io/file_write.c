@@ -34,13 +34,58 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t xm_io_file_write_file(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file_directly(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     // write data to file
     tb_stream_bwrit(file->file_ref, (tb_byte_t const*)data, size);
+}
+static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+{
+    // check
+    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+
+    // write cached data first
+    tb_byte_t const* odata = tb_buffer_data(&file->line);
+    tb_size_t        osize = tb_buffer_size(&file->line);
+    if (odata && osize)
+    {
+        if (!tb_stream_bwrit(file->file_ref, odata, osize)) return ;
+        tb_buffer_clear(&file->line);
+    }
+
+    // write data by lines
+    tb_char_t const* p = (tb_char_t const*)data;
+    tb_char_t const* e = p + size;
+    tb_char_t const* lf = tb_null;
+    while (p < e)
+    {
+        lf = tb_strnchr(p, e - p, '\n');
+        if (lf)
+        {
+            if (lf > p && lf[-1] == '\r')
+            {
+                if (!tb_stream_bwrit(file->file_ref, (tb_byte_t const*)p, lf + 1 - p)) break;
+            }
+            else
+            {
+                if (lf > p && !tb_stream_bwrit(file->file_ref, (tb_byte_t const*)p, lf - p)) break;
+                if (!tb_stream_bwrit(file->file_ref, (tb_byte_t const*)"\r\n", 2)) break;
+            }
+
+            // next line
+            p = lf + 1;
+        }
+        else
+        {
+            // cache the left data
+            tb_buffer_memncat(&file->line, (tb_byte_t const*)p, e - p);
+            p = e;
+            break;
+        }
+    }
 }
 static tb_void_t xm_io_file_write_std(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
@@ -73,6 +118,7 @@ tb_int_t xm_io_file_write(lua_State* lua)
 
     if (narg > 1)
     {
+        tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
         for (tb_int_t i = 2; i <= narg; i++)
         {
             // get data
@@ -84,8 +130,10 @@ tb_int_t xm_io_file_write(lua_State* lua)
             // write data to std or file
             if (xm_io_file_is_std(file))
                 xm_io_file_write_std(file, data, (tb_size_t)datasize);
-            else
-                xm_io_file_write_file(file, data, (tb_size_t)datasize);
+            else if (is_binary)
+                xm_io_file_write_file_directly(file, data, (tb_size_t)datasize);
+            else 
+                xm_io_file_write_file_transcrlf(file, data, (tb_size_t)datasize);
         }
     }
 
