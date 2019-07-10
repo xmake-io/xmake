@@ -174,7 +174,7 @@ function io.open(filepath, mode, opt)
     opt = opt or {}
 
     -- open it
-    local handle = io._open(path.translate(filepath), mode .. (opt.encoding or ""))
+    local handle = io._open(filepath, mode .. (opt.encoding or ""))
     if not handle then
         return nil, string.format("failed to open %s", filepath)
     end
@@ -203,7 +203,7 @@ function io.save(filepath, object, opt)
     end
 
     -- open the file
-    local file = io.open(filepath, "w", opt)
+    local file = io.open(filepath, "wb", opt)
     if not file then
         -- error
         return false, string.format("open %s failed!", filepath)
@@ -233,7 +233,7 @@ function io.load(filepath, opt)
     opt = opt or {}
 
     -- open the file
-    local file = io.open(filepath, "r", opt)
+    local file = io.open(filepath, "rb", opt)
     if not file then
         -- error
         return nil, string.format("open %s failed!", filepath)

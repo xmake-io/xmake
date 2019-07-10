@@ -49,7 +49,7 @@ function loadfile(filepath)
     end
 
     -- load script data from file
-    local data, rerrors = io.readfile(filepath)
+    local data, rerrors = io.readfile(filepath, {encoding = "binary"})
     if not data then
         return nil, rerrors
     end
