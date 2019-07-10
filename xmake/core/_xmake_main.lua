@@ -48,20 +48,23 @@ function loadfile(filepath)
         end
     end
 
-    -- load script data from file
-    local data, rerrors = io.readfile(filepath, {encoding = "binary"})
-    if not data then
-        return nil, rerrors
-    end
-
     -- init displaypath
+    local readopt = {}
     local displaypath = filepath
     if filepath:startswith(xmake._WORKING_DIR) then
         displaypath = path.join(".", path.relative(filepath, xmake._WORKING_DIR))
     elseif filepath:startswith(xmake._PROGRAM_DIR) then
+        readopt.encoding = "binary" -- read file by binary mode, will be faster
         displaypath = path.join("$(programdir)", path.relative(filepath, xmake._PROGRAM_DIR))
     elseif filepath:startswith(xmake._PROJECT_DIR) then
+        --readopt.encoding = "binary" -- read file by binary mode, will be faster
         displaypath = path.join("$(projectdir)", path.relative(filepath, xmake._PROJECT_DIR))
+    end
+
+    -- load script data from file
+    local data, rerrors = io.readfile(filepath, readopt)
+    if not data then
+        return nil, rerrors
     end
 
     -- load script from string

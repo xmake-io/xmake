@@ -55,6 +55,7 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
         // check
         tb_assert(file->file_ref);
 
+#ifdef TB_CONFIG_OS_WINDOWS
         // write cached data first
         tb_byte_t const* odata = tb_buffer_data(&file->wcache);
         tb_size_t        osize = tb_buffer_size(&file->wcache);
@@ -63,6 +64,7 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
             if (!tb_stream_bwrit(file->file_ref, odata, osize)) return tb_false;
             tb_buffer_clear(&file->wcache);
         }
+#endif
 
         // close file
         if (!tb_stream_clos(file->file_ref)) 
