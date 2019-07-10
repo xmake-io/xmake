@@ -118,8 +118,9 @@ static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
     tb_char_t const* info = xm_io_file_is_tty(file) ? "" : " redirected";
     tb_snprintf(file->name, tb_arrayn(file->name), "file: (%s%s)", name, info);
 
-    // init the line buffer
-    tb_buffer_init(&file->line);
+    // init the line cache buffer
+    tb_buffer_init(&file->rcache);
+    tb_buffer_init(&file->wcache);
 }
 
 tb_int_t xm_io_std(lua_State* lua)

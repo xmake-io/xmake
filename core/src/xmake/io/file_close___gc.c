@@ -52,8 +52,19 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
     }
     if (xm_io_file_is_file(file))
     {
-        // close file
+        // check
         tb_assert(file->file_ref);
+
+        // write cached data first
+        tb_byte_t const* odata = tb_buffer_data(&file->wcache);
+        tb_size_t        osize = tb_buffer_size(&file->wcache);
+        if (odata && osize)
+        {
+            if (!tb_stream_bwrit(file->file_ref, odata, osize)) return tb_false;
+            tb_buffer_clear(&file->wcache);
+        }
+
+        // close file
         if (!tb_stream_clos(file->file_ref)) 
             xm_io_file_return_error(lua, file, "failed to close file");
         file->file_ref = tb_null;
@@ -66,8 +77,9 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
         if (file->stream) tb_stream_exit(file->stream);
         file->stream = tb_null;
 
-        // exit the line buffer
-        tb_buffer_exit(&file->line);
+        // exit the line cache buffer
+        tb_buffer_exit(&file->rcache);
+        tb_buffer_exit(&file->wcache);
 
         // free file path
         if (file->path)

@@ -48,12 +48,12 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t con
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
     // write cached data first
-    tb_byte_t const* odata = tb_buffer_data(&file->line);
-    tb_size_t        osize = tb_buffer_size(&file->line);
+    tb_byte_t const* odata = tb_buffer_data(&file->wcache);
+    tb_size_t        osize = tb_buffer_size(&file->wcache);
     if (odata && osize)
     {
         if (!tb_stream_bwrit(file->file_ref, odata, osize)) return ;
-        tb_buffer_clear(&file->line);
+        tb_buffer_clear(&file->wcache);
     }
 
     // write data by lines
@@ -81,7 +81,7 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t con
         else
         {
             // cache the left data
-            tb_buffer_memncat(&file->line, (tb_byte_t const*)p, e - p);
+            tb_buffer_memncat(&file->wcache, (tb_byte_t const*)p, e - p);
             p = e;
             break;
         }

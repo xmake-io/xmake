@@ -110,10 +110,10 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file* file
     }
 
     // clear line buffer
-    tb_buffer_clear(&file->line);
+    tb_buffer_clear(&file->rcache);
 
     // read line data
-    tb_long_t size = xm_io_file_buffer_readline(file->file_ref, &file->line);
+    tb_long_t size = xm_io_file_buffer_readline(file->file_ref, &file->rcache);
 
     // translate line data
     tb_int_t    result = PL_FAIL;
@@ -129,10 +129,10 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file* file
         }
 
         // patch two '\0'
-        tb_buffer_memncat(&file->line, (tb_byte_t const*)"\0\0", 2);
+        tb_buffer_memncat(&file->rcache, (tb_byte_t const*)"\0\0", 2);
 
         // get line data
-        data = (tb_char_t*)tb_buffer_data(&file->line);
+        data = (tb_char_t*)tb_buffer_data(&file->rcache);
         tb_assert_and_check_break(data);
 
         // no lf found
@@ -308,7 +308,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file* file, tb_char_t co
     }
     else
     {
-        tb_byte_t* bufptr = tb_buffer_resize(&file->line, n + 1);
+        tb_byte_t* bufptr = tb_buffer_resize(&file->rcache, n + 1);
         if (bufptr)
         {
             if (tb_stream_bread(file->file_ref, bufptr, n))
@@ -466,7 +466,7 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file* file, tb_char_
     }
 
     // get line buffer
-    tb_byte_t* buf_ptr = tb_buffer_resize(&file->line, (tb_size_t)n);
+    tb_byte_t* buf_ptr = tb_buffer_resize(&file->rcache, (tb_size_t)n);
     tb_assert(buf_ptr);
 
     // io.read(n)

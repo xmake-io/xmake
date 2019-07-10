@@ -293,9 +293,9 @@ tb_int_t xm_io_open(lua_State* lua)
     xm_file->type       = XM_IO_FILE_TYPE_FILE;
     xm_file->encoding   = encoding;
 
-    // init the line buffer
-    tb_bool_t ok = tb_buffer_init(&xm_file->line); 
-    tb_assert(ok); tb_used(&ok);
+    // init the read/write line cache buffer
+    tb_buffer_init(&xm_file->rcache); 
+    tb_buffer_init(&xm_file->wcache); 
 
     // save file path
     tb_size_t pathlen = tb_strlen(path);
