@@ -47,6 +47,8 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t con
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
 
+#ifdef TB_CONFIG_OS_WINDOWS
+
     // write cached data first
     tb_byte_t const* odata = tb_buffer_data(&file->wcache);
     tb_size_t        osize = tb_buffer_size(&file->wcache);
@@ -86,6 +88,9 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t con
             break;
         }
     }
+#else
+    return xm_io_file_write_file_directly(file, data, size);
+#endif
 }
 static tb_void_t xm_io_file_write_std(xm_io_file* file, tb_char_t const* data, tb_size_t size)
 {
