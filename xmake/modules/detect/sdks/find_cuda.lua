@@ -31,13 +31,16 @@ function _find_sdkdir()
     -- init the search directories
     local pathes = {}
     if os.host() == "macosx" then
+        table.insert(pathes, "/Developer/NVIDIA/CUDA/bin")
         table.insert(pathes, "/Developer/NVIDIA/CUDA*/bin")
     elseif os.host() == "windows" then
         table.insert(pathes, "$(env CUDA_PATH)/bin")
     else
+        -- find from default symbol link dir
+        table.insert(pathes, "/usr/local/cuda/bin")
         table.insert(pathes, "/usr/local/cuda*/bin")
     end
-    table.insert(pathes, "$(env PATH)")
+    table.join2(pathes, path.splitenv(os.getenv("PATH")))
 
     -- attempt to find nvcc
     local nvcc = find_file(os.host() == "windows" and "nvcc.exe" or "nvcc", pathes)
