@@ -161,7 +161,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
 
             // get registry value size
             DWORD valuesize = 0;
-            if (RegQueryValueEx(keynew, valuename, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
+            if (RegQueryValueExA(keynew, valuename, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
                 lua_pushfstring(lua, "get registry value size failed: %s", path);
@@ -174,7 +174,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
 
             // get value result
             type = 0;
-            if (RegQueryValueEx(keynew, valuename, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
+            if (RegQueryValueExA(keynew, valuename, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
                 lua_pushfstring(lua, "get registry value failed: %s", path);

@@ -54,14 +54,16 @@ task("lua")
         if script then
 
             -- import and run script
-            if os.isfile(script) then
+            if path.extension(script) == ".lua" and os.isfile(script) then
 
                 -- run the given lua script file (xmake lua /tmp/script.lua)
+                vprint("runing given lua script file: %s", path.relative(script))
                 import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(unpack(option.get("arguments") or {}))
 
             elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
 
                 -- run builtin lua script (xmake lua echo "hello xmake")
+                vprint("runing builtin lua script: %s", script)
                 import("scripts." .. script, {anonymous = true})(unpack(option.get("arguments") or {}))
             else
 
@@ -76,9 +78,11 @@ task("lua")
                 local result = nil
                 if object then
                     -- run builtin modules (xmake lua core.xxx.xxx)
+                    vprint("runing builtin module: %s", script)
                     result = object(unpack(option.get("arguments") or {}))
                 else
                     -- run imported modules (xmake lua core.xxx.xxx)
+                    vprint("runing imported module: %s", script)
                     result = import(script, {anonymous = true})(unpack(option.get("arguments") or {}))
                 end
                 if result ~= nil then utils.dump(result) end

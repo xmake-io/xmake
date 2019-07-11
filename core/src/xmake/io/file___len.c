@@ -11,57 +11,46 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      ruki
- * @file        isatty.c
+ * @author      OpportunityLiu
+ * @file        file___len.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "isatty"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME    "file___len"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
+#include "file.h"
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_WINDOWS
-#   include <io.h>
-#else
-#   include <unistd.h>
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* stdout: io.isatty()
- * stderr: io.isatty(io.stderr)
- * stdin:  io.isatty(io.stdin)
+/* get file length, #file
  */
-tb_int_t xm_io_isatty(lua_State* lua)
+tb_int_t xm_io_file___len(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file pointer
-    FILE** fp = (FILE**)luaL_checkudata(lua, 1, LUA_FILEHANDLE);
-
-    // no arguments? default: stdout
-    tb_int_t answer = 1;
-#ifdef TB_CONFIG_OS_WINDOWS
-    if (fp) answer = _isatty(_fileno(*fp));
-#else
-    if (fp) answer = isatty(fileno(*fp));
-#endif
-
-    // return answer
-	lua_pushboolean(lua, answer);
-
-    // ok
-    return 1;
+    xm_io_file* file = xm_io_getfile(lua);
+    if (xm_io_file_is_closed(file))
+        xm_io_file_return_error_closed(lua);
+    else if (xm_io_file_is_file(file))
+    {
+        // get size from raw file stream, because we cannot get size from fstream
+        tb_assert(file->stream);
+        lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
+        xm_io_file_return_success();
+    }
+    else xm_io_file_return_error(lua, file, "getting file size for this file is invalid");
 }

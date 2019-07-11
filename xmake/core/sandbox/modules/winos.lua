@@ -26,8 +26,13 @@ local raise = require("sandbox/modules/raise")
 local sandbox_winos = sandbox_winos or {}
 
 -- inherit some builtin interfaces
-sandbox_winos.registry_query = winos.registry_query
-sandbox_winos.logical_drives = winos.logical_drives
+sandbox_winos.oem_cp            = winos.oem_cp
+sandbox_winos.ansi_cp           = winos.ansi_cp
+sandbox_winos.cp_info           = winos.cp_info
+sandbox_winos.console_cp        = winos.console_cp
+sandbox_winos.console_output_cp = winos.console_output_cp
+sandbox_winos.registry_query    = winos.registry_query
+sandbox_winos.logical_drives    = winos.logical_drives
 
 -- get windows system version
 function sandbox_winos.version()

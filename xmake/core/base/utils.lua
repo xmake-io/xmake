@@ -26,14 +26,48 @@ local option = require("base/option")
 local colors = require("base/colors")
 local string = require("base/string")
 local log    = require("base/log")
+local io     = require("base/io")
 local dump   = require("base/dump")
 
 -- dump value
-function utils.dump(value, indent)
-    if not option.get("quiet") then
-        dump(value, indent or "")
-        io.write("\n")
+function utils.dump(...)
+    if option.get("quiet") then
+        return ...
     end
+
+    -- show caller info
+    if option.get("diagnosis") then
+        local info = debug.getinfo(2)
+        local line = info.currentline
+        if not line or line < 0 then line = info.linedefined end
+        io.write(string.format("dump form %s %s:%s\n", info.name or "<anonymous>", info.source, line))
+    end
+
+    local values = table.pack(...)
+    if values.n == 0 then
+        return
+    end
+    local indent = nil
+    local values_count = values.n
+    values.n = nil
+    -- use last input as indent if it is a string
+    if values_count > 1 and type(values[values_count]) == "string" then
+        indent = values[values_count]
+        values[values_count] = nil
+        values_count = values_count - 1
+    end
+
+    if values_count == 1 then
+        dump(values[1], indent or "")
+        io.write("\n")
+    else
+        for i = 1, values_count do
+            dump(values[i], indent or string.format("%2d: ", i))
+            io.write("\n")
+        end
+    end
+
+    return table.unpack(values, 1, values_count)
 end
 
 -- print string with newline

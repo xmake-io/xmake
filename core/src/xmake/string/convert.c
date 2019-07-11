@@ -48,15 +48,20 @@ typedef struct __xm_charset_entry_t
 // the charsets, @note: type & name is sorted
 static xm_charset_entry_t g_charsets[] =
 {
-    {TB_CHARSET_TYPE_ASCII,     "ascii"   }
-,   {TB_CHARSET_TYPE_GB2312,    "gb2312"  }
-,   {TB_CHARSET_TYPE_GBK,       "gbk"     }
-,   {TB_CHARSET_TYPE_ISO8859,   "iso8859" }
-,   {TB_CHARSET_TYPE_UCS2,      "ucs3"    }
-,   {TB_CHARSET_TYPE_UCS4,      "ucs4"    }
-,   {TB_CHARSET_TYPE_UTF16,     "utf16"   }
-,   {TB_CHARSET_TYPE_UTF32,     "utf32"   }
-,   {TB_CHARSET_TYPE_UTF8,      "utf8"    }
+    {TB_CHARSET_TYPE_ANSI,                          "ansi"    }
+,   {TB_CHARSET_TYPE_ASCII,                         "ascii"   }
+,   {TB_CHARSET_TYPE_GB2312,                        "gb2312"  }
+,   {TB_CHARSET_TYPE_GBK,                           "gbk"     }
+,   {TB_CHARSET_TYPE_ISO8859,                       "iso8859" }
+,   {TB_CHARSET_TYPE_UCS2,                          "ucs2"    }
+,   {TB_CHARSET_TYPE_UCS4,                          "ucs4"    }
+,   {TB_CHARSET_TYPE_UTF16,                         "utf16"   }
+,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE,    "utf16be" }
+,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE,    "utf16le" }
+,   {TB_CHARSET_TYPE_UTF32,                         "utf32"   }
+,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_BE,    "utf32be" }
+,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_LE,    "utf32le" }
+,   {TB_CHARSET_TYPE_UTF8,                          "utf8"    }
 };
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -122,10 +127,10 @@ tb_int_t xm_string_convert(lua_State* lua)
         tb_byte_t*  dst_data = tb_malloc_bytes(dst_maxn);
         if (dst_data && dst_maxn && (dst_size = tb_charset_conv_data(fcharset->type, tcharset->type, (tb_byte_t const*)src_cstr, (tb_size_t)src_size, dst_data, dst_maxn)) >= 0 && dst_size < dst_maxn)
         {
-            dst_data[dst_size] = '\0';
-            lua_pushstring(lua, (tb_char_t const*)dst_data);
+            lua_pushlstring(lua, (tb_char_t const *)dst_data, dst_size);
         }
         else lua_pushnil(lua);
+        tb_free(dst_data);
     }
 
     // ok

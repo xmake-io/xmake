@@ -285,7 +285,7 @@ function _include_note(self, line)
     _g.notes = _g.notes or 
     {
         "Note: including file: "
-    ,   "\215\162\210\226: \176\252\186\172\206\196\188\254: " -- zh-cn: "注意: 包含文件: "
+    ,   "注意: 包含文件: "
     }
 
     -- contain notes?
@@ -321,10 +321,12 @@ function _include_deps(self, outdata)
 
             -- get the relative
             includefile = path.relative(includefile, project.directory())
+            includefile = path.absolute(includefile)
 
             -- save it if belong to the project
-            if path.absolute(includefile):startswith(os.projectdir()) then
+            if includefile:startswith(os.projectdir()) then
 
+                includefile = path.relative(includefile, project.directory())
                 -- insert it and filter repeat
                 if not uniques[includefile] then
                     table.insert(results, includefile)

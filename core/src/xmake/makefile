@@ -44,7 +44,17 @@ xmake_C_FILES 			+= \
 						os/uid \
 						os/gid \
 						os/getown \
-						io/isatty \
+						io/file___len \
+						io/file___tostring \
+						io/file_close___gc \
+						io/file_flush \
+						io/file_isatty \
+						io/file_path \
+						io/file_read \
+						io/file_seek \
+						io/file_write \
+						io/open \
+						io/std \
 						path/relative \
 						path/absolute \
 						path/translate \

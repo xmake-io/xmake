@@ -1,6 +1,6 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
- */ 
+ */
 #include "xmake/xmake.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -12,7 +12,7 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
     tb_int_t ok = -1;
 
     // init xmake
-    if (xm_init()) 
+    if (xm_init())
     {
         // init machine
         xm_machine_ref_t machine = xm_machine_init();

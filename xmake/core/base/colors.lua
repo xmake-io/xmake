@@ -161,8 +161,8 @@ function colors.color8()
     end
 
     -- this is supported if exists ANSICON envirnoment variable on windows
-    colors._ANSICON = colors._ANSICON or os.getenv("ANSICON")
-    return colors._ANSICON
+    colors._ANSICON = colors._ANSICON or os.getenv("ANSICON") or ""
+    return colors._ANSICON ~= ""
 end
 
 -- support 256 colors?

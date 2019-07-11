@@ -47,6 +47,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/libc/string/memset \
 						tbox/src/tbox/libc/string/strcat \
 						tbox/src/tbox/libc/string/strchr \
+						tbox/src/tbox/libc/string/strnchr \
 						tbox/src/tbox/libc/string/strcmp \
 						tbox/src/tbox/libc/string/strcpy \
 						tbox/src/tbox/libc/string/strdup \
@@ -128,6 +129,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/stream/filter \
 						tbox/src/tbox/stream/impl/filter/cache \
 						tbox/src/tbox/stream/impl/filter/chunked \
+						tbox/src/tbox/stream/impl/filter/charset \
 						tbox/src/tbox/stream/impl/stream/data \
 						tbox/src/tbox/stream/impl/stream/file \
 						tbox/src/tbox/stream/impl/stream/filter \
@@ -199,6 +201,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/container/stack \
 						tbox/src/tbox/container/vector \
 						tbox/src/tbox/libm/impl/libm \
+						tbox/src/tbox/libm/exp \
 						tbox/src/tbox/libm/ilog2i \
 						tbox/src/tbox/libm/isqrti \
 						tbox/src/tbox/libm/idivi8 \
@@ -220,6 +223,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/path \
 						tbox/src/tbox/platform/poller \
 						tbox/src/tbox/platform/print \
+						tbox/src/tbox/platform/stdfile \
 						tbox/src/tbox/platform/process \
 						tbox/src/tbox/platform/processor \
 						tbox/src/tbox/platform/sched \
@@ -230,6 +234,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/thread_local \
 						tbox/src/tbox/platform/time \
 						tbox/src/tbox/platform/timer \
+						tbox/src/tbox/platform/impl/charset \
 						tbox/src/tbox/platform/impl/sockdata \
 						tbox/src/tbox/platform/impl/dns \
 						tbox/src/tbox/platform/impl/platform \

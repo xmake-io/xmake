@@ -53,6 +53,10 @@ theme("default")
 
     -- color dump
     set_text("dump.default_format", "<%s>")
+    set_text("dump.anchor", "&%s")
+    set_text("dump.reference", "*%s")
+    set_color("dump.anchor", "yellow")
+    set_color("dump.reference", "yellow")
     set_color("dump.default", "bright")
     set_color("dump.string", "magenta bright")
     set_color("dump.string_quote", "magenta")

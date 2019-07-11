@@ -54,8 +54,9 @@ end
 --  src/tbox/libc/string/../../prefix/../config.h \
 --  build/iphoneos/x86_64/release/tbox.config.h \
 --
-function main(depsdata)
+function main(depsfile)
 
+    local depsdata = io.readfile(depsfile, { continuation = "\\"})
     -- check
     if not depsdata or #depsdata == 0 then
         return {}
@@ -63,8 +64,7 @@ function main(depsdata)
 
     -- parse results
     local results = {}
-    local data = depsdata:gsub("\\\n", "")
-    for _, line in ipairs(data:split("\n", {plain = true})) do
+    for _, line in ipairs(depsdata:split("\n", {plain = true})) do
         local p = line:find(':', 1, true)
         if p then
             line = line:sub(p + 1)

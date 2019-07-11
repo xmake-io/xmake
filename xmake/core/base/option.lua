@@ -832,7 +832,7 @@ function option.show_logo()
     end
 
     -- show logo
-    print(colors.translate(logo))
+    io.print(colors.translate(logo))
 
     -- define footer
     local footer = [[
@@ -841,7 +841,7 @@ function option.show_logo()
     ]]
 
     -- show footer
-    print(colors.translate(footer))
+    io.print(colors.translate(footer))
 end
 
 -- show the menu 
@@ -863,12 +863,12 @@ function option.show_menu(task)
 
     -- print title
     if menu.title then
-        print(colors.translate(menu.title))
+        io.print(colors.translate(menu.title))
     end
 
     -- print copyright
     if menu.copyright then
-        print(colors.translate(menu.copyright))
+        io.print(colors.translate(menu.copyright))
     end
 
     -- show logo
@@ -876,14 +876,14 @@ function option.show_menu(task)
 
     -- print usage
     if taskmenu.usage then
-        print("")
-        print(colors.translate("${bright}Usage: $${default cyan}" .. taskmenu.usage))
+        io.print("")
+        io.print(colors.translate("${bright}Usage: $${default cyan}" .. taskmenu.usage))
     end
 
     -- print description
     if taskmenu.description then
-        print("")
-        print(taskmenu.description)
+        io.print("")
+        io.print(taskmenu.description)
     end
 
     -- print options
@@ -905,12 +905,12 @@ function option.show_main()
 
     -- print title
     if menu.title then
-        print(colors.translate(menu.title))
+        io.print(colors.translate(menu.title))
     end
 
     -- print copyright
     if menu.copyright then
-        print(colors.translate(menu.copyright))
+        io.print(colors.translate(menu.copyright))
     end
 
     -- show logo
@@ -918,14 +918,14 @@ function option.show_main()
 
     -- print usage
     if main.usage then
-        print("")
-        print(colors.translate("${bright}Usage: $${default cyan}" .. main.usage))
+        io.print("")
+        io.print(colors.translate("${bright}Usage: $${default cyan}" .. main.usage))
     end
 
     -- print description
     if main.description then
-        print("")
-        print(main.description)
+        io.print("")
+        io.print(main.description)
     end
 
     -- print tasks
@@ -968,8 +968,8 @@ function option.show_main()
             assert(categoryname and categorytask)
 
             -- print category name
-            print("")
-            print(colors.translate(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
+            io.print("")
+            io.print(colors.translate(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
             
             -- the padding spaces
             local padding = 42
@@ -1005,7 +1005,7 @@ function option.show_main()
                 end
 
                 -- print task line
-                print(colors.translate(taskline))
+                io.print(colors.translate(taskline))
             end
         end
     end
@@ -1023,8 +1023,8 @@ function option.show_options(options)
     assert(options)
 
     -- print header
-    print("")
-    print(colors.translate("${bright}Options: "))
+    io.print("")
+    io.print(colors.translate("${bright}Options: "))
     
     -- the padding spaces
     local padding = 42
@@ -1111,7 +1111,7 @@ function option.show_options(options)
         end
 
         -- print option info
-        print(colors.translate(option_info))
+        io.print(colors.translate(option_info))
 
         -- print more description if exists
         for i = 6, 64 do
@@ -1135,7 +1135,7 @@ function option.show_options(options)
                 end
 
                 -- print this description
-                print(option._inwidth_append(spaces, description, padding + 1, console_width))
+                io.print(option._inwidth_append(spaces, description, padding + 1, console_width))
 
             -- the description is table?
             elseif type(description) == "table" then
@@ -1150,7 +1150,7 @@ function option.show_options(options)
                     end
 
                     -- print this description
-                    print(option._inwidth_append(spaces, v, padding + 1, console_width))
+                    io.print(option._inwidth_append(spaces, v, padding + 1, console_width))
                 end
             end
         end
@@ -1171,7 +1171,7 @@ function option.show_options(options)
                 end
 
                 -- print this value
-                print(option._inwidth_append(spaces, "    - " .. tostring(value), padding + 1, console_width))
+                io.print(option._inwidth_append(spaces, "    - " .. tostring(value), padding + 1, console_width))
             end
         end
     end

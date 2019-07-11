@@ -53,6 +53,10 @@ theme("plain")
 
     -- color dump
     set_text("dump.default_format", "<%s>")
+    set_text("dump.anchor", "&%s")
+    set_text("dump.reference", "*%s")
+    set_color("dump.anchor", "")
+    set_color("dump.reference", "")
     set_color("dump.default", "")
     set_color("dump.string", "")
     set_color("dump.string_quote", "")

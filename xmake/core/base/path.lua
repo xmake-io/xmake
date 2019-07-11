@@ -22,7 +22,6 @@
 local path = path or {}
 
 -- load modules
-local utils     = require("base/utils")
 local string    = require("base/string")
 
 -- get the directory of the path

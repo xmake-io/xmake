@@ -25,6 +25,24 @@ local winos = winos or {}
 local os     = require("base/os")
 local semver = require("base/semver")
 
+
+winos._ansi_cp  = winos._ansi_cp or winos.ansi_cp
+winos._oem_cp   = winos._oem_cp  or winos.oem_cp
+
+function winos.ansi_cp()
+    if not winos._ANSI_CP then
+         winos._ANSI_CP = winos._ansi_cp()
+    end
+    return winos._ANSI_CP
+end
+
+function winos.oem_cp()
+    if not winos._OEM_CP then
+         winos._OEM_CP = winos._oem_cp()
+    end
+    return winos._OEM_CP
+end
+
 -- get windows version from name
 function winos._version_from_name(name)
 

@@ -171,7 +171,7 @@ function main.entry()
     main._init()
 
     -- init option 
-    local ok, errors = option.init(menu)  
+    local ok, errors = option.init(menu)
     if not ok then
         utils.error(errors)
         return -1
