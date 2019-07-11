@@ -82,7 +82,7 @@ function sandbox_lib_detect_find_file.main(name, pathes, opt)
                 raise(results)
             end
         elseif type(_path) == "string" then
-            if _path:match("^%$%($s*env%s+%S+%s*%)$") then
+            if _path:match("^%$%(%s*env%s+%S+%s*%)$") then
                 _path = path.splitenv(vformat(_path))
             else
                 _path = vformat(_path)
