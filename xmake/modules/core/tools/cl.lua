@@ -262,7 +262,7 @@ function _include_note(self, line)
     --
     -- TODO zh-tw, zh-hk, jp, ...
     --
-    _g.notes = _g.notes or 
+    _g.notes = _g.notes or
     {
         "Note: including file: "
     ,   "注意: 包含文件: "
@@ -270,7 +270,7 @@ function _include_note(self, line)
 
     -- contain notes?
     for idx, note in ipairs(_g.notes) do
-        
+
         -- dump line bytes
         --[[
         print(line)
@@ -318,6 +318,31 @@ function _include_deps(self, outdata)
     return results
 end
 
+-- add if we need -Fd flags
+function _patch_pdbflags(objectfile, flags)
+
+    local compflags = flags
+
+    -- check if we need -Fd flags
+    local need_pdb = false
+    local has_pdb = false
+    for _, flag in ipairs(flags) do
+        if flag:find("-ZI", 1, true) or flag:find("-Zi", 1, true) or flag:find("/ZI", 1, true) or flag:find("/Zi", 1, true) then
+            need_pdb = true
+        end
+        if flag:find("-Fd", 1, true) or flag:find("/Fd", 1, true) then
+            has_pdb = true
+        end
+    end
+
+    -- add pdb output
+    if need_pdb and not has_pdb then
+        compflags = table.join(flags, "-Fd" .. objectfile .. ".pdb")
+    end
+
+    return compflags
+end
+
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
@@ -343,33 +368,16 @@ end
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
-    local compflags = flags
-
-    -- check if we need -Fd flags
-    local need_pdb = false
-    local has_pdb = false
-    for _, flag in ipairs(flags) do
-        if flag:find("-ZI", 1, true) or flag:find("-Zi", 1, true) then
-            need_pdb = true
-        end
-        if flag:find("-Fd", 1, true) then
-            has_pdb = true
-        end
-    end
-
-    -- add pdb output
-    if need_pdb and not has_pdb then
-        compflags = table.join(flags, "-Fd" .. objectfile .. ".pdb")
-    end
+    flags = _patch_pdbflags(objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv1_pch(self, sourcefile, objectfile, compflags)
+        return _compargv1_pch(self, sourcefile, objectfile, flags)
     end
 
     -- make complie arguments list
-    return self:program(), table.join("-c", compflags, "-Fo" .. objectfile, sourcefile)
+    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- complie the source file
