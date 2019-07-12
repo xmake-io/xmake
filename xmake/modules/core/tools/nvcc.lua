@@ -266,6 +266,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
         for _, flag in ipairs(flags) do
             if flag:find("-g", 1, true) then
                 need_pdb = true
+                break
             end
         end
         if need_pdb then
@@ -281,7 +282,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
         -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
         if not os.isexec(program) then
             argv = table.join(program:split("%s"), argv)
-        else 
+        else
             table.insert(argv, 1, program)
         end
         return ccache, argv
