@@ -87,33 +87,13 @@ end
 -- make the symbol flag
 function nf_symbol(self, level, target)
 
-    -- debug? generate *.pdb file
-    local flags = nil
-    if level == "debug" then
-        local symbolfile = nil
-        if target and target.symbolfile then
-            symbolfile = target:symbolfile()
-        end
-        if symbolfile then
+    -- the maps
+    local maps =
+    {
+        debug       = "-Zi"
+    }
 
-            -- ensure the object directory
-            local symboldir = path.directory(symbolfile)
-            if not os.isdir(symboldir) then
-                os.mkdir(symboldir)
-            end
-            
-            -- check and add symbol output file
-            flags = "-Zi -Fd" .. target:symbolfile()
-            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}, "cxflags") then
-                flags = "-FS " .. flags
-            end
-        else
-            flags = "-Zi"
-        end
-    end
-
-    -- none
-    return flags
+    return maps[level]
 end
 
 -- make the warning flag
@@ -341,8 +321,8 @@ end
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
-    -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     local pchflags = {}
+    -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     for _, flag in ipairs(flags) do
         if not flag:find("-Yu", 1, true) and not flag:find("-Fp", 1, true) then
             table.insert(pchflags, flag)
@@ -363,14 +343,33 @@ end
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
+    local compflags = flags
+
+    -- check if we need -Fd flags
+    local need_pdb = false
+    local has_pdb = false
+    for _, flag in ipairs(flags) do
+        if flag:find("-ZI", 1, true) or flag:find("-Zi", 1, true) then
+            need_pdb = true
+        end
+        if flag:find("-Fd", 1, true) then
+            has_pdb = true
+        end
+    end
+
+    -- add pdb output
+    if need_pdb and not has_pdb then
+        compflags = table.join(flags, "-Fd" .. objectfile .. ".pdb")
+    end
+
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv1_pch(self, sourcefile, objectfile, flags)
+        return _compargv1_pch(self, sourcefile, objectfile, compflags)
     end
 
     -- make complie arguments list
-    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    return self:program(), table.join("-c", compflags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- complie the source file
