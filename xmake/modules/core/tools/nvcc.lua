@@ -59,38 +59,13 @@ end
 -- make the symbol flag
 function nf_symbol(self, level, target)
 
-    -- debug? generate *.pdb file
-    local flags = nil
-    if level == "debug" then
-        flags = "-g -G"
-        if is_plat("windows") then
-            local host_flags = nil
-            local symbolfile = nil
-            if target and target.symbolfile then
-                symbolfile = target:symbolfile()
-            end
-            if symbolfile then
+    -- the maps
+    local maps =
+    {
+        debug       = "-g -G"
+    }
 
-                -- ensure the object directory
-                local symboldir = path.directory(symbolfile)
-                if not os.isdir(symboldir) then
-                    os.mkdir(symboldir)
-                end
-
-                -- check and add symbol output file
-                host_flags = "-Zi -Fd" .. target:symbolfile()
-                if self:has_flags({'-Xcompiler "-Zi -FS -Fd'  .. os.tmpfile() .. '.pdb"'}, "cuflags") then
-                    host_flags = "-FS " .. host_flags
-                end
-            else
-                host_flags = "-Zi"
-            end
-            flags = flags .. ' -Xcompiler "' .. host_flags .. '"'
-        end
-    end
-
-    -- none
-    return flags
+    return maps[level]
 end
 
 -- make the warning flag
@@ -285,14 +260,29 @@ function _compargv1(self, sourcefile, objectfile, flags)
     -- make argv
     local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
 
+    -- insert -Fd flags
+    if is_plat("windows") then
+        local need_pdb = false
+        for _, flag in ipairs(flags) do
+            if flag:find("-g", 1, true) then
+                need_pdb = true
+                break
+            end
+        end
+        if need_pdb then
+            table.insert(argv, "-Xcompiler")
+            table.insert(argv, "-Fd" .. objectfile .. ".pdb")
+        end
+    end
+
     -- uses cache?
     local program = self:program()
     if ccache then
-            
+
         -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
         if not os.isexec(program) then
             argv = table.join(program:split("%s"), argv)
-        else 
+        else
             table.insert(argv, 1, program)
         end
         return ccache, argv

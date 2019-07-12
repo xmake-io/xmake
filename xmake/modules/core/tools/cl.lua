@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.project")
 import("core.language.language")
 
@@ -87,33 +88,13 @@ end
 -- make the symbol flag
 function nf_symbol(self, level, target)
 
-    -- debug? generate *.pdb file
-    local flags = nil
-    if level == "debug" then
-        local symbolfile = nil
-        if target and target.symbolfile then
-            symbolfile = target:symbolfile()
-        end
-        if symbolfile then
+    -- the maps
+    local maps =
+    {
+        debug       = "-Zi"
+    }
 
-            -- ensure the object directory
-            local symboldir = path.directory(symbolfile)
-            if not os.isdir(symboldir) then
-                os.mkdir(symboldir)
-            end
-            
-            -- check and add symbol output file
-            flags = "-Zi -Fd" .. target:symbolfile()
-            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}, "cxflags") then
-                flags = "-FS " .. flags
-            end
-        else
-            flags = "-Zi"
-        end
-    end
-
-    -- none
-    return flags
+    return maps[level]
 end
 
 -- make the warning flag
@@ -282,7 +263,7 @@ function _include_note(self, line)
     --
     -- TODO zh-tw, zh-hk, jp, ...
     --
-    _g.notes = _g.notes or 
+    _g.notes = _g.notes or
     {
         "Note: including file: "
     ,   "注意: 包含文件: "
@@ -290,7 +271,7 @@ function _include_note(self, line)
 
     -- contain notes?
     for idx, note in ipairs(_g.notes) do
-        
+
         -- dump line bytes
         --[[
         print(line)
@@ -338,11 +319,42 @@ function _include_deps(self, outdata)
     return results
 end
 
+-- add if we need -Fd flags
+function _patch_pdbflags(objectfile, flags)
+
+    local compflags = flags
+
+    local _pdbflags = _g._pdbflags or hashset.of("-ZI", "-Zi", "/ZI", "/Zi")
+    _g._pdbflags = _pdbflags
+
+    -- check if we need -Fd flags
+    local need_pdb = false
+    local has_pdb = false
+    for _, flag in ipairs(flags) do
+        if _pdbflags:has(flag) then
+            need_pdb = true
+        end
+        if flag:find("-Fd", 1, true) or flag:find("/Fd", 1, true) then
+            has_pdb = true
+        end
+        if need_pdb and has_pdb then
+            break
+        end
+    end
+
+    -- add pdb output
+    if need_pdb and not has_pdb then
+        compflags = table.join(flags, "-Fd" .. objectfile .. ".pdb")
+    end
+
+    return compflags
+end
+
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
-    -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     local pchflags = {}
+    -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     for _, flag in ipairs(flags) do
         if not flag:find("-Yu", 1, true) and not flag:find("-Fp", 1, true) then
             table.insert(pchflags, flag)
@@ -362,6 +374,8 @@ end
 
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
+
+    flags = _patch_pdbflags(objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
