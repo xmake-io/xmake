@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.project")
 import("core.language.language")
 
@@ -323,11 +324,14 @@ function _patch_pdbflags(objectfile, flags)
 
     local compflags = flags
 
+    local _pdbflags = _g._pdbflags or hashset.of("-ZI", "-Zi", "/ZI", "/Zi")
+    _g._pdbflags = _pdbflags
+
     -- check if we need -Fd flags
     local need_pdb = false
     local has_pdb = false
     for _, flag in ipairs(flags) do
-        if flag:find("-ZI", 1, true) or flag:find("-Zi", 1, true) or flag:find("/ZI", 1, true) or flag:find("/Zi", 1, true) then
+        if _pdbflags:has(flag) then
             need_pdb = true
         end
         if flag:find("-Fd", 1, true) or flag:find("/Fd", 1, true) then
