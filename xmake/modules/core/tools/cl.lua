@@ -337,6 +337,9 @@ function _patch_pdbflags(objectfile, flags)
         if flag:find("-Fd", 1, true) or flag:find("/Fd", 1, true) then
             has_pdb = true
         end
+        if need_pdb and has_pdb then
+            break
+        end
     end
 
     -- add pdb output
