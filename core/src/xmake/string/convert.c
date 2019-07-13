@@ -53,12 +53,12 @@ static xm_charset_entry_t g_charsets[] =
 ,   {TB_CHARSET_TYPE_GB2312,                        "gb2312"  }
 ,   {TB_CHARSET_TYPE_GBK,                           "gbk"     }
 ,   {TB_CHARSET_TYPE_ISO8859,                       "iso8859" }
-,   {TB_CHARSET_TYPE_UCS2,                          "ucs2"    }
-,   {TB_CHARSET_TYPE_UCS4,                          "ucs4"    }
-,   {TB_CHARSET_TYPE_UTF16,                         "utf16"   }
+,   {TB_CHARSET_TYPE_UCS2  | TB_CHARSET_TYPE_NE,    "ucs2"    }
+,   {TB_CHARSET_TYPE_UCS4  | TB_CHARSET_TYPE_NE,    "ucs4"    }
+,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE,    "utf16"   }
 ,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE,    "utf16be" }
 ,   {TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE,    "utf16le" }
-,   {TB_CHARSET_TYPE_UTF32,                         "utf32"   }
+,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_NE,    "utf32"   }
 ,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_BE,    "utf32be" }
 ,   {TB_CHARSET_TYPE_UTF32 | TB_CHARSET_TYPE_LE,    "utf32le" }
 ,   {TB_CHARSET_TYPE_UTF8,                          "utf8"    }
@@ -115,6 +115,8 @@ tb_int_t xm_string_convert(lua_State* lua)
     // find charsets
     xm_charset_entry_ref_t fcharset = xm_string_charset_find_by_name(ftype_cstr);
     xm_charset_entry_ref_t tcharset = xm_string_charset_find_by_name(ttype_cstr);
+    luaL_argcheck(lua, fcharset, 2, "charset not found");
+    luaL_argcheck(lua, tcharset, 3, "charset not found");
     tb_check_return_val(fcharset && tcharset, 0);
 
     // empty string?
