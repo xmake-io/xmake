@@ -37,16 +37,18 @@ function _file:read(fmt, opt)
     return self:_read(fmt, opt.continuation)
 end
 
+-- iterator of lines
+function _file._lines_iter(data)
+    local l = data.file:read("l", data.opt)
+    if not l and data.opt.close_on_finished then
+        data.file:close()
+    end
+    return l
+end
+
 -- read all lines from a file
 function _file:lines(opt)
-    opt = opt or {}
-    return function()
-        local l = self:read("l", opt)
-        if not l and opt.close_on_finished then
-            self:close()
-        end
-        return l
-    end
+    return _file._lines_iter, { file = assert(self), opt = opt or {} }
 end
 
 -- print file
@@ -223,7 +225,7 @@ function io.save(filepath, object, opt)
     -- ok
     return true
 end
- 
+
 -- load object from the given file
 function io.load(filepath, opt)
 
