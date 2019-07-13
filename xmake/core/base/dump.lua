@@ -86,6 +86,11 @@ function dump._print_udata_scalar(value)
     io.write(dump._translate("${color.dump.udata}"), dump._format("text.dump.udata_format", "%s", value), dump._translate("${reset}"))
 end
 
+-- print table value with scalar format
+function dump._print_table_scalar(value)
+    io.write(dump._translate("${color.dump.table}"), dump._format("text.dump.table_format", "%s", value), dump._translate("${reset}"))
+end
+
 -- print scalar value
 function dump._print_scalar(value, as_key)
     if type(value) == "nil" then
@@ -100,6 +105,8 @@ function dump._print_scalar(value, as_key)
         dump._print_function(value, as_key)
     elseif type(value) == "userdata" then
         dump._print_udata_scalar(value)
+    elseif type(value) == "table" then
+        dump._print_table_scalar(value)
     else
         dump._print_default(value)
     end
@@ -223,7 +230,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     if not first_level and tostringmethod then
         local ok, strrep = pcall(tostringmethod, value, value)
         if ok then
-            return dump._print_default(strrep)
+            return dump._print_table_scalar(strrep)
         end
     end
     printed_set = printed_set or { len = 0 }
@@ -231,7 +238,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     local first_value = true
 
     -- print open brackets
-    io.write(dump._translate("${reset}${dim}{${reset}"))
+    io.write(dump._translate("${reset}${color.dump.table}{${reset}"))
 
     local function print_newline()
         if first_value then
@@ -285,9 +292,9 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
 
     -- print close brackets
     if first_value then
-        io.write(dump._translate(" ${dim}}${reset}"))
+        io.write(dump._translate(" ${color.dump.table}}${reset}"))
     else
-        io.write("\b \n", remain_indent, dump._translate("${reset}${dim}}${reset}"))
+        io.write("\b \n", remain_indent, dump._translate("${reset}${color.dump.table}}${reset}"))
     end
 end
 
