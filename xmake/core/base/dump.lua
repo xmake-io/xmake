@@ -25,6 +25,7 @@ local dump = dump or {}
 local colors  = require("base/colors")
 local table   = require("base/table")
 
+-- format string with theme colors
 function dump._format(fmtkey, fmtdefault, ...)
     local theme = colors.theme()
     local fmt = theme and theme:get(fmtkey) or fmtdefault
@@ -119,9 +120,9 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
         return false
     end
 
+    -- print metamethods
     local has_record = false
     local has_index_table = false
-    -- print metamethods
     for k, v in pairs(metatable) do
         if k == "__index" and type(v) == "table" then
             has_index_table = true
@@ -157,8 +158,8 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
         return has_record
     end
 
-    local index_table = metatable and rawget(metatable, "__index")
     -- print index methods
+    local index_table = metatable and rawget(metatable, "__index")
     for k, v in pairs(index_table) do
         -- hide private interfaces
         if type(k) ~= "string" or not k:startswith("_") then
@@ -181,7 +182,6 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             io.write(",")
         end
     end
-
     return has_record
 end
 
@@ -191,9 +191,11 @@ function dump._print_udata(value, first_indent, remain_indent)
     io.write(first_indent)
     local metatable = getmetatable(value)
     local inner_indent = remain_indent .. "  "
+
     -- print open brackets
     io.write(colors.translate("${dim}["))
 
+    -- print metatable
     local no_value = not dump._print_metatable(value, metatable, inner_indent, { len = 0 }, false)
 
     -- print close brackets
@@ -220,6 +222,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     printed_set = printed_set or { len = 0 }
     local inner_indent = remain_indent .. "  "
     local first_value = true
+
     -- print open brackets
     io.write(colors.translate("${dim}{"))
 
