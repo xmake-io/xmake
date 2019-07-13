@@ -1,0 +1,9 @@
+    <PropertyGroup Label="XmakePath" Condition="'$(Configuration)|$(Platform)'=='#mode#|#vsarch#'">
+        <XmakeBuilDir>#buildir#</XmakeBuilDir>
+        <XmakeConfigDir>#configdir#</XmakeConfigDir>
+        <XmakeConfigFileDir>#configfiledir#</XmakeConfigFileDir>
+        <XmakeTargetDir>#targetdir#</XmakeTargetDir>
+        <XmakeIncludeDir>#includedirs#</XmakeIncludeDir>
+        <XmakeLinkDir>#linkdirs#</XmakeLinkDir>
+        <XmakeRunDir>#rundir#</XmakeRunDir>
+    </PropertyGroup>

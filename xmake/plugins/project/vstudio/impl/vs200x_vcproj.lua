@@ -97,7 +97,7 @@ function _make_linkflags(target, vcprojdir)
         -- save flag
         table.insert(flags, flag)
     end
-    
+
     -- make flags string
     flags = os.args(flags)
 
@@ -114,20 +114,11 @@ function _make_header(vcprojfile, vsinfo, target)
     -- the target name
     local targetname = target:name()
 
-    -- the versions
-    local versions = 
-    {
-        vs2002 = '7.0'
-    ,   vs2003 = '7.1'
-    ,   vs2005 = '8.0'
-    ,   vs2008 = '9.0'
-    }
-
     -- make header
-    vcprojfile:print("<?xml version=\"1.0\" encoding=\"gb2312\"?>")
+    vcprojfile:print("<?xml version=\"1.0\" encoding=\"utf-8\"?>")
     vcprojfile:enter("<VisualStudioProject")
         vcprojfile:print("ProjectType=\"Visual C++\"")
-        vcprojfile:print("Version=\"%s0\"", assert(versions["vs" .. vsinfo.vstudio_version]))
+        vcprojfile:print("Version=\"%s0\"", assert(vsinfo.project_version))
         vcprojfile:print("Name=\"%s\"", targetname)
         vcprojfile:print("ProjectGUID=\"{%s}\"", hash.uuid(targetname))
         vcprojfile:print("RootNamespace=\"%s\"", targetname)

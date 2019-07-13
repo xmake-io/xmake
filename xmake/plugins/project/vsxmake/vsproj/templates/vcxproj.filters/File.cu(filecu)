@@ -1,0 +1,3 @@
+        <CudaCompile Include="#path#">
+            <Filter>#dir#</Filter>
+        </CudaCompile>

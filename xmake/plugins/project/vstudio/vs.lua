@@ -15,22 +15,21 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vs2008.lua
+-- @file        vs.lua
 --
 
 -- imports
 import("impl.vs200x")
+import("impl.vsinfo")
 
--- make
-function make(outputdir)
+-- make factory
+function make(version)
 
-    -- init vstudio info
-    local vsinfo = 
-    {
-        vstudio_version     = "2008"
-    ,   solution_version    = "10"
-    }
+    -- get vs version info
+    local info = vsinfo(version)
 
-    -- make project
-    vs200x.make(outputdir, vsinfo)
+    -- make
+    return function(outputdir)
+        vs200x.make(outputdir, info)
+    end
 end

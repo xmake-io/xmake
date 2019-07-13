@@ -161,7 +161,4 @@ function make(vsinfo, target)
 
     -- exit solution file
     filtersfile:close()
-
-    -- convert gb2312 to utf8
-    io.writefile(filterspath, io.readfile(filterspath):convert("gb2312", "utf8"))
 end
