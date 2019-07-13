@@ -63,22 +63,16 @@ end
 
 -- print file
 function sandbox_io_file:print(...)
-
-    -- print it
     return self:write(vformat(...), "\n")
 end
 
 -- printf file
 function sandbox_io_file:printf(...)
-
-    -- printf it
     return self:write(vformat(...))
 end
 
 -- writef file
 function sandbox_io_file:writef(...)
-
-    -- writef it
     return self:write(string.format(...))
 end
 
