@@ -430,8 +430,10 @@ function interpreter:_filter(values)
         for key, value in pairs(values) do
             if type(value) == "string" then
                 results[filter:handle(key)] = filter:handle(value)
+            elseif type(value) == "table" then
+                results[filter:handle(key)] = self:_filter(value)
             else
-                results[filter:handle(key)] = value
+                results[filter:handle(key)] = value 
             end
         end
     else
@@ -451,6 +453,8 @@ function interpreter:_filter(values)
                 for _, v in ipairs(value) do
                     if type(v) == "string" then
                         table.insert(values, filter:handle(v))
+                    elseif type(value) == "table" then
+                        table.insert(values, self:_filter(v))
                     else
                         table.insert(values, v)
                     end
