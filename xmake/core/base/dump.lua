@@ -35,6 +35,7 @@ function dump._format(fmtkey, fmtdefault, ...)
     end
 end
 
+-- translate string with theme formats
 function dump._translate(str)
     return colors.translate(str, { patch_reset = false, ignore_unknown = true })
 end
@@ -125,6 +126,7 @@ function dump._print_reference(value)
     io.write(dump._translate("${color.dump.reference}"), dump._format("text.dump.reference", "*%s", value), dump._translate("${reset}"))
 end
 
+-- print anchor and store to printed_set
 function dump._print_table_anchor(value, printed_set)
     printed_set.len = printed_set.len + 1
     io.write(" ")
@@ -132,6 +134,7 @@ function dump._print_table_anchor(value, printed_set)
     printed_set[value] = printed_set.len
 end
 
+-- print metatable of value
 function dump._print_metatable(value, metatable, inner_indent, printed_set, print_archor)
     if not metatable then
         return false
@@ -252,6 +255,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     end
 
     if first_level then
+        -- print metatable
         first_value = not dump._print_metatable(value, metatable, inner_indent, printed_set, true)
     end
 
