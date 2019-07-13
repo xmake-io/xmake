@@ -46,11 +46,11 @@ OutFile "xmake.exe"
 
 ; The default installation directory
 !ifdef x64
-  InstallDir $PROGRAMFILES64\xmake
+  !define PROGRAMFILES $PROGRAMFILES64
   !define HKLM HKLM64
   !define HKCU HKCU64
 !else
-  InstallDir $PROGRAMFILES\xmake
+  !define PROGRAMFILES $PROGRAMFILES
   !define HKLM HKLM
   !define HKCU HKCU
 !endif
@@ -126,23 +126,22 @@ ManifestDPIAware true
 ; Version Information
 
 
-VIProductVersion ${VERSION}.0
-VIFileVersion ${VERSION}.0
-VIAddVersionKey /LANG=0 ProductName XMake
-VIAddVersionKey /LANG=0 Comments "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
-VIAddVersionKey /LANG=0 CompanyName "The TBOOX Open Source Group"
-VIAddVersionKey /LANG=0 LegalCopyright "Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
-VIAddVersionKey /LANG=0 FileDescription "XMake Installer - v${VERSION}"
+VIProductVersion                         ${VERSION}.0
+VIFileVersion                            ${VERSION}.0
+VIAddVersionKey /LANG=0 ProductName      XMake
+VIAddVersionKey /LANG=0 Comments         "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
+VIAddVersionKey /LANG=0 CompanyName      "The TBOOX Open Source Group"
+VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+VIAddVersionKey /LANG=0 FileDescription  "XMake Installer - v${VERSION}"
 VIAddVersionKey /LANG=0 OriginalFilename "xmake-${ARCH}.exe"
-VIAddVersionKey /LANG=0 FileVersion ${VERSION_FULL}
-VIAddVersionKey /LANG=0 ProductVersion ${VERSION_FULL}
+VIAddVersionKey /LANG=0 FileVersion      ${VERSION_FULL}
+VIAddVersionKey /LANG=0 ProductVersion   ${VERSION_FULL}
 
 
 ;--------------------------------
 ; Reg pathes
 
 !define RegUninstall "Software\Microsoft\Windows\CurrentVersion\Uninstall\XMake"
-!define RegProduct "Software\XMake"
 
 ;--------------------------------
 
@@ -157,6 +156,22 @@ Function .onInit
   ${Else}
     StrCpy $NOADMIN "true"
   ${EndIf}
+
+  ; load from reg
+  ${If} $InstDir == ""
+    ${If} $NOADMIN == "false"
+      ReadRegStr $R0 ${HKLM} ${RegUninstall} "InstallLocation"
+    ${Else}
+      ReadRegStr $R0 ${HKCU} ${RegUninstall} "InstallLocation"
+    ${EndIf}
+    ${If} $R0 != ""
+      StrCpy $InstDir "$R0"
+    ${EndIf}
+  ${EndIf}
+  ; use default
+  ${If} $InstDir == ""
+    StrCpy $InstDir ${PROGRAMFILES}\xmake
+  ${EndIf}
 FunctionEnd
 
 Section "XMake (required)" InstallExeutable
@@ -164,10 +179,10 @@ Section "XMake (required)" InstallExeutable
   SectionIn RO
   
   ; Set output path to the installation directory.
-  SetOutPath $INSTDIR
+  SetOutPath $InstDir
 
   ; Remove previous directories used
-  RMDir /r "$INSTDIR"
+  RMDir /r "$InstDir"
   
   ; Put file there
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
@@ -177,31 +192,30 @@ Section "XMake (required)" InstallExeutable
 
   WriteUninstaller "uninstall.exe"
 
-  !macro AddReg RootKey    
-    ; Write the installation path into the registry
-    WriteRegStr ${RootKey} ${RegProduct} "Install_Dir" "$INSTDIR"
+  !macro AddReg RootKey
+
     ; Write uac info
-    WriteRegStr ${RootKey} ${RegProduct} "NoAdmin" "$NOADMIN"
+    WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
     
     ; Write the uninstall keys for Windows
-    WriteRegStr ${RootKey} ${RegUninstall} "DisplayName" "XMake build utility"
-    WriteRegStr ${RootKey} ${RegUninstall} "DisplayIcon" '"$INSTDIR\xmake.exe"'
-    WriteRegStr ${RootKey} ${RegUninstall} "Comments" "A cross-platform build utility based on Lua"
-    WriteRegStr ${RootKey} ${RegUninstall} "Publisher" "The TBOOX Open Source Group"
-    WriteRegStr ${RootKey} ${RegUninstall} "UninstallString" '"$INSTDIR\uninstall.exe"'
-    WriteRegStr ${RootKey} ${RegUninstall} "QuiteUninstallString" '"$INSTDIR\uninstall.exe" /S'
-    WriteRegStr ${RootKey} ${RegUninstall} "InstallLocation" '"$INSTDIR"'
-    WriteRegStr ${RootKey} ${RegUninstall} "HelpLink" 'https://xmake.io/'
-    WriteRegStr ${RootKey} ${RegUninstall} "URLInfoAbout" 'https://github.com/xmake-io/xmake'
-    WriteRegStr ${RootKey} ${RegUninstall} "URLUpdateInfo" 'https://github.com/xmake-io/xmake/releases'
-    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMajor" ${MAJOR}
-    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMinor" ${MINOR}
-    WriteRegStr ${RootKey} ${RegUninstall} "DisplayVersion" ${VERSION_FULL}
-    WriteRegDWORD ${RootKey} ${RegUninstall} "NoModify" 1
-    WriteRegDWORD ${RootKey} ${RegUninstall} "NoRepair" 1
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "XMake build utility"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\xmake.exe"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "A cross-platform build utility based on Lua"
+    WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "The TBOOX Open Source Group"
+    WriteRegStr   ${RootKey} ${RegUninstall} "UninstallString"       '"$InstDir\uninstall.exe"'
+    WriteRegStr   ${RootKey} ${RegUninstall} "QuiteUninstallString"  '"$InstDir\uninstall.exe" /S'
+    WriteRegStr   ${RootKey} ${RegUninstall} "InstallLocation"       $InstDir
+    WriteRegStr   ${RootKey} ${RegUninstall} "HelpLink"              'https://xmake.io/'
+    WriteRegStr   ${RootKey} ${RegUninstall} "URLInfoAbout"          'https://github.com/xmake-io/xmake'
+    WriteRegStr   ${RootKey} ${RegUninstall} "URLUpdateInfo"         'https://github.com/xmake-io/xmake/releases'
+    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMajor"          ${MAJOR}
+    WriteRegDWORD ${RootKey} ${RegUninstall} "VersionMinor"          ${MINOR}
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayVersion"        ${VERSION_FULL}
+    WriteRegDWORD ${RootKey} ${RegUninstall} "NoModify"              1
+    WriteRegDWORD ${RootKey} ${RegUninstall} "NoRepair"              1
 
     ;write size to reg
-    ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
+    ${GetSize} "$InstDir" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
     WriteRegDWORD ${RootKey} ${RegUninstall} "EstimatedSize" "$0"
   !macroend
@@ -219,10 +233,10 @@ Section "Add to PATH" InstallPath
   !macro AddRegPATH RootKey
     ; Remove the installation path from the $PATH environment variable first
     ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
 
     ; Write the installation path into the $PATH environment variable
-    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$INSTDIR"
+    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$InstDir"
   !macroend
 
   ${If} $NOADMIN == "false"
@@ -252,9 +266,9 @@ LangString DESC_InstallPath ${LANG_ENGLISH} "Add xmake to PATH"
 
 Function un.onInit
   ; check if we need uac
-  ReadRegStr $NOADMIN ${HKLM} SOFTWARE\XMake "NoAdmin"
+  ReadRegStr $NOADMIN ${HKLM} ${RegUninstall} "NoAdmin"
   IfErrors 0 +2
-  ReadRegStr $NOADMIN ${HKCU} SOFTWARE\XMake "NoAdmin"
+  ReadRegStr $NOADMIN ${HKCU} ${RegUninstall} "NoAdmin"
   
   ${IfNot} $NOADMIN == "true"
     !insertmacro Init "uninstaller"
@@ -267,17 +281,16 @@ Section "Uninstall"
   !macro RemoveReg RootKey 
     ; Remove registry keys
     DeleteRegKey ${RootKey} ${RegUninstall}
-    DeleteRegKey ${RootKey} ${RegProduct}
 
     ; Remove the installation path from the $PATH environment variable
     ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$INSTDIR" "" "+" $R1
-    ; MessageBox MB_OK|MB_USERICON '$R0 - $INSTDIR - $R1 '
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    ; MessageBox MB_OK|MB_USERICON '$R0 - $InstDir - $R1 '
     WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
   !macroend
 
   ; Remove directories used
-  RMDir /r "$INSTDIR"
+  RMDir /r "$InstDir"
   ${If} $NOADMIN == "false"
     !insertmacro RemoveReg ${HKLM}
   ${Else}
