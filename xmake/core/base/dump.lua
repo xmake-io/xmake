@@ -28,8 +28,11 @@ local table   = require("base/table")
 -- format string with theme colors
 function dump._format(fmtkey, fmtdefault, ...)
     local theme = colors.theme()
-    local fmt = theme and theme:get(fmtkey) or fmtdefault
-    return string.format(fmt, ...)
+    if theme then
+        return colors.translate(string.format(theme:get(fmtkey), ...))
+    else
+        return string.format(fmtdefault, ...)
+    end
 end
 
 function dump._translate(str)
