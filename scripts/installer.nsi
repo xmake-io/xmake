@@ -153,6 +153,7 @@ Function TrimQuote
  
 Loop:
 	StrCpy $R2 "$R1" 1
+	StrCmp "$R2" "'"   TrimLeft
 	StrCmp "$R2" "$\"" TrimLeft
 	StrCmp "$R2" "$\r" TrimLeft
 	StrCmp "$R2" "$\n" TrimLeft
@@ -165,6 +166,7 @@ TrimLeft:
  
 Loop2:
 	StrCpy $R2 "$R1" 1 -1
+	StrCmp "$R2" "'"   TrimRight
 	StrCmp "$R2" "$\"" TrimRight
 	StrCmp "$R2" "$\r" TrimRight
 	StrCmp "$R2" "$\n" TrimRight
@@ -198,17 +200,16 @@ Function .onInit
       ReadRegStr $R0 ${HKCU} ${RegUninstall} "InstallLocation"
     ${EndIf}
     ${If} $R0 != ""
-      StrCpy $InstDir "$R0"
+      Push $R0
+      Call TrimQuote
+      Pop  $R0
+      StrCpy $InstDir $R0
     ${EndIf}
   ${EndIf}
   ; use default
   ${If} $InstDir == ""
     StrCpy $InstDir ${PROGRAMFILES}\xmake
   ${EndIf}
-
-  Push $InstDir
-  Call TrimQuote
-  Pop  $InstDir
 
 FunctionEnd
 
