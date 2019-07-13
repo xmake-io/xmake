@@ -37,7 +37,7 @@ end
 
 -- make a new hashset
 function hashset.new()
-    return setmetatable({ _DATA = {} }, hashset)
+    return setmetatable({ _DATA = {}, _SIZE = 0 }, hashset)
 end
 
 -- construct from list of items
@@ -45,7 +45,7 @@ function hashset.of(...)
     local result = hashset.new()
     local data = table.pack(...)
     for i = 1, data.n do
-        result._DATA[hashset._to_key(data[i])] = true
+        result:insert(data[i])
     end
     return result
 end
@@ -65,9 +65,10 @@ end
 -- insert value to hashset, returns false if value has already in the hashset
 function hashset_impl:insert(value)
     value = hashset._to_key(value)
-    local result = self._DATA[value] or false
-    if not result then
+    local result = not (self._DATA[value] or false)
+    if result then
         self._DATA[value] = true
+        self._SIZE = self._SIZE + 1
     end
     return result
 end
@@ -78,6 +79,7 @@ function hashset_impl:remove(value)
     local result = self._DATA[value] or false
     if result then
         self._DATA[value] = nil
+        self._SIZE = self._SIZE - 1
     end
     return result
 end
@@ -91,6 +93,22 @@ function hashset_impl:to_array()
         end
     end
     return result
+end
+
+-- get size of hashset
+function hashset_impl:size()
+    return self._SIZE
+end
+
+-- get data of hashset
+function hashset_impl:data()
+    return self._DATA
+end
+
+-- clear hashset
+function hashset_impl:clear()
+    self._DATA = {}
+    self._SIZE = 0
 end
 
 -- return module

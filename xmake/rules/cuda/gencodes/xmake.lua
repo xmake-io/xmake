@@ -38,16 +38,11 @@ rule("cuda.gencodes")
 
         import("core.platform.platform")
         import("lib.detect.find_cudadevices")
-
-        local function set (list)
-            local result = {}
-            for _, l in ipairs(list) do result[l] = true end
-            return result
-        end
+        import("core.base.hashset")
 
         -- sm_20 and compute_20 is supported until CUDA 8
-        local known_v_archs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
-        local known_r_archs = set { 20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75, }
+        local known_v_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75)
+        local known_r_archs = hashset.of(20, 30, 32, 35, 37, 50, 52, 53, 60, 61, 62, 70, 72, 75)
 
         local function nf_cugencode(archs)
             if type(archs) ~= 'string' then
@@ -73,8 +68,8 @@ rule("cuda.gencodes")
                 if arch == nil then
                     raise("Unknown architecture: " .. value)
                 end
-                if not know_list[arch] then
-                    if arch <= table.maxn(know_list) then
+                if not know_list:has(arch) then
+                    if arch <= table.maxn(know_list:data()) then
                         raise("Unknown architecture: " .. prefix .. "_" .. arch)
                     else
                         utils.warning("Unknown architecture: " .. prefix .. "_" .. arch)

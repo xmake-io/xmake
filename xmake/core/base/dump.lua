@@ -111,8 +111,97 @@ function dump._print_table_anchor(value, printed_set)
     printed_set.len = printed_set.len + 1
     io.write(" ")
     dump._print_anchor(printed_set.len)
-    io.write("\n")
     printed_set[value] = printed_set.len
+end
+
+function dump._print_metatable(value, metatable, inner_indent, printed_set, print_archor)
+    if not metatable then
+        return false
+    end
+
+    local has_record = false
+    local has_index_table = false
+    -- print metamethods
+    for k, v in pairs(metatable) do
+        if k == "__index" and type(v) == "table" then
+            has_index_table = true
+        elseif k:startswith("__") then
+            if not has_record then
+                has_record = true
+                if print_archor then
+                    dump._print_table_anchor(value, printed_set)
+                end
+            end
+            io.write("\n", inner_indent)
+            local funcname = k:sub(3)
+            dump._print_keyword(funcname)
+            io.write(colors.translate("${dim} = "))
+            if funcname == "tostring" or funcname == "len" then
+                local ok, result = pcall(v, value, value)
+                if ok then
+                    dump._print_scalar(result)
+                    io.write(" (evaluated)")
+                else
+                    dump._print_scalar(v)
+                end
+            elseif v and printed_set[v] then
+                dump._print_reference(printed_set[v])
+            else
+                dump._print_scalar(v)
+            end
+            io.write(",")
+        end
+    end
+
+    if not has_index_table then
+        return has_record
+    end
+
+    local index_table = metatable and rawget(metatable, "__index")
+    -- print index methods
+    for k, v in pairs(index_table) do
+        -- hide private interfaces
+        if type(k) ~= "string" or not k:startswith("_") then
+            if not has_record then
+                has_record = true
+                if print_archor then
+                    dump._print_table_anchor(value, printed_set)
+                end
+            end
+            io.write("\n", inner_indent)
+            dump._print_keyword("(")
+            dump._print_scalar(k, true)
+            dump._print_keyword(")")
+            io.write(colors.translate("${dim} = "))
+            if v and printed_set[v] then
+                dump._print_reference(printed_set[v])
+            else
+                dump._print_scalar(v)
+            end
+            io.write(",")
+        end
+    end
+
+    return has_record
+end
+
+-- print udata
+function dump._print_udata(value, first_indent, remain_indent)
+
+    io.write(first_indent)
+    local metatable = getmetatable(value)
+    local inner_indent = remain_indent .. "  "
+    -- print open brackets
+    io.write(colors.translate("${dim}["))
+
+    local no_value = not dump._print_metatable(value, metatable, inner_indent, { len = 0 }, false)
+
+    -- print close brackets
+    if no_value then
+        io.write(colors.translate(" ${dim}]"))
+    else
+        io.write("\b \n" .. remain_indent .. colors.translate("${dim}]"))
+    end
 end
 
 -- print table
@@ -130,8 +219,6 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     end
     printed_set = printed_set or { len = 0 }
     local inner_indent = remain_indent .. "  "
-    local index_table = metatable and rawget(metatable, "__index")
-    if type(index_table) ~="table" then index_table = nil end
     local first_value = true
     -- print open brackets
     io.write(colors.translate("${dim}{"))
@@ -140,52 +227,12 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
         if first_value then
             dump._print_table_anchor(value, printed_set)
             first_value = false
-        else
-            io.write(",\n")
         end
-        io.write(inner_indent)
+        io.write("\n", inner_indent)
     end
 
     if first_level then
-        -- print metamethods
-        for k, v in pairs(metatable or {}) do
-            if k:startswith("__") and not (k == "__index" and type(v) == "table") then
-                print_newline()
-                local funcname = k:sub(3)
-                dump._print_keyword(funcname)
-                io.write(colors.translate("${dim} = "))
-                if funcname == "tostring" or funcname == "len" then
-                    local ok, result = pcall(v, value, value)
-                    if ok then
-                        dump._print_scalar(result)
-                        io.write(" (evaluated)")
-                    else
-                        dump._print_scalar(v)
-                    end
-                elseif v and printed_set[v] then
-                    dump._print_reference(printed_set[v])
-                else
-                    dump._print_scalar(v)
-                end
-            end
-        end
-
-        -- print index methods
-        for k, v in pairs(index_table or {}) do
-            -- hide private interfaces
-            if type(k) ~= "string" or not k:startswith("_") then
-                print_newline()
-                dump._print_keyword("(")
-                dump._print_scalar(k, true)
-                dump._print_keyword(")")
-                io.write(colors.translate("${dim} = "))
-                if v and printed_set[v] then
-                    dump._print_reference(printed_set[v])
-                else
-                    dump._print_scalar(v)
-                end
-            end
-        end
+        first_value = not dump._print_metatable(value, metatable, inner_indent, printed_set, true)
     end
 
     -- print array items
@@ -203,6 +250,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
             else
                 dump._print_scalar(v)
             end
+            io.write(",")
         end
     end
 
@@ -221,6 +269,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
             else
                 dump._print_scalar(v)
             end
+            io.write(",")
         end
     end
 
@@ -228,7 +277,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     if first_value then
         io.write(colors.translate(" ${dim}}"))
     else
-        io.write("\n" .. remain_indent .. colors.translate("${dim}}"))
+        io.write("\b \n" .. remain_indent .. colors.translate("${dim}}"))
     end
 end
 
@@ -237,6 +286,8 @@ function dump._print(value, indent)
     indent = tostring(indent or "")
     if type(value) == "table" then
         dump._print_table(value, indent, indent:gsub(".", " "), nil)
+    elseif type(value) == "userdata" then
+        dump._print_udata(value, indent, indent:gsub(".", " "))
     else
         io.write(indent)
         dump._print_scalar(value)
