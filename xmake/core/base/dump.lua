@@ -32,30 +32,34 @@ function dump._format(fmtkey, fmtdefault, ...)
     return string.format(fmt, ...)
 end
 
+function dump._translate(str)
+    return colors.translate(str, { patch_reset = false, ignore_unknown = true })
+end
+
 -- print string
 function dump._print_string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
-        io.write(colors.translate("${reset}${color.dump.string_quote}\"${reset}${color.dump.string}", { patch_reset = false }))
+        io.write(dump._translate("${reset}${color.dump.string_quote}\"${reset}${color.dump.string}"))
     else
-        io.write(colors.translate("${reset}${color.dump.string}", { patch_reset = false }))
+        io.write(dump._translate("${reset}${color.dump.string}"))
     end
     io.write(str)
     if quote then
-        io.write(colors.translate("${reset}${color.dump.string_quote}\"${reset}", { patch_reset = false }))
+        io.write(dump._translate("${reset}${color.dump.string_quote}\"${reset}"))
     else
-        io.write(colors.translate("${reset}", { patch_reset = false }))
+        io.write(dump._translate("${reset}"))
     end
 end
 
 -- print keyword
 function dump._print_keyword(keyword)
-    io.write(colors.translate("${color.dump.keyword}" .. tostring(keyword)))
+    io.write(dump._translate("${reset}${color.dump.keyword}"), tostring(keyword), dump._translate("${reset}"))
 end
 
 -- print number
 function dump._print_number(num)
-    io.write(colors.translate("${color.dump.number}" .. tostring(num)))
+    io.write(dump._translate("${reset}${color.dump.number}"), tostring(num), dump._translate("${reset}"))
 end
 
 -- print function
@@ -68,14 +72,18 @@ function dump._print_function(func, as_key)
     if funcinfo.linedefined >= 0 then
         srcinfo = srcinfo .. ":" .. funcinfo.linedefined
     end
-    io.write(colors.translate("${color.dump.function}function ${bright}" .. (funcinfo.name or "") .. "${reset}${dim}" .. srcinfo))
+    local funcname = funcinfo.name and (funcinfo.name .. " ") or ""
+    io.write(dump._translate("${reset}${color.dump.function}function ${bright}"), funcname, dump._translate("${reset}${dim}"), srcinfo)
 end
 
 -- print value with default format
 function dump._print_default(value)
-    io.write(colors.translate("${color.dump.default}", { patch_reset = false }))
-    io.write(dump._format("text.dump.default_format", "%s", value))
-    io.write(colors.translate("${reset}", { patch_reset = false }))
+    io.write(dump._translate("${color.dump.default}"), dump._format("text.dump.default_format", "%s", value), dump._translate("${reset}"))
+end
+
+-- print udata value with scalar format
+function dump._print_udata_scalar(value)
+    io.write(dump._translate("${color.dump.udata}"), dump._format("text.dump.udata_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print scalar value
@@ -90,6 +98,8 @@ function dump._print_scalar(value, as_key)
         dump._print_string(value, as_key)
     elseif type(value) == "function" then
         dump._print_function(value, as_key)
+    elseif type(value) == "userdata" then
+        dump._print_udata_scalar(value)
     else
         dump._print_default(value)
     end
@@ -97,15 +107,12 @@ end
 
 -- print anchor
 function dump._print_anchor(value)
-    io.write(colors.translate("${color.dump.anchor}", { patch_reset = false }))
-    io.write(dump._format("text.dump.anchor", "&%s", value))
-    io.write(colors.translate("${reset}", { patch_reset = false }))
+    io.write(dump._translate("${color.dump.anchor}"), dump._format("text.dump.anchor", "&%s", value), dump._translate("${reset}"))
 end
+
 -- print reference
 function dump._print_reference(value)
-    io.write(colors.translate("${color.dump.reference}", { patch_reset = false }))
-    io.write(dump._format("text.dump.reference", "*%s", value))
-    io.write(colors.translate("${reset}", { patch_reset = false }))
+    io.write(dump._translate("${color.dump.reference}"), dump._format("text.dump.reference", "*%s", value), dump._translate("${reset}"))
 end
 
 function dump._print_table_anchor(value, printed_set)
@@ -136,7 +143,7 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             io.write("\n", inner_indent)
             local funcname = k:sub(3)
             dump._print_keyword(funcname)
-            io.write(colors.translate("${dim} = "))
+            io.write(dump._translate("${reset} ${dim}=${reset} "))
             if funcname == "tostring" or funcname == "len" then
                 local ok, result = pcall(v, value, value)
                 if ok then
@@ -173,7 +180,7 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             dump._print_keyword("(")
             dump._print_scalar(k, true)
             dump._print_keyword(")")
-            io.write(colors.translate("${dim} = "))
+            io.write(dump._translate("${reset} ${dim}=${reset} "))
             if v and printed_set[v] then
                 dump._print_reference(printed_set[v])
             else
@@ -193,16 +200,16 @@ function dump._print_udata(value, first_indent, remain_indent)
     local inner_indent = remain_indent .. "  "
 
     -- print open brackets
-    io.write(colors.translate("${dim}["))
+    io.write(dump._translate("${reset}${color.dump.udata}[${reset}"))
 
     -- print metatable
     local no_value = not dump._print_metatable(value, metatable, inner_indent, { len = 0 }, false)
 
     -- print close brackets
     if no_value then
-        io.write(colors.translate(" ${dim}]"))
+        io.write(dump._translate(" ${color.dump.udata}]${reset}"))
     else
-        io.write("\b \n" .. remain_indent .. colors.translate("${dim}]"))
+        io.write("\b \n", remain_indent, dump._translate("${reset}${color.dump.udata}]${reset}"))
     end
 end
 
@@ -224,7 +231,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     local first_value = true
 
     -- print open brackets
-    io.write(colors.translate("${dim}{"))
+    io.write(dump._translate("${reset}${dim}{${reset}"))
 
     local function print_newline()
         if first_value then
@@ -262,7 +269,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
         if not is_arr or type(k) ~= "number" then
             print_newline()
             dump._print_scalar(k, true)
-            io.write(colors.translate("${dim} = "))
+            io.write(dump._translate("${reset} ${dim}=${reset} "))
             if type(v) == "table" then
                 if printed_set[v] then
                     dump._print_reference(printed_set[v])
@@ -278,9 +285,9 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
 
     -- print close brackets
     if first_value then
-        io.write(colors.translate(" ${dim}}"))
+        io.write(dump._translate(" ${dim}}${reset}"))
     else
-        io.write("\b \n" .. remain_indent .. colors.translate("${dim}}"))
+        io.write("\b \n", remain_indent, dump._translate("${reset}${dim}}${reset}"))
     end
 end
 

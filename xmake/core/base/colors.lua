@@ -260,6 +260,7 @@ end
 -- @param str          the string with colors
 -- @param opt          options
 --                       patch_reset: wrap str with `"${reset}"`?
+--                       ignore_unknown: ignore unknown codes like `"${unknown_code}"`?
 --
 -- 8 colors:
 --
@@ -340,12 +341,12 @@ function colors.translate(str, opt)
                     for _, theme_block_sub in ipairs(theme_block:split("%s")) do
                         table.insert(blocks, theme_block_sub)
                     end
-                else 
+                else
                     table.insert(blocks, block)
                 end
             elseif block:startswith("color.") or block:startswith("text.") then
                 local default_theme = {["color.error"] = "red", ["color.warning"] = "yellow", ["text.error"] = "error", ["text.warning"] = "warning"}
-                local theme_block = default_theme[block] 
+                local theme_block = default_theme[block]
                 if theme_block then
                     table.insert(blocks, theme_block)
                 else
@@ -384,7 +385,8 @@ function colors.translate(str, opt)
                     local emoji_code = emoji.translate(block)
                     if emoji_code then
                         table.insert(text_buffer, emoji_code)
-                    else
+                    elseif not opt.ignore_unknown then
+                        -- unknown code, regard as plain text
                         table.insert(text_buffer, block)
                     end
                 end
