@@ -36,6 +36,7 @@ rule("cuda.gencodes")
     --
     before_load(function (target)
 
+        -- imports
         import("core.platform.platform")
         import("lib.detect.find_cudadevices")
         import("core.base.hashset")
@@ -126,9 +127,7 @@ rule("cuda.gencodes")
                 nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=[sm_' .. table.concat(r_archs, ',sm_') .. ']'
             end
 
-            return {
-                clang = clang_flags
-            ,   nvcc = nvcc_flags }
+            return { clang = clang_flags, nvcc = nvcc_flags }
         end
 
         local cugencodes = table.wrap(target:get("cugencodes"))

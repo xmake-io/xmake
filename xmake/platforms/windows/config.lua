@@ -24,7 +24,6 @@ import("core.base.singleton")
 import("core.platform.environment")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_cuda")
 import("private.platform.check_vstudio")
 import("private.platform.check_toolchain")
 
@@ -132,9 +131,6 @@ function main(platform, name)
 
         -- check vstudio
         check_vstudio(config)
-
-        -- check cuda
-        check_cuda(config)
     end
 end
 

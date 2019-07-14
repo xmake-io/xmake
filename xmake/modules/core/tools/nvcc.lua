@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
+import("core.platform.platform")
 import("core.language.language")
 import("detect.tools.find_ccache")
 import("private.tools.nvcc.parse_deps")
@@ -35,7 +36,7 @@ function init(self)
     end
 
     -- add -ccbin
-    local cu_ccbin = get_config("cu-ccbin")
+    local cu_ccbin = platform.tool("cu-ccbin")
     if cu_ccbin then
         self:add("cuflags", "-ccbin=" .. os.args(cu_ccbin))
     end

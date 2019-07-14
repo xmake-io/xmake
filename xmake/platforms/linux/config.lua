@@ -24,7 +24,6 @@ import("core.base.singleton")
 import("detect.sdks.find_cross_toolchain")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_cuda")
 import("private.platform.check_toolchain")
 
 -- check the architecture
@@ -168,15 +167,6 @@ function main(platform, name)
 
         -- check arch
         _check_arch()
-
-        -- check cuda
-        check_cuda(config)
-
-        -- check cu-ccbin after checking arch
-        if config.get("cuda") then
-            local toolchains = singleton.get("linux.toolchains", _toolchains)
-            check_toolchain(config, "cu-ccbin", toolchains["cu-ccbin"])
-        end
     end
 end
 

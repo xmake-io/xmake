@@ -24,7 +24,6 @@ import("core.platform.platform")
 import("core.project.config")
 import("lib.detect.cache")
 import("lib.detect.find_tool")
-import("detect.sdks.find_cuda")
 
 -- a magic string to filter output
 local _PRINT_SUFFIX = "<find_cudadevices>"

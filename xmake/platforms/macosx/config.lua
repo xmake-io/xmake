@@ -23,7 +23,6 @@ import("core.project.config")
 import("core.base.singleton")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_cuda")
 import("private.platform.check_xcode")
 import("private.platform.check_toolchain")
 
@@ -152,15 +151,6 @@ function main(platform, name)
 
         -- check xcode 
         check_xcode(config, true)
-
-        -- check cuda
-        check_cuda(config)
-
-        -- check cu-ccbin after checking arch
-        if config.get("cuda") then
-            local toolchains = singleton.get("macosx.toolchains." .. (config.get("arch") or os.arch()), _toolchains)
-            check_toolchain(config, "cu-ccbin", toolchains["cu-ccbin"])
-        end
     end
 end
 

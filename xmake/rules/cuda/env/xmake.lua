@@ -20,13 +20,26 @@
 
 -- define rule: environment
 rule("cuda.env")
-    after_load(function (target)
+
+    before_load(function (target)
 
         -- imports
         import("detect.sdks.find_cuda")
 
-        -- get cuda sdk
+        -- find cuda sdk first
         local cuda = assert(find_cuda(nil, {verbose = true}), "Cuda SDK not found!")
+        if cuda then
+            target:data_set("cuda", cuda)
+        end
+    end)
+
+    after_load(function (target)
+
+        -- imports
+        import("core.platform.platform")
+
+        -- get cuda sdk
+        local cuda = assert(target:data("cuda"), "Cuda SDK not found!")
 
         -- add arch
         if is_arch("i386", "x86") then
@@ -38,7 +51,7 @@ rule("cuda.env")
         end
 
         -- add ccbin
-        local cu_ccbin = get_config("cu-ccbin")
+        local cu_ccbin = platform.tool("cu-ccbin")
         if cu_ccbin then
             target:add("culdflags", "-ccbin=" .. os.args(cu_ccbin), {force = true})
         end
