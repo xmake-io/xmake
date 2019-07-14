@@ -44,6 +44,12 @@ Name "XMake - v${VERSION}"
 ; The file to write
 OutFile "xmake.exe"
 
+; Use unicode
+Unicode true
+
+; Use best compressor
+SetCompressor /FINAL /SOLID lzma
+
 ; The default installation directory
 !ifdef x64
   !define PROGRAMFILES $PROGRAMFILES64
