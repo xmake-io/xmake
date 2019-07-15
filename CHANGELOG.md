@@ -6,6 +6,7 @@
 
 * Add protobuf c/c++ rules
 * [#468](https://github.com/xmake-io/xmake/pull/468): Add utf-8 support for windows
+* [#472](https://github.com/xmake-io/xmake/pull/472): Add `xmake project -k vsxmake201x` plugin to support call xmake from vs/msbuild
 
 ## v2.2.7
 
@@ -612,6 +613,7 @@
 
 * 添加protobuf c/c++构建规则
 * [#468](https://github.com/xmake-io/xmake/pull/468): 添加对 Windows 的 UTF-8 支持
+* [#472](https://github.com/xmake-io/xmake/pull/472): 添加`xmake project -k vsxmake201x`去更好的支持vs工程的生成，内部直接调用xmake来编译
 
 ## v2.2.7
 
