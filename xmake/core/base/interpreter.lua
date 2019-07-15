@@ -453,7 +453,7 @@ function interpreter:_filter(values)
                 for _, v in ipairs(value) do
                     if type(v) == "string" then
                         table.insert(values, filter:handle(v))
-                    elseif type(value) == "table" then
+                    elseif type(v) == "table" then
                         table.insert(values, self:_filter(v))
                     else
                         table.insert(values, v)
