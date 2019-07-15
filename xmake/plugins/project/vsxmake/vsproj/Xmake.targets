@@ -16,8 +16,10 @@
         <_XmakeCommonFlags Condition="$(XmakeDiagnosis)">$(_XmakeCommonFlags) -D</_XmakeCommonFlags>
         <_XmakeCommonFlags>$(_XmakeCommonFlags) $(_XmakeProjectFlag)</_XmakeCommonFlags>
 
+        <_XmakeBuilDir>$([MSBuild]::MakeRelative('$(XmakeProjectDir)', '$(XmakeBuilDir)').TrimEnd('/\'.ToCharArray()))</_XmakeBuilDir>
+
         <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
-        <_XmakeConfigFlags>$(_XmakeConfigFlags) -p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) -o "$([MSBuild]::MakeRelative('$(XmakeProjectDir)', '$(XmakeBuilDir)').TrimEnd('/\'.ToCharArray()))"</_XmakeConfigFlags>
+        <_XmakeConfigFlags>$(_XmakeConfigFlags) -p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) -o "$(_XmakeBuilDir)"</_XmakeConfigFlags>
 
         <_XmakeBuildFlags>$(XmakeBuildFlags.Trim())</_XmakeBuildFlags>
         <_XmakeBuildFlags Condition="$(XmakeWarning)">$(_XmakeBuildFlags) -w</_XmakeBuildFlags>
