@@ -7,10 +7,11 @@
 
         <XmakeArch Condition="'$(XmakeArch)' == '' And '$(Platform.ToLower())' == 'win32'">x86</XmakeArch>
         <XmakeArch Condition="'$(XmakeArch)' == '' And '$(Platform.ToLower())' != 'win32'">$(Platform)</XmakeArch>
-        <XmakeArch Condition="'$(XmakeArch)' == ''">auto</XmakeArch>
+        <XmakeArch Condition="'$(XmakeArch)' == ''">x86</XmakeArch>
     </PropertyGroup>
 
     <ImportGroup Label="CustomSettings">
+        <!--only search 2 levels to avoid accidentally import-->
         <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props')"
                 Project="$(MSBuildProjectDirectory)\Xmake.Custom.props" />
         <Import Condition="!Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props') And Exists('$(MSBuildProjectDirectory)\..\Xmake.Custom.props')"
@@ -39,13 +40,13 @@
 
     <PropertyGroup Label="XmakePathsResolve">
         <!-- resolve if they are relative paths -->
-        <XmakeProjectDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeProjectDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProjectDir)'))</XmakeProjectDir>
-        <XmakeScriptDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeScriptDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeScriptDir)'))</XmakeScriptDir>
-        <XmakeBuilDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeBuilDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDir)'))</XmakeBuilDir>
-        <XmakeTargetDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeTargetDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDir)'))</XmakeTargetDir>
-        <XmakeConfigDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeConfigDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigDir)'))</XmakeConfigDir>
-        <XmakeConfigFileDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeConfigFileDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigFileDir)'))</XmakeConfigFileDir>
-        <XmakeRunDir Condition="Exists('$(MSBuildProjectDirectory)\$(XmakeRunDir)')">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDir)'))</XmakeRunDir>
+        <XmakeProjectDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeProjectDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProjectDir)'))</XmakeProjectDir>
+        <XmakeScriptDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeScriptDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeScriptDir)'))</XmakeScriptDir>
+        <XmakeBuilDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDir)'))</XmakeBuilDir>
+        <XmakeTargetDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeTargetDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDir)'))</XmakeTargetDir>
+        <XmakeConfigDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigDir)'))</XmakeConfigDir>
+        <XmakeConfigFileDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigFileDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigFileDir)'))</XmakeConfigFileDir>
+        <XmakeRunDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeRunDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDir)'))</XmakeRunDir>
 
         <!-- normalize paths -->
         <XmakeProjectDir>$([System.IO.Path]::GetFullPath('$(XmakeProjectDir)'))</XmakeProjectDir>
@@ -131,7 +132,7 @@
     </PropertyGroup>
     
     <PropertyGroup Label="Path">
-        <IncludePath>$(XmakeIncludeDir);$(XmakeConfigFileDir);$(IncludePath)</IncludePath>
+        <IncludePath>$(XmakeIncludeDir);$(IncludePath)</IncludePath>
         <LibraryPath>$(XmakeLinkDir);$(LibraryPath)</LibraryPath>
         <OutDir>$(XmakeTargetDir)</OutDir>
         <IntDir>$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>

@@ -30,8 +30,11 @@
         <_XmakeCommonFlags>$(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
 
         <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)\xmake.exe'))"</_XmakeExecutable>
-        <_XmakeEnv>pushd "$(XmakeProjectDir)"
-set XMAKE_CONFIGDIR=$(XmakeConfigDir)</_XmakeEnv>
+        <_XmakeEnv>
+            pushd "$(XmakeProjectDir)"
+            set XMAKE_CONFIGDIR=$(XmakeConfigDir)
+            set XMAKE_PROGRAM_DIR=$(XmakeProgramDir)
+        </_XmakeEnv>
     </PropertyGroup>
 
     <Target Name="_XmakeProjCheck">
@@ -153,6 +156,7 @@ MSBuild Properties:
     </Target>
 
     <ImportGroup Label="CustomTargets">
+        <!--only search 2 levels to avoid accidentally import-->
         <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets')"
                 Project="$(MSBuildProjectDirectory)\Xmake.Custom.targets" />
         <Import Condition="!Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets') And Exists('$(MSBuildProjectDirectory)\..\Xmake.Custom.targets')"
