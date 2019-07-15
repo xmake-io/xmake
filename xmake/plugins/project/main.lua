@@ -24,16 +24,9 @@ import("core.base.task")
 import("core.platform.environment")
 import("make.makefile")
 import("cmake.cmakelists")
-import("vstudio.vs2002")
-import("vstudio.vs2003")
-import("vstudio.vs2005")
-import("vstudio.vs2008")
-import("vstudio.vs2010")
-import("vstudio.vs2012")
-import("vstudio.vs2013")
-import("vstudio.vs2015")
-import("vstudio.vs2017")
-import("vstudio.vs2019")
+import("vstudio.vs")
+import("vstudio.vsx")
+import("vsxmake.vsxmake")
 import("clang.compile_flags")
 import("clang.compile_commands")
 
@@ -45,16 +38,22 @@ function _make(kind)
     {
         makefile         = makefile.make
     ,   cmakelists       = cmakelists.make
-    ,   vs2002           = vs2002.make
-    ,   vs2003           = vs2003.make
-    ,   vs2005           = vs2005.make
-    ,   vs2008           = vs2008.make
-    ,   vs2010           = vs2010.make
-    ,   vs2012           = vs2012.make
-    ,   vs2013           = vs2013.make
-    ,   vs2015           = vs2015.make
-    ,   vs2017           = vs2017.make
-    ,   vs2019           = vs2019.make
+    ,   vs2002           = vs.make(2002)
+    ,   vs2003           = vs.make(2003)
+    ,   vs2005           = vs.make(2005)
+    ,   vs2008           = vs.make(2008)
+    ,   vs2010           = vsx.make(2010)
+    ,   vs2012           = vsx.make(2012)
+    ,   vs2013           = vsx.make(2013)
+    ,   vs2015           = vsx.make(2015)
+    ,   vs2017           = vsx.make(2017)
+    ,   vs2019           = vsx.make(2019)
+    ,   vsxmake2010      = vsxmake.make(2010)
+    ,   vsxmake2012      = vsxmake.make(2012)
+    ,   vsxmake2013      = vsxmake.make(2013)
+    ,   vsxmake2015      = vsxmake.make(2015)
+    ,   vsxmake2017      = vsxmake.make(2017)
+    ,   vsxmake2019      = vsxmake.make(2019)
     ,   compile_flags    = compile_flags.make
     ,   compile_commands = compile_commands.make
     }

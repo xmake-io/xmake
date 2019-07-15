@@ -116,7 +116,4 @@ function make(vsinfo)
 
     -- exit solution file
     slnfile:close()
-
-    -- convert gb2312 to utf8
-    io.writefile(slnpath, io.readfile(slnpath):convert("gb2312", "utf8"))
 end

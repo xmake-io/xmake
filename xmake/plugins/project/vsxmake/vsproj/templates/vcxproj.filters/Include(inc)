@@ -1,0 +1,3 @@
+        <ClInclude Include="#path#">
+            <Filter>#dir#</Filter>
+        </ClInclude>

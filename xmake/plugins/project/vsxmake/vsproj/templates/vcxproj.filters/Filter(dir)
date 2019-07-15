@@ -1,0 +1,3 @@
+﻿        <Filter Include="#dir#">
+            <UniqueIdentifier>{#dir_id#}</UniqueIdentifier>
+        </Filter>

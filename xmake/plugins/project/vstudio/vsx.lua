@@ -15,23 +15,21 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vs2012.lua
+-- @file        vsx.lua
 --
 
 -- imports
 import("impl.vs201x")
+import("impl.vsinfo")
 
--- make
-function make(outputdir)
+-- make factory
+function make(version)
 
-    -- init vstudio info
-    local vsinfo = 
-    {
-        vstudio_version     = "2012"
-    ,   filters_version     = "4.0"
-    ,   solution_version    = "12"
-    }
+    -- get vs version info
+    local info = vsinfo(version)
 
-    -- make project
-    vs201x.make(outputdir, vsinfo)
+    -- make
+    return function(outputdir)
+        vs201x.make(outputdir, info)
+    end
 end

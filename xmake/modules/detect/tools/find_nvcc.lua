@@ -51,7 +51,7 @@ function main(opt)
 
     -- not found? attempt to find program from cuda toolchains
     if not program then
-        local toolchains = find_cuda(config.get("cuda"))
+        local toolchains = find_cuda()
         if toolchains and toolchains.bindir then
             program = find_program(path.join(toolchains.bindir, "nvcc"), opt)
         end

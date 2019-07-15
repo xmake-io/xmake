@@ -42,8 +42,10 @@ task("project")
                                                        ,    "    - makefile"
                                                        ,    "    - compile_flags"
                                                        ,    "    - compile_commands (clang compilation database with json format)"
-                                                       ,    "    - vs2002, vs2003, vs2005, vs2008, vs2010, vs2012, vs2013, vs2015, vs2017" }
-                ,   {'m', "modes",     "kv", nil,           "Set the project modes." 
+                                                       ,    "    - vs2002, vs2003, vs2005, vs2008"
+                                                       ,    "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
+                                                       ,    "    - vsxmake2010 ~ vsmake2019" }
+                ,   {'m', "modes",     "kv", nil,           "Set the project modes."
                                                        ,    "    .e.g "
                                                        ,    "    - xmake project -k makefile"
                                                        ,    "    - xmake project -k compile_commands"

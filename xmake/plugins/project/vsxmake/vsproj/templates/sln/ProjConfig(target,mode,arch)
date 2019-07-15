@@ -1,0 +1,2 @@
+		{#target_id#}.#mode#|#arch#.ActiveCfg = #mode#|#vsarch#
+		{#target_id#}.#mode#|#arch#.Build.0 = #mode#|#vsarch#
