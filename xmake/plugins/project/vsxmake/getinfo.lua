@@ -29,6 +29,7 @@ import("core.tool.compiler")
 import("core.tool.linker")
 import("lib.detect.find_tool")
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
+import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 
 function _make_dirs(dir)
     if dir == nil then
@@ -196,25 +197,25 @@ function main(outputdir, vsinfo)
             print("checking for the %s.%s ...", mode, arch)
 
             -- reload config, project and platform
-            if mode ~= config.mode() or arch ~= config.arch() then
+            -- modify config
+            config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
+            config.set("mode", mode, {readonly = true, force = true})
+            config.set("arch", arch, {readonly = true, force = true})
 
-                -- modify config
-                config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
-                config.set("mode", mode, {readonly = true, force = true})
-                config.set("arch", arch, {readonly = true, force = true})
+            -- clear project to reload and recheck it
+            project.clear()
 
-                -- clear project to reload and recheck it
-                project.clear()
+            -- check project options
+            project.check()
 
-                -- check project options
-                project.check()
+            -- reload platform
+            platform.load(config.plat())
 
-                -- reload platform
-                platform.load(config.plat())
+            -- re-generate configheader
+            generate_configheader()
 
-                -- re-generate configheader
-                generate_configheader()
-            end
+            -- re-generate configfiles
+            generate_configfiles()
 
             -- ensure to enter project directory
             os.cd(project.directory())
