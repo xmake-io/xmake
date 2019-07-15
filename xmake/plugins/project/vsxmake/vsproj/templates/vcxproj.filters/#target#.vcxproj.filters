@@ -26,6 +26,9 @@
         </None>
     </ItemGroup>
     <ItemGroup>
+#Import(Include)#
+    </ItemGroup>
+    <ItemGroup>
 #Import(File.c)#
     </ItemGroup>
     <ItemGroup>

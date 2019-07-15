@@ -261,7 +261,7 @@ function main(outputdir, vsinfo)
     for _,target in pairs(targets) do
         target._sub2 = {}
         local dirs = {}
-        for _,f in ipairs(target.sourcefiles) do
+        for _,f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
             target._sub2[f] =
             {

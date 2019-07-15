@@ -35,6 +35,9 @@
               Include="$(XmakeScriptDir)\xmake.lua" />
     </ItemGroup>
     <ItemGroup>
+#Import(Include)#
+    </ItemGroup>
+    <ItemGroup>
 #Import(File.c)#
     </ItemGroup>
     <ItemGroup>

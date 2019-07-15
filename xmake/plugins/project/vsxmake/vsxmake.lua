@@ -100,6 +100,8 @@ function _buildparams(info, target, default)
         elseif args.filerc then
             local files = info._sub[target].sourcefiles
             table.insert(r, _filter_files(files, {".rc"}))
+        elseif args.inc then
+            table.insert(r, info._sub[target].headerfiles)
         end
         return r
     end
