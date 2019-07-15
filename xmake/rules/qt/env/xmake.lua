@@ -23,17 +23,19 @@ rule("qt.env")
 
     -- before load
     before_load(function (target)
+        
+        -- imports
         import("detect.sdks.find_qt")
-        if not target:data("qt") then
-            target:data_set("qt", assert(find_qt(nil, {verbose = true}), "Qt SDK not found!"))
+
+        -- find qt sdk
+        local qt = target:data("qt")
+        if not qt then
+            qt = assert(find_qt(nil, {verbose = true}), "Qt SDK not found!")
+            target:data_set("qt", qt)
+        end
+        if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
+            target:add("runenvs", "PATH", qt.bindir)
         end
     end)
 
-    -- before run
-    before_run(function (target)
-        local qt = target:data("qt")
-        if qt and (is_plat("windows") or (is_plat("mingw") and is_host("windows"))) then
-            os.addenv("PATH", qt.bindir)
-        end
-    end)
 
