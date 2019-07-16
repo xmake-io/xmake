@@ -21,6 +21,8 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("detect.tools.find_cudagdb")
+import("detect.tools.find_cudamemcheck")
 import("detect.tools.find_gdb")
 import("detect.tools.find_lldb")
 import("detect.tools.find_windbg")
@@ -33,6 +35,27 @@ function _run_gdb(program, argv)
 
     -- find gdb
     local gdb = find_gdb({program = config.get("debugger")})
+    if not gdb then
+        return false
+    end
+
+    -- patch arguments
+    argv = argv or {}
+    table.insert(argv, 1, program)
+    table.insert(argv, 1, "--args")
+
+    -- run it
+    os.execv(gdb, argv)
+
+    -- ok
+    return true
+end
+
+-- run cuda-gdb
+function _run_cudagdb(program, argv)
+
+    -- find cudagdb
+    local gdb = find_cudagdb({program = config.get("debugger")})
     if not gdb then
         return false
     end
@@ -90,6 +113,26 @@ function _run_windbg(program, argv)
 
     -- run it
     os.execv(windbg, argv)
+
+    -- ok
+    return true
+end
+
+-- run cuda-memcheck
+function _run_cudamemcheck(program, argv)
+
+    -- find cudamemcheck
+    local cudamemcheck = find_cudamemcheck({program = config.get("debugger")})
+    if not cudamemcheck then
+        return false
+    end
+
+    -- patch arguments
+    argv = argv or {}
+    table.insert(argv, 1, program)
+
+    -- run it
+    os.execv(cudamemcheck, argv)
 
     -- ok
     return true
@@ -172,10 +215,12 @@ end
 function main(program, argv)
 
     -- init debuggers
-    local debuggers = 
+    local debuggers =
     {
-        {"lldb", _run_lldb}
-    ,   {"gdb",  _run_gdb}
+        {"lldb"        , _run_lldb}
+    ,   {"gdb"         , _run_gdb}
+    ,   {"cudagdb"     , _run_cudagdb}
+    ,   {"cudamemcheck", _run_cudamemcheck}
     }
 
     -- for windows target or on windows?
@@ -190,10 +235,20 @@ function main(program, argv)
     local debugger = config.get("debugger")
     if debugger then
         debugger = debugger:lower()
+
+        -- try exactmatch first
+        for _, _debugger in ipairs(debuggers) do
+            if debugger:startswith(_debugger[1]) then
+                if _debugger[2](program, argv) then
+                    return
+                end
+            end
+        end
+
         for _, _debugger in ipairs(debuggers) do
             if debugger:find(_debugger[1]) then
                 if _debugger[2](program, argv) then
-                    return 
+                    return
                 end
             end
         end
