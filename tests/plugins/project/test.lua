@@ -11,7 +11,7 @@ function test_vsxmake(t)
 
     local projname = "testproj"
 
-    local tempdir = os.tmpdir()
+    local tempdir = os.tmpfile()
     os.mkdir(tempdir)
     os.cd(tempdir)
 
