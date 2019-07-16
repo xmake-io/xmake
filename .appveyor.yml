@@ -112,6 +112,8 @@ test_script:
               xmake lua --verbose --diagnosis runner.lua $_.fullname >stdout_file 2>stderr_file
               $outcome = if ($?) { "Passed" } else {  $all_success = $false; "Failed" }
           }
+          Get-Content stdout_file | Out-Host
+          Get-Content stderr_file | Out-Host
           Update-AppveyorTest -Name $testname -Framework "xmake-test" -FileName $filename -Outcome $outcome -Duration $time.TotalMilliseconds -StdOut (Get-Content -Raw stdout_file) -StdErr (Get-Content -Raw stderr_file)
       }
   - ps: Pop-Location
