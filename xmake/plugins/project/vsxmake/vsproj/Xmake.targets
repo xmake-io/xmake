@@ -86,10 +86,12 @@ MSBuild Properties:
         XmakeDefines: $(XmakeDefines)
         XmakeLanguages: $(XmakeLanguages)
     Xmake Path:
+        XmakeProgramDir: $(XmakeProgramDir)
         XmakeProjectDir: $(XmakeProjectDir)
         XmakeScriptDir: $(XmakeScriptDir)
         XmakeBuilDir: $(XmakeBuilDir)
         XmakeConfigDir: $(XmakeConfigDir)
+        XmakeConfigFileDir: $(XmakeConfigFileDir)
         XmakeIncludeDir: $(XmakeIncludeDir)
         XmakeLinkDir: $(XmakeLinkDir)
     Xmake Flags:
