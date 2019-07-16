@@ -9,11 +9,16 @@ function test_vsxmake(t)
         return t:skip("wrong host platform")
     end
 
+    local projname = "testproj"
+
+    -- create project
+    os.runv("xmake", {"create", projname})
+
     -- build project
     local vs = find_vstudio()
     local arch = os.getenv("platform") or "x86"
 
-    os.cd("c")
+    os.cd(projname)
 
     for name, _ in pairs(vs) do
         if tonumber(name) >= 2010 then
@@ -34,18 +39,15 @@ function test_vsxmake(t)
                 function ()
                     os.exec("msbuild /P:XmakeDiagnosis=true /P:XmakeVerbose=true")
                 end,
-                finally
+                catch
                 {
-                    function (ok)
-                        if ok then
-                            return
-                        end
+                    function ()
                         io.write("--- sln file ---\n")
-                        io.write(io.readfile("c_" .. vstype .. ".sln"), "\n")
+                        io.write(io.readfile(projname .. "_" .. vstype .. ".sln"), "\n")
                         io.write("--- vcx file ---\n")
-                        io.write(io.readfile("project/project.vcxproj"), "\n")
+                        io.write(io.readfile(projname .. "/" .. projname .. ".vcxproj"), "\n")
                         io.write("--- filter file ---\n")
-                        io.write(io.readfile("project/project.vcxproj.filters"), "\n")
+                        io.write(io.readfile(projname .. "/" .. projname .. ".vcxproj.filters"), "\n")
                         raise("msbuild failed")
                     end
                 }
@@ -57,5 +59,7 @@ function test_vsxmake(t)
         end
     end
 
+    -- clean up
     os.cd("..")
+    os.tryrm(projname)
 end
