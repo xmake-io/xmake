@@ -1,5 +1,6 @@
 import("detect.sdks.find_vstudio")
 import("core.project.config")
+import("core.platform.platform")
 import("core.platform.environment")
 
 function test_vsxmake(t)
@@ -14,17 +15,23 @@ function test_vsxmake(t)
 
     os.cd("c")
 
-    for name, data in pairs(vs) do
-        local vstype = "vsxmake" .. name
-        local path = os.getenv("path")
-        os.setenv("path", data.vcvarsall[arch].path)
+    for name, _ in pairs(vs) do
+        -- set config
+        config.set("arch", arch)
+        config.set("vs", name)
+        config.check()
+        platform.load(config.plat())
         environment.enter("toolchains")
+
+        local vstype = "vsxmake" .. name
+        -- create sln & vcxproj
         os.execv("xmake", {"project", "-k", vstype, "-a", arch})
         os.cd(vstype)
+        -- run msbuild
         os.exec("msbuild /t:show")
         os.exec("msbuild")
         environment.leave("toolchains")
-        os.setenv("path", path)
+        -- clean up
         os.cd("..")
         os.tryrm(vstype)
     end
