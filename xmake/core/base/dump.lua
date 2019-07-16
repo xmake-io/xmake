@@ -86,17 +86,17 @@ end
 
 -- print value with default format
 function dump._print_default(value)
-    io.write(dump._translate("${reset}${color.dump.default}"), dump._format("text.dump.default_format", "<%s>", value), dump._translate("${reset}"))
+    io.write(dump._translate("${reset}${color.dump.default}"), dump._format("text.dump.default_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print udata value with scalar format
 function dump._print_udata_scalar(value)
-    io.write(dump._translate("${reset}${color.dump.udata}"), dump._format("text.dump.udata_format", "[%s]", value), dump._translate("${reset}"))
+    io.write(dump._translate("${reset}${color.dump.udata}"), dump._format("text.dump.udata_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print table value with scalar format
 function dump._print_table_scalar(value)
-    io.write(dump._translate("${reset}${color.dump.table}"), dump._format("text.dump.table_format", "{%s}", value), dump._translate("${reset}"))
+    io.write(dump._translate("${reset}${color.dump.table}"), dump._format("text.dump.table_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print scalar value
