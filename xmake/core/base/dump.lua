@@ -23,7 +23,6 @@ local dump = dump or {}
 
 -- load modules
 local colors  = require("base/colors")
-local table   = require("base/table")
 
 -- format string with theme colors
 function dump._format(fmtkey, fmtdefault, ...)
@@ -37,7 +36,12 @@ end
 
 -- translate string with theme formats
 function dump._translate(str)
-    return colors.translate(str, { patch_reset = false, ignore_unknown = true })
+    local theme = colors.theme()
+    if theme then
+        return colors.translate(str, { patch_reset = false, ignore_unknown = true })
+    else
+        return colors.ignore(str)
+    end
 end
 
 -- print string
@@ -205,10 +209,26 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
     return has_record
 end
 
--- print udata
-function dump._print_udata(value, first_indent, remain_indent)
+-- returns printed_set, is_first_level
+function dump._init_printed_set(printed_set)
+    local first_level = not printed_set
+    if type(printed_set) ~= "table" then
+        printed_set = { len = 0 }
+    end
+    return printed_set, first_level
+end
 
+-- print udata
+function dump._print_udata(value, first_indent, remain_indent, printed_set)
+
+    local first_level
+    printed_set, first_level = dump._init_printed_set(printed_set)
     io.write(first_indent)
+
+    if not first_level then
+        return dump._print_udata_scalar(value)
+    end
+
     local metatable = getmetatable(value)
     local inner_indent = remain_indent .. "  "
 
@@ -216,7 +236,7 @@ function dump._print_udata(value, first_indent, remain_indent)
     io.write(dump._translate("${reset}${color.dump.udata}[${reset}"))
 
     -- print metatable
-    local no_value = not dump._print_metatable(value, metatable, inner_indent, { len = 0 }, false)
+    local no_value = not dump._print_metatable(value, metatable, inner_indent, printed_set, false)
 
     -- print close brackets
     if no_value then
@@ -229,7 +249,8 @@ end
 -- print table
 function dump._print_table(value, first_indent, remain_indent, printed_set)
 
-    local first_level = not printed_set
+    local first_level
+    printed_set, first_level = dump._init_printed_set(printed_set)
     io.write(first_indent)
     local metatable = getmetatable(value)
     local tostringmethod = metatable and rawget(metatable, "__tostring")
@@ -239,7 +260,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
             return dump._print_table_scalar(strrep)
         end
     end
-    printed_set = printed_set or { len = 0 }
+
     local inner_indent = remain_indent .. "  "
     local first_value = true
 
@@ -260,7 +281,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     end
 
     -- print array items
-    local is_arr = table.is_array(value) and (table.maxn(value) < 2 * #value)
+    local is_arr = (value[1] ~= nil) and (table.maxn(value) < 2 * #value)
     if is_arr then
         for i = 1,table.maxn(value) do
             print_newline()
@@ -306,12 +327,12 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
 end
 
 -- print value
-function dump._print(value, indent)
+function dump._print(value, indent, verbose)
     indent = tostring(indent or "")
     if type(value) == "table" then
-        dump._print_table(value, indent, indent:gsub(".", " "), nil)
+        dump._print_table(value, indent, indent:gsub(".", " "), not verbose)
     elseif type(value) == "userdata" then
-        dump._print_udata(value, indent, indent:gsub(".", " "))
+        dump._print_udata(value, indent, indent:gsub(".", " "), not verbose)
     else
         io.write(indent)
         dump._print_scalar(value)
