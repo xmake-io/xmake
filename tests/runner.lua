@@ -44,6 +44,8 @@ function main(script)
             local result = try
             {
                 function ()
+                    -- set workdir for each test
+                    os.cd(root)
                     return v(context)
                 end,
                 catch
