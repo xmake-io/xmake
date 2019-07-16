@@ -23,8 +23,8 @@ function test_vsxmake(t)
     for name, _ in pairs(vs) do
         if tonumber(name) >= 2010 then
             -- set config
-            config.set("arch", arch)
-            config.set("vs", name)
+            config.set("arch", arch, {readonly = true, force = true})
+            config.set("vs",   name, {readonly = true, force = true})
             config.check()
             platform.load(config.plat())
             environment.enter("toolchains")
@@ -43,11 +43,11 @@ function test_vsxmake(t)
                 {
                     function ()
                         io.write("--- sln file ---\n")
-                        io.write(io.readfile(projname .. "_" .. vstype .. ".sln"), "\n")
+                        io.cat(projname .. "_" .. vstype .. ".sln")
                         io.write("--- vcx file ---\n")
-                        io.write(io.readfile(projname .. "/" .. projname .. ".vcxproj"), "\n")
+                        io.cat(projname .. "/" .. projname .. ".vcxproj")
                         io.write("--- filter file ---\n")
-                        io.write(io.readfile(projname .. "/" .. projname .. ".vcxproj.filters"), "\n")
+                        io.cat(projname .. "/" .. projname .. ".vcxproj.filters")
                         raise("msbuild failed")
                     end
                 }
