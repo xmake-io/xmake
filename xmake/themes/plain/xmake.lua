@@ -52,9 +52,9 @@ theme("plain")
     set_color("build.target", "")
 
     -- color dump
-    set_text("dump.default_format", "<%s>")
-    set_text("dump.udata_format", "[%s]")
-    set_text("dump.table_format", "{%s}")
+    set_text("dump.default_format", "%s")
+    set_text("dump.udata_format", "%s")
+    set_text("dump.table_format", "%s")
     set_text("dump.anchor", "&%s")
     set_text("dump.reference", "*%s")
     set_color("dump.anchor", "")

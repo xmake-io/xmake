@@ -35,8 +35,10 @@ function utils.dump(...)
         return ...
     end
 
+    local diagnosis = option.get("diagnosis")
+
     -- show caller info
-    if option.get("diagnosis") then
+    if diagnosis then
         local info = debug.getinfo(2)
         local line = info.currentline
         if not line or line < 0 then line = info.linedefined end
@@ -58,11 +60,11 @@ function utils.dump(...)
     end
 
     if values_count == 1 then
-        dump(values[1], indent or "")
+        dump(values[1], indent or "", diagnosis)
         io.write("\n")
     else
         for i = 1, values_count do
-            dump(values[i], indent or string.format("%2d: ", i))
+            dump(values[i], indent or string.format("%2d: ", i), diagnosis)
             io.write("\n")
         end
     end

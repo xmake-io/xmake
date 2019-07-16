@@ -20,11 +20,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", 
 EndProject
 Global
     GlobalSection(SolutionConfigurationPlatforms) = preSolution
-#Import(SlnConfig)#
-    EndGlobalSection
+#Import(SlnConfig)#    EndGlobalSection
     GlobalSection(ProjectConfigurationPlatforms) = postSolution
-#Import(ProjConfig)#
-    EndGlobalSection
+#Import(ProjConfig)#    EndGlobalSection
     GlobalSection(SolutionProperties) = preSolution
         HideSolutionNode = FALSE
     EndGlobalSection

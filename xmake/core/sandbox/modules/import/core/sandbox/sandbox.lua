@@ -30,14 +30,16 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local history   = require("project/history")
 local dump      = require("base/dump")
+local option    = require("base/option")
 
 -- print variables for interactive mode
 function sandbox_core_sandbox._interactive_dump(...)
+    local diagnosis = option.get("diagnosis")
     local values = table.pack(...)
     -- do not use #values since nil might be included
     local n = values.n
     if n <= 1 then
-        dump(values[1], "< ")
+        dump(values[1], "< ", diagnosis)
         io.write("\n")
     else
         local fmt = "< %d: "
@@ -50,7 +52,7 @@ function sandbox_core_sandbox._interactive_dump(...)
             fmt = "< %2d: "
         end
         for i = 1, n do
-            dump(values[i], string.format(fmt, i))
+            dump(values[i], string.format(fmt, i), diagnosis)
             io.write("\n")
         end
     end
