@@ -21,7 +21,7 @@ function test_vsxmake(t)
     os.cd(projname)
 
     for name, _ in pairs(vs) do
-        if tonumber(name) >= 2010 then
+        if tonumber(name) > 2010 then
             -- set config
             config.set("arch", arch, {readonly = true, force = true})
             config.set("vs",   name, {readonly = true, force = true})
