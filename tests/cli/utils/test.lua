@@ -6,7 +6,7 @@ end
 
 function test_help(t)
     import("core.base.task")
-    for _, t in ipairs(task.names()) do
-        os.execv("xmake", {t, "--help"})
+    for _, taskname in ipairs(task.names()) do
+        os.runv("xmake", {taskname, "--help"})
     end
 end
