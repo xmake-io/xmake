@@ -16,7 +16,7 @@ function test_vsxmake(t)
     os.cd("c")
 
     for name, _ in pairs(vs) do
-        if tonumber(vs) >= 2010 then
+        if tonumber(name) >= 2010 then
             -- set config
             config.set("arch", arch)
             config.set("vs", name)
@@ -32,23 +32,20 @@ function test_vsxmake(t)
             try
             {
                 function ()
-                    return os.iorun("msbuild /P:XmakeDiagnosis=true /P:XmakeVerbose=true")
+                    os.exec("msbuild /P:XmakeDiagnosis=true /P:XmakeVerbose=true")
                 end,
                 finally
                 {
-                    function (ok, stdout, stderr)
+                    function (ok)
                         if ok then
                             return
                         end
-                        print("run msbuild for %s", vstype)
-                        io.write("--- msbuild output ---")
-                        io.write(stdout, "\n", stderr)
                         io.write("--- sln file ---")
                         io.write(io.readfile("c_" .. vstype .. ".sln"), "\n")
                         io.write("--- vcx file ---")
                         io.write(io.readfile("project/project.vcxproj"), "\n")
                         io.write("--- filter file ---")
-                        io.write(io.readfile("project/project.vcxprok.filters"), "\n")
+                        io.write(io.readfile("project/project.vcxproj.filters"), "\n")
                         raise("msbuild failed")
                     end
                 }
