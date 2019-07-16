@@ -49,14 +49,14 @@
         <XmakeRunDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeRunDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDir)'))</XmakeRunDir>
 
         <!-- normalize paths -->
-        <XmakeProgramDir>$([MSBuild]::NormalizeDirectory('$(XmakeProgramDir)'))</XmakeProgramDir>
-        <XmakeProjectDir>$([MSBuild]::NormalizeDirectory('$(XmakeProjectDir)'))</XmakeProjectDir>
-        <XmakeScriptDir>$([MSBuild]::NormalizeDirectory('$(XmakeScriptDir)'))</XmakeScriptDir>
-        <XmakeBuilDir>$([MSBuild]::NormalizeDirectory('$(XmakeBuilDir)'))</XmakeBuilDir>
-        <XmakeTargetDir>$([MSBuild]::NormalizeDirectory('$(XmakeTargetDir)'))</XmakeTargetDir>
-        <XmakeConfigDir>$([MSBuild]::NormalizeDirectory('$(XmakeConfigDir)'))</XmakeConfigDir>
-        <XmakeConfigFileDir>$([MSBuild]::NormalizeDirectory('$(XmakeConfigFileDir)'))</XmakeConfigFileDir>
-        <XmakeRunDir>$([MSBuild]::NormalizeDirectory('$(XmakeRunDir)'))</XmakeRunDir>
+        <XmakeProgramDir>$([MSBuild]::NormalizePath('$(XmakeProgramDir)/'))</XmakeProgramDir>
+        <XmakeProjectDir>$([MSBuild]::NormalizePath('$(XmakeProjectDir)/'))</XmakeProjectDir>
+        <XmakeScriptDir>$([MSBuild]::NormalizePath('$(XmakeScriptDir)/'))</XmakeScriptDir>
+        <XmakeBuilDir>$([MSBuild]::NormalizePath('$(XmakeBuilDir)/'))</XmakeBuilDir>
+        <XmakeTargetDir>$([MSBuild]::NormalizePath('$(XmakeTargetDir)/'))</XmakeTargetDir>
+        <XmakeConfigDir>$([MSBuild]::NormalizePath('$(XmakeConfigDir)/'))</XmakeConfigDir>
+        <XmakeConfigFileDir>$([MSBuild]::NormalizePath('$(XmakeConfigFileDir)/'))</XmakeConfigFileDir>
+        <XmakeRunDir>$([MSBuild]::NormalizePath('$(XmakeRunDir)/'))</XmakeRunDir>
     </PropertyGroup>
 
     <PropertyGroup Label="XmakeFlagsFallback">
