@@ -40,11 +40,11 @@ function test_vsxmake(t)
                         if ok then
                             return
                         end
-                        io.write("--- sln file ---")
+                        io.write("--- sln file ---\n")
                         io.write(io.readfile("c_" .. vstype .. ".sln"), "\n")
-                        io.write("--- vcx file ---")
+                        io.write("--- vcx file ---\n")
                         io.write(io.readfile("project/project.vcxproj"), "\n")
-                        io.write("--- filter file ---")
+                        io.write("--- filter file ---\n")
                         io.write(io.readfile("project/project.vcxproj.filters"), "\n")
                         raise("msbuild failed")
                     end
