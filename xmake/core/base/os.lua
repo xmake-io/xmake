@@ -534,10 +534,10 @@ function os.runv(program, argv, opt)
     opt = opt or {}
 
     -- make temporary log file
-    local log = os.tmpfile()
+    local logfile = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(program, argv, table.join(opt, {stdout = log, stderr = log}))
+    local ok = os.execv(program, argv, table.join(opt, {stdout = logfile, stderr = logfile}))
     if ok ~= 0 then
 
         -- make errors
@@ -551,14 +551,14 @@ function os.runv(program, argv, opt)
         end
 
         -- remove the temporary log file
-        os.rm(log)
+        os.rm(logfile)
 
         -- failed
         return false, errors
     end
 
     -- remove the temporary log file
-    os.rm(log)
+    os.rm(logfile)
 
     -- ok
     return true
@@ -948,9 +948,9 @@ function os.setenv(name, ...)
     local values = {...}
     if #values <= 1 then
         -- keep compatible with original implementation
-        os._setenv(name, values[1] or "")
+        return os._setenv(name, values[1] or "")
     else
-        os._setenv(path.joinenv(values))
+        return os._setenv(path.joinenv(values))
     end
 end
 
