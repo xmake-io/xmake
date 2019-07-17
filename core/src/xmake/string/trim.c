@@ -34,29 +34,54 @@
  * privates
  */
 
-static tb_char_t const* xm_string_ltrim(tb_char_t const* strstart, tb_char_t const* strend, tb_char_t const* trimchars,
-                                        size_t ntrimchars)
+static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const** pestr, tb_int64_t mode)
 {
     // check
-    tb_assert(strstart && strend && trimchars);
+    tb_assert(psstr && pestr && *psstr && *pestr);
+
+    tb_char_t const* p = *psstr;
+    tb_char_t const* e = *pestr;
+
+    // trim left?
+    if (mode <= 0)
+        while (p < e && tb_isspace(*p))
+            p++;
+
+    // trim right
+    if (mode >= 0)
+    {
+        e--;
+        while (e >= p && tb_isspace(*e))
+            e--;
+        e++;
+    }
+
+    // save trimed string
+    *psstr = p;
+    *pestr = e;
+}
+
+static tb_char_t const* xm_string_ltrim(tb_char_t const* sstr, tb_char_t const* estr, tb_char_t const* ctrim, size_t ntrim)
+{
+    // check
+    tb_assert(sstr && estr && ctrim);
 
     // done
-    tb_char_t const* p = strstart;
-    while (p < strend && tb_strnchr(trimchars, ntrimchars, *p))
+    tb_char_t const* p = sstr;
+    while (p < estr && tb_strnchr(ctrim, ntrim, *p))
         p++;
 
     return p;
 }
 
-static tb_char_t const* xm_string_rtrim(tb_char_t const* strstart, tb_char_t const* strend, tb_char_t const* trimchars,
-                                        size_t ntrimchars)
+static tb_char_t const* xm_string_rtrim(tb_char_t const* sstr, tb_char_t const* estr, tb_char_t const* ctrim, size_t ntrim)
 {
     // check
-    tb_assert(strstart && strend && trimchars);
+    tb_assert(sstr && estr && ctrim);
 
     // done
-    tb_char_t const* p = strend - 1;
-    while (p >= strstart && tb_strnchr(trimchars, ntrimchars, *p))
+    tb_char_t const* p = estr - 1;
+    while (p >= sstr && tb_strnchr(ctrim, ntrim, *p))
         p--;
 
     return p + 1;
@@ -85,28 +110,34 @@ tb_int_t xm_string_trim(lua_State* lua)
     size_t           lstr, ltrim;
     tb_char_t const* sstr      = luaL_checklstring(lua, 1, &lstr);
     tb_char_t const* estr      = sstr + lstr;
-    tb_char_t const* trimchars = luaL_optlstring(lua, 2, "\r\n\t \f\v", &ltrim);
+    tb_char_t const* trimchars = luaL_optlstring(lua, 2, "", &ltrim);
     tb_int64_t const trimtype  = (tb_int64_t)luaL_optinteger(lua, 3, 0);
+    do
+    {
+        tb_assert_and_check_break(sstr && trimchars);
+        // empty string
+        tb_check_break(lstr != 0);
 
-    tb_char_t const* const rsstr = sstr;
-    tb_char_t const* const restr = estr;
+        tb_char_t const* const rsstr = sstr;
+        tb_char_t const* const restr = estr;
+        if (ltrim == 0)
+            xm_string_trim_space(&sstr, &estr, trimtype);
+        else
+        {
+            // trim chars
+            if (trimtype <= 0) sstr = xm_string_ltrim(sstr, estr, trimchars, ltrim);
+            if (trimtype >= 0) estr = xm_string_rtrim(sstr, estr, trimchars, ltrim);
+        }
 
-    tb_assert_and_check_goto(sstr && trimchars, failed);
-    // empty string or empty tmim chars
-    tb_check_goto(ltrim != 0 && lstr != 0, failed);
+        // no trimed chars
+        tb_check_break(sstr != rsstr || estr != restr);
 
-    // trim chars
-    if (trimtype <= 0) sstr = xm_string_ltrim(sstr, estr, trimchars, ltrim);
-    if (trimtype >= 0) estr = xm_string_rtrim(sstr, estr, trimchars, ltrim);
+        // ok
+        lua_pushlstring(lua, sstr, estr - sstr);
+        return 1;
 
-    // no trimed chars
-    tb_check_goto(sstr != rsstr || estr != restr, failed);
+    } while (tb_false);
 
-    // ok
-    lua_pushlstring(lua, sstr, estr - sstr);
-    return 1;
-
-failed:
     // return orignal value
     lua_settop(lua, 1);
     return 1;
