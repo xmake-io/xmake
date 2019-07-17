@@ -83,8 +83,11 @@ rule("cuda.env")
         import("lib.detect.find_tool")
 
         local debugger = config.get("debugger")
-        if not debugger and find_tool("cudagdb") then
-            config.set("debugger", "cudagdb")
+        if not debugger then
+            local cudagdb = find_tool("cudagdb")
+            if cudagdb then
+                config.set("debugger", cudagdb.program)
+            end
         end
     end)
 

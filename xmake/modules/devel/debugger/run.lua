@@ -235,10 +235,10 @@ function main(program, argv)
     local debugger = config.get("debugger")
     if debugger then
         debugger = debugger:lower()
-
+        local debuggername = path.basename(debugger)
         -- try exactmatch first
         for _, _debugger in ipairs(debuggers) do
-            if debugger:startswith(_debugger[1]) then
+            if debuggername:startswith(_debugger[1]) then
                 if _debugger[2](program, argv) then
                     return
                 end
