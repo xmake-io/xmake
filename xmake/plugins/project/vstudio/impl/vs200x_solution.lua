@@ -88,7 +88,7 @@ end
 function make(vsinfo)
 
     -- init solution name
-    vsinfo.solution_name = project.name() or "vs" .. vsinfo.vstudio_version
+    vsinfo.solution_name = project.name() or ("vs" .. vsinfo.vstudio_version)
 
     -- open solution file
     local slnfile = vsfile.open(path.join(vsinfo.solution_dir, vsinfo.solution_name .. ".sln"), "w")

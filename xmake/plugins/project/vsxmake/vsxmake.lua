@@ -139,7 +139,7 @@ function make(version)
         local paramsprovidersln = _buildparams(info)
 
         -- write solution file
-        local sln = path.join(info.solution_dir, info.slnfile .. "_vsxmake" .. info.vstudio_version .. ".sln")
+        local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
         io.writefile(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidersln))
 
         -- add solution custom file
