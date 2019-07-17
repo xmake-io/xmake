@@ -412,7 +412,7 @@ function interpreter:_clear()
 end
 
 -- filter values
-function interpreter:_filter(values)
+function interpreter:_filter(values, level)
 
     -- check
     assert(self and values ~= nil)
@@ -423,52 +423,48 @@ function interpreter:_filter(values)
         return values
     end
 
-    -- done
-    local results = {}
-    if table.is_dictionary(values) then
-        -- filter keyvalues
-        for key, value in pairs(values) do
-            if type(value) == "string" then
-                results[filter:handle(key)] = filter:handle(value)
-            elseif type(value) == "table" then
-                results[filter:handle(key)] = self:_filter(value)
-            else
-                results[filter:handle(key)] = value 
-            end
-        end
-    else
-        for _, value in ipairs(table.wrap(values)) do
-
-            -- string?
-            if type(value) == "string" then
-                
-                -- filter value
-                value = filter:handle(value)
-
-            -- array?
-            elseif table.is_array(value) then
-
-                -- replace values
-                local values = {}
-                for _, v in ipairs(value) do
-                    if type(v) == "string" then
-                        table.insert(values, filter:handle(v))
-                    elseif type(v) == "table" then
-                        table.insert(values, self:_filter(v))
-                    else
-                        table.insert(values, v)
-                    end
-                end
-                value = values
-            end
-
-            -- append value
-            table.insert(results, value)
-        end
+    -- init level
+    if level == nil then
+        level = 0
     end
 
-    -- ok?
-    return results
+    -- filter keyvalues
+    if table.is_dictionary(values) then
+        local results = {}
+        for key, value in pairs(values) do
+            key = filter:handle(key)
+            if type(value) == "string" then
+                results[key] = filter:handle(value)
+            elseif type(value) == "table" and level < 1 then
+                results[key] = self:_filter(value, level + 1) -- only filter 2 levels for table values
+            else
+                results[key] = value 
+            end
+            values = results
+        end
+    else
+        -- filter value or arrays
+        values = table.wrap(values)
+        for idx = 1, table.maxn(values) do
+
+            local value = values[idx]        
+            if type(value) == "string" then
+                value = filter:handle(value)
+            elseif table.is_array(value) then
+                for i = 1, table.maxn(value) do
+                    local v = value[i]
+                    if type(v) == "string" then
+                        v = filter:handle(v)
+                    elseif type(v) == "table" and level < 1 then
+                        v = self:_filter(v, level + 1)
+                    end
+                    value[i] = v
+                end
+            end
+            values[idx] = value
+        end
+    end
+    return values
 end
 
 -- handle scope data
