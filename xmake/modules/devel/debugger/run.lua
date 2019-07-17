@@ -234,9 +234,10 @@ function main(program, argv)
     -- get debugger from the configure
     local debugger = config.get("debugger")
     if debugger then
+
+        -- try exactmatch first
         debugger = debugger:lower()
         local debuggername = path.basename(debugger)
-        -- try exactmatch first
         for _, _debugger in ipairs(debuggers) do
             if debuggername:startswith(_debugger[1]) then
                 if _debugger[2](program, argv) then
