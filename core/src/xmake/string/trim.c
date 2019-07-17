@@ -38,7 +38,7 @@ static tb_char_t const* xm_string_ltrim(tb_char_t const* strstart, tb_char_t con
                                         size_t ntrimchars)
 {
     // check
-    tb_assert_and_check_return_val(strstart && strend && trimchars, tb_null);
+    tb_assert(strstart && strend && trimchars);
 
     // done
     tb_char_t const* p = strstart;
@@ -52,7 +52,7 @@ static tb_char_t const* xm_string_rtrim(tb_char_t const* strstart, tb_char_t con
                                         size_t ntrimchars)
 {
     // check
-    tb_assert_and_check_return_val(strstart && strend && trimchars, tb_null);
+    tb_assert(strstart && strend && trimchars);
 
     // done
     tb_char_t const* p = strend - 1;
