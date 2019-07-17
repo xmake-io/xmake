@@ -15,10 +15,16 @@
 #Import(Filter)#
   </ItemGroup>
   <ItemGroup>
-    <None Include="Xmake.Custom.props">
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.props">
       <Filter>Properties</Filter>
     </None>
-    <None Include="Xmake.Custom.targets">
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.targets">
+      <Filter>Properties</Filter>
+    </None>
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.files">
+      <Filter>Properties</Filter>
+    </None>
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.files.filters">
       <Filter>Properties</Filter>
     </None>
     <None Include="$(XmakeScriptDir)\xmake.lua">
@@ -43,4 +49,6 @@
   <ItemGroup>
 #Import(File.rc)#
   </ItemGroup>
+  <Import Condition="Exists('$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters')"
+    Project="$(MSBuildThisFileDirectory)\Xmake.Custom.files.filters" />
 </Project>

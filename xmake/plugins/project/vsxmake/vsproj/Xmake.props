@@ -138,4 +138,21 @@
     <OutDir>$(XmakeTargetDir)</OutDir>
     <IntDir>$(XmakeBuilDir).vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
   </PropertyGroup>
+
+  <!-- Common files -->
+  <ItemGroup>
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.props" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.targets" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.files" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files.filters')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.files.filters" />
+    <None Condition="'$(XmakeScriptDir)' != '$(XmakeProjectDir)' And Exists('$(XmakeScriptDir)\xmake.lua')"
+      Include="$(XmakeScriptDir)\xmake.lua" />
+  </ItemGroup>
+  
+  <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files')"
+    Project="$(MSBuildProjectDirectory)\Xmake.Custom.files" />
 </Project>

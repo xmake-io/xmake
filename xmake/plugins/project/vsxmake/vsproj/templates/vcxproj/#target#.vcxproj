@@ -29,12 +29,6 @@
 #Import(XmakePath)#
   <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.props" />
   <ItemGroup>
-    <None Include="Xmake.Custom.props" />
-    <None Include="Xmake.Custom.targets" />
-    <None Condition="'$(XmakeScriptDir)' != '$(XmakeProjectDir)' And Exists('$(XmakeScriptDir)\xmake.lua')"
-        Include="$(XmakeScriptDir)\xmake.lua" />
-  </ItemGroup>
-  <ItemGroup>
 #Import(Include)#
   </ItemGroup>
   <ItemGroup>

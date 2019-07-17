@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!--
+    Use this file to include custom files for visual studio projects.
+
+    This file will be imported by .vcxproj.filters
+   -->
+  <ItemGroup>
+    <!-- <None Include="$(XmakeProjectDir)\xxx\yyy\zzz">
+      <Filter>xxx\yyy</Filter>
+    </None> -->
+  </ItemGroup>
+</Project>
