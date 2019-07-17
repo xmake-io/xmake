@@ -107,9 +107,9 @@ function _get_values(target, name)
     end
 
     -- from opts
-	for _, opt in ipairs(target:orderopts()) do
-		table.join2(values, table.wrap(opt:get(name)))
-	end
+    for _, opt in ipairs(target:orderopts()) do
+        table.join2(values, table.wrap(opt:get(name)))
+    end
 
     -- from packages
     for _, pkg in ipairs(target:orderpkgs()) do
