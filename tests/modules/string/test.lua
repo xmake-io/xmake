@@ -14,27 +14,42 @@ function test_startswith(t)
 end
 
 function test_trim(t)
+    t:are_equal((""):trim(), "")
+    t:are_equal(("   "):trim(), "")
+    t:are_equal((""):trim(""), "")
+    t:are_equal(("   "):trim(""), "")
     t:are_equal(("   aaa ccc   "):trim(), "aaa ccc")
     t:are_equal(("aaa ccc   "):trim(), "aaa ccc")
     t:are_equal(("   aaa ccc"):trim(), "aaa ccc")
     t:are_equal(("aaa ccc"):trim(), "aaa ccc")
     t:are_equal(("\t\naaa ccc\r\n"):trim(), "aaa ccc")
+    t:are_equal(("aba"):trim("a"), "b")
 end
 
 function test_ltrim(t)
+    t:are_equal((""):ltrim(), "")
+    t:are_equal(("   "):ltrim(), "")
+    t:are_equal((""):ltrim(""), "")
+    t:are_equal(("   "):ltrim(""), "")
     t:are_equal(("   aaa ccc   "):ltrim(), "aaa ccc   ")
     t:are_equal(("aaa ccc   "):ltrim(), "aaa ccc   ")
     t:are_equal(("   aaa ccc"):ltrim(), "aaa ccc")
     t:are_equal(("aaa ccc"):ltrim(), "aaa ccc")
     t:are_equal(("\t\naaa ccc\r\n"):ltrim(), "aaa ccc\r\n")
+    t:are_equal(("aba"):ltrim("a"), "ba")
 end
 
 function test_rtrim(t)
+    t:are_equal((""):rtrim(), "")
+    t:are_equal(("   "):rtrim(), "")
+    t:are_equal((""):rtrim(""), "")
+    t:are_equal(("   "):rtrim(""), "")
     t:are_equal(("   aaa ccc   "):rtrim(), "   aaa ccc")
     t:are_equal(("aaa ccc   "):rtrim(), "aaa ccc")
     t:are_equal(("   aaa ccc"):rtrim(), "   aaa ccc")
     t:are_equal(("aaa ccc"):rtrim(), "aaa ccc")
     t:are_equal(("\t\naaa ccc\r\n"):rtrim(), "\t\naaa ccc")
+    t:are_equal(("aba"):rtrim("a"), "ab")
 end
 
 function test_split(t)

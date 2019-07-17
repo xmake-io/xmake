@@ -190,18 +190,18 @@ function string:split(delimiter, opt)
 end
 
 -- trim the spaces
-function string:trim()
-    return self:_trim(0)
+function string:trim(trimchars)
+    return string._trim(self, trimchars, 0)
 end
 
 -- trim the left spaces
-function string:ltrim()
-    return self:_trim(-1)
+function string:ltrim(trimchars)
+    return string._trim(self, trimchars, -1)
 end
 
 -- trim the right spaces
-function string:rtrim()
-    return self:_trim(1)
+function string:rtrim(trimchars)
+    return string._trim(self, trimchars, 1)
 end
 
 -- encode: ' ', '=', '\"', '<'
