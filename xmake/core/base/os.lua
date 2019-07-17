@@ -943,34 +943,53 @@ function os.getenvs()
     return envs
 end
 
--- set values to environment variable 
+-- set values to environment variable
 function os.setenv(name, ...)
-    return os._setenv(name, table.concat({...}, path.envsep()))
+    local values = {...}
+    if #values <= 1 then
+        -- keep compatible with original implementation
+        os._setenv(name, values[1] or "")
+    else
+        os._setenv(path.joinenv(values))
+    end
 end
 
--- add values to environment variable 
+-- add values to environment variable
 function os.addenv(name, ...)
-    local sep = path.envsep()
     local values = {...}
     if #values > 0 then
-        return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
+        local oldenv = os.getenv(name)
+        local appendenv = path.joinenv(values)
+        if oldenv == "" or oldenv == nil then
+            return os._setenv(name, appendenv)
+        else
+            return os._setenv(name, appendenv .. path.envsep() .. oldenv)
+        end
     else
         return true
     end
 end
 
--- set values to environment variable with the given seperator 
+-- set values to environment variable with the given seperator
 function os.setenvp(name, values, sep)
     sep = sep or path.envsep()
     return os._setenv(name, table.concat(table.wrap(values), sep))
 end
 
--- add values to environment variable with the given seperator 
+-- add values to environment variable with the given seperator
 function os.addenvp(name, values, sep)
     sep = sep or path.envsep()
     values = table.wrap(values)
     if #values > 0 then
-        return os._setenv(name, table.concat(values, sep) .. sep ..  (os.getenv(name) or ""))
+        local oldenv = os.getenv(name)
+        local appendenv = table.concat(values, sep)
+        local newenv
+        if oldenv == "" or oldenv == nil then
+            newenv = appendenv
+        else
+            newenv = appendenv .. sep .. oldenv
+        end
+        return os._setenv(name, newenv)
     else
         return true
     end

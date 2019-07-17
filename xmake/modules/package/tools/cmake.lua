@@ -71,9 +71,9 @@ function buildenvs(package)
             table.join2(CMAKE_PREFIX_PATH, dep:installdir())
         end
     end
-    envs.CMAKE_LIBRARY_PATH = table.concat(CMAKE_LIBRARY_PATH, path.envsep())
-    envs.CMAKE_INCLUDE_PATH = table.concat(CMAKE_INCLUDE_PATH, path.envsep())
-    envs.CMAKE_PREFIX_PATH  = table.concat(CMAKE_PREFIX_PATH, path.envsep())
+    envs.CMAKE_LIBRARY_PATH = path.joinenv(CMAKE_LIBRARY_PATH)
+    envs.CMAKE_INCLUDE_PATH = path.joinenv(CMAKE_INCLUDE_PATH)
+    envs.CMAKE_PREFIX_PATH  = path.joinenv(CMAKE_PREFIX_PATH)
     return envs
 end
 

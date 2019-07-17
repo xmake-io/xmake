@@ -158,6 +158,33 @@ function path.splitenv(env_path)
     return result
 end
 
+-- concat environment variable with `path.envsep()`,
+-- also handles more speical cases such as posix flags and windows quoted pathes
+function path.joinenv(env_table)
+
+    -- check
+    env_table = env_table or {}
+
+    local envsep = path.envsep()
+
+    if xmake._HOST == "windows" then
+        local tab = {}
+        for _, v in ipairs(env_table) do
+            if v ~= "" then
+                if v:find(envsep, 1, true) then
+                    v = '"' .. v .. '"'
+                end
+                table.insert(tab, v)
+            end
+        end
+        return table.concat(tab, envsep)
+    else
+        return table.concat(env_table, envsep)
+    end
+
+    return result
+end
+
 -- the last character is the path seperator?
 function path.islastsep(p)
 
