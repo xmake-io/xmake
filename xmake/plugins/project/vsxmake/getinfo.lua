@@ -129,7 +129,7 @@ function _make_vsinfo_modes()
     local vsinfo_modes = {}
     local modes = option.get("modes")
     if modes then
-        for _, mode in ipairs(modes:split(',')) do
+        for _, mode in ipairs(path.splitenv(modes)) do
             table.insert(vsinfo_modes, mode:trim())
         end
     else
@@ -145,7 +145,7 @@ function _make_vsinfo_archs()
     local vsinfo_archs = {}
     local archs = option.get("archs")
     if archs then
-        for _, arch in ipairs(archs:split(',')) do
+        for _, arch in ipairs(path.splitenv(archs)) do
             table.insert(vsinfo_archs, arch:trim())
         end
     else
