@@ -53,6 +53,8 @@ if sandbox_io_file.__index ~= sandbox_io_file then
             end
         end
     end
+    -- file:lines does not use its second return value for error
+    sandbox_io_file.lines = io.file.lines
 end
 
 -- get file size
