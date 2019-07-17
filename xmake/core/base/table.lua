@@ -258,17 +258,10 @@ function table.unique(array, barrier)
                 end
 
                 -- add unique item
-                if type(v) == "string" then
-                    if not exists[v] then
-                        exists[v] = true
-                        table.insert(unique, v)
-                    end
-                else
-                    local key = "\"" .. tostring(v) .. "\""
-                    if not exists[key] then
-                        exists[key] = true
-                        table.insert(unique, v)
-                    end
+                if not exists[v] then
+                    -- v will not be nil
+                    exists[v] = true
+                    table.insert(unique, v)
                 end
             end
 

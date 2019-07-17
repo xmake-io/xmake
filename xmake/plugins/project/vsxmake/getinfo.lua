@@ -97,13 +97,34 @@ end
 
 function _get_values(target, name)
     local values = table.wrap(target:get(name))
+
+    -- from deps
     for _, dep in irpairs(target:orderdeps()) do
         local depinherit = target:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, {interface = true}))
         end
     end
-    return values
+
+    -- from opts
+	for _, opt in ipairs(target:orderopts()) do
+		table.join2(values, table.wrap(opt:get(name)))
+	end
+
+    -- from packages
+    for _, pkg in ipairs(target:orderpkgs()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = target:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+
+    return table.unique(values)
 end
 
 -- make target info
