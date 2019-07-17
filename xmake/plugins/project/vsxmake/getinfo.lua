@@ -129,6 +129,9 @@ function _make_vsinfo_modes()
     local vsinfo_modes = {}
     local modes = option.get("modes")
     if modes then
+        if not modes:find("\"") then
+            modes = modes:gsub(",", path.envsep())
+        end
         for _, mode in ipairs(path.splitenv(modes)) do
             table.insert(vsinfo_modes, mode:trim())
         end
@@ -145,6 +148,9 @@ function _make_vsinfo_archs()
     local vsinfo_archs = {}
     local archs = option.get("archs")
     if archs then
+        if not archs:find("\"") then
+            archs = archs:gsub(",", path.envsep())
+        end
         for _, arch in ipairs(path.splitenv(archs)) do
             table.insert(vsinfo_archs, arch:trim())
         end

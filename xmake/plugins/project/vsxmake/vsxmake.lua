@@ -67,7 +67,7 @@ function _escape(str)
         str = str:sub(#("$(XmakeProjectDir)") + 1)
     end
 
-    str = (string.gsub(str, "[%%%$@'\";%?%*]", function (c) return assert(map[c]) end))
+    str = (string.gsub(str, "[%%%$@';%?%*]", function (c) return assert(map[c]) end))
     if has_prefix then
         str = "$(XmakeProjectDir)" .. str
     end
