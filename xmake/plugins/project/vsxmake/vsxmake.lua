@@ -45,6 +45,35 @@ function _filter_files(files, exts)
     return f
 end
 
+-- escape special chars in msbuild file
+function _escape(str)
+    if not str then
+        return nil
+    end
+
+    local map =
+    {    ["%"] = "%25" -- Referencing metadata
+        ,["$"] = "%24" -- Referencing properties
+        ,["@"] = "%40" -- Referencing item lists
+        ,["'"] = "%27" -- Conditions and other expressions
+        ,[";"] = "%3B" -- List separator
+        ,["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
+        ,["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
+    }
+
+    local has_prefix = false
+    if str:startswith("$(XmakeProjectDir)") then
+        has_prefix = true
+        str = str:sub(#("$(XmakeProjectDir)") + 1)
+    end
+
+    str = (string.gsub(str, "[%%%$@'\";%?%*]", function (c) return assert(map[c]) end))
+    if has_prefix then
+        str = "$(XmakeProjectDir)" .. str
+    end
+    return str
+end
+
 function _buildparams(info, target, default)
 
     local function getprop(match, opt)
@@ -62,7 +91,7 @@ function _buildparams(info, target, default)
             r = i[match] or r
         end
 
-        return r or default
+        return _escape(r) or default
     end
 
     local function listconfig(args)

@@ -53,7 +53,7 @@ function _make_dirs(dir)
         r[k] = _make_dirs(v)
     end
     r = table.unique(r)
-    return table.concat(r, path.envsep())
+    return path.joinenv(r)
 end
 
 function _get_values(target, name)
@@ -103,7 +103,7 @@ function _make_targetinfo(mode, arch, target)
         for _, d in ipairs(v) do
             table.insert(defs, vformat(d))
         end
-        table.insert(runenvs, format("%s=%s", k, table.concat(defs, path.envsep())))
+        table.insert(runenvs, format("%s=%s", k, path.joinenv(defs)))
     end
     targetinfo.runenvs = table.concat(runenvs, "\n")
 
@@ -266,7 +266,7 @@ function main(outputdir, vsinfo)
             local dir = path.directory(f)
             target._sub2[f] =
             {
-                path = path.join("$(XmakeProjectDir)", f),
+                path = f,
                 dir = dir
             }
             while dir ~= "." do

@@ -37,14 +37,14 @@ function _expand(params)
     for _, v in ipairs(params) do
         if type(v) == "string" then
             for i, p in ipairs(r) do
-                r[i] = p .. ";" .. v
+                r[i] = p .. "\0" .. v
             end
         else
             local newr = {}
             for _, c in ipairs(v) do
                 local rcopy = {}
                 for i, p in ipairs(r) do
-                    rcopy[i] = p .. ";" .. c
+                    rcopy[i] = p .. "\0" .. c
                 end
                newr= table.join(newr, rcopy)
             end
@@ -52,7 +52,7 @@ function _expand(params)
         end
     end
     for i, p in ipairs(r) do
-        r[i] = p:split(";")
+        r[i] = p:split("\0")
     end
     return r
 end
