@@ -89,5 +89,5 @@ local vsinfo =
 
 function main(version)
     assert(version)
-    return assert(vsinfo[version]);
+    return assert(vsinfo[version], "unsupported vs version (%d)", version);
 end

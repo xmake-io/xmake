@@ -129,6 +129,11 @@ end
 -- make
 function make(version)
 
+    -- check
+    if version < 2010 then
+        raise("vsxmake does not support vs version lower than 2010")
+    end
+
     return function(outputdir)
         local info = getinfo(outputdir, vsinfo(version))
         local paramsprovidersln = _buildparams(info)
