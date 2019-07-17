@@ -1,3 +1,6 @@
+-- add rules
+add_rules("mode.debug", "mode.release")
+
 -- define target
 target("main")
 
