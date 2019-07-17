@@ -23,6 +23,7 @@ local string = string or {}
 
 -- save original interfaces
 string._dump = string._dump or string.dump
+string._trim = string._trim or string.trim
 
 -- make string with the level
 function string._makestr(object, deflate, serialize, level)
@@ -190,36 +191,26 @@ end
 
 -- trim the spaces
 function string:trim()
-    return (self:gsub("^%s*(.-)%s*$", "%1"))
+    return self:_trim(0)
 end
 
 -- trim the left spaces
 function string:ltrim()
-    return (self:gsub("^%s*", ""))
+    return self:_trim(-1)
 end
 
 -- trim the right spaces
 function string:rtrim()
-    return (self:gsub("%s*$", ""))
+    return self:_trim(1)
 end
 
 -- encode: ' ', '=', '\"', '<'
 function string:encode()
-
-    -- null?
-    if self == nil then return end
-
-    -- done
     return (self:gsub("[%s=\"<]", function (w) return string.format("%%%x", w:byte()) end))
 end
 
 -- decode: ' ', '=', '\"'
 function string:decode()
-
-    -- null?
-    if self == nil then return end
-
-    -- done
     return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
 end
 
