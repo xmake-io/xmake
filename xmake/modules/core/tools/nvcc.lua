@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -60,21 +60,46 @@ end
 -- make the symbol flag
 function nf_symbol(self, level, target)
 
-    -- the maps
-    local maps =
-    {
-        debug       = "-g -G"
-    }
+    -- debug? generate *.pdb file
+    local flags = nil
+    if level == "debug" then
+        flags = "-g -G"
+        if is_plat("windows") then
+            local host_flags = nil
+            local symbolfile = nil
+            if target and target.symbolfile then
+                symbolfile = target:symbolfile()
+            end
+            if symbolfile then
 
-    return maps[level]
+                -- ensure the object directory
+                local symboldir = path.directory(symbolfile)
+                if not os.isdir(symboldir) then
+                    os.mkdir(symboldir)
+                end
+
+                -- check and add symbol output file
+                host_flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
+                if self:has_flags({'-Xcompiler "-Zi -FS -Fd'  .. os.tmpfile() .. '.pdb"'}, "cuflags") then
+                    host_flags = "-FS " .. host_flags
+                end
+            else
+                host_flags = "-Zi"
+            end
+            flags = flags .. ' -Xcompiler "' .. host_flags .. '"'
+        end
+    end
+
+    -- none
+    return flags
 end
 
 -- make the warning flag
 function nf_warning(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-w"
     ,   everything = "-Wreorder"
     ,   error      = "-Werror"
@@ -82,7 +107,7 @@ function nf_warning(self, level)
 
     -- for cl.exe on windows
     local cl_maps =
-    {   
+    {
         none       = "-W0"
     ,   less       = "-W1"
     ,   more       = "-W3"
@@ -90,19 +115,19 @@ function nf_warning(self, level)
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
-    
+
     -- for gcc & clang on linux, may be work for other gnu compatible compilers such as icc
     --
     -- gcc dosen't support `-Weverything`, use `-Wall -Wextra -Weffc++` for it
     -- no warning will emit for unsupoorted `-W` flags by clang/gcc
     --
     local gcc_clang_maps =
-    {   
+    {
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"
-    ,   all        = "-Wall" 
-    ,   everything = "-Weverything -Wall -Wextra -Weffc++" 
+    ,   all        = "-Wall"
+    ,   everything = "-Weverything -Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
     }
 
@@ -150,7 +175,7 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
-        _g.cxxmaps = 
+        _g.cxxmaps =
         {
             cxx03       = "--std c++03"
         ,   cxx11       = "--std c++11"
@@ -261,21 +286,6 @@ function _compargv1(self, sourcefile, objectfile, flags)
     -- make argv
     local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
 
-    -- insert -Fd flags
-    if is_plat("windows") then
-        local need_pdb = false
-        for _, flag in ipairs(flags) do
-            if flag:find("-g", 1, true) then
-                need_pdb = true
-                break
-            end
-        end
-        if need_pdb then
-            table.insert(argv, "-Xcompiler")
-            table.insert(argv, "-Fd" .. objectfile .. ".pdb")
-        end
-    end
-
     -- uses cache?
     local program = self:program()
     if ccache then
@@ -304,7 +314,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            -- support `-M -MF depfile.d`? 
+            -- support `-M -MF depfile.d`?
             if depfile and _g._HAS_M_MF == nil then
                 _g._HAS_M_MF = self:has_flags({"-M", "-MF", os.nuldev()}, "cuflags") or false
             end

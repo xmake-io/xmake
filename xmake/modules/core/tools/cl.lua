@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -20,13 +20,12 @@
 
 -- imports
 import("core.base.option")
-import("core.base.hashset")
 import("core.project.project")
 import("core.language.language")
 
 -- init it
 function init(self)
-    
+
     -- init cxflags
     self:set("cxflags", "-nologo")
 
@@ -88,21 +87,41 @@ end
 -- make the symbol flag
 function nf_symbol(self, level, target)
 
-    -- the maps
-    local maps =
-    {
-        debug       = "-Zi"
-    }
+    -- debug? generate *.pdb file
+    local flags = nil
+    if level == "debug" then
+        local symbolfile = nil
+        if target and target.symbolfile then
+            symbolfile = target:symbolfile()
+        end
+        if symbolfile then
 
-    return maps[level]
+            -- ensure the object directory
+            local symboldir = path.directory(symbolfile)
+            if not os.isdir(symboldir) then
+                os.mkdir(symboldir)
+            end
+
+            -- check and add symbol output file
+            flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
+            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.tmpfile() .. ".pdb"}, "cxflags") then
+                flags = "-FS " .. flags
+            end
+        else
+            flags = "-Zi"
+        end
+    end
+
+    -- none
+    return flags
 end
 
 -- make the warning flag
 function nf_warning(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-W0"
     ,   less       = "-W1"
     ,   more       = "-W3"
@@ -112,15 +131,15 @@ function nf_warning(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none        = "-Od"
     ,   faster      = "-O2"
     ,   fastest     = "-Ox -fp:fast"
@@ -137,7 +156,7 @@ function nf_vectorext(self, extension)
 
     -- the maps
     local maps =
-    {   
+    {
         sse    = "-arch:SSE"
     ,   sse2   = "-arch:SSE2"
     ,   avx    = "-arch:AVX"
@@ -156,7 +175,7 @@ function nf_language(self, stdname)
 
     -- the stdc maps
     if _g.cmaps == nil then
-        _g.cmaps = 
+        _g.cmaps =
         {
             -- stdc
             c99   = "-TP" -- compile as c++ files because msvc only support c89
@@ -168,7 +187,7 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
-        _g.cxxmaps = 
+        _g.cxxmaps =
         {
             cxx11       = "-std:c++11"
         ,   gnuxx11     = "-std:c++11"
@@ -197,7 +216,7 @@ function nf_language(self, stdname)
 
     -- not support it?
     if flag and flag:find("std:c++", 1, true) and not self:has_flags(flag, "cxflags") then
-        return 
+        return
     end
 
     -- ok
@@ -319,42 +338,11 @@ function _include_deps(self, outdata)
     return results
 end
 
--- add if we need -Fd flags
-function _patch_pdbflags(objectfile, flags)
-
-    local compflags = flags
-
-    local _pdbflags = _g._pdbflags or hashset.of("-ZI", "-Zi", "/ZI", "/Zi")
-    _g._pdbflags = _pdbflags
-
-    -- check if we need -Fd flags
-    local need_pdb = false
-    local has_pdb = false
-    for _, flag in ipairs(flags) do
-        if _pdbflags:has(flag) then
-            need_pdb = true
-        end
-        if flag:find("-Fd", 1, true) or flag:find("/Fd", 1, true) then
-            has_pdb = true
-        end
-        if need_pdb and has_pdb then
-            break
-        end
-    end
-
-    -- add pdb output
-    if need_pdb and not has_pdb then
-        compflags = table.join(flags, "-Fd" .. objectfile .. ".pdb")
-    end
-
-    return compflags
-end
-
 -- make the complie arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
-    local pchflags = {}
     -- remove "-Yuxxx.h" and "-Fpxxx.pch"
+    local pchflags = {}
     for _, flag in ipairs(flags) do
         if not flag:find("-Yu", 1, true) and not flag:find("-Fp", 1, true) then
             table.insert(pchflags, flag)
@@ -374,8 +362,6 @@ end
 
 -- make the complie arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
-
-    flags = _patch_pdbflags(objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
@@ -428,7 +414,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 local results = ""
                 for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
                     line = line:rtrim()
-                    if not _include_note(self, line) then 
+                    if not _include_note(self, line) then
                         results = results .. line .. "\r\n"
                     end
                 end
