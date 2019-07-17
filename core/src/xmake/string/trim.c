@@ -22,8 +22,8 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                 "trim"
-#define TB_TRACE_MODULE_DEBUG                (0)
+#define TB_TRACE_MODULE_NAME                "trim"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -34,7 +34,7 @@
  * privates
  */
 
-static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const** pestr, tb_int64_t mode)
+static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const** pestr, tb_int_t mode)
 {
     // check
     tb_assert(psstr && pestr && *psstr && *pestr);
@@ -111,7 +111,7 @@ tb_int_t xm_string_trim(lua_State* lua)
     tb_char_t const* sstr      = luaL_checklstring(lua, 1, &lstr);
     tb_char_t const* estr      = sstr + lstr;
     tb_char_t const* trimchars = luaL_optlstring(lua, 2, "", &ltrim);
-    tb_int64_t const trimtype  = (tb_int64_t)luaL_optinteger(lua, 3, 0);
+    tb_int_t const   trimtype  = (tb_int_t)luaL_optinteger(lua, 3, 0);
     do
     {
         tb_assert_and_check_break(sstr && trimchars);
@@ -136,7 +136,7 @@ tb_int_t xm_string_trim(lua_State* lua)
         lua_pushlstring(lua, sstr, estr - sstr);
         return 1;
 
-    } while (tb_false);
+    } while (0);
 
     // return orignal value
     lua_settop(lua, 1);
