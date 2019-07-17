@@ -78,3 +78,16 @@ rule("cuda.env")
         target:add("includedirs", cuda.includedirs)
     end)
 
+    before_run(function (target)
+        import("core.project.config")
+        import("lib.detect.find_tool")
+
+        local debugger = config.get("debugger")
+        if not debugger then
+            local cudagdb = find_tool("cudagdb")
+            if cudagdb then
+                config.set("debugger", cudagdb.program)
+            end
+        end
+    end)
+

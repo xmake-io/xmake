@@ -14,14 +14,14 @@
 -- 
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
--- @author      ruki
--- @file        find_nvcc.lua
+-- @author      OpportunityLiu
+-- @file        find_cudamemcheck.lua
 --
 
 -- imports
 import("private.detect.find_cudatool")
 
--- find nvcc 
+-- find cudamemcheck
 --
 -- @param opt   the argument options, .e.g {version = true}
 --
@@ -29,11 +29,11 @@ import("private.detect.find_cudatool")
 --
 -- @code 
 --
--- local nvcc = find_nvcc()
--- local nvcc, version = find_nvcc({program = "nvcc", version = true})
--- 
+-- local cudamemcheck = find_cudamemcheck()
+-- local cudamemcheck, version = find_cudamemcheck({program = "cuda-memcheck", version = true})
+--
 -- @endcode
 --
 function main(opt)
-    return find_cudatool("nvcc", "V(%d+%.?%d*%.?%d*.-)%s", opt)
+    return find_cudatool("cuda-memcheck", "version (%d+%.?%d*%.?%d*.-)", opt)
 end
