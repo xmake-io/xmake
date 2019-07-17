@@ -541,7 +541,7 @@ function os.runv(program, argv, opt)
     if ok ~= 0 then
 
         -- make errors
-        local errors = io.readfile(log)
+        local errors = io.readfile(logfile)
         if not errors or #errors == 0 then
             if argv ~= nil then
                 errors = string.format("runv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
