@@ -163,10 +163,11 @@ end
 function path.joinenv(env_table)
 
     -- check
-    env_table = env_table or {}
+    if not env_table or #env_table == 0 then
+        return ""
+    end
 
     local envsep = path.envsep()
-
     if xmake._HOST == "windows" then
         local tab = {}
         for _, v in ipairs(env_table) do
@@ -181,8 +182,6 @@ function path.joinenv(env_table)
     else
         return table.concat(env_table, envsep)
     end
-
-    return result
 end
 
 -- the last character is the path seperator?

@@ -950,7 +950,7 @@ function os.setenv(name, ...)
         -- keep compatible with original implementation
         return os._setenv(name, values[1] or "")
     else
-        return os._setenv(path.joinenv(values))
+        return os._setenv(name, path.joinenv(values))
     end
 end
 
