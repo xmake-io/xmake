@@ -183,8 +183,9 @@ fi
     if   [[ "$SHELL" = */zsh ]]; then write_profile ~/.zshrc
     elif [[ "$SHELL" = */ksh ]]; then write_profile ~/.kshrc
     elif [[ "$SHELL" = */bash ]]; then write_profile ~/.bashrc
+    else write_profile ~/.bash_profile 
     fi
-    write_profile ~/.bash_profile 
+    
 }
 install_profile
 if xmake --version >/dev/null 2>&1; then xmake --version; else
