@@ -145,14 +145,14 @@
       Include="$(MSBuildProjectDirectory)\Xmake.Custom.props" />
     <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.targets')"
       Include="$(MSBuildProjectDirectory)\Xmake.Custom.targets" />
-    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files')"
-      Include="$(MSBuildProjectDirectory)\Xmake.Custom.files" />
-    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files.filters')"
-      Include="$(MSBuildProjectDirectory)\Xmake.Custom.files.filters" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.items" />
+    <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items.filters')"
+      Include="$(MSBuildProjectDirectory)\Xmake.Custom.items.filters" />
     <None Condition="'$(XmakeScriptDir)' != '$(XmakeProjectDir)' And Exists('$(XmakeScriptDir)\xmake.lua')"
       Include="$(XmakeScriptDir)\xmake.lua" />
   </ItemGroup>
   
-  <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.files')"
-    Project="$(MSBuildProjectDirectory)\Xmake.Custom.files" />
+  <Import Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.items')"
+    Project="$(MSBuildProjectDirectory)\Xmake.Custom.items" />
 </Project>

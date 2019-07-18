@@ -21,10 +21,10 @@
     <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.targets">
       <Filter>Properties</Filter>
     </None>
-    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.files">
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.items">
       <Filter>Properties</Filter>
     </None>
-    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.files.filters">
+    <None Include="$(MSBuildProjectDirectory)\Xmake.Custom.items.filters">
       <Filter>Properties</Filter>
     </None>
     <None Include="$(XmakeScriptDir)\xmake.lua">

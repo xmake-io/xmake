@@ -32,8 +32,8 @@ local template_fil = path.join(template_root, "vcxproj.filters", "#target#.vcxpr
 local template_usr = path.join(template_root, "#target#.vcxproj.user")
 local template_props = path.join(template_root, "Xmake.Custom.props")
 local template_targets = path.join(template_root, "Xmake.Custom.targets")
-local template_files = path.join(template_root, "Xmake.Custom.files")
-local template_filefil = path.join(template_root, "Xmake.Custom.files.filters")
+local template_items = path.join(template_root, "Xmake.Custom.items")
+local template_itemfil = path.join(template_root, "Xmake.Custom.items.filters")
 
 function _filter_files(files, exts)
     local extset = hashset.from(exts)
@@ -160,8 +160,8 @@ function make(version)
             -- add project custom file
             _trycp(template_props, proj_dir)
             _trycp(template_targets, proj_dir)
-            _trycp(template_files, proj_dir)
-            _trycp(template_filefil, proj_dir)
+            _trycp(template_items, proj_dir)
+            _trycp(template_itemfil, proj_dir)
             -- add project user file
             _trycp(template_usr, proj_dir, target .. ".vcxproj.user")
         end

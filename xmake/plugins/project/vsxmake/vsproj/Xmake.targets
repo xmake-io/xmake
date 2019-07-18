@@ -139,6 +139,7 @@ MSBuild Properties:
     PreprocessorDefinitions: %(ClCompile.PreprocessorDefinitions)
     LanguageStandard: %(ClCompile.LanguageStandard)
     SelectedFiles: $(SelectedFiles)
+    VCTargetsPath: $(VCTargetsPath)
     " Importance="High" />
   </Target>
 
@@ -177,11 +178,17 @@ MSBuild Properties:
 
   <Target Name="BeforeBuildFiles" />
   <Target Name="AfterBuildFiles" />
-  <Target Name="ClCompile">
+  <Target Name="BuildFiles" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
     <CallTarget Targets="BeforeBuildFiles" />
     <CallTarget Targets="_XmakeConfig;_XmakeBuildFile" />
     <CallTarget Targets="AfterBuildFiles" />
+  </Target>
+  <Target Name="ClCompile">
+    <CallTarget Targets="BuildFiles" />
+  </Target>
+  <Target Name="CudaBuild">
+    <CallTarget Targets="BuildFiles" />
   </Target>
 
   <ImportGroup Label="CustomTargets">
