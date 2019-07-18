@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("build")
+import("build_files")
 import("cleaner")
 import("trybuild")
 import("statistics")
@@ -56,7 +57,12 @@ function main()
     try
     {
         function ()
-            build(targetname) 
+            local sourcefiles = option.get("files")
+            if sourcefiles then
+                build_files(targetname, sourcefiles)
+            else
+                build(targetname) 
+            end
         end,
 
         catch 
