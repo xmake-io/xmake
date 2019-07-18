@@ -433,14 +433,14 @@ function option.find(argv, name, shortname)
         if nextvalue then return arg end
 
         -- --name=value?
-        if name and arg:startswith("--" .. name) then
+        if name and arg:startswith("--" .. name .. "=") then
                     
             -- get value
             local i = arg:find("=", 1, true)
             if i then return arg:sub(i + 1) end
 
         -- -shortname value?
-        elseif shortname and arg:startswith("-" .. shortname) then
+        elseif shortname and arg == ("-" .. shortname) then
  
             -- get value
             nextvalue = true
