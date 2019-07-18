@@ -97,14 +97,14 @@ task("config")
 
                 ,   {category = "Cross Complation Configuration"}
                 ,   {nil, "cross",      "kv", nil,          "The Cross Toolchains Prefix"   
-                                                          , ".e.g"
+                                                          , "e.g."
                                                           , "    - i386-mingw32-"
                                                           , "    - arm-linux-androideabi-"                                  }
                 ,   {nil, "bin",        "kv", nil,          "The Cross Toolchains Bin Directory" 
-                                                          , ".e.g"
+                                                          , "e.g."
                                                           , "    - sdk/bin (/arm-linux-gcc ..)"                             }
                 ,   {nil, "sdk",        "kv", nil,          "The Cross SDK Directory" 
-                                                          , ".e.g"
+                                                          , "e.g."
                                                           , "    - sdk/bin"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
