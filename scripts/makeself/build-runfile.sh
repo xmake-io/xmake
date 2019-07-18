@@ -1,6 +1,7 @@
 #! /bin/bash
 
 cd "$(dirname "$0")/../.."
+xmakeroot=`pwd`
 
 # prepare files to pack
 mkdir -p /tmp/xmake-makeself/xmake
@@ -18,4 +19,4 @@ sh ./makeself-2.4.0.run
 # make runfile
 ./makeself-2.4.0/makeself.sh --lsm ./xmake/scripts/makeself/lsm --help-header ./xmake/scripts/makeself/header ./xmake xmake.run xmake ./scripts/get.sh __local__
 
-cp xmake.run "$(dirname "$0")"
+cp xmake.run $xmakeroot/scripts/makeself
