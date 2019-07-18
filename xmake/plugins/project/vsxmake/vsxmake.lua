@@ -23,6 +23,7 @@ import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
+import("core.project.config")
 
 local template_root = path.join(os.scriptdir(), "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")

@@ -22,6 +22,7 @@
 import("impl.vs200x")
 import("impl.vs201x")
 import("impl.vsinfo")
+import("core.project.config")
 
 -- make factory
 function make(version)
@@ -34,7 +35,7 @@ function make(version)
     -- get vs version info
     local info = vsinfo(version)
 
-    if vsver < 2010 then
+    if version < 2010 then
         return function(outputdir)
             vs200x.make(outputdir, info)
         end
