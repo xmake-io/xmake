@@ -34,6 +34,7 @@
 
     <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)xmake.exe'))"</_XmakeExecutable>
     <_XmakeEnv>
+      chcp 65001 &gt; NUL
       pushd "$(XmakeProjectDir)"
       set XMAKE_CONFIGDIR=$(XmakeConfigDir)
       set XMAKE_PROGRAM_DIR=$(XmakeProgramDir)
@@ -54,36 +55,36 @@
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
-    <Exec Command="$(_XmakeEnv)
-      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true"/>
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeReconfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
-    <Exec Command="$(_XmakeEnv)
-      $(_XmakeExecutable) config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true"/>
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" />
-    <Exec Command="$(_XmakeEnv)
-      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true"/>
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeBuildFile" DependsOnTargets="_XmakeProjCheck">
     <ItemGroup>
-      <SelectedFile Include="$(SelectedFiles)"/>
-      <File Include="$([MSBuild]::MakeRelative('$(XmakeProjectDir)', $([System.IO.Path]::GetFullPath('%(SelectedFile.Identity)'))))"/>
+      <SelectedFile Include="$(SelectedFiles)" />
+      <File Include="$([MSBuild]::MakeRelative('$(XmakeProjectDir)', $([System.IO.Path]::GetFullPath('%(SelectedFile.Identity)'))))" />
     </ItemGroup>
     <PropertyGroup>
       <FileList>@(File)</FileList>
       <FileFlag>--files="$(FileList)"</FileFlag>
     </PropertyGroup>
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(FileFlag) $(XmakeTarget)" Importance="High" />
-    <Exec Command="$(_XmakeEnv)
-      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(FileFlag) $(XmakeTarget)" EchoOff="true"/>
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(FileFlag) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeClean" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake clean $(_XmakeCommonFlags) -a $(_XmakeCleanFlags) $(XmakeTarget)" Importance="High" />
-    <Exec Command="$(_XmakeEnv)
-      $(_XmakeExecutable) clean $(_XmakeCommonFlags) -a $(_XmakeCleanFlags) $(XmakeTarget)" EchoOff="true"/>
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) clean $(_XmakeCommonFlags) -a $(_XmakeCleanFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
 
   <Target Name="Show">
