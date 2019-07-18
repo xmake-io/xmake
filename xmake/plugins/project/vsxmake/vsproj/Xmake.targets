@@ -35,8 +35,8 @@
     <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)xmake.exe'))"</_XmakeExecutable>
     <_XmakeEnv>
       chcp 65001 &gt; NUL
-      set XMAKE_CONFIGDIR=$(XmakeConfigDir)
-      set XMAKE_PROGRAM_DIR=$(XmakeProgramDir)
+      set XMAKE_CONFIGDIR=$(XmakeConfigDir.TrimEnd('/\'.ToCharArray()))
+      set XMAKE_PROGRAM_DIR=$(XmakeProgramDir.TrimEnd('/\'.ToCharArray()))
     </_XmakeEnv>
   </PropertyGroup>
 
