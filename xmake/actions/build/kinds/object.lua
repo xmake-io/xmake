@@ -86,6 +86,7 @@ end
 function _do_build_file(target, sourcefile, opt)
 
     -- get build info
+    local buildinfo  = _g.buildinfo
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local sourcekind = opt.sourcekind
@@ -120,9 +121,9 @@ function _do_build_file(target, sourcefile, opt)
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${dim color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+        cprint("${dim color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
     else
-        cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
     end
 
     -- trace verbose info
@@ -153,7 +154,7 @@ function _build_object(target, buildinfo, index, sourcebatch)
     local sourcekind = sourcebatch.sourcekind
 
     -- calculate progress
-    local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+    local progress = ((buildinfo.targetindex + (buildinfo.sourceindex + index - 1) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
 
     -- init build option
     local opt = {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress}
@@ -215,14 +216,14 @@ function _build_files_for_single(target, sourcebatch, jobs)
     for index, sourcefile in ipairs(sourcefiles) do
 
         -- calculate progress
-        local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+        local progress = ((buildinfo.targetindex + (buildinfo.sourceindex + index - 1) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
 
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
         if verbose then
-            cprint("${dim color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+            cprint("${dim color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
         else
-            cprint("${color.build.object}%scompiling.$(mode) %s", _g.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
         end
     end
 
@@ -235,39 +236,11 @@ function _build_files_for_single(target, sourcebatch, jobs)
     compiler.compile(sourcefiles, objectfiles, {dependfiles = dependfiles, target = target, sourcekind = sourcekind})
 end
 
--- build precompiled header files (only for c/c++)
-function _build_pcheaderfiles(target)
-
-    -- for c/c++
-    local buildinfo = _g.buildinfo
-    for _, langkind in ipairs({"c", "cxx"}) do
-
-        -- get the precompiled header
-        local pcheaderfile = target:pcheaderfile(langkind)
-        if pcheaderfile then
-
-            -- init sourcefile, objectfile and dependfile
-            local sourcefile = pcheaderfile
-            local objectfile = target:pcoutputfile(langkind)
-            local dependfile = target:dependfile(objectfile)
-            local sourcekind = language.langkinds()[langkind]
-
-            -- init source batch
-            local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-
-            -- build this precompiled header
-            _build_object(target, buildinfo, 1, sourcebatch, false)
-        end
-    end
-end
-
 -- build source files with the custom rule
 function _build_files_for_rule(target, sourcebatch, jobs, suffix)
 
     -- the rule name
     local rulename = sourcebatch.rulename
-
-    -- get build info
     local buildinfo = _g.buildinfo
 
     -- get rule instance
@@ -279,7 +252,7 @@ function _build_files_for_rule(target, sourcebatch, jobs, suffix)
     if on_build_files then
 
         -- calculate progress
-        local progress = (buildinfo.targetindex + _g.sourceindex / _g.sourcecount) * 100 / buildinfo.targetcount
+        local progress = (buildinfo.targetindex + buildinfo.sourceindex / buildinfo.sourcecount) * 100 / buildinfo.targetcount
 
         -- do build files
         on_build_files(target, sourcebatch, {jobs = jobs, progress = progress})
@@ -296,9 +269,9 @@ function _build_files_for_rule(target, sourcebatch, jobs, suffix)
                 os.cd(curdir)
 
                 -- calculate progress
-                local progress = ((buildinfo.targetindex + (_g.sourceindex + index - 1) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                local progress = ((buildinfo.targetindex + (buildinfo.sourceindex + index - 1) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
                 if suffix then
-                    progress = ((buildinfo.targetindex + (suffix == "before" and _g.sourceindex or _g.sourcecount) / _g.sourcecount) * 100 / buildinfo.targetcount)
+                    progress = ((buildinfo.targetindex + (suffix == "before" and buildinfo.sourceindex or buildinfo.sourcecount) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
                 end
 
                 -- get source file
@@ -331,7 +304,7 @@ function _build_files(target, sourcebatch, jobs)
 
     -- calculate progress
     local buildinfo = _g.buildinfo
-    local progress = (buildinfo.targetindex + _g.sourceindex / _g.sourcecount) * 100 / buildinfo.targetcount
+    local progress = (buildinfo.targetindex + buildinfo.sourceindex / buildinfo.sourcecount) * 100 / buildinfo.targetcount
 
     -- init build option
     local opt = {jobs = jobs, progress = progress}
@@ -353,7 +326,7 @@ function _build_files(target, sourcebatch, jobs)
     end
 
     -- update object index
-    _g.sourceindex = _g.sourceindex + #sourcebatch.sourcefiles
+    buildinfo.sourceindex = buildinfo.sourceindex + #sourcebatch.sourcefiles
 
     -- do after build
     local after_build_files = target:script("build_files_after")
@@ -362,44 +335,76 @@ function _build_files(target, sourcebatch, jobs)
     end
 end
 
--- build objects for the given target
-function build(target, buildinfo)
+-- build precompiled header files (only for c/c++)
+function _build_pcheaderfiles(target, buildinfo)
 
-    -- init source index and count
-    _g.sourceindex = 0
-    _g.sourcecount = target:sourcecount()
+    -- for c/c++
+    for _, langkind in ipairs({"c", "cxx"}) do
 
-    -- init build info
-    _g.buildinfo = buildinfo
+        -- get the precompiled header
+        local pcheaderfile = target:pcheaderfile(langkind)
+        if pcheaderfile then
+
+            -- init sourcefile, objectfile and dependfile
+            local sourcefile = pcheaderfile
+            local objectfile = target:pcoutputfile(langkind)
+            local dependfile = target:dependfile(objectfile)
+            local sourcekind = language.langkinds()[langkind]
+
+            -- init source batch
+            local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
+
+            -- build this precompiled header
+            _build_object(target, buildinfo, 1, sourcebatch, false)
+        end
+    end
+end
+
+-- build source files
+function build_sourcefiles(target, buildinfo, sourcebatches)
 
     -- get the max job count
     local jobs = tonumber(option.get("jobs") or "4")
 
-    -- get ccache
-    if config.get("ccache") then
-        _g.ccache = find_ccache()
-    end
+    -- save buildinfo
+    _g.buildinfo = buildinfo
 
     -- build source batches with custom rules before building other sources
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in pairs(sourcebatches) do
         if sourcebatch.rulename then
             _build_files_for_rule(target, sourcebatch, jobs, "before")
         end
     end
 
-    -- build precompiled headers
-    _build_pcheaderfiles(target)
-
     -- build source batches
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in pairs(sourcebatches) do
         _build_files(target, sourcebatch, jobs)
     end
 
     -- build source batches with custom rules after building other sources
-    for _, sourcebatch in pairs(target:sourcebatches()) do
+    for _, sourcebatch in pairs(sourcebatches) do
         if sourcebatch.rulename then
             _build_files_for_rule(target, sourcebatch, jobs, "after")
         end
     end
+end
+
+-- build objects for the given target
+function build(target, buildinfo)
+
+    -- init source index and count
+    buildinfo.sourceindex = 0
+    buildinfo.sourcecount = target:sourcecount()
+
+    -- init ccache
+    if config.get("ccache") and buildinfo.ccache == nil then
+        buildinfo.ccache = find_ccache()
+    end
+
+    -- build precompiled headers
+    _build_pcheaderfiles(target, buildinfo)
+
+    -- build source files
+    build_sourcefiles(target, buildinfo, target:sourcebatches())
 end
 
