@@ -184,10 +184,14 @@ MSBuild Properties:
     <CallTarget Targets="_XmakeConfig;_XmakeBuildFile" />
     <CallTarget Targets="AfterBuildFiles" />
   </Target>
-  <Target Name="ClCompile">
+  <!-- override default compile commands -->
+  <Target Name="ClCompile" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="BuildFiles" />
   </Target>
-  <Target Name="CudaBuild">
+  <Target Name="ResourceCompile" Condition="'$(DesignTimeBuild)' != 'true'">
+    <CallTarget Targets="BuildFiles" />
+  </Target>
+  <Target Name="CudaBuild" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="BuildFiles" />
   </Target>
 
