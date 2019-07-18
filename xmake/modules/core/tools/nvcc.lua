@@ -63,7 +63,7 @@ function nf_symbol(self, level, target)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
-        flags = "-g -G"
+        flags = "-g -lineinfo"
         if is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
