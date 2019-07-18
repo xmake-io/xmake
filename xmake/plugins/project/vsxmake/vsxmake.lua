@@ -129,6 +129,11 @@ end
 -- make
 function make(version)
 
+    if not version then
+        version = assert(tonumber(config.get("vs")), "invalid vs version, run `xmake f --vs=2015`")
+        vprint("using project kind vsxmake%d", version)
+    end
+
     -- check
     if version < 2010 then
         raise("vsxmake does not support vs version lower than 2010")
