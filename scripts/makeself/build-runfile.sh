@@ -17,6 +17,6 @@ wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makese
 sh ./makeself-2.4.0.run
 
 # make runfile
-./makeself-2.4.0/makeself.sh --lsm ./xmake/scripts/makeself/lsm --help-header ./xmake/scripts/makeself/header ./xmake xmake.run xmake ./scripts/get.sh __local__
+./makeself-2.4.0/makeself.sh --sha256 --lsm ./xmake/scripts/makeself/lsm --help-header ./xmake/scripts/makeself/header ./xmake xmake.run xmake ./scripts/get.sh __local__
 
 cp xmake.run $xmakeroot/scripts/makeself
