@@ -1,4 +1,4 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
 # path constants
 cd "$(dirname "$0")/../.."
@@ -20,13 +20,13 @@ git clean -dfX
 mkdir -p $temproot/xmake/scripts
 cd $temproot/xmake-repo
 cp -r ./core $temproot/xmake
-rm -rf ./core/src/tbox/tbox/src/demo
-rm -rf ./core/src/pdcurses
 cp -r ./xmake $temproot/xmake
 cp ./scripts/get.sh $temproot/xmake/scripts
 cp ./*.md $temproot/xmake
 cp makefile $temproot/xmake
 cd $temproot/xmake
+rm -rf ./core/src/tbox/tbox/src/demo
+rm -rf ./core/src/pdcurses
 
 # prepare info texts
 cd $temproot
@@ -43,6 +43,7 @@ sh ./makeself-2.4.0.run
     --sha256 \
     --lsm ./lsm \
     --help-header ./header \
-    ./xmake $buildroot/xmake.run \
-    xmake-v$version \
+    ./xmake \
+    $buildroot/xmake.run \
+    xmake-v$version-runfile \
     ./scripts/get.sh __local__
