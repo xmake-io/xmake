@@ -1,4 +1,4 @@
-#! /usr/bin/pwsh
+#!/usr/bin/env pwsh
 #Requires -version 5
 
 # xmake getter
