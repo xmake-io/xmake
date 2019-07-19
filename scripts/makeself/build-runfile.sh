@@ -15,6 +15,7 @@ mkdir -p $temproot
 cp -Tr $xmakeroot $temproot/xmake-repo
 cd $temproot/xmake-repo
 git clean -dfX
+git submodule foreach git clean -dfX
 
 #   copy files to temproot/xmake
 mkdir -p $temproot/xmake/scripts
