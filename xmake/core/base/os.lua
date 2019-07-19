@@ -208,7 +208,7 @@ function os.match(pattern, mode, callback)
 
     -- get the excludes
     local excludes = pattern:match("|.*$")
-    if excludes then excludes = excludes:split("|") end
+    if excludes then excludes = excludes:split("|", {plain = true}) end
 
     -- translate excludes
     if excludes then
