@@ -35,6 +35,6 @@ sh ./makeself-2.4.0.run
     --sha256 \
     --lsm ./lsm \
     --help-header ./header \
-    ./xmake $xmakeroot/scripts/makeself/xmake.run \
-    xmake \
+    ./xmake $buildroot/xmake.run \
+    xmake-v$version \
     ./scripts/get.sh __local__
