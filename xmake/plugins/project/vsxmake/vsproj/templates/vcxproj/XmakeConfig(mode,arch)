@@ -1,13 +1,13 @@
-    <PropertyGroup Label="XmakeConfig" Condition="'$(Configuration)|$(Platform)'=='#mode#|#vsarch#'">
-        <XmakeBasename>#basename#</XmakeBasename>
-        <XmakeFilename>#filename#</XmakeFilename>
-        <XmakeMode>#mode#</XmakeMode>
-        <XmakePlat>#plat#</XmakePlat>
-        <XmakeArch>#arch#</XmakeArch>
-        <XmakeKind>#kind#</XmakeKind>
-        <XmakeDefines>#defines#</XmakeDefines>
-        <XmakeLanguages>#languages#</XmakeLanguages>
-        <XmakeCudaVersion>#cudaver#</XmakeCudaVersion>
-        <XmakeMfcKind>#mfckind#</XmakeMfcKind>
-        <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
-    </PropertyGroup>
+  <PropertyGroup Label="XmakeConfig" Condition="'$(Configuration)|$(Platform)'=='#mode#|#vsarch#'">
+    <XmakeBasename>#basename#</XmakeBasename>
+    <XmakeFilename>#filename#</XmakeFilename>
+    <XmakeMode>#mode#</XmakeMode>
+    <XmakePlat>#plat#</XmakePlat>
+    <XmakeArch>#arch#</XmakeArch>
+    <XmakeKind>#kind#</XmakeKind>
+    <XmakeDefines>#defines#</XmakeDefines>
+    <XmakeLanguages>#languages#</XmakeLanguages>
+    <XmakeCudaVersion>#cudaver#</XmakeCudaVersion>
+    <XmakeMfcKind>#mfckind#</XmakeMfcKind>
+    <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
+  </PropertyGroup>

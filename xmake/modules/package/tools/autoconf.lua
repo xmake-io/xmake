@@ -106,8 +106,8 @@ function buildenvs(package)
             table.insert(ACLOCAL_PATH, aclocal)
         end
     end
-    envs.ACLOCAL_PATH    = table.concat(ACLOCAL_PATH, path.envsep())
-    envs.PKG_CONFIG_PATH = table.concat(PKG_CONFIG_PATH, path.envsep())
+    envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
+    envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
     return envs
 end
 

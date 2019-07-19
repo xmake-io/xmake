@@ -380,8 +380,8 @@ function builder:_add_flags_from_language(flags, target, getters)
     {
         config      =   function (name)
                             local values = config.get(name)
-                            if values and name:endswith("dirs") then 
-                                values = values:split(path.envsep(), {plain = true})
+                            if values and name:endswith("dirs") then
+                                values = path.splitenv(values)
                             end
                             return values
                         end

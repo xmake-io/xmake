@@ -20,16 +20,28 @@
 
 -- imports
 import("impl.vs200x")
+import("impl.vs201x")
 import("impl.vsinfo")
+import("core.project.config")
 
 -- make factory
 function make(version)
 
+    if not version then
+        version = assert(tonumber(config.get("vs")), "invalid vs version, run `xmake f --vs=2015`")
+        vprint("using project kind vs%d", version)
+    end
+
     -- get vs version info
     local info = vsinfo(version)
 
-    -- make
-    return function(outputdir)
-        vs200x.make(outputdir, info)
+    if version < 2010 then
+        return function(outputdir)
+            vs200x.make(outputdir, info)
+        end
+    else
+        return function(outputdir)
+            vs201x.make(outputdir, info)
+        end
     end
 end

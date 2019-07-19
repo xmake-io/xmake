@@ -31,6 +31,31 @@ import("lib.detect.find_tool")
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 
+-- escape special chars in msbuild file
+function _escape(str)
+    if not str then
+        return nil
+    end
+
+    local map =
+    {
+         ["%"] = "%25" -- Referencing metadata
+    ,    ["$"] = "%24" -- Referencing properties
+    ,    ["@"] = "%40" -- Referencing item lists
+    ,    ["'"] = "%27" -- Conditions and other expressions
+    ,    [";"] = "%3B" -- List separator
+    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
+    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
+    -- html entities
+    ,    ["\""] = "&quot;"
+    ,    ["<"] = "&lt;"
+    ,    [">"] = "&gt;"
+    ,    ["&"] = "&amp;"
+    }
+
+    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
+end
+
 function _make_dirs(dir)
     if dir == nil then
         return ""
@@ -42,36 +67,78 @@ function _make_dirs(dir)
         end
         if path.is_absolute(dir) then
             if dir:startswith(project.directory()) then
-                return path.join("$(XmakeProjectDir)", path.relative(dir, project.directory()))
+                return path.join("$(XmakeProjectDir)", _escape(path.relative(dir, project.directory())))
             end
-            return dir
+            return _escape(dir)
         end
-        return path.join("$(XmakeProjectDir)", dir)
+        return path.join("$(XmakeProjectDir)", _escape(dir))
     end
     local r = {}
     for k, v in ipairs(dir) do
         r[k] = _make_dirs(v)
     end
     r = table.unique(r)
-    return table.concat(r, path.envsep())
+    return table.concat(r, ";")
+end
+
+function _make_arrs(arr)
+    if arr == nil then
+        return ""
+    end
+    if type(arr) == "string" then
+        return _escape(arr)
+    end
+    local r = {}
+    for k, v in ipairs(arr) do
+        r[k] = _make_arrs(v)
+    end
+    r = table.unique(r)
+    return table.concat(r, ";")
 end
 
 function _get_values(target, name)
     local values = table.wrap(target:get(name))
+
+    -- from deps
     for _, dep in irpairs(target:orderdeps()) do
         local depinherit = target:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, {interface = true}))
         end
     end
-    return values
+
+    -- from opts
+    for _, opt in ipairs(target:orderopts()) do
+        table.join2(values, table.wrap(opt:get(name)))
+    end
+
+    -- from packages
+    for _, pkg in ipairs(target:orderpkgs()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = target:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+
+    return table.unique(values)
 end
 
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
     -- init target info
-    local targetinfo = { mode = mode, arch = arch, plat = config.get("plat"), vsarch = (arch == "x86" and "Win32" or arch) }
+    local targetinfo =
+    {
+        mode = mode
+    ,   arch = arch
+    ,   plat = config.get("plat")
+    ,   vsarch = (arch == "x86" and "Win32" or arch)
+    }
 
     -- write only if not default
     -- use target:get("xxx") rather than target:xxx()
@@ -80,8 +147,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.kind          = target:get("kind")
 
     -- save target file
-    targetinfo.basename      = target:get("basename")
-    targetinfo.filename      = target:get("filename")
+    targetinfo.basename      = _escape(target:get("basename"))
+    targetinfo.filename      = _escape(target:get("filename"))
 
     -- save dirs
     targetinfo.targetdir     = _make_dirs(target:get("targetdir"))
@@ -93,8 +160,8 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.linkdirs      = _make_dirs(_get_values(target, "linkdirs"))
 
     -- save defines
-    targetinfo.defines       = table.concat(_get_values(target, "defines"), ";")
-    targetinfo.languages     = table.concat(_get_values(target, "languages"), ";")
+    targetinfo.defines       = _make_arrs(_get_values(target, "defines"))
+    targetinfo.languages     = _make_arrs(_get_values(target, "languages"))
 
     -- save runenvs
     local runenvs = {}
@@ -103,7 +170,7 @@ function _make_targetinfo(mode, arch, target)
         for _, d in ipairs(v) do
             table.insert(defs, vformat(d))
         end
-        table.insert(runenvs, format("%s=%s", k, table.concat(defs, path.envsep())))
+        table.insert(runenvs, format("%s=%s", k, path.joinenv(defs)))
     end
     targetinfo.runenvs = table.concat(runenvs, "\n")
 
@@ -129,7 +196,10 @@ function _make_vsinfo_modes()
     local vsinfo_modes = {}
     local modes = option.get("modes")
     if modes then
-        for _, mode in ipairs(modes:split(',')) do
+        if not modes:find("\"") then
+            modes = modes:gsub(",", path.envsep())
+        end
+        for _, mode in ipairs(path.splitenv(modes)) do
             table.insert(vsinfo_modes, mode:trim())
         end
     else
@@ -145,7 +215,10 @@ function _make_vsinfo_archs()
     local vsinfo_archs = {}
     local archs = option.get("archs")
     if archs then
-        for _, arch in ipairs(archs:split(',')) do
+        if not archs:find("\"") then
+            archs = archs:gsub(",", path.envsep())
+        end
+        for _, arch in ipairs(path.splitenv(archs)) do
             table.insert(vsinfo_archs, arch:trim())
         end
     else
@@ -266,14 +339,14 @@ function main(outputdir, vsinfo)
             local dir = path.directory(f)
             target._sub2[f] =
             {
-                path = path.join("$(XmakeProjectDir)", f),
-                dir = dir
+                path = _escape(f),
+                dir = _escape(dir)
             }
             while dir ~= "." do
                 if not dirs[dir] then
                     dirs[dir] =
                     {
-                        dir = dir,
+                        dir = _escape(dir),
                         dir_id = hash.uuid(dir)
                     }
                 end

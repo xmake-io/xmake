@@ -1,27 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-    <!-- inherit parent settings -->
-    <Import Condition="Exists('$(MSBuildThisFileDirectory)\..\Xmake.Custom.targets')"
-            Project="$(MSBuildThisFileDirectory)\..\Xmake.Custom.targets" />
+  <!-- inherit parent settings -->
+  <Import Condition="Exists('$(MSBuildThisFileDirectory)\..\Xmake.Custom.targets')"
+    Project="$(MSBuildThisFileDirectory)\..\Xmake.Custom.targets" />
 
-    <!-- Override these targets to customize your build workflow -->
-    <!--
-        If you uncomment targets below,
-        targets with same name that comes from ../Xmake.Custom.targets will be overrided.
+  <!-- Override these targets to customize your build workflow -->
+  <!--
+    If you uncomment targets below,
+    targets with same name that comes from ../Xmake.Custom.targets will be overrided.
 
-        You can also define your own targets and call them like:
-            <Target Name="BeforeBuild">
-                <CallTarget Targets="CustomStep1;CustomStep2" />
-            </Target>
-        
-        To find task that you can used in custom targets,
-        see: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference
-    -->
+    You can also define your own targets and call them like:
+      <Target Name="BeforeBuild">
+        <CallTarget Targets="CustomStep1;CustomStep2" />
+      </Target>
+    
+    To find task that you can used in custom targets,
+    see: https://docs.microsoft.com/en-us/visualstudio/msbuild/msbuild-task-reference
+  -->
 
-    <!-- <Target Name="BeforeRebuild"></Target> -->
-    <!-- <Target Name="AfterRebuild"></Target> -->
-    <!-- <Target Name="BeforeBuild"></Target> -->
-    <!-- <Target Name="AfterBuild"></Target> -->
-    <!-- <Target Name="BeforeClean"></Target> -->
-    <!-- <Target Name="AfterClean"></Target> -->
+  <!-- <Target Name="BeforeRebuild"></Target> -->
+  <!-- <Target Name="AfterRebuild"></Target> -->
+  <!-- <Target Name="BeforeBuild"></Target> -->
+  <!-- <Target Name="AfterBuild"></Target> -->
+  <!-- <Target Name="BeforeClean"></Target> -->
+  <!-- <Target Name="AfterClean"></Target> -->
+  <!-- <Target Name="BeforeBuildFiles"></Target> -->
+  <!-- <Target Name="AfterBuildFiles"></Target> -->
 </Project>

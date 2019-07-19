@@ -23,6 +23,7 @@ import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
+import("core.project.config")
 
 local template_root = path.join(os.scriptdir(), "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
@@ -32,6 +33,8 @@ local template_fil = path.join(template_root, "vcxproj.filters", "#target#.vcxpr
 local template_usr = path.join(template_root, "#target#.vcxproj.user")
 local template_props = path.join(template_root, "Xmake.Custom.props")
 local template_targets = path.join(template_root, "Xmake.Custom.targets")
+local template_items = path.join(template_root, "Xmake.Custom.items")
+local template_itemfil = path.join(template_root, "Xmake.Custom.items.filters")
 
 function _filter_files(files, exts)
     local extset = hashset.from(exts)
@@ -127,12 +130,22 @@ end
 -- make
 function make(version)
 
+    if not version then
+        version = assert(tonumber(config.get("vs")), "invalid vs version, run `xmake f --vs=2015`")
+        vprint("using project kind vsxmake%d", version)
+    end
+
+    -- check
+    if version < 2010 then
+        raise("vsxmake does not support vs version lower than 2010")
+    end
+
     return function(outputdir)
         local info = getinfo(outputdir, vsinfo(version))
         local paramsprovidersln = _buildparams(info)
 
         -- write solution file
-        local sln = path.join(info.solution_dir, info.slnfile .. "_vsxmake" .. info.vstudio_version .. ".sln")
+        local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
         io.writefile(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidersln))
 
         -- add solution custom file
@@ -153,6 +166,8 @@ function make(version)
             -- add project custom file
             _trycp(template_props, proj_dir)
             _trycp(template_targets, proj_dir)
+            _trycp(template_items, proj_dir)
+            _trycp(template_itemfil, proj_dir)
             -- add project user file
             _trycp(template_usr, proj_dir, target .. ".vcxproj.user")
         end
