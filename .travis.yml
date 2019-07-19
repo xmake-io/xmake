@@ -29,4 +29,7 @@ script:
   - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake --version
   - travis_wait 60 xmake lua -v -D tests/run.lua
+  - scripts/makeself/build-runfile.sh
+  - ls -l scripts/makeself/xmake.run
+  - scripts/makeself/xmake.run --info
 

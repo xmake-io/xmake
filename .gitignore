@@ -18,6 +18,7 @@ tags
 winenv/
 *.exe
 *.zip
+*.run
 
 # Makefile generation
 /core/xmake.config.h
