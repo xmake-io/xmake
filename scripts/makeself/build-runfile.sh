@@ -8,11 +8,13 @@ temproot=/tmp/xmake-makeself
 
 # prepare files to pack
 #   clean up temproot
-rm -rf $temproot
+if [ -d $temproot ]; then
+    rm -rf $temproot
+fi
 mkdir -p $temproot
 
 #   copy xmake repo to temproot/xmake-repo, remove git ignored files
-cp -Tr $xmakeroot $temproot/xmake-repo
+cp -r $xmakeroot $temproot/xmake-repo
 cd $temproot/xmake-repo
 git clean -dfX
 git submodule foreach git clean -dfX
@@ -33,8 +35,8 @@ rm -rf ./core/src/pdcurses
 cd $temproot
 cp $buildroot/* .
 version=`cat ./xmake/core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
-sed -i "s/#xmake-version#/$version/g" ./header
-sed -i "s/#xmake-version#/$version/g" ./lsm
+perl -pi -e "s/#xmake-version#/$version/g" ./header
+perl -pi -e "s/#xmake-version#/$version/g" ./lsm
 
 # make run file
 cd $temproot
