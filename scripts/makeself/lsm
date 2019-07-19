@@ -1,6 +1,6 @@
 Begin3
 Title:          xmake
-Version:        2.7.0
+Version:        #xmake-version#
 Description:    xmake is a cross-platform build utility based on lua. 
                 The project focuses on making development and building easier and 
                 provides many features (e.g package, install, plugin, macro, action, option, task ...), 
