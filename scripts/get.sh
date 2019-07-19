@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # xmake getter
 # usage: bash <(curl -s <my location>) [[mirror:]branch] [commit/__install_only__]
@@ -183,7 +183,7 @@ fi
     if   [[ "$SHELL" = */zsh ]]; then write_profile ~/.zshrc
     elif [[ "$SHELL" = */ksh ]]; then write_profile ~/.kshrc
     elif [[ "$SHELL" = */bash ]]; then write_profile ~/.bashrc
-    else write_profile ~/.bash_profile 
+    else write_profile ~/.profile 
     fi
     
 }
