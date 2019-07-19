@@ -1,22 +1,32 @@
 #! /bin/bash
 
+# path constants
 cd "$(dirname "$0")/../.."
 xmakeroot=`pwd`
 buildroot=$xmakeroot/scripts/makeself
 temproot=/tmp/xmake-makeself
 
 # prepare files to pack
+#   clean up temproot
 rm -rf $temproot
+mkdir -p $temproot
+
+#   copy xmake repo to temproot/xmake-repo, remove git ignored files
+cp -Tr $xmakeroot $temproot/xmake-repo
+cd $temproot/xmake-repo
+git clean -dfX
+
+#   copy files to temproot/xmake
 mkdir -p $temproot/xmake/scripts
+cd $temproot/xmake-repo
 cp -r ./core $temproot/xmake
-cp ./scripts/get.sh $temproot/xmake/scripts
+rm -rf ./core/src/tbox/tbox/src/demo
+rm -rf ./core/src/pdcurses
 cp -r ./xmake $temproot/xmake
+cp ./scripts/get.sh $temproot/xmake/scripts
 cp ./*.md $temproot/xmake
 cp makefile $temproot/xmake
 cd $temproot/xmake
-rm -rf ./core/.xmake ./core/build
-rm -rf ./core/src/tbox/tbox/src/demo
-rm -rf ./core/src/pdcurses
 
 # prepare info texts
 cd $temproot
@@ -25,12 +35,10 @@ version=`cat ./xmake/core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\
 sed -i "s/#xmake-version#/$version/g" ./header
 sed -i "s/#xmake-version#/$version/g" ./lsm
 
-# install makeself
+# make run file
 cd $temproot
 wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -O ./makeself-2.4.0.run
 sh ./makeself-2.4.0.run
-
-# make runfile
 ./makeself-2.4.0/makeself.sh \
     --sha256 \
     --lsm ./lsm \
