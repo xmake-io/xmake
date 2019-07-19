@@ -145,9 +145,10 @@ function _do_build_file(target, sourcefile, opt)
 end
 
 -- build object
-function _build_object(target, buildinfo, index, sourcebatch)
+function _build_object(target, index, sourcebatch)
 
     -- get the object and source with the given index
+    local buildinfo = _g.buildinfo
     local sourcefile = sourcebatch.sourcefiles[index]
     local objectfile = sourcebatch.objectfiles[index]
     local dependfile = sourcebatch.dependfiles[index]
@@ -187,14 +188,13 @@ function _build_files_for_each(target, sourcebatch, jobs)
 
     -- run build jobs for each source file 
     local curdir = os.curdir()
-    local buildinfo = _g.buildinfo
     process.runjobs(function (index)
 
         -- force to set the current directory first because the other jobs maybe changed it
         os.cd(curdir)
 
         -- build object
-        _build_object(target, buildinfo, index, sourcebatch)
+        _build_object(target, index, sourcebatch)
 
     end, #sourcebatch.sourcefiles, jobs)
 end
@@ -339,6 +339,7 @@ end
 function _build_pcheaderfiles(target, buildinfo)
 
     -- for c/c++
+    _g.buildinfo = buildinfo
     for _, langkind in ipairs({"c", "cxx"}) do
 
         -- get the precompiled header
@@ -355,7 +356,7 @@ function _build_pcheaderfiles(target, buildinfo)
             local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
 
             -- build this precompiled header
-            _build_object(target, buildinfo, 1, sourcebatch, false)
+            _build_object(target, 1, sourcebatch, false)
         end
     end
 end
