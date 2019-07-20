@@ -30,7 +30,6 @@ local template_sln = path.join(template_root, "sln", "vsxmake.sln")
 local template_vcx = path.join(template_root, "vcxproj", "#target#.vcxproj")
 
 local template_fil = path.join(template_root, "vcxproj.filters", "#target#.vcxproj.filters")
-local template_usr = path.join(template_root, "#target#.vcxproj.user")
 local template_props = path.join(template_root, "Xmake.Custom.props")
 local template_targets = path.join(template_root, "Xmake.Custom.targets")
 local template_items = path.join(template_root, "Xmake.Custom.items")
@@ -168,8 +167,6 @@ function make(version)
             _trycp(template_targets, proj_dir)
             _trycp(template_items, proj_dir)
             _trycp(template_itemfil, proj_dir)
-            -- add project user file
-            _trycp(template_usr, proj_dir, target .. ".vcxproj.user")
         end
     end
 end
