@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup Label="XmakePropsInit">
     <!-- initialize this first to allow `Condition="'$(XmakeMode)|$(XmakeArch)' == 'release|x86'"` in custom props file -->
     <XmakeMode Condition="'$(XmakeMode)' == ''">$(Configuration)</XmakeMode>
@@ -38,31 +39,11 @@
     <XmakeRunDir Condition="'$(XmakeRunDir)' == ''">$(XmakeTargetDir)</XmakeRunDir>
   </PropertyGroup>
 
-  <PropertyGroup Label="XmakePathsResolve">
-    <!-- resolve if they are relative paths -->
-    <XmakeProjectDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeProjectDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProjectDir)'))</XmakeProjectDir>
-    <XmakeScriptDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeScriptDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeScriptDir)'))</XmakeScriptDir>
-    <XmakeBuilDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDir)'))</XmakeBuilDir>
-    <XmakeTargetDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeTargetDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDir)'))</XmakeTargetDir>
-    <XmakeConfigDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigDir)'))</XmakeConfigDir>
-    <XmakeConfigFileDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeConfigFileDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeConfigFileDir)'))</XmakeConfigFileDir>
-    <XmakeRunDir Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeRunDir)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeRunDir)'))</XmakeRunDir>
-
-    <!-- normalize paths -->
-    <XmakeProgramDir>$([System.IO.Path]::GetFullPath('$(XmakeProgramDir)/'))</XmakeProgramDir>
-    <XmakeProjectDir>$([System.IO.Path]::GetFullPath('$(XmakeProjectDir)/'))</XmakeProjectDir>
-    <XmakeScriptDir>$([System.IO.Path]::GetFullPath('$(XmakeScriptDir)/'))</XmakeScriptDir>
-    <XmakeBuilDir>$([System.IO.Path]::GetFullPath('$(XmakeBuilDir)/'))</XmakeBuilDir>
-    <XmakeTargetDir>$([System.IO.Path]::GetFullPath('$(XmakeTargetDir)/'))</XmakeTargetDir>
-    <XmakeConfigDir>$([System.IO.Path]::GetFullPath('$(XmakeConfigDir)/'))</XmakeConfigDir>
-    <XmakeConfigFileDir>$([System.IO.Path]::GetFullPath('$(XmakeConfigFileDir)/'))</XmakeConfigFileDir>
-    <XmakeRunDir>$([System.IO.Path]::GetFullPath('$(XmakeRunDir)/'))</XmakeRunDir>
-  </PropertyGroup>
-
   <PropertyGroup Label="XmakeFlagsFallback">
     <XmakeWarning Condition="'$(XmakeWarning)' == ''">true</XmakeWarning>
     <XmakeVerbose Condition="'$(XmakeVerbose)' == ''">false</XmakeVerbose>
     <XmakeDiagnosis Condition="'$(XmakeDiagnosis)' == ''">false</XmakeDiagnosis>
+    <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)' == ''">
@@ -116,6 +97,12 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
 
+  <ItemGroup>
+    <PropertyPageSchema Include="$(MSBuildThisFileDirectory)$(MSBuildThisFileName).xml">
+      <Context>Project</Context>
+    </PropertyPageSchema>
+  </ItemGroup>
+
   <ImportGroup Label="ExtensionSettings">
     <Import Condition="'$(XmakeCudaVersion)' != '' And Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props')"
       Project="$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).props" />
@@ -135,8 +122,8 @@
   <PropertyGroup Label="Path">
     <IncludePath>$(XmakeIncludeDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(XmakeLinkDir);$(LibraryPath)</LibraryPath>
-    <OutDir>$(XmakeTargetDir)</OutDir>
-    <IntDir>$(XmakeBuilDir).vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
+    <OutDir>$(XmakeTargetDir)\</OutDir>
+    <IntDir>$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
   </PropertyGroup>
 
   <!-- Common files -->

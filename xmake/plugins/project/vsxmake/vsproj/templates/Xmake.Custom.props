@@ -34,17 +34,20 @@
     <!-- Set -D for all xmake call -->
     <!-- <XmakeDiagnosis Condition="'$(XmakeDiagnosis)' == ''">false</XmakeDiagnosis> -->
 
+    <!-- Set -r for "xmake build" for selected files -->
+    <!-- <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile> -->
+
     
     <!-- Additional flags for "xmake clean" -->
-    <XmakeCleanFlags>$(XmakeCleanflags)</XmakeCleanFlags>
+    <!-- <XmakeCleanFlags>$(XmakeCleanflags)</XmakeCleanFlags> -->
     
     <!-- Additional flags for "xmake build" -->
-    <XmakeBuildFlags>$(XmakeBuildFlags)</XmakeBuildFlags>
+    <!-- <XmakeBuildFlags>$(XmakeBuildFlags)</XmakeBuildFlags> -->
     
     <!-- Additional flags for "xmake config" -->
-    <XmakeConfigFlags>$(XmakeConfigFlags)</XmakeConfigFlags>
+    <!-- <XmakeConfigFlags>$(XmakeConfigFlags)</XmakeConfigFlags> -->
     
     <!-- Additional flags for all xmake call -->
-    <XmakeCommonFlags>$(XmakeCommonFlags)</XmakeCommonFlags>
+    <!-- <XmakeCommonFlags>$(XmakeCommonFlags)</XmakeCommonFlags> -->
   </PropertyGroup>
 </Project>

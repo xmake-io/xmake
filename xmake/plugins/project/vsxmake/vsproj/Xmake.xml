@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions
+  xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework"
+  xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+  xmlns:sys="clr-namespace:System;assembly=mscorlib">
+  <Rule Name="XmakeConfiguration" DisplayName="Xmake" PageTemplate="generic" SwitchPrefix="--" Description="Xmake Properties">
+    <Rule.Categories>
+      <Category Name="Common" DisplayName="Common" Description="Xmake common configurations"/>
+      <Category Name="Flags" DisplayName="Additional flags" Description="Xmake additional flags"/>
+      <Category Name="Paths" DisplayName="Paths" Description="Xmake configurable paths"/>
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="UserFile" Label="XmakeConfiguration"/>
+    </Rule.DataSource>
+    
+    <BoolProperty
+      Name="XmakeVerbose"
+      DisplayName="Print verbose information"
+      Category="Common"
+      Description="Print lots of verbose information for users."
+      Switch="verbose" />
+    <BoolProperty
+      Name="XmakeDiagnosis"
+      DisplayName="Print diagnosis information"
+      Category="Common"
+      Description="Print lots of diagnosis information (backtrace, check info ..) only for developers."
+      Switch="diagnosis" />
+    <BoolProperty
+      Name="XmakeWarning"
+      DisplayName="Print warings"
+      Category="Common"
+      Description="Enable the warnings output for build tasks."
+      Switch="warning" />
+    <BoolProperty
+      Name="XmakeRebuildFile"
+      DisplayName="Force rebuild selected files"
+      Category="Common"
+      Description="When use 'compile' command to build selected files, add '--rebuild' flag to force rebuild files."
+      Switch="rebuild" />
+      
+    <StringProperty
+      Name="XmakeCleanFlags"
+      DisplayName="Clean flags"
+      Category="Flags"
+      Description="Additional flags for 'xmake clean'" />
+    <StringProperty
+      Name="XmakeBuildFlags"
+      DisplayName="Build flags"
+      Category="Flags"
+      Description="Additional flags for 'xmake build'" />
+    <StringProperty
+      Name="XmakeConfigFlags"
+      DisplayName="Config flags"
+      Category="Flags"
+      Description="Additional flags for 'xmake config'" />
+    <StringProperty
+      Name="XmakeCommonFlags"
+      DisplayName="Common flags"
+      Category="Flags"
+      Description="Additional flags for all xmake call" />
+
+    <StringProperty
+      Name="XmakeConfigDir"
+      DisplayName="Config dir"
+      Category="Paths"
+      Description="Set environment XMAKE_CONFIGDIR for xmake tasks"
+      Subtype="folder" />
+    <StringProperty
+      Name="XmakeBuilDir"
+      DisplayName="Build dir"
+      Category="Paths"
+      Description="Set output dir for xmake tasks"
+      Subtype="folder" />
+  </Rule>
+
+</ProjectSchemaDefinitions>
