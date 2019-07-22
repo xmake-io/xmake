@@ -37,17 +37,6 @@
     <XmakeRunDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeRunDirResolved)/'))</XmakeRunDirResolved>
   </PropertyGroup>
 
-  <PropertyGroup Label="Debugger">
-    <LocalDebuggerWorkingDirectory>$(XmakeRunDirResolved)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerEnvironment>$(XmakeRunEnvs)
-$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
-    <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
-    <RemoteDebuggerWorkingDirectory>$(XmakeRunDirResolved)</RemoteDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
-    <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
-$(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
-  </PropertyGroup>
-
   <PropertyGroup Label="XmakeInternal">
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' != ''">-F "$(XmakeProjectFile)"</_XmakeProjectFlag>
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' == ''">-P .</_XmakeProjectFlag>
@@ -79,6 +68,7 @@ $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
     <_XmakeExecutable>"$([System.IO.Path]::GetFullPath('$(XmakeProgramDirResolved)xmake.exe'))"</_XmakeExecutable>
     <_XmakeEnv>
       chcp 65001 &gt; NUL
+      pushd $(XmakeProjectDirResolved)
       set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('/\'.ToCharArray()))
       set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('/\'.ToCharArray()))
     </_XmakeEnv>
@@ -98,17 +88,17 @@ $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
-    <Exec WorkingDirectory="$(XmakeProjectDirResolved)" StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeReconfig" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
-    <Exec WorkingDirectory="$(XmakeProjectDirResolved)" StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" />
-    <Exec WorkingDirectory="$(XmakeProjectDirResolved)" StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeBuildFile" DependsOnTargets="_XmakeProjCheck">
@@ -121,12 +111,12 @@ $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
       <FileFlag>--files="$(FileList)"</FileFlag>
     </PropertyGroup>
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(XmakeTarget)" Importance="High" />
-    <Exec WorkingDirectory="$(XmakeProjectDirResolved)" StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeClean" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake clean $(_XmakeCommonFlags) -a $(_XmakeCleanFlags) $(XmakeTarget)" Importance="High" />
-    <Exec WorkingDirectory="$(XmakeProjectDirResolved)" StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) clean $(_XmakeCommonFlags) -a $(_XmakeCleanFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
 
@@ -150,15 +140,19 @@ MSBuild Properties:
     XmakeProjectDir: $(XmakeProjectDir)
     XmakeScriptDir: $(XmakeScriptDir)
     XmakeBuilDir: $(XmakeBuilDir)
+    XmakeTargetDir: $(XmakeTargetDir)
     XmakeConfigDir: $(XmakeConfigDir)
     XmakeConfigFileDir: $(XmakeConfigFileDir)
+    XmakeRunDir: $(XmakeRunDir)
   Xmake Resolved Path:
     XmakeProgramDir: $(XmakeProgramDirResolved)
     XmakeProjectDir: $(XmakeProjectDirResolved)
     XmakeScriptDir: $(XmakeScriptDirResolved)
     XmakeBuilDir: $(XmakeBuilDirResolved)
+    XmakeTargetDir: $(XmakeTargetDirResolved)
     XmakeConfigDir: $(XmakeConfigDirResolved)
     XmakeConfigFileDir: $(XmakeConfigFileDirResolved)
+    XmakeRunDir: $(XmakeRunDirResolved)
   Xmake Flags:
     XmakeWarning: $(XmakeWarning)
     XmakeVerbose: $(XmakeVerbose)

@@ -180,13 +180,12 @@ tb_int_t xm_io_open(lua_State* lua)
     tb_assert_and_check_return_val(path && modestr, 0);
 
     // get file mode value
-    tb_size_t mode = TB_FILE_MODE_RW;
+    tb_size_t mode;
     switch (modestr[0])
     {
-    case 'w': mode |= TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC; break;
-    case 'a': mode |= TB_FILE_MODE_APPEND | TB_FILE_MODE_CREAT; break;
-    case 'r': mode = TB_FILE_MODE_RO; break;
-    default: break;
+    case 'w': mode = TB_FILE_MODE_RW | TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC; break;
+    case 'a': mode = TB_FILE_MODE_RW | TB_FILE_MODE_APPEND | TB_FILE_MODE_CREAT; break;
+    case 'r': default: mode = TB_FILE_MODE_RO; break;
     }
 
     // get file encoding

@@ -706,7 +706,10 @@ end
 --
 -- the parent function will capture it if we uses pcall or xpcall
 --
-function os.raise(msg, ...)
+function os.raiselevel(level, msg, ...)
+
+    -- set level of this function
+    level = level + 1
 
     -- flush log
     log:flush()
@@ -716,17 +719,26 @@ function os.raise(msg, ...)
 
     -- raise it
     if type(msg) == "string" then
-        error(string.tryformat(msg, ...))
+        error(string.tryformat(msg, ...), level)
     elseif type(msg) == "table" then
         local errobjstr, errors = string.serialize(msg, true)
         if errobjstr then
-            error("[@encode(error)]: " .. errobjstr)
+            error("[@encode(error)]: " .. errobjstr, level)
         else
-            error(errors)
+            error(errors, level)
         end
     else
-        error()
+        error(tostring(msg), level)
     end
+end
+
+-- raise an exception and abort the current script
+--
+-- the parent function will capture it if we uses pcall or xpcall
+--
+function os.raise(msg, ...)
+    -- add return to make it a tail call
+    return os.raiselevel(1, msg, ...)
 end
 
 -- is executable program file?

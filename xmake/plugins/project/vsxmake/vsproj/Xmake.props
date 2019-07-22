@@ -126,6 +126,17 @@
     <IntDir>$(XmakeBuilDir)\.vs\$(TargetName)\$(XmakeArch)\$(XmakeMode)\</IntDir>
   </PropertyGroup>
 
+  <PropertyGroup Label="Debugger">
+    <LocalDebuggerWorkingDirectory>$(XmakeRunDir)</LocalDebuggerWorkingDirectory>
+    <LocalDebuggerEnvironment>$(XmakeRunEnvs)
+$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
+    <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
+    <RemoteDebuggerWorkingDirectory>$(XmakeRunDir)</RemoteDebuggerWorkingDirectory>
+    <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
+    <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
+$(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
+  </PropertyGroup>
+
   <!-- Common files -->
   <ItemGroup>
     <None Condition="Exists('$(MSBuildProjectDirectory)\Xmake.Custom.props')"
