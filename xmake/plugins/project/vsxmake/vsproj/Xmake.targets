@@ -37,17 +37,6 @@
     <XmakeRunDirResolved>$([System.IO.Path]::GetFullPath('$(XmakeRunDirResolved)/'))</XmakeRunDirResolved>
   </PropertyGroup>
 
-  <PropertyGroup Label="Debugger">
-    <LocalDebuggerWorkingDirectory>$(XmakeRunDirResolved)</LocalDebuggerWorkingDirectory>
-    <LocalDebuggerEnvironment>$(XmakeRunEnvs)
-$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
-    <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
-    <RemoteDebuggerWorkingDirectory>$(XmakeRunDirResolved)</RemoteDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
-    <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
-$(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
-  </PropertyGroup>
-
   <PropertyGroup Label="XmakeInternal">
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' != ''">-F "$(XmakeProjectFile)"</_XmakeProjectFlag>
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' == ''">-P .</_XmakeProjectFlag>
@@ -150,15 +139,19 @@ MSBuild Properties:
     XmakeProjectDir: $(XmakeProjectDir)
     XmakeScriptDir: $(XmakeScriptDir)
     XmakeBuilDir: $(XmakeBuilDir)
+    XmakeTargetDir: $(XmakeTargetDir)
     XmakeConfigDir: $(XmakeConfigDir)
     XmakeConfigFileDir: $(XmakeConfigFileDir)
+    XmakeRunDir: $(XmakeRunDir)
   Xmake Resolved Path:
     XmakeProgramDir: $(XmakeProgramDirResolved)
     XmakeProjectDir: $(XmakeProjectDirResolved)
     XmakeScriptDir: $(XmakeScriptDirResolved)
     XmakeBuilDir: $(XmakeBuilDirResolved)
+    XmakeTargetDir: $(XmakeTargetDirResolved)
     XmakeConfigDir: $(XmakeConfigDirResolved)
     XmakeConfigFileDir: $(XmakeConfigFileDirResolved)
+    XmakeRunDir: $(XmakeRunDirResolved)
   Xmake Flags:
     XmakeWarning: $(XmakeWarning)
     XmakeVerbose: $(XmakeVerbose)
