@@ -113,11 +113,10 @@ function _check_try_running(flags, opt, islinker)
     end
 
     -- check flags
-    local objectfile = is_plat("windows") and sourcefile .. ".o" or os.nuldev()
     if islinker then
-        return _try_running(opt.program, table.join(flags, "-o", objectfile, sourcefile))
+        return _try_running(opt.program, table.join(flags, "-o", os.nuldev(), sourcefile))
     else
-        return _try_running(opt.program, table.join(flags, "-c", "-o", objectfile, sourcefile))
+        return _try_running(opt.program, table.join(flags, "-c", "-o", os.nuldev(), sourcefile))
     end
 end
 
