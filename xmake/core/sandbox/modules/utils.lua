@@ -20,6 +20,7 @@
 
 -- load modules
 local io        = require("base/io")
+local os        = require("base/os")
 local utils     = require("base/utils")
 local colors    = require("base/colors")
 local option    = require("base/option")
@@ -27,7 +28,6 @@ local log       = require("base/log")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local vformat   = require("sandbox/modules/vformat")
-local raise     = require("sandbox/modules/raise")
 
 -- define module
 local sandbox_utils = sandbox_utils or {}
@@ -173,13 +173,13 @@ function sandbox_utils.assert(value, format, ...)
     -- check
     if not value then
         if format ~= nil then
-            raise(format, ...)
+            os.raiselevel(2, format, ...)
         else
-            raise("assertion failed!")
+            os.raiselevel(2, "assertion failed!")
         end
     end
 
-    -- return it 
+    -- return it
     return value
 end
 
