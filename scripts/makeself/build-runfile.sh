@@ -43,10 +43,11 @@ cd $temproot
 wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -O ./makeself-2.4.0.run
 sh ./makeself-2.4.0.run
 ./makeself-2.4.0/makeself.sh \
+    --bzip2 \
     --sha256 \
     --lsm ./lsm \
     --help-header ./header \
     ./xmake \
-    $buildroot/xmake.run \
+    $buildroot/xmake.bz2.run \
     xmake-v$version-runfile \
     ./scripts/get.sh __local__
