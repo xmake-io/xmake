@@ -29,6 +29,7 @@ cp ./*.md $temproot/xmake
 cp makefile $temproot/xmake
 cd $temproot/xmake
 rm -rf ./core/src/tbox/tbox/src/demo
+rm -rf ./core/src/tbox/tbox/src/tbox/platform/windows
 rm -rf ./core/src/pdcurses
 
 # prepare info texts
