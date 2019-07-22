@@ -185,6 +185,7 @@ tb_int_t xm_io_open(lua_State* lua)
     {
     case 'w': mode |= TB_FILE_MODE_CREAT | TB_FILE_MODE_TRUNC; break;
     case 'a': mode |= TB_FILE_MODE_APPEND | TB_FILE_MODE_CREAT; break;
+    case 'r': mode = TB_FILE_MODE_RO; break;
     default: break;
     }
 
