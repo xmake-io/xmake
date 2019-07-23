@@ -37,12 +37,12 @@ local function loadfileimpl(filepath, mode)
     local binary = false
     local displaypath = filepath
     if filepath:startswith(xmake._WORKING_DIR) then
-        displaypath = path.translate("@./" .. path.relative(filepath, xmake._WORKING_DIR))
+        displaypath = path.translate("./" .. path.relative(filepath, xmake._WORKING_DIR))
     elseif filepath:startswith(xmake._PROGRAM_DIR) then
         binary = true -- read file by binary mode, will be faster
-        displaypath = path.translate("@$(programdir)/" .. path.relative(filepath, xmake._PROGRAM_DIR))
+        displaypath = path.translate("$(programdir)/" .. path.relative(filepath, xmake._PROGRAM_DIR))
     elseif filepath:startswith(xmake._PROJECT_DIR) then
-        displaypath = path.translate("@$(projectdir)/" .. path.relative(filepath, xmake._PROJECT_DIR))
+        displaypath = path.translate("$(projectdir)/" .. path.relative(filepath, xmake._PROJECT_DIR))
     end
 
     -- load script data from file
@@ -58,7 +58,7 @@ local function loadfileimpl(filepath, mode)
     file:close()
 
     -- load script from string
-    return load(data, displaypath, mode)
+    return load(data, "@" .. displaypath, mode)
 end
 
 -- init loadfile
