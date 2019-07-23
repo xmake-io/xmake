@@ -28,7 +28,7 @@ import("lib.detect.find_tool")
 --
 -- @param name      the tool name
 -- @param flags     the flags
--- @param opt       the argument options, .e.g {verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
+-- @param opt       the argument options, .e.g { verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]", flagskey = "custom key" }
 --
 -- @return          true or false
 --
@@ -40,14 +40,53 @@ import("lib.detect.find_tool")
 --
 function main(name, flags, opt)
 
+    flags = table.wrap(flags)
+
     -- init options
     opt = opt or {}
+    opt.flagskey = opt.flagskey or table.concat(flags, " ")
+    opt.sysflags = table.wrap(opt.sysflags)
 
     -- find tool program and version first
     opt.version = true
     local tool = find_tool(name, opt)
     if not tool then
         return false
+    end
+
+    -- init tool
+    opt.toolname   = tool.name
+    opt.program    = tool.program
+    opt.programver = tool.version
+
+    -- get tool platform
+    local plat = config.get("plat") or os.host()
+
+    -- get tool architecture
+    --
+    -- some tools select arch by path environment, not be flags, .e.g cl.exe of msvc)
+    -- so, it will affect the cache result
+    --
+    local arch = config.get("arch") or os.arch()
+
+    -- init cache key
+    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(opt.sysflags, " ") .. "_" .. opt.flagskey
+
+    -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
+    local coroutine_running = coroutine.running()
+    if coroutine_running then
+        while _g._checking ~= nil and _g._checking == key do
+            local curdir = os.curdir()
+            coroutine.yield()
+            os.cd(curdir)
+        end
+    end
+
+    -- attempt to get result from cache first
+    local cacheinfo = cache.load("lib.detect.has_flags")
+    local result = cacheinfo[key]
+    if result ~= nil then
+        return result
     end
 
     -- generate all checked flags
@@ -67,43 +106,8 @@ function main(name, flags, opt)
     end
     checkflags = results
 
-    -- init tool
-    opt.toolname   = tool.name
-    opt.program    = tool.program
-    opt.programver = tool.version
-
-    -- get tool platform
-    local plat = config.get("plat") or os.host()
-
-    -- get tool architecture
-    --
-    -- some tools select arch by path environment, not be flags, .e.g cl.exe of msvc)
-    -- so, it will affect the cache result
-    --
-    local arch = config.get("arch") or os.arch()
-
-    -- init cache key
-    local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(checkflags, " ")
-    
-    -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
-    local coroutine_running = coroutine.running()
-    if coroutine_running then
-        while _g._checking ~= nil and _g._checking == key do
-            local curdir = os.curdir()
-            coroutine.yield()
-            os.cd(curdir)
-        end
-    end
-
-    -- attempt to get result from cache first
-    local cacheinfo = cache.load("lib.detect.has_flags") 
-    local result = cacheinfo[key]
-    if result ~= nil then
-        return result
-    end
-
     -- detect.tools.xxx.has_flags(flags, opt)?
-    _g._checking = ifelse(coroutine_running, key, nil)
+    _g._checking = coroutine_running and key or nil
     local hasflags = import("detect.tools." .. tool.name .. ".has_flags", {try = true})
     local errors = nil
     if hasflags then
@@ -112,20 +116,23 @@ function main(name, flags, opt)
         result = try { function () os.runv(tool.program, checkflags); return true end, catch { function (errs) errors = errs end }}
     end
     _g._checking = nil
+    result = result or false
 
     -- trace
     if option.get("verbose") or option.get("diagnosis") or opt.verbose then
-        cprint("${dim}checking for the flags (%s) ... %s", table.concat(table.wrap(flags), " "), result and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+        cprintf("${dim}checking for the flags (")
+        io.write(opt.flagskey)
+        cprint("${dim}) ... %s", result and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
         if option.get("diagnosis") then
-            cprint("${dim}> %s %s", path.filename(tool.program), table.concat(checkflags, " "))
+            cprint("${dim}> %s \"%s\"", path.filename(tool.program), table.concat(checkflags, "\" \""))
+            if errors and #tostring(errors) > 0 then
+                cprint("${color.warning}checkinfo:${clear dim} %s", tostring(errors):trim())
+            end
         end
-    end
-    if errors and option.get("diagnosis")  and #tostring(errors) > 0 then
-        cprint("${color.warning}checkinfo:${clear dim} %s", tostring(errors):trim())
     end
 
     -- save result to cache
-    cacheinfo[key] = ifelse(result, result, false)
+    cacheinfo[key] = result
     cache.save("lib.detect.has_flags", cacheinfo)
 
     -- ok?

@@ -106,19 +106,25 @@ function _instance:get(name)
 end
 
 -- has the given flag?
-function _instance:has_flags(flags, flagkind)
+function _instance:has_flags(flags, flagkind, opt)
 
-    -- import has_flags()
-    self._has_flags = self._has_flags or import("lib.detect.has_flags")
+    -- init options
+    opt = opt or {}
+    opt.program = opt.program or self:program()
+    opt.toolkind = opt.toolkind or self:kind()
+    opt.flagkind = opt.flagkind or flagkind
 
     -- get system flags
-    local sysflags = self:get(self:kind() .. 'flags') 
-    if not sysflags and flagkind then
-        sysflags = self:get(flagkind)
+    opt.sysflags = opt.sysflags or self:get(self:kind() .. 'flags')
+    if not opt.sysflags and flagkind then
+        opt.sysflags = self:get(flagkind)
     end
 
+    -- import has_flags()
+    self._has_flags = self._has_flags or import("lib.detect.has_flags", {anonymous = true})
+
     -- has flags?
-    return self._has_flags(self:name(), flags, {program = self:program(), toolkind = self:kind(), flagkind = flagkind, sysflags = sysflags})
+    return self._has_flags(self:name(), flags, opt)
 end
 
 -- load the given tool from the given kind

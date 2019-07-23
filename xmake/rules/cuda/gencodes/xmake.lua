@@ -98,7 +98,6 @@ rule("cuda.gencodes")
                 end
             end
 
-            local result = { clang = {}, nvcc = {} }
             if v_arch == nil and #r_archs == 0 then
                 return nil
             end
@@ -111,15 +110,16 @@ rule("cuda.gencodes")
 
             if v_arch then
                 table.insert(r_archs, v_arch)
+            else
+                v_arch = math.min(unpack(r_archs))
             end
             r_archs = table.unique(r_archs)
+
             local clang_flags = {}
             for _, r_arch in ipairs(r_archs) do
                 table.insert(clang_flags, '--cuda-gpu-arch=sm_' .. r_arch)
             end
 
-            r_archs = table.unique(r_archs)
-            v_arch = v_arch or math.min(unpack(r_archs))
             local nvcc_flags = nil
             if #r_archs == 1 then
                 nvcc_flags = '-gencode arch=compute_' .. v_arch .. ',code=sm_' .. r_archs[1]

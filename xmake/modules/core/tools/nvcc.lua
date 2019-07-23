@@ -80,7 +80,7 @@ function nf_symbol(self, level, target)
 
                 -- check and add symbol output file
                 host_flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
-                if self:has_flags({'-Xcompiler "-Zi -FS -Fd'  .. os.tmpfile() .. '.pdb"'}, "cuflags") then
+                if self:has_flags({'-Xcompiler "-Zi -FS -Fd' .. os.nuldev() .. '.pdb"'}, "cuflags", { flagskey = '-Xcompiler "-Zi -FS -Fd"' }) then
                     host_flags = "-FS " .. host_flags
                 end
             else
@@ -316,7 +316,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         function ()
             -- support `-M -MF depfile.d`?
             if depfile and _g._HAS_M_MF == nil then
-                _g._HAS_M_MF = self:has_flags({"-M", "-MF", os.nuldev()}, "cuflags") or false
+                _g._HAS_M_MF = self:has_flags({"-M", "-MF", os.nuldev()}, "cuflags", { flagskey = "-M -MF" }) or false
             end
 
             -- generate includes file
