@@ -31,23 +31,7 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 
--- init loadfile
-local _loadfile = _loadfile or loadfile
-local _loadcache = {}
-function loadfile(filepath)
-
-    -- get absolute path
-    filepath = path.absolute(filepath)
-
-    -- attempt to load script from cache first
-    local mtime = nil
-    local cache = _loadcache[filepath]
-    if cache and cache.script then
-        mtime = os.mtime(filepath)
-        if mtime > 0 and cache.mtime == mtime then
-            return cache.script, nil
-        end
-    end
+local function loadfileimpl(filepath)
 
     -- init displaypath
     local binary = false
@@ -74,7 +58,29 @@ function loadfile(filepath)
     file:close()
 
     -- load script from string
-    local script, errors = load(data, displaypath)
+    return load(data, displaypath)
+end
+
+-- init loadfile
+local _loadfile = _loadfile or loadfile
+local _loadcache = {}
+function loadfile(filepath)
+
+    -- get absolute path
+    filepath = path.absolute(filepath)
+
+    -- attempt to load script from cache first
+    local mtime = nil
+    local cache = _loadcache[filepath]
+    if cache and cache.script then
+        mtime = os.mtime(filepath)
+        if mtime > 0 and cache.mtime == mtime then
+            return cache.script, nil
+        end
+    end
+
+    -- load file
+    local script, errors = loadfileimpl(filepath)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
@@ -84,7 +90,7 @@ end
 -- init package path
 table.insert(package.loaders, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
-    local script, serr = loadfile(filepath)
+    local script, serr = loadfileimpl(filepath)
     if not script then
         return "\n\tfailed to load " .. filepath .. " : " .. serr
     end
