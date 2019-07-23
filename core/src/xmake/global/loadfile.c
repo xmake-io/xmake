@@ -48,8 +48,7 @@ static tb_char_t const* xm_global_readxmakefile(lua_State* lua, xm_global_filere
     return data->buffer;
 }
 
-static tb_int_t xm_global_loadxmakefile(lua_State* lua, tb_char_t const* filepath, tb_char_t const* disppath,
-                                        tb_char_t const* mode)
+static tb_int_t xm_global_loadxmakefile(lua_State* lua, tb_char_t const* filepath, tb_char_t const* disppath, tb_char_t const* mode)
 {
     tb_file_ref_t file = tb_file_init(filepath, TB_FILE_MODE_RO);
     if(!file)
@@ -81,8 +80,7 @@ static tb_int_t xm_global_loadxmakefile(lua_State* lua, tb_char_t const* filepat
     }
 }
 
-static tb_int_t xm_global_loaduserfile(lua_State* lua, tb_char_t const* filepath, tb_char_t const* disppath,
-                                       tb_char_t const* mode)
+static tb_int_t xm_global_loaduserfile(lua_State* lua, tb_char_t const* filepath, tb_char_t const* disppath, tb_char_t const* mode)
 {
     lua_getglobal(lua, "io");
     lua_getfield(lua, 1, "file");

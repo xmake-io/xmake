@@ -29,7 +29,7 @@ xmake._PROGRAM_DIR      = _PROGRAM_DIR
 xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
-xmake._WORKING_DIR      = _WORKING_DIR or os.curdir()
+xmake._WORKING_DIR      = _WORKING_DIR
 
 local _loadfile = _loadfile or loadfile
 
