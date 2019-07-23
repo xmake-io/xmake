@@ -80,7 +80,7 @@ function nf_symbol(self, level, target)
 
                 -- check and add symbol output file
                 host_flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
-                if self:has_flags({'-Xcompiler "-Zi -FS -Fd' .. os.nuldev() ..  '.pdb"'}, "cuflags", { flagskey = '-Xcompiler "-Zi -FS -Fd"' }) then
+                if self:has_flags({'-Xcompiler "-Zi -FS -Fd' .. os.nuldev() .. '.pdb"'}, "cuflags", { flagskey = '-Xcompiler "-Zi -FS -Fd"' }) then
                     host_flags = "-FS " .. host_flags
                 end
             else

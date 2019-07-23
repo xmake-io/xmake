@@ -104,7 +104,7 @@ function nf_symbol(self, level, target)
 
             -- check and add symbol output file
             flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
-            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.nuldev() ..  ".pdb"}, "cxflags", { flagskey = "-Zi -FS -Fd" }) then
+            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-Zi -FS -Fd" }) then
                 flags = "-FS " .. flags
             end
         else
