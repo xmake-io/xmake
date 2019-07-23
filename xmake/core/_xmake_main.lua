@@ -29,7 +29,37 @@ xmake._PROGRAM_DIR      = _PROGRAM_DIR
 xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
-xmake._WORKING_DIR      = _WORKING_DIR
+xmake._WORKING_DIR      = os.curdir()
+
+local function loadfileimpl(filepath, mode)
+
+    -- init displaypath
+    local binary = false
+    local displaypath = filepath
+    if filepath:startswith(xmake._WORKING_DIR) then
+        displaypath = path.translate("@./" .. path.relative(filepath, xmake._WORKING_DIR))
+    elseif filepath:startswith(xmake._PROGRAM_DIR) then
+        binary = true -- read file by binary mode, will be faster
+        displaypath = path.translate("@$(programdir)/" .. path.relative(filepath, xmake._PROGRAM_DIR))
+    elseif filepath:startswith(xmake._PROJECT_DIR) then
+        displaypath = path.translate("@$(projectdir)/" .. path.relative(filepath, xmake._PROJECT_DIR))
+    end
+
+    -- load script data from file
+    local file, ferrors = io.open(filepath, binary and "rb" or "r")
+    if not file then
+        return nil, ferrors
+    end
+
+    local data, rerrors = file:read("a")
+    if not data then
+        return nil, rerrors
+    end
+    file:close()
+
+    -- load script from string
+    return load(data, displaypath, mode)
+end
 
 -- init loadfile
 local _loadfile = _loadfile or loadfile
@@ -49,7 +79,7 @@ function loadfile(filepath, mode)
     end
 
     -- load file
-    local script, errors = _loadfile(filepath, mode)
+    local script, errors = loadfileimpl(filepath, mode)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
@@ -59,7 +89,7 @@ end
 -- init package path
 table.insert(package.loaders, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
-    local script, serr = _loadfile(filepath)
+    local script, serr = loadfileimpl(filepath)
     if not script then
         return "\n\tfailed to load " .. filepath .. " : " .. serr
     end
