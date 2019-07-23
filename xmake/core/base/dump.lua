@@ -235,8 +235,10 @@ function dump._get_printed_set(printed_set, value)
     local first_level = not printed_set
     if type(printed_set) ~= "table" then
         printed_set = {id = 0, refs = {}}
-        printed_set[value] = {obj = value}
-        dump._init_printed_set(printed_set, value)
+        if type(value) == "table" then
+            printed_set[value] = {obj = value}
+            dump._init_printed_set(printed_set, value)
+        end
     end
     return printed_set, first_level
 end
