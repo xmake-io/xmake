@@ -46,7 +46,7 @@
 // the machine type
 typedef struct __xm_machine_t
 {
-    // the lua 
+    // the lua
     lua_State*              lua;
 
 }xm_machine_t;
@@ -56,6 +56,7 @@ typedef struct __xm_machine_t
  */
 
 // the global functions
+tb_int_t xm_global_loadfile(lua_State* lua);
 
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
@@ -166,6 +167,13 @@ tb_int_t xm_curses_register(lua_State* lua);
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
+
+// the global functions
+static luaL_Reg const g_global_functions[] = 
+{
+    { "loadfile",       xm_global_loadfile   }
+,   { tb_null,          tb_null         }
+};
 
 // the os functions
 static luaL_Reg const g_os_functions[] = 
@@ -491,7 +499,6 @@ static tb_bool_t xm_machine_get_project_directory(xm_machine_t* machine, tb_char
         // save the directory to the global variable: _PROJECT_DIR
         lua_pushstring(machine->lua, path);
         lua_setglobal(machine->lua, "_PROJECT_DIR");
-
         // ok
         ok = tb_true;
 
@@ -499,6 +506,36 @@ static tb_bool_t xm_machine_get_project_directory(xm_machine_t* machine, tb_char
 
     // failed?
     if (!ok) tb_printf("error: not found the project directory!\n");
+
+    // ok?
+    return ok;
+}
+static tb_bool_t xm_machine_get_working_directory(xm_machine_t* machine, tb_char_t* path, tb_size_t maxn)
+{
+    // check
+    tb_assert_and_check_return_val(machine && path && maxn, tb_false);
+
+    // done
+    tb_bool_t ok = tb_false;
+    do
+    {
+        // get it from the current directory
+        if (!tb_directory_current(path, maxn)) break;
+
+        // trace
+        tb_trace_d("working: %s", path);
+
+        // save the directory to the global variable: _WORKING_DIR
+        lua_pushstring(machine->lua, path);
+        lua_setglobal(machine->lua, "_WORKING_DIR");
+
+        // ok
+        ok = tb_true;
+
+    } while (0);
+
+    // failed?
+    if (!ok) tb_printf("error: can't get the working directory!\n");
 
     // ok?
     return ok;
@@ -571,6 +608,13 @@ xm_machine_ref_t xm_machine_init()
 
         // open lua libraries
         luaL_openlibs(machine->lua);
+
+        // bind global functions
+        for (tb_size_t i = 0; g_global_functions[i].func; i++)
+        {
+            lua_pushcfunction(machine->lua, g_global_functions[i].func);
+            lua_setglobal(machine->lua, g_global_functions[i].name);
+        }
 
         // bind os functions
         luaL_register(machine->lua, "os", g_os_functions);
@@ -731,6 +775,9 @@ tb_int_t xm_machine_main(xm_machine_ref_t self, tb_int_t argc, tb_char_t** argv)
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
     if (!xm_machine_get_project_directory(machine, path, sizeof(path))) return -1;
+
+    // get the working directory
+    if (!xm_machine_get_working_directory(machine, path, sizeof(path))) return -1;
 
     // get the program file
     if (!xm_machine_get_program_file(machine, path, sizeof(path))) return -1;

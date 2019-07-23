@@ -125,7 +125,7 @@ function main._init()
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
     if projectdir and not path.is_absolute(projectdir) then
         projectdir = path.absolute(projectdir)
-    elseif projectdir then 
+    elseif projectdir then
         projectdir = path.translate(projectdir)
     end
     xmake._PROJECT_DIR = projectdir
