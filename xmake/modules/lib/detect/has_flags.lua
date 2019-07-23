@@ -40,6 +40,7 @@ import("lib.detect.find_tool")
 --
 function main(name, flags, opt)
 
+    -- wrap flags first
     flags = table.wrap(flags)
 
     -- init options
