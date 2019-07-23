@@ -29,6 +29,7 @@ xmake._PROGRAM_DIR      = _PROGRAM_DIR
 xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
+xmake._WORKING_DIR      = os.curdir()
 
 -- init loadfile
 local _loadfile = _loadfile or loadfile
@@ -49,25 +50,31 @@ function loadfile(filepath)
     end
 
     -- init displaypath
-    local readopt = {}
+    local binary = false
     local displaypath = filepath
     if filepath:startswith(xmake._WORKING_DIR) then
-        displaypath = path.join(".", path.relative(filepath, xmake._WORKING_DIR))
+        displaypath = path.translate("@./" .. path.relative(filepath, xmake._WORKING_DIR))
     elseif filepath:startswith(xmake._PROGRAM_DIR) then
-        readopt.encoding = "binary" -- read file by binary mode, will be faster
-        displaypath = path.join("$(programdir)", path.relative(filepath, xmake._PROGRAM_DIR))
+        binary = true -- read file by binary mode, will be faster
+        displaypath = path.translate("@$(programdir)/" .. path.relative(filepath, xmake._PROGRAM_DIR))
     elseif filepath:startswith(xmake._PROJECT_DIR) then
-        displaypath = path.join("$(projectdir)", path.relative(filepath, xmake._PROJECT_DIR))
+        displaypath = path.translate("@$(projectdir)/" .. path.relative(filepath, xmake._PROJECT_DIR))
     end
 
     -- load script data from file
-    local data, rerrors = io.readfile(filepath, readopt)
+    local file, ferrors = io.open(filepath, binary and "rb" or "r")
+    if not file then
+        return nil, ferrors
+    end
+
+    local data, rerrors = file:read("a")
     if not data then
         return nil, rerrors
     end
+    file:close()
 
     -- load script from string
-    local script, errors = load(data, "@" .. displaypath)
+    local script, errors = load(data, displaypath)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
@@ -75,7 +82,14 @@ function loadfile(filepath)
 end
 
 -- init package path
-package.path = xmake._PROGRAM_DIR .. "/core/?.lua;" .. package.path
+table.insert(package.loaders, 2, function(v)
+    local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
+    local script, serr = loadfile(filepath)
+    if not script then
+        return "\n\tfailed to load " .. filepath .. " : " .. serr
+    end
+    return script
+end)
 
 -- load modules
 local main = require("main")
