@@ -21,12 +21,9 @@
 -- define module: table
 local table = table or {}
 
--- clear the table
-function table.clear(self)
-    for k in next, self do
-        rawset(self, k, nil)
-    end
-end
+-- import jit function
+table.clear = require("table.clear")
+table.new   = require("table.new")
 
 -- join all objects and tables
 function table.join(...)
