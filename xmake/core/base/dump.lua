@@ -121,21 +121,22 @@ function dump._print_scalar(value, as_key)
 end
 
 -- print anchor
-function dump._print_anchor(value)
-    io.write(dump._translate("${color.dump.anchor}"), dump._format("text.dump.anchor", "&%s", value), dump._translate("${reset}"))
+function dump._print_anchor(printed_set_value)
+    io.write(dump._translate("${color.dump.anchor}"), dump._format("text.dump.anchor", "&%s", printed_set_value.id), dump._translate("${reset}"))
 end
 
 -- print reference
-function dump._print_reference(value)
-    io.write(dump._translate("${color.dump.reference}"), dump._format("text.dump.reference", "*%s", value), dump._translate("${reset}"))
+function dump._print_reference(printed_set_value)
+    io.write(dump._translate("${color.dump.reference}"), dump._format("text.dump.reference", "*%s", printed_set_value.id), dump._translate("${reset}"))
 end
 
 -- print anchor and store to printed_set
 function dump._print_table_anchor(value, printed_set)
-    printed_set.len = printed_set.len + 1
     io.write(" ")
-    dump._print_anchor(printed_set.len)
-    printed_set[value] = printed_set.len
+    if printed_set[value].id then
+        dump._print_anchor(printed_set[value])
+        printed_set.refs[value] = printed_set[value]
+    end
 end
 
 -- print metatable of value
@@ -169,8 +170,8 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
                 else
                     dump._print_scalar(v)
                 end
-            elseif v and printed_set[v] then
-                dump._print_reference(printed_set[v])
+            elseif v and printed_set.refs[v] then
+                dump._print_reference(printed_set.refs[v])
             else
                 dump._print_scalar(v)
             end
@@ -198,8 +199,8 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             dump._print_scalar(k, true)
             dump._print_keyword(")")
             io.write(dump._translate("${reset} ${dim}=${reset} "))
-            if v and printed_set[v] then
-                dump._print_reference(printed_set[v])
+            if v and printed_set.refs[v] then
+                dump._print_reference(printed_set.refs[v])
             else
                 dump._print_scalar(v)
             end
@@ -209,11 +210,35 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
     return has_record
 end
 
+-- init printed_set
+function dump._init_printed_set(printed_set, value)
+    assert(type(value) == "table")
+    for k, v in pairs(value) do
+        if type(v) == "table" then
+            -- has reference? v -> printed_set[v].obj
+            if printed_set[v] then
+                local obj = printed_set[v].obj
+                if not printed_set[obj].id then
+                    printed_set.id = printed_set.id + 1
+                    printed_set[obj].id = printed_set.id
+                end
+            else
+                printed_set[v] = {obj = v, name = k}
+                dump._init_printed_set(printed_set, v)
+            end
+        end
+    end
+end
+
 -- returns printed_set, is_first_level
-function dump._init_printed_set(printed_set)
+function dump._get_printed_set(printed_set, value)
     local first_level = not printed_set
     if type(printed_set) ~= "table" then
-        printed_set = { len = 0 }
+        printed_set = {id = 0, refs = {}}
+        if type(value) == "table" then
+            printed_set[value] = {obj = value}
+            dump._init_printed_set(printed_set, value)
+        end
     end
     return printed_set, first_level
 end
@@ -222,14 +247,13 @@ end
 function dump._print_udata(value, first_indent, remain_indent, printed_set)
 
     local first_level
-    printed_set, first_level = dump._init_printed_set(printed_set)
+    local metatable = getmetatable(value)
+    printed_set, first_level = dump._get_printed_set(printed_set, metatable)
     io.write(first_indent)
 
     if not first_level then
         return dump._print_udata_scalar(value)
     end
-
-    local metatable = getmetatable(value)
     local inner_indent = remain_indent .. "  "
 
     -- print open brackets
@@ -250,7 +274,7 @@ end
 function dump._print_table(value, first_indent, remain_indent, printed_set)
 
     local first_level
-    printed_set, first_level = dump._init_printed_set(printed_set)
+    printed_set, first_level = dump._get_printed_set(printed_set, value)
     io.write(first_indent)
     local metatable = getmetatable(value)
     local tostringmethod = metatable and rawget(metatable, "__tostring")
@@ -275,20 +299,20 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
         io.write("\n", inner_indent)
     end
 
+    -- print metatable
     if first_level then
-        -- print metatable
         first_value = not dump._print_metatable(value, metatable, inner_indent, printed_set, true)
     end
 
     -- print array items
     local is_arr = (value[1] ~= nil) and (table.maxn(value) < 2 * #value)
     if is_arr then
-        for i = 1,table.maxn(value) do
+        for i = 1, table.maxn(value) do
             print_newline()
             local v = value[i]
             if type(v) == "table" then
-                if printed_set[v] then
-                    dump._print_reference(printed_set[v])
+                if printed_set.refs[v] then
+                    dump._print_reference(printed_set.refs[v])
                 else
                     dump._print_table(v, "", inner_indent, printed_set)
                 end
@@ -306,8 +330,8 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
             dump._print_scalar(k, true)
             io.write(dump._translate("${reset} ${dim}=${reset} "))
             if type(v) == "table" then
-                if printed_set[v] then
-                    dump._print_reference(printed_set[v])
+                if printed_set.refs[v] then
+                    dump._print_reference(printed_set.refs[v])
                 else
                     dump._print_table(v, "", inner_indent, printed_set)
                 end
