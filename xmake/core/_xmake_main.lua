@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -31,12 +31,10 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = _WORKING_DIR
 
-local _loadfile = _loadfile or loadfile
-
 -- init loadfile
 local _loadfile = _loadfile or loadfile
 local _loadcache = {}
-function loadfile(filepath)
+function loadfile(filepath, mode)
     -- get absolute path
     filepath = path.absolute(filepath)
 
@@ -51,7 +49,7 @@ function loadfile(filepath)
     end
 
     -- load file
-    local script, errors = _loadfile(filepath)
+    local script, errors = _loadfile(filepath, mode)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
