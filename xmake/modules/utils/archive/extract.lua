@@ -347,7 +347,7 @@ end
 --
 -- @param archivefile   the archive file. e.g. *.tar.gz, *.zip, *.7z, *.tar.bz2, ..
 -- @param outputdir     the output directory
--- @param options       the options, .e.g. {excludes = {"*/dir/*", "dir/*"}}
+-- @param options       the options, e.g.. {excludes = {"*/dir/*", "dir/*"}}
 --
 function main(archivefile, outputdir, opt)
 

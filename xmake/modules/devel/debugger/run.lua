@@ -81,7 +81,7 @@ function _run_lldb(program, argv)
         return false
     end
 
-    -- attempt to split name, .e.g xcrun -sdk macosx lldb 
+    -- attempt to split name, e.g. xcrun -sdk macosx lldb 
     local names = lldb:split("%s")
 
     -- patch arguments

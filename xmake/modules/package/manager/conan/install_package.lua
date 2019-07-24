@@ -98,7 +98,7 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
--- @param opt   the options, .e.g { verbose = true, mode = "release", plat = , arch = ,
+-- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = ,
 --                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
 --                                  settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}
 --

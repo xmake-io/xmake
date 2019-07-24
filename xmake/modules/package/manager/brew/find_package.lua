@@ -26,7 +26,7 @@ import("package.manager.find_package")
 -- find package from the brew package manager
 --
 -- @param name  the package name, e.g. zlib, pcre/libpcre16
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
 
@@ -36,7 +36,7 @@ function main(name, opt)
         return 
     end
 
-    -- parse name, .e.g pcre/libpcre16
+    -- parse name, e.g. pcre/libpcre16
     local nameinfo = name:split('/')
     local pcname   = nameinfo[2] or nameinfo[1]
 

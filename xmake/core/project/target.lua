@@ -1046,7 +1046,7 @@ function _instance:objectfile(sourcefile)
 
     -- translate path
     --
-    -- .e.g 
+    -- e.g. 
     --
     -- src/xxx.c
     --      project/xmake.lua
@@ -1304,7 +1304,7 @@ end
 
 -- get the kinds of sourcefiles
 --
--- .e.g cc cxx mm mxx as ...
+-- e.g. cc cxx mm mxx as ...
 --
 function _instance:sourcekinds()
 

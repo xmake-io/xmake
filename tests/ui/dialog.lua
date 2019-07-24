@@ -52,7 +52,7 @@ function demo:init()
 
     -- init main dialog
     local dialog_main = boxdialog:new("dialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "main dialog")
-    dialog_main:text():text_set("The project focuses on making development and building easier and provides many features (.e.g package, install, plugin, macro, action, option, task ...), so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.")
+    dialog_main:text():text_set("The project focuses on making development and building easier and provides many features (e.g. package, install, plugin, macro, action, option, task ...), so that any developer can quickly pick it up and enjoy the productivity boost when developing and building project.")
     dialog_main:button_add("tips", "< Tips >", function (v) self:view("dialog.tips"):show(true, {focused = true}) end)
     dialog_main:button_add("input", "< Input >", function (v) self:view("dialog.input"):show(true, {focused = true}) end)
     dialog_main:button_add("help", "< Help >", function (v) self:insert(dialog_help) end)

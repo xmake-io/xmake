@@ -28,7 +28,7 @@ import("lib.detect.find_tool")
 --
 -- @param name      the tool name
 -- @param flags     the flags
--- @param opt       the argument options, .e.g { verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]", flagskey = "custom key" }
+-- @param opt       the argument options, e.g. { verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]", flagskey = "custom key" }
 --
 -- @return          true or false
 --
@@ -64,7 +64,7 @@ function main(name, flags, opt)
 
     -- get tool architecture
     --
-    -- some tools select arch by path environment, not be flags, .e.g cl.exe of msvc)
+    -- some tools select arch by path environment, not be flags, e.g. cl.exe of msvc)
     -- so, it will affect the cache result
     --
     local arch = config.get("arch") or os.arch()
@@ -72,7 +72,7 @@ function main(name, flags, opt)
     -- init cache key
     local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(opt.sysflags, " ") .. "_" .. opt.flagskey
 
-    -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
+    -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
     local coroutine_running = coroutine.running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do
@@ -92,7 +92,7 @@ function main(name, flags, opt)
     -- generate all checked flags
     local checkflags = table.join(flags, opt.sysflags)
 
-    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
+    -- split flag group, e.g. "-I /xxx" => {"-I", "/xxx"}
     local results = {}
     for _, flag in ipairs(checkflags) do
         flag = flag:trim()

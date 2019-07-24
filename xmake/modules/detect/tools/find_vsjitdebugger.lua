@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find vsjitdebugger 
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\vsjitdebugger.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\vsjitdebugger.exe"}
 --
 -- @return      program, version
 --

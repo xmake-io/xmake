@@ -57,7 +57,7 @@ end
 
 -- get the platform tool from the kind
 --
--- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
 function sandbox_core_platform.tool(toolkind)
     return platform.tool(toolkind)

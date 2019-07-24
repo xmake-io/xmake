@@ -176,7 +176,7 @@ end
 
 -- get items
 --
--- .e.g 
+-- e.g. 
 --
 -- for item in dlist:items() do
 --     print(item)

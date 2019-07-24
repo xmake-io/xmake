@@ -258,7 +258,7 @@ end
 -- enable or disable this option
 --
 -- @param enabled   enable option?
--- @param opt       the argument options, .e.g {readonly = true, force = false}
+-- @param opt       the argument options, e.g. {readonly = true, force = false}
 --
 function _instance:enable(enabled, opt)
 

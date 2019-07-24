@@ -45,7 +45,7 @@ end
 
 -- find ar
 --
--- @param opt   the argument options, .e.g {version = true}
+-- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --

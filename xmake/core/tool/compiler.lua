@@ -259,7 +259,7 @@ end
 -- get the compling flags
 --
 -- @param opt   the argument options (contain all the compiler attributes of target), 
---              .e.g
+--              e.g.
 --              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
 -- @return      flags string, flags list

@@ -23,7 +23,7 @@ import("detect.tools.find_lipo")
 
 -- main
 --
--- .e.g.
+-- e.g..
 --
 -- xmake l lipo "-create -arch armv7 file -arch arm64 file -output file"
 function main(...)

@@ -87,7 +87,7 @@ function interpreter._merge_root_scope(root, root_prev, override)
     root_prev = root_prev or {}
     for scope_kind_and_name, _ in pairs(root or {}) do
         -- only merge sub-scope for each kind("target@@xxxx") or __rootkind 
-        -- we need ignore the sub-root scope .e.g target{} after fetching root scope
+        -- we need ignore the sub-root scope e.g. target{} after fetching root scope
         --
         if scope_kind_and_name:find("@@", 1, true) or scope_kind_and_name == "__rootkind" then
             local scope_values = root_prev[scope_kind_and_name] or {}
@@ -142,10 +142,10 @@ function interpreter._fetch_root_scope(root)
     end
 end
 
--- save api source info, .e.g call api() in sourcefile:linenumber
+-- save api source info, e.g. call api() in sourcefile:linenumber
 function interpreter:_save_sourceinfo_to_scope(scope, apiname, values)
 
-    -- save api source info, .e.g call api() in sourcefile:linenumber
+    -- save api source info, e.g. call api() in sourcefile:linenumber
     local sourceinfo = debug.getinfo(3, "Sl")
     if sourceinfo then
         scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
@@ -260,7 +260,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
             scope["__override_" .. apiname] = true
         end
 
-        -- save api source info, .e.g call api() in sourcefile:linenumber
+        -- save api source info, e.g. call api() in sourcefile:linenumber
         self:_save_sourceinfo_to_scope(scope, apiname, {...})
 
         -- call function
@@ -959,7 +959,7 @@ function interpreter:api_register_scope(...)
 
         -- with scope info? translate it
         --
-        -- .e.g 
+        -- e.g. 
         -- option("text", {showmenu = true, default = true, description = "test option"})
         -- target("tbox", {kind = "static", files = {"src/*.c", "*.cpp"}})
         --
@@ -1274,7 +1274,7 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
             end
         end
 
-        -- save api source info, .e.g call api() in sourcefile:linenumber
+        -- save api source info, e.g. call api() in sourcefile:linenumber
         self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 
@@ -1304,7 +1304,7 @@ function interpreter:api_register_del_pathes(scope_kind, ...)
         -- save values
         scope[name] = table.join2(scope[name] or {}, pathes_deleted)
 
-        -- save api source info, .e.g call api() in sourcefile:linenumber
+        -- save api source info, e.g. call api() in sourcefile:linenumber
         self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 
@@ -1345,7 +1345,7 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
             end
         end
 
-        -- save api source info, .e.g call api() in sourcefile:linenumber
+        -- save api source info, e.g. call api() in sourcefile:linenumber
         self:_save_sourceinfo_to_scope(scope, name, pathes)
     end
 

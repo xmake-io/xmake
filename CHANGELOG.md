@@ -201,7 +201,7 @@
 
 ### Changes
 
-* Improve to configure cross-toolchains, add tool alias to support unknown tool name, .e.g `xmake f --cc=gcc@ccmips.exe`
+* Improve to configure cross-toolchains, add tool alias to support unknown tool name, e.g. `xmake f --cc=gcc@ccmips.exe`
 * [#151](https://github.com/xmake-io/xmake/issues/151): Improve to build the share library for the mingw platform
 * Improve to generate makefile plugin
 * Improve the checking errors tips
@@ -230,7 +230,7 @@
 
 ### Changes
 
-* Improve support for IDE/editor plugins (.e.g vscode, sublime, intellij-idea)
+* Improve support for IDE/editor plugins (e.g. vscode, sublime, intellij-idea)
 * Add `.gitignore` file when creating new projects
 * Improve to create template project
 * Improve to detect toolchains on macosx without xcode
@@ -280,7 +280,7 @@
 
 * Improve `add_files` to configure the compile option of the given files
 * Inherit links and linkdirs from the dependent targets and options
-* Improve `target.add_deps` and add inherit config, .e.g `add_deps("test", {inherit = false})`
+* Improve `target.add_deps` and add inherit config, e.g. `add_deps("test", {inherit = false})`
 * Remove the binary files of `tbox.pkg`
 * Use `/Zi` instead of `/ZI` for msvc
 
@@ -298,7 +298,7 @@
 * [#83](https://github.com/xmake-io/xmake/issues/83): Add user extension modules to detect program, libraries and files.
 * Add `find_program`, `find_file`, `find_library`, `find_tool` and `find_package` module interfaces.
 * Add `net.*` and `devel.*` extension modules
-* Add `val()` api to get the value of builtin-variable, .e.g `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
+* Add `val()` api to get the value of builtin-variable, e.g. `val("host")`, `val("env PATH")`, `val("shell echo hello")` and `val("reg HKEY_LOCAL_MACHINE\\XX;Value")`
 * Support to compile the microsoft resource file (.rc)
 * Add `has_flags`, `features` and `has_features` for detect module interfaces.
 * Add `option.on_check`, `option.after_check` and `option.before_check` api
@@ -320,7 +320,7 @@
 * Improve `print` interface to dump table
 * [#111](https://github.com/xmake-io/xmake/issues/111): Add `--root` common option to allow run xmake command as root
 * [#113](https://github.com/xmake-io/xmake/pull/113): Privilege manage when running as root, store the root privilege and degrade.
-* Improve `xxx_script` in `xmake.lua` to support pattern match, .e.g `on_build("iphoneos|arm*", function (target) end)`
+* Improve `xxx_script` in `xmake.lua` to support pattern match, e.g. `on_build("iphoneos|arm*", function (target) end)`
 * improve builtin-variables to support to get the value envirnoment and registry
 * Improve to detect vstudio sdk and cross toolchains envirnoment
 * [#71](https://github.com/xmake-io/xmake/issues/71): Improve to detect compiler and linker from env vars
@@ -470,7 +470,7 @@
 
 ### New features
 
-* Add native shell support for `xmake.lua`. .e.g `add_ldflags("$(shell pkg-config --libs sqlite3)")`
+* Add native shell support for `xmake.lua`. e.g. `add_ldflags("$(shell pkg-config --libs sqlite3)")`
 * Enable pdb symbol files for windows
 * Add debugger support on windows (vsjitdebugger, ollydbg, windbg ... )
 * Add `getenv` interface for the global scope of `xmake.lua`
@@ -493,7 +493,7 @@
 
 * Add check includes dependence automatically
 * Add print colors 
-* Add debugger support, .e.g `xmake run -d program ...`
+* Add debugger support, e.g. `xmake run -d program ...`
 
 ### Changes
 
@@ -532,7 +532,7 @@
 
 * Add task api for running custom tasks
 * Add plugin expansion and provide some builtin plugins
-* Add export ide project plugin(.e.g makefile and will support to export other projects for vs, xcode in feature)
+* Add export ide project plugin(e.g. makefile and will support to export other projects for vs, xcode in feature)
 * Add demo plugin for printing 'hello xmake'
 * Add make doxygen documents plugin
 * Add macro script plugin
@@ -555,7 +555,7 @@
 * Modify some api name, but be compatible with the old version
 * Optimize merging static library
 * Simplify cross compilation using argument `--sdk=xxx`
-* Simplify boolean option for command line, .e.g `xmake config --xxx=[y|n|yes|no|true|false]`
+* Simplify boolean option for command line, e.g. `xmake config --xxx=[y|n|yes|no|true|false]`
 * Merge iphoneos and iphonesimulator platforms
 * Merge watchos and watchsimulator platformss
 
@@ -595,7 +595,7 @@
 ### New features
 
 * Add `set_runscript` api and support custom action
-* Add import api and support import modules in xmake.lua, .e.g os, path, utils ...
+* Add import api and support import modules in xmake.lua, e.g. os, path, utils ...
 * Add new architecture: arm64-v8a for android
 
 ### Bugs fixed

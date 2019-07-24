@@ -396,7 +396,7 @@ function sandbox_os.execv(program, argv, opt)
 
     -- flush io buffer first for fixing redirect io output order
     --
-    -- .e.g 
+    -- e.g. 
     --
     -- xmake run > /tmp/a
     --   print("xxx1")

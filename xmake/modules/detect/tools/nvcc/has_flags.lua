@@ -122,7 +122,7 @@ end
 
 -- has_flags(flags)?
 -- 
--- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", toolkind = "cu"}
+-- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "cu"}
 --
 -- @return      true or false
 --

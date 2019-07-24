@@ -23,7 +23,7 @@ local sandbox = require("sandbox/sandbox")
 
 -- get the variable value of filter
 --
--- .e.g
+-- e.g.
 --
 -- local value = val("host")
 -- local value = val("env PATH")

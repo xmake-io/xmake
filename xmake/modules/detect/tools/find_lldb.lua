@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find lldb 
 --
--- @param opt   the argument options, .e.g {version = true, program="/usr/bin/lldb"}
+-- @param opt   the argument options, e.g. {version = true, program="/usr/bin/lldb"}
 --
 -- @return      program, version
 --

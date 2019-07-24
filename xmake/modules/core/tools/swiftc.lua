@@ -217,7 +217,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
     local program = self:program()
     if ccache then
             
-        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
         if not os.isexec(program) then
             argv = table.join(program:split("%s"), argv)
         else 

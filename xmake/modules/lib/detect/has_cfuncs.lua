@@ -25,7 +25,7 @@ import("lib.detect.check_csnippets")
 --
 -- @param funcs     the funcs
 -- @param opt       the argument options
---                  .e.g 
+--                  e.g. 
 --                  { verbose = false, target = [target|option], includes = "", configs = {linkdirs = .., links = .., defines = .., ..}}
 --
 -- funcs:

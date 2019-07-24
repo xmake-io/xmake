@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find python 
 --
--- @param opt  the arguments, .e.g {version = true}
+-- @param opt  the arguments, e.g. {version = true}
 --
 -- @return     program, version
 --

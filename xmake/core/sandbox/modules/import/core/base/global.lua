@@ -37,7 +37,7 @@ end
 --
 -- @param name  the name
 -- @param value the value
--- @param opt   the argument options, .e.g {readonly = false, force = false}
+-- @param opt   the argument options, e.g. {readonly = false, force = false}
 --
 function sandbox_core_base_global.set(name, value, opt)
     global.set(name, value, opt)

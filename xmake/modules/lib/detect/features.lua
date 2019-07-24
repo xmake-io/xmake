@@ -24,7 +24,7 @@ import("lib.detect.find_tool")
 -- get all features of the current tool
 --
 -- @param name      the tool name
--- @param opt       the argument options, .e.g {program = "", flags = {}}
+-- @param opt       the argument options, e.g. {program = "", flags = {}}
 --
 -- @return          the features dictionary
 --
@@ -56,7 +56,7 @@ function main(name, opt)
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
     
-    -- @note avoid detect the same program in the same time if running in the coroutine (.e.g ccache)
+    -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
     local coroutine_running = coroutine.running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do

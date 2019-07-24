@@ -71,9 +71,9 @@ end
 --
 -- @param sdkdir    the mingw directory
 -- @param opt       the argument options 
---                  .e.g {verbose = true, force = false, bindir = .., cross = ...}  
+--                  e.g. {verbose = true, force = false, bindir = .., cross = ...}  
 --
--- @return          the mingw toolchains. .e.g {sdkdir = .., bindir = .., cross = ..}
+-- @return          the mingw toolchains. e.g. {sdkdir = .., bindir = .., cross = ..}
 --
 -- @code 
 --

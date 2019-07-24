@@ -26,7 +26,7 @@ import("privilege.sudo")
 -- install package
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, yum = "the package name"}
+-- @param opt   the options, e.g. {verbose = true, yum = "the package name"}
 --
 -- @return      true or false
 --

@@ -23,7 +23,7 @@ local table = require("base/table")
 
 -- irpairs
 --
--- .e.g
+-- e.g.
 --
 -- @code
 -- 

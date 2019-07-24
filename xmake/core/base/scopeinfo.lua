@@ -77,10 +77,10 @@ function _instance:_api_handle(values)
     return table.unwrap(values)
 end
 
--- save api source info, .e.g call api() in sourcefile:linenumber
+-- save api source info, e.g. call api() in sourcefile:linenumber
 function _instance:_api_save_sourceinfo_to_scope(scope, apiname, values)
 
-    -- save api source info, .e.g call api() in sourcefile:linenumber
+    -- save api source info, e.g. call api() in sourcefile:linenumber
     local sourceinfo = debug.getinfo(5, "Sl")
     if sourceinfo then
         scope["__sourceinfo_" .. apiname] = scope["__sourceinfo_" .. apiname] or {}
@@ -313,7 +313,7 @@ function _instance:_api_set_pathes(name, ...)
         end
     end
 
-    -- save api source info, .e.g call api() in sourcefile:linenumber
+    -- save api source info, e.g. call api() in sourcefile:linenumber
     self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 
@@ -353,7 +353,7 @@ function _instance:_api_add_pathes(name, ...)
         end
     end
 
-    -- save api source info, .e.g call api() in sourcefile:linenumber
+    -- save api source info, e.g. call api() in sourcefile:linenumber
     self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 
@@ -381,7 +381,7 @@ function _instance:_api_del_pathes(name, ...)
     -- save values
     scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes_deleted))
 
-    -- save api source info, .e.g call api() in sourcefile:linenumber
+    -- save api source info, e.g. call api() in sourcefile:linenumber
     self:_api_save_sourceinfo_to_scope(scope, name, pathes)
 end
 

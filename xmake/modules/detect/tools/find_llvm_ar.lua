@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find llvm-ar
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\llvm_ar.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\llvm_ar.exe"}
 --
 -- @return      program, version
 --

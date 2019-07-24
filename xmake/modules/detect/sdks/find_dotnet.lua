@@ -81,9 +81,9 @@ end
 -- find dotnet toolchains
 --
 -- @param sdkdir    the dotnet directory
--- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the dotnet toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., libdir = ..., includedir = ..., .. }
+-- @return          the dotnet toolchains. e.g. {sdkver = ..., sdkdir = ..., bindir = .., libdir = ..., includedir = ..., .. }
 --
 -- @code 
 --

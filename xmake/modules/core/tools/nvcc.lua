@@ -245,7 +245,7 @@ end
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
-    -- add rpath for dylib (macho), .e.g -install_name @rpath/file.dylib
+    -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
     if targetkind == "shared" and targetfile:endswith(".dylib") then
         table.insert(flags_extra, "-Xlinker")
@@ -290,7 +290,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
     local program = self:program()
     if ccache then
 
-        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
         if not os.isexec(program) then
             argv = table.join(program:split("%s"), argv)
         else

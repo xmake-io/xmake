@@ -123,7 +123,7 @@ end
 
 -- load deps 
 --
--- .e.g 
+-- e.g. 
 --
 -- a.deps = b
 -- b.deps = c

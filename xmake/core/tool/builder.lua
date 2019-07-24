@@ -437,7 +437,7 @@ function builder:_add_flags_from_language(flags, target, getters)
             --
             -- ignore "nf_" and "_if_ok"
             --
-            -- .e.g
+            -- e.g.
             --
             -- defines => define
             -- defines_if_ok => define
@@ -472,7 +472,7 @@ function builder:_preprocess_flags(flags)
     -- remove repeat
     flags = table.unique(flags)
 
-    -- split flag group, .e.g "-I /xxx" => {"-I", "/xxx"}
+    -- split flag group, e.g. "-I /xxx" => {"-I", "/xxx"}
     local results = {}
     for _, flag in ipairs(flags) do
         flag = flag:trim()

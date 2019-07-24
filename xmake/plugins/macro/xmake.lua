@@ -42,7 +42,7 @@ task("macro")
             ,   options = 
                 {
                     {'b', "begin",      "k",  nil,  "Start to record macro."                          
-                                                ,   ".e.g"
+                                                ,   "e.g."
                                                 ,   "Record macro with name: test"
                                                 ,   "    xmake macro --begin"                   
                                                 ,   "    xmake config --plat=macosx"
@@ -58,16 +58,16 @@ task("macro")
                 ,   {'c', "clear",      "k",  nil,  "Clear the all macros."                         }
                 ,   {}
                 ,   {nil, "import",     "kv", nil,  "Import the given macro file or directory."                   
-                                                ,   ".e.g"
+                                                ,   "e.g."
                                                 ,   "    xmake macro --import=/xxx/macro.lua test"
                                                 ,   "    xmake macro --import=/xxx/macrodir"        }
                 ,   {nil, "export",     "kv", nil,  "Export the given macro to file or directory."
-                                                ,   ".e.g"
+                                                ,   "e.g."
                                                 ,   "    xmake macro --export=/xxx/macro.lua test"  
                                                 ,   "    xmake macro --export=/xxx/macrodir"        }
                 ,   {}
                 ,   {nil, "name",       "v",  ".",  "Set the macro name."
-                                                ,   ".e.g"
+                                                ,   "e.g."
                                                 ,   "   Run the given macro:     xmake macro test"        
                                                 ,   "   Run the anonymous macro: xmake macro ."     
                                                 ,   "   Run the last command:    xmake macro .."    }

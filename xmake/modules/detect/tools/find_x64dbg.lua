@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find x64dbg 
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\x64dbg.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\x64dbg.exe"}
 --
 -- @return      program, version
 --

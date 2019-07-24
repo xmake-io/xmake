@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find gdb 
 --
--- @param opt   the argument options, .e.g {version = true, program="/usr/bin/gdb"}
+-- @param opt   the argument options, e.g. {version = true, program="/usr/bin/gdb"}
 --
 -- @return      program, version
 --

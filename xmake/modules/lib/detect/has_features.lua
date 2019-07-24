@@ -26,7 +26,7 @@ import("lib.detect.features", {alias = "get_features"})
 --
 -- @param name      the tool name
 -- @param features  the features
--- @param opt       the argument options, .e.g {verbose = false, flags = {}, program = ""}}
+-- @param opt       the argument options, e.g. {verbose = false, flags = {}, program = ""}}
 --
 -- @return          the supported features or nil
 --

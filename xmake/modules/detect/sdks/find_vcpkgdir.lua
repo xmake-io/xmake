@@ -56,7 +56,7 @@ end
 -- find vcpkg directory
 --
 -- @param sdkdir    the vcpkg directory
--- @param opt       the argument options, .e.g {verbose = true, force = false} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false} 
 --
 -- @return          the vcpkg directory
 --

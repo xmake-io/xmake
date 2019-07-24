@@ -87,7 +87,7 @@ function _find_sdkdir(sdkdir, sdkver)
             end)
         end
 
-        -- add root logical drive pates, .e.g C:/Qt/Qtx.x.x, D:/Qtx.x.x ..
+        -- add root logical drive pates, e.g. C:/Qt/Qtx.x.x, D:/Qtx.x.x ..
         for idx, drive in ipairs(winos.logical_drives()) do
             if idx < 5 then
                 table.insert(pathes, path.join(drive, "Qt", "Qt*"))
@@ -137,9 +137,9 @@ end
 -- find qt sdk toolchains
 --
 -- @param sdkdir    the qt sdk directory
--- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the qt sdk toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the qt sdk toolchains. e.g. {sdkver = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
 -- @code 
 --

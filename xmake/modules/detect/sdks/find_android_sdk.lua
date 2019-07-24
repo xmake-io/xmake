@@ -80,7 +80,7 @@ end
 -- @param sdkdir    the android sdk directory
 -- @param opt       the argument options, e.g. {force = true, build_toolver = "28.0.3"} 
 --
--- @return          the sdk toolchains. .e.g {sdkdir = .., build_toolver = "28.0.3"} 
+-- @return          the sdk toolchains. e.g. {sdkdir = .., build_toolver = "28.0.3"} 
 --
 -- @code 
 --

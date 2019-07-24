@@ -123,7 +123,7 @@ end
 -- find program from the xmake packages
 function sandbox_lib_detect_find_program._find_from_packages(name, opt)
 
-    -- get the manifest file of package, .e.g ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt 
+    -- get the manifest file of package, e.g. ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt 
     local manifest_file = path.join(package.installdir(), name:sub(1, 1), name, opt.version, opt.buildhash, "manifest.txt")
     if not os.isfile(manifest_file) then
         return
@@ -217,8 +217,8 @@ end
 -- find program
 --
 -- @param name      the program name
--- @param opt       the options, .e.g {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
---                    - opt.pathes    the program pathes (.e.g dirs, pathes, winreg pathes, script pathes)
+-- @param opt       the options, e.g. {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
+--                    - opt.pathes    the program pathes (e.g. dirs, pathes, winreg pathes, script pathes)
 --                    - opt.check     the check script or command 
 --                    - opt.norun     do not attempt to run program to check program fastly
 --
@@ -237,7 +237,7 @@ end
 --
 function sandbox_lib_detect_find_program.main(name, opt)
 
-    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (.e.g ccache)
+    -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
     local coroutine_running = coroutine.running()
     if coroutine_running then
         while checking ~= nil and checking == name do

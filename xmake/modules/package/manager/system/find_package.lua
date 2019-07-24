@@ -26,7 +26,7 @@ import("lib.detect.pkg_config")
 -- find package from the system directories
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
        
@@ -75,7 +75,7 @@ function main(name, opt)
         end
     end
 
-    -- uses name as links directly .e.g libname.a
+    -- uses name as links directly e.g. libname.a
     if #links == 0 then
         links = table.wrap(name)
     end
