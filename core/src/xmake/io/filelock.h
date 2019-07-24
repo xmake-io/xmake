@@ -41,6 +41,9 @@ typedef struct __xm_io_filelock_t
     // the lock reference
     tb_filelock_ref_t   lock_ref;
 
+    // is opened
+    tb_bool_t           is_opened;
+
 } xm_io_filelock_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -56,7 +59,8 @@ static __tb_inline__ xm_io_filelock_t* xm_io_new_filelock(lua_State* lua)
     tb_assert_and_check_return_val(lock, tb_null);
 
     // init file lock
-    lock->lock_ref = tb_null;
+    lock->lock_ref  = tb_null;
+    lock->is_opened = tb_false;
 
     // bind io._filelock metatable
     luaL_getmetatable(lua, xm_io_filelock_udata);

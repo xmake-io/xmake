@@ -28,7 +28,8 @@ local table  = require("base/table")
 local string = require("base/string")
 
 -- save original apis
-io._open    = io._open or io.open
+io._open        = io._open or io.open
+io._openlock    = io._openlock or io.openlock
 _file._read = _file._read or _file.read
 
 -- read data from file
@@ -178,13 +179,25 @@ function io.open(filepath, mode, opt)
     mode = mode or "r"
 
     -- open it
-    local handle = io._open(filepath, mode .. (opt.encoding or ""))
-    if not handle then
-        return nil, string.format("failed to open %s", filepath)
+    local file = io._open(filepath, mode .. (opt.encoding or ""))
+    if not file then
+        return nil, string.format("failed to open file: %s", filepath)
     end
+    return file
+end
 
-    -- ok?
-    return handle
+-- replace the original openlock interface
+function io.openlock(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- open it
+    local lock = io._openlock(filepath)
+    if not lock then
+        return nil, string.format("failed to open lock: %s", filepath)
+    end
+    return lock
 end
 
 -- close file

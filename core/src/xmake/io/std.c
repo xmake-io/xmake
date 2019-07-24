@@ -102,7 +102,7 @@ static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
     tb_assert_and_check_return(name && path && fp);
 
     // new file
-    xm_io_file* file = xm_io_newfile(lua);
+    xm_io_file_t* file = xm_io_newfile(lua);
     tb_assert_and_check_return(file);
     lua_setfield(lua, -2, name);
 

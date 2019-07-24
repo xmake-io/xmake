@@ -44,7 +44,7 @@ tb_int_t xm_io_file___tostring(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get file name as string
-    xm_io_file* file = xm_io_getfile(lua);
+    xm_io_file_t* file = xm_io_getfile(lua);
     lua_pushstring(lua, file->name);
     return 1;
 }

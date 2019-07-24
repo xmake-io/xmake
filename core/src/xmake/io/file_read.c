@@ -96,7 +96,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
     if (linesize) return linesize;
     else return (eof || tb_stream_beof(stream))? -1 : 0;
 }
-static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
+static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
     tb_assert(buf && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -175,7 +175,7 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file* file
     // return result
     return result;
 }
-static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file* file)
+static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 {
     // check
     tb_assert(lua && file && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -207,7 +207,7 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file* file)
     tb_buffer_exit(&buf);
     return 1;
 }
-static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
+static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -246,7 +246,7 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file* file, tb_char_t 
     }
 }
 
-static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
+static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -283,7 +283,7 @@ static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file* file, tb_char_t
     }
 }
 
-static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_long_t n)
+static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_long_t n)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -322,7 +322,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file* file, tb_char_t co
     return 1;
 }
 
-static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
+static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
     tb_assert(buf && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -374,7 +374,7 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file*
     return result;
 }
 
-static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
+static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -411,7 +411,7 @@ static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file* file, tb_ch
     }
 }
 
-static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
+static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -445,7 +445,7 @@ static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file* file, tb_cha
     }
 }
 
-static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file* file, tb_char_t const* continuation, tb_long_t n)
+static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_long_t n)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -476,7 +476,7 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file* file, tb_char_
     return 1;
 }
 
-static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file* file, tb_char_t const* continuation)
+static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
     tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -505,7 +505,7 @@ tb_int_t xm_io_file_read(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get file and arguments
-    xm_io_file*      file         = xm_io_getfile(lua);
+    xm_io_file_t*      file         = xm_io_getfile(lua);
     tb_char_t const* mode         = luaL_optstring(lua, 2, "l");
     tb_char_t const* continuation = luaL_optstring(lua, 3, "");
     tb_assert_and_check_return_val(mode && continuation, 0);

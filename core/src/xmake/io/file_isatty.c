@@ -43,7 +43,7 @@ tb_int_t xm_io_file_isatty(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // is tty?
-    xm_io_file* file = xm_io_getfile(lua);
+    xm_io_file_t* file = xm_io_getfile(lua);
     lua_pushboolean(lua, xm_io_file_is_tty(file));
     return 1;
 }

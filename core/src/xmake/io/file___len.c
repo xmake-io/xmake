@@ -42,7 +42,7 @@ tb_int_t xm_io_file___len(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file* file = xm_io_getfile(lua);
+    xm_io_file_t* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file))
         xm_io_file_return_error_closed(lua);
     else if (xm_io_file_is_file(file))

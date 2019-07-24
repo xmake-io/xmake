@@ -34,13 +34,13 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_io_std_flush_impl(xm_io_file* file)
+static tb_bool_t xm_io_std_flush_impl(xm_io_file_t* file)
 {
     tb_assert_and_check_return_val(xm_io_file_is_std(file) && !xm_io_file_is_closed(file), tb_false);
     return (file->std_ref != tb_stdfile_input())? tb_stdfile_flush(file->std_ref) : tb_false;
 }
 
-static tb_bool_t xm_io_file_flush_impl(xm_io_file* file)
+static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
 {
     // check
     tb_assert_and_check_return_val(xm_io_file_is_file(file) && !xm_io_file_is_closed(file), tb_false);
@@ -71,7 +71,7 @@ tb_int_t xm_io_file_flush(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // file has been closed? 
-    xm_io_file* file = xm_io_getfile(lua);
+    xm_io_file_t* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file))
         xm_io_file_return_error_closed(lua);
 

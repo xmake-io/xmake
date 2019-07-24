@@ -285,7 +285,7 @@ tb_int_t xm_io_open(lua_State* lua)
     tb_assert_and_check_return_val(path, 0);
 
     // new file
-    xm_io_file* xm_file = xm_io_newfile(lua);
+    xm_io_file_t* xm_file = xm_io_newfile(lua);
     xm_file->file_ref   = file_ref;
     xm_file->stream     = stream;
     xm_file->fstream    = fstream;

@@ -40,7 +40,8 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file* file = xm_io_getfile(lua);
+    // close file
+    xm_io_file_t* file = xm_io_getfile(lua);
     if (xm_io_file_is_closed(file))
     {
         if (allow_closed_file)

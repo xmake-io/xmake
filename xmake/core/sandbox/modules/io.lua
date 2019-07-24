@@ -114,13 +114,9 @@ function sandbox_io.open(filepath, mode, opt)
         raise(errors)
     end
 
-    -- wrap file
+    -- bind metatable
     file = { _FILE = file }
-
-    -- replace print with vformat
     setmetatable(file, sandbox_io_file);
-
-    -- ok?
     return file
 end
 
@@ -134,11 +130,15 @@ function sandbox_io.openlock(filepath)
     filepath = vformat(filepath)
 
     -- open lock
-    local filelock, errors = io.openlock(filepath)
-    if not filelock then
+    local lock, errors = io.openlock(filepath)
+    if not lock then
         raise(errors)
     end
-    return filelock
+
+    -- bind metatable
+    lock = { _LOCK = lock }
+    setmetatable(lock, sandbox_io_filelock);
+    return lock
 end
 
 -- load object from the given file

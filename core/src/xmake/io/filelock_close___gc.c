@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        openlock.c
+ * @file        filelock_close___gc.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "openlock"
+#define TB_TRACE_MODULE_NAME    "filelock_close___gc"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,31 +34,57 @@
  * implementation
  */
 
-/*
- * io.openlock(path)
- */
-tb_int_t xm_io_openlock(lua_State* lua)
+static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed_lock)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file path 
-    tb_char_t const* path = luaL_checkstring(lua, 1);
-    tb_assert_and_check_return_val(path, 0);
+    // close lock
+    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
+    if (!lock->is_opened)
+    {
+        if (allow_closed_lock)
+        {
+            lua_pushboolean(lua, tb_true);
+            return 1;
+        }
+        else 
+        {
+            lua_pushnil(lua);
+            lua_pushliteral(lua, "error: file lock has been closed");
+            return 2;     
+        }
+    }
 
-    // init file lock
-    tb_filelock_ref_t lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
-    if (lock)
-    {
-        xm_io_filelock_t* xmlock = xm_io_new_filelock(lua);
-        xmlock->lock_ref  = lock;
-        xmlock->is_opened = tb_true;
-        return 1;
-    }
-    else 
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "cannot open file lock!");
-        return 2;
-    }
+    // check
+    tb_assert(lock->lock_ref);
+
+    // close lock
+    tb_filelock_exit(lock->lock_ref);
+    lock->lock_ref  = tb_null;
+    lock->is_opened = tb_false;
+
+    // close ok
+    lua_pushboolean(lua, tb_true);
+    return 1;
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+/*
+ * lock:close()
+ */
+tb_int_t xm_io_filelock_close(lua_State* lua)
+{
+    return xm_io_filelock_close_impl(lua, tb_false);
+}
+
+/*
+ * lock:close()
+ */
+tb_int_t xm_io_filelock___gc(lua_State* lua)
+{
+    return xm_io_filelock_close_impl(lua, tb_true);
 }

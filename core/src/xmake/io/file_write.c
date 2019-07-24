@@ -34,7 +34,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t xm_io_file_write_file_directly(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -42,7 +42,7 @@ static tb_void_t xm_io_file_write_file_directly(xm_io_file* file, tb_char_t cons
     // write data to file
     tb_stream_bwrit(file->file_ref, (tb_byte_t const*)data, size);
 }
-static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
@@ -92,7 +92,7 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file* file, tb_char_t con
     return xm_io_file_write_file_directly(file, data, size);
 #endif
 }
-static tb_void_t xm_io_file_write_std(xm_io_file* file, tb_char_t const* data, tb_size_t size)
+static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
     tb_assert(file && data && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
@@ -114,7 +114,7 @@ tb_int_t xm_io_file_write(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get file 
-    xm_io_file* file = xm_io_getfile(lua);
+    xm_io_file_t* file = xm_io_getfile(lua);
     tb_int_t    narg = lua_gettop(lua);
 
     // this file has been closed? 

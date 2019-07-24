@@ -106,6 +106,10 @@ tb_int_t xm_io_file___len(lua_State* lua);
 tb_int_t xm_io_file___tostring(lua_State* lua);
 tb_int_t xm_io_file___gc(lua_State* lua);
 
+// the filelock functions
+tb_int_t xm_io_filelock_close(lua_State* lua);
+tb_int_t xm_io_filelock___gc(lua_State* lua);
+
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
@@ -246,7 +250,9 @@ static luaL_Reg const g_io_file_functions[] =
 // the filelock functions
 static luaL_Reg const g_io_filelock_functions[] = 
 {
-    { tb_null,         tb_null                 }
+    { "close",         xm_io_filelock_close    }
+,   { "__gc",          xm_io_filelock___gc     }
+,   { tb_null,         tb_null                 }
 };
 
 // the path functions

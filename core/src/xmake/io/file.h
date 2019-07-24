@@ -87,7 +87,8 @@ typedef enum __xm_io_file_encoding_e
 
 } xm_io_file_encoding_e;
 
-typedef struct __xm_io_file
+// the file type
+typedef struct __xm_io_file_t
 {
     union 
     {
@@ -111,34 +112,34 @@ typedef struct __xm_io_file
     tb_char_t const* path;
     tb_buffer_t      rcache;      // the read line cache buffer
     tb_buffer_t      wcache;      // the write line cache buffer
-} xm_io_file;
+} xm_io_file_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
-static __tb_inline__ xm_io_file* xm_io_newfile(lua_State* lua)
+static __tb_inline__ xm_io_file_t* xm_io_newfile(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, tb_null);
 
     // new file
-    xm_io_file* file = (xm_io_file*)lua_newuserdata(lua, sizeof(xm_io_file));
+    xm_io_file_t* file = (xm_io_file_t*)lua_newuserdata(lua, sizeof(xm_io_file_t));
     tb_assert_and_check_return_val(file, tb_null);
 
     // init file
     luaL_getmetatable(lua, xm_io_file_udata);
     lua_setmetatable(lua, -2);
-    tb_memset(file, 0, sizeof(xm_io_file));
+    tb_memset(file, 0, sizeof(xm_io_file_t));
     return file;
 }
 
-static __tb_inline__ xm_io_file* xm_io_getfile(lua_State* lua)
+static __tb_inline__ xm_io_file_t* xm_io_getfile(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, tb_null);
 
     // get file
-    xm_io_file* file = (xm_io_file*)luaL_checkudata(lua, 1, xm_io_file_udata);
+    xm_io_file_t* file = (xm_io_file_t*)luaL_checkudata(lua, 1, xm_io_file_udata);
     tb_assert(file);
     return file;
 }
