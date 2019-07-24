@@ -51,7 +51,7 @@ static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed
         else 
         {
             lua_pushnil(lua);
-            lua_pushliteral(lua, "error: file lock has been closed");
+            lua_pushliteral(lua, "file lock has been closed");
             return 2;     
         }
     }
@@ -63,6 +63,16 @@ static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed
     tb_filelock_exit(lock->lock_ref);
     lock->lock_ref  = tb_null;
     lock->is_opened = tb_false;
+
+    // free lock path
+    if (lock->path)
+    {
+        tb_free(lock->path);
+        lock->path = tb_null;
+    }
+
+    // mark this lock as closed
+    tb_strlcpy(lock->name, "lock: (closed lock)", tb_arrayn(lock->name));
 
     // close ok
     lua_pushboolean(lua, tb_true);

@@ -53,6 +53,8 @@ xmake_C_FILES 			+= \
 						io/file_read \
 						io/file_seek \
 						io/file_write \
+						io/filelock_path \
+						io/filelock___tostring \
 						io/filelock_close___gc \
 						io/open \
 						io/openlock \

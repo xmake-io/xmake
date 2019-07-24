@@ -14,45 +14,42 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      ruki
- * @file        filelock_path.c
+ * @author      OpportunityLiu
+ * @file        file_path.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_path"
+#define TB_TRACE_MODULE_NAME    "file_path"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "filelock.h"
+#include "file.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* filelock:path()
+/* file:path()
  */
-tb_int_t xm_io_filelock_path(lua_State* lua)
+tb_int_t xm_io_file_path(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // this lock has been closed?
-    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    if (!lock->is_opened)
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "file lock has been closed!");
-        return 2;     
-    }
+    // this file has been closed?
+    xm_io_file_t* file = xm_io_getfile(lua);
+    if (xm_io_file_is_closed(file)) 
+        xm_io_file_return_error_closed(lua);
     else 
     {
-        // return lock path
-        lua_pushstring(lua, lock->path);
+        // return file path
+        lua_pushstring(lua, file->path);
         return 1;
     }
 }

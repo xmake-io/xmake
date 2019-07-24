@@ -28,9 +28,8 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io._file or {}
-local sandbox_io_filelock = sandbox_io._filelock or {}
 sandbox_io._file     = sandbox_io_file
-sandbox_io._filelock = sandbox_io_filelock
+sandbox_io._filelock = io._filelock
 
 -- inherit some builtin interfaces
 sandbox_io.lines  = io.lines
@@ -134,10 +133,6 @@ function sandbox_io.openlock(filepath)
     if not lock then
         raise(errors)
     end
-
-    -- bind metatable
-    lock = { _LOCK = lock }
-    setmetatable(lock, sandbox_io_filelock);
     return lock
 end
 

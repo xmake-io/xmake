@@ -50,9 +50,30 @@ tb_int_t xm_io_openlock(lua_State* lua)
     tb_filelock_ref_t lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
     if (lock)
     {
+        // init file lock
         xm_io_filelock_t* xmlock = xm_io_new_filelock(lua);
         xmlock->lock_ref  = lock;
         xmlock->is_opened = tb_true;
+
+        // save lock path
+        tb_size_t pathlen = tb_strlen(path);
+        xmlock->path = tb_malloc_cstr(pathlen + 1);
+        if (xmlock->path) 
+        {
+            tb_strncpy((tb_char_t*)xmlock->path, path, pathlen);
+            ((tb_char_t*)xmlock->path)[pathlen] = '\0';
+        }
+
+        // save lock name
+        tb_size_t name_maxn = tb_arrayn(xmlock->name);
+        tb_strlcpy(xmlock->name, "lock: ", name_maxn);
+        if (pathlen < name_maxn - tb_arrayn("lock: "))
+            tb_strcat(xmlock->name, path);
+        else
+        {
+            tb_strcat(xmlock->name, "...");
+            tb_strcat(xmlock->name, path + (pathlen - name_maxn + tb_arrayn("lock: ") + tb_arrayn("...")));
+        }
         return 1;
     }
     else 

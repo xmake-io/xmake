@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        filelock_path.c
+ * @file        filelock___tostring.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_path"
+#define TB_TRACE_MODULE_NAME    "filelock___tostring"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,25 +34,17 @@
  * implementation
  */
 
-/* filelock:path()
+/*
+ * tostring(lock)
  */
-tb_int_t xm_io_filelock_path(lua_State* lua)
+tb_int_t xm_io_filelock___tostring(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // this lock has been closed?
+    // get lock name as string
     xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    if (!lock->is_opened)
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "file lock has been closed!");
-        return 2;     
-    }
-    else 
-    {
-        // return lock path
-        lua_pushstring(lua, lock->path);
-        return 1;
-    }
+    lua_pushstring(lua, lock->name);
+    return 1;
 }
+
