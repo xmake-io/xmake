@@ -55,8 +55,6 @@ typedef struct __xm_machine_t
  * declaration
  */
 
-// the global functions
-
 // the os functions
 tb_int_t xm_os_argv(lua_State* lua);
 tb_int_t xm_os_find(lua_State* lua);
@@ -94,6 +92,7 @@ tb_int_t xm_os_getown(lua_State* lua);
 // the io functions
 tb_int_t xm_io_std(lua_State* lua);
 tb_int_t xm_io_open(lua_State* lua);
+tb_int_t xm_io_openlock(lua_State* lua);
 
 // the file functions
 tb_int_t xm_io_file_read(lua_State* lua);
@@ -224,6 +223,7 @@ static luaL_Reg const g_winos_functions[] =
 static luaL_Reg const g_io_functions[] = 
 {
     { "open",           xm_io_open      }
+,   { "openlock",       xm_io_openlock  }
 ,   { tb_null,          tb_null         }
 };
 
@@ -614,7 +614,7 @@ xm_machine_ref_t xm_machine_init()
         xm_machine_register_metatable(machine, "io", "_file", "XM_IO_FILE*", g_io_file_functions);
 
         // bind io.filelock (metatable) functions
-        xm_machine_register_metatable(machine, "io", "_filelock", "XM_IO_FILELOCK*", g_io_filelock_functions);
+        xm_machine_register_metatable(machine, "io", "_filelock", "XM_IO_FILE_LOCK*", g_io_filelock_functions);
 
         // add stdin, stdout, stderr to io
         xm_io_std(machine->lua);

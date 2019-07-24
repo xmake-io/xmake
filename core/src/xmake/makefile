@@ -54,6 +54,7 @@ xmake_C_FILES 			+= \
 						io/file_seek \
 						io/file_write \
 						io/open \
+						io/openlock \
 						io/std \
 						path/relative \
 						path/absolute \

@@ -114,12 +114,31 @@ function sandbox_io.open(filepath, mode, opt)
         raise(errors)
     end
 
+    -- wrap file
     file = { _FILE = file }
+
     -- replace print with vformat
     setmetatable(file, sandbox_io_file);
 
     -- ok?
     return file
+end
+
+-- open file lock
+function sandbox_io.openlock(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- format it first
+    filepath = vformat(filepath)
+
+    -- open lock
+    local filelock, errors = io.openlock(filepath)
+    if not filelock then
+        raise(errors)
+    end
+    return filelock
 end
 
 -- load object from the given file
