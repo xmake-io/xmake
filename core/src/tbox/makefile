@@ -214,6 +214,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/environment \
 						tbox/src/tbox/platform/event \
 						tbox/src/tbox/platform/file \
+						tbox/src/tbox/platform/filelock \
 						tbox/src/tbox/platform/hostname \
 						tbox/src/tbox/platform/ifaddrs \
 						tbox/src/tbox/platform/ltimer \
