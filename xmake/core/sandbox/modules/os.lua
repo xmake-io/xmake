@@ -22,6 +22,7 @@
 local io        = require("base/io")
 local os        = require("base/os")
 local utils     = require("base/utils")
+local xmake     = require("base/xmake")
 local option    = require("base/option")
 local semver    = require("base/semver")
 local sandbox   = require("sandbox/sandbox")
@@ -395,7 +396,7 @@ function sandbox_os.execv(program, argv, opt)
 
     -- flush io buffer first for fixing redirect io output order
     --
-    -- .e.g 
+    -- e.g. 
     --
     -- xmake run > /tmp/a
     --   print("xxx1")
@@ -480,19 +481,16 @@ end
 -- get xmake version
 function sandbox_os.xmakever()
 
-    -- get it from cache first
-    if sandbox_os._XMAKEVER ~= nil then
-        return sandbox_os._XMAKEVER 
+    -- fill cache
+    if sandbox_os._XMAKEVER == nil then
+        -- get xmakever
+        local xmakever = semver.new(xmake._VERSION_SHORT)
+        -- save to cache
+        sandbox_os._XMAKEVER = xmakever or false
     end
 
-    -- get xmakever
-    local xmakever = semver.new(xmake._VERSION_SHORT)
-
-    -- save to cache
-    os._XMAKEVER = xmakever or false
-
     -- done
-    return xmakever
+    return sandbox_os._XMAKEVER or nil
 end
 
 -- return module

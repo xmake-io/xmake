@@ -296,7 +296,7 @@ end
 
 -- match directories
 --
--- @note only return {} without count to simplify code, .e.g unpack(os.dirs(""))
+-- @note only return {} without count to simplify code, e.g. unpack(os.dirs(""))
 --
 function os.dirs(pattern, callback)
     return (os.match(pattern, 'd', callback))
@@ -582,7 +582,7 @@ end
 -- @param program     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
 --        filename    "clang", "xcrun"", "~/dir/test\ xxx/clang"
 -- @param argv        the arguments
--- @param opt         the options, .e.g {wildcards = false, stdout = outfile, stderr = errfile,
+-- @param opt         the options, e.g. {wildcards = false, stdout = outfile, stderr = errfile,
 --                                       envs = {PATH = "xxx;xx", CFLAGS = "xx"}}
 --
 function os.execv(program, argv, opt)
@@ -603,7 +603,7 @@ function os.execv(program, argv, opt)
     local filename = program
     if not os.isexec(program) then
 
-        -- parse the filename and arguments, .e.g "xcrun -sdk macosx clang"
+        -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
         local splitinfo = program:split("%s")
         filename = splitinfo[1]
         if #splitinfo > 1 then

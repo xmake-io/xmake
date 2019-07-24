@@ -78,7 +78,7 @@ function _instance:shortstr()
     return str
 end
 
--- satisfies the given semantic version(.e.g '> 1.0 < 2.0', '~1.5')?
+-- satisfies the given semantic version(e.g. '> 1.0 < 2.0', '~1.5')?
 function _instance:satisfies(version)
     return semver.satisfies(self:rawstr(), version) 
 end

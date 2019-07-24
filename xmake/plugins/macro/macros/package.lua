@@ -28,14 +28,14 @@ import("core.platform.platform")
 local options =
 {
     {'p', "plat",       "kv",  os.host(),   "Set the platform."                                    }
-,   {'a', "arch",       "kv",  nil,         "Set the architectures. .e.g 'armv7, arm64'"           }
+,   {'a', "arch",       "kv",  nil,         "Set the architectures. e.g. 'armv7, arm64'"           }
 ,   {'f', "config",     "kv",  nil,         "Pass the config arguments to \"xmake config\" .."     }
 ,   {'o', "outputdir",  "kv",  nil,         "Set the output directory of the package."             }
 }
 
 -- package all
 --
--- .e.g
+-- e.g.
 -- xmake m package 
 -- xmake m package -f "-m debug"
 -- xmake m package -p linux

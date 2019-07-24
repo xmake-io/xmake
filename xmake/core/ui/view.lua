@@ -236,7 +236,7 @@ end
 
 -- show view?
 -- 
--- .e.g
+-- e.g.
 -- v:show(false)
 -- v:show(true, {focused = true})
 --
@@ -404,7 +404,7 @@ function view:background()
     return background
 end
 
--- set background, .e.g background_set("blue")
+-- set background, e.g. background_set("blue")
 function view:background_set(color)
     return self:attr_set("background", color)
 end

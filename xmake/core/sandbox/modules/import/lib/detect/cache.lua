@@ -43,7 +43,7 @@ end
 
 -- load detect cache
 --
--- @param name  the cache name. .e.g find_program, find_programver, ..
+-- @param name  the cache name. e.g. find_program, find_programver, ..
 --
 function sandbox_lib_detect_cache.load(name)
 
@@ -63,7 +63,7 @@ end
 
 -- save detect cache
 --
--- @param name  the cache name. .e.g find_program, find_programver, ..
+-- @param name  the cache name. e.g. find_program, find_programver, ..
 -- @param info  the cache info
 --
 function sandbox_lib_detect_cache.save(name, info)
@@ -78,7 +78,7 @@ end
 
 -- clear detect cache
 --
--- @param name  the cache name. .e.g find_program, find_programver, ..
+-- @param name  the cache name. e.g. find_program, find_programver, ..
 --
 function sandbox_lib_detect_cache.clear(name)
 

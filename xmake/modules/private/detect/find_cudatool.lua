@@ -26,9 +26,9 @@ import("detect.sdks.find_cuda")
 
 -- find cuda tool
 --
--- @param       toolname   name of cuda tool, .e.g "nvcc"
+-- @param       toolname   name of cuda tool, e.g. "nvcc"
 --              parse      default pattern for version string
---              opt        the argument options, .e.g {version = true}
+--              opt        the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --

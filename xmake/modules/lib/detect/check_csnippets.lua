@@ -25,7 +25,7 @@ import("lib.detect.check_cxsnippets")
 --
 -- @param snippets  the snippets
 -- @param opt       the argument options
---                  .e.g 
+--                  e.g. 
 --                  { verbose = false, target = [target|option]
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
 --                  , configs = {defines = "xx", cxflags = ""}}

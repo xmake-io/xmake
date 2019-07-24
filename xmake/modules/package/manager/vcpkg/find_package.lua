@@ -28,7 +28,7 @@ import("core.project.target")
 -- find package from the brew package manager
 --
 -- @param name  the package name, e.g. zlib, pcre/libpcre16
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
 
@@ -55,7 +55,7 @@ function main(name, opt)
     -- get the vcpkg info directory
     local infodir = path.join(installdir, "vcpkg", "info")
 
-    -- find the package info file, .e.g zlib_1.2.11-3_x86-windows.list
+    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows.list
     local infofile = find_file(format("%s_*_%s-%s.list", name, arch, plat), infodir)
 
     -- save includedirs, linkdirs and links

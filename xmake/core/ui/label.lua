@@ -83,7 +83,7 @@ function label:textattr()
     return self:attr("textattr")
 end
 
--- set text attribute, .e.g textattr_set("yellow onblue bold")
+-- set text attribute, e.g. textattr_set("yellow onblue bold")
 function label:textattr_set(attr)
     return self:attr_set("textattr", attr)
 end

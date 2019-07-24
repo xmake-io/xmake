@@ -71,7 +71,7 @@ end
 --
 -- @param name  the name
 -- @param value the value
--- @param opt   the argument options, .e.g {readonly = false, force = false}
+-- @param opt   the argument options, e.g. {readonly = false, force = false}
 --
 function sandbox_core_project_config.set(name, value, opt)
     return config.set(name, value, opt)

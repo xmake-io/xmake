@@ -132,7 +132,6 @@
 $(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>
     <LocalDebuggerMergeEnvironment>true</LocalDebuggerMergeEnvironment>
     <RemoteDebuggerWorkingDirectory>$(XmakeRunDir)</RemoteDebuggerWorkingDirectory>
-    <DebuggerFlavor>WindowsRemoteDebugger</DebuggerFlavor>
     <RemoteDebuggerEnvironment>$(XmakeRunEnvs)
 $(RemoteDebuggerEnvironment)</RemoteDebuggerEnvironment>
   </PropertyGroup>

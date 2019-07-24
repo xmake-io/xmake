@@ -123,7 +123,7 @@ end
 
 -- get features 
 -- 
--- @param opt   the argument options, .e.g {toolname = "", program = "", programver = "", flags = {}}
+-- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", flags = {}}
 --
 -- @return      the features
 --

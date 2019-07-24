@@ -42,12 +42,12 @@ task("install")
             ,   options = 
                 {
                     {'o', "installdir", "kv", nil,      "Set the install directory.",
-                                                        ".e.g",
+                                                        "e.g.",
                                                         "    $ xmake install -o /usr/local",
                                                         "or  $ DESTDIR=/usr/local xmake install",
                                                         "or  $ INSTALLDIR=/usr/local xmake install" }
                 ,   {'p', "prefix",     "kv", nil,      "Set the prefix directory.",
-                                                        ".e.g",
+                                                        "e.g.",
                                                         "    $ xmake install --prefix=local",
                                                         "or  $ PREFIX=local xmake install"          }
                 ,   {'a', "all",        "k",  nil,      "Install all targets."                      }

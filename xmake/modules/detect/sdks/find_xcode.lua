@@ -86,9 +86,9 @@ end
 --
 -- @param sdkdir    the xcode directory
 -- @param opt       the argument options 
---                  .e.g {verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
+--                  e.g. {verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
 --
--- @return          the xcode toolchain. .e.g {bindir = .., cross = ..}
+-- @return          the xcode toolchain. e.g. {bindir = .., cross = ..}
 --
 -- @code 
 --

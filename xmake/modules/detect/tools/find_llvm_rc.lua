@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find llvm-rc
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\llvm_rc.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\llvm_rc.exe"}
 --
 -- @return      program, version
 --

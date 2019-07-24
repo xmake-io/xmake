@@ -32,8 +32,8 @@ local vformat   = require("sandbox/modules/vformat")
 -- find directory
 --
 -- @param name      the directory name
--- @param pathes    the search pathes (.e.g dirs, pathes, winreg pathes)
--- @param opt       the options, .e.g {suffixes = {"/aa", "/bb"}}
+-- @param pathes    the search pathes (e.g. dirs, pathes, winreg pathes)
+-- @param opt       the options, e.g. {suffixes = {"/aa", "/bb"}}
 --
 -- @return          the directory path
 --

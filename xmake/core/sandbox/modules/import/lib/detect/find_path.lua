@@ -53,8 +53,8 @@ end
 -- find path
 --
 -- @param name      the path name
--- @param pathes    the search pathes (.e.g dirs, pathes, winreg pathes)
--- @param opt       the options, .e.g {suffixes = {"/aa", "/bb"}}
+-- @param pathes    the search pathes (e.g. dirs, pathes, winreg pathes)
+-- @param opt       the options, e.g. {suffixes = {"/aa", "/bb"}}
 --
 -- @return          the path
 --

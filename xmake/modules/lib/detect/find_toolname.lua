@@ -68,7 +68,7 @@ end
 
 -- find tool name
 --
--- .e.g 
+-- e.g. 
 -- "xcrun -sdk macosx clang":   clang
 -- "/usr/bin/arm-linux-gcc":    gcc
 -- "link.exe -lib":             link

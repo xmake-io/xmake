@@ -103,7 +103,7 @@ end
 --
 -- @param sourcefiles   the source files
 -- @param opt           the argument options (contain all the compiler attributes of target), 
---                      .e.g {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
+--                      e.g. {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
 --
 -- @return              the flags list
 --
@@ -178,9 +178,9 @@ end
 
 -- get all compiler features
 --
--- @param langkind      the language kind, .e.g c, cxx, mm, mxx, swift, go, rust, d, as
+-- @param langkind      the language kind, e.g. c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param opt           the argument options (contain all the compiler attributes of target), 
---                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--                      e.g. {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
 --
 -- @return              the features
 --
@@ -219,9 +219,9 @@ end
 
 -- has the given features?
 --
--- @param features      the features, .e.g {"c_static_assert", "cxx_constexpr"}
+-- @param features      the features, e.g. {"c_static_assert", "cxx_constexpr"}
 -- @param opt           the argument options (contain all the compiler attributes of target), 
---                      .e.g {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
+--                      e.g. {target = ..., targetkind = "static", cxflags = "", defines = "", includedirs = "", ...}
 --
 -- @return              the supported features or nil
 --
@@ -284,7 +284,7 @@ end
 
 -- has the given flags?
 --
--- @param langkind      the language kind, .e.g c, cxx, mm, mxx, swift, go, rust, d, as
+-- @param langkind      the language kind, e.g. c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param flags         the flags
 -- @param options       the options
 --

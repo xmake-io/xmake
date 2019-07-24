@@ -92,7 +92,7 @@ static xm_charset_entry_ref_t xm_string_charset_find_by_name(tb_char_t const* na
 /* convert string 
  *
  * @param str       the string
- * @param ftype     the from-charset type, .e.g ascii, gb2312, gbk, ios8859, ucs2, ucs4, utf8, utf16, utf32
+ * @param ftype     the from-charset type, e.g. ascii, gb2312, gbk, ios8859, ucs2, ucs4, utf8, utf16, utf32
  * @param ttype     the to-charset type
  *
  * @code

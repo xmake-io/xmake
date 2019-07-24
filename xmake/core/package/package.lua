@@ -742,9 +742,9 @@ end
 
 -- fetch the local package info 
 --
--- @param opt   the fetch option, .e.g {force = true, system = false}
+-- @param opt   the fetch option, e.g. {force = true, system = false}
 --
--- @return {packageinfo}, fetchfrom (.e.g xmake/system)
+-- @return {packageinfo}, fetchfrom (e.g. xmake/system)
 --
 function _instance:fetch(opt)
 
@@ -893,7 +893,7 @@ end
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, .e.g { includes = ""}
+-- @param opt       the argument options, e.g. { includes = ""}
 --
 -- @return          true or false
 --
@@ -910,7 +910,7 @@ end
 -- has the given c++ funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, .e.g { includes = ""}
+-- @param opt       the argument options, e.g. { includes = ""}
 --
 -- @return          true or false
 --
@@ -927,7 +927,7 @@ end
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, .e.g { includes = ""}
+-- @param opt       the argument options, e.g. { includes = ""}
 --
 -- @return          true or false
 --
@@ -944,7 +944,7 @@ end
 -- check the given c++ snippets?
 --
 -- @param snippets  the snippets
--- @param opt       the argument options, .e.g { includes = ""}
+-- @param opt       the argument options, e.g. { includes = ""}
 --
 -- @return          true or false
 --

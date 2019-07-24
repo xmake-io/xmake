@@ -306,7 +306,7 @@ end
 
 -- get the platform tool from the kind
 --
--- .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
 function platform.tool(toolkind, plat)
 
@@ -332,7 +332,7 @@ function platform.tool(toolkind, plat)
         toolname = config.get("__toolname_" .. toolkind)
     end
 
-    -- contain toolname? parse it, .e.g 'gcc@xxxx.exe'
+    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
     if program and type(program) == "string" then
         local pos = program:find('@', 1, true)
         if pos then

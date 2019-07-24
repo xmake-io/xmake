@@ -47,7 +47,7 @@ end
 
 -- filter the shell command
 -- 
--- .e.g
+-- e.g.
 --
 -- print("$(shell echo hello xmake)")
 -- add_ldflags("$(shell pkg-config --libs sqlite3)")
@@ -152,7 +152,7 @@ end
 
 -- filter the builtin variables: "hello $(variable)" for string
 --
--- .e.g  
+-- e.g.  
 --
 -- print("$(host)")
 -- print("$(env PATH)")

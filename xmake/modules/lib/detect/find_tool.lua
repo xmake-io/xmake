@@ -39,7 +39,7 @@ end
 -- find tool
 --
 -- @param name      the tool name
--- @param opt       the options, .e.g {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, 
+-- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, 
 --                                     check = function (tool) os.run("%s -h", tool) end, version = true
 --                                     force = true, cachekey = "xxx"}
 --

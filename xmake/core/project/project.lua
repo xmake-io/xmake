@@ -350,9 +350,9 @@ function project._load(force, disable_filter)
     return true
 end
 
--- load deps for instance: .e.g option, target and rule
+-- load deps for instance: e.g. option, target and rule
 --
--- .e.g 
+-- e.g. 
 --
 -- a.deps = b
 -- b.deps = c
@@ -500,7 +500,7 @@ function project._load_targets()
 
         -- load rules from target and language
         --
-        -- .e.g 
+        -- e.g. 
         --
         -- a.deps = b
         -- b.deps = c

@@ -66,7 +66,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get version
     --
-    -- .e.g 
+    -- e.g. 
     -- 
     -- lastest
     -- >=1.5.1 <1.6.0  
@@ -187,7 +187,7 @@ end
 
 -- sort package deps
 --
--- .e.g 
+-- e.g. 
 --
 -- a.deps = b
 -- b.deps = c

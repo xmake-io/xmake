@@ -144,9 +144,9 @@ end
 -- find WDK toolchains
 --
 -- @param sdkdir    the WDK directory
--- @param opt       the argument options, .e.g {verbose = true, force = false, version = "5.9.1"} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false, version = "5.9.1"} 
 --
--- @return          the WDK toolchains. .e.g {sdkver = ..., sdkdir = ..., bindir = .., libdir = ..., includedir = ..., .. }
+-- @return          the WDK toolchains. e.g. {sdkver = ..., sdkdir = ..., bindir = .., libdir = ..., includedir = ..., .. }
 --
 -- @code 
 --

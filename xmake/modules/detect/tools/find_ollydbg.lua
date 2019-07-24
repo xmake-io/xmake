@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find ollydbg 
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\ollydbg.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\ollydbg.exe"}
 --
 -- @return      program, version
 --

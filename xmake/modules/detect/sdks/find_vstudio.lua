@@ -114,7 +114,7 @@ end
 
 -- find vstudio environment
 --
--- @param opt   the options, .e.g {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
+-- @param opt   the options, e.g. {vcvars_ver = 14.0, sdkver = "10.0.15063.0"}
 --
 -- @return      { 2008 = {version = "9.0", vcvarsall = {x86 = {path = .., lib = .., include = ..}}}
 --              , 2017 = {version = "15.0", vcvarsall = {x64 = {path = .., lib = ..}}}}

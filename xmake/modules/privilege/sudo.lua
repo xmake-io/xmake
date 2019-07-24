@@ -38,7 +38,7 @@ end
 
 -- sudo run command with administrator permission
 --
--- .e.g
+-- e.g.
 -- _sudo(os.run, "echo", "hello xmake!")
 --
 function _sudo(runner, cmd, ...)
@@ -53,7 +53,7 @@ end
 
 -- sudo run command with administrator permission and arguments list
 --
--- .e.g
+-- e.g.
 -- _sudov(os.runv, {"echo", "hello xmake!"})
 --
 function _sudov(runner, program, argv, opt)
@@ -68,7 +68,7 @@ end
 
 -- sudo run lua script with administrator permission and arguments list
 --
--- .e.g
+-- e.g.
 -- _lua(os.runv, "xxx.lua", {"arg1", "arg2"})
 --
 function _lua(runner, luafile, luaargv)

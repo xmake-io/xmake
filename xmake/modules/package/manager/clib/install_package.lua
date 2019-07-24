@@ -35,7 +35,7 @@ end
 
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
--- @param opt   the options, .e.g { verbose = true,
+-- @param opt   the options, e.g. { verbose = true,
 --                                  settings = {outputdir = "clib", save = false, save_dev = false}}
 --
 -- @return      true or false

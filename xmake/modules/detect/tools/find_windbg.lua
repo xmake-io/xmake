@@ -24,7 +24,7 @@ import("lib.detect.find_programver")
 
 -- find windbg 
 --
--- @param opt   the argument options, .e.g {version = true, program = "c:\xxx\windbg.exe"}
+-- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\windbg.exe"}
 --
 -- @return      program, version
 --

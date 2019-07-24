@@ -120,7 +120,7 @@ end
 
 -- get the target kinds (targetkind => linkerkind)
 --
--- .e.g
+-- e.g.
 -- {binary = "ld", static = "ar", shared = "sh"}
 --
 function _instance:targetkinds()
@@ -129,7 +129,7 @@ end
 
 -- get the target flags (targetkind => linkerflag)
 --
--- .e.g
+-- e.g.
 -- {binary = "ldflags", static = "arflags", shared = "shflags"}
 --
 function _instance:targetflags()
@@ -138,7 +138,7 @@ end
 
 -- get the mixing kinds for linker
 --
--- .e.g
+-- e.g.
 -- {"cc", "cxx"}
 --
 function _instance:mixingkinds()
@@ -428,7 +428,7 @@ end
 
 -- get language source extensions
 --
--- .e.g
+-- e.g.
 --
 -- {
 --      [".c"]      = cc
@@ -468,7 +468,7 @@ end
 
 -- get language source kinds
 --
--- .e.g
+-- e.g.
 --
 -- {
 --      cc  = ".c"
@@ -507,7 +507,7 @@ end
 
 -- get language source flags
 --
--- .e.g
+-- e.g.
 --
 -- {
 --      cc  = {"cflags", "cxflags"}
@@ -643,7 +643,7 @@ end
 
 -- get language target kinds
 --
--- .e.g
+-- e.g.
 --
 -- {
 --      binary = {"ld", "gc-ld", "dc-ld"}
@@ -685,7 +685,7 @@ end
 
 -- get language kinds (langkind => sourcekind)
 --
--- .e.g
+-- e.g.
 --
 -- {
 --      c           = "cc"

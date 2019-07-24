@@ -141,9 +141,9 @@ end
 --
 -- @param sdkdir    the ndk directory
 -- @param opt       the argument options 
---                  .e.g {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
+--                  e.g. {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
 --
--- @return          the ndk toolchains. .e.g {bindir = .., cross = ..}
+-- @return          the ndk toolchains. e.g. {bindir = .., cross = ..}
 --
 -- @code 
 --

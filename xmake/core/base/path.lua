@@ -197,7 +197,7 @@ end
 -- convert path pattern to a lua pattern
 function path.pattern(pattern)
 
-    -- translate wildcards, .e.g *, **
+    -- translate wildcards, e.g. *, **
     pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
     pattern = pattern:gsub("%*%*", "\001")
     pattern = pattern:gsub("%*", "\002")

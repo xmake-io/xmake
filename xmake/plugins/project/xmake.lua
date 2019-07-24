@@ -46,10 +46,10 @@ task("project")
                                                        ,    "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
                                                        ,    "    - vsxmake2010 ~ vsmake2019" }
                 ,   {'m', "modes",     "kv", nil,           "Set the project modes."
-                                                       ,    "    .e.g "
+                                                       ,    "    e.g. "
                                                        ,    "    - xmake project -k vs2015 -m \"release" .. path.envsep() ..  "debug\"" }
                 ,   {'a', "archs",     "kv", nil,           "Set the project archs."
-                                                       ,    "    .e.g "
+                                                       ,    "    e.g. "
                                                        ,    "    - xmake project -k vs2015 -a \"x86" .. path.envsep() ..  "x64\"" }
                 ,   {nil, "outputdir", "v",  ".",           "Set the output directory." }
                 }

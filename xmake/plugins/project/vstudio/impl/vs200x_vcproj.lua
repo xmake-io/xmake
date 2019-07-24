@@ -152,7 +152,7 @@ end
 
 -- make VCCLCompilerTool
 --
--- .e.g
+-- e.g.
 --
 -- <Tool
 --      Name="VCCLCompilerTool"
@@ -188,7 +188,7 @@ end
 
 -- make VCLinkerTool
 --
--- .e.g
+-- e.g.
 -- <Tool
 --      Name="VCLinkerTool"
 --      AdditionalDependencies="xxx.lib"
@@ -393,7 +393,7 @@ end
 
 -- make cxfile
 --
--- .e.g
+-- e.g.
 --  <File
 --      RelativePath="..\..\..\src\file3.c"
 --      >
@@ -449,7 +449,7 @@ end
 
 -- make rcfile
 --
--- .e.g
+-- e.g.
 --  <File
 --      RelativePath="..\..\..\src\resource.rc"
 --      >
@@ -490,7 +490,7 @@ end
 
 -- make files
 --
--- .e.g
+-- e.g.
 -- <Filter
 --      Name="Source Files"
 --      >

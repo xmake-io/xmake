@@ -129,8 +129,8 @@ end
 
 -- load the given tool from the given kind
 --
--- @param kind      the tool kind .e.g cc, cxx, mm, mxx, as, ar, ld, sh, ..
--- @param program   the tool program, .e.g /xxx/arm-linux-gcc, gcc@mipscc.exe
+-- @param kind      the tool kind e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- @param program   the tool program, e.g. /xxx/arm-linux-gcc, gcc@mipscc.exe
 --
 function tool.load(kind, program)
 
@@ -143,7 +143,7 @@ function tool.load(kind, program)
         return tool._TOOLS[key]
     end
 
-    -- contain toolname? parse it, .e.g 'gcc@xxxx.exe'
+    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
     local toolname = nil
     if program then
         local pos = program:find('@', 1, true)

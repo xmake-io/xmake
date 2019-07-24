@@ -93,7 +93,7 @@ end
 -- @param sdkdir    the cuda sdk directory
 -- @param opt       the argument options 
 --
--- @return          the cuda sdk toolchains. .e.g {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
+-- @return          the cuda sdk toolchains. e.g. {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
 -- @code 
 --

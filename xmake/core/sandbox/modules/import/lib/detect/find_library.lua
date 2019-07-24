@@ -36,7 +36,7 @@ local find_file         = import("lib.detect.find_file")
 --
 -- @param names     the library names
 -- @param pathes    the search pathes
--- @param opt       the options, .e.g {kind = "static/shared", suffixes = {"/aa", "/bb"}}
+-- @param opt       the options, e.g. {kind = "static/shared", suffixes = {"/aa", "/bb"}}
 --
 -- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
 --

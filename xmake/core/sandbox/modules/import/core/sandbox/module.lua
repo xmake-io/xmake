@@ -325,12 +325,12 @@ end
 
 -- import module
 --
--- @param name      the module name, .e.g core.platform
--- @param opt       the argument options, .e.g {alias = "", nolocal = true, rootdir = "", try = false, inherit = false, anonymous = false, nocache = false}
+-- @param name      the module name, e.g. core.platform
+-- @param opt       the argument options, e.g. {alias = "", nolocal = true, rootdir = "", try = false, inherit = false, anonymous = false, nocache = false}
 --
 -- @return          the module instance
 --
--- .e.g 
+-- e.g. 
 --
 -- import("core.platform")
 -- => platform
@@ -451,7 +451,7 @@ function core_sandbox_module.import(name, opt)
         --
         -- we can access the all scope members of _super in the child module
         --
-        -- .e.g
+        -- e.g.
         --
         -- import("core.platform.xxx", {inherit = true})
         --

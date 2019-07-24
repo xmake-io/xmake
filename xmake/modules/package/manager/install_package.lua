@@ -81,7 +81,7 @@ end
 -- install package using the package manager
 --
 -- @param name  the package name, e.g. zlib 1.12.x (try all), XMAKE::zlib 1.12.x, BREW::zlib, VCPKG::zlib, CONAN::OpenSSL/1.0.2n@conan/stable
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
 

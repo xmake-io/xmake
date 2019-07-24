@@ -24,7 +24,7 @@ import("lib.detect.pkg_config")
 -- find package from the pkg-config package manager
 --
 -- @param name  the package name
--- @param opt   the options, .e.g {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
     return pkg_config.find(name, opt)

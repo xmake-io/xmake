@@ -42,12 +42,12 @@ task("uninstall")
             ,   options = 
                 {
                     {nil, "installdir", "kv", nil,      "Set the install directory.",
-                                                        ".e.g",
+                                                        "e.g.",
                                                         "    $ xmake uninstall -o /usr/local",
                                                         "or  $ DESTDIR=/usr/local xmake uninstall",
                                                         "or  $ INSTALLDIR=/usr/local xmake uninstall" }
                 ,   {'p', "prefix",     "kv", nil,      "Set the prefix directory.",
-                                                        ".e.g",
+                                                        "e.g.",
                                                         "    $ xmake uninstall --prefix=local",
                                                         "or  $ PREFIX=local xmake uninstall"          }
                 ,   {                                                                                 }

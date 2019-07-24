@@ -35,7 +35,7 @@ local cache     = require("sandbox/modules/import/lib/detect/cache")
 -- find program version
 --
 -- @param program   the program
--- @param opt       the options, .e.g {command = "--version", parse = "(%d+%.?%d*%.?%d*.-)%s", verbose = true, force = true, cachekey = "xxx"}
+-- @param opt       the options, e.g. {command = "--version", parse = "(%d+%.?%d*%.?%d*.-)%s", verbose = true, force = true, cachekey = "xxx"}
 --                    - opt.command   the version command string or script, default: --version
 --                    - opt.parse     the version parse script or lua match pattern 
 --

@@ -50,8 +50,8 @@ end
 -- find file
 --
 -- @param name      the file name
--- @param pathes    the search pathes (.e.g dirs, pathes, winreg pathes)
--- @param opt       the options, .e.g {suffixes = {"/aa", "/bb"}}
+-- @param pathes    the search pathes (e.g. dirs, pathes, winreg pathes)
+-- @param opt       the options, e.g. {suffixes = {"/aa", "/bb"}}
 --
 -- @return          the file path
 --

@@ -125,7 +125,7 @@ function main._init()
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
     if projectdir and not path.is_absolute(projectdir) then
         projectdir = path.absolute(projectdir)
-    elseif projectdir then 
+    elseif projectdir then
         projectdir = path.translate(projectdir)
     end
     xmake._PROJECT_DIR = projectdir
@@ -150,9 +150,7 @@ function main._init()
 
     -- enter the project directory
     if os.isdir(os.projectdir()) then
-        xmake._WORKING_DIR = os.cd(os.projectdir())
-    else
-        xmake._WORKING_DIR = os.curdir()
+        os.cd(os.projectdir())
     end
 
     -- add the directory of the program file (xmake) to $PATH environment

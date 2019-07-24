@@ -51,9 +51,9 @@ end
 --
 -- @param sdkdir   the root sdk directory of cross toolchain 
 -- @param opt      the argument options 
---                 .e.g {bindir = .., cross = ..}
+--                 e.g. {bindir = .., cross = ..}
 --
--- @return          the toolchain .e.g {sdkdir = .., bindir = .., cross = ..}
+-- @return          the toolchain e.g. {sdkdir = .., bindir = .., cross = ..}
 --
 -- @code 
 --
