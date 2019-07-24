@@ -20,7 +20,7 @@
 
 -- define module
 local io    = io or {}
-local _file = _file or io.file or {}
+local _file = _file or io._file or {}
 
 -- load modules
 local path   = require("base/path")
@@ -142,6 +142,7 @@ end
 -- write data to file
 function io.writefile(filepath, data, opt)
 
+    -- init option
     opt = opt or {}
 
     -- open file
@@ -172,8 +173,9 @@ function io.open(filepath, mode, opt)
     -- check
     assert(filepath)
 
+    -- init option and mode
+    opt  = opt or {}
     mode = mode or "r"
-    opt = opt or {}
 
     -- open it
     local handle = io._open(filepath, mode .. (opt.encoding or ""))
@@ -196,6 +198,7 @@ function io.save(filepath, object, opt)
     -- check
     assert(filepath and object)
 
+    -- init option
     opt = opt or {}
 
     -- ensure directory
@@ -232,6 +235,7 @@ function io.load(filepath, opt)
     -- check
     assert(filepath)
 
+    -- init option
     opt = opt or {}
 
     -- open the file
@@ -254,6 +258,7 @@ end
 -- gsub the given file and return replaced data
 function io.gsub(filepath, pattern, replace, opt)
 
+    -- init option
     opt = opt or {}
 
     -- read all data from file
@@ -282,6 +287,7 @@ end
 -- cat the given file
 function io.cat(filepath, linecount, opt)
 
+    -- init option
     opt = opt or {}
 
     -- open file
@@ -312,6 +318,7 @@ end
 -- tail the given file
 function io.tail(filepath, linecount, opt)
 
+    -- init option
     opt = opt or {}
 
     -- all?

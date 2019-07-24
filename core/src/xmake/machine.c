@@ -243,6 +243,12 @@ static luaL_Reg const g_io_file_functions[] =
 ,   { tb_null,         tb_null                 }
 };
 
+// the filelock functions
+static luaL_Reg const g_io_filelock_functions[] = 
+{
+    { tb_null,         tb_null                 }
+};
+
 // the path functions
 static luaL_Reg const g_path_functions[] = 
 {
@@ -510,45 +516,71 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
 
 #if defined(TB_CONFIG_OS_WINDOWS)
 
-        // the GetNativeSystemInfo function type
-        typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
+    // the GetNativeSystemInfo function type
+    typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
 
-        // get system info
-        SYSTEM_INFO systeminfo = {0};
-        GetNativeSystemInfo_t pGetNativeSystemInfo = tb_null;
-        tb_dynamic_ref_t kernel32 = tb_dynamic_init("kernel32.dll");
-        if (kernel32) pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
-        if (pGetNativeSystemInfo) pGetNativeSystemInfo(&systeminfo);
-        else GetSystemInfo(&systeminfo);
+    // get system info
+    SYSTEM_INFO systeminfo = {0};
+    GetNativeSystemInfo_t pGetNativeSystemInfo = tb_null;
+    tb_dynamic_ref_t kernel32 = tb_dynamic_init("kernel32.dll");
+    if (kernel32) pGetNativeSystemInfo = (GetNativeSystemInfo_t)tb_dynamic_func(kernel32, "GetNativeSystemInfo");
+    if (pGetNativeSystemInfo) pGetNativeSystemInfo(&systeminfo);
+    else GetSystemInfo(&systeminfo);
 
-        // init architecture
-        switch (systeminfo.wProcessorArchitecture)
-        {
-        case PROCESSOR_ARCHITECTURE_AMD64:
-            lua_pushstring(machine->lua, "x64");
-            break;
-        case PROCESSOR_ARCHITECTURE_ARM:
-            lua_pushstring(machine->lua, "arm");
-            break;
-        case PROCESSOR_ARCHITECTURE_INTEL:
-            lua_pushstring(machine->lua, "x86");
-            break;
-        default:
+    // init architecture
+    switch (systeminfo.wProcessorArchitecture)
+    {
+    case PROCESSOR_ARCHITECTURE_AMD64:
+        lua_pushstring(machine->lua, "x64");
+        break;
+    case PROCESSOR_ARCHITECTURE_ARM:
+        lua_pushstring(machine->lua, "arm");
+        break;
+    case PROCESSOR_ARCHITECTURE_INTEL:
+        lua_pushstring(machine->lua, "x86");
+        break;
+    default:
 #   ifdef TB_ARCH_x64
-            lua_pushstring(machine->lua, "x64");
+        lua_pushstring(machine->lua, "x64");
 #   else
-            lua_pushstring(machine->lua, "x86");
+        lua_pushstring(machine->lua, "x86");
 #   endif
-            break;
-        }
+        break;
+    }
 #elif defined(TB_ARCH_x64)
-        lua_pushstring(machine->lua, "x86_64");
+    lua_pushstring(machine->lua, "x86_64");
 #elif defined(TB_ARCH_x86)
-        lua_pushstring(machine->lua, "i386");
+    lua_pushstring(machine->lua, "i386");
 #else
-        lua_pushstring(machine->lua, TB_ARCH_STRING);
+    lua_pushstring(machine->lua, TB_ARCH_STRING);
 #endif
-        lua_setglobal(machine->lua, "_ARCH");
+    lua_setglobal(machine->lua, "_ARCH");
+}
+static tb_void_t xm_machine_register_metatable(xm_machine_t* machine, tb_char_t const* module, tb_char_t const* metaname, tb_char_t const* metatype, luaL_Reg const* funcs)
+{
+    // check
+    tb_assert_and_check_return(machine && machine->lua);
+
+    /* register metatable and functions
+     *
+     * metatype module.metaname = metatable {__index = metatable, funcs ...}
+     *
+     * e.g. XM_IO_FILE* io.file = metatable {__index = metatable, funcs ...}
+     */
+    luaL_newmetatable(machine->lua, metatype);
+    // stack: {metatable}, {metatable}
+    lua_pushvalue(machine->lua, -1);
+    // stack: {metatable, __index = {metatable}}
+    lua_setfield(machine->lua, -2, "__index");
+    // stack: {metatable}, {io}
+    lua_getglobal(machine->lua, module);
+    // stack: {metatable}, {io}, {metatable}
+    lua_pushvalue(machine->lua, -2);
+    // stack: {metatable}, {io, file = {metatable}}
+    lua_setfield(machine->lua, -2, metaname);
+    // stack: {metatable}
+    lua_pop(machine->lua, 1);
+    luaL_register(machine->lua, tb_null, funcs);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -578,24 +610,13 @@ xm_machine_ref_t xm_machine_init()
         // bind io functions
         luaL_register(machine->lua, "io", g_io_functions);
 
-        // bind file functions
-        // stack: {metatable}
-        luaL_newmetatable(machine->lua, "XM_IO_FILE*");
-        // stack: {metatable}, {metatable}
-        lua_pushvalue(machine->lua, -1);
-        // stack: {metatable, __index = {metatable}}
-        lua_setfield(machine->lua, -2, "__index");
-        // stack: {metatable}, {io}
-        lua_getglobal(machine->lua, "io");
-        // stack: {metatable}, {io}, {metatable}
-        lua_pushvalue(machine->lua, -2);
-        // stack: {metatable}, {io, file = {metatable}}
-        lua_setfield(machine->lua, -2, "file");
-        // stack: {metatable}
-        lua_pop(machine->lua, 1);
-        // stack:
-        luaL_register(machine->lua, NULL, g_io_file_functions);
-        // add stdin,stdout,stderr to io
+        // bind io.file (metatable) functions
+        xm_machine_register_metatable(machine, "io", "_file", "XM_IO_FILE*", g_io_file_functions);
+
+        // bind io.filelock (metatable) functions
+        xm_machine_register_metatable(machine, "io", "_filelock", "XM_IO_FILELOCK*", g_io_filelock_functions);
+
+        // add stdin, stdout, stderr to io
         xm_io_std(machine->lua);
 
         // bind path functions

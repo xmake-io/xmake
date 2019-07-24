@@ -26,9 +26,11 @@ local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
 -- define module
-local sandbox_io      = sandbox_io or {}
-local sandbox_io_file = sandbox_io.file or {}
-sandbox_io.file = sandbox_io_file
+local sandbox_io          = sandbox_io or {}
+local sandbox_io_file     = sandbox_io._file or {}
+local sandbox_io_filelock = sandbox_io._filelock or {}
+sandbox_io._file     = sandbox_io_file
+sandbox_io._filelock = sandbox_io_filelock
 
 -- inherit some builtin interfaces
 sandbox_io.lines  = io.lines
@@ -38,7 +40,7 @@ sandbox_io.isatty = io.isatty
 -- inherit matatable of file
 if sandbox_io_file.__index ~= sandbox_io_file then
     sandbox_io_file.__index = sandbox_io_file
-    for k, v in pairs(io.file) do
+    for k, v in pairs(io._file) do
         if type(v) == "function" then
             sandbox_io_file[k] = function(s, ...)
                 local result, err = v(s._FILE, ...)
@@ -54,7 +56,7 @@ if sandbox_io_file.__index ~= sandbox_io_file then
         end
     end
     -- file:lines does not use its second return value for error
-    sandbox_io_file.lines = io.file.lines
+    sandbox_io_file.lines = io._file.lines
 end
 
 -- get file size
