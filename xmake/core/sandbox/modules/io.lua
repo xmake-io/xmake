@@ -28,8 +28,9 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io._file or {}
+local sandbox_io_filelock = sandbox_io._filelock or {}
 sandbox_io._file     = sandbox_io_file
-sandbox_io._filelock = io._filelock
+sandbox_io._filelock = sandbox_io_filelock
 
 -- inherit some builtin interfaces
 sandbox_io.lines  = io.lines
@@ -56,6 +57,26 @@ if sandbox_io_file.__index ~= sandbox_io_file then
     end
     -- file:lines does not use its second return value for error
     sandbox_io_file.lines = io._file.lines
+end
+
+-- inherit matatable of file lock
+if sandbox_io_filelock.__index ~= sandbox_io_filelock then
+    sandbox_io_filelock.__index = sandbox_io_filelock
+    for k, v in pairs(io._filelock) do
+        if type(v) == "function" then
+            sandbox_io_filelock[k] = function(s, ...)
+                local result, err = v(s._LOCK, ...)
+                if result == nil and err ~= nil then
+                    raise(err)
+                end
+                -- wrap to sandbox_filelock again
+                if result == s._LOCK then
+                    result = s
+                end
+                return result
+            end
+        end
+    end
 end
 
 -- get file size
@@ -133,6 +154,10 @@ function sandbox_io.openlock(filepath)
     if not lock then
         raise(errors)
     end
+
+    -- bind metatable
+    lock = { _LOCK = lock }
+    setmetatable(lock, sandbox_io_filelock);
     return lock
 end
 

@@ -45,6 +45,6 @@ tb_int_t xm_io_filelock___tostring(lua_State* lua)
     // get lock name as string
     xm_io_filelock_t* lock = xm_io_get_filelock(lua);
     lua_pushstring(lua, lock->name);
-    return 1;
+    xm_io_filelock_return_success();
 }
 

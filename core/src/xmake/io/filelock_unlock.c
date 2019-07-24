@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        filelock_path.c
+ * @file        filelock_unlock.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_path"
+#define TB_TRACE_MODULE_NAME    "filelock_unlock"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,9 +34,8 @@
  * implementation
  */
 
-/* lock:path()
- */
-tb_int_t xm_io_filelock_path(lua_State* lua)
+// filelock:unlock()
+tb_int_t xm_io_filelock_unlock(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -47,8 +46,12 @@ tb_int_t xm_io_filelock_path(lua_State* lua)
         xm_io_filelock_return_error_closed(lua);
     else 
     {
-        // return lock path
-        lua_pushstring(lua, lock->path);
-        xm_io_filelock_return_success();
+        // unlock it
+        if (tb_filelock_leave(lock->lock_ref))
+        {
+            lua_pushboolean(lua, tb_true);
+            xm_io_filelock_return_success();
+        }
+        else xm_io_filelock_return_error(lua, lock, "unlock failed!");
     }
 }

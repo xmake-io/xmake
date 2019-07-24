@@ -46,14 +46,9 @@ static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed
         if (allow_closed_lock)
         {
             lua_pushboolean(lua, tb_true);
-            return 1;
+            xm_io_filelock_return_success();
         }
-        else 
-        {
-            lua_pushnil(lua);
-            lua_pushliteral(lua, "file lock has been closed");
-            return 2;     
-        }
+        else xm_io_filelock_return_error_closed(lua);
     }
 
     // check
@@ -76,7 +71,7 @@ static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed
 
     // close ok
     lua_pushboolean(lua, tb_true);
-    return 1;
+    xm_io_filelock_return_success();
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

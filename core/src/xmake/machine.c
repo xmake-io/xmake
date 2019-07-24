@@ -108,6 +108,9 @@ tb_int_t xm_io_file___gc(lua_State* lua);
 
 // the filelock functions
 tb_int_t xm_io_filelock_path(lua_State* lua);
+tb_int_t xm_io_filelock_lock(lua_State* lua);
+tb_int_t xm_io_filelock_unlock(lua_State* lua);
+tb_int_t xm_io_filelock_trylock(lua_State* lua);
 tb_int_t xm_io_filelock_close(lua_State* lua);
 tb_int_t xm_io_filelock___gc(lua_State* lua);
 tb_int_t xm_io_filelock___tostring(lua_State* lua);
@@ -254,6 +257,9 @@ static luaL_Reg const g_io_filelock_functions[] =
 {
     { "path",          xm_io_filelock_path       }
 ,   { "close",         xm_io_filelock_close      }
+,   { "lock",          xm_io_filelock_lock       }
+,   { "unlock",        xm_io_filelock_unlock     }
+,   { "trylock",       xm_io_filelock_trylock    }
 ,   { "__gc",          xm_io_filelock___gc       }
 ,   { "__tostring",    xm_io_filelock___tostring }
 ,   { tb_null,         tb_null                   }
@@ -575,7 +581,7 @@ static tb_void_t xm_machine_register_metatable(xm_machine_t* machine, tb_char_t 
      *
      * metatype module.metaname = metatable {__index = metatable, funcs ...}
      *
-     * e.g. XM_IO_FILE* io.file = metatable {__index = metatable, funcs ...}
+     * e.g. io._file* io._file = metatable {__index = metatable, funcs ...}
      */
     luaL_newmetatable(machine->lua, metatype);
     // stack: {metatable}, {metatable}
@@ -621,10 +627,10 @@ xm_machine_ref_t xm_machine_init()
         luaL_register(machine->lua, "io", g_io_functions);
 
         // bind io.file (metatable) functions
-        xm_machine_register_metatable(machine, "io", "_file", "XM_IO_FILE*", g_io_file_functions);
+        xm_machine_register_metatable(machine, "io", "_file", "io._file*", g_io_file_functions);
 
         // bind io.filelock (metatable) functions
-        xm_machine_register_metatable(machine, "io", "_filelock", "XM_IO_FILE_LOCK*", g_io_filelock_functions);
+        xm_machine_register_metatable(machine, "io", "_filelock", "io._filelock*", g_io_filelock_functions);
 
         // add stdin, stdout, stderr to io
         xm_io_std(machine->lua);

@@ -38,14 +38,13 @@
 #define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
 #define xm_io_file_is_closed(file)        (xm_io_file_is_closed_file(file) || xm_io_file_is_closed_std(file))
 
-#define xm_io_file_udata "XM_IO_FILE*"
+// the file udata type
+#define xm_io_file_udata    "io._file*"
 
-#define xm_io_file_return_success()                                                                                    \
-    do                                                                                                                 \
-    {                                                                                                                  \
-        return 1;                                                                                                      \
-    } while (0)
+// return file success
+#define xm_io_file_return_success()       do { return 1; } while (0)
 
+// return file error with reason
 #define xm_io_file_return_error(lua, file, reason)                                                                     \
     do                                                                                                                 \
     {                                                                                                                  \
@@ -54,6 +53,7 @@
         return 2;                                                                                                      \
     } while (0)
 
+// return file closed error 
 #define xm_io_file_return_error_closed(lua)                                                                            \
     do                                                                                                                 \
     {                                                                                                                  \

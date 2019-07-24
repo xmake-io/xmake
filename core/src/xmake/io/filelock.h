@@ -29,7 +29,30 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * macros
  */
-#define xm_io_filelock_udata "XM_IO_FILE_LOCK*"
+
+// the file lock udata type
+#define xm_io_filelock_udata "io._filelock*"
+
+// return lock success
+#define xm_io_filelock_return_success()       do { return 1; } while (0)
+
+// return lock error with reason
+#define xm_io_filelock_return_error(lua, lock, reason)                                                                 \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        lua_pushnil(lua);                                                                                              \
+        lua_pushfstring(lua, "error: %s (%s)", reason, lock->name);                                                    \
+        return 2;                                                                                                      \
+    } while (0)
+
+// return closed error
+#define xm_io_filelock_return_error_closed(lua)                                                                        \
+    do                                                                                                                 \
+    {                                                                                                                  \
+        lua_pushnil(lua);                                                                                              \
+        lua_pushliteral(lua, "error: file lock has been closed");                                                      \
+        return 2;                                                                                                      \
+    } while (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
