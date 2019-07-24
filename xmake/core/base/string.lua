@@ -21,6 +21,9 @@
 -- define module: string
 local string = string or {}
 
+-- load modules
+local deprecated = require("base/deprecated")
+
 -- save original interfaces
 string._dump = string._dump or string.dump
 string._trim = string._trim or string.trim
@@ -29,11 +32,29 @@ string._trim = string._trim or string.trim
 function string._makestr(object, deflate, serialize, level)
     if type(object) == "string" then
         return serialize and string.format("%q", object) or object
-    elseif type(object) == "boolean" or type(object) == "number" then
+    elseif type(object) == "boolean" or type(object) == "nil" then
+        return tostring(object)
+    elseif type(object) == "number" then
+        if serialize then
+            if math.isnan(object) then
+                return "math.nan"
+            end
+            local inf = math.isinf(object)
+            if inf == 1 then
+                return "math.huge"
+            elseif inf == -1 then
+                return "-math.huge"
+            end
+        end
         return tostring(object)
     elseif not serialize and type(object) == "table" and (getmetatable(object) or {}).__tostring then
         return tostring(object)
     elseif type(object) == "table" then
+
+        local indent = ""
+        if not deflate then
+            indent = string.rep("    ", level)
+        end
 
         -- make head
         local s = ""
@@ -43,41 +64,36 @@ function string._makestr(object, deflate, serialize, level)
             if level > 0 then
                 s = s .. "\n"
             end
-            for l = 1, level do
-                s = s .. "    "
-            end
-            s = s .. "{\n"
+            s = s .. indent .. "{\n"
         end
 
         -- make body
         local i = 0
-        for k, v in pairs(object) do  
+        for k, v in pairs(object) do
 
             if deflate then
                 s = s .. (i ~= 0 and "," or "")
             else
-                for l = 1, level do
-                    s = s .. "    "
-                end
+                s = s .. indent
                 if i == 0 then
                     s = s .. "    "
                 else
                     s = s .. ",   "
                 end
             end
-            
+
             -- make key = value
             if type(k) == "string" then
-                if serialize and not k:match("^%a[%w_]+$") then
+                if serialize and not k:match("^[%a_][%w_]+$") then
                     k = string.format("[%q]", k)
                 end
                 if deflate then
-                    s = s .. k .. "=" 
+                    s = s .. k .. "="
                 else
-                    s = s .. k .. " = " 
+                    s = s .. k .. " = "
                 end
             end
-            local substr, errors = string._makestr(v, deflate, serialize, level + 1)  
+            local substr, errors = string._makestr(v, deflate, serialize, level + 1)
             if substr == nil then
                 return nil, errors
             end
@@ -87,17 +103,12 @@ function string._makestr(object, deflate, serialize, level)
                 s = s .. "\n"
             end
             i = i + 1
-        end  
+        end
 
         -- make tail
-        if not deflate then
-            for l = 1, level do
-                s = s .. "    "
-            end
-        end
-        s = s .. "}"
+        s = s .. indent .. "}"
         return s
-    elseif serialize and type(object) == "function" then 
+    elseif serialize and type(object) == "function" then
         return string.format("%q", string._dump(object))
     elseif serialize then
         return nil, "cannot serialize object: " .. type(object)
@@ -113,7 +124,7 @@ function string._loadstr(object)
     -- only load luajit function data: e.g. "\27LJ\2\0\6=stdin"
     if type(object) == "string" and object:startswith("\27LJ") then
         return loadstring(object)
-    elseif type(object) == "table" then  
+    elseif type(object) == "table" then
         for k, v in pairs(object) do
             local value, errors = string._loadstr(v)
             if value ~= nil then
@@ -286,6 +297,7 @@ function string.ipattern(pattern, brackets)
     return table.concat(tmp)
 end
 
+-- @deprecated
 -- dump to string from the given object (more readable)
 --
 -- @param deflate       deflate empty characters
@@ -293,6 +305,7 @@ end
 -- @return              string, errors
 -- 
 function string.dump(object, deflate)
+    deprecated.add("utils.dump() or string.serialize()", "string.dump()")
     return string._makestr(object, deflate, false, 0)
 end
 
@@ -318,10 +331,10 @@ function string:deserialize()
     local result = nil
     local script, errors = loadstring("return " .. self)
     if script then
-        
+
         -- load object
         local ok, object = pcall(script)
-        if ok and object then
+        if ok then
             result = object
         elseif object then
             -- error

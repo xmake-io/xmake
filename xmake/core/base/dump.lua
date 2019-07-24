@@ -72,16 +72,19 @@ end
 
 -- print function
 function dump._print_function(func, as_key)
+    io.write(dump._translate("${reset}${color.dump.function}"))
     if as_key then
-        return dump._print_default(func)
+        io.write(dump._format("text.dump.default_format", "%s", func))
+    else
+        local funcinfo = debug.getinfo(func)
+        local srcinfo = funcinfo.short_src
+        if funcinfo.linedefined >= 0 then
+            srcinfo = srcinfo .. ":" .. funcinfo.linedefined
+        end
+        local funcname = funcinfo.name and (funcinfo.name .. " ") or ""
+        io.write(dump._translate("function ${bright}"), funcname, dump._translate("${reset}${dim}"), srcinfo)
     end
-    local funcinfo = debug.getinfo(func)
-    local srcinfo = funcinfo.short_src
-    if funcinfo.linedefined >= 0 then
-        srcinfo = srcinfo .. ":" .. funcinfo.linedefined
-    end
-    local funcname = funcinfo.name and (funcinfo.name .. " ") or ""
-    io.write(dump._translate("${reset}${color.dump.function}function ${bright}"), funcname, dump._translate("${reset}${dim}"), srcinfo)
+    io.write(dump._translate("${reset}"))
 end
 
 -- print value with default format
@@ -101,9 +104,7 @@ end
 
 -- print scalar value
 function dump._print_scalar(value, as_key)
-    if type(value) == "nil" then
-        dump._print_keyword("nil")
-    elseif type(value) == "boolean" then
+    if type(value) == "nil" or type(value) == "boolean" then
         dump._print_keyword(value)
     elseif type(value) == "number" then
         dump._print_number(value)

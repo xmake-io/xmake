@@ -11,13 +11,48 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      OpportunityLiu
 -- @file        math.lua
 --
 
--- load module
-return require("base/math")
+-- define module
+local math = math or {}
 
+-- init constants
+math.nan   = math.log(-1)
+math.e     = math.exp(1)
+
+-- check a number is inf or -inf
+--
+-- @returns 1 for inf,  -1 for -inf, otherwise false
+function math:isinf()
+
+    -- check
+    assert(type(self) == "number", "number expacted")
+
+    if self == math.huge then
+        return 1
+    elseif self == -math.huge then
+        return -1
+    else
+        return false
+    end
+end
+
+-- check a number is nan
+--
+-- @returns true for nan, otherwise false
+function math:isnan()
+
+    -- check
+    assert(type(self) == "number", "number expacted")
+
+    return self ~= self
+end
+
+
+-- return module
+return math

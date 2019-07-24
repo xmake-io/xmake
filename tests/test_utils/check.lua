@@ -13,6 +13,9 @@ function _get_rep(value)
 end
 
 function same(actual, expacted)
+    if actual ~= actual and expacted ~= expacted then
+        return true, _get_rep(actual), _get_rep(expacted)
+    end
     return actual == expacted, _get_rep(actual), _get_rep(expacted)
 end
 
