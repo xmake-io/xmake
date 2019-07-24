@@ -31,7 +31,7 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 
-function _loadfileimpl(filepath, mode)
+function _loadfile_impl(filepath, mode)
 
     -- init displaypath
     local binary = false
@@ -62,9 +62,9 @@ function _loadfileimpl(filepath, mode)
 end
 
 -- init loadfile
-local _loadfile = _loadfile or loadfile
 local _loadcache = {}
 function loadfile(filepath, mode)
+
     -- get absolute path
     filepath = path.absolute(filepath)
 
@@ -79,7 +79,7 @@ function loadfile(filepath, mode)
     end
 
     -- load file
-    local script, errors = _loadfileimpl(filepath, mode)
+    local script, errors = _loadfile_impl(filepath, mode)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end
@@ -89,7 +89,7 @@ end
 -- init package path
 table.insert(package.loaders, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
-    local script, serr = _loadfileimpl(filepath)
+    local script, serr = _loadfile_impl(filepath)
     if not script then
         return "\n\tfailed to load " .. filepath .. " : " .. serr
     end
