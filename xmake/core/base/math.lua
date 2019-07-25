@@ -25,6 +25,17 @@ local math = math or {}
 math.nan   = math.log(-1)
 math.e     = math.exp(1)
 
+-- check a number is int
+--
+-- @returns true for int, otherwise false
+function math:isint()
+
+    -- check
+    assert(type(self) == "number", "number expacted")
+
+    return self == math.floor(self) and self ~= math.huge and self ~= -math.huge
+end
+
 -- check a number is inf or -inf
 --
 -- @returns 1 for inf,  -1 for -inf, otherwise false
