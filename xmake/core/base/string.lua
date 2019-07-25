@@ -203,13 +203,13 @@ end
 
 -- serialize to string from the given object
 --
--- @param deflate       deflate empty characters
+-- @param opt           serialize options
+--                      e.g. { strip = true, binary = false, indent = true }
 --
 -- @return              string, errors
 --
-function string.serialize(object, deflate)
-    deflate = not not deflate
-    return serialize.save(object, { strip = deflate, indent = not deflate })
+function string.serialize(object, opt)
+    return serialize.save(object, opt)
 end
 
 -- deserialize string to object

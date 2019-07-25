@@ -138,6 +138,10 @@ function serialize._maketable(object, opt, level)
             table.insert(s, indent .. k .. con .. v)
         end
     end
+
+    if #s == 0 then
+        return opt.indent and "{ }" or "{}"
+    end
     return headstr .. table.concat(s, opt.indent and ",\n" or ",") .. tailstr
 end
 
@@ -189,7 +193,11 @@ end
 function serialize.save(object, opt)
 
     -- init options
-    opt = opt or {}
+    if opt == true then
+        opt = { strip = true, binary = false, indent = false }
+    elseif opt == false or opt == nil then
+        opt = { strip = false, binary = false, indent = true }
+    end
 
     -- make string
     local result, errors = serialize._make(object, opt, 0)
@@ -198,7 +206,19 @@ function serialize.save(object, opt)
     if errors ~= nil then
         return nil, errors
     end
-    return result
+
+    if not opt.binary then
+        return result
+    end
+
+    -- binary mode
+    local dump, lerr = serialize._dump(loadstring("return " .. result), true)
+    if lerr ~= nil then
+        return nil, lerr
+    end
+
+    -- return shorter representation
+    return (#dump < #result) and dump or result
 end
 
 -- load table from string in table
@@ -206,7 +226,14 @@ function serialize._load(str)
 
     -- load table as script
     local result = nil
-    local script, errors = loadstring("return " .. str, str)
+
+    local binary = str:startswith("\27LJ")
+
+    if not binary then
+        str = "return " .. str
+    end
+
+    local script, errors = loadstring(str)
     if script then
 
         -- load object
@@ -217,8 +244,16 @@ function serialize._load(str)
             -- error
             errors = object
         else
+            local data
+            if binary then
+                data = "<binary data>"
+            elseif #str > 20 then
+                data = str:sub(8, 17) .. "..."
+            else
+                data = str:sub(8)
+            end
             -- error
-            errors = string.format("cannot deserialize string: %s", str)
+            errors = string.format("cannot deserialize string: %s", data)
         end
     end
 
