@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        filelock_lock.c
+ * @file        filelock_islocked.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_lock"
+#define TB_TRACE_MODULE_NAME    "filelock_islocked"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,26 +34,12 @@
  * implementation
  */
 
-/* lock file
- *
- * exclusive lock:  filelock:lock("/xxxx/filelock")
- * shared lock:     filelock:lock("/xxxx/filelock", {shared = true})
+/* lock:islocked()
  */
-tb_int_t xm_io_filelock_lock(lua_State* lua)
+tb_int_t xm_io_filelock_islocked(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
-
-    // get option argument
-    tb_bool_t is_shared = tb_false;
-    if (lua_istable(lua, 2)) 
-    { 
-        // is shared lock?
-        lua_pushstring(lua, "shared");
-        lua_gettable(lua, 2);
-        is_shared = (tb_bool_t)lua_toboolean(lua, -1);
-        lua_pop(lua, 1);
-    }
 
     // this lock has been closed?
     xm_io_filelock_t* lock = xm_io_get_filelock(lua);
@@ -61,13 +47,7 @@ tb_int_t xm_io_filelock_lock(lua_State* lua)
         xm_io_filelock_return_error_closed(lua);
     else 
     {
-        // lock it
-        if (lock->is_locked || tb_filelock_enter(lock->lock_ref, is_shared? TB_FILELOCK_MODE_SH : TB_FILELOCK_MODE_EX))
-        {
-            lock->is_locked = tb_true;
-            lua_pushboolean(lua, tb_true);
-            xm_io_filelock_return_success();
-        }
-        else xm_io_filelock_return_error(lua, lock, "lock failed!");
+        lua_pushboolean(lua, lock->is_locked);
+        xm_io_filelock_return_success();
     }
 }

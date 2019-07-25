@@ -57,6 +57,7 @@ xmake_C_FILES 			+= \
 						io/filelock_lock \
 						io/filelock_unlock \
 						io/filelock_trylock \
+						io/filelock_islocked \
 						io/filelock___tostring \
 						io/filelock_close___gc \
 						io/open \

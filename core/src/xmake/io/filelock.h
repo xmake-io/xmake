@@ -64,8 +64,11 @@ typedef struct __xm_io_filelock_t
     // the lock reference
     tb_filelock_ref_t   lock_ref;
 
-    // is opened
+    // is opened?
     tb_bool_t           is_opened;
+
+    // is locked?
+    tb_bool_t           is_locked;
 
     // the lock name
     tb_char_t           name[64];

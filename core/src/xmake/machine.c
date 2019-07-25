@@ -111,6 +111,7 @@ tb_int_t xm_io_filelock_path(lua_State* lua);
 tb_int_t xm_io_filelock_lock(lua_State* lua);
 tb_int_t xm_io_filelock_unlock(lua_State* lua);
 tb_int_t xm_io_filelock_trylock(lua_State* lua);
+tb_int_t xm_io_filelock_islocked(lua_State* lua);
 tb_int_t xm_io_filelock_close(lua_State* lua);
 tb_int_t xm_io_filelock___gc(lua_State* lua);
 tb_int_t xm_io_filelock___tostring(lua_State* lua);
@@ -260,6 +261,7 @@ static luaL_Reg const g_io_filelock_functions[] =
 ,   { "lock",          xm_io_filelock_lock       }
 ,   { "unlock",        xm_io_filelock_unlock     }
 ,   { "trylock",       xm_io_filelock_trylock    }
+,   { "islocked",      xm_io_filelock_islocked   }
 ,   { "__gc",          xm_io_filelock___gc       }
 ,   { "__tostring",    xm_io_filelock___tostring }
 ,   { tb_null,         tb_null                   }

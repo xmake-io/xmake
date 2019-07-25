@@ -37,17 +37,23 @@
 /* try to lock file
  *
  * exclusive lock:  filelock:trylock("/xxxx/filelock")
- * exclusive lock:  filelock:trylock("/xxxx/filelock", "ex")
- * shared lock:     filelock:trylock("/xxxx/filelock", "sh")
+ * shared lock:     filelock:trylock("/xxxx/filelock", {shared = true})
  */
 tb_int_t xm_io_filelock_trylock(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get lock mode
-    tb_char_t const* modestr = luaL_optstring(lua, 2, "ex");
-    tb_assert_and_check_return_val(modestr, 0);
+    // get option argument
+    tb_bool_t is_shared = tb_false;
+    if (lua_istable(lua, 2)) 
+    { 
+        // is shared lock?
+        lua_pushstring(lua, "shared");
+        lua_gettable(lua, 2);
+        is_shared = (tb_bool_t)lua_toboolean(lua, -1);
+        lua_pop(lua, 1);
+    }
 
     // this lock has been closed?
     xm_io_filelock_t* lock = xm_io_get_filelock(lua);
@@ -55,14 +61,8 @@ tb_int_t xm_io_filelock_trylock(lua_State* lua)
         xm_io_filelock_return_error_closed(lua);
     else 
     {
-        // is exclusive mode?
-        tb_bool_t is_exclusive = tb_true;
-        if (!tb_strcmp(modestr, "sh")) is_exclusive = tb_false;
-        else if (tb_strcmp(modestr, "ex"))
-            xm_io_filelock_return_error(lua, lock, "invalid lock mode!");
-
         // try to lock it
-        if (tb_filelock_enter_try(lock->lock_ref, is_exclusive? TB_FILELOCK_MODE_EX : TB_FILELOCK_MODE_SH))
+        if (lock->is_locked || tb_filelock_enter_try(lock->lock_ref, is_shared? TB_FILELOCK_MODE_SH : TB_FILELOCK_MODE_EX))
         {
             lua_pushboolean(lua, tb_true);
             xm_io_filelock_return_success();
