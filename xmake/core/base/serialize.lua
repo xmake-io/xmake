@@ -28,8 +28,6 @@ local math      = require("base/math")
 -- save original interfaces
 serialize._dump = serialize._dump or string._dump or string.dump
 
-serialize._FUNCTAG = "\27FUNCTION"
-
 function serialize._makenumber(num, opt, level)
     if math.isnan(num) then
         return "math.nan"
@@ -71,9 +69,13 @@ function serialize._maketable(object, opt, level)
         elseif type(k) == "string" then
             isarr = false
         else
-            return nil, string.format("cannot serialize table with key of %s: %s", type(k), tostring(k))
+            return nil, string.format("cannot serialize table with key of %s: <%s>", type(k), k)
         end
-        serialized[k] = serialize._make(v, opt, childlevel)
+        local sval, err = serialize._make(v, opt, childlevel)
+        if err ~= nil then
+            return nil, err
+        end
+        serialized[k] = sval
     end
 
     -- too sparse
@@ -127,7 +129,11 @@ function serialize._maketable(object, opt, level)
             if type(k) == "string" and not k:match("^[%a_][%w_]*$") then
                 k = string.format("[%q]", k)
             elseif type(k) == "number" then
-                k = string.format("[%s]", serialize._makenumber(k, opt, childlevel))
+                local nval, err = serialize._makenumber(v, opt, childlevel)
+                if err ~= nil then
+                    return nil, err
+                end
+                k = string.format("[%s]", nval)
             end
             table.insert(s, indent .. k .. con .. v)
         end
@@ -138,23 +144,21 @@ end
 function serialize._makefunction(func, opt, level)
     local ok, funccode = pcall(serialize._dump, func, opt.strip)
     if not ok then
-        return nil, funccode
+        return nil, string.format("%s: <%s>", funccode, func)
     end
-    local closure = {}
-    -- local nups = debug.getinfo(func, 'u').nups
-    -- for i = 1, nups do
-    --     local k, v = debug.getupvalue(func, i)
-    --     if _G[k] == v then
-    --         v = nil
-    --     else
-    --         v = "haha"
-    --     end
-    --     closure[i] = { k, v }
-    -- end
-    -- closure.nups = nups
-    closure.func = funccode
-    closure.tag  = serialize._FUNCTAG
-    return serialize._maketable(closure, opt, level + 1)
+    local chunkname = nil
+    local sep = ","
+    if opt.strip then
+        chunkname = "\"=(deserialized code)\""
+    end
+    if opt.indent then
+        sep = ", "
+    end
+    if chunkname then
+        return string.format("loadstring(%q%s%s)", funccode, sep, chunkname)
+    else
+        return string.format("loadstring(%q)", funccode)
+    end
 end
 
 -- make string with the level
@@ -172,7 +176,7 @@ function serialize._make(object, opt, level)
     elseif type(object) == "function" then
         return serialize._makefunction(object, opt, level)
     else
-        return nil, string.format("cannot serialize %s: '%s'", type(object), tostring(object))
+        return nil, string.format("cannot serialize %s: <%s>", type(object), object)
     end
 end
 
@@ -197,50 +201,12 @@ function serialize.save(object, opt)
     return result
 end
 
-function serialize._loadfunction(closure)
-    local func, err = loadstring(closure.func, "=(deserialized code)")
-    if func == nil then
-        return nil, err
-    end
-    -- for i = 1, closure.nups do
-    --     local upval = closure[i]
-    --     if upval[2] == nil then
-    --         upval[2] = _G[upval[1]]
-    --     end
-    --     debug.setupvalue(func, i, upval[2])
-    -- end
-    return func
-end
-
 -- load table from string in table
-function serialize._load(object)
-    if type(object) == "table" then
-        if object.tag == serialize._FUNCTAG then
-            return serialize._loadfunction(object)
-        end
-        for k, v in pairs(object) do
-            local value, errors = serialize._load(v)
-            if value ~= nil then
-                object[k] = value
-            else
-                return nil, errors
-            end
-        end
-    end
-    return object
-end
-
--- deserialize string to object
---
--- @param str           the serialized string
---
--- @return              object, errors
---
-function serialize.load(str)
+function serialize._load(str)
 
     -- load table as script
     local result = nil
-    local script, errors = loadstring("return " .. str)
+    local script, errors = loadstring("return " .. str, str)
     if script then
 
         -- load object
@@ -256,10 +222,22 @@ function serialize.load(str)
         end
     end
 
-    -- load function from string in table
-    if result then
-        result, errors = serialize._load(result)
-    end
+    return result, errors
+end
+
+-- deserialize string to object
+--
+-- @param str           the serialized string
+--
+-- @return              object, errors
+--
+function serialize.load(str)
+
+    -- check
+    assert(str)
+
+    -- load string
+    local result, errors = serialize._load(str)
 
     -- ok?
     if errors ~= nil then
