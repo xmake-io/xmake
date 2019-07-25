@@ -86,16 +86,12 @@ function serialize._maketable(object, opt, level)
     -- make indent
     local indent = ""
     if opt.indent then
-        indent = string.rep("    ", level)
+        indent = string.rep(opt.indent, level)
     end
 
     -- make head
-    local headstr
-    if opt.indent then
-        headstr = (level > 0 and "\n" or "") .. indent .. "{\n"
-    else
-        headstr = "{"
-    end
+    local headstr = opt.indent and "{\n" or "{"
+
     -- make tail
     local tailstr
     if opt.indent then
@@ -107,7 +103,7 @@ function serialize._maketable(object, opt, level)
     -- make body
     local s = {}
     if opt.indent then
-        indent = indent .. "    "
+        indent = string.rep(opt.indent, level + 1)
     end
 
     if isarr then
@@ -197,6 +193,24 @@ function serialize.save(object, opt)
         opt = { strip = true, binary = false, indent = false }
     elseif opt == false or opt == nil then
         opt = { strip = false, binary = false, indent = true }
+    end
+
+    if not opt.indent then
+        opt.indent = false
+    elseif type(opt.indent) == "boolean" then
+        opt.indent = "    "
+    elseif type(opt.indent) == "number" then
+        if opt.indent < 0 then
+            opt.indent = false
+        else
+            opt.indent = string.rep(" ", opt.indent)
+        end
+    elseif type(opt.indent) == "string" then
+        if not opt.indent:match("^%s+$") then
+            return nil, "invalid opt.indent, only whitespaces are accepted"
+        end
+    else
+        return nil, "invalid opt.indent, should be boolean, number or string"
     end
 
     -- make string

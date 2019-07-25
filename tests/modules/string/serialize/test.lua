@@ -3,7 +3,9 @@ function roundtrip(round0)
     local round1 = string.serialize(round0, false):deserialize()
     local round2 = string.serialize(round1, true):deserialize()
     local round3 = string.serialize(round2, {binary=true}):deserialize()
-    return round3
+    local round4 = string.serialize(round3, {indent=16}):deserialize()
+    local round5 = string.serialize(round4, {indent="  \r\n\t"}):deserialize()
+    return round5
 end
 
 function test_number(t)
