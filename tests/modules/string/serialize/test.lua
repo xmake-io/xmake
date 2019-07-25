@@ -27,6 +27,7 @@ function test_table(t)
     t:are_equal(roundtrip({1, 2, 3}), {1, 2, 3})
     t:are_equal(roundtrip({1, "", 3}), {1, "", 3})
     t:are_equal(roundtrip({{1, 2, 3, nil, 4}}), {{1, 2, 3, nil, 4}})
+    t:are_equal(roundtrip({{1, 2, 3, nil, 4, [100]=5}}), {{1, 2, 3, nil, 4, [100]=5}})
     t:are_equal(roundtrip({{a=1, b=2, c=3, nil, 4}}), {{a=1, b=2, c=3, nil, 4}})
 end
 
@@ -34,4 +35,6 @@ function test_function(t)
     t:are_equal(roundtrip(function() return {} end)(), {})
     t:are_equal(roundtrip(function() return {1, 2, 3} end)(), {1, 2, 3})
     t:are_equal(roundtrip(function() return {{1, 2, 3, nil, 4}} end)(), {{1, 2, 3, nil, 4}})
+    t:are_equal(roundtrip({function() return {{1, 2, 3, nil, 4}} end})[1](), {{1, 2, 3, nil, 4}})
+    t:are_equal(roundtrip({{function() return {{1, 2, 3, nil, 4}} end}})[1][1](), {{1, 2, 3, nil, 4}})
 end

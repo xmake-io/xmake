@@ -129,7 +129,7 @@ function serialize._maketable(object, opt, level)
             if type(k) == "string" and not k:match("^[%a_][%w_]*$") then
                 k = string.format("[%q]", k)
             elseif type(k) == "number" then
-                local nval, err = serialize._makenumber(v, opt, childlevel)
+                local nval, err = serialize._makenumber(k, opt, childlevel)
                 if err ~= nil then
                     return nil, err
                 end
