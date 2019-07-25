@@ -214,7 +214,15 @@ function serialize.save(object, opt)
     end
 
     -- make string
-    local result, errors = serialize._make(object, opt, 0)
+    local ok, result, errors = pcall(serialize._make, object, opt, 0)
+
+    if not ok then
+        if result:find("stack overflow", 1, true) then
+            errors = "cannot serialize: reference loop found"
+        else
+            errors = "cannot serialize: " .. result
+        end
+    end
 
     -- ok?
     if errors ~= nil then
@@ -226,9 +234,14 @@ function serialize.save(object, opt)
     end
 
     -- binary mode
-    local dump, lerr = serialize._dump(loadstring("return " .. result), true)
+    local func, lerr = loadstring("return " .. result)
     if lerr ~= nil then
         return nil, lerr
+    end
+
+    local dump, derr = serialize._dump(func, true)
+    if derr ~= nil then
+        return nil, derr
     end
 
     -- return shorter representation
