@@ -59,11 +59,14 @@ function serialize._maketable(object, opt, level)
     local maxn = 0
     for k, v in pairs(object) do
         if type(k) == "number" then
-            numidxcount = numidxcount + 1
-            if k < 1 or not math.isint(k) then
-                isarr = false
-            elseif k > maxn then
-                maxn = k
+            -- only checks when it may be an array
+            if isarr then
+                numidxcount = numidxcount + 1
+                if k < 1 or not math.isint(k) then
+                    isarr = false
+                elseif k > maxn then
+                    maxn = k
+                end
             end
         elseif type(k) == "string" then
             isarr = false
@@ -89,7 +92,7 @@ function serialize._maketable(object, opt, level)
     end
 
     -- make head
-    local headstr = opt.indent and "{\n" or "{"
+    local headstr = opt.indent and ("{\n" .. indent .. opt.indent)  or "{"
 
     -- make tail
     local tailstr
@@ -100,44 +103,33 @@ function serialize._maketable(object, opt, level)
     end
 
     -- make body
-    local s = {}
-    if opt.indent then
-        indent = string.rep(opt.indent, level + 1)
-    end
-
+    local bodystrs = {}
     if isarr then
-        local nilval
-        if maxn ~= numidxcount then
-            nilval = indent .. "nil"
-        end
         for i = 1, maxn do
-            local val = serialized[i]
-            if val == nil then
-                s[i] = nilval
-            else
-                s[i] = indent .. val
-            end
+            bodystrs[i] = serialized[i] or "nil"
         end
     else
         local con = opt.indent and " = " or "="
         for k, v in pairs(serialized) do
-            if type(k) == "string" and not k:match("^[%a_][%w_]*$") then
-                k = string.format("[%q]", k)
-            elseif type(k) == "number" then
+            if type(k) == "string" then
+                if not k:match("^[%a_][%w_]*$") then
+                    k = string.format("[%q]", k)
+                end
+            else -- type(k) == "number"
                 local nval, err = serialize._makenumber(k, opt, childlevel)
                 if err ~= nil then
                     return nil, err
                 end
                 k = string.format("[%s]", nval)
             end
-            table.insert(s, indent .. k .. con .. v)
+            table.insert(bodystrs, k .. con .. v)
         end
     end
 
-    if #s == 0 then
+    if #bodystrs == 0 then
         return opt.indent and "{ }" or "{}"
     end
-    return headstr .. table.concat(s, opt.indent and ",\n" or ",") .. tailstr
+    return headstr .. table.concat(bodystrs, opt.indent and (",\n" .. indent .. opt.indent) or ",") .. tailstr
 end
 
 function serialize._makefunction(func, opt, level)
@@ -196,17 +188,24 @@ function serialize.save(object, opt)
         opt = { strip = false, binary = false, indent = true }
     end
 
+    -- init indent, from nil, boolean, number or string to false or string
     if not opt.indent then
+        -- no indent
         opt.indent = false
-    elseif type(opt.indent) == "boolean" then
+    elseif type(opt.indent) == "boolean" then -- true
+        -- 4 spaces
         opt.indent = "    "
     elseif type(opt.indent) == "number" then
         if opt.indent < 0 then
             opt.indent = false
+        elseif opt.indent > 20 then
+            return nil, "invalid opt.indent, too large"
         else
+            -- opt.indent spaces
             opt.indent = string.rep(" ", opt.indent)
         end
     elseif type(opt.indent) == "string" then
+        -- only whitespaces allowed
         if not opt.indent:match("^%s+$") then
             return nil, "invalid opt.indent, only whitespaces are accepted"
         end
@@ -216,7 +215,6 @@ function serialize.save(object, opt)
 
     -- make string
     local ok, result, errors = pcall(serialize._make, object, opt, 0)
-
     if not ok then
         if result:find("stack overflow", 1, true) then
             errors = "cannot serialize: reference loop found"
