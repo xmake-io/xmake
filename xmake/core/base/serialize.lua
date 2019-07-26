@@ -257,31 +257,33 @@ function serialize._load(str)
         str = "return " .. str
     end
 
-    local script, errors = loadstring(str)
+    -- load string
+    local script, errors = loadstring(str, "=(deserializing data)")
     if script then
-
         -- load object
         local ok, object = pcall(script)
         if ok then
             result = object
-        elseif object then
-            -- error
-            errors = object
         else
-            local data
-            if binary then
-                data = "<binary data>"
-            elseif #str > 20 then
-                data = str:sub(8, 17) .. "..."
-            else
-                data = str:sub(8)
-            end
             -- error
-            errors = string.format("cannot deserialize string: %s", data)
+            errors = tostring(object)
         end
     end
 
-    return result, errors
+    if errors then
+        local data
+        if binary then
+            data = "<binary data>"
+        elseif #str > 30 then
+            data = string.format("%q... ", str:sub(8, 27))
+        else
+            data = string.format("%q", str:sub(8))
+        end
+        -- error
+        return nil, string.format("cannot deserialize %s: %s", data, errors)
+    end
+
+    return result
 end
 
 -- deserialize string to object
