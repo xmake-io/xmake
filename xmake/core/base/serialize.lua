@@ -184,8 +184,22 @@ function serialize._resolvefunction(root, env, funccode)
     if type(funccode) ~= "string" then
         return nil, "func should called with a string"
     end
-    -- resolve
-    return load(funccode, "=(deserialized code)", "b", env)
+
+    -- resolve funccode
+    local func, err = load(funccode, "=(deserialized code)", "b", env)
+    if err ~= nil then
+        return nil, err
+    end
+
+    -- try restore upvalues
+    for i = 1, math.huge do
+        local upname = debug.getupvalue(func, i)
+        if upname == nil or upname == "" then
+            break
+        end
+        debug.setupvalue(func, i, env[upname])
+    end
+    return func
 end
 
 function serialize._makeref(path, opt)
@@ -320,9 +334,9 @@ function serialize._createenv()
     end
 
     -- load function
-    function env.func(funccode)
+    function env.func(...)
         -- load func
-        return serialize._createstub(serialize._resolvefunction, env, funccode)
+        return serialize._createstub(serialize._resolvefunction, env, ...)
     end
 
     -- return new env
