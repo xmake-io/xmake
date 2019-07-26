@@ -39,7 +39,7 @@ function main()
     end
 
     -- lock the whole project
-    project.filelock():lock()
+    project.lock()
 
     -- get the target name
     local targetname = option.get("target")
@@ -83,7 +83,7 @@ function main()
     }
 
     -- unlock the whole project
-    project.filelock():unlock()
+    project.unlock()
 
     -- leave project directory
     os.cd(oldir)

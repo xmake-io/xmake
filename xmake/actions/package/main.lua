@@ -218,7 +218,7 @@ function main()
     end
 
     -- lock the whole project
-    project.filelock():lock()
+    project.lock()
 
     -- get the target name
     local targetname = option.get("target")
@@ -243,5 +243,5 @@ function main()
     end
 
     -- unlock the whole project
-    project.filelock():lock()
+    project.lock()
 end

@@ -24,6 +24,8 @@ local sandbox_core_project = sandbox_core_project or {}
 -- load modules
 local table       = require("base/table")
 local deprecated  = require("base/deprecated")
+local utils       = require("base/utils")
+local baseoption  = require("base/option")
 local config      = require("project/config")
 local option      = require("project/option")
 local project     = require("project/project")
@@ -159,6 +161,26 @@ function sandbox_core_project.filelock()
         sandbox_core_project._FILELOCK = filelock 
     end
     return filelock
+end
+
+-- lock the whole project 
+function sandbox_core_project.lock(opt)
+    if sandbox_core_project.trylock(opt) then
+        return true
+    elseif baseoption.get("diagnosis") then
+        utils.warning("the current project is being accessed by other processes, please waiting!") 
+    end
+    return sandbox_core_project.filelock():lock(opt)
+end
+
+-- trylock the whole project 
+function sandbox_core_project.trylock(opt)
+    return sandbox_core_project.filelock():trylock(opt)
+end
+
+-- unlock the whole project 
+function sandbox_core_project.unlock()
+    return sandbox_core_project.filelock():unlock()
 end
 
 -- get the project mtimes
