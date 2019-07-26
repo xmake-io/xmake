@@ -112,6 +112,9 @@ function main(package)
     -- get working directory of this package
     local workdir = package:cachedir()
 
+    -- lock this package
+    package:lock()
+
     -- enter the working directory
     local oldir = nil
     if #package:urls() > 0 then
@@ -267,6 +270,9 @@ function main(package)
     if os.emptydir(installdir) then
         os.tryrm(installdir)
     end
+
+    -- unlock this package
+    package:unlock()
 
     -- leave source codes directory
     os.cd(oldir)

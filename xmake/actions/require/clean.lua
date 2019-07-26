@@ -73,17 +73,6 @@ end
 function main(package_names)
 
     -- trace
-    print("clearing caches ..")
-
-    -- clear cache directory
-    os.rm(package.cachedir())
-
-    -- clear require cache
-    local require_cache = cache("local.require")
-    require_cache:clear()
-    require_cache:flush()
-
-    -- trace
     print("clearing packages ..")
 
     -- clear all unused packages
@@ -99,5 +88,16 @@ function main(package_names)
             _clear_packagedirs(packagedir)
         end
     end
+
+    -- trace
+    print("clearing caches ..")
+
+    -- clear cache directory
+    os.rm(package.cachedir())
+
+    -- clear require cache
+    local require_cache = cache("local.require")
+    require_cache:clear()
+    require_cache:flush()
 end
 

@@ -30,6 +30,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
 local semver         = require("base/semver")
+local option         = require("base/option")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local sandbox        = require("sandbox/sandbox")
@@ -246,6 +247,40 @@ end
 -- get the package kind, binary or nil(static, shared)
 function _instance:kind()
     return self:get("kind")
+end
+
+-- get the filelock of the whole package directory
+function _instance:filelock()
+    local filelock = self._FILELOCK
+    if filelock == nil then
+        filelock = io.openlock(path.join(self:cachedir(), "package.lock"))
+        if not filelock then
+            os.raise("cannot create filelock for package(%s)!", package:name())
+        end
+        self._FILELOCK = filelock 
+    end
+    return filelock
+end
+
+-- lock the whole package 
+function _instance:lock(opt)
+    if self:filelock():trylock(opt) then
+        return true
+    elseif option.get("diagnosis") then
+        utils.warning("the current package is being accessed by other processes, please waiting!") 
+    end
+    local ok, errors = self:filelock():lock(opt)
+    if not ok then
+        os.raise(errors)
+    end
+end
+
+-- unlock the whole package 
+function _instance:unlock()
+    local ok, errors = self:filelock():unlock()
+    if not ok then
+        os.raise(errors)
+    end
 end
 
 -- get the cached directory of this package
