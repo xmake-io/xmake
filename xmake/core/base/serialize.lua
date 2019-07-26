@@ -101,12 +101,6 @@ function serialize._maketable(object, opt, level, path, reftab)
         isarr = false
     end
 
-    -- make indent
-    local indent = ""
-    if opt.indent then
-        indent = string.rep(opt.indent, level)
-    end
-
     -- make body
     local bodystrs = {}
     if isarr then
@@ -114,38 +108,40 @@ function serialize._maketable(object, opt, level, path, reftab)
             bodystrs[i] = serialized[i] or "nil"
         end
     else
-        local con = opt.indent and " = " or "="
+        local dformat = opt.indent and "%s = %s" or "%s=%s"
+        local sformat = opt.indent and "[%q] = %s" or "[%q]=%s"
+        local nformat = opt.indent and "[%s] = %s" or "[%s]=%s"
         for k, v in pairs(serialized) do
+            local format
             -- serialize key
             if type(k) == "string" then
                 if keywords:has(k) or not k:match("^[%a_][%w_]*$") then
-                    k = string.format("[%q]", k)
+                    format = sformat
+                else
+                    format = dformat
                 end
             else -- type(k) == "number"
-                local nval, err = serialize._makedefault(k, opt)
-                if err ~= nil then
-                    return nil, err
-                end
-                k = string.format("[%s]", nval)
+                format = nformat
             end
             -- concat k = v
-            table.insert(bodystrs, k .. con .. v)
+            table.insert(bodystrs, string.format(format, k, v))
         end
     end
 
-    -- make head
-    local headstr = opt.indent and ("{\n" .. indent .. opt.indent)  or "{"
-
-    -- make tail
-    local tailstr
+    -- make head and tail
+    local headstr, bodysep, tailstr
     if opt.indent then
-        tailstr = "\n" .. indent .. "}"
+        local indent = "\n" .. string.rep(opt.indent, level)
+        tailstr = indent .. "}"
+        indent = indent .. opt.indent
+        headstr = "{" .. indent
+        bodysep = "," .. indent
     else
-        tailstr = "}"
+        headstr, bodysep, tailstr = "{", ",", "}"
     end
 
     -- concat together
-    return headstr .. table.concat(bodystrs, opt.indent and (",\n" .. indent .. opt.indent) or ",") .. tailstr
+    return headstr .. table.concat(bodystrs, bodysep) .. tailstr
 end
 
 function serialize._makefunction(func, opt)
