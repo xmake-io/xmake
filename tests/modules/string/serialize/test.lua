@@ -41,6 +41,8 @@ end
 
 function test_table(t)
     t:are_equal(roundtrip({}), {})
+    t:are_equal(roundtrip({{},{1}}), {{},{1}})
+    t:are_equal(roundtrip({["true"] = true}), {["true"] = true})
     t:are_equal(roundtrip({1, 2, 3}), {1, 2, 3})
     t:are_equal(roundtrip({1, "", 3}), {1, "", 3})
     t:are_equal(roundtrip({{1, 2, 3, nil, 4}}), {{1, 2, 3, nil, 4}})

@@ -25,39 +25,13 @@ local serialize = serialize or {}
 -- load modules
 local math      = require("base/math")
 local table     = require("base/table")
+local hashset   = require("base/hashset")
+
+-- reserved keywords in lua
+local keywords  = hashset.of("and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while")
 
 -- save original interfaces
 serialize._dump = serialize._dump or string._dump or string.dump
-
-function serialize._createstub(resolver, env, ...)
-    env.has_stub = true
-    local params = table.pack(...)
-    return function(root, fenv)
-        return resolver(root, fenv, table.unpack(params, 1, params.n))
-    end
-end
-
-function serialize._resolvestub(object, root, fenv)
-    if type(object) == "function" then
-        local ok, result, errors = pcall(object, root, fenv)
-        if ok and errors == nil then
-            return result
-        end
-        return nil, errors or result or "unspecified error"
-    end
-    if type(object) ~= "table" then
-        return object
-    end
-
-    for k, v in pairs(object) do
-        local result, errors = serialize._resolvestub(v, root, fenv)
-        if errors ~= nil then
-            return nil, errors
-        end
-        object[k] = result
-    end
-    return object
-end
 
 function serialize._makestring(str, opt)
     return string.format("%q", str)
@@ -117,6 +91,11 @@ function serialize._maketable(object, opt, level, path, reftab)
         serialized[k] = sval
     end
 
+    -- empty table
+    if isarr and numidxcount == 0 then
+        return opt.indent and "{ }" or "{}"
+    end
+
     -- too sparse
     if numidxcount * 2 < maxn then
         isarr = false
@@ -126,17 +105,6 @@ function serialize._maketable(object, opt, level, path, reftab)
     local indent = ""
     if opt.indent then
         indent = string.rep(opt.indent, level)
-    end
-
-    -- make head
-    local headstr = opt.indent and ("{\n" .. indent .. opt.indent)  or "{"
-
-    -- make tail
-    local tailstr
-    if opt.indent then
-        tailstr = "\n" .. indent .. "}"
-    else
-        tailstr = "}"
     end
 
     -- make body
@@ -150,11 +118,11 @@ function serialize._maketable(object, opt, level, path, reftab)
         for k, v in pairs(serialized) do
             -- serialize key
             if type(k) == "string" then
-                if not k:match("^[%a_][%w_]*$") then
+                if keywords:has(k) or not k:match("^[%a_][%w_]*$") then
                     k = string.format("[%q]", k)
                 end
             else -- type(k) == "number"
-                local nval, err = serialize._makedefault(k, opt, childlevel)
+                local nval, err = serialize._makedefault(k, opt)
                 if err ~= nil then
                     return nil, err
                 end
@@ -165,9 +133,18 @@ function serialize._maketable(object, opt, level, path, reftab)
         end
     end
 
-    if #bodystrs == 0 then
-        return opt.indent and "{ }" or "{}"
+    -- make head
+    local headstr = opt.indent and ("{\n" .. indent .. opt.indent)  or "{"
+
+    -- make tail
+    local tailstr
+    if opt.indent then
+        tailstr = "\n" .. indent .. "}"
+    else
+        tailstr = "}"
     end
+
+    -- concat together
     return headstr .. table.concat(bodystrs, opt.indent and (",\n" .. indent .. opt.indent) or ",") .. tailstr
 end
 
@@ -324,6 +301,45 @@ function serialize.save(object, opt)
     return (#dump < #result) and dump or result
 end
 
+-- called by functions in deserialize environment
+-- create a function (called stub) to finish deserialization
+function serialize._createstub(resolver, env, ...)
+    env.has_stub = true
+    local params = table.pack(...)
+    return function(root, fenv)
+        return resolver(root, fenv, table.unpack(params, 1, params.n))
+    end
+end
+
+-- after deserialization by load()
+-- use this routine to call all stubs in deserialzed data
+--
+-- @param       object   object to search stubs
+--              root     root object
+--              fenv     fenv of deserialzer caller
+function serialize._resolvestub(object, root, fenv)
+    if type(object) == "function" then
+        local ok, result, errors = pcall(object, root, fenv)
+        if ok and errors == nil then
+            return result
+        end
+        return nil, errors or result or "unspecified error"
+    end
+    if type(object) ~= "table" then
+        return object
+    end
+
+    for k, v in pairs(object) do
+        local result, errors = serialize._resolvestub(v, root, fenv)
+        if errors ~= nil then
+            return nil, errors
+        end
+        object[k] = result
+    end
+    return object
+end
+
+-- create a env for deserialze load() call
 function serialize._createenv()
 
     -- init env
