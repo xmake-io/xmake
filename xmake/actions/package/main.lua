@@ -217,6 +217,9 @@ function main()
         raise("please run \"xmake m package %s\" instead of \"xmake p --archs=%s\"", config.get("plat"), option.get("archs"))
     end
 
+    -- lock the whole project
+    project.filelock():lock()
+
     -- get the target name
     local targetname = option.get("target")
 
@@ -238,4 +241,7 @@ function main()
             end
         end
     end
+
+    -- unlock the whole project
+    project.filelock():lock()
 end

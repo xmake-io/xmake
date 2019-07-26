@@ -38,6 +38,9 @@ function main()
         return trybuild() 
     end
 
+    -- lock the whole project
+    project.filelock():lock()
+
     -- get the target name
     local targetname = option.get("target")
 
@@ -78,6 +81,9 @@ function main()
             end
         }
     }
+
+    -- unlock the whole project
+    project.filelock():unlock()
 
     -- leave project directory
     os.cd(oldir)

@@ -148,6 +148,19 @@ function sandbox_core_project.directory()
     return project.directory()
 end
 
+-- get the filelock of the whole project directory
+function sandbox_core_project.filelock()
+    local filelock = sandbox_core_project._FILELOCK
+    if filelock == nil then
+        filelock = io.openlock(path.join(config.directory(), "project.lock"))
+        if not filelock then
+            raise("cannot create the project lock!")
+        end
+        sandbox_core_project._FILELOCK = filelock 
+    end
+    return filelock
+end
+
 -- get the project mtimes
 function sandbox_core_project.mtimes()
     return project.mtimes()

@@ -206,6 +206,9 @@ end
 -- main
 function main()
 
+    -- lock the whole project
+    project.filelock():lock()
+
     -- get the target name
     local targetname = option.get("target")
 
@@ -220,6 +223,9 @@ function main()
 
     -- clean the current target
     _clean(targetname) 
+
+    -- lock the whole project
+    project.filelock():unlock()
 
     -- leave project directory
     os.cd(oldir)

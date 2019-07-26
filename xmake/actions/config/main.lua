@@ -165,6 +165,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- lock the whole project
+    project.filelock():lock()
+
     -- enter menu config
     if option.get("menu") then
         menuconf_show()
@@ -297,4 +300,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- flush config cache
     configcache:flush()
+
+    -- unlock the whole project
+    project.filelock():unlock()
 end
