@@ -54,7 +54,7 @@ tb_int_t xm_io_openlock(lua_State* lua)
         xm_io_filelock_t* xmlock = xm_io_new_filelock(lua);
         xmlock->lock_ref  = lock;
         xmlock->is_opened = tb_true;
-        xmlock->is_locked = tb_false;
+        xmlock->nlocked   = 0;
 
         // save lock path
         tb_size_t pathlen = tb_strlen(path);

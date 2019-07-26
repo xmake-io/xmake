@@ -47,9 +47,11 @@ tb_int_t xm_io_filelock_unlock(lua_State* lua)
     else 
     {
         // unlock it
-        if (tb_filelock_leave(lock->lock_ref))
+        if (lock->nlocked > 1 || tb_filelock_leave(lock->lock_ref))
         {
-            lock->is_locked = tb_false;
+            if (lock->nlocked > 0)
+                lock->nlocked--;
+            else lock->nlocked = 0;
             lua_pushboolean(lua, tb_true);
             xm_io_filelock_return_success();
         }

@@ -67,8 +67,8 @@ typedef struct __xm_io_filelock_t
     // is opened?
     tb_bool_t           is_opened;
 
-    // is locked?
-    tb_bool_t           is_locked;
+    // the locked count
+    tb_long_t           nlocked;
 
     // the lock name
     tb_char_t           name[64];

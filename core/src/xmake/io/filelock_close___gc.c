@@ -58,7 +58,7 @@ static tb_int_t xm_io_filelock_close_impl(lua_State* lua, tb_bool_t allow_closed
     tb_filelock_exit(lock->lock_ref);
     lock->lock_ref  = tb_null;
     lock->is_opened = tb_false;
-    lock->is_locked = tb_false;
+    lock->nlocked   = 0;
 
     // free lock path
     if (lock->path)

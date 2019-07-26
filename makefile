@@ -62,7 +62,6 @@ build:
 	@echo compiling xmake-core ...
 	@if [ -f core/.config.mak ]; then rm core/.config.mak; fi
 	@$(MAKE) -C core --no-print-directory f DEBUG=$(debug)
-	@$(MAKE) -C core --no-print-directory c
 	@$(MAKE) -C core --no-print-directory
 
 install:
