@@ -64,15 +64,20 @@ function serialize._resolvestub(object, root, env)
     return object
 end
 
-function serialize._makestring(str, opt, level)
+function serialize._makestring(str, opt)
     return string.format("%q", str)
 end
 
-function serialize._makedefault(val, opt, level)
+function serialize._makedefault(val, opt)
     return tostring(val)
 end
 
-function serialize._maketable(object, opt, level)
+function serialize._maketable(object, opt, level, path, reftab)
+
+    level = level or 0
+    reftab = reftab or {}
+    path = path or {}
+    reftab[object] = table.copy(path)
 
     -- serialize child items
     local childlevel = level + 1
@@ -81,6 +86,7 @@ function serialize._maketable(object, opt, level)
     local isarr = true
     local maxn = 0
     for k, v in pairs(object) do
+        -- check key
         if type(k) == "number" then
             -- only checks when it may be an array
             if isarr then
@@ -96,7 +102,20 @@ function serialize._maketable(object, opt, level)
         else
             return nil, string.format("cannot serialize table with key of %s: <%s>", type(k), k)
         end
-        local sval, err = serialize._make(v, opt, childlevel)
+
+        -- serialize value
+        local sval, err
+        if type(v) == "table" then
+            if reftab[v] then
+                sval, err = serialize._makeref(reftab[v], opt)
+            else
+                table.insert(path, k)
+                sval, err = serialize._maketable(v, opt, childlevel, path, reftab)
+                table.remove(path)
+            end
+        else
+            sval, err = serialize._make(v, opt)
+        end
         if err ~= nil then
             return nil, err
         end
@@ -134,6 +153,7 @@ function serialize._maketable(object, opt, level)
     else
         local con = opt.indent and " = " or "="
         for k, v in pairs(serialized) do
+            -- serialize key
             if type(k) == "string" then
                 if not k:match("^[%a_][%w_]*$") then
                     k = string.format("[%q]", k)
@@ -145,6 +165,7 @@ function serialize._maketable(object, opt, level)
                 end
                 k = string.format("[%s]", nval)
             end
+            -- concat k = v
             table.insert(bodystrs, k .. con .. v)
         end
     end
@@ -155,7 +176,7 @@ function serialize._maketable(object, opt, level)
     return headstr .. table.concat(bodystrs, opt.indent and (",\n" .. indent .. opt.indent) or ",") .. tailstr
 end
 
-function serialize._makefunction(func, opt, level)
+function serialize._makefunction(func, opt)
 
     local ok, funccode = pcall(serialize._dump, func, opt.strip)
     if not ok then
@@ -176,18 +197,51 @@ function _ENV.func(funccode)
     return serialize._createstub(serialize._resolvefunction, funccode)
 end
 
+function serialize._makeref(path, opt)
+
+    -- root reference
+    if path[1] == nil then
+        return "ref()"
+    end
+
+    local ppath = {}
+    for i, v in ipairs(path) do
+        ppath[i] = serialize._make(v, opt)
+    end
+
+    return "ref(" .. table.concat(ppath, opt.indent and ", " or ",") .. ")"
+end
+
+function serialize._resolveref(root, env, ...)
+    local pos = root
+    for i, v in ipairs({...}) do
+        if type(pos) ~= "table" then
+            return nil, "unable to resolve path: <root>." .. table.concat(path, ".", 1, i - 1) .. " is " .. tostring(pos)
+        end
+        pos = pos[v]
+    end
+    return pos
+end
+
+-- reference
+function _ENV.ref(...)
+    -- load func
+    return serialize._createstub(serialize._resolveref, ...)
+end
+
+
 -- make string with the level
-function serialize._make(object, opt, level)
+function serialize._make(object, opt)
 
     -- call make* by type
     if type(object) == "string" then
-        return serialize._makestring(object, opt, level)
+        return serialize._makestring(object, opt)
     elseif type(object) == "boolean" or type(object) == "nil" or type(object) == "number" then
-        return serialize._makedefault(object, opt, level)
+        return serialize._makedefault(object, opt)
     elseif type(object) == "table" then
-        return serialize._maketable(object, opt, level)
+        return serialize._maketable(object, opt)
     elseif type(object) == "function" then
-        return serialize._makefunction(object, opt, level)
+        return serialize._makefunction(object, opt)
     else
         return nil, string.format("cannot serialize %s: <%s>", type(object), object)
     end
@@ -238,13 +292,9 @@ function serialize.save(object, opt)
     end
 
     -- make string
-    local ok, result, errors = pcall(serialize._make, object, opt, 0)
+    local ok, result, errors = pcall(serialize._make, object, opt)
     if not ok then
-        if result:find("stack overflow", 1, true) then
-            errors = "cannot serialize: reference loop found"
-        else
-            errors = "cannot serialize: " .. result
-        end
+        errors = "cannot serialize: " .. result
     end
 
     -- ok?

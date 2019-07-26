@@ -43,3 +43,18 @@ function test_function(t)
     t:are_equal(roundtrip({function() return {{1, 2, 3, nil, 4}} end})[1](), {{1, 2, 3, nil, 4}})
     t:are_equal(roundtrip({{function() return {{1, 2, 3, nil, 4}} end}})[1][1](), {{1, 2, 3, nil, 4}})
 end
+
+function test_refloop(t)
+    local l1 = {}
+    l1.l = l1
+    local r1 = roundtrip(l1)
+    t:are_same(r1.l, r1)
+
+    local l2 = {{1}, {2}, {3}}
+    l2[1].l = { root = l2, a = l2[1], b = l2[2], c = l2[3] }
+    local r2 = roundtrip(l2)
+    t:are_same(r2[1].l.root, r2)
+    t:are_same(r2[1].l.a, r2[1])
+    t:are_same(r2[1].l.b, r2[2])
+    t:are_same(r2[1].l.c, r2[3])
+end
