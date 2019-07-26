@@ -50,7 +50,7 @@ xmake is a cross-platform build utility based on lua.
 The project focuses on making development and building easier and provides many features (e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy a productivity boost when developing and building projects.
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
 
 If you want to know more, please refer to:
 
@@ -81,11 +81,11 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io
 
 ## Simple description
 
-<img src="https://xmake.io/assets/img/index/showcode1.png" width="40%" />
+<img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />
 
 ## Package dependences
 
-<img src="https://xmake.io/assets/img/index/add_require.png" width="70%" />
+<img src="https://xmake.io/assets/img/index/add_require.png" width="600px" />
 
 An official xmake package repository: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
@@ -120,11 +120,11 @@ $ xmake
 $ xmake f --menu
 ```
 
-<img src="https://xmake.io/assets/img/index/menuconf.png" width="80%" />
+<img src="https://xmake.io/assets/img/index/menuconf.png" width="650px" />
 
 ## Package management
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
 
 ## Supported platforms
 
@@ -203,15 +203,15 @@ Please download and install from the plugins repository [xmake-plugins](https://
 
 * [xmake-vscode](https://github.com/xmake-io/xmake-vscode)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="650px" />
 
 * [xmake-sublime](https://github.com/xmake-io/xmake-sublime)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="650px" />
 
 * [xmake-idea](https://github.com/xmake-io/xmake-idea)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="650px" />
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
@@ -275,7 +275,7 @@ Some projects using xmake:
 ## Example Video
 
 <a href="https://asciinema.org/a/133693">
-<img src="https://asciinema.org/a/133693.png" width="60%" />
+<img src="https://asciinema.org/a/133693.png" width="650px" />
 </a>
 
 ## Contacts
