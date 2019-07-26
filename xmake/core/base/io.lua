@@ -63,8 +63,8 @@ function _file:printf(...)
 end
 
 -- save object
-function _file:save(object)
-    local str, errors = string.serialize(object, false)
+function _file:save(object, opt)
+    local str, errors = string.serialize(object, opt)
     if not errors then
         self:write(str)
         return str
@@ -226,7 +226,7 @@ function io.save(filepath, object, opt)
     end
 
     -- save object to file
-    local ok, errors = file:save(object)
+    local ok, errors = file:save(object, opt)
     -- close file
     file:close()
     if not ok then

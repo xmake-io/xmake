@@ -21,6 +21,7 @@
 
 -- define module: serialize
 local serialize = serialize or {}
+local _ENV      = serialize._ENV or {}
 
 -- load modules
 local math      = require("base/math")
@@ -28,24 +29,15 @@ local math      = require("base/math")
 -- save original interfaces
 serialize._dump = serialize._dump or string._dump or string.dump
 
-function serialize._makenumber(num, opt, level)
-    if math.isnan(num) then
-        return "math.nan"
-    end
-    local inf = math.isinf(num)
-    if inf == 1 then
-        return "math.huge"
-    elseif inf == -1 then
-        return "-math.huge"
-    end
-    return tostring(num)
-end
+-- init env
+_ENV.nan = math.nan
+_ENV.inf = math.huge
 
 function serialize._makestring(str, opt, level)
     return string.format("%q", str)
 end
 
-function serialize._makekeyword(val, opt, level)
+function serialize._makedefault(val, opt, level)
     return tostring(val)
 end
 
@@ -116,7 +108,7 @@ function serialize._maketable(object, opt, level)
                     k = string.format("[%q]", k)
                 end
             else -- type(k) == "number"
-                local nval, err = serialize._makenumber(k, opt, childlevel)
+                local nval, err = serialize._makedefault(k, opt, childlevel)
                 if err ~= nil then
                     return nil, err
                 end
@@ -138,20 +130,15 @@ function serialize._makefunction(func, opt, level)
     if not ok then
         return nil, string.format("%s: <%s>", funccode, func)
     end
+    return string.format("func%q", funccode)
+end
 
-    local chunkname = nil
-    local sep = ","
-    if opt.strip then
-        chunkname = "\"=(deserialized code)\""
-    end
-    if opt.indent then
-        sep = ", "
-    end
-    if chunkname then
-        return string.format("loadstring(%q%s%s)", funccode, sep, chunkname)
-    else
-        return string.format("loadstring(%q)", funccode)
-    end
+-- load function
+function _ENV.func(funccode)
+    -- type guard
+    assert(type(funccode) == "string", "func should called with a string")
+    -- load func
+    return loadstring(funccode, "=(deserialized code)")
 end
 
 -- make string with the level
@@ -160,10 +147,8 @@ function serialize._make(object, opt, level)
     -- call make* by type
     if type(object) == "string" then
         return serialize._makestring(object, opt, level)
-    elseif type(object) == "boolean" or type(object) == "nil" then
-        return serialize._makekeyword(object, opt, level)
-    elseif type(object) == "number" then
-        return serialize._makenumber(object, opt, level)
+    elseif type(object) == "boolean" or type(object) == "nil" or type(object) == "number" then
+        return serialize._makedefault(object, opt, level)
     elseif type(object) == "table" then
         return serialize._maketable(object, opt, level)
     elseif type(object) == "function" then
@@ -184,9 +169,13 @@ function serialize.save(object, opt)
     -- init options
     if opt == true then
         opt = { strip = true, binary = false, indent = false }
-    elseif opt == false or opt == nil then
-        opt = { strip = false, binary = false, indent = true }
+    elseif not opt then
+        opt = {}
     end
+
+    if opt.strip == nil then opt.strip = false end
+    if opt.binary == nil then opt.binary = false end
+    if opt.indent == nil then opt.indent = true end
 
     -- init indent, from nil, boolean, number or string to false or string
     if not opt.indent then
@@ -258,7 +247,7 @@ function serialize._load(str)
     end
 
     -- load string
-    local script, errors = loadstring(str, "=(deserializing data)")
+    local script, errors = load(str, "=(deserializing data)", binary and "b" or "t", _ENV)
     if script then
         -- load object
         local ok, object = pcall(script)
@@ -306,4 +295,5 @@ function serialize.load(str)
 end
 
 -- return module: serialize
+serialize._ENV = _ENV
 return serialize
