@@ -21,110 +21,13 @@
 -- define module: string
 local string = string or {}
 
+-- load modules
+local deprecated = require("base/deprecated")
+local serialize  = require("base/serialize")
+
 -- save original interfaces
 string._dump = string._dump or string.dump
 string._trim = string._trim or string.trim
-
--- make string with the level
-function string._makestr(object, deflate, serialize, level)
-    if type(object) == "string" then
-        return serialize and string.format("%q", object) or object
-    elseif type(object) == "boolean" or type(object) == "number" then
-        return tostring(object)
-    elseif not serialize and type(object) == "table" and (getmetatable(object) or {}).__tostring then
-        return tostring(object)
-    elseif type(object) == "table" then
-
-        -- make head
-        local s = ""
-        if deflate then
-            s = s .. "{"
-        else
-            if level > 0 then
-                s = s .. "\n"
-            end
-            for l = 1, level do
-                s = s .. "    "
-            end
-            s = s .. "{\n"
-        end
-
-        -- make body
-        local i = 0
-        for k, v in pairs(object) do  
-
-            if deflate then
-                s = s .. (i ~= 0 and "," or "")
-            else
-                for l = 1, level do
-                    s = s .. "    "
-                end
-                if i == 0 then
-                    s = s .. "    "
-                else
-                    s = s .. ",   "
-                end
-            end
-            
-            -- make key = value
-            if type(k) == "string" then
-                if serialize and not k:match("^%a[%w_]+$") then
-                    k = string.format("[%q]", k)
-                end
-                if deflate then
-                    s = s .. k .. "=" 
-                else
-                    s = s .. k .. " = " 
-                end
-            end
-            local substr, errors = string._makestr(v, deflate, serialize, level + 1)  
-            if substr == nil then
-                return nil, errors
-            end
-            s = s .. substr
-
-            if not deflate then
-                s = s .. "\n"
-            end
-            i = i + 1
-        end  
-
-        -- make tail
-        if not deflate then
-            for l = 1, level do
-                s = s .. "    "
-            end
-        end
-        s = s .. "}"
-        return s
-    elseif serialize and type(object) == "function" then 
-        return string.format("%q", string._dump(object))
-    elseif serialize then
-        return nil, "cannot serialize object: " .. type(object)
-    elseif object ~= nil then
-        return "<" .. tostring(object) .. ">"
-    else
-        return "nil"
-    end
-end
-
--- load table from string in table
-function string._loadstr(object)
-    -- only load luajit function data: e.g. "\27LJ\2\0\6=stdin"
-    if type(object) == "string" and object:startswith("\27LJ") then
-        return loadstring(object)
-    elseif type(object) == "table" then  
-        for k, v in pairs(object) do
-            local value, errors = string._loadstr(v)
-            if value ~= nil then
-                object[k] = value
-            else
-                return nil, errors
-            end
-        end
-    end
-    return object
-end
 
 -- find the last substring with the given pattern
 function string:find_last(pattern, plain)
@@ -286,6 +189,7 @@ function string.ipattern(pattern, brackets)
     return table.concat(tmp)
 end
 
+-- @deprecated
 -- dump to string from the given object (more readable)
 --
 -- @param deflate       deflate empty characters
@@ -293,17 +197,19 @@ end
 -- @return              string, errors
 -- 
 function string.dump(object, deflate)
-    return string._makestr(object, deflate, false, 0)
+    deprecated.add("utils.dump() or string.serialize()", "string.dump()")
+    return string.serialize(object, deflate)
 end
 
 -- serialize to string from the given object
 --
--- @param deflate       deflate empty characters
+-- @param opt           serialize options
+--                      e.g. { strip = true, binary = false, indent = true }
 --
 -- @return              string, errors
--- 
-function string.serialize(object, deflate)
-    return string._makestr(object, deflate, true, 0)
+--
+function string.serialize(object, opt)
+    return serialize.save(object, opt)
 end
 
 -- deserialize string to object
@@ -311,34 +217,9 @@ end
 -- @param str           the serialized string
 --
 -- @return              object, errors
--- 
+--
 function string:deserialize()
-
-    -- load table as script
-    local result = nil
-    local script, errors = loadstring("return " .. self)
-    if script then
-        
-        -- load object
-        local ok, object = pcall(script)
-        if ok and object then
-            result = object
-        elseif object then
-            -- error
-            errors = object
-        else
-            -- error
-            errors = string.format("cannot deserialize string: %s", self)
-        end
-    end
-
-    -- load function from string in table
-    if result then
-        result, errors = string._loadstr(result)
-    end
-
-    -- ok?
-    return result, errors
+    return serialize.load(self)
 end
 
 -- return module: string

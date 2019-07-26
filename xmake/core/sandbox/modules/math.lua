@@ -19,5 +19,5 @@
 --
 
 -- load module
-return math
+return require("base/math")
 
