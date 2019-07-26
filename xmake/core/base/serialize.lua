@@ -51,9 +51,8 @@ end
 
 function serialize._maketable(object, opt, level)
 
-    local childlevel = level + 1
-
     -- serialize child items
+    local childlevel = level + 1
     local serialized = {}
     local numidxcount = 0
     local isarr = true
@@ -142,10 +141,12 @@ function serialize._maketable(object, opt, level)
 end
 
 function serialize._makefunction(func, opt, level)
+
     local ok, funccode = pcall(serialize._dump, func, opt.strip)
     if not ok then
         return nil, string.format("%s: <%s>", funccode, func)
     end
+
     local chunkname = nil
     local sep = ","
     if opt.strip then
@@ -253,9 +254,7 @@ function serialize._load(str)
 
     -- load table as script
     local result = nil
-
     local binary = str:startswith("\27LJ")
-
     if not binary then
         str = "return " .. str
     end
@@ -300,8 +299,6 @@ function serialize.load(str)
 
     -- load string
     local result, errors = serialize._load(str)
-
-    -- ok?
     if errors ~= nil then
         return nil, errors
     end

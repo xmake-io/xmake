@@ -28,6 +28,7 @@ math.e     = math.exp(1)
 -- check a number is int
 --
 -- @returns true for int, otherwise false
+--
 function math:isint()
 
     -- check
@@ -39,6 +40,7 @@ end
 -- check a number is inf or -inf
 --
 -- @returns 1 for inf,  -1 for -inf, otherwise false
+--
 function math:isinf()
 
     -- check
@@ -56,6 +58,7 @@ end
 -- check a number is nan
 --
 -- @returns true for nan, otherwise false
+--
 function math:isnan()
 
     -- check
