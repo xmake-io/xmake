@@ -172,7 +172,7 @@ function sandbox_io.load(filepath, opt)
 
     -- done
     local result, errors = io.load(filepath, opt)
-    if not result then
+    if errors ~= nil then
         raise(errors)
     end
 
