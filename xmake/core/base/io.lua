@@ -65,15 +65,19 @@ end
 -- save object
 function _file:save(object)
     local str, errors = string.serialize(object, false)
-    if str then
+    if not errors then
         self:write(str)
+        return str
     end
     return str, errors
 end
 
 -- load object
 function _file:load()
-    local data = self:read("*all")
+    local data, err = self:read("*all")
+    if err then
+        return nil, err
+    end
     if data and type(data) == "string" then
         return data:deserialize()
     end
@@ -214,29 +218,21 @@ function io.save(filepath, object, opt)
     -- init option
     opt = opt or {}
 
-    -- ensure directory
-    local dir = path.directory(filepath)
-    if not os.isdir(dir) then
-        os.mkdir(dir)
-    end
-
     -- open the file
-    local file = io.open(filepath, "wb", opt)
-    if not file then
+    local file, err = io.open(filepath, "wb", opt)
+    if err then
         -- error
-        return false, string.format("open %s failed!", filepath)
+        return false, err
     end
 
     -- save object to file
     local ok, errors = file:save(object)
-    if not ok then
-        -- error
-        file:close()
-        return false, string.format("save %s failed, %s!", filepath, errors)
-    end
-
     -- close file
     file:close()
+    if not ok then
+        -- error
+        return false, string.format("save %s failed, %s!", filepath, errors)
+    end
 
     -- ok
     return true
@@ -252,10 +248,10 @@ function io.load(filepath, opt)
     opt = opt or {}
 
     -- open the file
-    local file = io.open(filepath, "rb", opt)
-    if not file then
+    local file, err = io.open(filepath, "rb", opt)
+    if err then
         -- error
-        return nil, string.format("open %s failed!", filepath)
+        return nil, err
     end
 
     -- load object
