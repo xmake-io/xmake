@@ -50,11 +50,25 @@ function _get_configs(package, configs)
     return configs
 end
 
+-- init arguments and inherit some global options from the parent xmake
+function _init_argv(...)
+    local argv = {...}
+    for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
+        local value = option.get(name) 
+        if type(value) == "boolean" then
+            table.insert(argv, "--" .. name)
+        elseif value ~= nil then
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
+    end
+    return argv
+end
+
 -- install package
 function install(package, configs)
 
     -- inherit builtin configs
-    local argv = {"f", "-y", "-c"}
+    local argv = _init_argv("f", "-y", "-c")
     local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "mingw", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
     for _, name in ipairs(names) do
         local value = get_config(name)
@@ -74,31 +88,13 @@ function install(package, configs)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "--diagnosis")
-    end
     os.vrunv("xmake", argv)
 
     -- do build
-    argv = {}
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "--diagnosis")
-    end
+    argv = _init_argv()
     os.vrunv("xmake", argv)
 
     -- do install
-    argv = {"install", "-y", "-o", package:installdir()}
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(argv, "--diagnosis")
-    end
+    argv = _init_argv("install", "-y", "-o", package:installdir())
     os.vrunv("xmake", argv)
 end
