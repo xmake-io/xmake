@@ -47,7 +47,10 @@ tb_int_t xm_io_openlock(lua_State* lua)
     tb_assert_and_check_return_val(path, 0);
 
     // init file lock
-    tb_filelock_ref_t lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
+    tb_long_t tryn = 2;
+    tb_filelock_ref_t lock = tb_null;
+    while (!lock && tryn-- > 0) 
+        lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
     if (lock)
     {
         // init file lock
