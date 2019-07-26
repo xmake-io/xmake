@@ -296,6 +296,16 @@ function project.directory()
     return os.projectdir()
 end
 
+-- get the filelock of the whole project directory
+function project.filelock()
+    local filelock = project._FILELOCK
+    if filelock == nil then
+        filelock = io.openlock(path.join(config.directory(), "project.lock"))
+        project._FILELOCK = filelock 
+    end
+    return filelock
+end
+
 -- get the project info from the given name
 function project.get(name)
     return project._INFO and project._INFO:get(name) or nil

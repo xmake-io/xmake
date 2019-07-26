@@ -152,13 +152,9 @@ end
 
 -- get the filelock of the whole project directory
 function sandbox_core_project.filelock()
-    local filelock = sandbox_core_project._FILELOCK
-    if filelock == nil then
-        filelock = io.openlock(path.join(config.directory(), "project.lock"))
-        if not filelock then
-            raise("cannot create the project lock!")
-        end
-        sandbox_core_project._FILELOCK = filelock 
+    local filelock = project.filelock()
+    if not filelock then
+        raise("cannot create the project lock!")
     end
     return filelock
 end
@@ -170,7 +166,10 @@ function sandbox_core_project.lock(opt)
     elseif baseoption.get("diagnosis") then
         utils.warning("the current project is being accessed by other processes, please waiting!") 
     end
-    return sandbox_core_project.filelock():lock(opt)
+    local ok, errors = sandbox_core_project.filelock():lock(opt)
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- trylock the whole project 
@@ -180,7 +179,10 @@ end
 
 -- unlock the whole project 
 function sandbox_core_project.unlock()
-    return sandbox_core_project.filelock():unlock()
+    local ok, errors = sandbox_core_project.filelock():unlock()
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- get the project mtimes
