@@ -1,10 +1,22 @@
 
+function roundtripimpl(value, opt)
+    local s, serr = string.serialize(value, opt)
+    if serr then
+        raise(serr)
+    end
+    local v, verr = s:deserialize()
+    if verr then
+        raise(verr)
+    end
+    return v
+end
+
 function roundtrip(round0)
-    local round1 = string.serialize(round0, false):deserialize()
-    local round2 = string.serialize(round1, true):deserialize()
-    local round3 = string.serialize(round2, {binary=true}):deserialize()
-    local round4 = string.serialize(round3, {indent=16}):deserialize()
-    local round5 = string.serialize(round4, {indent="  \r\n\t"}):deserialize()
+    local round1 = roundtripimpl(round0, false)
+    local round2 = roundtripimpl(round1, true)
+    local round3 = roundtripimpl(round2, {binary=true})
+    local round4 = roundtripimpl(round3, {indent=16})
+    local round5 = roundtripimpl(round4, {indent="  \r\n\t"})
     return round5
 end
 
@@ -60,7 +72,7 @@ function test_function(t)
     -- upvalue will not restore if striped
     t:are_same(roundtrip(g)(), nil)
     -- upvalue will be restored by fenv, so y in fenv is returned
-    t:are_same(string.serialize(g):deserialize()(), g_y)
+    t:are_same(roundtripimpl(g)(), g_y)
 end
 
 function test_refloop(t)
