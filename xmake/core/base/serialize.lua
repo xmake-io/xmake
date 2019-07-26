@@ -50,7 +50,7 @@ function serialize._resolvestub(object, root, fenv)
     end
 
     for k, v in pairs(object) do
-        local result, errors = serialize._resolvestub(v, root, env)
+        local result, errors = serialize._resolvestub(v, root, fenv)
         if errors ~= nil then
             return nil, errors
         end
@@ -179,25 +179,27 @@ function serialize._makefunction(func, opt)
     return string.format("func%q", funccode)
 end
 
-function serialize._resolvefunction(root, env, funccode)
+function serialize._resolvefunction(root, fenv, funccode)
     -- check
     if type(funccode) ~= "string" then
         return nil, "func should called with a string"
     end
 
     -- resolve funccode
-    local func, err = load(funccode, "=(deserialized code)", "b", env)
+    local func, err = load(funccode, "=(deserialized code)", "b", fenv)
     if err ~= nil then
         return nil, err
     end
 
     -- try restore upvalues
-    for i = 1, math.huge do
-        local upname = debug.getupvalue(func, i)
-        if upname == nil or upname == "" then
-            break
+    if fenv then
+        for i = 1, math.huge do
+            local upname = debug.getupvalue(func, i)
+            if upname == nil or upname == "" then
+                break
+            end
+            debug.setupvalue(func, i, fenv[upname])
         end
-        debug.setupvalue(func, i, env[upname])
     end
     return func
 end
@@ -217,7 +219,7 @@ function serialize._makeref(path, opt)
     return "ref(" .. table.concat(ppath, opt.indent and ", " or ",") .. ")"
 end
 
-function serialize._resolveref(root, env, ...)
+function serialize._resolveref(root, fenv, ...)
     local pos = root
     for i, v in ipairs({...}) do
         if type(v) ~= "string" and type(v) ~= "number" then
