@@ -43,8 +43,24 @@ function test_function(t)
     t:are_equal(roundtrip({function() return {{1, 2, 3, nil, 4}} end})[1](), {{1, 2, 3, nil, 4}})
     t:are_equal(roundtrip({{function() return {{1, 2, 3, nil, 4}} end}})[1][1](), {{1, 2, 3, nil, 4}})
 
-    t:will_raise(function() string.serialize({io.open}):deserialize()[1]("test.lua") end, "attempt to call global 'setmetatable' (a nil value)")
-    t:will_raise(function() string.serialize({io.open}):deserialize()[1]("not/a/file") end, "failed to open file: not/a/file")
+    -- x in fenv
+    x = {}
+    -- return x in fenv
+    function f() return x end
+    -- fenv will restore
+    t:are_same(roundtrip(f)(), x)
+
+    y = {}
+    -- y in fenv
+    local g_y = y
+    -- y in upvalue
+    local y = {}
+    -- return y in upvalue
+    function g() return y end
+    -- upvalue will not restore if striped
+    t:are_same(roundtrip(g)(), nil)
+    -- upvalue will be restored by fenv, so y in fenv is returned
+    t:are_same(string.serialize(g):deserialize()(), g_y)
 end
 
 function test_refloop(t)
