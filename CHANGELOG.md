@@ -10,6 +10,10 @@
 * [#487](https://github.com/xmake-io/xmake/issues/487): Support to build the selected files for the given target
 * Add filelock for io
 
+### Changes
+
+* [#257](https://github.com/xmake-io/xmake/issues/257): Lock the whole project to avoid other process to access.
+
 ## v2.2.7
 
 ### New features
@@ -618,6 +622,10 @@
 * [#472](https://github.com/xmake-io/xmake/pull/472): 添加`xmake project -k vsxmake201x`去更好的支持vs工程的生成，内部直接调用xmake来编译
 * [#487](https://github.com/xmake-io/xmake/issues/487): 通过`xmake --files="src/*.c"`支持指定一批文件进行编译。
 * 针对io模块增加文件锁接口
+
+### 改进
+
+* [#257](https://github.com/xmake-io/xmake/issues/257): 锁定当前正在构建的工程，避免其他xmake进度同时对其操作
 
 ## v2.2.7
 
