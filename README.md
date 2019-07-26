@@ -124,7 +124,13 @@ $ xmake f --menu
 
 ## Package management
 
+### Download and build
+
 <img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+
+### Processing architecture
+
+<img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
 
 ## Supported platforms
 

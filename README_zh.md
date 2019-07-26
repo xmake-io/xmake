@@ -56,7 +56,7 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 不仅如此，它还提供了许多更加高级的特性，例如插件扩展、脚本宏记录、批量打包、自动文档生成等等。。
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
 
 如果你想要了解更多，请参考：
 
@@ -87,11 +87,11 @@ Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io
 
 ## 简单的工程描述
 
-<img src="https://xmake.io/assets/img/index/showcode1.png" width="40%" />
+<img src="https://xmake.io/assets/img/index/showcode1.png" width="340px" />
 
 ## 包依赖描述
 
-<img src="https://xmake.io/assets/img/index/add_require.png" width="70%" />
+<img src="https://xmake.io/assets/img/index/add_require.png" width="600px" />
 
 官方的xmake包管理仓库: [xmake-repo](https://github.com/xmake-io/xmake-repo)
 
@@ -126,11 +126,17 @@ $ xmake
 $ xmake f --menu
 ```
 
-<img src="https://xmake.io/assets/img/index/menuconf.png" width="80%" />
+<img src="https://xmake.io/assets/img/index/menuconf.png" width="650px" />
 
 ## 包依赖管理
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="80%" />
+### 下载和编译
+
+<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+
+### 架构和流程
+
+<img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
 
 ## 支持平台
 
@@ -208,15 +214,15 @@ $ xmake doxygen [srcdir]
 
 * [xmake-vscode](https://github.com/xmake-io/xmake-vscode)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="650px" />
 
 * [xmake-sublime](https://github.com/xmake-io/xmake-sublime)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="650px" />
 
 * [xmake-idea](https://github.com/xmake-io/xmake-idea)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="60%" />
+<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="650px" />
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
@@ -280,7 +286,7 @@ target("test")
 ## 演示视频
 
 <a href="https://asciinema.org/a/133693">
-<img src="https://asciinema.org/a/133693.png" width="60%" />
+<img src="https://asciinema.org/a/133693.png" width="650px" />
 </a>
 
 ## 联系方式
