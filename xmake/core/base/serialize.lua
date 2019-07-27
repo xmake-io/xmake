@@ -223,6 +223,35 @@ function serialize._make(object, opt)
     end
 end
 
+function serialize._generateindent(indent)
+
+    -- init indent, from nil, boolean, number or string to false or string
+    if not indent then
+        -- no indent
+        return false
+    elseif type(indent) == "boolean" then -- true
+        -- 4 spaces
+        return "    "
+    elseif type(indent) == "number" then
+        if indent < 0 then
+            return false
+        elseif indent > 20 then
+            return nil, "invalid opt.indent, too large"
+        else
+            -- indent spaces
+            return string.rep(" ", indent)
+        end
+    elseif type(indent) == "string" then
+        -- only whitespaces allowed
+        if not (indent:trim() == "") then
+            return nil, "invalid opt.indent, only whitespaces are accepted"
+        end
+        return indent
+    else
+        return nil, "invalid opt.indent, should be boolean, number or string"
+    end
+end
+
 -- serialize to string from the given object
 --
 -- @param opt           serialize options
@@ -242,30 +271,11 @@ function serialize.save(object, opt)
     if opt.binary == nil then opt.binary = false end
     if opt.indent == nil then opt.indent = true end
 
-    -- init indent, from nil, boolean, number or string to false or string
-    if not opt.indent then
-        -- no indent
-        opt.indent = false
-    elseif type(opt.indent) == "boolean" then -- true
-        -- 4 spaces
-        opt.indent = "    "
-    elseif type(opt.indent) == "number" then
-        if opt.indent < 0 then
-            opt.indent = false
-        elseif opt.indent > 20 then
-            return nil, "invalid opt.indent, too large"
-        else
-            -- opt.indent spaces
-            opt.indent = string.rep(" ", opt.indent)
-        end
-    elseif type(opt.indent) == "string" then
-        -- only whitespaces allowed
-        if not opt.indent:match("^%s+$") then
-            return nil, "invalid opt.indent, only whitespaces are accepted"
-        end
-    else
-        return nil, "invalid opt.indent, should be boolean, number or string"
+    local indent, ierrors = serialize._generateindent(opt.indent)
+    if ierrors then
+        return nil, ierrors
     end
+    opt.indent = indent
 
     -- make string
     local ok, result, errors = pcall(serialize._make, object, opt)
@@ -283,7 +293,7 @@ function serialize.save(object, opt)
     end
 
     -- binary mode
-    local func, lerr = loadstring("return " .. result)
+    local func, lerr = loadstring("return " .. result, "=")
     if lerr ~= nil then
         return nil, lerr
     end
