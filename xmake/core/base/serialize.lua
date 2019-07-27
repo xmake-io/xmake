@@ -22,8 +22,6 @@
 -- define module: serialize
 local serialize  = serialize or {}
 local stub       = serialize._stub or {}
-stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
-stub.__index     = stub
 serialize._stub  = stub
 
 -- load modules
@@ -313,6 +311,10 @@ function serialize.save(object, opt)
     -- return shorter representation
     return (#dump < #result) and dump or result
 end
+
+-- init stub metatable
+stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
+stub.__index     = stub
 
 function stub:__call(root, fenv)
     return self.resolver(root, fenv, table.unpack(self.params, 1, self.params.n))
