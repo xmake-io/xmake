@@ -95,7 +95,7 @@ function serialize._maketable(object, opt, level, path, reftab)
 
     -- empty table
     if isarr and numidxcount == 0 then
-        return opt.indent and "{ }" or "{}"
+        return opt.indentstr and "{ }" or "{}"
     end
 
     -- too sparse
@@ -110,9 +110,9 @@ function serialize._maketable(object, opt, level, path, reftab)
             bodystrs[i] = serialized[i] or "nil"
         end
     else
-        local dformat = opt.indent and "%s = %s" or "%s=%s"
-        local sformat = opt.indent and "[%q] = %s" or "[%q]=%s"
-        local nformat = opt.indent and "[%s] = %s" or "[%s]=%s"
+        local dformat = opt.indentstr and "%s = %s" or "%s=%s"
+        local sformat = opt.indentstr and "[%q] = %s" or "[%q]=%s"
+        local nformat = opt.indentstr and "[%s] = %s" or "[%s]=%s"
         for k, v in pairs(serialized) do
             local format
             -- serialize key
@@ -132,10 +132,10 @@ function serialize._maketable(object, opt, level, path, reftab)
 
     -- make head and tail
     local headstr, bodysep, tailstr
-    if opt.indent then
-        local indent = "\n" .. string.rep(opt.indent, level)
+    if opt.indentstr then
+        local indent = "\n" .. string.rep(opt.indentstr, level)
         tailstr = indent .. "}"
-        indent = indent .. opt.indent
+        indent = indent .. opt.indentstr
         headstr = "{" .. indent
         bodysep = "," .. indent
     else
@@ -191,7 +191,7 @@ function serialize._makeref(path, opt)
         ppath[i] = serialize._make(v, opt)
     end
 
-    return "ref(" .. table.concat(ppath, opt.indent and ", " or ",") .. ")"
+    return "ref(" .. table.concat(ppath, opt.indentstr and ", " or ",") .. ")"
 end
 
 function serialize._resolveref(root, fenv, ...)
@@ -228,18 +228,18 @@ function serialize._make(object, opt)
     end
 end
 
-function serialize._generateindent(indent)
+function serialize._generateindentstr(indent)
 
     -- init indent, from nil, boolean, number or string to false or string
     if not indent then
         -- no indent
-        return false
-    elseif type(indent) == "boolean" then -- true
+        return nil
+    elseif indent == true then
         -- 4 spaces
         return "    "
     elseif type(indent) == "number" then
         if indent < 0 then
-            return false
+            return nil
         elseif indent > 20 then
             return nil, "invalid opt.indent, too large"
         else
@@ -276,11 +276,11 @@ function serialize.save(object, opt)
     if opt.binary == nil then opt.binary = false end
     if opt.indent == nil then opt.indent = true end
 
-    local indent, ierrors = serialize._generateindent(opt.indent)
+    local indent, ierrors = serialize._generateindentstr(opt.indent)
     if ierrors then
         return nil, ierrors
     end
-    opt.indent = indent
+    opt.indentstr = indent
 
     -- make string
     local ok, result, errors = pcall(serialize._make, object, opt)
