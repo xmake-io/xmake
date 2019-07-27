@@ -248,7 +248,7 @@ end
 function dump._print_udata(value, first_indent, remain_indent, printed_set)
 
     local first_level
-    local metatable = getmetatable(value)
+    local metatable = debug.getmetatable(value)
     printed_set, first_level = dump._get_printed_set(printed_set, metatable)
     io.write(first_indent)
 
@@ -277,7 +277,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     local first_level
     printed_set, first_level = dump._get_printed_set(printed_set, value)
     io.write(first_indent)
-    local metatable = getmetatable(value)
+    local metatable = debug.getmetatable(value)
     local tostringmethod = metatable and rawget(metatable, "__tostring")
     if not first_level and tostringmethod then
         local ok, strrep = pcall(tostringmethod, value, value)

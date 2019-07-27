@@ -20,7 +20,11 @@
 --
 
 -- define module: serialize
-local serialize = serialize or {}
+local serialize  = serialize or {}
+local stub       = serialize._stub or {}
+stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
+stub.__index     = stub
+serialize._stub  = stub
 
 -- load modules
 local math      = require("base/math")
@@ -194,12 +198,15 @@ end
 
 function serialize._resolveref(root, fenv, ...)
     local pos = root
-    for i, v in ipairs({...}) do
+    local path = table.pack(...)
+    for i = 1, path.n do
+        local v = path[i]
         if type(v) ~= "string" and type(v) ~= "number" then
             return nil, "path segments in ref should be string or number"
         end
         if type(pos) ~= "table" then
-            return nil, "unable to resolve path: <root>." .. table.concat(path, ".", 1, i - 1) .. " is " .. tostring(pos)
+            table.insert(path, 1, "<root>")
+            return nil, "unable to resolve path: " .. table.concat(path, ".", 1, i) .. " is " .. tostring(pos)
         end
         pos = pos[v]
     end
@@ -307,14 +314,23 @@ function serialize.save(object, opt)
     return (#dump < #result) and dump or result
 end
 
+function stub:__call(root, fenv)
+    return self.resolver(root, fenv, table.unpack(self.params, 1, self.params.n))
+end
+
+function stub:__tostring()
+    local fparams = {}
+    for i = 1, self.params.n do
+        fparams[i] = serialize._make(self.params[i])
+    end
+    return string.format("%s(%s)", self.name, table.concat(fparams, ", "))
+end
+
 -- called by functions in deserialize environment
 -- create a function (called stub) to finish deserialization
-function serialize._createstub(resolver, env, ...)
+function serialize._createstub(name, resolver, env, ...)
     env.has_stub = true
-    local params = table.pack(...)
-    return function(root, fenv)
-        return resolver(root, fenv, table.unpack(params, 1, params.n))
-    end
+    return setmetatable({ name = name, resolver = resolver, params = table.pack(...)}, stub)
 end
 
 -- after deserialization by load()
@@ -324,15 +340,16 @@ end
 --              root     root object
 --              fenv     fenv of deserialzer caller
 function serialize._resolvestub(object, root, fenv)
-    if type(object) == "function" then
+    if type(object) ~= "table" then
+        return object
+    end
+
+    if object.isstub == stub.isstub then
         local ok, result, errors = pcall(object, root, fenv)
         if ok and errors == nil then
             return result
         end
         return nil, errors or result or "unspecified error"
-    end
-    if type(object) ~= "table" then
-        return object
     end
 
     for k, v in pairs(object) do
@@ -354,13 +371,13 @@ function serialize._createenv()
     -- resolve reference
     function env.ref(...)
         -- load ref
-        return serialize._createstub(serialize._resolveref, env, ...)
+        return serialize._createstub("ref", serialize._resolveref, env, ...)
     end
 
     -- load function
     function env.func(...)
         -- load func
-        return serialize._createstub(serialize._resolvefunction, env, ...)
+        return serialize._createstub("func", serialize._resolvefunction, env, ...)
     end
 
     -- return new env
