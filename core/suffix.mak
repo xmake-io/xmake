@@ -206,43 +206,43 @@ $(foreach name, $(NAMES), $(eval $(call MAKE_OBJS_AND_SRCS_FILES,$(name))))
 define MAKE_OBJ_C
 $(1)$(OBJ_SUFFIX) : $(1).c
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1).c
-	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).c $(OUT) /tmp/$(PRO_NAME).out
+	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).c $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_CC
 $(1)$(OBJ_SUFFIX) : $(1).cc
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1).cc
-	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).cc $(OUT) /tmp/$(PRO_NAME).out
+	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).cc $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_CPP
 $(1)$(OBJ_SUFFIX) : $(1).cpp
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1).cpp
-	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).cpp $(OUT) /tmp/$(PRO_NAME).out
+	@$(CC) $(2) $(3) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).cpp $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_M
 $(1)$(OBJ_SUFFIX) : $(1).m
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1).m
-	@$(MM) -x objective-c $(2) $(3) $(MXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).m $(OUT) /tmp/$(PRO_NAME).out
+	@$(MM) -x objective-c $(2) $(3) $(MXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).m $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_MM
 $(1)$(OBJ_SUFFIX) : $(1).mm
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1).mm
-	@$(MM) -x objective-c++ $(2) $(3) $(MXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).mm $(OUT) /tmp/$(PRO_NAME).out
+	@$(MM) -x objective-c++ $(2) $(3) $(MXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1).mm $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_ASM_WITH_CC
 $(1)$(OBJ_SUFFIX) : $(1)$(ASM_SUFFIX)
 	@echo $(CCACHE) $(DISTCC) compile.$(DTYPE) $(1)$(ASM_SUFFIX)
-	@$(CC) $(2) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1)$(ASM_SUFFIX) $(OUT) /tmp/$(PRO_NAME).out
+	@$(CC) $(2) $(CXFLAGS-o)$(1)$(OBJ_SUFFIX) $(1)$(ASM_SUFFIX) $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_OBJ_ASM_WITH_AS
 $(1)$(OBJ_SUFFIX) : $(1)$(ASM_SUFFIX)
 	@echo compile.$(DTYPE) $(1)$(ASM_SUFFIX)
-	@$(AS) $(2) $(ASFLAGS-o)$(1)$(OBJ_SUFFIX) $(1)$(ASM_SUFFIX) $(OUT) /tmp/$(PRO_NAME).out
+	@$(AS) $(2) $(ASFLAGS-o)$(1)$(OBJ_SUFFIX) $(1)$(ASM_SUFFIX) $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 define MAKE_ALL
@@ -268,18 +268,18 @@ $(if $(AS)
 $(BIN_PREFIX)$(1)$(BIN_SUFFIX): $($(1)_OBJS) $(addsuffix $(OBJ_SUFFIX), $($(1)_OBJ_FILES))
 	@echo link $$@
 	-@$(RM) $$@
-	@$(LD) $(LDFLAGS-o)$$@ $$^ $($(1)_LDFLAGS) $(OUT) /tmp/$(PRO_NAME).out
+	@$(LD) $(LDFLAGS-o)$$@ $$^ $($(1)_LDFLAGS) $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 
 $(LIB_PREFIX)$(1)$(LIB_SUFFIX): $($(1)_OBJS) $(addsuffix $(OBJ_SUFFIX), $($(1)_OBJ_FILES))
 	@echo link $$@
 	-@$(RM) $$@
-	@$(AR) $($(1)_ARFLAGS) $(ARFLAGS-o)$$@ $$^ $(OUT) /tmp/$(PRO_NAME).out
+	@$(AR) $($(1)_ARFLAGS) $(ARFLAGS-o)$$@ $$^ $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 	$(if $(RANLIB),@$(RANLIB) $$@,)
 
 $(DLL_PREFIX)$(1)$(DLL_SUFFIX): $($(1)_OBJS) $(addsuffix $(OBJ_SUFFIX), $($(1)_OBJ_FILES))
 	@echo link $$@
 	-@$(RM) $$@
-	@$(LD) $(LDFLAGS-o)$$@ $$^ $($(1)_SHFLAGS) $(OUT) /tmp/$(PRO_NAME).out
+	@$(LD) $(LDFLAGS-o)$$@ $$^ $($(1)_SHFLAGS) $(OUT) $(TMP_DIR)/$(PRO_NAME).out
 endef
 
 

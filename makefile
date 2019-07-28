@@ -8,6 +8,10 @@ verbose:=
 # prefix
 prefix:=$(if $(prefix),$(prefix),$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr))
 
+
+# the temporary directory
+TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
+
 # platform
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
@@ -50,7 +54,7 @@ ARCH 		:=$(if $(findstring amd64,$(ARCH)),x86_64,$(ARCH))
 xmake_dir_install   :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 xmake_core_install  :=$(xmake_dir_install)/xmake
-xmake_loader        :=/tmp/xmake_loader
+xmake_loader        :=$(TMP_DIR)/xmake_loader
 xmake_loader_install:=$(prefix)/bin/xmake
 
 tip:
@@ -62,6 +66,7 @@ build:
 	@echo compiling xmake-core ...
 	@if [ -f core/.config.mak ]; then rm core/.config.mak; fi
 	@$(MAKE) -C core --no-print-directory f DEBUG=$(debug)
+	@$(MAKE) -C core --no-print-directory c
 	@$(MAKE) -C core --no-print-directory
 
 install:
@@ -85,7 +90,7 @@ install:
 	@mv $(xmake_loader) $(xmake_loader_install)
 	@chmod 777 $(xmake_loader_install)
 	@# remove xmake.out
-	@if [ -f '/tmp/xmake.out' ]; then rm /tmp/xmake.out; fi
+	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi
 	@# ok
 	@echo ok!
 

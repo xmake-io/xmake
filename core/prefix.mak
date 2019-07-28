@@ -3,6 +3,9 @@
 # include project
 include 		$(PRO_DIR)/project.mak
 
+# the temporary directory
+TMP_DIR 		:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
+
 # the source directory
 SRC_DIR 		= $(PRO_DIR)/src
 

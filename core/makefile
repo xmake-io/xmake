@@ -36,9 +36,9 @@ endif
 
 # make all
 all : .null
-	@echo "" > /tmp/$(PRO_NAME).out
+	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo make $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) || cat /tmp/$(PRO_NAME).out
+	@$(MAKE) --no-print-directory -C $(SRC_DIR) || cat $(TMP_DIR)/$(PRO_NAME).out
 
 # make rebuild
 rebuild : .null
@@ -48,7 +48,7 @@ rebuild : .null
 
 # make install
 install : .null
-	@echo "" > /tmp/$(PRO_NAME).out
+	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo install $(PRO_NAME)
 	@$(MAKE) --no-print-directory -C $(SRC_DIR)
 	@$(MAKE) --no-print-directory -C $(SRC_DIR) install
@@ -59,13 +59,13 @@ lipo : .null
 
 # make clean
 clean : .null
-	@echo "" > /tmp/$(PRO_NAME).out
+	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo clean $(PRO_NAME)
 	@$(MAKE) --no-print-directory -C $(SRC_DIR) clean
 
 # make update
 update : .null
-	@echo "" > /tmp/$(PRO_NAME).out
+	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo update $(PRO_NAME)
 	@$(MAKE) --no-print-directory -C $(SRC_DIR) update
 	@$(MAKE) --no-print-directory -C $(SRC_DIR)
@@ -74,17 +74,17 @@ update : .null
 # make output
 output : .null
 	@echo output $(PRO_NAME)
-	@cat /tmp/$(PRO_NAME).out
+	@cat $(TMP_DIR)/$(PRO_NAME).out
 
 # make error
 error : .null
 	@echo error $(PRO_NAME)
-	@cat /tmp/$(PRO_NAME).out | egrep -i "error|undefined|cannot|错误" | cat
+	@cat $(TMP_DIR)/$(PRO_NAME).out | egrep -i "error|undefined|cannot|错误" | cat
 
 # make warning
 warning : .null
 	@echo warning $(PRO_NAME)
-	@cat /tmp/$(PRO_NAME).out | egrep warning
+	@cat $(TMP_DIR)/$(PRO_NAME).out | egrep warning
 
 # make doc
 doc : .null
