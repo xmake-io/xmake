@@ -20,36 +20,42 @@
 --
 
 -- define module: serialize
-local serialize = serialize or {}
+local serialize  = serialize or {}
+local stub       = serialize._stub or {}
+serialize._stub  = stub
 
 -- load modules
 local math      = require("base/math")
+local table     = require("base/table")
+local hashset   = require("base/hashset")
+
+-- reserved keywords in lua
+function serialize._keywords()
+    local keywords = serialize._KEYWORDS
+    if not keywords then
+        keywords  = hashset.of("and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while")
+        serialize._KEYWORDS = keywords
+    end
+    return keywords
+end
 
 -- save original interfaces
 serialize._dump = serialize._dump or string._dump or string.dump
 
-function serialize._makenumber(num, opt, level)
-    if math.isnan(num) then
-        return "math.nan"
-    end
-    local inf = math.isinf(num)
-    if inf == 1 then
-        return "math.huge"
-    elseif inf == -1 then
-        return "-math.huge"
-    end
-    return tostring(num)
-end
-
-function serialize._makestring(str, opt, level)
+function serialize._makestring(str, opt)
     return string.format("%q", str)
 end
 
-function serialize._makekeyword(val, opt, level)
+function serialize._makedefault(val, opt)
     return tostring(val)
 end
 
-function serialize._maketable(object, opt, level)
+function serialize._maketable(object, opt, level, path, reftab)
+
+    level = level or 0
+    reftab = reftab or {}
+    path = path or {}
+    reftab[object] = table.copy(path)
 
     -- serialize child items
     local childlevel = level + 1
@@ -58,23 +64,45 @@ function serialize._maketable(object, opt, level)
     local isarr = true
     local maxn = 0
     for k, v in pairs(object) do
+        -- check key
         if type(k) == "number" then
-            numidxcount = numidxcount + 1
-            if k < 1 or not math.isint(k) then
-                isarr = false
-            elseif k > maxn then
-                maxn = k
+            -- only checks when it may be an array
+            if isarr then
+                numidxcount = numidxcount + 1
+                if k < 1 or not math.isint(k) then
+                    isarr = false
+                elseif k > maxn then
+                    maxn = k
+                end
             end
         elseif type(k) == "string" then
             isarr = false
         else
             return nil, string.format("cannot serialize table with key of %s: <%s>", type(k), k)
         end
-        local sval, err = serialize._make(v, opt, childlevel)
+
+        -- serialize value
+        local sval, err
+        if type(v) == "table" then
+            if reftab[v] then
+                sval, err = serialize._makeref(reftab[v], opt)
+            else
+                table.insert(path, k)
+                sval, err = serialize._maketable(v, opt, childlevel, path, reftab)
+                table.remove(path)
+            end
+        else
+            sval, err = serialize._make(v, opt)
+        end
         if err ~= nil then
             return nil, err
         end
         serialized[k] = sval
+    end
+
+    -- empty table
+    if isarr and numidxcount == 0 then
+        return opt.indentstr and "{ }" or "{}"
     end
 
     -- too sparse
@@ -82,102 +110,158 @@ function serialize._maketable(object, opt, level)
         isarr = false
     end
 
-    -- make indent
-    local indent = ""
-    if opt.indent then
-        indent = string.rep(opt.indent, level)
-    end
-
-    -- make head
-    local headstr = opt.indent and "{\n" or "{"
-
-    -- make tail
-    local tailstr
-    if opt.indent then
-        tailstr = "\n" .. indent .. "}"
-    else
-        tailstr = "}"
-    end
-
     -- make body
-    local s = {}
-    if opt.indent then
-        indent = string.rep(opt.indent, level + 1)
-    end
-
+    local bodystrs = {}
     if isarr then
-        local nilval
-        if maxn ~= numidxcount then
-            nilval = indent .. "nil"
-        end
         for i = 1, maxn do
-            local val = serialized[i]
-            if val == nil then
-                s[i] = nilval
-            else
-                s[i] = indent .. val
-            end
+            bodystrs[i] = serialized[i] or "nil"
         end
     else
-        local con = opt.indent and " = " or "="
+        local dformat = opt.indentstr and "%s = %s" or "%s=%s"
+        local sformat = opt.indentstr and "[%q] = %s" or "[%q]=%s"
+        local nformat = opt.indentstr and "[%s] = %s" or "[%s]=%s"
+        local keywords = serialize._keywords()
         for k, v in pairs(serialized) do
-            if type(k) == "string" and not k:match("^[%a_][%w_]*$") then
-                k = string.format("[%q]", k)
-            elseif type(k) == "number" then
-                local nval, err = serialize._makenumber(k, opt, childlevel)
-                if err ~= nil then
-                    return nil, err
+            local format
+            -- serialize key
+            if type(k) == "string" then
+                if keywords:has(k) or not k:match("^[%a_][%w_]*$") then
+                    format = sformat
+                else
+                    format = dformat
                 end
-                k = string.format("[%s]", nval)
+            else -- type(k) == "number"
+                format = nformat
             end
-            table.insert(s, indent .. k .. con .. v)
+            -- concat k = v
+            table.insert(bodystrs, string.format(format, k, v))
         end
     end
 
-    if #s == 0 then
-        return opt.indent and "{ }" or "{}"
+    -- make head and tail
+    local headstr, bodysep, tailstr
+    if opt.indentstr then
+        local indent = "\n" .. string.rep(opt.indentstr, level)
+        tailstr = indent .. "}"
+        indent = indent .. opt.indentstr
+        headstr = "{" .. indent
+        bodysep = "," .. indent
+    else
+        headstr, bodysep, tailstr = "{", ",", "}"
     end
-    return headstr .. table.concat(s, opt.indent and ",\n" or ",") .. tailstr
+
+    -- concat together
+    return headstr .. table.concat(bodystrs, bodysep) .. tailstr
 end
 
-function serialize._makefunction(func, opt, level)
-
+function serialize._makefunction(func, opt)
     local ok, funccode = pcall(serialize._dump, func, opt.strip)
     if not ok then
         return nil, string.format("%s: <%s>", funccode, func)
     end
+    return string.format("func%q", funccode)
+end
 
-    local chunkname = nil
-    local sep = ","
-    if opt.strip then
-        chunkname = "\"=(deserialized code)\""
+function serialize._resolvefunction(root, fenv, funccode)
+    -- check
+    if type(funccode) ~= "string" then
+        return nil, "func should called with a string"
     end
-    if opt.indent then
-        sep = ", "
+
+    -- resolve funccode
+    local func, err = load(funccode, "=(deserialized code)", "b", fenv)
+    if err ~= nil then
+        return nil, err
     end
-    if chunkname then
-        return string.format("loadstring(%q%s%s)", funccode, sep, chunkname)
-    else
-        return string.format("loadstring(%q)", funccode)
+
+    -- try restore upvalues
+    if fenv then
+        for i = 1, math.huge do
+            local upname = debug.getupvalue(func, i)
+            if upname == nil or upname == "" then
+                break
+            end
+            debug.setupvalue(func, i, fenv[upname])
+        end
     end
+    return func
+end
+
+function serialize._makeref(path, opt)
+
+    -- root reference
+    if path[1] == nil then
+        return "ref()"
+    end
+
+    local ppath = {}
+    for i, v in ipairs(path) do
+        ppath[i] = serialize._make(v, opt)
+    end
+
+    return "ref(" .. table.concat(ppath, opt.indentstr and ", " or ",") .. ")"
+end
+
+function serialize._resolveref(root, fenv, ...)
+    local pos = root
+    local path = table.pack(...)
+    for i = 1, path.n do
+        local v = path[i]
+        if type(v) ~= "string" and type(v) ~= "number" then
+            return nil, "path segments in ref should be string or number"
+        end
+        if type(pos) ~= "table" then
+            table.insert(path, 1, "<root>")
+            return nil, "unable to resolve path: " .. table.concat(path, ".", 1, i) .. " is " .. tostring(pos)
+        end
+        pos = pos[v]
+    end
+    return pos
 end
 
 -- make string with the level
-function serialize._make(object, opt, level)
+function serialize._make(object, opt)
 
     -- call make* by type
     if type(object) == "string" then
-        return serialize._makestring(object, opt, level)
-    elseif type(object) == "boolean" or type(object) == "nil" then
-        return serialize._makekeyword(object, opt, level)
-    elseif type(object) == "number" then
-        return serialize._makenumber(object, opt, level)
+        return serialize._makestring(object, opt)
+    elseif type(object) == "boolean" or type(object) == "nil" or type(object) == "number" then
+        return serialize._makedefault(object, opt)
     elseif type(object) == "table" then
-        return serialize._maketable(object, opt, level)
+        return serialize._maketable(object, opt)
     elseif type(object) == "function" then
-        return serialize._makefunction(object, opt, level)
+        return serialize._makefunction(object, opt)
     else
         return nil, string.format("cannot serialize %s: <%s>", type(object), object)
+    end
+end
+
+function serialize._generateindentstr(indent)
+
+    -- init indent, from nil, boolean, number or string to false or string
+    if not indent then
+        -- no indent
+        return nil
+    elseif indent == true then
+        -- 4 spaces
+        return "    "
+    elseif type(indent) == "number" then
+        if indent < 0 then
+            return nil
+        elseif indent > 20 then
+            return nil, "invalid opt.indent, too large"
+        else
+            -- indent spaces
+            return string.rep(" ", indent)
+        end
+    elseif type(indent) == "string" then
+        -- only whitespaces allowed
+        if not (indent:trim() == "") then
+            return nil, "invalid opt.indent, only whitespaces are accepted"
+        end
+        return indent
+    else
+        return nil, "invalid opt.indent, should be boolean, number or string"
     end
 end
 
@@ -192,37 +276,24 @@ function serialize.save(object, opt)
     -- init options
     if opt == true then
         opt = { strip = true, binary = false, indent = false }
-    elseif opt == false or opt == nil then
-        opt = { strip = false, binary = false, indent = true }
+    elseif not opt then
+        opt = {}
     end
 
-    if not opt.indent then
-        opt.indent = false
-    elseif type(opt.indent) == "boolean" then
-        opt.indent = "    "
-    elseif type(opt.indent) == "number" then
-        if opt.indent < 0 then
-            opt.indent = false
-        else
-            opt.indent = string.rep(" ", opt.indent)
-        end
-    elseif type(opt.indent) == "string" then
-        if not opt.indent:match("^%s+$") then
-            return nil, "invalid opt.indent, only whitespaces are accepted"
-        end
-    else
-        return nil, "invalid opt.indent, should be boolean, number or string"
+    if opt.strip == nil then opt.strip = false end
+    if opt.binary == nil then opt.binary = false end
+    if opt.indent == nil then opt.indent = true end
+
+    local indent, ierrors = serialize._generateindentstr(opt.indent)
+    if ierrors then
+        return nil, ierrors
     end
+    opt.indentstr = indent
 
     -- make string
-    local ok, result, errors = pcall(serialize._make, object, opt, 0)
-
+    local ok, result, errors = pcall(serialize._make, object, opt)
     if not ok then
-        if result:find("stack overflow", 1, true) then
-            errors = "cannot serialize: reference loop found"
-        else
-            errors = "cannot serialize: " .. result
-        end
+        errors = "cannot serialize: " .. result
     end
 
     -- ok?
@@ -235,7 +306,7 @@ function serialize.save(object, opt)
     end
 
     -- binary mode
-    local func, lerr = loadstring("return " .. result)
+    local func, lerr = loadstring("return " .. result, "=")
     if lerr ~= nil then
         return nil, lerr
     end
@@ -249,6 +320,80 @@ function serialize.save(object, opt)
     return (#dump < #result) and dump or result
 end
 
+-- init stub metatable
+stub.isstub      = setmetatable({}, { __tostring = function() return "stub indentifier" end })
+stub.__index     = stub
+
+function stub:__call(root, fenv)
+    return self.resolver(root, fenv, table.unpack(self.params, 1, self.params.n))
+end
+
+function stub:__tostring()
+    local fparams = {}
+    for i = 1, self.params.n do
+        fparams[i] = serialize._make(self.params[i])
+    end
+    return string.format("%s(%s)", self.name, table.concat(fparams, ", "))
+end
+
+-- called by functions in deserialize environment
+-- create a function (called stub) to finish deserialization
+function serialize._createstub(name, resolver, env, ...)
+    env.has_stub = true
+    return setmetatable({ name = name, resolver = resolver, params = table.pack(...)}, stub)
+end
+
+-- after deserialization by load()
+-- use this routine to call all stubs in deserialzed data
+--
+-- @param       object   object to search stubs
+--              root     root object
+--              fenv     fenv of deserialzer caller
+function serialize._resolvestub(object, root, fenv)
+    if type(object) ~= "table" then
+        return object
+    end
+
+    if object.isstub == stub.isstub then
+        local ok, result, errors = pcall(object, root, fenv)
+        if ok and errors == nil then
+            return result
+        end
+        return nil, errors or result or "unspecified error"
+    end
+
+    for k, v in pairs(object) do
+        local result, errors = serialize._resolvestub(v, root, fenv)
+        if errors ~= nil then
+            return nil, errors
+        end
+        object[k] = result
+    end
+    return object
+end
+
+-- create a env for deserialze load() call
+function serialize._createenv()
+
+    -- init env
+    local env = { nan = math.nan, inf = math.huge }
+
+    -- resolve reference
+    function env.ref(...)
+        -- load ref
+        return serialize._createstub("ref", serialize._resolveref, env, ...)
+    end
+
+    -- load function
+    function env.func(...)
+        -- load func
+        return serialize._createstub("func", serialize._resolvefunction, env, ...)
+    end
+
+    -- return new env
+    return env
+end
+
 -- load table from string in table
 function serialize._load(str)
 
@@ -259,31 +404,38 @@ function serialize._load(str)
         str = "return " .. str
     end
 
-    local script, errors = loadstring(str)
+    -- load string
+    local env = serialize._createenv()
+    local script, errors = load(str, "=(deserializing data)", binary and "b" or "t", env)
     if script then
-
         -- load object
         local ok, object = pcall(script)
         if ok then
             result = object
-        elseif object then
-            -- error
-            errors = object
-        else
-            local data
-            if binary then
-                data = "<binary data>"
-            elseif #str > 20 then
-                data = str:sub(8, 17) .. "..."
-            else
-                data = str:sub(8)
+            if env.has_stub then
+                local fenv = debug.getfenv(debug.getinfo(3, "f").func)
+                result, errors = serialize._resolvestub(result, result, fenv)
             end
+        else
             -- error
-            errors = string.format("cannot deserialize string: %s", data)
+            errors = tostring(object)
         end
     end
 
-    return result, errors
+    if errors then
+        local data
+        if binary then
+            data = "<binary data>"
+        elseif #str > 30 then
+            data = string.format("%q... ", str:sub(8, 27))
+        else
+            data = string.format("%q", str:sub(8))
+        end
+        -- error
+        return nil, string.format("cannot deserialize %s: %s", data, errors)
+    end
+
+    return result
 end
 
 -- deserialize string to object
