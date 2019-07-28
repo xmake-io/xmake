@@ -493,7 +493,7 @@ function os.tmpdir()
 
     -- get root tmpdir
     if os._ROOT_TMPDIR == nil then
-        os._ROOT_TMPDIR = os.getenv("XMAKE_TMPDIR") or os._tmpdir()
+        os._ROOT_TMPDIR = os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()
     end
     local tmpdir_root = os._ROOT_TMPDIR
 

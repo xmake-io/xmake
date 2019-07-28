@@ -6,10 +6,11 @@ verbose:=
 #verbose:=-v
 
 # prefix
+prefix:=$(if $(prefix),$(prefix),$(PREFIX)) # for termux
 prefix:=$(if $(prefix),$(prefix),$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr))
 
-
 # the temporary directory
+TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR)) # for termux
 TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
 
 # platform
