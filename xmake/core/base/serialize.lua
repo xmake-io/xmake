@@ -30,7 +30,14 @@ local table     = require("base/table")
 local hashset   = require("base/hashset")
 
 -- reserved keywords in lua
-local keywords  = hashset.of("and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while")
+function serialize._keywords()
+    local keywords = serialize._KEYWORDS
+    if not keywords then
+        keywords  = hashset.of("and", "break", "do", "else", "elseif", "end", "false", "for", "function", "goto", "if", "in", "local", "nil", "not", "or", "repeat", "return", "then", "true", "until", "while")
+        serialize._KEYWORDS = keywords
+    end
+    return keywords
+end
 
 -- save original interfaces
 serialize._dump = serialize._dump or string._dump or string.dump
@@ -113,6 +120,7 @@ function serialize._maketable(object, opt, level, path, reftab)
         local dformat = opt.indentstr and "%s = %s" or "%s=%s"
         local sformat = opt.indentstr and "[%q] = %s" or "[%q]=%s"
         local nformat = opt.indentstr and "[%s] = %s" or "[%s]=%s"
+        local keywords = serialize._keywords()
         for k, v in pairs(serialized) do
             local format
             -- serialize key
