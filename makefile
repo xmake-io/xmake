@@ -1,17 +1,26 @@
 # is debug?
-debug  :=n
-verbose:=
+debug  		:=n
+verbose 	:=
 
-#debug  :=y
-#verbose:=-v
+#debug   	:=y
+#verbose 	:=-v
 
 # prefix
-prefix:=$(if $(prefix),$(prefix),$(PREFIX)) # for termux
-prefix:=$(if $(prefix),$(prefix),$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr))
+ifeq ($(prefix),) # compatible with brew script (make install prefix=xxx)
+ifeq ($(PREFIX),)
+prefix 		:=$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr)
+else
+prefix 		:=$(PREFIX)
+endif
+endif
 
 # the temporary directory
-TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR)) # for termux
+ifeq ($(TMPDIR),)
 TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),/tmp)
+else
+# for termux
+TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR))
+endif
 
 # platform
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
