@@ -5,14 +5,17 @@
 
 set -o pipefail
 
-if [ 0 -ne "$(id -u)" ]
-then
+if [ 0 -ne "$(id -u)" ]; then
     sudoprefix=sudo
 else
     sudoprefix=
 fi
 
-tmpdir=/tmp/.xmake_getter$$
+if [ -z "$TMPDIR" ]; then
+    tmpdir=/tmp/.xmake_getter$$
+else
+    tmpdir=$TMPDIR
+fi
 
 remote_get_content(){
     if curl --version >/dev/null 2>&1
