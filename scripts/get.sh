@@ -14,7 +14,7 @@ fi
 if [ -z "$TMPDIR" ]; then
     tmpdir=/tmp/.xmake_getter$$
 else
-    tmpdir=$TMPDIR
+    tmpdir=$TMPDIR/.xmake_getter$$
 fi
 
 remote_get_content(){
