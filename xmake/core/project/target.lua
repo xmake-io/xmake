@@ -832,13 +832,9 @@ function _instance:installdir()
         if not installdir then
 
             -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
-            installdir = baseoption.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("DESTDIR") or platform.get("installdir")
+            installdir = baseoption.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
             if installdir then
-                -- append prefix
-                local prefix = baseoption.get("prefix") or os.getenv("PREFIX")
-                if prefix then
-                    installdir = path.join(installdir, prefix)
-                end
+                installdir = installdir:trim()
             end
         end
         self._INSTALLDIR = installdir or false
