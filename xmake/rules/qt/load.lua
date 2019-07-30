@@ -195,7 +195,7 @@ function main(target, opt)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-msvc"))
         target:add("linkdirs", qt.linkdirs)
-        target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "OpenGL32", "imm32", "winmm")
+        target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "OpenGL32", "imm32", "winmm", "iphlpapi")
     elseif is_plat("mingw") then
         target:set("frameworks", nil)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
