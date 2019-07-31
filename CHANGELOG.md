@@ -9,6 +9,7 @@
 * [#472](https://github.com/xmake-io/xmake/pull/472): Add `xmake project -k vsxmake201x` plugin to support call xmake from vs/msbuild
 * [#487](https://github.com/xmake-io/xmake/issues/487): Support to build the selected files for the given target
 * Add filelock for io
+* [#513](https://github.com/xmake-io/xmake/issues/513): Support for android/termux
 
 ### Changes
 
@@ -622,6 +623,7 @@
 * [#472](https://github.com/xmake-io/xmake/pull/472): 添加`xmake project -k vsxmake201x`去更好的支持vs工程的生成，内部直接调用xmake来编译
 * [#487](https://github.com/xmake-io/xmake/issues/487): 通过`xmake --files="src/*.c"`支持指定一批文件进行编译。
 * 针对io模块增加文件锁接口
+* [#513](https://github.com/xmake-io/xmake/issues/513): 增加对android/termux终端的支持，可在android设备上执行xmake来构建项目
 
 ### 改进
 
