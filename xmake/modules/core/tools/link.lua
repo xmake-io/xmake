@@ -90,14 +90,14 @@ function nf_linkdir(self, dir)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- init arguments
     local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
 
     -- too long arguments for windows? 
     local args = os.args(argv)
-    if #args > 1024 then
+    if #args > 1024 and not opt.rawargs then
         local argsfile = os.tmpfile(args) .. ".args.txt" 
         io.writefile(argsfile, args)
         argv = {"@" .. argsfile}
@@ -106,12 +106,12 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 end
 
 -- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+function link(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
 end
 

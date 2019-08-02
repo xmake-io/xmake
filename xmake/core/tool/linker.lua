@@ -194,12 +194,12 @@ end
 -- link the target file
 function linker:link(objectfiles, targetfile, opt)
     opt = opt or {}
-    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt))
+    return sandbox.load(self:_tool().link, self:_tool(), table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
 end
 
 -- get the link arguments list
 function linker:linkargv(objectfiles, targetfile, opt)
-    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt))
+    return self:_tool():linkargv(table.wrap(objectfiles), self:_targetkind(), targetfile, opt.linkflags or self:linkflags(opt), opt)
 end
 
 -- get the link command
