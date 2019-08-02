@@ -35,6 +35,8 @@ rule("qt.env")
         end
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
             target:add("runenvs", "PATH", qt.bindir)
+            target:add("runenvs", "QML2_IMPORT_PATH", path.join(qt.sdkdir, "qml"))
+            target:add("runenvs", "QML_IMPORT_TRACE", "1")
         end
     end)
 
