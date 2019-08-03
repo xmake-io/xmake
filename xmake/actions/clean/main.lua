@@ -50,6 +50,9 @@ function _do_clean_target(target)
     local _, dstheaders = target:headers()
     remove_files(dstheaders) 
 
+    -- remove the clean files
+    remove_files(target:get("cleanfiles"))
+
     -- remove all?
     if option.get("all") then 
 

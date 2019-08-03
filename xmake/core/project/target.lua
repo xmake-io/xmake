@@ -1689,6 +1689,7 @@ function target.apis()
         ,   "target.set_rundir"
             -- target.add_xxx
         ,   "target.add_files"
+        ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
             -- target.del_xxx

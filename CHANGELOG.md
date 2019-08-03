@@ -10,6 +10,7 @@
 * [#487](https://github.com/xmake-io/xmake/issues/487): Support to build the selected files for the given target
 * Add filelock for io
 * [#513](https://github.com/xmake-io/xmake/issues/513): Support for android/termux
+* [#517](https://github.com/xmake-io/xmake/issues/517): Add `add_cleanfiles` api for target
 
 ### Changes
 
@@ -624,6 +625,7 @@
 * [#487](https://github.com/xmake-io/xmake/issues/487): 通过`xmake --files="src/*.c"`支持指定一批文件进行编译。
 * 针对io模块增加文件锁接口
 * [#513](https://github.com/xmake-io/xmake/issues/513): 增加对android/termux终端的支持，可在android设备上执行xmake来构建项目
+* [#517](https://github.com/xmake-io/xmake/issues/517): 为target增加`add_cleanfiles`接口，实现快速定制化清理文件
 
 ### 改进
 
