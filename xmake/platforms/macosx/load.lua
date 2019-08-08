@@ -40,6 +40,8 @@ function main(platform)
     platform:add("cxflags", "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0")
     platform:add("ldflags", "-arch " .. arch)
     if target_minver then
+        platform:add("cxflags", "-mmacosx-version-min=" .. target_minver)
+        platform:add("mxflags", "-mmacosx-version-min=" .. target_minver)
         platform:add("ldflags", "-mmacosx-version-min=" .. target_minver)
     end
     if xcode_sdkdir then
