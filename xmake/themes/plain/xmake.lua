@@ -68,3 +68,7 @@ theme("plain")
     set_color("dump.number", "")
     set_color("dump.function", "")
 
+    -- menu
+    set_color("menu.main.task.name", "")
+    set_color("menu.option.name", "")
+    set_color("menu.usage", "")

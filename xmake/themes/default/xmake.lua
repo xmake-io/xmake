@@ -68,3 +68,7 @@ theme("default")
     set_color("dump.number", "green")
     set_color("dump.function", "cyan")
 
+    -- menu
+    set_color("menu.main.task.name", "magenta")
+    set_color("menu.option.name", "green")
+    set_color("menu.usage", "cyan")

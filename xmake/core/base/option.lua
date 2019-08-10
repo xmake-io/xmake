@@ -877,7 +877,7 @@ function option.show_menu(task)
     -- print usage
     if taskmenu.usage then
         io.print("")
-        io.print(colors.translate("${bright}Usage: $${default cyan}" .. taskmenu.usage))
+        io.print(colors.translate("${bright}Usage: $${default color.menu.usage}" .. taskmenu.usage .. "${clear}"))
     end
 
     -- print description
@@ -919,7 +919,7 @@ function option.show_main()
     -- print usage
     if main.usage then
         io.print("")
-        io.print(colors.translate("${bright}Usage: $${default cyan}" .. main.usage))
+        io.print(colors.translate("${bright}Usage: $${default color.menu.usage}" .. main.usage .. "${clear}"))
     end
 
     -- print description
@@ -992,7 +992,7 @@ function option.show_main()
                 taskline = taskline .. taskname
 
                 -- append color
-                taskline = "${magenta}" .. taskline .. "${clear}"
+                taskline = colors.translate("${color.menu.main.task.name}" .. taskline .. "${clear}")
 
                 -- append spaces
                 for i = (#taskline), padding do
@@ -1084,7 +1084,7 @@ function option.show_options(options)
         end
 
         -- append color
-        option_info = "${green}" .. option_info .. "${clear}"
+        option_info = colors.translate("${color.menu.option.name}" .. option_info .. "${clear}")
 
         -- get width of console
         local console_width = os.getwinsize()["width"]
