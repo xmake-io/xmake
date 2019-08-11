@@ -24,13 +24,12 @@ import("core.project.target")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
-import("detect.tools.find_brew")
 import("detect.tools.find_pkg_config")
 
 -- get package info
 --
 -- @param name  the package name
--- @param opt   the argument options, {version = true, configdirs = {"/xxxx/pkgconfig/"}}
+-- @param opt   the argument options, {version = true, variables = "includedir", configdirs = {"/xxxx/pkgconfig/"}}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
 --
@@ -58,8 +57,20 @@ function info(name, opt)
         os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
-    -- get libs and cflags
+    -- get variable value
     local result = nil
+    if opt.variables then
+        for _, variable in ipairs(table.wrap(opt.variables)) do
+            local value = try { function () return os.iorunv(pkg_config, {"--variable=" .. variable, name}) end }
+            if value ~= nil then
+                result = result or {}
+                result[variable] = value:trim()
+            end
+        end
+        return result
+    end
+
+    -- get libs and cflags
     local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
     if flags then
 
@@ -149,11 +160,14 @@ function find(name, opt)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
         end
     end
-
-    -- found?
     if result and result.links then
-        result.linkdirs     = table.unique(result.linkdirs)
-        result.includedirs  = table.join(result.includedirs or {}, pkginfo.includedirs)
+        result.linkdirs = table.unique(result.linkdirs)
+    end
+
+    -- get includedirs
+    if pkginfo.includedirs then
+        result             = result or {}
+        result.includedirs = pkginfo.includedirs
     end
 
     -- save version

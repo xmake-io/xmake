@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
+import("lib.detect.pkg_config")
 import("package.manager.find_package")
 
 -- find package from the brew package manager
@@ -50,6 +51,14 @@ function main(name, opt)
     if pcfile then
         opt.configdirs = path.directory(pcfile)
         result = find_package("pkg_config::" .. pcname, opt)
+        if not result then
+            -- attempt to get includedir variable from pkg-config/xx.pc 
+            local pkginfo = pkg_config.info(pcname, table.join(opt, {variables = "includedir"}))
+            if pkginfo.includedir then
+                result = result or {}
+                result.includedirs = pkginfo.includedir
+            end
+        end
     end
 
     -- find package from xxx/lib, xxx/include
