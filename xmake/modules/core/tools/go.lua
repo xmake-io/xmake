@@ -115,12 +115,12 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function compargv(self, sourcefiles, objectfile, flags)
     return self:program(), table.join("tool", "compile", flags, "-o", objectfile, sourcefiles)
 end
 
--- complie the source file
+-- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- ensure the object directory

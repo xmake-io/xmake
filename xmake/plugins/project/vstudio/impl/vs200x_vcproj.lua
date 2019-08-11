@@ -436,7 +436,7 @@ function _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcproj
                 vcprojfile:print("AdditionalOptions=\"%s\"", flags)
                 vcprojfile:print("ObjectFile=\"%s\"", path.relative(path.absolute(objectfile), vcprojdir))
 
-                -- complie as c++ if exists flag: /TP
+                -- compile as c++ if exists flag: /TP
                 if flags:find("[%-|/]TP") then
                     vcprojfile:print("CompileAs=\"2\"")
                 end

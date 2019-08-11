@@ -99,12 +99,12 @@ function build(self, sourcefiles, targetkind, targetfile, flags)
     os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function compargv(self, sourcefiles, objectfile, flags)
     return self:program(), table.join("--emit", "obj", flags, "-o", objectfile, sourcefiles)
 end
 
--- complie the source file
+-- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- ensure the object directory

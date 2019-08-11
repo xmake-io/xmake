@@ -338,7 +338,7 @@ function _include_deps(self, outdata)
     return results
 end
 
--- make the complie arguments list for the precompiled header
+-- make the compile arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
     -- remove "-Yuxxx.h" and "-Fpxxx.pch"
@@ -356,11 +356,11 @@ function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
         table.insert(pchflags, "-TP")
     end
 
-    -- make complie arguments list
+    -- make the compile arguments list
     return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
     -- precompiled header?
@@ -369,11 +369,11 @@ function _compargv1(self, sourcefile, objectfile, flags)
         return _compargv1_pch(self, sourcefile, objectfile, flags)
     end
 
-    -- make complie arguments list
+    -- make the compile arguments list
     return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
--- complie the source file
+-- compile the source file
 function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
@@ -456,7 +456,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     end
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
@@ -466,7 +466,7 @@ function compargv(self, sourcefiles, objectfile, flags)
     return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
--- complie the source file
+-- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- only support single source file now
