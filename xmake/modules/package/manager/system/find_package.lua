@@ -68,7 +68,7 @@ function main(name, opt)
     local version = nil
     local links = table.wrap(opt.links)
     if #links == 0 then
-        pkginfo = pkg_config.info(name)
+        pkginfo = pkg_config.libinfo(name)
         if pkginfo then
             links = table.wrap(pkginfo.links)
             version = pkginfo.version

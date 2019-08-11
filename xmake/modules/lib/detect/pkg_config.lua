@@ -26,20 +26,51 @@ import("lib.detect.find_file")
 import("lib.detect.find_library")
 import("detect.tools.find_pkg_config")
 
--- get package info
+-- get version
 --
--- @param name  the package name
--- @param opt   the argument options, {version = true, variables = "includedir", configdirs = {"/xxxx/pkgconfig/"}}
+-- @param name      the package name
+-- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
 --
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
+function version(name, opt)
+    
+    -- attempt to add search pathes from pkg-config
+    local pkg_config = find_pkg_config()
+    if not pkg_config then
+        return 
+    end
+
+    -- init options
+    opt = opt or {}
+
+    -- init PKG_CONFIG_PATH
+    local configdirs_old = os.getenv("PKG_CONFIG_PATH")
+    local configdirs = table.wrap(opt.configdirs)
+    if #configdirs > 0 then
+        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+    end
+
+    -- get version
+    local version = try { function() return os.iorunv(pkg_config, {"--modversion", name}) end }
+    if version then
+        version = version:trim()
+    end
+
+    -- restore PKG_CONFIG_PATH
+    if configdirs_old then
+        os.setenv("PKG_CONFIG_PATH", configdirs_old)
+    end
+
+    -- ok?
+    return version
+end
+
+-- get variables
 --
--- @code 
+-- @param name      the package name
+-- @param variables the variables
+-- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
 --
--- local pkginfo = pkg_config.info("openssl")
--- 
--- @endcode
---
-function info(name, opt)
+function variables(name, variables, opt)
     
     -- attempt to add search pathes from pkg-config
     local pkg_config = find_pkg_config()
@@ -59,15 +90,54 @@ function info(name, opt)
 
     -- get variable value
     local result = nil
-    if opt.variables then
-        for _, variable in ipairs(table.wrap(opt.variables)) do
+    if variables then
+        for _, variable in ipairs(table.wrap(variables)) do
             local value = try { function () return os.iorunv(pkg_config, {"--variable=" .. variable, name}) end }
             if value ~= nil then
                 result = result or {}
                 result[variable] = value:trim()
             end
         end
-        return result
+    end
+
+    -- restore PKG_CONFIG_PATH
+    if configdirs_old then
+        os.setenv("PKG_CONFIG_PATH", configdirs_old)
+    end
+
+    -- ok?
+    return result
+end
+
+-- get library info
+--
+-- @param name  the package name
+-- @param opt   the argument options, {version = true, variables = "includedir", configdirs = {"/xxxx/pkgconfig/"}}
+--
+-- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
+--
+-- @code 
+--
+-- local libinfo = pkg_config.libinfo("openssl")
+-- 
+-- @endcode
+--
+function libinfo(name, opt)
+    
+    -- attempt to add search pathes from pkg-config
+    local pkg_config = find_pkg_config()
+    if not pkg_config then
+        return 
+    end
+
+    -- init options
+    opt = opt or {}
+
+    -- init PKG_CONFIG_PATH
+    local configdirs_old = os.getenv("PKG_CONFIG_PATH")
+    local configdirs = table.wrap(opt.configdirs)
+    if #configdirs > 0 then
+        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
     end
 
     -- get libs and cflags
@@ -128,7 +198,7 @@ end
 --
 -- @code 
 --
--- local pkginfo = pkg_config.find("openssl")
+-- local libinfo = pkg_config.find("openssl")
 -- 
 -- @endcode
 --
@@ -137,21 +207,21 @@ function find(name, opt)
     -- init options
     opt = opt or {}
 
-    -- get package info
-    local pkginfo = info(name, opt)
-    if not pkginfo then
+    -- get library info
+    local libinfo = libinfo(name, opt)
+    if not libinfo then
         return 
     end
 
     -- get links
-    local links = pkginfo.links
+    local links = libinfo.links
     if not links or #links == 0 then
         links = opt.links
     end
 
     -- find library 
     local result = nil
-    local linkdirs = table.wrap(pkginfo.linkdirs)
+    local linkdirs = table.wrap(libinfo.linkdirs)
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
@@ -165,14 +235,14 @@ function find(name, opt)
     end
 
     -- get includedirs
-    if pkginfo.includedirs then
+    if libinfo.includedirs then
         result             = result or {}
-        result.includedirs = pkginfo.includedirs
+        result.includedirs = libinfo.includedirs
     end
 
     -- save version
-    if result and pkginfo.version then
-        result.version = pkginfo.version
+    if result and libinfo.version then
+        result.version = libinfo.version
     end
 
     -- ok?

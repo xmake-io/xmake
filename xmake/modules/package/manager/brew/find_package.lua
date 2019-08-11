@@ -53,10 +53,11 @@ function main(name, opt)
         result = find_package("pkg_config::" .. pcname, opt)
         if not result then
             -- attempt to get includedir variable from pkg-config/xx.pc 
-            local pkginfo = pkg_config.info(pcname, table.join(opt, {variables = "includedir"}))
-            if pkginfo.includedir then
+            local varinfo = pkg_config.variables(pcname, "includedir", opt)
+            if varinfo.includedir then
                 result = result or {}
-                result.includedirs = pkginfo.includedir
+                result.version = pkg_config.version(pcname, opt)
+                result.includedirs = varinfo.includedir
             end
         end
     end
