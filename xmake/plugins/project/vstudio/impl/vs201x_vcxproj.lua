@@ -331,7 +331,7 @@ function _make_source_options(vcxprojfile, flags, condition)
         end
     end
 
-    -- complie as c++ if exists flag: /TP
+    -- compile as c++ if exists flag: /TP
     if flagstr:find("[%-/]TP") then
         vcxprojfile:print("<CompileAs%s>CompileAsCpp</CompileAs>", condition)
     end

@@ -274,7 +274,7 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
 
     -- get ccache
@@ -303,7 +303,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
     return program, argv
 end
 
--- complie the source file
+-- compile the source file
 function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
@@ -381,7 +381,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     }
 end
 
--- make the complie arguments list
+-- make the compile arguments list
 function compargv(self, sourcefiles, objectfile, flags)
 
     -- only support single source file now
@@ -391,7 +391,7 @@ function compargv(self, sourcefiles, objectfile, flags)
     return _compargv1(self, sourcefiles, objectfile, flags)
 end
 
--- complie the source file
+-- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
 
     -- only support single source file now

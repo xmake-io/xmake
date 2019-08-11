@@ -134,7 +134,7 @@ function _do_build_file(target, sourcefile, opt)
     -- flush io buffer to update progress info
     io.flush()
 
-    -- complie it 
+    -- compile it 
     dependinfo.files = {}
     assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 
@@ -232,7 +232,7 @@ function _build_files_for_single(target, sourcebatch, jobs)
         print(compiler.compcmd(sourcefiles, objectfiles, {target = target, sourcekind = sourcekind}))
     end
 
-    -- complie them
+    -- compile them
     compiler.compile(sourcefiles, objectfiles, {dependfiles = dependfiles, target = target, sourcekind = sourcekind})
 end
 
