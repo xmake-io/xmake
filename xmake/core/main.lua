@@ -175,8 +175,23 @@ function main.entry()
     -- init 
     main._init()
 
+    -- load global configuration
+    local ok, errors = global.load()
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
+
+    -- load theme
+    local theme_inst, errors = theme.load(global.get("theme") or "default")
+    if not theme_inst then
+        utils.error(errors)
+        return -1
+    end
+    colors.theme_set(theme_inst)
+
     -- init option 
-    local ok, errors = option.init(menu)
+    ok, errors = option.init(menu)
     if not ok then
         utils.error(errors)
         return -1
@@ -198,21 +213,6 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
 
     -- start profiling
     -- profiler:start()
-
-    -- load global configuration
-    ok, errors = global.load()
-    if not ok then
-        utils.error(errors)
-        return -1
-    end
-
-    -- load theme
-    local theme_inst, errors = theme.load(global.get("theme") or "default")
-    if not theme_inst then
-        utils.error(errors)
-        return -1
-    end
-    colors.theme_set(theme_inst)
 
     -- show help?
     if main._show_help() then
