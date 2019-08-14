@@ -158,7 +158,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
     targetinfo.includedirs   = _make_dirs(_get_values(target, "includedirs"))
     targetinfo.linkdirs      = _make_dirs(_get_values(target, "linkdirs"))
-    targetinfo.vcsourcepaths = _make_dirs(config.get("vcsourcepaths"))
+    targetinfo.vcsourcepaths = _make_dirs(target:values("project.vsxmake.vcsourcepaths"))
 
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values(target, "defines"))
