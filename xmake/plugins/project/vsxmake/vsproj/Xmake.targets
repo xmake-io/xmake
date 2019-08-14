@@ -91,11 +91,6 @@
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
       $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
   </Target>
-  <Target Name="_XmakeReconfig" DependsOnTargets="_XmakeProjCheck">
-    <Message Text="$xmake config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
-    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
-      $(_XmakeExecutable) config $(_XmakeCommonFlags) -c $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
-  </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" />
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
@@ -203,7 +198,7 @@ MSBuild Properties:
   <Target Name="Clean" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
     <CallTarget Targets="BeforeClean" />
-    <CallTarget Targets="_XmakeClean;_XmakeReconfig" />
+    <CallTarget Targets="_XmakeClean;_XmakeConfig" />
     <CallTarget Targets="AfterClean" />
   </Target>
 
@@ -213,7 +208,7 @@ MSBuild Properties:
     <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
     <CallTarget Targets="BeforeRebuild" />
     <CallTarget Targets="BeforeClean" />
-    <CallTarget Targets="_XmakeClean;_XmakeReconfig" />
+    <CallTarget Targets="_XmakeClean;_XmakeConfig" />
     <CallTarget Targets="AfterClean" />
     <CallTarget Targets="BeforeBuild" />
     <CallTarget Targets="_XmakeBuild" />
