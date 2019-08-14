@@ -676,12 +676,13 @@ xm_machine_ref_t xm_machine_init()
         lua_pushstring(machine->lua, "windows");
 #elif defined(TB_CONFIG_OS_MACOSX)
         lua_pushstring(machine->lua, "macosx");
+#elif defined(TB_CONFIG_OS_ANDROID) || \
+        defined(__ANDROID__) /* on termux/android */
+        lua_pushstring(machine->lua, "android");
 #elif defined(TB_CONFIG_OS_LINUX)
         lua_pushstring(machine->lua, "linux");
 #elif defined(TB_CONFIG_OS_IOS)
         lua_pushstring(machine->lua, "ios");
-#elif defined(TB_CONFIG_OS_ANDROID)
-        lua_pushstring(machine->lua, "android");
 #elif defined(TB_CONFIG_OS_LIKE_UNIX)
         lua_pushstring(machine->lua, "unix");
 #else
