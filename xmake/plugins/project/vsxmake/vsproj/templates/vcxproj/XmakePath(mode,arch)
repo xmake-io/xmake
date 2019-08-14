@@ -6,4 +6,5 @@
     <XmakeIncludeDir>#includedirs#</XmakeIncludeDir>
     <XmakeLinkDir>#linkdirs#</XmakeLinkDir>
     <XmakeRunDir>#rundir#</XmakeRunDir>
+    <XmakeVCSourcePaths>#vcsourcepaths#</XmakeVCSourcePaths>
   </PropertyGroup>
