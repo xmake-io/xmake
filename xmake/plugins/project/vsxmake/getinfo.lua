@@ -167,8 +167,7 @@ function _make_targetinfo(mode, arch, target)
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" then
-            table.insert(flags, "--" .. k)
-            table.insert(flags, tostring(v));
+            table.insert(flags, "--" .. k .. "=" .. tostring(v));
         end
     end
     targetinfo.configflags   = os.args(flags)
