@@ -166,7 +166,7 @@ function _make_targetinfo(mode, arch, target)
     local configcache = cache("local.config")
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do
-        if k ~= "plat" and k ~= "mode" and k ~= arch then
+        if k ~= "plat" and k ~= "mode" and k ~= "arch" then
             table.insert(flags, "--" .. k)
             table.insert(flags, tostring(v));
         end
