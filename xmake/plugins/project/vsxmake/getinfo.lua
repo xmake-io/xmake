@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
+import("core.project.cache")
 import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
@@ -162,6 +163,14 @@ function _make_targetinfo(mode, arch, target)
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values(target, "defines"))
     targetinfo.languages     = _make_arrs(_get_values(target, "languages"))
+    local configcache = cache("local.config")
+    local flags = {}
+    for k, v in pairs(configcache:get("options_" .. target:name())) do
+        if k ~= "plat" and k ~= "mode" and k ~= "arch" then
+            table.insert(flags, "--" .. k .. "=" .. tostring(v));
+        end
+    end
+    targetinfo.configflags   = os.args(flags)
 
     -- save runenvs
     local runenvs = {}

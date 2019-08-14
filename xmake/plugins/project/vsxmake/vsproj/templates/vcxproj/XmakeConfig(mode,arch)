@@ -10,4 +10,5 @@
     <XmakeCudaVersion>#cudaver#</XmakeCudaVersion>
     <XmakeMfcKind>#mfckind#</XmakeMfcKind>
     <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
+    <XmakeConfigFlags>#configflags#</XmakeConfigFlags>
   </PropertyGroup>
