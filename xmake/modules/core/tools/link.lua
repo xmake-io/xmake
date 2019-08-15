@@ -23,7 +23,7 @@ import("core.project.config")
 
 -- init it
 function init(self)
-   
+
     -- init ldflags
     self:set("ldflags", "-nologo", "-dynamicbase", "-nxcompat")
 
@@ -95,13 +95,6 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     -- init arguments
     local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
 
-    -- too long arguments for windows? 
-    local args = os.args(argv)
-    if #args > 1024 then
-        local argsfile = os.tmpfile(args) .. ".args.txt" 
-        io.writefile(argsfile, args)
-        argv = {"@" .. argsfile}
-    end
     return self:program(), argv
 end
 
@@ -111,7 +104,14 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+
+    -- save and replace env
+    local oldlink = os.getenv("LINK")
+    os.setenv("LINK", os.args(argv))
     -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(program, { "-nologo" })
+    -- restore env
+    os.setenv("LINK", oldlink)
 end
 

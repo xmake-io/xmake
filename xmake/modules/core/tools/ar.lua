@@ -49,16 +49,6 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     -- init arguments
     local argv = table.join(flags, targetfile, objectfiles)
 
-    -- too long arguments for windows? 
-    if is_host("windows") then
-        local args = os.args(argv)
-        if #args > 1024 then
-            local argsfile = os.tmpfile(args) .. ".args.txt" 
-            io.writefile(argsfile, args)
-            argv = {"@" .. argsfile}
-        end
-    end
-
     -- make it
     return self:program(), argv
 end
@@ -75,8 +65,20 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     -- @note remove the previous archived file first to force recreating a new file
     os.tryrm(targetfile)
 
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+
+    -- too long arguments for windows?
+    if is_host("windows") then
+        local args = os.args(argv)
+        if #args > 1024 then
+            local argsfile = os.tmpfile(args) .. ".args.txt"
+            io.writefile(argsfile, args)
+            argv = {"@" .. argsfile}
+        end
+    end
+
     -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    os.runv(program, argv)
 end
 
 -- extract the static library to object directory
