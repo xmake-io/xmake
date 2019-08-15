@@ -167,7 +167,7 @@ function _make_targetinfo(mode, arch, target)
     local configcache = cache("local.config")
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do
-        if k ~= "plat" and k ~= "mode" and k ~= "arch" then
+        if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
             table.insert(flags, "--" .. k .. "=" .. tostring(v));
         end
     end
@@ -190,7 +190,7 @@ function _make_targetinfo(mode, arch, target)
     elseif target:rule("win.sdk.mfc.static_app") or target:rule("win.sdk.mfc.static") then
         targetinfo.mfckind = "Static"
     end
-    
+
     -- use cuda? save the cuda runtime version
     if target:rule("cuda") then
         local nvcc = find_tool("nvcc", { version = true })
