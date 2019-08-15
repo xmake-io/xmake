@@ -89,8 +89,7 @@ function _do_link_target(target, opt)
 
     -- trace verbose info
     if verbose then
-        -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
-        print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
+        print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags}))
     end
 
     -- flush io buffer to update progress info
