@@ -25,13 +25,6 @@
 #include "xmake.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * globals
- */
-
-// the initial count
-static tb_atomic_t  g_init = 0;
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static __tb_inline__ tb_bool_t xm_check_mode(tb_size_t mode)
@@ -92,9 +85,6 @@ static __tb_inline__ tb_bool_t xm_version_check(tb_hize_t build)
  */
 tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
 {
-    // is inited?
-    if (tb_atomic_fetch_and_inc(&g_init)) return tb_true;
-
     // trace
     tb_trace_d("init: ..");
 
@@ -115,13 +105,6 @@ tb_bool_t xm_init_(tb_size_t mode, tb_hize_t build)
 }
 tb_void_t xm_exit()
 {
-    // need exit?
-    tb_long_t init = 0;
-    if ((init = tb_atomic_dec_and_fetch(&g_init)) > 0) return ;
-
-    // check
-    tb_assert_and_check_return(!init);
-
     // exit tbox
     tb_exit();
 }

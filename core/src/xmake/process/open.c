@@ -34,7 +34,7 @@
  * implementation
  */
 
-// p = process.open(command, outfile, errfile) 
+// p = process.open(command, outpath, errpath) 
 tb_int_t xm_process_open(lua_State* lua)
 {
     // check
@@ -43,34 +43,34 @@ tb_int_t xm_process_open(lua_State* lua)
     // get the command
     size_t              command_size = 0;
     tb_char_t const*    command = luaL_checklstring(lua, 1, &command_size);
-    tb_char_t const*    outfile = lua_tostring(lua, 2);
-    tb_char_t const*    errfile = lua_tostring(lua, 3);
+    tb_char_t const*    outpath = lua_tostring(lua, 2);
+    tb_char_t const*    errpath = lua_tostring(lua, 3);
     tb_check_return_val(command, 0);
 
     // init attributes
     tb_process_attr_t attr = {0};
 
     // redirect stdout?
-    if (outfile)
+    if (outpath)
     {
         // redirect stdout to file
-        attr.outfile = outfile;
+        attr.outpath = outpath;
         attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
 
     // redirect stderr?
-    if (errfile)
+    if (errpath)
     {
         // redirect stderr to file
-        attr.errfile = errfile;
+        attr.errpath = errpath;
         attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init_cmd(command, &attr);
     if (process) lua_pushlightuserdata(lua, (tb_pointer_t)process);
     else lua_pushnil(lua);
-
-    // ok
     return 1;
 }
