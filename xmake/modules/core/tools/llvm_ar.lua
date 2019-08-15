@@ -41,7 +41,7 @@ function strip(self, level)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- check
     assert(targetkind == "static")
@@ -51,8 +51,9 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- too long arguments for windows? 
     if is_host("windows") then
+        opt = opt or {}
         local args = os.args(argv)
-        if #args > 1024 then
+        if #args > 1024 and not opt.rawargs then
             local argsfile = os.tmpfile(args) .. ".args.txt" 
             io.writefile(argsfile, args)
             argv = {"@" .. argsfile}

@@ -96,6 +96,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
 
     -- too long arguments for windows? 
+    opt = opt or {}
     local args = os.args(argv)
     if #args > 1024 and not opt.rawargs then
         local argsfile = os.tmpfile(args) .. ".args.txt" 
