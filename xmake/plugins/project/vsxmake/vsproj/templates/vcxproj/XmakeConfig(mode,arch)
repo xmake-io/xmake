@@ -11,4 +11,7 @@
     <XmakeMfcKind>#mfckind#</XmakeMfcKind>
     <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
     <XmakeConfigFlags>#configflags#</XmakeConfigFlags>
+    <XmakeIncludeDirs>#includedirs#</XmakeIncludeDirs>
+    <XmakeLinkDirs>#linkdirs#</XmakeLinkDirs>
+    <XmakeSourceDirs>#sourcedirs#</XmakeSourceDirs>
   </PropertyGroup>

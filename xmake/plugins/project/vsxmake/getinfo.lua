@@ -104,7 +104,7 @@ function _get_values(target, name)
     for _, dep in irpairs(target:orderdeps()) do
         local depinherit = target:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, {interface = true}))
+            table.join2(values, dep:get(name, { interface = true }))
         end
     end
 
@@ -159,7 +159,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
     targetinfo.includedirs   = _make_dirs(_get_values(target, "includedirs"))
     targetinfo.linkdirs      = _make_dirs(_get_values(target, "linkdirs"))
-    targetinfo.vcsourcepaths = _make_dirs(target:values("project.vsxmake.vcsourcepaths"))
+    targetinfo.sourcedirs    = _make_dirs(_get_values(target, "project.vsxmake.sourcedirs"))
 
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values(target, "defines"))
