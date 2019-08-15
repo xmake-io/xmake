@@ -107,11 +107,11 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
 
     -- save and replace env
-    local oldlink = os.getenv("LINK")
-    os.setenv("LINK", os.args(argv))
+    local oldlink = os.getenv("_LINK_")
+    os.setenv("_LINK_", os.args(argv))
     -- link it
     os.runv(program, { "-nologo" })
     -- restore env
-    os.setenv("LINK", oldlink)
+    os.setenv("_LINK_", oldlink)
 end
 
