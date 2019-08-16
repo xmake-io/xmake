@@ -34,7 +34,7 @@
  * implementation
  */
 
-// p = process.open(command, {outpath = "", errpath = ""}) 
+// p = process.open(command, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
 tb_int_t xm_process_open(lua_State* lua)
 {
     // check
@@ -49,6 +49,8 @@ tb_int_t xm_process_open(lua_State* lua)
     tb_process_attr_t attr = {0};
 
     // get option arguments
+    tb_size_t        envn = 0;
+    tb_char_t const* envs[256] = {0};
     tb_char_t const* outpath = tb_null;
     tb_char_t const* errpath = tb_null;
     if (lua_istable(lua, 2)) 
@@ -64,6 +66,48 @@ tb_int_t xm_process_open(lua_State* lua)
         lua_gettable(lua, 2);
         errpath = lua_tostring(lua, -1);
         lua_pop(lua, 1);
+
+        // get environments
+        lua_pushstring(lua, "envs");
+        lua_gettable(lua, 2);
+        if (lua_istable(lua, -1))
+        {
+            // get environment variables count
+            envn = (tb_size_t)lua_objlen(lua, -1);
+
+            // get all passed environment variables
+            tb_size_t i;
+            for (i = 0; i < envn; i++)
+            {
+                // get envs[i]
+                lua_pushinteger(lua, i + 1);
+                lua_gettable(lua, -2);
+
+                // is string?
+                if (lua_isstring(lua, -1))
+                {
+                    // add this environment value
+                    if (i + 1 < tb_arrayn(envs)) 
+                        envs[i] = lua_tostring(lua, -1);
+                    else
+                    {
+                        // error
+                        lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
+                        lua_error(lua);
+                    }
+                }
+                else
+                {
+                    // error
+                    lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
+                    lua_error(lua);
+                }
+
+                // pop it
+                lua_pop(lua, 1);
+            }
+        }
+        lua_pop(lua, 1);
     }
     else
     {
@@ -71,6 +115,9 @@ tb_int_t xm_process_open(lua_State* lua)
         outpath = lua_tostring(lua, 2);
         errpath = lua_tostring(lua, 3);
     }
+
+    // set the new environments
+    if (envn > 0) attr.envp = envs;
 
     // redirect stdout?
     if (outpath)
