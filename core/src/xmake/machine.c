@@ -94,7 +94,7 @@ tb_int_t xm_io_std(lua_State* lua);
 tb_int_t xm_io_open(lua_State* lua);
 tb_int_t xm_io_openlock(lua_State* lua);
 
-// the file functions
+// the io/file functions
 tb_int_t xm_io_file_read(lua_State* lua);
 tb_int_t xm_io_file_seek(lua_State* lua);
 tb_int_t xm_io_file_write(lua_State* lua);
@@ -106,7 +106,7 @@ tb_int_t xm_io_file___len(lua_State* lua);
 tb_int_t xm_io_file___tostring(lua_State* lua);
 tb_int_t xm_io_file___gc(lua_State* lua);
 
-// the filelock functions
+// the io/filelock functions
 tb_int_t xm_io_filelock_path(lua_State* lua);
 tb_int_t xm_io_filelock_lock(lua_State* lua);
 tb_int_t xm_io_filelock_unlock(lua_State* lua);
@@ -146,9 +146,13 @@ tb_int_t xm_string_startswith(lua_State* lua);
 // the process functions
 tb_int_t xm_process_open(lua_State* lua);
 tb_int_t xm_process_openv(lua_State* lua);
-tb_int_t xm_process_wait(lua_State* lua);
 tb_int_t xm_process_waitlist(lua_State* lua);
-tb_int_t xm_process_close(lua_State* lua);
+
+// the process/subprocess functions
+tb_int_t xm_process_subprocess_wait(lua_State* lua);
+tb_int_t xm_process_subprocess_close(lua_State* lua);
+tb_int_t xm_process_subprocess___gc(lua_State* lua);
+tb_int_t xm_process_subprocess___tostring(lua_State* lua);
 
 // the sandbox functions
 tb_int_t xm_sandbox_interactive(lua_State* lua);
@@ -237,7 +241,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { tb_null,          tb_null         }
 };
 
-// the file functions
+// the io/file functions
 static luaL_Reg const g_io_file_functions[] = 
 {
     { "read",          xm_io_file_read         }
@@ -253,7 +257,7 @@ static luaL_Reg const g_io_file_functions[] =
 ,   { tb_null,         tb_null                 }
 };
 
-// the filelock functions
+// the io/filelock functions
 static luaL_Reg const g_io_filelock_functions[] = 
 {
     { "path",          xm_io_filelock_path       }
@@ -300,10 +304,18 @@ static luaL_Reg const g_process_functions[] =
 {
     { "open",           xm_process_open     }
 ,   { "openv",          xm_process_openv    }
-,   { "wait",           xm_process_wait     }
 ,   { "waitlist",       xm_process_waitlist }
-,   { "close",          xm_process_close    }
 ,   { tb_null,          tb_null             }
+};
+
+// the process/subprocess functions
+static luaL_Reg const g_process_subprocess_functions[] = 
+{
+    { "close",         xm_process_subprocess_close      }
+,   { "wait",          xm_process_subprocess_wait       }
+,   { "__gc",          xm_process_subprocess___gc       }
+,   { "__tostring",    xm_process_subprocess___tostring }
+,   { tb_null,         tb_null                          }
 };
 
 // the sandbox functions
@@ -628,10 +640,10 @@ xm_machine_ref_t xm_machine_init()
         // bind io functions
         luaL_register(machine->lua, "io", g_io_functions);
 
-        // bind io.file (metatable) functions
+        // bind io._file (metatable) functions
         xm_machine_register_metatable(machine, "io", "_file", "io._file*", g_io_file_functions);
 
-        // bind io.filelock (metatable) functions
+        // bind io._filelock (metatable) functions
         xm_machine_register_metatable(machine, "io", "_filelock", "io._filelock*", g_io_filelock_functions);
 
         // add stdin, stdout, stderr to io
@@ -648,6 +660,9 @@ xm_machine_ref_t xm_machine_init()
 
         // bind process functions
         luaL_register(machine->lua, "process", g_process_functions);
+
+        // bind process._subprocess (metatable) functions
+        xm_machine_register_metatable(machine, "process", "_subprocess", "process._subprocess*", g_process_subprocess_functions);
 
         // bind sandbox functions
         luaL_register(machine->lua, "sandbox", g_sandbox_functions);

@@ -50,7 +50,8 @@ tb_int_t xm_process_openv(lua_State* lua)
     }
 
     // get shellname
-    tb_char_t const* shellname  = lua_tostring(lua, 1);
+    size_t           shellname_size = 0;
+    tb_char_t const* shellname  = luaL_checklstring(lua, 1, &shellname_size);
     tb_check_return_val(shellname, 0);
 
     // get the arguments count
@@ -175,7 +176,27 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init(shellname, argv, &attr);
-    if (process) lua_pushlightuserdata(lua, (tb_pointer_t)process);
+    if (process) 
+    {
+        // init subprocess
+        xm_subprocess_t* subprocess = xm_subprocess_new(lua);
+        subprocess->process   = process;
+        subprocess->is_opened = tb_true;
+
+        // attach subprocess
+        tb_process_priv_set(process, subprocess);
+
+        // save subprocess name
+        tb_size_t name_maxn = tb_arrayn(subprocess->name);
+        tb_strlcpy(subprocess->name, "subprocess: ", name_maxn);
+        if (shellname_size < name_maxn - tb_arrayn("subprocess: "))
+            tb_strcat(subprocess->name, shellname);
+        else
+        {
+            tb_strcat(subprocess->name, "...");
+            tb_strcat(subprocess->name, shellname + (shellname_size - name_maxn + tb_arrayn("subprocess: ") + tb_arrayn("...")));
+        }
+    }
     else lua_pushnil(lua);
 
     // exit argv

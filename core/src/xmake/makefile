@@ -75,9 +75,10 @@ xmake_C_FILES 			+= \
 						string/startswith \
 						process/open \
 						process/openv \
-						process/wait \
 						process/waitlist \
-						process/close \
+						process/subprocess_wait \
+						process/subprocess___tostring \
+						process/subprocess_close___gc \
 						sandbox/interactive \
 						semver/parse \
 						semver/compare \

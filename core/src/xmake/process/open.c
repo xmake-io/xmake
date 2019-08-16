@@ -133,7 +133,27 @@ tb_int_t xm_process_open(lua_State* lua)
 
     // init process
     tb_process_ref_t process = (tb_process_ref_t)tb_process_init_cmd(command, &attr);
-    if (process) lua_pushlightuserdata(lua, (tb_pointer_t)process);
+    if (process) 
+    {
+        // init subprocess
+        xm_subprocess_t* subprocess = xm_subprocess_new(lua);
+        subprocess->process   = process;
+        subprocess->is_opened = tb_true;
+
+        // attach subprocess
+        tb_process_priv_set(process, subprocess);
+
+        // save subprocess name
+        tb_size_t name_maxn = tb_arrayn(subprocess->name);
+        tb_strlcpy(subprocess->name, "subprocess: ", name_maxn);
+        if (command_size < name_maxn - tb_arrayn("subprocess: "))
+            tb_strcat(subprocess->name, command);
+        else
+        {
+            tb_strcat(subprocess->name, "...");
+            tb_strcat(subprocess->name, command + (command_size - name_maxn + tb_arrayn("subprocess: ") + tb_arrayn("...")));
+        }
+    }
     else lua_pushnil(lua);
     return 1;
 }
