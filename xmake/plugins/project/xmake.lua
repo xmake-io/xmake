@@ -42,9 +42,9 @@ task("project")
                                                        ,    "    - makefile"
                                                        ,    "    - compile_flags"
                                                        ,    "    - compile_commands (clang compilation database with json format)"
-                                                       ,    "    - vs2002, vs2003, vs2005, vs2008"
+                                                       ,    "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"
                                                        ,    "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
-                                                       ,    "    - vsxmake2010 ~ vsmake2019" }
+                                                       ,    "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2019" }
                 ,   {'m', "modes",     "kv", nil,           "Set the project modes."
                                                        ,    "    e.g. "
                                                        ,    "    - xmake project -k vs2015 -m \"release" .. path.envsep() ..  "debug\"" }
