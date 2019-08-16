@@ -83,7 +83,7 @@ function post()
     try
     {
         function ()
-            local proc = process.openv("xmake", argv, path.join(os.tmpdir(), projectname .. ".stats.log"))
+            local proc = process.openv("xmake", argv, {outpath = path.join(os.tmpdir(), projectname .. ".stats.log")})
             if proc ~= nil then
                 process.close(proc)
             end

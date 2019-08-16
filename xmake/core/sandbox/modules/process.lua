@@ -28,6 +28,10 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_process = sandbox_process or {}
 
 -- open process
+---
+-- @param command   the command
+-- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
+-- 
 function sandbox_process.open(command, opt) 
 
     -- check
@@ -47,7 +51,12 @@ function sandbox_process.open(command, opt)
 end
 
 -- open process with arguments
-function sandbox_process.openv(filename, argv, outfile, errfile) 
+--
+-- @param filename  the command/file name
+-- @param argv      the command arguments
+-- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
+-- 
+function sandbox_process.openv(filename, argv, opt) 
 
     -- check
     assert(argv)
@@ -55,18 +64,8 @@ function sandbox_process.openv(filename, argv, outfile, errfile)
     -- format filename first
     filename = vformat(filename)
 
-    -- format output file if exists
-    if outfile then
-        outfile = vformat(outfile)
-    end
-
-    -- format error file if exists
-    if errfile then
-        errfile = vformat(errfile)
-    end
-
     -- open process
-    local proc = process.openv(filename, argv, outfile, errfile)
+    local proc = process.openv(filename, argv, opt)
     if not proc then
         raise("openv process(%s, %s) failed!", filename, table.concat(argv, " "))
     end

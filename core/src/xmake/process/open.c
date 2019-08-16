@@ -109,12 +109,6 @@ tb_int_t xm_process_open(lua_State* lua)
         }
         lua_pop(lua, 1);
     }
-    else
-    {
-        // @deprecated compatible with process.open(cmd, outpath, errpath)
-        outpath = lua_tostring(lua, 2);
-        errpath = lua_tostring(lua, 3);
-    }
 
     // set the new environments
     if (envn > 0) attr.envp = envs;

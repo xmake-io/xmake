@@ -53,7 +53,7 @@ function cleanup()
     try
     {
         function ()
-            local proc = process.openv("xmake", argv, path.join(os.tmpdir(), "cleaner.log"))
+            local proc = process.openv("xmake", argv, {outpath = path.join(os.tmpdir(), "cleaner.log")})
             if proc ~= nil then
                 process.close(proc)
             end

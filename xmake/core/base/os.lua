@@ -626,7 +626,7 @@ function os.execv(program, argv, opt)
 
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, opt.stdout, opt.stderr, envs)
+    local proc = process.openv(filename, argv, {outpath = opt.stdout, errpath = opt.stderr, envs = envs})
     if proc ~= nil then
 
         -- wait process
