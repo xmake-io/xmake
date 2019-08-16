@@ -28,7 +28,7 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_process = sandbox_process or {}
 
 -- open process
-function sandbox_process.open(command, outfile, errfile) 
+function sandbox_process.open(command, opt) 
 
     -- check
     assert(command)
@@ -36,18 +36,8 @@ function sandbox_process.open(command, outfile, errfile)
     -- format command first
     command = vformat(command)
 
-    -- format output file if exists
-    if outfile then
-        outfile = vformat(outfile)
-    end
-
-    -- format error file if exists
-    if errfile then
-        errfile = vformat(errfile)
-    end
-
     -- open process
-    local proc = process.open(command, outfile, errfile)
+    local proc = process.open(command, opt)
     if not proc then
         raise("open process(%s) failed!", command)
     end

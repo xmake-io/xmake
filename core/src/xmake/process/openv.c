@@ -34,7 +34,7 @@
  * implementation
  */
 
-// p = process.openv(shellname, argv, outpath, errpath, envs) 
+// p = process.openv(shellname, argv, outfile, errfile, envs) 
 tb_int_t xm_process_openv(lua_State* lua)
 {
     // check
@@ -51,8 +51,8 @@ tb_int_t xm_process_openv(lua_State* lua)
 
     // get the output and error file
     tb_char_t const* shellname  = lua_tostring(lua, 1);
-    tb_char_t const* outpath    = lua_tostring(lua, 3);
-    tb_char_t const* errpath    = lua_tostring(lua, 4);
+    tb_char_t const* outfile    = lua_tostring(lua, 3);
+    tb_char_t const* errfile    = lua_tostring(lua, 4);
     tb_check_return_val(shellname, 0);
 
     // get environments
@@ -137,21 +137,19 @@ tb_int_t xm_process_openv(lua_State* lua)
     if (envn > 0) attr.envp = envs;
 
     // redirect stdout?
-    if (outpath)
+    if (outfile)
     {
         // redirect stdout to file
-        attr.outpath = outpath;
+        attr.outfile = outfile;
         attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
 
     // redirect stderr?
-    if (errpath)
+    if (errfile)
     {
         // redirect stderr to file
-        attr.errpath = errpath;
+        attr.errfile = errfile;
         attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
 
     // init process

@@ -34,21 +34,43 @@
  * implementation
  */
 
-// p = process.open(command, outpath, errpath) 
+// p = process.open(command, {outpath = "", errpath = ""}) 
 tb_int_t xm_process_open(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the command
+    // get command
     size_t              command_size = 0;
     tb_char_t const*    command = luaL_checklstring(lua, 1, &command_size);
-    tb_char_t const*    outpath = lua_tostring(lua, 2);
-    tb_char_t const*    errpath = lua_tostring(lua, 3);
     tb_check_return_val(command, 0);
 
     // init attributes
     tb_process_attr_t attr = {0};
+
+    // get option arguments
+    tb_char_t const* outpath = tb_null;
+    tb_char_t const* errpath = tb_null;
+    if (lua_istable(lua, 2)) 
+    { 
+        // get outpath
+        lua_pushstring(lua, "outpath");
+        lua_gettable(lua, 2);
+        outpath = lua_tostring(lua, -1);
+        lua_pop(lua, 1);
+
+        // get errpath
+        lua_pushstring(lua, "errpath");
+        lua_gettable(lua, 2);
+        errpath = lua_tostring(lua, -1);
+        lua_pop(lua, 1);
+    }
+    else
+    {
+        // @deprecated compatible with process.open(cmd, outpath, errpath)
+        outpath = lua_tostring(lua, 2);
+        errpath = lua_tostring(lua, 3);
+    }
 
     // redirect stdout?
     if (outpath)
