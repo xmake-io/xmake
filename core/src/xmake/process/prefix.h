@@ -26,6 +26,39 @@
  */
 #include "../prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * types
+ */
+
+// the subprocess type
+typedef struct __xm_subprocess_t
+{
+    /// the stdout redirect type
+    tb_uint16_t             outtype;
+
+    /// the stderr redirect type
+    tb_uint16_t             errtype;
+
+    union
+    {
+        /// the stdout pipe
+        tb_pipe_file_ref_t  outpipe;
+
+        /// the stdout file 
+        tb_file_ref_t       outfile;
+    };
+
+    union 
+    {
+        /// the strerr pipe
+        tb_pipe_file_ref_t  errpipe;
+
+        /// the stderr file
+        tb_file_ref_t       errfile;
+    };
+
+}xm_subprocess_t;
+
 
 #endif
 

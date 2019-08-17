@@ -48,6 +48,25 @@ tb_int_t xm_process_close(lua_State* lua)
     tb_process_ref_t process = (tb_process_ref_t)lua_touserdata(lua, 1);
     tb_check_return_val(process, 0);
 
+    // exit subprocess
+    xm_subprocess_t* subprocess = (xm_subprocess_t*)tb_process_priv(process);
+    if (subprocess)
+    {
+        if (subprocess->outtype == TB_PROCESS_REDIRECT_TYPE_FILE && subprocess->outfile)
+        {
+            tb_file_exit(subprocess->outfile);
+            subprocess->outfile = tb_null;
+        }
+
+        if (subprocess->errtype == TB_PROCESS_REDIRECT_TYPE_FILE && subprocess->errfile)
+        {
+            tb_file_exit(subprocess->errfile);
+            subprocess->errfile = tb_null;
+        }
+
+        tb_free(subprocess);
+    }
+
     // exit process
     tb_process_exit(process);
 

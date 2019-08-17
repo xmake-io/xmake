@@ -155,22 +155,49 @@ tb_int_t xm_process_openv(lua_State* lua)
     // set the new environments
     if (envn > 0) attr.envp = envs;
 
-    // redirect stdout?
-    if (outpath)
+    // TODO
+    if (1)
     {
-        // redirect stdout to file
-        attr.outpath = outpath;
-        attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
-    }
+        xm_subprocess_t* subprocess = tb_malloc0_type(xm_subprocess_t);
+        if (subprocess)
+        {
+            // redirect stdout?
+            if (outpath)
+            {
+                // redirect stdout to file
+                subprocess->outfile = tb_file_init(outpath, TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT);
+                subprocess->outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+            }
 
-    // redirect stderr?
-    if (errpath)
+            // redirect stderr?
+            if (errpath)
+            {
+                // redirect stderr to file
+                subprocess->errfile = tb_file_init(errpath, TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT);
+                subprocess->errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+            }
+            attr.priv = subprocess;
+        }
+    }
+    else
     {
-        // redirect stderr to file
-        attr.errpath = errpath;
-        attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+        // redirect stdout?
+        if (outpath)
+        {
+            // redirect stdout to file
+            attr.outpath = outpath;
+            attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+            attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+        }
+
+        // redirect stderr?
+        if (errpath)
+        {
+            // redirect stderr to file
+            attr.errpath = errpath;
+            attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+            attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+        }
     }
 
     // init process
