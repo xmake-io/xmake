@@ -73,48 +73,6 @@ tb_int_t xm_process_open(lua_State* lua)
         lua_gettable(lua, 2);
         vs_unicode_output = lua_toboolean(lua, -1);
         lua_pop(lua, 1);
-
-        // get environments
-        lua_pushstring(lua, "envs");
-        lua_gettable(lua, 2);
-        if (lua_istable(lua, -1))
-        {
-            // get environment variables count
-            envn = (tb_size_t)lua_objlen(lua, -1);
-
-            // get all passed environment variables
-            tb_size_t i;
-            for (i = 0; i < envn; i++)
-            {
-                // get envs[i]
-                lua_pushinteger(lua, i + 1);
-                lua_gettable(lua, -2);
-
-                // is string?
-                if (lua_isstring(lua, -1))
-                {
-                    // add this environment value
-                    if (i + 1 < tb_arrayn(envs)) 
-                        envs[i] = lua_tostring(lua, -1);
-                    else
-                    {
-                        // error
-                        lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
-                        lua_error(lua);
-                    }
-                }
-                else
-                {
-                    // error
-                    lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
-                    lua_error(lua);
-                }
-
-                // pop it
-                lua_pop(lua, 1);
-            }
-        }
-        lua_pop(lua, 1);
     }
 
     // enable vs_unicode_output? @see https://github.com/xmake-io/xmake/issues/528
@@ -136,7 +94,10 @@ tb_int_t xm_process_open(lua_State* lua)
                 attr.outtype = subprocess->outtype;
 
 #ifdef TB_CONFIG_OS_WINDOWS
-                // add environment value of vs_unicode_output
+                /* add environment value of vs_unicode_output
+                 *
+                 * @note we have to set it at the beginning, because opt.envs might also have this value.
+                 */
                 if (envn + 1 < tb_arrayn(envs)) 
                     envs[envn++] = tb_string_cstrfcpy(&subprocess->vs_unicode_output, "VS_UNICODE_OUTPUT=%zu", (tb_size_t)subprocess->outfile);
 #endif
@@ -174,6 +135,53 @@ tb_int_t xm_process_open(lua_State* lua)
             attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
         }
     }
+
+    // append other environments after setting VS_UNICODE_OUTPUT 
+    if (lua_istable(lua, 2)) 
+    { 
+        // get environments
+        lua_pushstring(lua, "envs");
+        lua_gettable(lua, 2);
+        if (lua_istable(lua, -1))
+        {
+            // get environment variables count
+            tb_size_t count = (tb_size_t)lua_objlen(lua, -1);
+
+            // get all passed environment variables
+            tb_size_t i;
+            for (i = 0; i < count; i++)
+            {
+                // get envs[i]
+                lua_pushinteger(lua, i + 1);
+                lua_gettable(lua, -2);
+
+                // is string?
+                if (lua_isstring(lua, -1))
+                {
+                    // add this environment value
+                    if (envn + 1 < tb_arrayn(envs)) 
+                        envs[envn++] = lua_tostring(lua, -1);
+                    else
+                    {
+                        // error
+                        lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
+                        lua_error(lua);
+                    }
+                }
+                else
+                {
+                    // error
+                    lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
+                    lua_error(lua);
+                }
+
+                // pop it
+                lua_pop(lua, 1);
+            }
+        }
+        lua_pop(lua, 1);
+    }
+
 
     // set the new environments
     if (envn > 0) attr.envp = envs;
