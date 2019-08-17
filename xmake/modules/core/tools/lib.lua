@@ -25,7 +25,7 @@ function extract(self, libraryfile, objectdir)
     os.mkdir(objectdir)
 
     -- list object files 
-    local objectfiles = os.iorunv(self:program(), {"-nologo", "-list", libraryfile})
+    local objectfiles = os.iorunv(self:program(), {"-nologo", "-list", libraryfile}, {vs_unicode_output = true})
 
     -- extrace all object files
     for _, objectfile in ipairs(objectfiles:split('\n')) do
@@ -47,7 +47,7 @@ function extract(self, libraryfile, objectdir)
             end
 
             -- extract it
-            os.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile})
+            os.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile}, {vs_unicode_output = true})
         end
     end
 end

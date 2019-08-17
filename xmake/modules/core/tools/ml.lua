@@ -104,7 +104,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.runv(_compargv1(self, sourcefile, objectfile, flags))
+    local program, argv = _compargv1(self, sourcefile, objectfile, flags)
+    os.runv(program, argv, {vs_unicode_output = true})
 end
 
 -- make the compile arguments list

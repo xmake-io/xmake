@@ -64,6 +64,7 @@ tb_int_t xm_process_close(lua_State* lua)
             subprocess->errfile = tb_null;
         }
 
+        tb_string_exit(&subprocess->vs_unicode_output);
         tb_free(subprocess);
     }
 

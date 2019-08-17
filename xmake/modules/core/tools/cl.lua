@@ -392,7 +392,10 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             if dependinfo then
                 compflags = table.join(flags, "-showIncludes")
             end
-            return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+
+            -- compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+            local program, argv = _compargv1(self, sourcefile, objectfile, compflags)
+            return os.iorunv(program, argv, {vs_unicode_output = true})
         end,
         catch
         {

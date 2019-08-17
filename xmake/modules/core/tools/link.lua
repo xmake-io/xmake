@@ -112,7 +112,8 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
-    -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
+    -- link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
+    os.runv(program, argv, {vs_unicode_output = true})
 end
 

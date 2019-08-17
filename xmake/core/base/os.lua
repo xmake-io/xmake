@@ -614,10 +614,12 @@ function os.execv(program, argv, opt)
 
     -- uses the given environments?
     local envs = nil
-    if opt.envs then
+    if opt.envs or opt.vs_unicode_output then
         local envars = os.getenvs()
-        for k, v in pairs(opt.envs) do
-            envars[k] = v
+        if opt.envs then
+            for k, v in pairs(opt.envs) do
+                envars[k] = v
+            end
         end
         envs = {}
         for k, v in pairs(envars) do
@@ -627,7 +629,7 @@ function os.execv(program, argv, opt)
 
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, {outpath = opt.stdout, errpath = opt.stderr, envs = envs})
+    local proc = process.openv(filename, argv, {outpath = opt.stdout, errpath = opt.stderr, envs = envs, vs_unicode_output = opt.vs_unicode_output})
     if proc ~= nil then
 
         -- wait process
@@ -682,6 +684,7 @@ end
 -- run command with arguments and return output and error data
 function os.iorunv(program, argv, opt)
 
+    -- init options
     opt = opt or {}
 
     -- make temporary output and error file

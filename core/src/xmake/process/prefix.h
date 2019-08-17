@@ -57,6 +57,9 @@ typedef struct __xm_subprocess_t
         tb_file_ref_t       errfile;
     };
 
+    // vs unicode output environment variable
+    tb_string_t             vs_unicode_output;
+
 }xm_subprocess_t;
 
 
