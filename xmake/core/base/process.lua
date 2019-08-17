@@ -115,7 +115,7 @@ end
 -- @return          the subprocess
 --
 function process.openv(shellname, argv, opt)
-    local proc = process._open(shellname, argv, opt)
+    local proc = process._openv(shellname, argv, opt)
     if proc then
         return _subprocess.new(path.filename(shellname), proc)
     else
