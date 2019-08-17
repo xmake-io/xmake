@@ -140,6 +140,20 @@ end
 -- end
 --
 function process.waitlist(proclist, timeout)
+    local procs = {}
+    for _, proc in ipairs(proclist) do
+        table.insert(procs, proc._PROC)
+    end
+    local count, list = process._waitlist(procs, timeout)
+    if count > 0 and list then
+        for _, procinfo in ipairs(list) do
+            local proc = procinfo[1]
+            local index = procinfo[2]
+            procinfo[1] = proclist[index]
+            assert(proc == procinfo[1]._PROC)
+        end
+    end
+    return count, list
 end
 
 -- async run task and echo waiting info
