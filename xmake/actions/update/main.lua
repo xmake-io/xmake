@@ -98,7 +98,7 @@ function _run_win_v(program, commands, admin)
     os.cp(sudo_vbs, temp_vbs)
     local params = table.join("/Nologo", temp_vbs, "W" .. (admin and "A" or "N") , program, commands)
     local proc = process.openv("cscript", params)
-    if proc then process.close(proc) end
+    if proc then proc:close() end
     return proc ~= nil
 end
 

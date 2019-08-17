@@ -19,12 +19,128 @@
 --
 
 -- define module: process
-local process = process or {}
+local process   = process or {}
+local _subprocess = _subprocess or {}
 
 -- load modules
+local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local coroutine = require("base/coroutine")
+
+-- save original interfaces
+process._open       = process._open or process.open
+process._openv      = process._openv or process.openv
+process._wait       = process._wait or process.wait
+process._waitlist   = process._waitlist or process.waitlist
+process._close      = process._close or process.close
+process.wait        = nil
+process.close       = nil
+process._subprocess = _subprocess
+
+-- new an subprocess
+function _subprocess.new(name, proc)
+    local subprocess = table.inherit(_subprocess)
+    subprocess._NAME = name
+    subprocess._PROC = proc
+    setmetatable(subprocess, _subprocess)
+    return subprocess
+end
+
+-- get the process name 
+function _subprocess:name()
+    return self._NAME
+end
+
+-- wait subprocess
+--
+-- @param timeout   the timeout
+--
+-- @return          ok, status
+--
+function _subprocess:wait(timeout)
+    if not self._PROC then
+        return -1, 0, string.format("subprocess(%s) has been closed!", self:name())
+    end
+    return process._wait(self._PROC, timeout or -1)
+end
+
+-- close subprocess
+function _subprocess:close(timeout)
+    if not self._PROC then
+        return false, string.format("subprocess(%s) has been closed!", self:name())
+    end
+    local ok = process._close(self._PROC)
+    if ok then
+        self._PROC = nil
+    end
+    return ok
+end
+
+-- tostring(subprocess)
+function _subprocess:__tostring()
+    return "subprocess: " .. self:name()
+end
+
+-- gc(subprocess)
+function _subprocess:__gc()
+    local ok = self._PROC and process._close(self._PROC) or false
+    if ok then
+        self._PROC = nil
+    end
+end
+
+-- open a subprocess
+--
+-- @param command   the process command
+-- @param opt       the option arguments, e.g. {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+--
+-- @return          the subprocess
+--
+function process.open(command, opt)
+    local proc = process._open(command, opt)
+    if proc then
+        return _subprocess.new(path.filename(command:split(' ', {plain = true})[1]), proc)
+    else
+        return nil, string.format("open process(%s) failed!", command)
+    end
+end
+
+-- open a subprocess with the arguments list
+--
+-- @param shellname the shell name 
+-- @param argv      the arguments list
+-- @param opt       the option arguments, e.g. {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+--
+-- @return          the subprocess
+--
+function process.openv(shellname, argv, opt)
+    local proc = process._open(shellname, argv, opt)
+    if proc then
+        return _subprocess.new(path.filename(shellname), proc)
+    else
+        return nil, string.format("openv process(%s, %s) failed!", shellname, table.concat(argv, " "))
+    end
+end
+
+-- wait subprocess list
+--
+-- count, list = process.waitlist(proclist, timeout)
+--
+-- count:
+--
+-- the finished count: > 0
+-- timeout: 0
+-- failed: -1
+-- 
+-- for _, procinfo in ipairs(list) do
+--    print("proc: ", procinfo[1])
+--    print("index: ", procinfo[2])
+--    print("status: ", procinfo[3])
+-- end
+--
+function process.waitlist(proclist, timeout)
+end
 
 -- async run task and echo waiting info
 function process.asyncrun(task, waitchars)

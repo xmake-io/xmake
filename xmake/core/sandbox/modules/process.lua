@@ -25,7 +25,26 @@ local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
 -- define module
-local sandbox_process = sandbox_process or {}
+local sandbox_process            = sandbox_process or {}
+local sandbox_process_subprocess = sandbox_process_subprocess or {}
+sandbox_process._subprocess = sandbox_process._subprocess or process._subprocess
+
+-- wait subprocess
+function sandbox_process_subprocess.wait(proc, timeout)
+    local ok, status, errors = proc:_wait(timeout)
+    if errors then
+        raise(errors)
+    end
+    return ok, status
+end
+
+-- close subprocess
+function sandbox_process_subprocess.close(proc)
+    local ok, errors = proc:_close()
+    if not ok then
+        raise(errors)
+    end
+end
 
 -- open process
 ---
@@ -41,12 +60,21 @@ function sandbox_process.open(command, opt)
     command = vformat(command)
 
     -- open process
-    local proc = process.open(command, opt)
+    local proc, errors = process.open(command, opt)
     if not proc then
-        raise("open process(%s) failed!", command)
+        raise(errors)
     end
 
-    -- ok
+    -- hook subprocess interfaces
+    for name, func in pairs(proc) do
+        if not name:startswith("_") and type(func) == "function" then
+            local newfunc = sandbox_process_subprocess[name]
+            if newfunc ~= nil then
+                proc["_" .. name] = proc["_" .. name] or func
+                proc[name] = newfunc
+            end
+        end
+    end
     return proc
 end
 
@@ -65,39 +93,22 @@ function sandbox_process.openv(filename, argv, opt)
     filename = vformat(filename)
 
     -- open process
-    local proc = process.openv(filename, argv, opt)
+    local proc, errors = process.openv(filename, argv, opt)
     if not proc then
-        raise("openv process(%s, %s) failed!", filename, table.concat(argv, " "))
+        raise(errors)
     end
 
-    -- ok
+    -- hook subprocess interfaces
+    for name, func in pairs(proc) do
+        if not name:startswith("_") and type(func) == "function" then
+            local newfunc = sandbox_process_subprocess[name]
+            if newfunc ~= nil then
+                proc["_" .. name] = proc["_" .. name] or func
+                proc[name] = newfunc
+            end
+        end
+    end
     return proc
-end
-
--- close process
-function sandbox_process.close(proc)
-
-    -- check
-    assert(proc)
-
-    -- close it
-    process.close(proc)
-end
-
--- wait process
-function sandbox_process.wait(proc, timeout)
-
-    -- check
-    assert(proc)
-
-    -- wait it
-    local ok, status = process.wait(proc, timeout)
-    if ok < 0 then
-        raise("wait process failed(%d)", ok)
-    end
-
-    -- timeout or finished
-    return ok, status
 end
 
 -- wait processes

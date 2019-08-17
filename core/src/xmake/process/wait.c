@@ -11,19 +11,19 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * 
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        subprocess___tostring.c
+ * @file        wait.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "subprocess___tostring"
-#define TB_TRACE_MODULE_DEBUG   (0)
+#define TB_TRACE_MODULE_NAME                "process.wait"
+#define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -34,17 +34,36 @@
  * implementation
  */
 
-/*
- * tostring(subprocess)
- */
-tb_int_t xm_process_subprocess___tostring(lua_State* lua)
+// ok, status = process.wait(proc, timeout)
+tb_int_t xm_process_wait(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get subprocess name as string
-    xm_subprocess_t* subprocess = xm_subprocess_get(lua);
-    lua_pushstring(lua, subprocess->name);
-    xm_subprocess_return_success();
-}
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+    { 
+        // error
+        lua_pushfstring(lua, "invalid argument type(%s) for process.wait", luaL_typename(lua, 1));
+        lua_error(lua);
+        return 0;
+    }
 
+    // get the process
+    tb_process_ref_t process = (tb_process_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(process, 0);
+
+    // get the timeout
+    tb_long_t timeout = (tb_long_t)luaL_checkinteger(lua, 2);
+
+    // wait it
+    tb_long_t status = 0;
+    tb_long_t ok = tb_process_wait(process, &status, timeout);
+
+    // save result
+    lua_pushinteger(lua, ok);
+    lua_pushinteger(lua, status);
+
+    // ok
+    return 2;
+}

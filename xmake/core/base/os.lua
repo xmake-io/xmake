@@ -28,6 +28,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local process   = require("base/process")
 
 -- save original interfaces
 os._uid         = os._uid or os.uid
@@ -640,7 +641,7 @@ function os.execv(program, argv, opt)
             -- wait it
             repeat
                 -- poll it
-                waitok, status = process.wait(proc, 0)
+                waitok, status = proc:wait(0)
                 if waitok == 0 then
                     waitok, status = coroutine.yield(proc)
                 end
@@ -649,7 +650,7 @@ function os.execv(program, argv, opt)
             -- resume the current directory
             os.cd(curdir)
         else
-            waitok, status = process.wait(proc, -1)
+            waitok, status = proc:wait(-1)
         end
 
         -- get status
@@ -658,7 +659,7 @@ function os.execv(program, argv, opt)
         end
 
         -- close process
-        process.close(proc)
+        proc:close()
     end
 
     -- ok?

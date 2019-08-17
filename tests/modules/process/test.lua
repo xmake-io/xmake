@@ -7,20 +7,14 @@ function test_single_process(t)
     local stdout = os.tmpfile()
     local stderr = os.tmpfile()
     for i = 1, 2 do
-        local pro = process.open("echo -n awd", {outpath = stdout, errpath = stderr})
-        process.wait(pro, inftimeout)
-        process.close(pro)
+        local proc = process.open("echo -n awd", {outpath = stdout, errpath = stderr})
+        proc:wait(inftimeout)
+        proc:close()
         t:are_equal(io.readfile(stdout), "awd")
     end
 end
 
 function test_hack(t)
-    -- hack test
-    t:will_raise(function ()
-        process.wait("awd", inftimeout)
-    end)
-
-    t:require_not(process.close("awd"))
 
     t:will_raise(function ()
         process.waitlist("awd", inftimeout)

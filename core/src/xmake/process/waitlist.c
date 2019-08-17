@@ -81,15 +81,15 @@ tb_int_t xm_process_waitlist(lua_State* lua)
         lua_pushinteger(lua, i + 1);
         lua_gettable(lua, 1);
 
-        // save this process
-        xm_subprocess_t* subprocess = (xm_subprocess_t*)luaL_checkudata(lua, -1, xm_subprocess_udata);
-        if (subprocess)
+        // is userdata?
+        if (lua_isuserdata(lua, -1))
         {
-            processes[i] = subprocess->process;
-            if (!subprocess->is_opened || !processes[i])
+            // save this process
+            processes[i] = (tb_process_ref_t)lua_touserdata(lua, -1);
+            if (!processes[i])
             {
                 // error
-                lua_pushfstring(lua, "process[%d] is null or closed for process.waitlist", i);
+                lua_pushfstring(lua, "process[%d] is null for process.waitlist", i);
                 lua_error(lua);
             }
         }
@@ -124,10 +124,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
         {
             // save one process info
             lua_newtable(lua);
-            tb_process_ref_t process = infolist[i].process;
-            if (process)
-                lua_pushlightuserdata(lua, tb_process_priv(process));
-            else lua_pushnil(lua);
+            lua_pushlightuserdata(lua, (tb_pointer_t)infolist[i].process);
             lua_rawseti(lua, -2, 1);
             lua_pushinteger(lua, infolist[i].index + 1);
             lua_rawseti(lua, -2, 2);
