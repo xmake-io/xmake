@@ -14,43 +14,41 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file_close___gc.c
+ * @author      OpportunityLiu, ruki
+ * @file        file_close.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_close___gc"
+#define TB_TRACE_MODULE_NAME    "file_close"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_file)
+// io.file_close(file)
+tb_int_t xm_io_file_close(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
+
     // close file
-    xm_io_file_t* file = xm_io_getfile(lua);
-    if (xm_io_file_is_closed(file))
-    {
-        if (allow_closed_file)
-        {
-            lua_pushboolean(lua, tb_true);
-            xm_io_file_return_success();
-        }
-        else xm_io_file_return_error_closed(lua);
-    }
     if (xm_io_file_is_file(file))
     {
         // check
@@ -69,7 +67,7 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
 
         // close file
         if (!tb_stream_clos(file->file_ref)) 
-            xm_io_file_return_error(lua, file, "failed to close file");
+            xm_io_file_return_error(lua, "failed to close file");
         file->file_ref = tb_null;
 
         // exit fstream
@@ -84,41 +82,11 @@ static tb_int_t xm_io_file_close_impl(lua_State* lua, tb_bool_t allow_closed_fil
         tb_buffer_exit(&file->rcache);
         tb_buffer_exit(&file->wcache);
 
-        // free file path
-        if (file->path)
-        {
-            tb_free(file->path);
-            file->path = tb_null;
-        }
-
-        // mark this file as closed
-        tb_strlcpy(file->name, "file: (closed file)", tb_arrayn(file->name));
-        lua_pushboolean(lua, tb_true);
-        xm_io_file_return_success();
+        // exit file
+        tb_free(file);
     }
-    else
-    {
-        lua_pushboolean(lua, tb_true);
-        xm_io_file_return_success();
-    }
+
+    lua_pushboolean(lua, tb_true);
+    return 1;
 }
 
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-
-/*
- * file:close()
- */
-tb_int_t xm_io_file_close(lua_State* lua)
-{
-    return xm_io_file_close_impl(lua, tb_false);
-}
-
-/*
- * file:close()
- */
-tb_int_t xm_io_file___gc(lua_State* lua)
-{
-    return xm_io_file_close_impl(lua, tb_true);
-}

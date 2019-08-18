@@ -89,21 +89,16 @@ tb_int_t xm_os_gid(lua_State* lua);
 tb_int_t xm_os_getown(lua_State* lua);
 #endif
 
-// the io functions
-tb_int_t xm_io_std(lua_State* lua);
-tb_int_t xm_io_open(lua_State* lua);
-
 // the io/file functions
+tb_int_t xm_io_std(lua_State* lua);
+tb_int_t xm_io_file_open(lua_State* lua);
 tb_int_t xm_io_file_read(lua_State* lua);
 tb_int_t xm_io_file_seek(lua_State* lua);
+tb_int_t xm_io_file_size(lua_State* lua);
 tb_int_t xm_io_file_write(lua_State* lua);
 tb_int_t xm_io_file_flush(lua_State* lua);
 tb_int_t xm_io_file_close(lua_State* lua);
 tb_int_t xm_io_file_isatty(lua_State* lua);
-tb_int_t xm_io_file_path(lua_State* lua);
-tb_int_t xm_io_file___len(lua_State* lua);
-tb_int_t xm_io_file___tostring(lua_State* lua);
-tb_int_t xm_io_file___gc(lua_State* lua);
 
 // the io/filelock functions
 tb_int_t xm_io_filelock_open(lua_State* lua);
@@ -228,29 +223,21 @@ static luaL_Reg const g_winos_functions[] =
 // the io functions
 static luaL_Reg const g_io_functions[] = 
 {
-    { "open",               xm_io_open             }
+    { "std",                xm_io_std              }
+,   { "file_open",          xm_io_file_open        }
+,   { "file_read",          xm_io_file_read        }
+,   { "file_seek",          xm_io_file_seek        }
+,   { "file_size",          xm_io_file_size        }
+,   { "file_write",         xm_io_file_write       }
+,   { "file_flush",         xm_io_file_flush       }
+,   { "file_isatty",        xm_io_file_isatty      }
+,   { "file_close",         xm_io_file_close       }
 ,   { "filelock_open",      xm_io_filelock_open    }
 ,   { "filelock_lock",      xm_io_filelock_lock    }
 ,   { "filelock_trylock",   xm_io_filelock_trylock }
 ,   { "filelock_unlock",    xm_io_filelock_unlock  }
 ,   { "filelock_close",     xm_io_filelock_close   }
 ,   { tb_null,              tb_null                }
-};
-
-// the io/file functions
-static luaL_Reg const g_io_file_functions[] = 
-{
-    { "read",          xm_io_file_read         }
-,   { "seek",          xm_io_file_seek         }
-,   { "write",         xm_io_file_write        }
-,   { "flush",         xm_io_file_flush        }
-,   { "isatty",        xm_io_file_isatty       }
-,   { "path",          xm_io_file_path         }
-,   { "close",         xm_io_file_close        }
-,   { "__gc",          xm_io_file___gc         }
-,   { "__len",         xm_io_file___len        }
-,   { "__tostring",    xm_io_file___tostring   }
-,   { tb_null,         tb_null                 }
 };
 
 // the path functions
@@ -613,12 +600,6 @@ xm_machine_ref_t xm_machine_init()
 
         // bind io functions
         luaL_register(machine->lua, "io", g_io_functions);
-
-        // bind io._file (metatable) functions
-        xm_machine_register_metatable(machine, "io", "_file", "io._file*", g_io_file_functions);
-
-        // add stdin, stdout, stderr to io
-        xm_io_std(machine->lua);
 
         // bind path functions
         luaL_register(machine->lua, "path", g_path_functions);

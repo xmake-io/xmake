@@ -14,7 +14,7 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
+ * @author      OpportunityLiu, ruki
  * @file        file_seek.c
  *
  */
@@ -28,31 +28,35 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/*
- * file:seek([whence [, offset]])
- */
+// io.file_seek(file, [whence [, offset]])
 tb_int_t xm_io_file_seek(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    xm_io_file_t*      file   = xm_io_getfile(lua);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
+
+    // get whence and offset
     tb_char_t const* whence = luaL_optstring(lua, 2, "cur");
     tb_hong_t        offset = (tb_hong_t)luaL_optnumber(lua, 3, 0);
-    tb_assert_and_check_return_val(file && whence, 0);
+    tb_assert_and_check_return_val(whence, 0);
 
+    // seek file
     if (xm_io_file_is_file(file))
     {
-        if (xm_io_file_is_closed_file(file))
-            xm_io_file_return_error_closed(lua);
-
+        tb_assert(file->file_ref);
         switch (*whence)
         {
         case 's': // "set"
@@ -62,7 +66,7 @@ tb_int_t xm_io_file_seek(lua_State* lua)
                 tb_hong_t size = tb_stream_size(file->file_ref);
                 if (size > 0 && size + offset <= size)
                     offset = size + offset;
-                else xm_io_file_return_error(lua, file, "seek failed, invalid offset!"); 
+                else xm_io_file_return_error(lua, "seek failed, invalid offset!"); 
             }
             break;
         default:  // "cur"
@@ -73,9 +77,9 @@ tb_int_t xm_io_file_seek(lua_State* lua)
         if (tb_stream_seek(file->file_ref, offset))
         {
             lua_pushnumber(lua, (lua_Number)offset);
-            xm_io_file_return_success();
+            return 1;
         }
-        else xm_io_file_return_error(lua, file, "seek failed!"); 
+        else xm_io_file_return_error(lua, "seek failed!"); 
     }
-    else xm_io_file_return_error(lua, file, "seek is not supported on this file");
+    else xm_io_file_return_error(lua, "seek is not supported on this file");
 }

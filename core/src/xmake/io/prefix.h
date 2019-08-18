@@ -26,6 +26,72 @@
  */
 #include "../prefix.h"
 
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#define xm_io_file_is_file(file)          ((file)->type == XM_IO_FILE_TYPE_FILE)
+#define xm_io_file_is_std(file)           ((file)->type != XM_IO_FILE_TYPE_FILE)
+#define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
+
+// return file error 
+#define xm_io_file_return_error(lua, error)       \
+    do                                            \
+    {                                             \
+        lua_pushnil(lua);                         \
+        lua_pushstring(lua, error);               \
+        return 2;                                 \
+    } while (0)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * types
+ */
+typedef enum __xm_io_file_type_e
+{
+    XM_IO_FILE_TYPE_FILE   = 0      //!< disk file
+
+,   XM_IO_FILE_TYPE_STDIN  = 1
+,   XM_IO_FILE_TYPE_STDOUT = 2
+,   XM_IO_FILE_TYPE_STDERR = 3
+
+,   XM_IO_FILE_FLAG_TTY    = 0x10   //!< mark tty std stream
+
+} xm_io_file_type_e;
+
+/* use negetive numbers for this enum, its a extension for tb_charset_type_e
+ * before adding new values, make sure they have not conflicts with values in tb_charset_type_e
+ */
+typedef enum __xm_io_file_encoding_e
+{
+    XM_IO_FILE_ENCODING_UNKNOWN = -1
+,   XM_IO_FILE_ENCODING_BINARY  = -2
+
+} xm_io_file_encoding_e;
+
+// the file type
+typedef struct __xm_io_file_t
+{
+    union 
+    {
+        /* the normal file for XM_IO_FILE_TYPE_FILE
+         *
+         * direct:    file_ref -> stream -> file
+         * transcode: file_ref -> fstream -> stream -> file
+         */
+        tb_stream_ref_t     file_ref;
+
+        // the standard io file
+        tb_stdfile_ref_t    std_ref;
+    };
+
+    tb_stream_ref_t  stream;    // the file stream for XM_IO_FILE_TYPE_FILE
+    tb_stream_ref_t  fstream;   // the file charset stream filter
+    tb_size_t        mode;      // tb_file_mode_t
+    tb_size_t        type;      // xm_io_file_type_e
+    tb_size_t        encoding;  // value of xm_io_file_encoding_e or tb_charset_type_e
+    tb_buffer_t      rcache;    // the read line cache buffer
+    tb_buffer_t      wcache;    // the write line cache buffer
+
+} xm_io_file_t;
 
 #endif
 

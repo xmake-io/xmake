@@ -14,38 +14,47 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file___tostring.c
+ * @author      OpportunityLiu, ruki
+ * @file        file_size.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file___tostring"
+#define TB_TRACE_MODULE_NAME    "file_size"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/*
- * tostring(file)
- */
-tb_int_t xm_io_file___tostring(lua_State* lua)
+// io.file_size(file)
+tb_int_t xm_io_file_size(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file name as string
-    xm_io_file_t* file = xm_io_getfile(lua);
-    lua_pushstring(lua, file->name);
-    return 1;
-}
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
 
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
+
+    // get file length
+    if (xm_io_file_is_file(file))
+    {
+        // get size from raw file stream, because we cannot get size from fstream
+        tb_assert(file->stream);
+        lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
+        return 1;
+    }
+    else xm_io_file_return_error(lua, "getting file size for this file is invalid");
+}

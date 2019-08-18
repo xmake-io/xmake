@@ -14,7 +14,7 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
+ * @author      OpportunityLiu, ruki
  * @file        file_read.c
  *
  */
@@ -29,7 +29,6 @@
  * includes
  */
 #include "prefix.h"
-#include "file.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * types
@@ -99,7 +98,7 @@ static tb_long_t xm_io_file_buffer_readline(tb_stream_ref_t stream, tb_buffer_re
 static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(buf && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(buf && file && continuation && xm_io_file_is_file(file) && file->file_ref);
 
     // is binary? 
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
@@ -178,12 +177,12 @@ static tb_int_t xm_io_file_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* fi
 static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 {
     // check
-    tb_assert(lua && file && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && xm_io_file_is_file(file) && file->file_ref);
 
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
-        xm_io_file_return_error(lua, file, "init buffer failed!");
+        xm_io_file_return_error(lua, "init buffer failed!");
 
     // read all
     tb_byte_t           data[TB_STREAM_BLOCK_MAXN];
@@ -210,7 +209,7 @@ static tb_int_t xm_io_file_read_all_directly(lua_State* lua, xm_io_file_t* file)
 static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
 
     // is binary? read all directly
     tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
@@ -220,7 +219,7 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
-        xm_io_file_return_error(lua, file, "init buffer failed!");
+        xm_io_file_return_error(lua, "init buffer failed!");
 
     // read all
     tb_bool_t has_content = tb_false;
@@ -240,7 +239,7 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_
         case PL_FAIL:
         default:
             tb_buffer_exit(&buf);
-            xm_io_file_return_error(lua, file, "failed to read all");
+            xm_io_file_return_error(lua, "failed to read all");
             break;
         }
     }
@@ -249,12 +248,12 @@ static tb_int_t xm_io_file_read_all(lua_State* lua, xm_io_file_t* file, tb_char_
 static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
 
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
-        xm_io_file_return_error(lua, file, "init buffer failed!");
+        xm_io_file_return_error(lua, "init buffer failed!");
 
     // read line
     tb_bool_t has_content = tb_false;
@@ -277,7 +276,7 @@ static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char
         case PL_FAIL:
         default: 
             tb_buffer_exit(&buf);
-            xm_io_file_return_error(lua, file, "failed to readline");
+            xm_io_file_return_error(lua, "failed to readline");
             break;
         }
     }
@@ -286,15 +285,15 @@ static tb_int_t xm_io_file_read_line(lua_State* lua, xm_io_file_t* file, tb_char
 static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_long_t n)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_file(file) && file->file_ref);
 
     // check continuation
     if (*continuation != '\0') 
-        xm_io_file_return_error(lua, file, "continuation is not supported for read number of bytes");
+        xm_io_file_return_error(lua, "continuation is not supported for read number of bytes");
 
     // check encoding
     if (file->encoding != XM_IO_FILE_ENCODING_BINARY)
-        xm_io_file_return_error(lua, file, "read number of bytes only allows binary file, reopen with 'rb' and try again");
+        xm_io_file_return_error(lua, "read number of bytes only allows binary file, reopen with 'rb' and try again");
 
     tb_bool_t ok = tb_false;
     if (n == 0)
@@ -325,7 +324,7 @@ static tb_int_t xm_io_file_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t 
 static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(buf && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(buf && file && continuation && xm_io_file_is_std(file));
 
     // get input buffer
     tb_char_t strbuf[8192];
@@ -377,12 +376,12 @@ static tb_size_t xm_io_file_std_buffer_pushline(tb_buffer_ref_t buf, xm_io_file_
 static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_bool_t keep_crlf)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file));
 
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
-        xm_io_file_return_error(lua, file, "init buffer failed!");
+        xm_io_file_return_error(lua, "init buffer failed!");
 
     // read line
     tb_bool_t has_content = tb_false;
@@ -405,7 +404,7 @@ static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file_t* file, tb_
         case PL_FAIL:
         default: 
             tb_buffer_exit(&buf);
-            xm_io_file_return_error(lua, file, "failed to readline");
+            xm_io_file_return_error(lua, "failed to readline");
             break;
         }
     }
@@ -414,12 +413,12 @@ static tb_int_t xm_io_file_std_read_line(lua_State* lua, xm_io_file_t* file, tb_
 static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file));
 
     // init buffer
     tb_buffer_t buf;
     if (!tb_buffer_init(&buf))
-        xm_io_file_return_error(lua, file, "init buffer failed!");
+        xm_io_file_return_error(lua, "init buffer failed!");
 
     // read all
     tb_bool_t has_content = tb_false;
@@ -439,7 +438,7 @@ static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file_t* file, tb_c
         case PL_FAIL:
         default:
             tb_buffer_exit(&buf);
-            xm_io_file_return_error(lua, file, "failed to readline");
+            xm_io_file_return_error(lua, "failed to readline");
             break;
         }
     }
@@ -448,11 +447,11 @@ static tb_int_t xm_io_file_std_read_all(lua_State* lua, xm_io_file_t* file, tb_c
 static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation, tb_long_t n)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file));
 
     // check continuation
     if (*continuation != '\0') 
-        xm_io_file_return_error(lua, file, "continuation is not supported for std streams");
+        xm_io_file_return_error(lua, "continuation is not supported for std streams");
 
     // io.read(0)
     if (n == 0)
@@ -479,11 +478,11 @@ static tb_int_t xm_io_file_std_read_n(lua_State* lua, xm_io_file_t* file, tb_cha
 static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file_t* file, tb_char_t const* continuation)
 {
     // check
-    tb_assert(lua && file && continuation && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(lua && file && continuation && xm_io_file_is_std(file));
 
     // check continuation
     if (*continuation != '\0') 
-        xm_io_file_return_error(lua, file, "continuation is not supported for std streams");
+        xm_io_file_return_error(lua, "continuation is not supported for std streams");
 
     // read number
     tb_char_t strbuf[512];
@@ -493,19 +492,25 @@ static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file_t* file, tb_c
     return 1;
 }
 
-/*
- * file:read([mode, [continuation]])
- * file:read("all", "\\")
- * file:read("L")
- * file:read(10)
+/* io.file_read(file, [mode, [continuation]])
+ * io.file_read(file, "all", "\\")
+ * io.file_read(file, "L")
+ * io.file_read(file, 10)
  */
 tb_int_t xm_io_file_read(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file and arguments
-    xm_io_file_t*      file         = xm_io_getfile(lua);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
+
+    // get arguments
     tb_char_t const* mode         = luaL_optstring(lua, 2, "l");
     tb_char_t const* continuation = luaL_optstring(lua, 3, "");
     tb_assert_and_check_return_val(mode && continuation, 0);
@@ -514,26 +519,22 @@ tb_int_t xm_io_file_read(lua_State* lua)
     if (lua_isnumber(lua, 2))
     {
         count = (tb_long_t)lua_tointeger(lua, 2);
-        if (count < 0) xm_io_file_return_error(lua, file, "invalid read size, must be positive nubmber or 0");
+        if (count < 0) xm_io_file_return_error(lua, "invalid read size, must be positive nubmber or 0");
     }
     else if (*mode == '*')
         mode++;
 
     if (xm_io_file_is_file(file))
     {
-        // this file has been closed?
-        if (xm_io_file_is_closed_file(file)) 
-            xm_io_file_return_error_closed(lua);
-
         if (count >= 0) return xm_io_file_read_n(lua, file, continuation, count);
         switch (*mode)
         {
         case 'a': return xm_io_file_read_all(lua, file, continuation);
         case 'L': return xm_io_file_read_line(lua, file, continuation, tb_true);
-        case 'n': xm_io_file_return_error(lua, file, "read number is not implemented");
+        case 'n': xm_io_file_return_error(lua, "read number is not implemented");
         case 'l': return xm_io_file_read_line(lua, file, continuation, tb_false);
         default: 
-            xm_io_file_return_error(lua, file, "unknonwn read mode");
+            xm_io_file_return_error(lua, "unknonwn read mode");
             return 0;
         }
     }
@@ -547,7 +548,7 @@ tb_int_t xm_io_file_read(lua_State* lua)
         case 'n': return xm_io_file_std_read_num(lua, file, continuation);
         case 'l': return xm_io_file_std_read_line(lua, file, continuation, tb_false);
         default: 
-            xm_io_file_return_error(lua, file, "unknonwn read mode");
+            xm_io_file_return_error(lua, "unknonwn read mode");
             return 0;
         }
     }

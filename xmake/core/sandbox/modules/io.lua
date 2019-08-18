@@ -27,57 +27,105 @@ local vformat   = require("sandbox/modules/vformat")
 
 -- define module
 local sandbox_io          = sandbox_io or {}
-local sandbox_io_file     = sandbox_io._file or {}
+local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
-sandbox_io._file     = sandbox_io_file
+sandbox_io._file     = sandbox_io._file or io._file
 sandbox_io._filelock = sandbox_io._filelock or io._filelock
 
--- inherit some builtin interfaces
-sandbox_io.lines  = io.lines
-sandbox_io.read   = io.read
-sandbox_io.isatty = io.isatty
-
--- inherit matatable of file
-if sandbox_io_file.__index ~= sandbox_io_file then
-    sandbox_io_file.__index = sandbox_io_file
-    for k, v in pairs(io._file) do
-        if type(v) == "function" then
-            sandbox_io_file[k] = function(s, ...)
-                local result, err = v(s._FILE, ...)
-                if result == nil and err ~= nil then
-                    raise(err)
-                end
-                -- wrap to sandbox_file again
-                if result == s._FILE then
-                    result = s
-                end
-                return result
-            end
-        end
+-- get file size
+function sandbox_io_file.size(file)
+    local result, errors = file:_size()
+    if not result then
+        raise(errors)
     end
-    -- file:lines does not use its second return value for error
-    sandbox_io_file.lines = io._file.lines
+    return result
 end
 
--- get file size
-function sandbox_io_file:size()
-    -- __len on tables is scheduled to be supported in 5.2.
-    return sandbox_io_file.__len(self)
+-- close file
+function sandbox_io_file.close(file)
+    local ok, errors = file:_close()
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- flush file
+function sandbox_io_file.flush(file)
+    local ok, errors = file:_flush()
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- this file is a tty?
+function sandbox_io_file.isatty(file)
+    local ok, errors = file:_isatty()
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- seek offset at file
+function sandbox_io_file.seek(file, whence, offset)
+    local result, errors = file:_seek(whence, offset)
+    if not result then
+        raise(errors)
+    end
+    return result
+end
+
+-- read data from file
+function sandbox_io_file.read(file, fmt, opt)
+    local result, errors = file:_read(fmt, opt)
+    if not result then
+        raise(errors)
+    end
+    return result
+end
+
+-- write data to file
+function sandbox_io_file.write(file, ...)
+    local ok, errors = file:_write(...)
+    if not ok then
+        raise(errors)
+    end
+    return ok
 end
 
 -- print file
-function sandbox_io_file:print(...)
-    return self:write(vformat(...), "\n")
+function sandbox_io_file.print(file, ...)
+    return sandbox_io_file.write(file, vformat(...), "\n")
 end
 
 -- printf file
-function sandbox_io_file:printf(...)
-    return self:write(vformat(...))
+function sandbox_io_file.printf(file, ...)
+    return sandbox_io_file.write(file, vformat(...))
 end
 
--- writef file
-function sandbox_io_file:writef(...)
-    return self:write(string.format(...))
+-- writef file (without value filter)
+function sandbox_io_file.writef(file, ...)
+    return sandbox_io_file.write(file, string.format(...))
+end
+
+-- load object from file
+function sandbox_io_file.load(file)
+    local result, errors = file:_load()
+    if errors then
+        raise(errors)
+    end
+    return result
+end
+
+-- save object to file
+function sandbox_io_file.save(file, object, opt)
+    local ok, errors = file:_save(object, opt)
+    if not ok then
+        raise(errors)
+    end
+    return ok
 end
 
 -- lock filelock
@@ -146,9 +194,17 @@ function sandbox_io.open(filepath, mode, opt)
         raise(errors)
     end
 
-    -- bind metatable
-    file = { _FILE = file }
-    setmetatable(file, sandbox_io_file);
+    -- hook file interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_io_file) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = file["_" .. name] or file[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        file[name] = func
+    end
     return file
 end
 
@@ -235,6 +291,11 @@ function sandbox_io.readfile(filepath, opt)
     return result
 end
 
+--- direct read from stdin
+function sandbox_io.read(fmt, opt)
+    return sandbox_io.stdin:read(fmt, opt)
+end
+
 --- direct write to stdout
 function sandbox_io.write(...)
     sandbox_io.stdout:write(...)
@@ -243,6 +304,12 @@ end
 --- flush file
 function sandbox_io.flush(file)
     return (file or sandbox_io.stdout):flush()
+end
+
+-- isatty
+function sandbox_io.isatty(file)
+    file = file or sandbox_io.stdout
+    return file:isatty()
 end
 
 -- write all data to file
@@ -296,14 +363,6 @@ function sandbox_io.tail(filepath, linecount, opt)
     -- tail it
     io.tail(filepath, linecount, opt)
 end
-
--- wrap std files
-sandbox_io.stdin  = { _FILE = io.stdin  }
-sandbox_io.stderr = { _FILE = io.stderr }
-sandbox_io.stdout = { _FILE = io.stdout }
-setmetatable(sandbox_io.stdin, sandbox_io_file);
-setmetatable(sandbox_io.stderr, sandbox_io_file);
-setmetatable(sandbox_io.stdout, sandbox_io_file);
 
 -- return module
 return sandbox_io

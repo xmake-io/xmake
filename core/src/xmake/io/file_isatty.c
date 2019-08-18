@@ -28,22 +28,27 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-/* file:isatty()
- */
+// io.file_isatty(file)
 tb_int_t xm_io_file_isatty(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
+
     // is tty?
-    xm_io_file_t* file = xm_io_getfile(lua);
     lua_pushboolean(lua, xm_io_file_is_tty(file));
     return 1;
 }

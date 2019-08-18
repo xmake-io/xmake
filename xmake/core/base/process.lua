@@ -84,8 +84,7 @@ end
 
 -- gc(subprocess)
 function _subprocess:__gc()
-    local ok = self._PROC and process._close(self._PROC) or false
-    if ok then
+    if self._PROC and process._close(self._PROC) then
         self._PROC = nil
     end
 end

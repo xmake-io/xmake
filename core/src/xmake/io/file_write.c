@@ -14,7 +14,7 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
+ * @author      OpportunityLiu, ruki
  * @file        file_write.c
  *
  */
@@ -29,7 +29,6 @@
  * includes
  */
 #include "prefix.h"
-#include "file.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -37,7 +36,7 @@
 static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
-    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
 
     // write data to file
     tb_stream_bwrit(file->file_ref, (tb_byte_t const*)data, size);
@@ -45,7 +44,7 @@ static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_char_t co
 static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
-    tb_assert(file && data && xm_io_file_is_file(file) && !xm_io_file_is_closed(file));
+    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
 
 #ifdef TB_CONFIG_OS_WINDOWS
 
@@ -95,7 +94,7 @@ static tb_void_t xm_io_file_write_file_transcrlf(xm_io_file_t* file, tb_char_t c
 static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
-    tb_assert(file && data && xm_io_file_is_std(file) && !xm_io_file_is_closed(file));
+    tb_assert(file && data && xm_io_file_is_std(file));
 
     // check type
     tb_size_t type = (file->type & ~XM_IO_FILE_FLAG_TTY);
@@ -105,22 +104,26 @@ static tb_void_t xm_io_file_write_std(xm_io_file_t* file, tb_char_t const* data,
     tb_stdfile_writ(file->std_ref, (tb_byte_t const*)data, size);
 }
 
-/*
- * file:write(...)
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * implementation
  */
+
+// io.file_write(file, ...)
 tb_int_t xm_io_file_write(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get file 
-    xm_io_file_t* file = xm_io_getfile(lua);
-    tb_int_t    narg = lua_gettop(lua);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
 
-    // this file has been closed? 
-    if (xm_io_file_is_closed(file))
-        xm_io_file_return_error_closed(lua);
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
 
+    // write file data
+    tb_int_t narg = lua_gettop(lua);
     if (narg > 1)
     {
         tb_bool_t is_binary = file->encoding == XM_IO_FILE_ENCODING_BINARY;
@@ -141,7 +144,7 @@ tb_int_t xm_io_file_write(lua_State* lua)
                 xm_io_file_write_file_transcrlf(file, data, (tb_size_t)datasize);
         }
     }
-
-    lua_settop(lua, 1);
-    xm_io_file_return_success();
+    lua_settop(lua, 1);    
+    lua_pushboolean(lua, tb_true);
+    return 1;
 }

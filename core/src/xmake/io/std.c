@@ -14,31 +14,24 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        std.c
+ * @author      OpportunityLiu, ruki
+ * @file        file_std.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "io_std"
+#define TB_TRACE_MODULE_NAME    "std"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
-#include <stdio.h>
-#ifdef TB_CONFIG_OS_WINDOWS
-#    include <io.h>
-#else
-#    include <unistd.h>
-#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * private implementation
  */
 static tb_size_t xm_io_std_isatty(tb_size_t type)
 {
@@ -66,73 +59,49 @@ static tb_size_t xm_io_std_isatty(tb_size_t type)
     return type;
 }
 
-static tb_void_t xm_io_std_init(lua_State* lua, tb_size_t type)
-{
-    // check
-    tb_assert_and_check_return(lua);
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
 
-    tb_char_t const* name = tb_null;
-    tb_char_t const* path = tb_null;
-    tb_stdfile_ref_t fp   = tb_null;
-    switch (type)
-    {
-    case XM_IO_FILE_TYPE_STDIN:
-        name = "stdin";
-        fp   = tb_stdfile_input();
-        break;
-    case XM_IO_FILE_TYPE_STDOUT:
-        name = "stdout";
-        fp   = tb_stdfile_output();
-        break;
-    case XM_IO_FILE_TYPE_STDERR:
-        name = "stderr";
-        fp   = tb_stdfile_error();
-        break;
-    }
-#ifdef TB_CONFIG_OS_WINDOWS
-    path = "CON"; // console device
-#else
-    switch (type)
-    {
-    case XM_IO_FILE_TYPE_STDIN: path = "/dev/stdin"; break;
-    case XM_IO_FILE_TYPE_STDOUT: path = "/dev/stdout"; break;
-    case XM_IO_FILE_TYPE_STDERR: path = "/dev/stderr"; break;
-    }
-#endif
-    tb_assert_and_check_return(name && path && fp);
-
-    // new file
-    xm_io_file_t* file = xm_io_newfile(lua);
-    tb_assert_and_check_return(file);
-    lua_setfield(lua, -2, name);
-
-    // init file
-    file->encoding        = TB_CHARSET_TYPE_UTF8;
-    file->type            = xm_io_std_isatty(type);
-    file->path            = path;
-    file->std_ref         = fp;
-    file->stream          = tb_null;
-    file->fstream         = tb_null;
-
-    // init name
-    tb_char_t const* info = xm_io_file_is_tty(file) ? "" : " redirected";
-    tb_snprintf(file->name, tb_arrayn(file->name), "file: (%s%s)", name, info);
-
-    // init the line cache buffer
-    tb_buffer_init(&file->rcache);
-    tb_buffer_init(&file->wcache);
-}
-
+// io.std(stdin: 1, stdout: 2, stderr: 3)
 tb_int_t xm_io_std(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // init io.stdin, io.stdout and io.stderr
-    lua_getglobal(lua, "io");
-    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDIN);
-    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDOUT);
-    xm_io_std_init(lua, XM_IO_FILE_TYPE_STDERR);
-    lua_pop(lua, 1);
-    return 0;
+    // get std type
+    tB_int_t type = lua_tointeger(lua, 1);
+    tb_stdfile_ref_t fp = tb_null;
+    switch (type)
+    {
+    case XM_IO_FILE_TYPE_STDIN:
+        fp   = tb_stdfile_input();
+        break;
+    case XM_IO_FILE_TYPE_STDOUT:
+        fp   = tb_stdfile_output();
+        break;
+    case XM_IO_FILE_TYPE_STDERR:
+        fp   = tb_stdfile_error();
+        break;
+    }
+
+    // make file
+    xm_io_file_t* file = tb_malloc0_type(xm_io_file_t);
+    tb_assert_and_check_return_val(file, 0);
+
+    // init file
+    file->std_ref    = fp;
+    file->stream     = tb_null;
+    file->fstream    = tb_null;
+    file->type       = xm_io_std_isatty(type);
+    file->encoding   = TB_CHARSET_TYPE_UTF8;
+
+    // init the read/write line cache buffer
+    tb_buffer_init(&file->rcache); 
+    tb_buffer_init(&file->wcache); 
+
+    // ok
+    lua_pushlightuserdata(lua, (tb_pointer_t)file);
+    return 1;
 }
+

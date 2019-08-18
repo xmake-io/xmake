@@ -20,7 +20,7 @@
 
 -- define module
 local io        = io or {}
-local _file     = _file or io._file or {}
+local _file     = _file or {}
 local _filelock = _filelock or {}
 
 -- load modules
@@ -28,15 +28,130 @@ local path   = require("base/path")
 local table  = require("base/table")
 local string = require("base/string")
 
--- save original apis
-io._open        = io._open or io.open
+-- save metatable
+io._file        = _file
 io._filelock    = _filelock
-_file._read = _file._read or _file.read
+
+-- new an file
+function _file.new(filepath, file)
+    local file = table.inherit(_file)
+    file._NAME = path.filename(filepath)
+    file._PATH = filepath
+    file._FILE = file
+    setmetatable(file, _file)
+    return file
+end
+
+-- get the file name 
+function _file:name()
+    return self._NAME
+end
+
+-- get the file path 
+function _file:path()
+    return self._PATH
+end
+
+-- close file
+function _file:close()
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local ok, errors = io.file_close(self._FILE)
+    if ok then
+        self._FILE = nil
+    end
+    return ok, errors
+end
+
+-- tostring(file)
+function _file:__tostring()
+    return "file: " .. self:name()
+end
+
+-- gc(file)
+function _file:__gc()
+    if self._FILE and io.file_close(self._FILE) then
+        self._FILE = nil
+    end
+end
+
+-- get file length
+function _file:__len()
+    return self:size()
+end
+
+-- get file size
+function _file:size()
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local result, errors = io.file_size(self._FILE)
+    if not result and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return result, errors
+end
 
 -- read data from file
 function _file:read(fmt, opt)
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
     opt = opt or {}
-    return self:_read(fmt, opt.continuation)
+    local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
+    if not result then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return result, errors
+end
+
+-- write data to file
+function _file:write(...)
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local ok, errors = io.file_write(self._FILE, ...)
+    if not ok and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return ok, errors
+end
+
+-- seek offset at file
+function _file:seek(whence, offset)
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local result, errors = io.file_seek(self._FILE, whence, offset)
+    if not result and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return result, errors
+end
+
+-- flush data to file
+function _file:flush()
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local ok, errors = io.file_flush(self._FILE)
+    if not ok and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return ok, errors
+end
+
+-- this file is a tty?
+function _file:isatty()
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local ok, errors = io.file_isatty(self._FILE)
+    if not ok and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return ok, errors
 end
 
 -- iterator of lines
@@ -66,11 +181,11 @@ end
 -- save object
 function _file:save(object, opt)
     local str, errors = string.serialize(object, opt)
-    if not errors then
-        self:write(str)
-        return str
+    if errors then
+        return false, errors
+    else
+        return self:write(str)
     end
-    return str, errors
 end
 
 -- load object
@@ -183,8 +298,7 @@ end
 
 -- gc(filelock)
 function _filelock:__gc()
-    local ok = self._LOCK and io.filelock_close(self._LOCK) or false
-    if ok then
+    if self._LOCK and io.filelock_close(self._LOCK) then
         self._LOCK = nil
         self._LOCKED_NUM = 0
     end
@@ -236,7 +350,7 @@ function io.read(fmt, opt)
 end
 
 function io.write(...)
-    io.stdout:write(...)
+    return io.stdout:write(...)
 end
 
 function io.print(...)
@@ -274,9 +388,9 @@ function io.writefile(filepath, data, opt)
 end
 
 -- isatty
-function io.isatty(fd)
-    fd = fd or io.stdout
-    return fd:isatty()
+function io.isatty(file)
+    file = file or io.stdout
+    return file:isatty()
 end
 
 -- replace the original open interface
@@ -290,11 +404,12 @@ function io.open(filepath, mode, opt)
     mode = mode or "r"
 
     -- open it
-    local file = io._open(filepath, mode .. (opt.encoding or ""))
-    if not file then
+    local file = io.file_open(filepath, mode .. (opt.encoding or ""))
+    if file then
+        return _file.new(filepath, file)
+    else
         return nil, string.format("failed to open file: %s", filepath)
     end
-    return file
 end
 
 -- open a filelock

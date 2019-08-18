@@ -14,7 +14,7 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
+ * @author      OpportunityLiu, ruki
  * @file        file_flush.c
  *
  */
@@ -28,7 +28,6 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -36,14 +35,14 @@
  */
 static tb_bool_t xm_io_std_flush_impl(xm_io_file_t* file)
 {
-    tb_assert_and_check_return_val(xm_io_file_is_std(file) && !xm_io_file_is_closed(file), tb_false);
+    tb_assert_and_check_return_val(xm_io_file_is_std(file), tb_false);
     return (file->std_ref != tb_stdfile_input())? tb_stdfile_flush(file->std_ref) : tb_false;
 }
 
 static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
 {
     // check
-    tb_assert_and_check_return_val(xm_io_file_is_file(file) && !xm_io_file_is_closed(file), tb_false);
+    tb_assert_and_check_return_val(xm_io_file_is_file(file), tb_false);
 
 #ifdef TB_CONFIG_OS_WINDOWS
     // write cached data first
@@ -62,25 +61,26 @@ static tb_bool_t xm_io_file_flush_impl(xm_io_file_t* file)
  * interfaces
  */
 
-/*
- * file:flush()
- */
+// io.file_flush(file)
 tb_int_t xm_io_file_flush(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // file has been closed? 
-    xm_io_file_t* file = xm_io_getfile(lua);
-    if (xm_io_file_is_closed(file))
-        xm_io_file_return_error_closed(lua);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get file
+    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
+    tb_check_return_val(file, 0);
 
     // flush file
-    tb_bool_t ok = xm_io_file_is_file(file) ? xm_io_file_flush_impl(file) : xm_io_std_flush_impl(file);
+    tb_bool_t ok = xm_io_file_is_file(file)? xm_io_file_flush_impl(file) : xm_io_std_flush_impl(file);
     if (ok) 
     {
         lua_pushboolean(lua, tb_true);
-        xm_io_file_return_success();
+        return 1;
     }
-    else xm_io_file_return_error(lua, file, "failed to flush file");
+    else xm_io_file_return_error(lua, "failed to flush file");
 }

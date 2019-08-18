@@ -14,21 +14,20 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        open.c
+ * @author      OpportunityLiu, ruki
+ * @file        file_open.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "open"
+#define TB_TRACE_MODULE_NAME    "file_open"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "file.h"
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -166,10 +165,8 @@ static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t* p
  * implementation
  */
 
-/*
- * io.open(path, modestr)
- */
-tb_int_t xm_io_open(lua_State* lua)
+// io.file_open(path, modestr)
+tb_int_t xm_io_file_open(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -279,42 +276,23 @@ tb_int_t xm_io_open(lua_State* lua)
         return 2;
     }
 
-    // get absolute file path
-    tb_char_t full[TB_PATH_MAXN] = {0};
-    path = tb_path_absolute(path, full, TB_PATH_MAXN);
-    tb_assert_and_check_return_val(path, 0);
+    // make file
+    xm_io_file_t* file = tb_malloc0_type(xm_io_file_t);
+    tb_assert_and_check_return_val(file, 0);
 
-    // new file
-    xm_io_file_t* xm_file = xm_io_newfile(lua);
-    xm_file->file_ref   = file_ref;
-    xm_file->stream     = stream;
-    xm_file->fstream    = fstream;
-    xm_file->mode       = mode;
-    xm_file->type       = XM_IO_FILE_TYPE_FILE;
-    xm_file->encoding   = encoding;
+    // init file
+    file->file_ref   = file_ref;
+    file->stream     = stream;
+    file->fstream    = fstream;
+    file->mode       = mode;
+    file->type       = XM_IO_FILE_TYPE_FILE;
+    file->encoding   = encoding;
 
     // init the read/write line cache buffer
-    tb_buffer_init(&xm_file->rcache); 
-    tb_buffer_init(&xm_file->wcache); 
+    tb_buffer_init(&file->rcache); 
+    tb_buffer_init(&file->wcache); 
 
-    // save file path
-    tb_size_t pathlen = tb_strlen(path);
-    xm_file->path = tb_malloc_cstr(pathlen + 1);
-    if (xm_file->path) 
-    {
-        tb_strncpy((tb_char_t*)xm_file->path, path, pathlen);
-        ((tb_char_t*)xm_file->path)[pathlen] = '\0';
-    }
-
-    // save file name
-    tb_size_t name_maxn = tb_arrayn(xm_file->name);
-    tb_strlcpy(xm_file->name, "file: ", name_maxn);
-    if (pathlen < name_maxn - tb_arrayn("file: "))
-        tb_strcat(xm_file->name, path);
-    else
-    {
-        tb_strcat(xm_file->name, "...");
-        tb_strcat(xm_file->name, path + (pathlen - name_maxn + tb_arrayn("file: ") + tb_arrayn("...")));
-    }
+    // ok
+    lua_pushlightuserdata(lua, (tb_pointer_t)file);
     return 1;
 }
