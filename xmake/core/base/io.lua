@@ -19,8 +19,9 @@
 --
 
 -- define module
-local io    = io or {}
-local _file = _file or io._file or {}
+local io        = io or {}
+local _file     = _file or io._file or {}
+local _filelock = _filelock or {}
 
 -- load modules
 local path   = require("base/path")
@@ -29,7 +30,7 @@ local string = require("base/string")
 
 -- save original apis
 io._open        = io._open or io.open
-io._openlock    = io._openlock or io.openlock
+io._filelock    = _filelock
 _file._read = _file._read or _file.read
 
 -- read data from file
@@ -80,6 +81,112 @@ function _file:load()
     end
     if data and type(data) == "string" then
         return data:deserialize()
+    end
+end
+
+-- new an filelock
+function _filelock.new(lockpath, lock)
+    local filelock = table.inherit(_filelock)
+    filelock._NAME = path.filename(lockpath)
+    filelock._PATH = lockpath
+    filelock._LOCK = lock
+    filelock._LOCKED_NUM = 0
+    setmetatable(filelock, _filelock)
+    return filelock
+end
+
+-- get the filelock name 
+function _filelock:name()
+    return self._NAME
+end
+
+-- get the filelock path 
+function _filelock:path()
+    return self._PATH
+end
+
+-- is locked?
+function _filelock:islocked()
+    return self._LOCKED_NUM > 0
+end
+
+-- lock file
+--
+-- @param opt       the argument option, {shared = true}
+--
+-- @return          ok, errors
+--
+function _filelock:lock(opt)
+    if not self._LOCK then
+        return false, string.format("filelock(%s) has been closed!", self:name())
+    end
+    if self._LOCKED_NUM > 0 or io.filelock_lock(self._LOCK, opt) then
+        self._LOCKED_NUM = self._LOCKED_NUM + 1
+        return true
+    else
+        return false, string.format("filelock(%s): lock %s failed!", self:name(), self:path())
+    end
+end
+
+-- try to lock file
+--
+-- @param opt       the argument option, {shared = true}
+--
+-- @return          ok, errors
+--
+function _filelock:trylock(opt)
+    if not self._LOCK then
+        return false, string.format("filelock(%s) has been closed!", self:name())
+    end
+    if self._LOCKED_NUM > 0 or io.filelock_trylock(self._LOCK, opt) then
+        self._LOCKED_NUM = self._LOCKED_NUM + 1
+        return true
+    else
+        return false, string.format("filelock(%s): trylock %s failed!", self:name(), self:path())
+    end
+end
+
+-- unlock file
+function _filelock:unlock(opt)
+    if not self._LOCK then
+        return false, string.format("filelock(%s) has been closed!", self:name())
+    end
+    if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self._LOCK)) then
+        if self._LOCKED_NUM > 0 then
+            self._LOCKED_NUM = self._LOCKED_NUM - 1
+        else 
+            self._LOCKED_NUM = 0
+        end
+        return true
+    else
+        return false, string.format("filelock(%s): unlock %s failed!", self:name(), self:path())
+    end
+end
+
+-- close filelock
+function _filelock:close()
+    if not self._LOCK then
+        return false, string.format("filelock(%s) has been closed!", self:name())
+    end
+    local ok = io.filelock_close(self._LOCK)
+    if ok then
+        self._LOCK = nil
+        self._LOCKED_NUM = 0
+    end
+    return ok
+end
+
+-- tostring(filelock)
+function _filelock:__tostring()
+    return "filelock: " .. self:name()
+end
+
+-- gc(filelock)
+function _filelock:__gc()
+    local ok = self._LOCK and io.filelock_close(self._LOCK) or false
+    if ok then
+        self._LOCK = nil
+        self._LOCKED_NUM = 0
     end
 end
 
@@ -190,18 +297,19 @@ function io.open(filepath, mode, opt)
     return file
 end
 
--- replace the original openlock interface
+-- open a filelock
 function io.openlock(filepath)
 
     -- check
     assert(filepath)
 
     -- open it
-    local lock = io._openlock(filepath)
-    if not lock then
+    local lock = io.filelock_open(filepath)
+    if lock then
+        return _filelock.new(filepath, lock)
+    else
         return nil, string.format("failed to open lock: %s", filepath)
     end
-    return lock
 end
 
 -- close file

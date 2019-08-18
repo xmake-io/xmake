@@ -66,14 +66,18 @@ function sandbox_process.open(command, opt)
     end
 
     -- hook subprocess interfaces
+    local hooked = {}
     for name, func in pairs(proc) do
         if not name:startswith("_") and type(func) == "function" then
             local newfunc = sandbox_process_subprocess[name]
             if newfunc ~= nil then
-                proc["_" .. name] = proc["_" .. name] or func
-                proc[name] = newfunc
+                hooked["_" .. name] = proc["_" .. name] or func
+                hooked[name] = newfunc
             end
         end
+    end
+    for name, func in pairs(hooked) do
+        proc[name] = func
     end
     return proc
 end
@@ -99,14 +103,18 @@ function sandbox_process.openv(filename, argv, opt)
     end
 
     -- hook subprocess interfaces
+    local hooked = {}
     for name, func in pairs(proc) do
         if not name:startswith("_") and type(func) == "function" then
             local newfunc = sandbox_process_subprocess[name]
             if newfunc ~= nil then
-                proc["_" .. name] = proc["_" .. name] or func
-                proc[name] = newfunc
+                hooked["_" .. name] = proc["_" .. name] or func
+                hooked[name] = newfunc
             end
         end
+    end
+    for name, func in pairs(hooked) do
+        proc[name] = func
     end
     return proc
 end

@@ -28,7 +28,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "filelock.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -36,8 +36,8 @@
 
 /* try to lock file
  *
- * exclusive lock:  filelock:trylock("/xxxx/filelock")
- * shared lock:     filelock:trylock("/xxxx/filelock", {shared = true})
+ * exclusive lock:  io.filelock_trylock("/xxxx/filelock")
+ * shared lock:     io.filelock_trylock("/xxxx/filelock", {shared = true})
  */
 tb_int_t xm_io_filelock_trylock(lua_State* lua)
 {
@@ -55,19 +55,16 @@ tb_int_t xm_io_filelock_trylock(lua_State* lua)
         lua_pop(lua, 1);
     }
 
-    // this lock has been closed?
-    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    if (!lock->is_opened) 
-        xm_io_filelock_return_error_closed(lua);
-    else 
-    {
-        // try to lock it
-        if (lock->nlocked > 0 || tb_filelock_enter_try(lock->lock_ref, is_shared? TB_FILELOCK_MODE_SH : TB_FILELOCK_MODE_EX))
-        {
-            lock->nlocked++;
-            lua_pushboolean(lua, tb_true);
-            xm_io_filelock_return_success();
-        }
-        else xm_io_filelock_return_error(lua, lock, "trylock failed!");
-    }
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get lock
+    tb_filelock_ref_t lock = (tb_filelock_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(lock, 0);
+
+    // try to lock it
+    tb_bool_t ok = tb_filelock_enter_try(lock, is_shared? TB_FILELOCK_MODE_SH : TB_FILELOCK_MODE_EX);
+    lua_pushboolean(lua, ok);
+    return 1;
 }

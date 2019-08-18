@@ -28,33 +28,28 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "filelock.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-// filelock:unlock()
+// io.filelock_unlock(lock)
 tb_int_t xm_io_filelock_unlock(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // this lock has been closed?
-    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    if (!lock->is_opened) 
-        xm_io_filelock_return_error_closed(lua);
-    else 
-    {
-        // unlock it
-        if (lock->nlocked > 1 || tb_filelock_leave(lock->lock_ref))
-        {
-            if (lock->nlocked > 0)
-                lock->nlocked--;
-            else lock->nlocked = 0;
-            lua_pushboolean(lua, tb_true);
-            xm_io_filelock_return_success();
-        }
-        else xm_io_filelock_return_error(lua, lock, "unlock failed!");
-    }
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get lock
+    tb_filelock_ref_t lock = (tb_filelock_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(lock, 0);
+
+    // unlock it
+    tb_bool_t ok = tb_filelock_leave(lock);
+    lua_pushboolean(lua, ok);
+    return 1;
 }

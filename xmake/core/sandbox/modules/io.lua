@@ -28,9 +28,9 @@ local vformat   = require("sandbox/modules/vformat")
 -- define module
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io._file or {}
-local sandbox_io_filelock = sandbox_io._filelock or {}
+local sandbox_io_filelock = sandbox_io_filelock or {}
 sandbox_io._file     = sandbox_io_file
-sandbox_io._filelock = sandbox_io_filelock
+sandbox_io._filelock = sandbox_io._filelock or io._filelock
 
 -- inherit some builtin interfaces
 sandbox_io.lines  = io.lines
@@ -59,26 +59,6 @@ if sandbox_io_file.__index ~= sandbox_io_file then
     sandbox_io_file.lines = io._file.lines
 end
 
--- inherit matatable of file lock
-if sandbox_io_filelock.__index ~= sandbox_io_filelock then
-    sandbox_io_filelock.__index = sandbox_io_filelock
-    for k, v in pairs(io._filelock) do
-        if type(v) == "function" then
-            sandbox_io_filelock[k] = function(s, ...)
-                local result, err = v(s._LOCK, ...)
-                if result == nil and err ~= nil then
-                    raise(err)
-                end
-                -- wrap to sandbox_filelock again
-                if result == s._LOCK then
-                    result = s
-                end
-                return result
-            end
-        end
-    end
-end
-
 -- get file size
 function sandbox_io_file:size()
     -- __len on tables is scheduled to be supported in 5.2.
@@ -98,6 +78,38 @@ end
 -- writef file
 function sandbox_io_file:writef(...)
     return self:write(string.format(...))
+end
+
+-- lock filelock
+function sandbox_io_filelock.lock(lock, opt)
+    local ok, errors = lock:_lock(opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- try to lock filelock
+function sandbox_io_filelock.trylock(lock, opt)
+    local ok, errors = lock:_trylock(opt)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- unlock filelock
+function sandbox_io_filelock.unlock(lock)
+    local ok, errors = lock:_unlock()
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- close filelock
+function sandbox_io_filelock.close(lock)
+    local ok, errors = lock:_close()
+    if not ok then
+        raise(errors)
+    end
 end
 
 -- gsub the given file and return replaced data
@@ -155,9 +167,20 @@ function sandbox_io.openlock(filepath)
         raise(errors)
     end
 
-    -- bind metatable
-    lock = { _LOCK = lock }
-    setmetatable(lock, sandbox_io_filelock);
+    -- hook filelock interfaces
+    local hooked = {}
+    for name, func in pairs(lock) do
+        if not name:startswith("_") and type(func) == "function" then
+            local newfunc = sandbox_io_filelock[name]
+            if newfunc ~= nil then
+                hooked["_" .. name] = lock["_" .. name] or func
+                hooked[name] = newfunc
+            end
+        end
+    end
+    for name, func in pairs(hooked) do
+        lock[name] = func
+    end
     return lock
 end
 

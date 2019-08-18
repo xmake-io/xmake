@@ -15,40 +15,46 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        filelock_path.c
+ * @file        filelock_close.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock_path"
+#define TB_TRACE_MODULE_NAME    "filelock_close"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "filelock.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-/* lock:path()
- */
-tb_int_t xm_io_filelock_path(lua_State* lua)
+// io.filelock_close(lock)
+tb_int_t xm_io_filelock_close(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // this lock has been closed?
-    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    if (!lock->is_opened) 
-        xm_io_filelock_return_error_closed(lua);
-    else 
-    {
-        // return lock path
-        lua_pushstring(lua, lock->path);
-        xm_io_filelock_return_success();
-    }
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
+
+    // get lock
+    tb_filelock_ref_t lock = (tb_filelock_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(lock, 0);
+
+    // exit lock
+    tb_filelock_exit(lock);
+
+    // save result: ok
+    lua_pushboolean(lua, tb_true);
+
+    // ok
+    return 1;
 }
+

@@ -15,36 +15,43 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        filelock___tostring.c
+ * @file        filelock_open.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "filelock___tostring"
+#define TB_TRACE_MODULE_NAME    "filelock_open"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "filelock.h"
+#include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
 /*
- * tostring(lock)
+ * io.filelock_open(path)
  */
-tb_int_t xm_io_filelock___tostring(lua_State* lua)
+tb_int_t xm_io_filelock_open(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get lock name as string
-    xm_io_filelock_t* lock = xm_io_get_filelock(lua);
-    lua_pushstring(lua, lock->name);
-    xm_io_filelock_return_success();
-}
+    // get file path 
+    tb_char_t const* path = luaL_checkstring(lua, 1);
+    tb_assert_and_check_return_val(path, 0);
 
+    // init file lock
+    tb_long_t tryn = 2;
+    tb_filelock_ref_t lock = tb_null;
+    while (!lock && tryn-- > 0) 
+        lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
+    if (lock) lua_pushlightuserdata(lua, (tb_pointer_t)lock);
+    else lua_pushnil(lua);
+    return 1;
+}
