@@ -309,5 +309,35 @@ function table.values(tab)
     return valueset, n
 end
 
+-- map values to a new table
+function table.map(tab, mapper)
+
+    assert(tab)
+    if mapper == nil then
+        return table.copy(tab)
+    end
+
+    local newtab = {}
+    for k, v in pairs(tab) do
+        newtab[k] = mapper(k, v)
+    end
+    return newtab
+end
+
+-- map values to a new array
+function table.imap(arr, mapper)
+
+    assert(arr)
+    if mapper == nil then
+        return table.copy(arr)
+    end
+
+    local newarr = {}
+    for k, v in ipairs(arr) do
+        table.insert(newarr, mapper(k, v))
+    end
+    return newarr
+end
+
 -- return module: table
 return table
