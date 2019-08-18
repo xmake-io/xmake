@@ -343,8 +343,8 @@ function main(outputdir, vsinfo)
         target._sub2 = {}
         local dirs = {}
         local root = project.directory()
-        target.sourcefiles = table.map(target.sourcefiles, function(_, v) return path.relative(v, root) end)
-        target.headerfiles = table.map(target.headerfiles, function(_, v) return path.relative(v, root) end)
+        target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
+        target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
             target._sub2[f] =
