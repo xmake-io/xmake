@@ -176,10 +176,7 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     for k, v in pairs(target:get("runenvs")) do
-        local defs = {}
-        for _, d in ipairs(v) do
-            table.insert(defs, vformat(d))
-        end
+        local defs = table.imap(v, function(_, v) return vformat(v) end)
         table.insert(runenvs, format("%s=%s", k, path.joinenv(defs)))
     end
     targetinfo.runenvs = table.concat(runenvs, "\n")
@@ -345,7 +342,10 @@ function main(outputdir, vsinfo)
     for _,target in pairs(targets) do
         target._sub2 = {}
         local dirs = {}
-        for _,f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
+        local root = project.directory()
+        target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
+        target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
+        for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
             target._sub2[f] =
             {

@@ -309,5 +309,31 @@ function table.values(tab)
     return valueset, n
 end
 
+-- map values to a new table
+function table.map(tab, mapper)
+
+    assert(tab)
+    assert(mapper)
+
+    local newtab = {}
+    for k, v in pairs(tab) do
+        newtab[k] = mapper(k, v)
+    end
+    return newtab
+end
+
+-- map values to a new array
+function table.imap(arr, mapper)
+
+    assert(arr)
+    assert(mapper)
+
+    local newarr = {}
+    for k, v in ipairs(arr) do
+        table.insert(newarr, mapper(k, v))
+    end
+    return newarr
+end
+
 -- return module: table
 return table
