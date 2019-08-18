@@ -313,9 +313,7 @@ end
 function table.map(tab, mapper)
 
     assert(tab)
-    if mapper == nil then
-        return table.copy(tab)
-    end
+    assert(mapper)
 
     local newtab = {}
     for k, v in pairs(tab) do
@@ -328,9 +326,7 @@ end
 function table.imap(arr, mapper)
 
     assert(arr)
-    if mapper == nil then
-        return table.copy(arr)
-    end
+    assert(mapper)
 
     local newarr = {}
     for k, v in ipairs(arr) do
