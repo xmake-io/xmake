@@ -169,13 +169,10 @@ function sandbox_io.openlock(filepath)
 
     -- hook filelock interfaces
     local hooked = {}
-    for name, func in pairs(lock) do
+    for name, func in pairs(sandbox_io_filelock) do
         if not name:startswith("_") and type(func) == "function" then
-            local newfunc = sandbox_io_filelock[name]
-            if newfunc ~= nil then
-                hooked["_" .. name] = lock["_" .. name] or func
-                hooked[name] = newfunc
-            end
+            hooked["_" .. name] = lock["_" .. name] or lock[name]
+            hooked[name] = func
         end
     end
     for name, func in pairs(hooked) do
