@@ -16,32 +16,32 @@ function test_assert:require_not(value)
     end
 end
 
-function test_assert:are_same(actual, expacted)
-    local r, ap, ep = check.same(actual, expacted)
+function test_assert:are_same(actual, expected)
+    local r, ap, ep = check.same(actual, expected)
     if not r then
-        self:print_error(format("expacted: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
+        self:print_error(format("expected: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
     end
 end
 
-function test_assert:are_not_same(actual, expacted)
-    local r, ap, ep = check.same(actual, expacted)
+function test_assert:are_not_same(actual, expected)
+    local r, ap, ep = check.same(actual, expected)
     if r then
-        self:print_error(format("expacted: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
+        self:print_error(format("expected: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
     end
 end
 
 
-function test_assert:are_equal(actual, expacted)
-    local r, ap, ep = check.equal(actual, expacted)
+function test_assert:are_equal(actual, expected)
+    local r, ap, ep = check.equal(actual, expected)
     if not r then
-        self:print_error(format("expacted: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
+        self:print_error(format("expected: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
     end
 end
 
-function test_assert:are_not_equal(actual, expacted)
-    local r, ap, ep = check.equal(actual, expacted)
+function test_assert:are_not_equal(actual, expected)
+    local r, ap, ep = check.equal(actual, expected)
     if r then
-        self:print_error(format("expacted: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
+        self:print_error(format("expected: ${green}%s${reset}, actual ${red}%s${reset}", ep, ap), self.filename)
     end
 end
 
