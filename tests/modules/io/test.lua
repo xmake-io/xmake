@@ -41,7 +41,7 @@ function test_readlines(t)
     function get_all_without_crlf(file, opt)
         local r = {}
         local fp = io.open(file, "r", opt)
-        for l in fp:lines() do
+        for l in fp:lines(opt) do
             table.insert(r, l)
         end
         t:require(fp:close())
@@ -58,7 +58,7 @@ function test_readlines(t)
     t:are_equal(get_all_without_crlf("files/utf8bom-lf-eleof"), {"123\\", "456", "789"})
     t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof"), {"123\\", "456", "789"})
     t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof", {encoding = "binary"}), {"123\\\r\n", "456\r\n", "789"})
-    t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof", {continuation = "\\"}), {"123\\", "456", "789"})
+    t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof", {continuation = "\\"}), {"123456", "789"})
     t:are_equal(get_all_without_crlf("files/utf16be-lf-eleof"), {"123\\", "456", "789"})
     t:are_equal(get_all_without_crlf("files/utf16le-crlf-neleof"), {"123\\", "456", "789"})
 end

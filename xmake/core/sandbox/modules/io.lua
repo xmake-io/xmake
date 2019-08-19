@@ -29,9 +29,9 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
-sandbox_io._file     = sandbox_io._file or io._file
-sandbox_io._filelock = sandbox_io._filelock or io._filelock
-sandbox_io.lines     = io.lines
+sandbox_io._file          = sandbox_io._file or io._file
+sandbox_io._filelock      = sandbox_io._filelock or io._filelock
+sandbox_io.lines          = io.lines
 
 -- get file size
 function sandbox_io_file.size(file)
