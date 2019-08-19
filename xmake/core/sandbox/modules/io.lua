@@ -80,7 +80,7 @@ end
 -- read data from file
 function sandbox_io_file.read(file, fmt, opt)
     local result, errors = file:_read(fmt, opt)
-    if not result then
+    if errors then
         raise(errors)
     end
     return result
@@ -329,6 +329,15 @@ end
 --- flush file
 function sandbox_io.flush(file)
     return (file or sandbox_io.stdout):flush()
+end
+
+-- read lines from the given file
+function sandbox_io.lines(filepath, opt)
+    local iter, data_or_errors = io.lines(filepath, opt)
+    if not iter and data_or_errors then
+        raise(data_or_errors)
+    end
+    return iter, data_or_errors
 end
 
 -- isatty

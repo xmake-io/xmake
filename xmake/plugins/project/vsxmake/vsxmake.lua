@@ -130,8 +130,13 @@ end
 function make(version)
 
     if not version then
-        version = assert(tonumber(config.get("vs")), "invalid vs version, run `xmake f --vs=2015`")
-        vprint("using project kind vsxmake%d", version)
+        version = tonumber(config.get("vs"))
+        if not version then
+            return function(outputdir)
+                raise("invalid vs version, run `xmake f --vs=201x`")
+            end
+        end
+        vprint("using project kind vs%d", version)
     end
 
     -- check

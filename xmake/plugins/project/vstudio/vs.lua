@@ -28,13 +28,17 @@ import("core.project.config")
 function make(version)
 
     if not version then
-        version = assert(tonumber(config.get("vs")), "invalid vs version, run `xmake f --vs=2015`")
+        version = tonumber(config.get("vs"))
+        if not version then
+            return function(outputdir)
+                raise("invalid vs version, run `xmake f --vs=201x`")
+            end
+        end
         vprint("using project kind vs%d", version)
     end
 
     -- get vs version info
     local info = vsinfo(version)
-
     if version < 2010 then
         return function(outputdir)
             vs200x.make(outputdir, info)

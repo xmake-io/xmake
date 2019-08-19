@@ -101,7 +101,7 @@ function _file:read(fmt, opt)
     end
     opt = opt or {}
     local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
-    if not result and errors then
+    if errors then
         errors = string.format("file(%s): %s", self:name(), errors)
     end
     return result, errors
@@ -364,6 +364,16 @@ end
 
 function io.flush()
     return io.stdout:flush()
+end
+
+function io.lines(filepath, opt)
+    opt = opt or {}
+    opt.close_on_finished = true
+    local file, errors = io.open(filepath, 'r', opt)
+    if file then
+        return file:lines()
+    end
+    return file, errors
 end
 
 -- write data to file
