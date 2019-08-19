@@ -495,6 +495,8 @@ static tb_int_t xm_io_file_std_read_num(lua_State* lua, xm_io_file_t* file, tb_c
 /* io.file_read(file, [mode, [continuation]])
  * io.file_read(file, "all", "\\")
  * io.file_read(file, "L")
+ * io.file_read(file, "l")
+ * io.file_read(file, "n")
  * io.file_read(file, 10)
  */
 tb_int_t xm_io_file_read(lua_State* lua)

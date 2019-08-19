@@ -36,6 +36,15 @@
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macors
+ */
+
+// the singleton type of stdfile
+#define XM_IO_STDFILE_STDIN      (TB_SINGLETON_TYPE_USER + 1)
+#define XM_IO_STDFILE_STDOUT     (TB_SINGLETON_TYPE_USER + 2)
+#define XM_IO_STDFILE_STDERR     (TB_SINGLETON_TYPE_USER + 3)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
@@ -63,20 +72,15 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     if (answer) type |= XM_IO_FILE_FLAG_TTY;
     return type;
 }
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * interfaces
- */
-
-// io.stdfile(stdin: 1, stdout: 2, stderr: 3)
-tb_int_t xm_io_stdfile(lua_State* lua)
+static tb_handle_t xm_io_stdfile_instance_init(tb_cpointer_t* ppriv)
 {
-    // check
-    tb_assert_and_check_return_val(lua, 0);
+    // get stdfile type
+    tb_size_t* ptype = (tb_size_t*)ppriv;
+    tb_assert_and_check_return_val(ptype, tb_null);
 
-    // get std type
-    tb_int_t type = lua_tointeger(lua, 1);
+    // init stdfile
     tb_stdfile_ref_t fp = tb_null;
+    tb_size_t type = *ptype;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN:
@@ -106,7 +110,63 @@ tb_int_t xm_io_stdfile(lua_State* lua)
     tb_buffer_init(&file->wcache); 
 
     // ok
-    lua_pushlightuserdata(lua, (tb_pointer_t)file);
-    return 1;
+    return (tb_handle_t)file;
+}
+static tb_void_t xm_io_stdfile_instance_exit(tb_handle_t stdfile, tb_cpointer_t priv)
+{
+    xm_io_file_t* file = (xm_io_file_t*)stdfile;
+    if (file)
+    {
+        tb_buffer_exit(&file->rcache);
+        tb_buffer_exit(&file->wcache);
+        tb_free(file);
+    }
+}
+static xm_io_file_t* xm_io_stdfile_input()
+{
+    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDIN, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDIN));
+}
+static xm_io_file_t* xm_io_stdfile_output()
+{
+    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDOUT, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDOUT));
+}
+static xm_io_file_t* xm_io_stdfile_error()
+{
+    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDERR, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDERR));
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
+ * interfaces
+ */
+
+// io.stdfile(stdin: 1, stdout: 2, stderr: 3)
+tb_int_t xm_io_stdfile(lua_State* lua)
+{
+    // check
+    tb_assert_and_check_return_val(lua, 0);
+
+    // get std type
+    tb_int_t type = lua_tointeger(lua, 1);
+
+    // get stdfile
+    xm_io_file_t* file = tb_null;
+    switch (type)
+    {
+    case XM_IO_FILE_TYPE_STDIN:
+        file = xm_io_stdfile_input();
+        break;
+    case XM_IO_FILE_TYPE_STDOUT:
+        file = xm_io_stdfile_output();
+        break;
+    case XM_IO_FILE_TYPE_STDERR:
+        file = xm_io_stdfile_error();
+        break;
+    }
+    if (file)
+    {
+        lua_pushlightuserdata(lua, (tb_pointer_t)file);
+        return 1;
+    }
+    else xm_io_file_return_error(lua, "invalid stdfile type!");
 }
 
