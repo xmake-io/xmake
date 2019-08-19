@@ -210,17 +210,10 @@ tb_int_t xm_io_file_open(lua_State* lua)
         else
         {
             if (stream) tb_stream_exit(stream);
-            lua_pushnil(lua);
-            lua_pushliteral(lua, "file not found!");
-            return 2;
+            xm_io_file_return_error(lua, "file not found!");
         }
     }
-    else
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "invalid open mode!");
-        return 2;
-    }
+    else xm_io_file_return_error(lua, "invalid open mode!");
     tb_assert_and_check_return_val(encoding != XM_IO_FILE_ENCODING_UNKNOWN, 0);
 
     // open file

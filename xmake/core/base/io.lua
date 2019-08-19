@@ -28,16 +28,17 @@ local path   = require("base/path")
 local table  = require("base/table")
 local string = require("base/string")
 
--- save metatable
+-- save metatable and builtin functions
 io._file        = _file
 io._filelock    = _filelock
+io._stdfile     = io._stdfile or io.stdfile
 
 -- new an file
-function _file.new(filepath, file)
+function _file.new(filepath, fileref)
     local file = table.inherit(_file)
     file._NAME = path.filename(filepath)
     file._PATH = filepath
-    file._FILE = file
+    file._FILE = fileref
     setmetatable(file, _file)
     return file
 end
@@ -100,7 +101,7 @@ function _file:read(fmt, opt)
     end
     opt = opt or {}
     local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
-    if not result then
+    if not result and errors then
         errors = string.format("file(%s): %s", self:name(), errors)
     end
     return result, errors
@@ -393,7 +394,24 @@ function io.isatty(file)
     return file:isatty()
 end
 
--- replace the original open interface
+-- get std file, /dev/stdin, /dev/stdout, /dev/stderr
+function io.stdfile(filepath)
+    local file = nil
+    if filepath == "/dev/stdin" then
+        file = io._stdfile(1)
+    elseif filepath == "/dev/stdout" then
+        file = io._stdfile(2)
+    elseif filepath == "/dev/stderr" then
+        file = io._stdfile(3)
+    end
+    if file then
+        return _file.new(filepath, file)
+    else
+        return nil, string.format("failed to get std file: %s", filepath)
+    end
+end
+
+-- open file
 function io.open(filepath, mode, opt)
 
     -- check
@@ -602,6 +620,10 @@ function io.tail(filepath, linecount, opt)
     end
 end
 
+-- init stdfile
+io.stdin  = io.stdfile("/dev/stdin")
+io.stdout = io.stdfile("/dev/stdout")
+io.stderr = io.stdfile("/dev/stderr")
 
 -- return module
 return io

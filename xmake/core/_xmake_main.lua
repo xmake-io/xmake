@@ -46,16 +46,16 @@ function _loadfile_impl(filepath, mode)
     end
 
     -- load script data from file
-    local file, ferrors = io.open(filepath, binary and "rb" or "r")
+    local file, ferrors = io.file_open(filepath, binary and "rb" or "r")
     if not file then
         return nil, ferrors
     end
 
-    local data, rerrors = file:read("a")
+    local data, rerrors = io.file_read(file, "a")
     if not data then
         return nil, rerrors
     end
-    file:close()
+    io.file_close(file)
 
     -- load script from string
     return load(data, "@" .. displaypath, mode)

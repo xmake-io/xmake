@@ -15,25 +15,30 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      OpportunityLiu, ruki
- * @file        file_std.c
+ * @file        stdfile.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "std"
+#define TB_TRACE_MODULE_NAME    "stdfile"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
 #include "prefix.h"
+#ifdef TB_CONFIG_OS_WINDOWS
+#    include <io.h>
+#else
+#    include <unistd.h>
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_size_t xm_io_std_isatty(tb_size_t type)
+static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
 {
     tb_bool_t answer = tb_false;
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -63,25 +68,25 @@ static tb_size_t xm_io_std_isatty(tb_size_t type)
  * interfaces
  */
 
-// io.std(stdin: 1, stdout: 2, stderr: 3)
-tb_int_t xm_io_std(lua_State* lua)
+// io.stdfile(stdin: 1, stdout: 2, stderr: 3)
+tb_int_t xm_io_stdfile(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // get std type
-    tB_int_t type = lua_tointeger(lua, 1);
+    tb_int_t type = lua_tointeger(lua, 1);
     tb_stdfile_ref_t fp = tb_null;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN:
-        fp   = tb_stdfile_input();
+        fp = tb_stdfile_input();
         break;
     case XM_IO_FILE_TYPE_STDOUT:
-        fp   = tb_stdfile_output();
+        fp = tb_stdfile_output();
         break;
     case XM_IO_FILE_TYPE_STDERR:
-        fp   = tb_stdfile_error();
+        fp = tb_stdfile_error();
         break;
     }
 
@@ -93,7 +98,7 @@ tb_int_t xm_io_std(lua_State* lua)
     file->std_ref    = fp;
     file->stream     = tb_null;
     file->fstream    = tb_null;
-    file->type       = xm_io_std_isatty(type);
+    file->type       = xm_io_stdfile_isatty(type);
     file->encoding   = TB_CHARSET_TYPE_UTF8;
 
     // init the read/write line cache buffer

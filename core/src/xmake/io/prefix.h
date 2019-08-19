@@ -38,7 +38,7 @@
     do                                            \
     {                                             \
         lua_pushnil(lua);                         \
-        lua_pushstring(lua, error);               \
+        lua_pushliteral(lua, error);              \
         return 2;                                 \
     } while (0)
 

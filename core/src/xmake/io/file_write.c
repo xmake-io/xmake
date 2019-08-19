@@ -116,7 +116,7 @@ tb_int_t xm_io_file_write(lua_State* lua)
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
-        return 0;
+        xm_io_file_return_error(lua, "write(invalid file)!");
 
     // get file
     xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);

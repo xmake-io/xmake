@@ -44,7 +44,7 @@ xmake_C_FILES 			+= \
 						os/uid \
 						os/gid \
 						os/getown \
-						io/std \
+						io/stdfile \
 						io/file_size \
 						io/file_close \
 						io/file_flush \

@@ -90,7 +90,7 @@ tb_int_t xm_os_getown(lua_State* lua);
 #endif
 
 // the io/file functions
-tb_int_t xm_io_std(lua_State* lua);
+tb_int_t xm_io_stdfile(lua_State* lua);
 tb_int_t xm_io_file_open(lua_State* lua);
 tb_int_t xm_io_file_read(lua_State* lua);
 tb_int_t xm_io_file_seek(lua_State* lua);
@@ -223,7 +223,7 @@ static luaL_Reg const g_winos_functions[] =
 // the io functions
 static luaL_Reg const g_io_functions[] = 
 {
-    { "std",                xm_io_std              }
+    { "stdfile",            xm_io_stdfile          }
 ,   { "file_open",          xm_io_file_open        }
 ,   { "file_read",          xm_io_file_read        }
 ,   { "file_seek",          xm_io_file_seek        }
@@ -546,32 +546,6 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     lua_pushstring(machine->lua, TB_ARCH_STRING);
 #endif
     lua_setglobal(machine->lua, "_ARCH");
-}
-static tb_void_t xm_machine_register_metatable(xm_machine_t* machine, tb_char_t const* module, tb_char_t const* metaname, tb_char_t const* metatype, luaL_Reg const* funcs)
-{
-    // check
-    tb_assert_and_check_return(machine && machine->lua);
-
-    /* register metatable and functions
-     *
-     * metatype module.metaname = metatable {__index = metatable, funcs ...}
-     *
-     * e.g. io._file* io._file = metatable {__index = metatable, funcs ...}
-     */
-    luaL_newmetatable(machine->lua, metatype);
-    // stack: {metatable}, {metatable}
-    lua_pushvalue(machine->lua, -1);
-    // stack: {metatable, __index = {metatable}}
-    lua_setfield(machine->lua, -2, "__index");
-    // stack: {metatable}, {io}
-    lua_getglobal(machine->lua, module);
-    // stack: {metatable}, {io}, {metatable}
-    lua_pushvalue(machine->lua, -2);
-    // stack: {metatable}, {io, file = {metatable}}
-    lua_setfield(machine->lua, -2, metaname);
-    // stack: {metatable}
-    lua_pop(machine->lua, 1);
-    luaL_register(machine->lua, tb_null, funcs);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////

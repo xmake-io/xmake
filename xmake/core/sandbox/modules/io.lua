@@ -92,22 +92,21 @@ function sandbox_io_file.write(file, ...)
     if not ok then
         raise(errors)
     end
-    return ok
 end
 
 -- print file
 function sandbox_io_file.print(file, ...)
-    return sandbox_io_file.write(file, vformat(...), "\n")
+    sandbox_io_file.write(file, vformat(...), "\n")
 end
 
 -- printf file
 function sandbox_io_file.printf(file, ...)
-    return sandbox_io_file.write(file, vformat(...))
+    sandbox_io_file.write(file, vformat(...))
 end
 
 -- writef file (without value filter)
 function sandbox_io_file.writef(file, ...)
-    return sandbox_io_file.write(file, string.format(...))
+    sandbox_io_file.write(file, string.format(...))
 end
 
 -- load object from file
@@ -177,6 +176,32 @@ function sandbox_io.gsub(filepath, pattern, replace, opt)
 
     -- ok
     return data, count
+end
+
+-- get std file
+function sandbox_io.stdfile(filepath)
+
+    -- check
+    assert(filepath)
+
+    -- open it
+    local file, errors = io.stdfile(filepath)
+    if not file then
+        raise(errors)
+    end
+
+    -- hook file interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_io_file) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = file["_" .. name] or file[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        file[name] = func
+    end
+    return file
 end
 
 -- open file
@@ -363,6 +388,11 @@ function sandbox_io.tail(filepath, linecount, opt)
     -- tail it
     io.tail(filepath, linecount, opt)
 end
+
+-- init stdfile
+sandbox_io.stdin  = sandbox_io.stdin  or sandbox_io.stdfile("/dev/stdin")
+sandbox_io.stdout = sandbox_io.stdout or sandbox_io.stdfile("/dev/stdout")
+sandbox_io.stderr = sandbox_io.stderr or sandbox_io.stdfile("/dev/stderr")
 
 -- return module
 return sandbox_io
