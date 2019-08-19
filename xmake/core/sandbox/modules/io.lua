@@ -390,10 +390,17 @@ function sandbox_io.tail(filepath, linecount, opt)
     io.tail(filepath, linecount, opt)
 end
 
--- init stdfile
-sandbox_io.stdin  = sandbox_io.stdin  or sandbox_io.stdfile("/dev/stdin")
-sandbox_io.stdout = sandbox_io.stdout or sandbox_io.stdfile("/dev/stdout")
-sandbox_io.stderr = sandbox_io.stderr or sandbox_io.stdfile("/dev/stderr")
+-- lazy loading stdfile
+setmetatable(sandbox_io, { __index = function (tbl, key)    
+        local val = rawget(tbl, key)
+        if val == nil and (key == "stdin" or key == "stdout" or key == "stderr") then
+            val = sandbox_io.stdfile("/dev/" .. key)
+            if val ~= nil then
+                rawset(tbl, key, val)
+            end
+        end
+        return val
+    end})
 
 -- return module
 return sandbox_io

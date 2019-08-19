@@ -619,10 +619,20 @@ function io.tail(filepath, linecount, opt)
     end
 end
 
--- init stdfile
-io.stdin  = io.stdfile("/dev/stdin")
-io.stdout = io.stdfile("/dev/stdout")
-io.stderr = io.stdfile("/dev/stderr")
+-- lazy loading stdfile
+io.stdin  = nil
+io.stdout = nil
+io.stderr = nil
+setmetatable(io, { __index = function (tbl, key)    
+        local val = rawget(tbl, key)
+        if val == nil and (key == "stdin" or key == "stdout" or key == "stderr") then
+            val = io.stdfile("/dev/" .. key)
+            if val ~= nil then
+                rawset(tbl, key, val)
+            end
+        end
+        return val
+    end})
 
 -- return module
 return io
