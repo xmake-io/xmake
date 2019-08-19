@@ -37,7 +37,7 @@ io._stdfile     = io._stdfile or io.stdfile
 function _file.new(filepath, fileref)
     local file = table.inherit(_file)
     file._NAME = path.filename(filepath)
-    file._PATH = filepath
+    file._PATH = path.absolute(filepath)
     file._FILE = fileref
     setmetatable(file, _file)
     return file
@@ -149,7 +149,7 @@ function _file:isatty()
         return false, string.format("file(%s) has been closed!", self:name())
     end
     local ok, errors = io.file_isatty(self._FILE)
-    if not ok and errors then
+    if ok == nil and errors then
         errors = string.format("file(%s): %s", self:name(), errors)
     end
     return ok, errors
@@ -204,7 +204,7 @@ end
 function _filelock.new(lockpath, lock)
     local filelock = table.inherit(_filelock)
     filelock._NAME = path.filename(lockpath)
-    filelock._PATH = lockpath
+    filelock._PATH = path.absolute(lockpath)
     filelock._LOCK = lock
     filelock._LOCKED_NUM = 0
     setmetatable(filelock, _filelock)
@@ -308,8 +308,8 @@ end
 -- read all lines from file
 function io.lines(filepath, opt)
 
+    -- close on finished
     opt = opt or {}
-
     if opt.close_on_finished == nil then
         opt.close_on_finished = true
     end
@@ -317,7 +317,6 @@ function io.lines(filepath, opt)
     -- open file
     local file = io.open(filepath, "r", opt)
     if not file then
-        -- error
         return function() return nil end
     end
 
@@ -364,16 +363,6 @@ end
 
 function io.flush()
     return io.stdout:flush()
-end
-
-function io.lines(filepath, opt)
-    opt = opt or {}
-    opt.close_on_finished = true
-    local file, errors = io.open(filepath, 'r', opt)
-    if file then
-        return file:lines()
-    end
-    return file, errors
 end
 
 -- write data to file

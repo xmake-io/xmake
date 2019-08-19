@@ -31,6 +31,7 @@ local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
 sandbox_io._file     = sandbox_io._file or io._file
 sandbox_io._filelock = sandbox_io._filelock or io._filelock
+sandbox_io.lines     = io.lines
 
 -- get file size
 function sandbox_io_file.size(file)
@@ -62,7 +63,7 @@ end
 -- this file is a tty?
 function sandbox_io_file.isatty(file)
     local ok, errors = file:_isatty()
-    if not ok then
+    if ok == nil then
         raise(errors)
     end
     return ok
@@ -329,15 +330,6 @@ end
 --- flush file
 function sandbox_io.flush(file)
     return (file or sandbox_io.stdout):flush()
-end
-
--- read lines from the given file
-function sandbox_io.lines(filepath, opt)
-    local iter, data_or_errors = io.lines(filepath, opt)
-    if not iter and data_or_errors then
-        raise(data_or_errors)
-    end
-    return iter, data_or_errors
 end
 
 -- isatty

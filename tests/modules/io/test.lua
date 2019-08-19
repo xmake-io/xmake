@@ -26,7 +26,7 @@ end
 
 function test_readlines(t)
 
-    function get_all(file, opt)
+    function get_all_keep_crlf(file, opt)
         local fp = io.open(file, "r", opt)
         local r = {}
         while true do
@@ -35,33 +35,32 @@ function test_readlines(t)
             table.insert(r, l)
         end
         t:require(fp:close())
-
         return r
     end
 
-    function get_all2(file, opt)
-        local fp = io.open(file, "r", opt)
+    function get_all_without_crlf(file, opt)
         local r = {}
-        for l in fp:lines(opt) do
+        local fp = io.open(file, "r", opt)
+        for l in fp:lines() do
             table.insert(r, l)
         end
         t:require(fp:close())
         return r
     end
 
-    t:are_equal(get_all("files/utf8bom-lf-eleof"), {"123\\\n", "456\n", "789\n"})
-    t:are_equal(get_all("files/utf8-crlf-neleof"), {"123\\\n", "456\n", "789"})
-    t:are_equal(get_all("files/utf8-crlf-neleof", {encoding = "binary"}), {"123\\\r\n", "456\r\n", "789"})
-    t:are_equal(get_all("files/utf8-crlf-neleof", {continuation = "\\"}), {"123456\n", "789"})
-    t:are_equal(get_all("files/utf16be-lf-eleof"), {"123\\\n", "456\n", "789\n"})
-    t:are_equal(get_all("files/utf16le-crlf-neleof"), {"123\\\n", "456\n", "789"})
+    t:are_equal(get_all_keep_crlf("files/utf8bom-lf-eleof"), {"123\\\n", "456\n", "789\n"})
+    t:are_equal(get_all_keep_crlf("files/utf8-crlf-neleof"), {"123\\\n", "456\n", "789"})
+    t:are_equal(get_all_keep_crlf("files/utf8-crlf-neleof", {encoding = "binary"}), {"123\\\r\n", "456\r\n", "789"})
+    t:are_equal(get_all_keep_crlf("files/utf8-crlf-neleof", {continuation = "\\"}), {"123456\n", "789"})
+    t:are_equal(get_all_keep_crlf("files/utf16be-lf-eleof"), {"123\\\n", "456\n", "789\n"})
+    t:are_equal(get_all_keep_crlf("files/utf16le-crlf-neleof"), {"123\\\n", "456\n", "789"})
 
-    t:are_equal(get_all2("files/utf8bom-lf-eleof"), {"123\\\n", "456\n", "789\n"})
-    t:are_equal(get_all2("files/utf8-crlf-neleof"), {"123\\\n", "456\n", "789"})
-    t:are_equal(get_all2("files/utf8-crlf-neleof", {encoding = "binary"}), {"123\\\r\n", "456\r\n", "789"})
-    t:are_equal(get_all2("files/utf8-crlf-neleof", {continuation = "\\"}), {"123456\n", "789"})
-    t:are_equal(get_all2("files/utf16be-lf-eleof"), {"123\\\n", "456\n", "789\n"})
-    t:are_equal(get_all2("files/utf16le-crlf-neleof"), {"123\\\n", "456\n", "789"})
+    t:are_equal(get_all_without_crlf("files/utf8bom-lf-eleof"), {"123\\", "456", "789"})
+    t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof"), {"123\\", "456", "789"})
+    t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof", {encoding = "binary"}), {"123\\\r\n", "456\r\n", "789"})
+    t:are_equal(get_all_without_crlf("files/utf8-crlf-neleof", {continuation = "\\"}), {"123\\", "456", "789"})
+    t:are_equal(get_all_without_crlf("files/utf16be-lf-eleof"), {"123\\", "456", "789"})
+    t:are_equal(get_all_without_crlf("files/utf16le-crlf-neleof"), {"123\\", "456", "789"})
 end
 
 function test_prop(t)
