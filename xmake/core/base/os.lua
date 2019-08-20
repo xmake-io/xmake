@@ -131,6 +131,30 @@ function os._rm(filedir)
     return true
 end
 
+-- get the ramdisk root directory
+function os._ramdir()
+
+    -- get root ramdir
+    local ramdir_root = os._ROOT_RAMDIR
+    if ramdir_root == nil then
+        ramdir_root = os.getenv("XMAKE_RAMDIR")
+    end
+    if ramdir_root == nil then
+        if os.host() == "linux" and os.isdir("/dev/shm") then
+            ramdir_root = "/dev/shm"
+        elseif os.host() == "macosx" and os.isdir("/Volumes/RAM") then
+            -- @note we need the user to execute the command to create it.
+            -- diskutil partitionDisk `hdiutil attach -nomount ram://8388608` GPT APFS "RAM" 0
+            ramdir_root = "/Volumes/RAM"
+        end
+        if ramdir_root == nil then
+            ramdir_root = false
+        end
+        os._ROOT_RAMDIR = ramdir_root
+    end
+    return ramdir_root or nil
+end
+
 -- translate arguments for wildcard
 function os.argw(argv)
 
@@ -494,7 +518,7 @@ function os.tmpdir()
 
     -- get root tmpdir
     if os._ROOT_TMPDIR == nil then
-        os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
+        os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
     end
     local tmpdir_root = os._ROOT_TMPDIR
 
@@ -513,7 +537,7 @@ end
 
 -- generate the temporary file path
 function os.tmpfile(key)
-    return path.join(os.tmpdir(), "_" .. (hash.uuid(key):gsub("-", "")))
+    return path.join(os.tmpdir(), "_" .. (hash.uuid(key):gsub("-", "")))                                                        
 end
 
 -- run command

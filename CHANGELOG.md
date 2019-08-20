@@ -15,6 +15,7 @@
 ### Changes
 
 * [#257](https://github.com/xmake-io/xmake/issues/257): Lock the whole project to avoid other process to access.
+* Attempt to enable /dev/shm for the os.tmpdir
 
 ## v2.2.7
 
@@ -630,6 +631,7 @@
 ### 改进
 
 * [#257](https://github.com/xmake-io/xmake/issues/257): 锁定当前正在构建的工程，避免其他xmake进度同时对其操作
+* 尝试采用/dev/shm作为os.tmpdir去改善构建过程中临时文件的读写效率
 
 ## v2.2.7
 
