@@ -43,8 +43,8 @@ function runv(program, argv, opt)
     if ok ~= 0 then
 
         -- read errors
-        local outdata = io.readfile(outpath)
-        local errdata = io.readfile(errpath)
+        local outdata = os.isfile(outpath) and io.readfile(outpath) or nil
+        local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
         local errors = errdata or ""
         if #errors:trim() == 0 then
             errors = outdata or ""
@@ -92,8 +92,8 @@ function iorunv(program, argv, opt)
 
     -- get output and error data
     outfile:close()
-    local outdata = io.readfile(outpath)
-    local errdata = io.readfile(errpath)
+    local outdata = os.isfile(outpath) and io.readfile(outpath) or nil
+    local errdata = os.isfile(errpath) and io.readfile(errpath) or nil
 
     -- remove the temporary output and error file
     os.tryrm(outpath)
