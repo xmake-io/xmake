@@ -67,10 +67,10 @@ tb_int_t xm_io_file_rawfd(lua_State* lua)
     // get file raw fd
     if (xm_io_file_is_file(file))
     {
-        tb_file_ref_t file = tb_null;
-        if (tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &file))
+        tb_file_ref_t rawfile = tb_null;
+        if (tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile))
         {
-            lua_pushnumber(lua, xm_io_file2fd(file));
+            lua_pushnumber(lua, xm_io_file2fd(rawfile));
             return 1;
         }
     }
