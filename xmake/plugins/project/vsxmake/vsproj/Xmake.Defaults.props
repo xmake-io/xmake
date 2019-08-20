@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup Label="XmakePathsResolve">
+    <XmakeProgramDirResolved>$(XmakeProgramDir)</XmakeProgramDirResolved>
+    <XmakeProjectDirResolved>$(XmakeProjectDir)</XmakeProjectDirResolved>
+    <XmakeScriptDirResolved>$(XmakeScriptDir)</XmakeScriptDirResolved>
+    
+    <!-- resolve if they are relative paths -->
+    <XmakeProjectDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeProjectDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProjectDirResolved)'))</XmakeProjectDirResolved>
+    <XmakeScriptDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeScriptDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeScriptDirResolved)'))</XmakeScriptDirResolved>
+    <XmakeBuilDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDirResolved)'))</XmakeBuilDirResolved>
+
+    <!-- normalize paths -->
+    <XmakeProgramDir>$([System.IO.Path]::GetFullPath('$(XmakeProgramDirResolved)'))</XmakeProgramDir>
+    <XmakeProjectDir>$([System.IO.Path]::GetFullPath('$(XmakeProjectDirResolved)'))</XmakeProjectDir>
+    <XmakeScriptDir>$([System.IO.Path]::GetFullPath('$(XmakeScriptDirResolved)'))</XmakeScriptDir>
+  </PropertyGroup>
+
+</Project>
