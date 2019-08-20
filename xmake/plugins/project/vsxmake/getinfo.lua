@@ -80,7 +80,7 @@ function _make_dirs(dir)
         r[k] = _make_dirs(v)
     end
     r = table.unique(r)
-    return table.concat(r, ";")
+    return path.joinenv(r)
 end
 
 function _make_arrs(arr)
@@ -215,7 +215,7 @@ function _make_targetinfo(mode, arch, target)
         local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
         runenvs[k] = path.joinenv(defs)
     end
-    runenvs["PATH"] = path.joinenv(_make_runpath(target)) .. ";" .. (runenvs["PATH"] or "$([System.Environment]::GetEnvironmentVariable('PATH'))")
+    runenvs["PATH"] = _make_dirs(_make_runpath(target)) .. ";" .. (runenvs["PATH"] or "$([System.Environment]::GetEnvironmentVariable('PATH'))")
     local runenvstr = {}
     for k, v in pairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)
