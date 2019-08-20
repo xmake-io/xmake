@@ -30,15 +30,10 @@ import("core.platform.environment")
 import("devel.debugger")
 
 -- add search directories for all dependent shared libraries on windows
-function _make_runpath(target)
+function _make_runpath_on_windows(target)
 
-    if not (is_plat("windows") or (is_plat("mingw") and is_host("windows"))) then
-        return {}
-    end
-
-    local searchdirs = hashset.new()
     local pathenv = {}
-
+    local searchdirs = hashset.new()
     local function insert(dir)
         if not path.is_absolute(dir) then
             dir = path.absolute(dir, os.projectdir())
@@ -66,6 +61,8 @@ end
 
 -- run target
 function _do_run_target(target)
+
+    -- only for binary program
     if target:targetkind() ~= "binary" then
         return
     end
@@ -93,7 +90,10 @@ function _do_run_target(target)
         end
     end
 
-    os.addenv("PATH", table.unpack(_make_runpath(target)))
+    -- add search directories for all dependent shared libraries on windows
+    if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
+        os.addenv("PATH", table.unpack(_make_runpath_on_windows(target)))
+    end
 
     -- debugging?
     if option.get("debug") then
