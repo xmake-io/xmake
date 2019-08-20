@@ -176,10 +176,18 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     for k, v in pairs(target:get("runenvs")) do
-        local defs = table.imap(v, function(_, v) return vformat(v) end)
-        table.insert(runenvs, format("%s=%s", k, path.joinenv(defs)))
+        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
+        runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(defs), k)
     end
-    targetinfo.runenvs = table.concat(runenvs, "\n")
+    for k, v in pairs(target:get("runenv")) do
+        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
+        runenvs[k] = path.joinenv(defs)
+    end
+    local runenvstr = {}
+    for k, v in pairs(runenvs) do
+        table.insert(runenvstr, k .. "=" .. v)
+    end
+    targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then

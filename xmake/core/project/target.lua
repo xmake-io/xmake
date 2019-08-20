@@ -1674,11 +1674,12 @@ function target.apis()
             -- target.set_xxx
             "target.set_values"
         ,   "target.set_configvar"
+        ,   "target.set_runenv"
             -- target.add_xxx
         ,   "target.add_values"
         ,   "target.add_runenvs"
         }
-    ,   pathes = 
+    ,   pathes =
         {
             -- target.set_xxx
             "target.set_targetdir"

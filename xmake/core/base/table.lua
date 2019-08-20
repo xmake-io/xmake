@@ -335,5 +335,17 @@ function table.imap(arr, mapper)
     return newarr
 end
 
+function table.reverse(arr)
+
+    assert(arr)
+
+    local revarr = {}
+    local l = #arr
+    for i = 1, l do
+        revarr[i] = arr[l - i + 1]
+    end
+    return revarr
+end
+
 -- return module: table
 return table

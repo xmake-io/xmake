@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.base.hashset")
 import("core.project.config")
 import("core.base.global")
 import("core.project.project")
@@ -28,7 +29,7 @@ import("core.platform.platform")
 import("core.platform.environment")
 import("devel.debugger")
 
--- run target 
+-- run target
 function _do_run_target(target)
     if target:targetkind() == "binary" then
 
@@ -48,14 +49,23 @@ function _do_run_target(target)
                 os.addenv(name, unpack(table.wrap(values)))
             end
         end
+        local runenv = target:get("runenv")
+        if runenv then
+            for name, value in pairs(runenv) do
+                os.setenv(name, unpack(table.wrap(value)))
+            end
+        end
 
         -- add search directories for all dependent shared libraries on windows
         if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
-            local searchdirs = {}
+            local searchdirs = hashset.new()
+            local pathenv = {}
             for _, linkdir in ipairs(target:get("linkdirs")) do
-                if not searchdirs[linkdir] then
-                    searchdirs[linkdir] = true
-                    os.addenv("PATH", linkdir)
+                if not path.is_absolute(linkdir) then
+                    linkdir = path.absolute(linkdir, os.projectdir())
+                end
+                if searchdirs:insert(linkdir) then
+                    table.insert(pathenv, linkdir)
                 end
             end
             for _, dep in ipairs(target:orderdeps()) do
@@ -64,12 +74,13 @@ function _do_run_target(target)
                     if not path.is_absolute(depdir) then
                         depdir = path.absolute(depdir, os.projectdir())
                     end
-                    if not searchdirs[depdir] then
-                        searchdirs[depdir] = true
-                        os.addenv("PATH", depdir)
+                    if searchdirs:insert(depdir) then
+                        table.insert(pathenv, depdir)
                     end
                 end
             end
+            pathenv = table.reverse(pathenv)
+            os.addenv("PATH", table.unpack(pathenv))
         end
 
         -- debugging?
