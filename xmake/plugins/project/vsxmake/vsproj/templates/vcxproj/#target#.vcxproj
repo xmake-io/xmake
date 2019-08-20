@@ -25,6 +25,7 @@
     <XmakeProjectFile>#projectfile#</XmakeProjectFile>
     <XmakeTarget>#target#</XmakeTarget>
   </PropertyGroup>
+  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.Defaults.props" />
 #Import(XmakeConfig)#
 #Import(XmakePath)#
   <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.props" />

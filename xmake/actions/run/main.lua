@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.base.hashset")
 import("core.project.config")
 import("core.base.global")
 import("core.project.project")
@@ -28,60 +29,81 @@ import("core.platform.platform")
 import("core.platform.environment")
 import("devel.debugger")
 
--- run target 
-function _do_run_target(target)
-    if target:targetkind() == "binary" then
+-- add search directories for all dependent shared libraries on windows
+function _make_runpath(target)
 
-        -- get the run directory of target
-        local rundir = target:rundir()
-
-        -- get the absolute target file path
-        local targetfile = path.absolute(target:targetfile())
-
-        -- enter the run directory
-        local oldir = os.cd(rundir)
-
-        -- add run environments
-        local runenvs = target:get("runenvs")
-        if runenvs then
-            for name, values in pairs(runenvs) do
-                os.addenv(name, unpack(table.wrap(values)))
-            end
-        end
-
-        -- add search directories for all dependent shared libraries on windows
-        if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
-            local searchdirs = {}
-            for _, linkdir in ipairs(target:get("linkdirs")) do
-                if not searchdirs[linkdir] then
-                    searchdirs[linkdir] = true
-                    os.addenv("PATH", linkdir)
-                end
-            end
-            for _, dep in ipairs(target:orderdeps()) do
-                if dep:targetkind() == "shared" then
-                    local depdir = dep:targetdir()
-                    if not path.is_absolute(depdir) then
-                        depdir = path.absolute(depdir, os.projectdir())
-                    end
-                    if not searchdirs[depdir] then
-                        searchdirs[depdir] = true
-                        os.addenv("PATH", depdir)
-                    end
-                end
-            end
-        end
-
-        -- debugging?
-        if option.get("debug") then
-            debugger.run(targetfile, option.get("arguments"))
-        else
-            os.execv(targetfile, option.get("arguments"))
-        end
-
-        -- restore the previous directory
-        os.cd(oldir)
+    if not (is_plat("windows") or (is_plat("mingw") and is_host("windows"))) then
+        return {}
     end
+
+    local searchdirs = hashset.new()
+    local pathenv = {}
+
+    local function insert(dir)
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, os.projectdir())
+        end
+        if searchdirs:insert(dir) then
+            table.insert(pathenv, dir)
+        end
+    end
+
+    for _, linkdir in ipairs(target:get("linkdirs")) do
+        insert(linkdir)
+    end
+    for _, opt in ipairs(target:orderopts()) do
+        for _, linkdir in ipairs(opt:get("linkdirs")) do
+            insert(linkdir)
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:targetkind() == "shared" then
+            insert(dep:targetdir())
+        end
+    end
+    return pathenv
+end
+
+-- run target
+function _do_run_target(target)
+    if target:targetkind() ~= "binary" then
+        return
+    end
+
+    -- get the run directory of target
+    local rundir = target:rundir()
+
+    -- get the absolute target file path
+    local targetfile = path.absolute(target:targetfile())
+
+    -- enter the run directory
+    local oldir = os.cd(rundir)
+
+    -- add run environments
+    local runenvs = target:get("runenvs")
+    if runenvs then
+        for name, values in pairs(runenvs) do
+            os.addenv(name, unpack(table.wrap(values)))
+        end
+    end
+    local runenv = target:get("runenv")
+    if runenv then
+        for name, value in pairs(runenv) do
+            os.setenv(name, unpack(table.wrap(value)))
+        end
+    end
+
+    os.addenv("PATH", table.unpack(_make_runpath(target)))
+
+    -- debugging?
+    if option.get("debug") then
+        debugger.run(targetfile, option.get("arguments"))
+    else
+        os.execv(targetfile, option.get("arguments"))
+    end
+
+    -- restore the previous directory
+    os.cd(oldir)
 end
 
 -- run target 

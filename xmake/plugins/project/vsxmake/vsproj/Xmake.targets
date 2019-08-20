@@ -130,6 +130,7 @@ MSBuild Properties:
     XmakeIncludeDirs: $(XmakeIncludeDirs)
     XmakeLinkDirs: $(XmakeLinkDirs)
     XmakeSourceDirs: $(XmakeSourceDirs)
+    XmakeRunEnvs: $(XmakeRunEnvs)
   Xmake Path:
     XmakeProgramDir: $(XmakeProgramDir)
     XmakeProjectDir: $(XmakeProjectDir)

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.semver")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.cache")
 import("core.project.project")
@@ -79,7 +80,7 @@ function _make_dirs(dir)
         r[k] = _make_dirs(v)
     end
     r = table.unique(r)
-    return table.concat(r, ";")
+    return path.joinenv(r)
 end
 
 function _make_arrs(arr)
@@ -129,6 +130,37 @@ function _get_values(target, name)
     return table.unique(values)
 end
 
+-- add search directories for all dependent shared libraries on windows
+function _make_runpath(target)
+
+    local searchdirs = hashset.new()
+    local pathenv = {}
+
+    local function insert(dir)
+        if not path.is_absolute(dir) then
+            dir = path.absolute(dir, os.projectdir())
+        end
+        if searchdirs:insert(dir) then
+            table.insert(pathenv, dir)
+        end
+    end
+
+    for _, linkdir in ipairs(target:get("linkdirs")) do
+        insert(linkdir)
+    end
+    for _, opt in ipairs(target:orderopts()) do
+        for _, linkdir in ipairs(opt:get("linkdirs")) do
+            insert(linkdir)
+        end
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:targetkind() == "shared" then
+            insert(dep:targetdir())
+        end
+    end
+    return pathenv
+end
+
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -176,10 +208,19 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     for k, v in pairs(target:get("runenvs")) do
-        local defs = table.imap(v, function(_, v) return vformat(v) end)
-        table.insert(runenvs, format("%s=%s", k, path.joinenv(defs)))
+        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
+        runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(defs), k)
     end
-    targetinfo.runenvs = table.concat(runenvs, "\n")
+    for k, v in pairs(target:get("runenv")) do
+        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
+        runenvs[k] = path.joinenv(defs)
+    end
+    runenvs["PATH"] = _make_dirs(_make_runpath(target)) .. ";" .. (runenvs["PATH"] or "$([System.Environment]::GetEnvironmentVariable('PATH'))")
+    local runenvstr = {}
+    for k, v in pairs(runenvs) do
+        table.insert(runenvstr, k .. "=" .. v)
+    end
+    targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then
