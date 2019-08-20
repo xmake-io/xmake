@@ -638,12 +638,10 @@ function os.execv(program, argv, opt)
 
     -- uses the given environments?
     local envs = nil
-    if opt.envs or opt.vs_unicode_output then
+    if opt.envs then
         local envars = os.getenvs()
-        if opt.envs then
-            for k, v in pairs(opt.envs) do
-                envars[k] = v
-            end
+        for k, v in pairs(opt.envs) do
+            envars[k] = v
         end
         envs = {}
         for k, v in pairs(envars) do
@@ -651,9 +649,22 @@ function os.execv(program, argv, opt)
         end
     end
 
+    -- init open options
+    local openopt = {envs = envs}
+    if type(opt.stdout) == "table" then
+        openopt.outfile = opt.stdout._FILE
+    else
+        openopt.outpath = opt.stdout
+    end
+    if type(opt.stderr) == "table" then
+        openopt.errfile = opt.stderr._FILE
+    else
+        openopt.errpath = opt.stderr
+    end
+
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, {outpath = opt.stdout, errpath = opt.stderr, envs = envs, vs_unicode_output = opt.vs_unicode_output})
+    local proc = process.openv(filename, argv, openopt)
     if proc ~= nil then
 
         -- wait process

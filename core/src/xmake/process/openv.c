@@ -29,12 +29,13 @@
  * includes
  */
 #include "prefix.h"
+#include "../io/prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-// p = process.openv(shellname, argv, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}) 
+// p = process.openv(shellname, argv, {outpath = "", errpath = "", outfile = , errfile = , envs = {"PATH=xxx", "XXX=yyy"}) 
 tb_int_t xm_process_openv(lua_State* lua)
 {
     // check
@@ -95,7 +96,8 @@ tb_int_t xm_process_openv(lua_State* lua)
     tb_char_t const* envs[256] = {0};
     tb_char_t const* outpath = tb_null;
     tb_char_t const* errpath = tb_null;
-    tb_bool_t        vs_unicode_output = tb_false;
+    xm_io_file_t*    outfile = tb_null;
+    xm_io_file_t*    errfile = tb_null;
     if (lua_istable(lua, 3)) 
     { 
         // get outpath
@@ -110,77 +112,24 @@ tb_int_t xm_process_openv(lua_State* lua)
         errpath = lua_tostring(lua, -1);
         lua_pop(lua, 1);
 
-        // enable vs_unicode_output?
-        lua_pushstring(lua, "vs_unicode_output");
-        lua_gettable(lua, 3);
-        vs_unicode_output = lua_toboolean(lua, -1);
-        lua_pop(lua, 1);
-    }
-  
-    // enable vs_unicode_output? @see https://github.com/xmake-io/xmake/issues/528
-    if (vs_unicode_output)
-    {
-        xm_subprocess_t* subprocess = tb_malloc0_type(xm_subprocess_t);
-        if (subprocess)
+        // get outfile
+        if (!outpath)
         {
-            // init vs_unicode_output
-            tb_string_init(&subprocess->vs_unicode_output);
-
-            // redirect stdout?
-            if (outpath)
-            {
-                // redirect stdout to file
-                subprocess->outfile = tb_file_init(outpath, TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT);
-                subprocess->outtype = TB_PROCESS_REDIRECT_TYPE_FILE;
-                attr.outfile = subprocess->outfile;
-                attr.outtype = subprocess->outtype;
-
-#ifdef TB_CONFIG_OS_WINDOWS
-                /* add environment value of vs_unicode_output
-                 *
-                 * @note we have to set it at the beginning, because opt.envs might also have this value.
-                 */
-                if (envn + 1 < tb_arrayn(envs)) 
-                    envs[envn++] = tb_string_cstrfcpy(&subprocess->vs_unicode_output, "VS_UNICODE_OUTPUT=%zu", (tb_size_t)subprocess->outfile);
-#endif
-            }
-
-            // redirect stderr?
-            if (errpath)
-            {
-                // redirect stderr to file
-                subprocess->errfile = tb_file_init(errpath, TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT);
-                subprocess->errtype = TB_PROCESS_REDIRECT_TYPE_FILE;
-                attr.errfile = subprocess->errfile;
-                attr.errtype = subprocess->errtype;
-            }
-            attr.priv = subprocess;
-        }
-    }
-    else
-    {
-        // redirect stdout?
-        if (outpath)
-        {
-            // redirect stdout to file
-            attr.outpath = outpath;
-            attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-            attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+            lua_pushstring(lua, "outfile");
+            lua_gettable(lua, 3);
+            outfile = (xm_io_file_t*)lua_touserdata(lua, -1);
+            lua_pop(lua, 1);
         }
 
-        // redirect stderr?
-        if (errpath)
+        // get errfile
+        if (!errpath)
         {
-            // redirect stderr to file
-            attr.errpath = errpath;
-            attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-            attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+            lua_pushstring(lua, "errfile");
+            lua_gettable(lua, 3);
+            errfile = (xm_io_file_t*)lua_touserdata(lua, -1);
+            lua_pop(lua, 1);
         }
-    }
 
-    // append other environments after setting VS_UNICODE_OUTPUT 
-    if (lua_istable(lua, 3)) 
-    { 
         // get environments
         lua_pushstring(lua, "envs");
         lua_gettable(lua, 3);
@@ -222,6 +171,42 @@ tb_int_t xm_process_openv(lua_State* lua)
             }
         }
         lua_pop(lua, 1);
+    }
+ 
+    // redirect stdout?
+    if (outpath)
+    {
+        // redirect stdout to file
+        attr.outpath = outpath;
+        attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+    }
+    else if (outfile && xm_io_file_is_file(outfile))
+    {
+        tb_file_ref_t rawfile = tb_null;
+        if (tb_stream_ctrl(outfile->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) && rawfile)
+        {
+            attr.outfile = rawfile;
+            attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+        }
+    }
+
+    // redirect stderr?
+    if (errpath)
+    {
+        // redirect stderr to file
+        attr.errpath = errpath;
+        attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+    }
+    else if (errfile && xm_io_file_is_file(errfile))
+    {
+        tb_file_ref_t rawfile = tb_null;
+        if (tb_stream_ctrl(errfile->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) && rawfile)
+        {
+            attr.errfile = rawfile;
+            attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+        }
     }
 
     // set the new environments
