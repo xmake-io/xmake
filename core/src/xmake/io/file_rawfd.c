@@ -14,15 +14,15 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu, ruki
- * @file        file_size.c
+ * @author      ruki
+ * @file        file_rawfd.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_size"
+#define TB_TRACE_MODULE_NAME    "file_rawfd"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,30 +31,50 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// file to fd
+#ifdef TB_CONFIG_OS_WINDOWS
+#   define xm_io_file2fd(file)            (lua_Number)((tb_size_t)(file))
+#else
+#   define xm_io_file2fd(file)            (lua_Number)tb_file2fd(file)
+#endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-// io.file_size(file)
-tb_int_t xm_io_file_size(lua_State* lua)
+/* io.file_rawfd(file)
+ *
+ * @note this interface is very dangerous and is only used in some special/hacking cases.
+ *
+ * e.g. set VS_UNICODE_OUTPUT=fd to enable vs unicode output, @see https://github.com/xmake-io/xmake/issues/528
+ */
+tb_int_t xm_io_file_rawfd(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
-        xm_io_file_return_error(lua, "get size for invalid file!");
+        xm_io_file_return_error(lua, "get rawfd for invalid file!");
 
     // get file
     xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
     tb_check_return_val(file, 0);
 
-    // get file length
+    // get file raw fd
     if (xm_io_file_is_file(file))
     {
-        // get size from raw file stream, because we cannot get size from fstream
-        tb_assert(file->stream);
-        lua_pushnumber(lua, (lua_Number)tb_stream_size(file->stream));
-        return 1;
+        tb_file_ref_t file = tb_null;
+        if (tb_stream_ctrl(file->stream, TB_STREAM_CTRL_FILE_GET_FILE, &file))
+        {
+            lua_pushnumber(lua, xm_io_file2fd(file));
+            return 1;
+        }
     }
-    else xm_io_file_return_error(lua, "get size for invalid file!");
+
+    // get rawfd failed
+    xm_io_file_return_error(lua, "get rawfd for invalid file!");
 }

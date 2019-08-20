@@ -95,6 +95,7 @@ tb_int_t xm_io_file_open(lua_State* lua);
 tb_int_t xm_io_file_read(lua_State* lua);
 tb_int_t xm_io_file_seek(lua_State* lua);
 tb_int_t xm_io_file_size(lua_State* lua);
+tb_int_t xm_io_file_rawfd(lua_State* lua);
 tb_int_t xm_io_file_write(lua_State* lua);
 tb_int_t xm_io_file_flush(lua_State* lua);
 tb_int_t xm_io_file_close(lua_State* lua);
@@ -232,6 +233,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "file_flush",         xm_io_file_flush       }
 ,   { "file_isatty",        xm_io_file_isatty      }
 ,   { "file_close",         xm_io_file_close       }
+,   { "file_rawfd",         xm_io_file_rawfd       }
 ,   { "filelock_open",      xm_io_filelock_open    }
 ,   { "filelock_lock",      xm_io_filelock_lock    }
 ,   { "filelock_trylock",   xm_io_filelock_trylock }

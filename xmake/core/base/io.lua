@@ -82,6 +82,18 @@ function _file:__len()
     return self:size()
 end
 
+-- get file rawfd
+function _file:rawfd()
+    if not self._FILE then
+        return false, string.format("file(%s) has been closed!", self:name())
+    end
+    local result, errors = io.file_rawfd(self._FILE)
+    if not result and errors then
+        errors = string.format("file(%s): %s", self:name(), errors)
+    end
+    return result, errors
+end
+
 -- get file size
 function _file:size()
     if not self._FILE then

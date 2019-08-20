@@ -42,6 +42,15 @@ function sandbox_io_file.size(file)
     return result
 end
 
+-- get file rawfd
+function sandbox_io_file.rawfd(file)
+    local result, errors = file:_rawfd()
+    if not result then
+        raise(errors)
+    end
+    return result
+end
+
 -- close file
 function sandbox_io_file.close(file)
     local ok, errors = file:_close()
