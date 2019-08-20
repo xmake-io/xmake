@@ -409,14 +409,16 @@ function sandbox_os.execv(program, argv, opt)
     io.flush()
 
     -- run it
+    opt = opt or {}
     local ok = os.execv(program, argv, opt)
-    if ok ~= 0 then
+    if ok ~= 0 and not opt.try then
         if argv ~= nil then
             os.raise("execv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
         else
             os.raise("execv(%s) failed(%d)!", program, ok)
         end
     end
+    return ok
 end
 
 -- match files or directories

@@ -18,9 +18,13 @@
 -- @file        ml.lua
 --
 
--- https://docs.microsoft.com/en-us/cpp/assembler/masm/ml-and-ml64-command-line-reference
+-- imports
+import("private.tools.vstool")
 
 -- init it
+--
+-- @see https://docs.microsoft.com/en-us/cpp/assembler/masm/ml-and-ml64-command-line-reference
+--
 function init(self)
    
     -- init asflags
@@ -103,9 +107,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
-    -- compile it
-    local program, argv = _compargv1(self, sourcefile, objectfile, flags)
-    os.runv(program, argv, {vs_unicode_output = true})
+    -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+    vstool.runv(_compargv1(self, sourcefile, objectfile, flags))
 end
 
 -- make the compile arguments list

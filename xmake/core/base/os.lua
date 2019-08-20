@@ -556,6 +556,7 @@ end
 -- run command with arguments list
 function os.runv(program, argv, opt)
 
+    -- init options
     opt = opt or {}
 
     -- make temporary log file
