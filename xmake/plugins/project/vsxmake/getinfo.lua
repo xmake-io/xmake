@@ -30,6 +30,7 @@ import("core.platform.environment")
 import("core.tool.compiler")
 import("core.tool.linker")
 import("lib.detect.find_tool")
+import("private.action.run.make_runenvs")
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 
@@ -130,37 +131,6 @@ function _get_values(target, name)
     return table.unique(values)
 end
 
--- add search directories for all dependent shared libraries on windows
-function _make_runpath(target)
-
-    local searchdirs = hashset.new()
-    local pathenv = {}
-
-    local function insert(dir)
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, os.projectdir())
-        end
-        if searchdirs:insert(dir) then
-            table.insert(pathenv, dir)
-        end
-    end
-
-    for _, linkdir in ipairs(target:get("linkdirs")) do
-        insert(linkdir)
-    end
-    for _, opt in ipairs(target:orderopts()) do
-        for _, linkdir in ipairs(opt:get("linkdirs")) do
-            insert(linkdir)
-        end
-    end
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" then
-            insert(dep:targetdir())
-        end
-    end
-    return pathenv
-end
-
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -207,15 +177,26 @@ function _make_targetinfo(mode, arch, target)
 
     -- save runenvs
     local runenvs = {}
-    for k, v in pairs(target:get("runenvs")) do
-        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
-        runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(defs), k)
+    local addrunenvs, setrunenvs = make_runenvs(target)
+    for k, v in pairs(addrunenvs) do
+        if k:upper() == "PATH" then
+            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", _make_dirs(v), k)
+        else
+            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(v), k)
+        end
     end
-    for k, v in pairs(target:get("runenv")) do
-        local defs = table.imap(table.wrap(v), function(_, v) return vformat(v) end)
-        runenvs[k] = path.joinenv(defs)
+    for k, v in pairs(setrunenvs) do
+        if #v == 1 then
+            v = v[1]
+            if path.is_absolute(v) and v:startswith(project.directory()) then
+                runenvs[k] = _make_dirs(v)
+            else
+                runenvs[k] = v[1]
+            end
+        else
+            runenvs[k] = path.joinenv(v)
+        end
     end
-    runenvs["PATH"] = _make_dirs(_make_runpath(target)) .. ";" .. (runenvs["PATH"] or "$([System.Environment]::GetEnvironmentVariable('PATH'))")
     local runenvstr = {}
     for k, v in pairs(runenvs) do
         table.insert(runenvstr, k .. "=" .. v)

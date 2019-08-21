@@ -21,43 +21,13 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.base.hashset")
 import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
 import("devel.debugger")
-
--- add search directories for all dependent shared libraries on windows
-function _make_runpath_on_windows(target)
-
-    local pathenv = {}
-    local searchdirs = hashset.new()
-    local function insert(dir)
-        if not path.is_absolute(dir) then
-            dir = path.absolute(dir, os.projectdir())
-        end
-        if searchdirs:insert(dir) then
-            table.insert(pathenv, dir)
-        end
-    end
-
-    for _, linkdir in ipairs(target:get("linkdirs")) do
-        insert(linkdir)
-    end
-    for _, opt in ipairs(target:orderopts()) do
-        for _, linkdir in ipairs(opt:get("linkdirs")) do
-            insert(linkdir)
-        end
-    end
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" then
-            insert(dep:targetdir())
-        end
-    end
-    return pathenv
-end
+import("private.action.run.make_runenvs")
 
 -- run target
 function _do_run_target(target)
@@ -77,22 +47,12 @@ function _do_run_target(target)
     local oldir = os.cd(rundir)
 
     -- add run environments
-    local runenvs = target:get("runenvs")
-    if runenvs then
-        for name, values in pairs(runenvs) do
-            os.addenv(name, unpack(table.wrap(values)))
-        end
+    local addrunenvs, setrunenvs = make_runenvs(target)
+    for name, values in pairs(addrunenvs) do
+        os.addenv(name, unpack(table.wrap(values)))
     end
-    local runenv = target:get("runenv")
-    if runenv then
-        for name, value in pairs(runenv) do
-            os.setenv(name, unpack(table.wrap(value)))
-        end
-    end
-
-    -- add search directories for all dependent shared libraries on windows
-    if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
-        os.addenv("PATH", table.unpack(_make_runpath_on_windows(target)))
+    for name, value in pairs(setrunenvs) do
+        os.setenv(name, unpack(table.wrap(value)))
     end
 
     -- debugging?
