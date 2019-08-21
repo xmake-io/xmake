@@ -76,16 +76,16 @@ function main(target)
         end
     end
 
+    -- add search directories for all dependent shared libraries on windows
     if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
         -- get PATH table
-        local path = add["PATH"] or set["PATH"]
-        if path == nil then
-            path = {}
-            add["PATH"] = path
+        local pathenv = add["PATH"] or set["PATH"]
+        local runpath = _make_runpath_on_windows(target)
+        if pathenv == nil then
+            add["PATH"] = runpath
+        else
+            table.append(pathenv, table.unpack(runpath))
         end
-
-        -- add search directories for all dependent shared libraries on windows
-        table.append(path, table.unpack(_make_runpath_on_windows(target)))
     end
 
     return add, set
