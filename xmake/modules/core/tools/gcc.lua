@@ -200,6 +200,8 @@ function nf_language(self, stdname)
         ,   gnuxx17      = "-std=gnu++17"
         ,   cxx1z        = "-std=c++1z"
         ,   gnuxx1z      = "-std=gnu++1z"
+        ,   cxx20        = "-std=c++2a"
+        ,   gnuxx20      = "-std=gnu++2a"
         ,   cxx2a        = "-std=c++2a"
         ,   gnuxx2a      = "-std=gnu++2a"
         }
