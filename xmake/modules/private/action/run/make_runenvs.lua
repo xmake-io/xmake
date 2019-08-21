@@ -53,12 +53,12 @@ end
 
 function main(target)
 
+    -- check
     assert(target)
 
+    -- add run environments
     local set = {}
     local add = {}
-
-    -- add run environments
     local runenvs = target:get("runenvs")
     if runenvs then
         for name, values in pairs(runenvs) do
@@ -87,6 +87,5 @@ function main(target)
             table.append(pathenv, table.unpack(runpath))
         end
     end
-
     return add, set
 end
