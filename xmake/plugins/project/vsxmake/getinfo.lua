@@ -186,7 +186,16 @@ function _make_targetinfo(mode, arch, target)
         end
     end
     for k, v in pairs(setrunenvs) do
-        runenvs[k] = path.joinenv(v)
+        if #v == 1 then
+            v = v[1]
+            if path.is_absolute(v) and v:startswith(project.directory()) then
+                runenvs[k] = _make_dirs(v)
+            else
+                runenvs[k] = v[1]
+            end
+        else
+            runenvs[k] = path.joinenv(v)
+        end
     end
     local runenvstr = {}
     for k, v in pairs(runenvs) do
