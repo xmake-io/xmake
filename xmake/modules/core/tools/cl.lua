@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.project")
 import("core.language.language")
+import("private.tools.vstool")
 
 -- init it
 function init(self)
@@ -393,9 +394,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 compflags = table.join(flags, "-showIncludes")
             end
 
-            -- compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            local program, argv = _compargv1(self, sourcefile, objectfile, compflags)
-            return os.iorunv(program, argv, {vs_unicode_output = true})
+            -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+            return vstool.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
         end,
         catch
         {

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("private.tools.vstool")
 
 -- init it
 function init(self)
@@ -112,8 +113,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     -- ensure the target directory
     os.mkdir(path.directory(targetfile))
 
-    -- link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
-    os.runv(program, argv, {vs_unicode_output = true})
+    -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+    vstool.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
 end
 

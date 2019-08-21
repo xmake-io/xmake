@@ -18,6 +18,9 @@
 -- @file        lib.lua
 --
 
+-- imports
+import("private.tools.vstool")
+
 -- extract the static library to object directory
 function extract(self, libraryfile, objectdir)
 
@@ -25,7 +28,7 @@ function extract(self, libraryfile, objectdir)
     os.mkdir(objectdir)
 
     -- list object files 
-    local objectfiles = os.iorunv(self:program(), {"-nologo", "-list", libraryfile}, {vs_unicode_output = true})
+    local objectfiles = vstool.iorunv(self:program(), {"-nologo", "-list", libraryfile})
 
     -- extrace all object files
     for _, objectfile in ipairs(objectfiles:split('\n')) do
@@ -47,7 +50,7 @@ function extract(self, libraryfile, objectdir)
             end
 
             -- extract it
-            os.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile}, {vs_unicode_output = true})
+            vstool.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile})
         end
     end
 end
