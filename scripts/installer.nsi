@@ -275,15 +275,6 @@ SectionEnd
 
 Section "Add to PATH" InstallPath
 
-  !macro AddRegPATH RootKey
-    ; Remove the installation path from the $PATH environment variable first
-    ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
-
-    ; Write the installation path into the $PATH environment variable
-    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$InstDir"
-  !macroend
-
   ${If} $NOADMIN == "false"
     ; Remove the installation path from the $PATH environment variable first
     ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
@@ -333,23 +324,22 @@ FunctionEnd
 
 Section "Uninstall"
 
-  !macro RemoveReg RootKey 
-    ; Remove registry keys
-    DeleteRegKey ${RootKey} ${RegUninstall}
-
-    ; Remove the installation path from the $PATH environment variable
-    ReadRegStr $R0 ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
-    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
-    ; MessageBox MB_OK|MB_USERICON '$R0 - $InstDir - $R1 '
-    WriteRegExpandStr ${RootKey} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
-  !macroend
-
   ; Remove directories used
   RMDir /r "$InstDir"
+
+  ; Clean reg
   ${If} $NOADMIN == "false"
-    !insertmacro RemoveReg ${HKLM}
+    DeleteRegKey ${HKLM} ${RegUninstall}
+    ; Remove the installation path from the $PATH environment variable
+    ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1"
   ${Else}
-    !insertmacro RemoveReg ${HKCU}
+    DeleteRegKey ${HKCU} ${RegUninstall}
+    ; Remove the installation path from the $PATH environment variable
+    ReadRegStr $R0 ${HKCU} "Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1"
   ${EndIf}
 
 SectionEnd
