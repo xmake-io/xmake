@@ -32,6 +32,12 @@
       Description="Enable the warnings output for build tasks."
       Switch="warning" />
     <BoolProperty
+      Name="XmakeCleanAll"
+      DisplayName="Clean all"
+      Category="Common"
+      Description="Clean all auto-generated files by xmake for clean tasks."
+      Switch="all" />
+    <BoolProperty
       Name="XmakeRebuildFile"
       DisplayName="Force rebuild selected files"
       Category="Common"
