@@ -285,9 +285,19 @@ Section "Add to PATH" InstallPath
   !macroend
 
   ${If} $NOADMIN == "false"
-    !insertmacro AddRegPATH ${HKLM}
+    ; Remove the installation path from the $PATH environment variable first
+    ReadRegStr $R0 ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+
+    ; Write the installation path into the $PATH environment variable
+    WriteRegExpandStr ${HKLM} "SYSTEM\CurrentControlSet\Control\Session Manager\Environment" "Path" "$R1;$InstDir"
   ${Else}
-    !insertmacro AddRegPATH ${HKCU}
+    ; Remove the installation path from the $PATH environment variable first
+    ReadRegStr $R0 ${HKCU} "Environment" "Path"
+    ${WordReplace} $R0 ";$InstDir" "" "+" $R1
+
+    ; Write the installation path into the $PATH environment variable
+    WriteRegExpandStr ${HKCU} "Environment" "Path" "$R1;$InstDir"
   ${EndIf}
 
 SectionEnd
