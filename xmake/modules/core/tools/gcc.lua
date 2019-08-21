@@ -190,18 +190,18 @@ function nf_language(self, stdname)
     if _g.cxxmaps == nil then
         _g.cxxmaps = 
         {
-            cxx98       = "-std=c++98"
-        ,   gnuxx98     = "-std=gnu++98"
-        ,   cxx11       = "-std=c++11"
-        ,   gnuxx11     = "-std=gnu++11"
-        ,   cxx14       = "-std=c++14"
-        ,   gnuxx14     = "-std=gnu++14"
-        ,   cxx17       = "-std=c++17"
-        ,   gnuxx17     = "-std=gnu++17"
-        ,   cxx1z       = "-std=c++1z"
-        ,   gnuxx1z     = "-std=gnu++1z"
-        ,   cxx2a       = "-std=c++2a"
-        ,   gnuxx2a     = "-std=gnu++2a"
+            cxx98        = "-std=c++98"
+        ,   gnuxx98      = "-std=gnu++98"
+        ,   cxx11        = "-std=c++11"
+        ,   gnuxx11      = "-std=gnu++11"
+        ,   cxx14        = "-std=c++14"
+        ,   gnuxx14      = "-std=gnu++14"
+        ,   cxx17        = "-std=c++17"
+        ,   gnuxx17      = "-std=gnu++17"
+        ,   cxx1z        = "-std=c++1z"
+        ,   gnuxx1z      = "-std=gnu++1z"
+        ,   cxx2a        = "-std=c++2a"
+        ,   gnuxx2a      = "-std=gnu++2a"
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
