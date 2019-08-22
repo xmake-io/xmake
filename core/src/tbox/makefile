@@ -206,7 +206,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/libm/isqrti \
 						tbox/src/tbox/libm/idivi8 \
 						tbox/src/tbox/platform/addrinfo \
-						tbox/src/tbox/platform/impl/atomic64 \
+						tbox/src/tbox/platform/atomic64 \
 						tbox/src/tbox/platform/backtrace \
 						tbox/src/tbox/platform/cache_time \
 						tbox/src/tbox/platform/directory \
