@@ -321,9 +321,9 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
             -- generate includes file
             if depfile and _g._HAS_M_MF then
-                local compflags = table.join(flags, "-M", "-MF", depfile)
                 -- since -MD is not supported, run nvcc twice
-                os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+                local compflags = table.join(flags, "-M", "-MF", depfile)
+                os.runv(_compargv1(self, sourcefile, objectfile, compflags))
             end
 
             local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
@@ -337,7 +337,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- find the start line of error
-                local lines = tostring(errors):split("\n", {plain = true})
+                errors = tostring(errors)
+                local lines = errors:split("\n", {plain = true})
                 local start = 0
                 for index, line in ipairs(lines) do
                     if line:find("error:", 1, true) or line:find("错误：", 1, true) then
