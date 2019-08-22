@@ -234,19 +234,34 @@ function utils.trycall(script, traceback, ...)
             if errors then
                 local _, pos = errors:find("[@encode(error)]: ", 1, true)
                 if pos then
+                    -- strip traceback (maybe from coroutine.resume)
                     local errs = errors:sub(pos + 1)
+                    local stack = nil
+                    local stackpos = errs:find("}\nstack traceback:", 1, true)
+                    if stackpos and stackpos > 1 then
+                        stack = errs:sub(stackpos + 2)
+                        errs  = errs:sub(1, stackpos)
+                    end
                     errors, errs = errs:deserialize()
                     if not errors then
                         errors = errs
                     end
                     if type(errors) == "table" then
+                        if stack then
+                            errors._stack = stack
+                        end
                         setmetatable(errors, 
                         { 
                             __tostring = function (self)
-                                if self.errors then
-                                    return self.errors
+                                local result = self.errors
+                                if not result then
+                                    result = string.serialize(self, {strip = true, indent = false})
                                 end
-                                return string.serialize(self)
+                                result = result or ""
+                                if self._stack then
+                                    result = result .. "\n" .. self._stack
+                                end
+                                return result
                             end,
                             __concat = function (self, other)
                                 return tostring(self) .. tostring(other)
