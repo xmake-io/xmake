@@ -11,11 +11,13 @@
 * Add filelock for io
 * [#513](https://github.com/xmake-io/xmake/issues/513): Support for android/termux
 * [#517](https://github.com/xmake-io/xmake/issues/517): Add `add_cleanfiles` api for target
+* [#537](https://github.com/xmake-io/xmake/pull/537): Add `set_runenv` api to override os/envs 
 
 ### Changes
 
 * [#257](https://github.com/xmake-io/xmake/issues/257): Lock the whole project to avoid other process to access.
 * Attempt to enable /dev/shm for the os.tmpdir
+* [#542](https://github.com/xmake-io/xmake/pull/542): Improve vs unicode output for link/cl
 
 ## v2.2.7
 
@@ -627,11 +629,13 @@
 * 针对io模块增加文件锁接口
 * [#513](https://github.com/xmake-io/xmake/issues/513): 增加对android/termux终端的支持，可在android设备上执行xmake来构建项目
 * [#517](https://github.com/xmake-io/xmake/issues/517): 为target增加`add_cleanfiles`接口，实现快速定制化清理文件
+* [#537](https://github.com/xmake-io/xmake/pull/537): 添加`set_runenv`接口去覆盖写入系统envs
 
 ### 改进
 
 * [#257](https://github.com/xmake-io/xmake/issues/257): 锁定当前正在构建的工程，避免其他xmake进度同时对其操作
 * 尝试采用/dev/shm作为os.tmpdir去改善构建过程中临时文件的读写效率
+* [#542](https://github.com/xmake-io/xmake/pull/542): 改进vs系列工具链的unicode输出问题
 
 ## v2.2.7
 
