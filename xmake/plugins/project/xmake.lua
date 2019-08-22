@@ -40,6 +40,7 @@ task("project")
                 {
                     {'k', "kind",      "kv", "makefile",    "Set the project kind." 
                                                        ,    "    - makefile"
+                                                       ,    "    - cmakelists"
                                                        ,    "    - compile_flags"
                                                        ,    "    - compile_commands (clang compilation database with json format)"
                                                        ,    "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"
@@ -47,10 +48,10 @@ task("project")
                                                        ,    "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2019" }
                 ,   {'m', "modes",     "kv", nil,           "Set the project modes."
                                                        ,    "    e.g. "
-                                                       ,    "    - xmake project -k vs2015 -m \"release" .. path.envsep() ..  "debug\"" }
+                                                       ,    "    - xmake project -k vsxmake -m \"release" .. path.envsep() ..  "debug\"" }
                 ,   {'a', "archs",     "kv", nil,           "Set the project archs."
                                                        ,    "    e.g. "
-                                                       ,    "    - xmake project -k vs2015 -a \"x86" .. path.envsep() ..  "x64\"" }
+                                                       ,    "    - xmake project -k vsxmake -a \"x86" .. path.envsep() ..  "x64\"" }
                 ,   {nil, "outputdir", "v",  ".",           "Set the output directory." }
                 }
             }
