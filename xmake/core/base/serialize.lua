@@ -23,6 +23,7 @@
 local serialize  = serialize or {}
 local stub       = serialize._stub or {}
 serialize._stub  = stub
+serialize._dump = serialize._dump or string._dump or string.dump
 
 -- load modules
 local math      = require("base/math")
@@ -38,9 +39,6 @@ function serialize._keywords()
     end
     return keywords
 end
-
--- save original interfaces
-serialize._dump = serialize._dump or string._dump or string.dump
 
 function serialize._makestring(str, opt)
     return string.format("%q", str)
