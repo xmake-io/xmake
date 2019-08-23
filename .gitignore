@@ -18,6 +18,9 @@ tags
 winenv/
 *.exe
 *.zip
+*.gz
+*.bz2
+*.xz
 *.run
 
 # Makefile generation

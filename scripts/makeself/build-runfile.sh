@@ -4,42 +4,40 @@
 cd "$(dirname "$0")/../.."
 xmakeroot=`pwd`
 buildroot=$xmakeroot/scripts/makeself
-temproot=/tmp/xmake-makeself
-
-# clean up temproot
-if [ -d $temproot ]; then
-    rm -rf $temproot
+tmpdir=/tmp/xmake-makeself
+if [ -d $tmpdir ]; then
+    rm -rf $tmpdir
 fi
-mkdir -p $temproot
+mkdir -p $tmpdir
 
-# copy xmake repo to temproot/xmake-repo, remove git ignored files
-cp -r $xmakeroot $temproot/xmake-repo
-cd $temproot/xmake-repo
+# copy xmake repo to tmpdir/xmake-repo, remove git ignored files
+cp -r $xmakeroot $tmpdir/xmake-repo
+cd $tmpdir/xmake-repo
 git clean -dfX
 git submodule foreach git clean -dfX
 
-# copy files to temproot/xmake
-mkdir -p $temproot/xmake/scripts
-cd $temproot/xmake-repo
-cp -r ./core $temproot/xmake
-cp -r ./xmake $temproot/xmake
-cp ./scripts/get.sh $temproot/xmake/scripts
-cp ./*.md $temproot/xmake
-cp makefile $temproot/xmake
-cd $temproot/xmake
+# copy files to tmpdir/xmake
+mkdir -p $tmpdir/xmake/scripts
+cd $tmpdir/xmake-repo
+cp -r ./core $tmpdir/xmake
+cp -r ./xmake $tmpdir/xmake
+cp ./scripts/get.sh $tmpdir/xmake/scripts
+cp ./*.md $tmpdir/xmake
+cp makefile $tmpdir/xmake
+cd $tmpdir/xmake
 rm -rf ./core/src/tbox/tbox/src/demo
 rm -rf ./core/src/tbox/tbox/src/tbox/platform/windows
 rm -rf ./core/src/pdcurses
 
 # prepare info texts
-cd $temproot
+cd $tmpdir
 cp $buildroot/* .
 version=`cat ./xmake/core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
 perl -pi -e "s/#xmake-version#/$version/g" ./header
 perl -pi -e "s/#xmake-version#/$version/g" ./lsm
 
 # make run file
-cd $temproot
+cd $tmpdir
 wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -O ./makeself-2.4.0.run
 sh ./makeself-2.4.0.run
 ./makeself-2.4.0/makeself.sh \
