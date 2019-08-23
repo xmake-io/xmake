@@ -1,37 +1,24 @@
 #!/usr/bin/env bash
 
-# compress algorithm: gzip, bzip2, xz
-algo=$1
-if [ -z $algo ]; then
-    algo="gzip"
-fi
-suffix=$algo
-if [ $algo = "gzip" ]; then
-    suffix="gz"
-elif [ $algo = "bzip2" ]; then
-    suffix="bz2"
-fi
-
 # path constants
 cd "$(dirname "$0")/../.."
 xmakeroot=`pwd`
 buildroot=$xmakeroot/scripts/makeself
 temproot=/tmp/xmake-makeself
 
-# prepare files to pack
-#   clean up temproot
+# clean up temproot
 if [ -d $temproot ]; then
     rm -rf $temproot
 fi
 mkdir -p $temproot
 
-#   copy xmake repo to temproot/xmake-repo, remove git ignored files
+# copy xmake repo to temproot/xmake-repo, remove git ignored files
 cp -r $xmakeroot $temproot/xmake-repo
 cd $temproot/xmake-repo
 git clean -dfX
 git submodule foreach git clean -dfX
 
-#   copy files to temproot/xmake
+# copy files to temproot/xmake
 mkdir -p $temproot/xmake/scripts
 cd $temproot/xmake-repo
 cp -r ./core $temproot/xmake
@@ -56,11 +43,29 @@ cd $temproot
 wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -O ./makeself-2.4.0.run
 sh ./makeself-2.4.0.run
 ./makeself-2.4.0/makeself.sh \
-    --$algo \
+    --gzip \
     --sha256 \
     --lsm ./lsm \
     --help-header ./header \
     ./xmake \
-    $buildroot/xmake.$suffix.run \
+    $buildroot/xmake.gz.run \
+    xmake-v$version-runfile \
+    ./scripts/get.sh __local__
+./makeself-2.4.0/makeself.sh \
+    --bzip2 \
+    --sha256 \
+    --lsm ./lsm \
+    --help-header ./header \
+    ./xmake \
+    $buildroot/xmake.bz2.run \
+    xmake-v$version-runfile \
+    ./scripts/get.sh __local__
+./makeself-2.4.0/makeself.sh \
+    --xz \
+    --sha256 \
+    --lsm ./lsm \
+    --help-header ./header \
+    ./xmake \
+    $buildroot/xmake.xz.run \
     xmake-v$version-runfile \
     ./scripts/get.sh __local__
