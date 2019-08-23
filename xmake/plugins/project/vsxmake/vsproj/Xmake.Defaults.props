@@ -7,9 +7,9 @@
     <XmakeScriptDirResolved>$(XmakeScriptDir)</XmakeScriptDirResolved>
     
     <!-- resolve if they are relative paths -->
+    <XmakeProgramDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeProgramDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProgramDirResolved)'))</XmakeProgramDirResolved>
     <XmakeProjectDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeProjectDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeProjectDirResolved)'))</XmakeProjectDirResolved>
     <XmakeScriptDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeScriptDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeScriptDirResolved)'))</XmakeScriptDirResolved>
-    <XmakeBuilDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDirResolved)'))</XmakeBuilDirResolved>
 
     <!-- normalize paths -->
     <XmakeProgramDir>$([System.IO.Path]::GetFullPath('$(XmakeProgramDirResolved)'))</XmakeProgramDir>
