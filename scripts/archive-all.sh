@@ -8,30 +8,35 @@ if [ -d $tmpdir ]; then
 fi
 mkdir $tmpdir
 
-# copy xmake repo to temproot/xmake-repo, remove git ignored files
+# clone xmake repo 
 cp -r $xmakeroot $tmpdir/repo
 cd $tmpdir/repo
 git reset --hard HEAD
-git clean -fd
-git submodule foreach git clean -fd
+git clean -dfX
+git submodule foreach git clean -dfX
 
 # prepare files
+xmake l -v private.utils.bcsave -s -o $tmpdir/repo/output $tmpdir/repo/xmake
+cd $tmpdir/repo || exit
 version=`cat core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
 outputfile=$xmakeroot/xmake-v$version
-xmake l -v private.utils.bcsave -s -o $tmpdir/repo/output $tmpdir/repo/xmake
 rm -rf xmake
 mv output xmake
 rm -rf tests
 rm -rf core/src/tbox/tbox/src/demo
-cd core/src/tbox/tbox
-git add .
-git commit -a -m "..."
-cd -
-git add .
-git commit -a -m "..."
-git tag "v$version-1"
-ls -l
-git archive --format "zip" -9 -o "$outputfile.zip" "v$version-1"
-git archive --format "tar.gz" -9 -o "$outputfile.tar.gz" "v$version-1"
+cd core/src/tbox/tbox 
+cd $tmpdir/repo || exit
+rm -rf `find ./ -name ".git"`
+ls -a -l
+if [ -f "$outputfile.zip" ]; then
+    rm "$outputfile.zip"
+fi
+if [ -f "$outputfile.7z" ]; then
+    rm "$outputfile.7z"
+fi
+zip -qr "$outputfile.zip" .
+7z a "$outputfile.7z" .
 shasum -a 256 "$outputfile.zip"
-shasum -a 256 "$outputfile.tar.gz"
+shasum -a 256 "$outputfile.7z"
+ls -l "$outputfile.zip"
+ls -l "$outputfile.7z"
