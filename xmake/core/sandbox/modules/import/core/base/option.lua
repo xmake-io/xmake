@@ -81,17 +81,21 @@ function sandbox_core_base_option.parse(argv, options, ...)
     table.insert(options, 2, {'h', "help",      "k",  nil, "Print this help message and exit." })
     table.insert(options, 3, {})
 
+    -- show help
+    local descriptions = {...}
+    local function show_help()
+        for _, description in ipairs(descriptions) do
+            print(description)
+        end
+        option.show_options(options)
+    end
+
     -- parse it
     local results, errors = option.parse(argv, options)
     if not results then
 
-        -- show descriptions
-        for _, description in ipairs({...}) do
-            print(description)
-        end
-
-        -- show options
-        option.show_options(options)
+        -- show help
+        show_help()
 
         -- raise errors
         raise(errors)
@@ -100,16 +104,13 @@ function sandbox_core_base_option.parse(argv, options, ...)
     -- help?
     if results.help then
 
-        -- show descriptions
-        for _, description in ipairs({...}) do
-            print(description)
-        end
-
-        -- show options
-        option.show_options(options)
+        -- show help
+        show_help()
 
         -- exit
         raise()
+    else
+        results.help = show_help
     end
 
     -- ok

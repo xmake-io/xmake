@@ -767,8 +767,10 @@ function os.raiselevel(level, msg, ...)
         else
             error(errors, level)
         end
-    else
+    elseif msg ~= nil then
         error(tostring(msg), level)
+    else
+        error(msg, level)
     end
 end
 
