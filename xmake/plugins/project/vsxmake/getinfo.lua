@@ -267,7 +267,7 @@ function main(outputdir, vsinfo)
 
     -- init solution directory
     vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
-    vsinfo.programdir = xmake.programdir()
+    vsinfo.programdir = _make_dirs(xmake.programdir())
     vsinfo.projectdir = project.directory()
     vsinfo.sln_projectfile = path.relative(project.file(), vsinfo.solution_dir)
     local projectfile = path.filename(project.file())
