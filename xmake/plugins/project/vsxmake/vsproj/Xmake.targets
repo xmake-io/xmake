@@ -155,6 +155,7 @@ MSBuild Properties:
     XmakeVerbose: $(XmakeVerbose)
     XmakeDiagnosis: $(XmakeDiagnosis)
     XmakeRebuildFile: $(XmakeRebuildFile)
+    XmakeCleanAll: $(XmakeCleanAll)
     XmakeCommonFlags: $(XmakeCommonFlags)
     XmakeConfigFlags: $(XmakeConfigFlags)
     XmakeBuildFlags: $(XmakeBuildFlags)
