@@ -761,7 +761,7 @@ function os.raiselevel(level, msg, ...)
     if type(msg) == "string" then
         error(string.tryformat(msg, ...), level)
     elseif type(msg) == "table" then
-        local errobjstr, errors = string.serialize(msg, true)
+        local errobjstr, errors = string.serialize(msg, {strip = true, indent = false})
         if errobjstr then
             error("[@encode(error)]: " .. errobjstr, level)
         else

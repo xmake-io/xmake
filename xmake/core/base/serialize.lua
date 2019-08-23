@@ -23,7 +23,7 @@
 local serialize  = serialize or {}
 local stub       = serialize._stub or {}
 serialize._stub  = stub
-serialize._dump = serialize._dump or string._dump or string.dump
+serialize._dump  = serialize._dump or string._dump or string.dump
 
 -- load modules
 local math      = require("base/math")
