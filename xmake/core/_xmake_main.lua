@@ -48,11 +48,13 @@ function _loadfile_impl(filepath, mode)
     -- load script data from file
     local file, ferrors = io.file_open(filepath, binary and "rb" or "r")
     if not file then
+        ferrors = string.format("file(%s): %s", filepath, ferrors or "open failed!")
         return nil, ferrors
     end
 
     local data, rerrors = io.file_read(file, "a")
     if not data then
+        rerrors = string.format("file(%s): %s", filepath, rerrors or "read failed!")
         return nil, rerrors
     end
     io.file_close(file)
