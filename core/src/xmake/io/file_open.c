@@ -52,7 +52,12 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
     tb_size_t        charset = XM_IO_FILE_ENCODING_BINARY;
     do
     {
-        if (size >= 3 && data[0] == 239 && data[1] == 187 && data[2] == 191) // utf-8 with bom
+        // is luajit bitcode? open as binary
+        if (size >= 3 && data[0] == 27 && data[1] == 'L' && data[2] == 'J')
+            break;
+
+        // utf-8 with bom
+        if (size >= 3 && data[0] == 239 && data[1] == 187 && data[2] == 191) 
         {
             charset = TB_CHARSET_TYPE_UTF8;
             data += 3; // skip bom
@@ -60,13 +65,15 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
         }
         if (size >= 2)
         {
-            if (data[0] == 254 && data[1] == 255) // utf16be
+            // utf16be
+            if (data[0] == 254 && data[1] == 255) 
             {
                 charset = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
                 data += 2; // skip bom
                 break;
             }
-            else if (data[0] == 255 && data[1] == 254) // utf16le
+            // utf16le
+            else if (data[0] == 255 && data[1] == 254) 
             {
                 charset = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
                 data += 2; // skip bom
