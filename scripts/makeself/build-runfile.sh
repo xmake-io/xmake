@@ -52,15 +52,6 @@ sh ./makeself-2.4.0.run
     xmake-v$version-runfile \
     ./scripts/get.sh __local__
 ./makeself-2.4.0/makeself.sh \
-    --bzip2 \
-    --sha256 \
-    --lsm ./lsm \
-    --help-header ./header \
-    ./xmake \
-    $buildroot/xmake.bz2.run \
-    xmake-v$version-runfile \
-    ./scripts/get.sh __local__
-./makeself-2.4.0/makeself.sh \
     --xz \
     --sha256 \
     --lsm ./lsm \

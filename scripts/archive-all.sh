@@ -36,9 +36,15 @@ fi
 if [ -f "$outputfile.7z" ]; then
     rm "$outputfile.7z"
 fi
+if [ -f "$outputfile.tar.gz" ]; then
+    rm "$outputfile.tar.gz"
+fi
 zip -qr "$outputfile.zip" .
 7z a "$outputfile.7z" .
+tar -czf "$outputfile.tar.gz" .
 shasum -a 256 "$outputfile.zip"
 shasum -a 256 "$outputfile.7z"
+shasum -a 256 "$outputfile.tar.gz"
 ls -l "$outputfile.zip"
 ls -l "$outputfile.7z"
+ls -l "$outputfile.tar.gz"
