@@ -15,19 +15,21 @@ git reset --hard HEAD
 git clean -dfX
 git submodule foreach git clean -dfX
 
-# prepare files
-xmake l -v private.utils.bcsave -s -o $tmpdir/repo/output $tmpdir/repo/xmake
+# copy files to tmpdir/xmake
+mkdir -p $tmpdir/xmake/scripts
+xmake l -v private.utils.bcsave -s -o $tmpdir/repo/bcxmake $tmpdir/repo/xmake || exit
 cd $tmpdir/repo || exit
-version=`cat core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
-outputfile=$xmakeroot/xmake-v$version
-rm -rf xmake
-mv output xmake
-rm -rf tests
-rm -rf core/src/tbox/tbox/src/demo
-cd core/src/tbox/tbox 
-cd $tmpdir/repo || exit
-rm -rf `find ./ -name ".git"`
-ls -a -l
+cp -r ./core $tmpdir/xmake
+mv bcxmake $tmpdir/xmake/xmake
+cp ./scripts/get.sh $tmpdir/xmake/scripts
+cp ./*.md $tmpdir/xmake
+cp makefile $tmpdir/xmake
+cd $tmpdir/xmake || exit
+rm -rf ./core/src/tbox/tbox/src/demo
+
+# archive files
+version=`cat ./core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
+outputfile=$xmakeroot/"xmake-v$version"
 if [ -f "$outputfile.zip" ]; then
     rm "$outputfile.zip"
 fi

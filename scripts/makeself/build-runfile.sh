@@ -10,21 +10,23 @@ if [ -d $tmpdir ]; then
 fi
 mkdir -p $tmpdir
 
-# copy xmake repo to tmpdir/xmake-repo, remove git ignored files
-cp -r $xmakeroot $tmpdir/xmake-repo
-cd $tmpdir/xmake-repo
+# copy xmake repo to tmpdir/repo, remove git ignored files
+cp -r $xmakeroot $tmpdir/repo
+cd $tmpdir/repo || exit
+git reset --hard HEAD
 git clean -dfX
 git submodule foreach git clean -dfX
 
 # copy files to tmpdir/xmake
 mkdir -p $tmpdir/xmake/scripts
-cd $tmpdir/xmake-repo
+xmake l -v private.utils.bcsave -s -o $tmpdir/repo/bcxmake $tmpdir/repo/xmake || exit
+cd $tmpdir/repo || exit
 cp -r ./core $tmpdir/xmake
-cp -r ./xmake $tmpdir/xmake
+mv bcxmake $tmpdir/xmake/xmake
 cp ./scripts/get.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
-cd $tmpdir/xmake
+cd $tmpdir/xmake || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 rm -rf ./core/src/tbox/tbox/src/tbox/platform/windows
 rm -rf ./core/src/pdcurses

@@ -21,6 +21,7 @@ winenv/
 *.gz
 *.bz2
 *.xz
+*.7z
 *.run
 
 # Makefile generation
