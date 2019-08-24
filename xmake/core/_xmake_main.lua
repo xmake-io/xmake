@@ -31,18 +31,24 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 
-function _loadfile_impl(filepath, mode)
+function _loadfile_impl(filepath, mode, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- init displaypath
     local binary = false
-    local displaypath = filepath
-    if filepath:startswith(xmake._WORKING_DIR) then
-        displaypath = path.translate("./" .. path.relative(filepath, xmake._WORKING_DIR))
-    elseif filepath:startswith(xmake._PROGRAM_DIR) then
-        binary = true -- read file by binary mode, will be faster
-        displaypath = path.translate("$(programdir)/" .. path.relative(filepath, xmake._PROGRAM_DIR))
-    elseif filepath:startswith(xmake._PROJECT_DIR) then
-        displaypath = path.translate("$(projectdir)/" .. path.relative(filepath, xmake._PROJECT_DIR))
+    local displaypath = opt.displaypath
+    if displaypath == nil then
+        displaypath = filepath
+        if filepath:startswith(xmake._WORKING_DIR) then
+            displaypath = path.translate("./" .. path.relative(filepath, xmake._WORKING_DIR))
+        elseif filepath:startswith(xmake._PROGRAM_DIR) then
+            binary = true -- read file by binary mode, will be faster
+            displaypath = path.translate("@programdir/" .. path.relative(filepath, xmake._PROGRAM_DIR))
+        elseif filepath:startswith(xmake._PROJECT_DIR) then
+            displaypath = path.translate("@projectdir/" .. path.relative(filepath, xmake._PROJECT_DIR))
+        end
     end
 
     -- load script data from file
@@ -64,8 +70,13 @@ function _loadfile_impl(filepath, mode)
 end
 
 -- init loadfile
+--
+-- @param filepath      the lua file path
+-- @param mode          the load mode, e.g 't', 'b' or 'bt' (default)
+-- @param opt           the arguments option, e.g. {displaypath = ""}
+--
 local _loadcache = {}
-function loadfile(filepath, mode)
+function loadfile(filepath, mode, opt)
 
     -- get absolute path
     filepath = path.absolute(filepath)
@@ -81,7 +92,7 @@ function loadfile(filepath, mode)
     end
 
     -- load file
-    local script, errors = _loadfile_impl(filepath, mode)
+    local script, errors = _loadfile_impl(filepath, mode, opt)
     if script then
         _loadcache[filepath] = {script = script, mtime = mtime or os.mtime(filepath)}
     end

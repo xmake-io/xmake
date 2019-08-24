@@ -27,11 +27,11 @@ local raise     = require("sandbox/modules/raise")
 --
 -- @param luafile       the lua file
 -- @param bcfile        the bitcode file
--- @param opt           the arguments option, e.g. {strip = true}
+-- @param opt           the arguments option, e.g. {strip = true, displaypath = "/xxx/a.lua"}
 --
 function main(luafile, bcfile, opt)
     opt = opt or {}
-    local result, errors = loadfile(luafile)
+    local result, errors = loadfile(luafile, "bt", {displaypath = opt.displaypath})
     if not result then
         raise(errors)
     end

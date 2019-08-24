@@ -143,7 +143,7 @@ fi
 
 # make bytecodes
 export XMAKE_PROGRAM_DIR=$projectdir/xmake
-$projectdir/core/src/demo/demo.b l -v private.utils.bcsave -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
+$projectdir/core/src/demo/demo.b l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
 export XMAKE_PROGRAM_DIR=
 
 # do install

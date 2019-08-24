@@ -26,6 +26,7 @@ import("lib.luajit.bcsave")
 local options =
 {
     {'s', "strip",       "k",  false,            "Strip the debug info."                      }
+,   {nil, "rootname",    "kv", nil,              "Set the display root path name."            }
 ,   {'o', "outputdir",   "kv", nil,              "Set the output directory of bitcode files." }
 ,   {'x', "excludedirs", "kv", nil,              "Set the excluded directories."              }
 ,   {nil, "sourcedir",   "v",  os.programdir(),  "Set the directory of lua source files."     }
@@ -44,7 +45,6 @@ function save(sourcedir, outputdir, opt)
     print("generating bitcode files from %s ..", sourcedir)
 
     -- save all lua files to bitcode files
-    local oldir = os.cd(sourcedir)
     local total_lua = 0
     local total_bc  = 0
     local pattern = path.join(sourcedir, "**.lua")
@@ -54,28 +54,30 @@ function save(sourcedir, outputdir, opt)
     local override = (outputdir == sourcedir)
     for _, luafile in ipairs(os.files(pattern)) do
 
-        -- get relative lua file path to decrease bitcode file size (without strip)
-        luafile = path.relative(luafile, sourcedir)
+        -- get relative lua file path 
+        local relativepath = path.relative(luafile, sourcedir)
+        
+        -- get display path
+        local displaypath = opt.rootname and path.join(opt.rootname, relativepath) or relativepath
 
         -- get bitcode file path
-        local bcfile = override and os.tmpfile() or path.join(outputdir, luafile)
+        local bcfile = override and os.tmpfile() or path.join(outputdir, relativepath)
         
         -- generate bitcode file
-        bcsave(luafile, bcfile, {strip = opt.strip})
+        bcsave(luafile, bcfile, {strip = opt.strip, displaypath = displaypath})
 
         -- trace
         local luasize = os.filesize(luafile)
         local bcsize  = os.filesize(bcfile)
         total_lua = total_lua + luasize
         total_bc  = total_bc + bcsize
-        vprint("generating %s (%d => %d)..", luafile, luasize, bcsize)
+        vprint("generating %s (%d => %d) ..", displaypath, luasize, bcsize)
 
         -- override?
         if override then
             os.cp(bcfile, luafile)
         end
     end
-    os.cd(oldir)
 
     -- trace
     cprint("${bright}bitcode files have been generated in %s, size: %d => %d", outputdir, total_lua, total_bc)
