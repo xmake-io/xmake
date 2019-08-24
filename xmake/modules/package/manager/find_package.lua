@@ -72,13 +72,6 @@ function _find_package_with_builtin_rule(package_name, opt)
             break
         end
     end
-
-    -- check result?
-    if result and not result.includedirs then
-        result = nil
-    end
-
-    -- ok?
     return result
 end
 
