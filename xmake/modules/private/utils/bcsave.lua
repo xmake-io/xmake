@@ -46,24 +46,30 @@ function save(sourcedir, outputdir, opt)
 
     -- save all lua files to bitcode files
     local oldir = os.cd(sourcedir)
+    local total_lua = 0
+    local total_bc  = 0
     for _, luafile in ipairs(os.files(path.join(sourcedir, "**.lua"))) do
 
         -- get relative lua file path to decrease bitcode file size (without strip)
         luafile = path.relative(luafile, sourcedir)
-
-        -- trace
-        vprint("generating %s ..", luafile)
 
         -- get bitcode file path
         local bcfile = path.join(outputdir, luafile)
         
         -- generate bitcode file
         bcsave(luafile, bcfile, {strip = opt.strip})
+
+        -- trace
+        local luasize = os.filesize(luafile)
+        local bcsize  = os.filesize(bcfile)
+        total_lua = total_lua + luasize
+        total_bc  = total_bc + bcsize
+        vprint("generating %s (%d => %d)..", luafile, luasize, bcsize)
     end
     os.cd(oldir)
 
     -- trace
-    cprint("${bright}bitcode files have been generated in %s", outputdir)
+    cprint("${bright}bitcode files have been generated in %s, size: %d => %d", outputdir, total_lua, total_bc)
 end
 
 -- main entry
