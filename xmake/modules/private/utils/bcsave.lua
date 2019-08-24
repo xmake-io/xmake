@@ -38,7 +38,8 @@ function save(sourcedir, outputdir, opt)
 
     -- init source directory and options
     opt = opt or {}
-    sourcedir = sourcedir or os.programdir()
+    sourcedir = path.absolute(sourcedir or os.programdir())
+    outputdir = path.absolute(outputdir)
     assert(os.isdir(sourcedir), "%s not found!", sourcedir)
 
     -- trace
