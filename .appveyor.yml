@@ -50,7 +50,7 @@ build_script:
   - ps: Copy-Item -Force .\core\build\xmake.exe $(Get-Command xmake).Path
   - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
   # use bitcodes
-  - ps: xmake l private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
+  - ps: xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
   - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
 
 after_build:
