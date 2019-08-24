@@ -16,8 +16,6 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{#target_id#}</ProjectGuid>
-    <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
-    <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>
     <Configuration Condition="'$(Configuration)' == ''">release</Configuration>
     <Platform Condition="'$(Platform)' == ''">Win32</Platform>
     <XmakeScriptDir>#scriptdir#</XmakeScriptDir>
@@ -25,10 +23,14 @@
     <XmakeProjectFile>#projectfile#</XmakeProjectFile>
     <XmakeTarget>#target#</XmakeTarget>
   </PropertyGroup>
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.Defaults.props" />
+  <PropertyGroup Label="XmakeProgram">
+    <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>
+    <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">#programdir#</XmakeProgramDir>
+  </PropertyGroup>
+  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.Defaults.props" />
 #Import(XmakeConfig)#
 #Import(XmakePath)#
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.props" />
+  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.props" />
   <ItemGroup>
 #Import(Include)#
   </ItemGroup>
@@ -50,5 +52,5 @@
   <!-- <ItemGroup>
 #Import(ProjectRef)#
   </ItemGroup> -->
-  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\xmake.targets" />
+  <Import Project="$(XmakeProgramDir)\plugins\project\vsxmake\vsproj\Xmake.targets" />
 </Project>
