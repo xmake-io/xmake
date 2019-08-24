@@ -25,9 +25,10 @@ import("lib.luajit.bcsave")
 -- the options
 local options =
 {
-    {'s', "strip",      "k",  false,            "Strip the debug info."                      }
-,   {'o', "outputdir",  "kv", nil,              "Set the output directory of bitcode files." }
-,   {nil, "sourcedir",  "v",  os.programdir(),  "Set the directory of lua source files."     }
+    {'s', "strip",       "k",  false,            "Strip the debug info."                      }
+,   {'o', "outputdir",   "kv", nil,              "Set the output directory of bitcode files." }
+,   {'x', "excludedirs", "kv", nil,              "Set the excluded directories."              }
+,   {nil, "sourcedir",   "v",  os.programdir(),  "Set the directory of lua source files."     }
 }
 
 -- save lua files to bitcode files in the given directory
@@ -49,7 +50,11 @@ function save(sourcedir, outputdir, opt)
     local oldir = os.cd(sourcedir)
     local total_lua = 0
     local total_bc  = 0
-    for _, luafile in ipairs(os.files(path.join(sourcedir, "**.lua"))) do
+    local pattern = path.join(sourcedir, "**.lua")
+    if opt.excludedirs then
+        pattern = pattern .. "|" .. opt.excludedirs
+    end
+    for _, luafile in ipairs(os.files(pattern)) do
 
         -- get relative lua file path to decrease bitcode file size (without strip)
         luafile = path.relative(luafile, sourcedir)

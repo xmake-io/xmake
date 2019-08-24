@@ -17,8 +17,8 @@ git submodule foreach git clean -dfX
 
 # copy files to tmpdir/xmake
 mkdir -p $tmpdir/xmake/scripts
-xmake l -v private.utils.bcsave -o $tmpdir/repo/bcxmake $tmpdir/repo/xmake || exit
 cd $tmpdir/repo || exit
+xmake l -v private.utils.bcsave -x 'scripts/**|templates/**' -o bcxmake xmake || exit
 cp -r ./core $tmpdir/xmake
 mv bcxmake $tmpdir/xmake/xmake
 cp ./scripts/get.sh $tmpdir/xmake/scripts
