@@ -29,11 +29,7 @@ script:
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
   - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake --version
-  - xmake l private.utils.bcsave -x 'scripts/**|templates/**' -o bcxmake xmake
-  - mv xmake/scripts bcxmake/scripts
-  - mv xmake/templates bcxmake/templates
-  - rm -rf xmake
-  - mv bcxmake xmake
+  - xmake l private.utils.bcsave -x 'scripts/**|templates/**' xmake
   - xmake --version
   - travis_wait 60 xmake lua -v -D tests/run.lua
   - scripts/archive-all.sh
