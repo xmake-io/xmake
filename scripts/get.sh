@@ -5,6 +5,7 @@
 
 set -o pipefail
 
+# has sudo?
 if [ 0 -ne "$(id -u)" ]; then
     if sudo --version >/dev/null 2>&1
     then
@@ -16,13 +17,17 @@ else
     sudoprefix=
 fi
 
+# make tmpdir
 if [ -z "$TMPDIR" ]; then
     tmpdir=/tmp/.xmake_getter$$
 else
     tmpdir=$TMPDIR/.xmake_getter$$
 fi
+if [ -d $tmpdir ]; then
+    rm -rf $tmpdir
+fi
 
-remote_get_content(){
+remote_get_content() {
     if curl --version >/dev/null 2>&1
     then
         curl -fsSL "$1"
@@ -94,8 +99,7 @@ test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependenci
 branch=master
 mirror=tboox
 IFS=':'
-if [ x != "x$1" ]
-then
+if [ x != "x$1" ]; then
     brancharr=($1)
     if [ ${#brancharr[@]} -eq 1 ]
     then
@@ -109,8 +113,7 @@ then
     echo "Branch: $branch"
 fi
 projectdir=$tmpdir
-if [ 'x__local__' != "x$branch" ]
-then
+if [ 'x__local__' != "x$branch" ]; then
     if [ x != "x$2" ]; then
         git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
@@ -123,10 +126,12 @@ else
     if [ -d '.git' ]; then
         git submodule update --init --recursive
     fi
-    projectdir=`pwd`
+    cp -r . $projectdir
+    cd $projectdir || my_exit 'Chdir Error'
 fi
-if [ 'x__install_only__' != "x$2" ]
-then
+
+# do build
+if [ 'x__install_only__' != "x$2" ]; then
     make -C $projectdir --no-print-directory build 
     rv=$?
     if [ $rv -ne 0 ]
@@ -136,13 +141,16 @@ then
     fi
 fi
 
-if [ "$prefix" = "" ]
-then
+# make bytecodes
+export XMAKE_PROGRAM_DIR=$projectdir/xmake
+$projectdir/core/src/demo/demo.b l -v private.utils.bcsave -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
+export XMAKE_PROGRAM_DIR=
+
+# do install
+if [ "$prefix" = "" ]; then
     prefix=~/.local
 fi
-
-if [ "x$prefix" != x ]
-then
+if [ "x$prefix" != x ]; then
     make -C $projectdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
     $sudoprefix make -C $projectdir --no-print-directory install || my_exit 'Install Fail'
