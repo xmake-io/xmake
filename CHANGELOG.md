@@ -18,6 +18,7 @@
 * [#257](https://github.com/xmake-io/xmake/issues/257): Lock the whole project to avoid other process to access.
 * Attempt to enable /dev/shm for the os.tmpdir
 * [#542](https://github.com/xmake-io/xmake/pull/542): Improve vs unicode output for link/cl
+* Improve binary bitcode lua scripts in the program directory
 
 ## v2.2.7
 
@@ -636,6 +637,7 @@
 * [#257](https://github.com/xmake-io/xmake/issues/257): 锁定当前正在构建的工程，避免其他xmake进程同时对其操作
 * 尝试采用/dev/shm作为os.tmpdir去改善构建过程中临时文件的读写效率
 * [#542](https://github.com/xmake-io/xmake/pull/542): 改进vs系列工具链的unicode输出问题
+* 对于安装的lua脚本，启用lua字节码存储，减少安装包大小（<2.4M），提高运行加载效率。
 
 ## v2.2.7
 
