@@ -73,17 +73,20 @@ end
 --
 -- @param filepath      the lua file path
 -- @param mode          the load mode, e.g 't', 'b' or 'bt' (default)
--- @param opt           the arguments option, e.g. {displaypath = ""}
+-- @param opt           the arguments option, e.g. {displaypath = "", nocache = true}
 --
 local _loadcache = {}
 function loadfile(filepath, mode, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- get absolute path
     filepath = path.absolute(filepath)
 
     -- attempt to load script from cache first
     local mtime = nil
-    local cache = _loadcache[filepath]
+    local cache = (not opt.nocache) and _loadcache[filepath] or nil
     if cache and cache.script then
         mtime = os.mtime(filepath)
         if mtime > 0 and cache.mtime == mtime then

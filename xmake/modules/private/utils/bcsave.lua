@@ -64,7 +64,8 @@ function save(sourcedir, outputdir, opt)
         local bcfile = override and os.tmpfile() or path.join(outputdir, relativepath)
         
         -- generate bitcode file
-        bcsave(luafile, bcfile, {strip = opt.strip, displaypath = displaypath})
+        -- @note we disable cache to ensure all display pathes are correct
+        bcsave(luafile, bcfile, {strip = opt.strip, displaypath = displaypath, nocache = true})
 
         -- trace
         local luasize = os.filesize(luafile)
