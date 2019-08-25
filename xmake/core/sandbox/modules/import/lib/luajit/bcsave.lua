@@ -31,7 +31,7 @@ local raise     = require("sandbox/modules/raise")
 --
 function main(luafile, bcfile, opt)
     opt = opt or {}
-    local result, errors = loadfile(luafile, "bt", {displaypath = opt.displaypath, opt.nocache})
+    local result, errors = loadfile(luafile, "bt", {displaypath = opt.displaypath, nocache = opt.nocache})
     if not result then
         raise(errors)
     end
