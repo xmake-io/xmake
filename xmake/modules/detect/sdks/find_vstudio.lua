@@ -45,6 +45,7 @@ function _load_vcvarsall(vcvarsall, arch, vcvars_ver, sdkver)
     local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
+    file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
     if vcvars_ver then
         file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  sdkver and sdkver or "", vcvars_ver)
     else
