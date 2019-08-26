@@ -216,7 +216,9 @@ function serialize._resolveref(root, fenv, ...)
         end
         if type(pos) ~= "table" then
             local vpre = serialize._make(v, {})
-            return nil, string.format("unable to resolve [%s] in <root>/%s, which is %s", vpre, table.concat(path, "/", 1, i - 1), pos)
+            table.insert(path, 1, "<root>")
+            local pathstr = table.concat(path, "/", 1, i)
+            return nil, string.format("unable to resolve [%s] in %s, which is %s", vpre, pathstr, pos)
         end
         pos = pos[v]
     end
@@ -335,7 +337,7 @@ end
 function stub:__tostring()
     local fparams = {}
     for i = 1, self.params.n do
-        fparams[i] = serialize._make(self.params[i])
+        fparams[i] = serialize._make(self.params[i], {})
     end
     return string.format("%s(%s)", self.name, table.concat(fparams, ", "))
 end
