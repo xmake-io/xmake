@@ -6,7 +6,7 @@
 
 * Add protobuf c/c++ rules
 * [#468](https://github.com/xmake-io/xmake/pull/468): Add utf-8 support for io module on windows
-* [#472](https://github.com/xmake-io/xmake/pull/472): Add `xmake project -k vsxmake201x` plugin to support call xmake from vs/msbuild
+* [#472](https://github.com/xmake-io/xmake/pull/472): Add `xmake project -k vsxmake` plugin to support call xmake from vs/msbuild
 * [#487](https://github.com/xmake-io/xmake/issues/487): Support to build the selected files for the given target
 * Add filelock for io
 * [#513](https://github.com/xmake-io/xmake/issues/513): Support for android/termux
@@ -36,7 +36,7 @@
 
 ### Changes
 
-* [#430](https://github.com/xmake-io/xmake/pull/430): Add `add_cucodegens()` api to improve set codegen for cuda
+* [#430](https://github.com/xmake-io/xmake/pull/430): Add `add_cugencodes()` api to improve set codegen for cuda
 * [#432](https://github.com/xmake-io/xmake/pull/432): support deps analyze for cu file (for CUDA 10.1+)
 * [#437](https://github.com/xmake-io/xmake/issues/437): Support explict git source for xmake update, `xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): Support to only update scripts, `xmake update --scriptonly dev`
@@ -659,7 +659,7 @@
 
 ### 改进
 
-* [#430](https://github.com/xmake-io/xmake/pull/430): 添加`add_cucodegens()`api为cuda改进设置codegen
+* [#430](https://github.com/xmake-io/xmake/pull/430): 添加`add_cugencodes()`api为cuda改进设置codegen
 * [#432](https://github.com/xmake-io/xmake/pull/432): 针对cuda编译支持依赖分析检测（仅支持 CUDA 10.1+）
 * [#437](https://github.com/xmake-io/xmake/issues/437): 支持指定更新源，`xmake update github:xmake-io/xmake#dev`
 * [#438](https://github.com/xmake-io/xmake/pull/438): 支持仅更新脚本，`xmake update --scriptonly dev`
