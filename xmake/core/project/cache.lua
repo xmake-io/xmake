@@ -88,22 +88,16 @@ end
 
 -- get the value
 function cache:get(name)
-
-    -- get it
     return self._CACHEDATA[name]
 end
 
 -- set the value
 function cache:set(name, value)
-
-    -- set it
     self._CACHEDATA[name] = value
 end
 
 -- clear all
 function cache:clear()
-
-    -- clear it
     self._CACHEDATA = {__version = xmake._VERSION_SHORT}
 end
 

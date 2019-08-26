@@ -145,12 +145,13 @@ function config.buildir()
     return buildir
 end
 
--- get the configure directory
+-- get the configure directory on the current host/arch platform
 function config.directory()
-    if config._ROOTDIR == nil then
-        config._ROOTDIR = os.getenv("XMAKE_CONFIGDIR") or path.join(os.projectdir(), ".xmake", os.host(), os.arch())
+    if config._DIRECTORY == nil then
+        local rootdir = os.getenv("XMAKE_CONFIGDIR") or path.join(os.projectdir(), ".xmake")
+        config._DIRECTORY = path.join(rootdir, os.host(), os.arch())
     end
-    return config._ROOTDIR
+    return config._DIRECTORY
 end
 
 -- load the project configure
