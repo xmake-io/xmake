@@ -362,6 +362,7 @@ function dump._print(value, indent, verbose)
         io.write(indent)
         dump._print_scalar(value)
     end
+    io.write("\n")
 end
 
 return dump._print

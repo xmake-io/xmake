@@ -40,7 +40,6 @@ function sandbox_core_sandbox._interactive_dump(...)
     local n = values.n
     if n <= 1 then
         dump(values[1], "< ", diagnosis)
-        io.write("\n")
     else
         local fmt = "< %d: "
         if n >= 1000 then
@@ -53,7 +52,6 @@ function sandbox_core_sandbox._interactive_dump(...)
         end
         for i = 1, n do
             dump(values[i], string.format(fmt, i), diagnosis)
-            io.write("\n")
         end
     end
 end

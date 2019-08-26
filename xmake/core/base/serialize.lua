@@ -48,12 +48,12 @@ function serialize._makedefault(val, opt)
     return tostring(val)
 end
 
-function serialize._maketable(object, opt, level, path, reftab)
+function serialize._maketable(object, opt, level, pathsegs, reftab)
 
     level = level or 0
     reftab = reftab or {}
-    path = path or {}
-    reftab[object] = table.copy(path)
+    pathsegs = pathsegs or {}
+    reftab[object] = table.copy(pathsegs)
 
     -- serialize child items
     local childlevel = level + 1
@@ -85,9 +85,9 @@ function serialize._maketable(object, opt, level, path, reftab)
             if reftab[v] then
                 sval, err = serialize._makeref(reftab[v], opt)
             else
-                table.insert(path, k)
-                sval, err = serialize._maketable(v, opt, childlevel, path, reftab)
-                table.remove(path)
+                table.insert(pathsegs, k)
+                sval, err = serialize._maketable(v, opt, childlevel, pathsegs, reftab)
+                table.remove(pathsegs)
             end
         else
             sval, err = serialize._make(v, opt)
@@ -191,36 +191,34 @@ function serialize._resolvefunction(root, fenv, bytecode)
     return func
 end
 
-function serialize._makeref(path, opt)
+function serialize._makeref(pathsegs, opt)
 
     -- root reference
-    if path[1] == nil then
+    if pathsegs[1] == nil then
         return "ref()"
     end
 
-    local ppath = {}
-    for i, v in ipairs(path) do
-        ppath[i] = serialize._make(v, opt)
+    for i, v in ipairs(pathsegs) do
+        pathsegs[i] = serialize._make(v, opt)
     end
 
-    return "ref(" .. table.concat(ppath, opt.indentstr and ", " or ",") .. ")"
+    return "ref(" .. table.concat(pathsegs, opt.indentstr and ", " or ",") .. ")"
 end
 
 function serialize._resolveref(root, fenv, ...)
+    local pathsegs = table.pack("<root>", ...)
     local pos = root
-    local path = table.pack(...)
-    for i = 1, path.n do
-        local v = path[i]
-        if type(v) ~= "string" and type(v) ~= "number" then
+    for i = 2, pathsegs.n do
+        local pathseg = pathsegs[i]
+        if type(pathseg) ~= "string" and type(pathseg) ~= "number" then
             return nil, "path segments should be string or number"
         end
         if type(pos) ~= "table" then
-            local vpre = serialize._make(v, {})
-            table.insert(path, 1, "<root>")
-            local pathstr = table.concat(path, "/", 1, i)
+            local vpre = serialize._make(pathseg, {})
+            local pathstr = table.concat(pathsegs, "/", 1, i)
             return nil, string.format("unable to resolve [%s] in %s, which is %s", vpre, pathstr, pos)
         end
-        pos = pos[v]
+        pos = pos[pathseg]
     end
     return pos
 end
@@ -355,8 +353,8 @@ end
 -- @param       object   object to search stubs
 --              root     root object
 --              fenv     fenv of deserialzer caller
---              path     path key for current item
-function serialize._resolvestub(object, root, fenv, path)
+--              pathseg  path key for current item
+function serialize._resolvestub(object, root, fenv, pathseg)
     if type(object) ~= "table" then
         return object
     end
@@ -364,23 +362,23 @@ function serialize._resolvestub(object, root, fenv, path)
     if object.isstub == stub.isstub then
         local ok, result_or_errors, errors = pcall(object, root, fenv)
         if ok and errors == nil then
-            return result
+            return result_or_errors
         end
 
         -- resolve & concat path only if error occurs
-        local pathseg = {}
+        local pathsegs = {}
         local level = 1
         while true do
             if debug.getinfo(level, "f").func ~= serialize._resolvestub then
                 break
             end
             local _, p = debug.getlocal(level, 4)
-            table.insert(pathseg, 1, p)
+            table.insert(pathsegs, 1, p)
             level = level + 1
         end
         -- make error message
         local errmsg = (ok and errors) or result_or_errors or "unspecified error"
-        return nil, string.format("failed to resolve stub '%s' at %s: %s", object.name, table.concat(pathseg, "/"), errmsg)
+        return nil, string.format("failed to resolve stub '%s' at %s: %s", object.name, table.concat(pathsegs, "/"), errmsg)
     end
 
     for k, v in pairs(object) do
