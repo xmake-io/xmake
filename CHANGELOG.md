@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.2.8
+
 ### New features
 
 * Add protobuf c/c++ rules
@@ -624,6 +626,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.2.8
 
 ### 新特性
 
