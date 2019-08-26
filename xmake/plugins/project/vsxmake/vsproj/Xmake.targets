@@ -70,6 +70,13 @@
       set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('/\'.ToCharArray()))
       set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('/\'.ToCharArray()))
     </_XmakeEnv>
+    <_XmakeEnv Condition="$(XmakeDiagnosis)">
+      $(_XmakeEnv)
+      echo XMAKE_CONFIGDIR=%25XMAKE_CONFIGDIR%25
+      echo XMAKE_PROGRAM_DIR=%25XMAKE_PROGRAM_DIR%25
+      echo CD=%25CD%25
+      chcp
+    </_XmakeEnv>
   </PropertyGroup>
 
   <Target Name="_XmakeProjCheck">

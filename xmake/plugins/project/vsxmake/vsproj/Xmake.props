@@ -34,7 +34,7 @@
     <XmakeConfigFileDir Condition="'$(XmakeConfigFileDir)' == ''">$(XmakeBuilDir)\$(XmakePlat)\$(XmakeArch)\$(XmakeMode)</XmakeConfigFileDir>
 
     <XmakeConfigDir Condition="'$(XmakeConfigDir)' == ''">$(XMAKE_CONFIGDIR)</XmakeConfigDir>
-    <XmakeConfigDir Condition="'$(XmakeConfigDir)' == ''">$(XmakeProjectDir)\.xmake</XmakeConfigDir>
+    <XmakeConfigDir Condition="'$(XmakeConfigDir)' == ''">$(XmakeProjectDir)</XmakeConfigDir>
 
     <XmakeRunDir Condition="'$(XmakeRunDir)' == ''">$(XmakeTargetDir)</XmakeRunDir>
   </PropertyGroup>
