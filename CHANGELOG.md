@@ -20,6 +20,10 @@
 * [#542](https://github.com/xmake-io/xmake/pull/542): Improve vs unicode output for link/cl
 * Improve binary bitcode lua scripts in the program directory
 
+### Bugs fixed
+
+* [#549](https://github.com/xmake-io/xmake/issues/549): Fix error caused by the new vsDevCmd.bat of vs2019
+
 ## v2.2.7
 
 ### New features
@@ -638,6 +642,10 @@
 * 尝试采用/dev/shm作为os.tmpdir去改善构建过程中临时文件的读写效率
 * [#542](https://github.com/xmake-io/xmake/pull/542): 改进vs系列工具链的unicode输出问题
 * 对于安装的lua脚本，启用lua字节码存储，减少安装包大小（<2.4M），提高运行加载效率。
+
+### Bugs修复
+
+* [#549](https://github.com/xmake-io/xmake/issues/549): 修复新版vs2019下检测环境会卡死的问题
 
 ## v2.2.7
 
