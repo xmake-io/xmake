@@ -38,18 +38,23 @@ local vcvars = {"path",
                 "UCRTVersion"}
 
 -- load vcvarsall environment variables
-function _load_vcvarsall(vcvarsall, arch, vcvars_ver, sdkver)
+function _load_vcvarsall(vcvarsall, vsver, arch, opt)
 
     -- make the genvcvars.bat 
+    opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
-    file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
-    if vcvars_ver then
-        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  sdkver and sdkver or "", vcvars_ver)
+    -- fix error caused by the new vsDevCmd.bat of vs2019 
+    -- @see https://github.com/xmake-io/xmake/issues/549
+    if vsver and tonumber(vsver) >= 16 then
+        file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
+    end
+    if opt.vcvars_ver then
+        file:print("call \"%s\" %s %s -vcvars_ver=%s > nul", vcvarsall, arch,  opt.sdkver and opt.sdkver or "", opt.vcvars_ver)
     else
-        file:print("call \"%s\" %s %s > nul", vcvarsall, arch, sdkver and sdkver or "")
+        file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
     for idx, var in ipairs(vcvars) do
         file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
@@ -201,8 +206,8 @@ function main(opt)
         if os.isfile(vcvarsall) then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver, opt.sdkver)
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver, opt.sdkver)
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x86", opt)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x64", opt)
 
             -- save results
             local results = {}
@@ -261,8 +266,8 @@ function main(opt)
         if vcvarsall then
 
             -- load vcvarsall
-            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, "x86", opt.vcvars_ver, opt.sdkver)
-            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, "x64", opt.vcvars_ver, opt.sdkver)
+            local vcvarsall_x86 = _load_vcvarsall(vcvarsall, version, "x86", opt)
+            local vcvarsall_x64 = _load_vcvarsall(vcvarsall, version, "x64", opt)
 
             -- save results
             results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
