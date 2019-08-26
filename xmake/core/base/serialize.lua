@@ -153,22 +153,28 @@ function serialize._maketable(object, opt, level, path, reftab)
 end
 
 function serialize._makefunction(func, opt)
-    local ok, funccode = pcall(serialize._dump, func, opt.strip)
+    local ok, bytecode = pcall(serialize._dump, func, opt.strip)
     if not ok then
-        return nil, string.format("%s: <%s>", funccode, func)
+        return nil, string.format("%s: <%s>", bytecode, func)
     end
-    return string.format("func%q", funccode)
+    return string.format("func%q", bytecode)
 end
 
-function serialize._resolvefunction(root, fenv, funccode)
+function serialize._resolvefunction(root, fenv, bytecode)
     -- check
-    if type(funccode) ~= "string" then
-        return nil, "func should called with a string"
+    if type(bytecode) ~= "string" then
+        return nil, string.format("invalid bytecode (string expected, got %s)", type(bytecode))
+    end
+    if not bytecode:startswith("\27LJ") then
+        return nil, "cannot load incompatible bytecode"
     end
 
     -- resolve funccode
-    local func, err = load(funccode, "=(deserialized code)", "b", fenv)
+    local func, err = load(bytecode, "=(func)", "b", fenv)
     if err ~= nil then
+        if err:startswith("(func): ") then
+            err = err:sub(#"(func): " + 1)
+        end
         return nil, err
     end
 
@@ -206,11 +212,11 @@ function serialize._resolveref(root, fenv, ...)
     for i = 1, path.n do
         local v = path[i]
         if type(v) ~= "string" and type(v) ~= "number" then
-            return nil, "path segments in ref should be string or number"
+            return nil, "path segments should be string or number"
         end
         if type(pos) ~= "table" then
-            table.insert(path, 1, "<root>")
-            return nil, "unable to resolve path: " .. table.concat(path, ".", 1, i) .. " is " .. tostring(pos)
+            local vpre = serialize._make(v, {})
+            return nil, string.format("unable to resolve [%s] in <root>/%s, which is %s", vpre, table.concat(path, "/", 1, i - 1), pos)
         end
         pos = pos[v]
     end
@@ -347,21 +353,36 @@ end
 -- @param       object   object to search stubs
 --              root     root object
 --              fenv     fenv of deserialzer caller
-function serialize._resolvestub(object, root, fenv)
+--              path     path key for current item
+function serialize._resolvestub(object, root, fenv, path)
     if type(object) ~= "table" then
         return object
     end
 
     if object.isstub == stub.isstub then
-        local ok, result, errors = pcall(object, root, fenv)
+        local ok, result_or_errors, errors = pcall(object, root, fenv)
         if ok and errors == nil then
             return result
         end
-        return nil, errors or result or "unspecified error"
+
+        -- resolve & concat path only if error occurs
+        local pathseg = {}
+        local level = 1
+        while true do
+            if debug.getinfo(level, "f").func ~= serialize._resolvestub then
+                break
+            end
+            local _, p = debug.getlocal(level, 4)
+            table.insert(pathseg, 1, p)
+            level = level + 1
+        end
+        -- make error message
+        local errmsg = (ok and errors) or result_or_errors or "unspecified error"
+        return nil, string.format("failed to resolve stub '%s' at %s: %s", object.name, table.concat(pathseg, "/"), errmsg)
     end
 
     for k, v in pairs(object) do
-        local result, errors = serialize._resolvestub(v, root, fenv)
+        local result, errors = serialize._resolvestub(v, root, fenv, k)
         if errors ~= nil then
             return nil, errors
         end
@@ -404,7 +425,7 @@ function serialize._load(str)
 
     -- load string
     local env = serialize._createenv()
-    local script, errors = load(str, "=(deserializing data)", binary and "b" or "t", env)
+    local script, errors = load(str, binary and "=(b)" or "=(t)", binary and "b" or "t", env)
     if script then
         -- load object
         local ok, object = pcall(script)
@@ -412,7 +433,7 @@ function serialize._load(str)
             result = object
             if env.has_stub then
                 local fenv = debug.getfenv(debug.getinfo(3, "f").func)
-                result, errors = serialize._resolvestub(result, result, fenv)
+                result, errors = serialize._resolvestub(result, result, fenv, "<root>")
             end
         else
             -- error
