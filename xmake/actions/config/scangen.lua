@@ -63,9 +63,6 @@ function main()
     sourcefiles         = table.unique(sourcefiles)
     sourcefiles_main    = table.unique(sourcefiles_main)
 
-    -- remove config directory first
-    os.tryrm(config.directory())
-        
     -- project not found
     if #sourcefiles == 0 and #sourcefiles_main == 0 then
         raise("project not found!")

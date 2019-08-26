@@ -146,10 +146,9 @@ function main()
     _g.configured = true
 
     -- scan project and generate it if xmake.lua not exists
+    local autogen = false
     if not os.isfile(project.file()) then
-
-        -- scan and generate it automatically
-        local autogen = utils.confirm({default = false, description = "xmake.lua not found, try generating it"})
+        autogen = utils.confirm({default = false, description = "xmake.lua not found, try generating it"})
         if autogen then
             scangen()
         else
@@ -196,7 +195,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- override configure from the options or cache 
     local options_changed = false
     local options_history = {}
-    if not option.get("clean") then
+    if not option.get("clean") and not autogen then
         options_history = configcache:get("options_" .. targetname) or {}
         options = options or options_history
     end
@@ -243,7 +242,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- merge the checked configure 
-    local recheck = _need_check(options_changed or not configcache_loaded)
+    local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
         -- clear detect cache
