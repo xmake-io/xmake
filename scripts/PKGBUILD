@@ -3,7 +3,7 @@
 
 pkgname=xmake
 pkgver=2.2.8
-pkgrel=2
+pkgrel=3
 pkgdesc="A make-like build utility based on Lua"
 arch=('i686' 'x86_64')
 url="https://github.com/xmake-io/xmake"
