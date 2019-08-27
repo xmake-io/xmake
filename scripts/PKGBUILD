@@ -13,12 +13,12 @@ source=("$pkgname.tar.gz::https://github.com/xmake-io/xmake/releases/download/v$
 sha256sums=('f607955bb83c991e6c69197cbd9f21c31debcb08ffcd97a73e67766e2ad0d313')
 
 build() {
-    cd "$srcdir/${pkgname}-${pkgver}"
+    cd "$srcdir"
     make build
 }
 
 package() {
-    cd "$srcdir/${pkgname}-${pkgver}"
+    cd "$srcdir"
     mkdir -p "${pkgdir}/usr/share"
     cp -r "./xmake" "${pkgdir}/usr/share/"
     install -Dm755 ./core/src/demo/demo.b "${pkgdir}/usr/share/xmake/xmake"
