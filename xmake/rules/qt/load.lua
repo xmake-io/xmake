@@ -48,7 +48,7 @@ function _find_static_links(linkdirs, libpattern)
     for _, linkdir in ipairs(linkdirs) do
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
-            if (is_mode("debug") and basename:endswith(debug_suffix)) or not basename:endswith(debug_suffix) then
+            if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
                 table.insert(links, target.linkname(path.filename(libpath)))
             end
         end
