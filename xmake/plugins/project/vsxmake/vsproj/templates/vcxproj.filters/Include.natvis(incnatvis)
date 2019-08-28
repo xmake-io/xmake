@@ -1,0 +1,3 @@
+    <Natvis Include="$(XmakeProjectDir)\#path#">
+      <Filter>#dir#</Filter>
+    </Natvis>

@@ -32,15 +32,12 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-#Import(Include)#
+#Import(Include.c)#
+#Import(Include.natvis)#
   </ItemGroup>
   <ItemGroup>
 #Import(File.c)#
-  </ItemGroup>
-  <ItemGroup>
 #Import(File.cxx)#
-  </ItemGroup>
-  <ItemGroup>
 #Import(File.cu)#
   </ItemGroup>
   <ItemGroup>
