@@ -35,12 +35,13 @@ local template_targets = path.join(template_root, "Xmake.Custom.targets")
 local template_items = path.join(template_root, "Xmake.Custom.items")
 local template_itemfil = path.join(template_root, "Xmake.Custom.items.filters")
 
-function _filter_files(files, exts)
-    local extset = hashset.from(exts)
+function _filter_files(files, includeexts, excludeexts)
+    local positive = not excludeexts
+    local extset = hashset.from(positive and includeexts or excludeexts)
     local f = {}
     for _, file in ipairs(files) do
         local ext = path.extension(file)
-        if extset:has(ext) then
+        if (positive and extset:has(ext)) or not (positive or extset:has(ext)) then
             table.insert(f, file)
         end
     end
@@ -102,8 +103,12 @@ function _buildparams(info, target, default)
         elseif args.filerc then
             local files = info._sub[target].sourcefiles
             table.insert(r, _filter_files(files, {".rc"}))
-        elseif args.inc then
-            table.insert(r, info._sub[target].headerfiles)
+        elseif args.incc then
+            local files = info._sub[target].headerfiles
+            table.insert(r, _filter_files(files, nil, {".natvis"}))
+        elseif args.incnatvis then
+            local files = info._sub[target].headerfiles
+            table.insert(r, _filter_files(files, {".natvis"}))
         end
         return r
     end
