@@ -39,6 +39,9 @@ language("c++")
     -- set mixing kinds
     set_mixingkinds("cc", "cxx", "as", "mrc")
 
+    -- add rules
+    add_rules("cpp")
+
     -- on load
     on_load("load")
 

@@ -28,7 +28,6 @@ import("core.project.config")
 import("core.project.depend")
 import("core.project.project")
 import("core.language.language")
-import("detect.tools.find_ccache")
 
 -- build the object from the *.[o|obj] source file
 function _build_from_object(target, sourcefile, objectfile, progress)
@@ -118,12 +117,16 @@ function _do_build_file(target, sourcefile, opt)
     -- is verbose?
     local verbose = option.get("verbose")
 
+    -- get build prefix
+    local build_prefix = target:data("build.object.prefix")
+    build_prefix = build_prefix and (build_prefix .. " ") or ""
+
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
-        cprint("${dim color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
+        cprint("${dim color.build.object}%scompiling.$(mode) %s", build_prefix, sourcefile)
     else
-        cprint("${color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
+        cprint("${color.build.object}%scompiling.$(mode) %s", build_prefix, sourcefile)
     end
 
     -- trace verbose info
@@ -211,6 +214,10 @@ function _build_files_for_single(target, sourcebatch, jobs)
     local dependfiles = sourcebatch.dependfiles
     local sourcekind  = sourcebatch.sourcekind
 
+    -- get build prefix
+    local build_prefix = target:data("build.object.prefix")
+    build_prefix = build_prefix and (build_prefix .. " ") or ""
+
     -- trace progress info
     local buildinfo = _g.buildinfo
     for index, sourcefile in ipairs(sourcefiles) do
@@ -221,9 +228,9 @@ function _build_files_for_single(target, sourcebatch, jobs)
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
         if verbose then
-            cprint("${dim color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
+            cprint("${dim color.build.object}%scompiling.$(mode) %s", build_prefix, sourcefile)
         else
-            cprint("${color.build.object}%scompiling.$(mode) %s", buildinfo.ccache and "ccache " or "", sourcefile)
+            cprint("${color.build.object}%scompiling.$(mode) %s", build_prefix, sourcefile)
         end
     end
 
@@ -396,11 +403,6 @@ function build(target, buildinfo)
     -- init source index and count
     buildinfo.sourceindex = 0
     buildinfo.sourcecount = target:sourcecount()
-
-    -- init ccache
-    if config.get("ccache") and buildinfo.ccache == nil then
-        buildinfo.ccache = find_ccache()
-    end
 
     -- build precompiled headers
     _build_pcheaderfiles(target, buildinfo)
