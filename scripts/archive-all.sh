@@ -24,6 +24,7 @@ cp -r ./xmake $tmpdir/xmake/xmake
 cp ./scripts/get.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
+cp install $tmpdir/xmake
 cd $tmpdir/xmake || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 
