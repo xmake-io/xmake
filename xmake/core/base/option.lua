@@ -991,13 +991,13 @@ function option.show_main()
                 -- append the task name
                 taskline = taskline .. taskname
 
-                -- append color
-                taskline = colors.translate("${color.menu.main.task.name}" .. taskline .. "${clear}")
-
                 -- append spaces
                 for i = (#taskline), padding do
                     taskline = taskline .. " "
                 end
+
+                -- append color
+                taskline = colors.translate("${color.menu.main.task.name}" .. taskline .. "${clear}")
 
                 -- append the task description
                 if taskinfo.description then
