@@ -18,13 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define rule: cpp.pcheader
-rule("cpp.pcheader")
-    add_deps("cpp.cache")
-    before_build(function (target, opt)
-        import("pcheader.build")(target, opt)
+-- define rule: cpp.build
+rule("cpp.build")
+    set_extensions(".c", ".cpp", ".cc", ".cxx")    
+    on_build_files(function (target, sourcefiles, opt)
+        import("build.object")(target, sourcefiles, opt)
     end)
 
 -- define rule: cpp
 rule("cpp")
-    add_deps("cpp.pcheader", "cpp.cache")
+    add_deps("cpp.build")
