@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
-import("detect.tools.find_ccache")
+import("private.tools.ccache")
 import("private.tools.gcc.parse_deps")
 
 -- init it
@@ -366,31 +366,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
     if (extension:startswith(".h") or extension == ".inl") then
         return _compargv1_pch(self, sourcefile, objectfile, flags)
     end
-
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = find_ccache()
-    end
-
-    -- make argv
-    local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
-
-    -- uses cache?
-    local program = self:program()
-    if ccache then
-            
-        -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
-        if not os.isexec(program) then
-            argv = table.join(program:split("%s"), argv)
-        else 
-            table.insert(argv, 1, program)
-        end
-        return ccache, argv
-    end
-
-    -- no cache
-    return program, argv
+    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
 end
 
 -- compile the source file

@@ -20,7 +20,7 @@
 
 -- imports
 import("core.project.config")
-import("detect.tools.find_ccache")
+import("private.tools.ccache")
 
 -- init it
 function init(self)
@@ -203,31 +203,7 @@ end
 
 -- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
-
-    -- get ccache
-    local ccache = nil
-    if config.get("ccache") then
-        ccache = find_ccache()
-    end
-
-    -- make argv
-    local argv = table.join("-c", flags, "-o", objectfile, sourcefile)
-
-    -- uses cache?
-    local program = self:program()
-    if ccache then
-            
-        -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
-        if not os.isexec(program) then
-            argv = table.join(program:split("%s"), argv)
-        else 
-            table.insert(argv, 1, program)
-        end
-        return ccache, argv
-    end
-
-    -- no cache
-    return program, argv
+    return ccache.cmdargv(self.program(), table.join("-c", flags, "-o", objectfile, sourcefile))
 end
 
 -- compile the source file
