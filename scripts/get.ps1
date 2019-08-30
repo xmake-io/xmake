@@ -11,6 +11,7 @@ param (
 )
 
 & {
+    $ErrorActionPreference = 'Stop'
 
     function writeErrorTip($msg) {
         Write-Host $msg -BackgroundColor Red -ForegroundColor White
@@ -134,38 +135,31 @@ param (
     function registerTabCompletion {
 
         function writeDataToFile($file) {
-            $encoding = [text.encoding]::UTF8
+            $content = ''
             if (Test-Path $file -PathType Leaf) {
-                #Create a stream reader to get the file's encoding and contents.
-                $sr = New-Object System.IO.StreamReader($file, $true)
-                [char[]] $buffer = new-object char[] 3
-                $sr.Read($buffer, 0, 3) | Out-Null
-                $encoding = $sr.CurrentEncoding
-                $sr.Close() | Out-Null 
-
-                if ($(Get-Content $file) -imatch "Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock") {
-                    Write-Host "Seems the tab completion of xmake has installed here... skipped"
-                    return
-                }
+                $content = Get-Content $file -Raw
             }
 
             try {
                 New-Item $(Split-Path $file -Parent) -ItemType Directory -Force | Out-Null
-                [IO.File]::AppendAllText($file, "`n", $encoding)
+                Set-Content $file $content
             } catch {
                 writeErrorTip "Failed to append to profile!"
                 writeErrorTip "Please try again as administrator"
                 return
             }
+            
+            if ($content) {
+                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n?(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "", [System.Text.RegularExpressions.RegexOptions]::Singleline) 
+            }
             try {
-                $content = (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/register-completions.ps1' -UseBasicParsing).Content
+                $appendcontent = (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/register-completions.ps1' -UseBasicParsing).Content
             } catch {
                 writeErrorTip 'Download failed!'
                 writeErrorTip 'Check your network or... the news of S3 break'
                 return
             }
-            [IO.File]::AppendAllText($file, $content, $encoding)
-            [IO.File]::AppendAllText($file, "`n", $encoding)
+            Set-Content $file "$content`n$appendcontent" -NoNewline
             . $file
             Write-Host "Tab completion installed"
         }

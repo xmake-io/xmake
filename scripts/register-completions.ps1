@@ -13,4 +13,3 @@ Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock {
     }
     $env:XMAKE_SKIP_HISTORY = $oldenv
 }
-
