@@ -1337,8 +1337,8 @@ function _instance:sourcebatches()
             local sourcebatch = sourcebatches[rulename] or {sourcefiles = {}}
             sourcebatches[rulename] = sourcebatch
 
-            -- add file rule to this batch
-            sourcebatch.rule = filerule
+            -- save the rule name
+            sourcebatch.rulename = rulename
 
             -- add source file to this batch
             table.insert(sourcebatch.sourcefiles, sourcefile)

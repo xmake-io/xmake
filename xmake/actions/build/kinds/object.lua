@@ -20,14 +20,18 @@
 
 -- imports
 import("core.base.option")
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 
 -- build source files with the custom rule
 function _build_files_with_rule(target, sourcebatch, opt, suffix)
 
+    -- the rule name
+    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+
     -- get rule instance
-    local ruleinst = assert(sourcebatch.rule, "unknown rule!")
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
@@ -53,7 +57,7 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
                 os.cd(curdir)
 
                 -- calculate progress
-                local progress_now = (index * (progress.start + progress.stop)) / sourcecount
+                local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / sourcecount
                 if suffix == "before" then
                     progress_now = progress.start
                 elseif suffix == "after" then
@@ -124,8 +128,9 @@ function build_sourcefiles(target, sourcebatches, opt)
 
         -- compute the sub-progress range
         sourcestop = sourcestart + #sourcebatch.sourcefiles
-        local progress_start = (sourcestart * (progress.start + progress.stop)) / sourcetotal
-        local progress_stop  = (sourcestop * (progress.start + progress.stop)) / sourcetotal
+        local progress_range = progress.stop - progress.start
+        local progress_start = progress.start + (sourcestart * progress_range) / sourcetotal
+        local progress_stop  = progress.start + (sourcestop * progress_range) / sourcetotal
         opt.progress = {start = progress_start, stop = progress_stop}
         sourcestart = sourcestop
 
