@@ -220,13 +220,20 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- save command lines to history
-    if os.isfile(os.projectfile()) then
+    local skipHistory = os.getenv('XMAKE_SKIP_HISTORY')
+    if skipHistory then
+        skipHistory = skipHistory:lower():trim()
+    end
+    if not skipHistory or skipHistory == '' or skipHistory == 'false' or skipHistory == '0' then
+        skipHistory = false
+    end
+    if os.isfile(os.projectfile()) and not skipHistory then
         history("local.history"):save("cmdlines", option.cmdline())
     end
 
     -- get task instance
     local taskname = option.taskname() or "build"
-    local taskinst = project.task(taskname) or task.task(taskname) 
+    local taskinst = project.task(taskname) or task.task(taskname)
     if not taskinst then
         utils.error("do unknown task(%s)!", taskname)
         return -1

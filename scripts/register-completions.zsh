@@ -2,7 +2,7 @@
 
 _xmake_zsh_complete() 
 {
-  local completions=("$(xmake lua private.utils.complete 0 nospace "$words")")
+  local completions=("$(XMAKE_SKIP_HISTORY=1 xmake lua private.utils.complete 0 nospace "$words")")
 
   reply=( "${(ps:\n:)completions}" )
 }
