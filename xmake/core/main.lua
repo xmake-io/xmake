@@ -220,14 +220,8 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- save command lines to history
-    local skipHistory = os.getenv('XMAKE_SKIP_HISTORY')
-    if skipHistory then
-        skipHistory = skipHistory:lower():trim()
-    end
-    if not skipHistory or skipHistory == '' or skipHistory == 'false' or skipHistory == '0' then
-        skipHistory = false
-    end
-    if os.isfile(os.projectfile()) and not skipHistory then
+    local skipHistory = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
+    if os.isfile(os.projectfile()) and skipHistory == '' then
         history("local.history"):save("cmdlines", option.cmdline())
     end
 
