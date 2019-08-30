@@ -20,20 +20,14 @@
 
 -- imports
 import("core.base.option")
-import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 
 -- build source files with the custom rule
 function _build_files_with_rule(target, sourcebatch, opt, suffix)
 
-    -- get rule name
-    local rulename = sourcebatch.rulename
-    assert(rulename, "unknown source rule!")
-
     -- get rule instance
-    local ruleinst = project.rule(rulename) or rule.rule(rulename)
-    assert(ruleinst, "unknown rule: %s", rulename)
+    local ruleinst = assert(sourcebatch.rule, "unknown rule!")
 
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))

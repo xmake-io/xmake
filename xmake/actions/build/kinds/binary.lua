@@ -149,8 +149,8 @@ function _link_target(target, opt)
     end
 end
 
--- build target from objects
-function _build_from_objects(target, buildinfo)
+-- build binary target
+function build(target, buildinfo)
 
     -- build objects
     object.build(target, buildinfo)
@@ -160,59 +160,4 @@ function _build_from_objects(target, buildinfo)
 
     -- link target
     _link_target(target, {progress = progress})
-end
-
--- build target from sources
-function _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
-
-    -- the target file
-    local targetfile = target:targetfile()
-
-    -- is verbose?
-    local verbose = option.get("verbose")
-
-    -- trace progress into
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount)
-    if verbose then
-        cprint("${dim color.build.target}linking.$(mode) %s", path.filename(targetfile))
-    else
-        cprint("${color.build.target}linking.$(mode) %s", path.filename(targetfile))
-    end
-
-    -- trace verbose info
-    if verbose then
-        print(compiler.buildcmd(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind}))
-    end
-
-    -- flush io buffer to update progress info
-    io.flush()
-
-    -- build it
-    compiler.build(sourcebatch.sourcefiles, targetfile, {target = target, sourcekind = sourcekind})
-end
-
--- build binary target
-function build(target, buildinfo)
-
-    -- only one source kind?
-    local kindcount = 0
-    local sourcekind = nil
-    local sourcebatch = nil
-    for kind, batch in pairs(target:sourcebatches()) do
-        if not batch.rulename then
-            sourcekind  = kind
-            sourcebatch = batch
-            kindcount   = kindcount + 1
-            if kindcount > 1 then
-                break
-            end
-        end
-    end
-
-    -- build target
-    if kindcount == 1 and compiler.buildmode(sourcekind, "binary:sources", {target = target}) then
-        _build_from_sources(target, buildinfo, sourcebatch, sourcekind)
-    else
-        _build_from_objects(target, buildinfo)
-    end
 end
