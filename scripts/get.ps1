@@ -142,7 +142,7 @@ param (
 
             try {
                 New-Item $(Split-Path $file -Parent) -ItemType Directory -Force | Out-Null
-                Set-Content $file $content
+                Set-Content $file $content -NoNewline
             } catch {
                 writeErrorTip "Failed to append to profile!"
                 writeErrorTip "Please try again as administrator"
@@ -150,7 +150,7 @@ param (
             }
             
             if ($content) {
-                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n?(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "", [System.Text.RegularExpressions.RegexOptions]::Singleline) 
+                $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline) 
             }
             try {
                 $appendcontent = (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/register-completions.ps1' -UseBasicParsing).Content
