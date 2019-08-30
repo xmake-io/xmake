@@ -946,19 +946,6 @@ function _instance:sourcefiles()
         return {}, false
     end
 
-    -- the patterns
-    local patterns = 
-    {
-        {"([%w%*]+)%.obj|",     "%%1|",  "object"}
-    ,   {"([%w%*]+)%.obj$",     "%%1",   "object"}
-    ,   {"([%w%*]+)%.o|",       "%%1|",  "object"}
-    ,   {"([%w%*]+)%.o$",       "%%1",   "object"}
-    ,   {"([%w%*]+)%.lib|",     "%%1|",  "static"}
-    ,   {"([%w%*]+)%.lib$",     "%%1",   "static"}
-    ,   {"lib([%w%*]+)%.a|",    "%%1|",  "static"}
-    ,   {"lib([%w%*]+)%.a$",    "%%1",   "static"}
-    }
-
     -- match files
     local i = 1
     local count = 0
@@ -971,15 +958,6 @@ function _instance:sourcefiles()
         if file:startswith("__del_") then
             file = file:sub(7)
             deleted = true
-        end
-
-        -- normalize *.[o|obj] and [lib]*.[a|lib] filename
-        for _, pattern in ipairs(patterns) do
-            file, count = file:gsub(pattern[1], target.filename(pattern[2], pattern[3]))
-            if count > 0 then
-                -- disable cache because the object and library files will be modified if them depend on previous target file
-                cache = false
-            end
         end
 
         -- match source files
@@ -1023,9 +1001,6 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-
-    -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
-    sourcefile = sourcefile:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
     -- get relative directory in the autogen directory
     local relativedir = nil
@@ -1346,15 +1321,6 @@ function _instance:sourcebatches()
         return self._SOURCEBATCHES, false
     end
 
-    -- the extensional source kinds
-    local sourcekinds_ext = 
-    {
-        [".o"]   = "obj"
-    ,   [".obj"] = "obj"
-    ,   [".a"]   = "lib"
-    ,   [".lib"] = "lib"
-    }
-
     -- make source batches for each source kinds
     local sourcebatches = {}
     for _, sourcefile in ipairs(sourcefiles) do
@@ -1391,12 +1357,6 @@ function _instance:sourcebatches()
 
             -- get source kind
             sourcekind = language.sourcekind_of(sourcefile)
-            if not sourcekind then
-                local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
-                if sourcekind_ext then
-                    sourcekind = sourcekind_ext
-                end
-            end
             if sourcekind then
 
                 -- make this batch

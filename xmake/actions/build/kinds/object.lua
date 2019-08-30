@@ -25,11 +25,11 @@ import("core.project.config")
 import("core.project.project")
 
 -- build source files with the custom rule
-function _build_files_for_rule(target, sourcebatch, jobs, suffix)
+function _build_files_with_rule(target, sourcebatch, opt, suffix)
 
-    -- the rule name
+    -- get rule name
     local rulename = sourcebatch.rulename
-    local buildinfo = _g.buildinfo
+    assert(rulename, "unknown source rule!")
 
     -- get rule instance
     local ruleinst = project.rule(rulename) or rule.rule(rulename)
@@ -38,59 +38,52 @@ function _build_files_for_rule(target, sourcebatch, jobs, suffix)
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
     if on_build_files then
-
-        -- calculate progress
-        local progress = (buildinfo.targetindex + buildinfo.sourceindex / buildinfo.sourcecount) * 100 / buildinfo.targetcount
-
-        -- do build files
-        on_build_files(target, sourcebatch, {jobs = jobs, progress = progress})
+        on_build_files(target, sourcebatch, opt)
     else
         -- get the build file script
         local on_build_file = ruleinst:script("build_file" .. (suffix and ("_" .. suffix) or ""))
         if on_build_file then
 
+            -- get the max job count
+            local jobs = tonumber(option.get("jobs") or "4")
+
+            -- get progress range
+            local progress = opt.progress
+
             -- run build jobs for each source file 
             local curdir = os.curdir()
+            local sourcecount = #sourcebatch.sourcefiles
             process.runjobs(function (index)
 
                 -- force to set the current directory first because the other jobs maybe changed it
                 os.cd(curdir)
 
                 -- calculate progress
-                local progress = ((buildinfo.targetindex + (buildinfo.sourceindex + index - 1) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
-                if suffix then
-                    progress = ((buildinfo.targetindex + (suffix == "before" and buildinfo.sourceindex or buildinfo.sourcecount) / buildinfo.sourcecount) * 100 / buildinfo.targetcount)
+                local progress_now = (index * (progress.start + progress.stop)) / sourcecount
+                if suffix == "before" then
+                    progress_now = progress.start
+                elseif suffix == "after" then
+                    progress_now = progress.stop
                 end
 
                 -- get source file
                 local sourcefile = sourcebatch.sourcefiles[index]
 
                 -- do build file
-                on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = progress})
+                on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = progress_now})
 
-            end, #sourcebatch.sourcefiles, jobs)
+            end, sourcecount, jobs)
         end
     end
 end
 
 -- do build files
 function _do_build_files(target, sourcebatch, opt)
-
-    -- compile source files with custom rule
-    if sourcebatch.rulename then
-        _build_files_for_rule(target, sourcebatch, opt.jobs)
-    end
+    _build_files_with_rule(target, sourcebatch, opt)
 end
 
 -- build files
-function _build_files(target, sourcebatch, jobs)
-
-    -- calculate progress
-    local buildinfo = _g.buildinfo
-    local progress = (buildinfo.targetindex + buildinfo.sourceindex / buildinfo.sourcecount) * 100 / buildinfo.targetcount
-
-    -- init build option
-    local opt = {jobs = jobs, progress = progress}
+function _build_files(target, sourcebatch, opt)
 
     -- do before build
     local before_build_files = target:script("build_files_before")
@@ -108,9 +101,6 @@ function _build_files(target, sourcebatch, jobs)
         _do_build_files(target, sourcebatch, opt)
     end
 
-    -- update object index
-    buildinfo.sourceindex = buildinfo.sourceindex + #sourcebatch.sourcefiles
-
     -- do after build
     local after_build_files = target:script("build_files_after")
     if after_build_files then
@@ -119,42 +109,51 @@ function _build_files(target, sourcebatch, jobs)
 end
 
 -- build source files
-function build_sourcefiles(target, buildinfo, sourcebatches)
+function build_sourcefiles(target, sourcebatches, opt)
 
-    -- get the max job count
-    local jobs = tonumber(option.get("jobs") or "4")
+    -- init options
+    opt = opt or {}
 
-    -- save buildinfo
-    _g.buildinfo = buildinfo
+    -- get progress range
+    local progress = assert(opt.progress, "no build progress!")
 
     -- build source batches with custom rules before building other sources
     for _, sourcebatch in pairs(sourcebatches) do
-        if sourcebatch.rulename then
-            _build_files_for_rule(target, sourcebatch, jobs, "before")
-        end
+        _build_files_with_rule(target, sourcebatch, opt, "before")
     end
 
     -- build source batches
+    local sourcestart = 0
+    local sourcestop  = 0
+    local sourcetotal = target:sourcecount()
     for _, sourcebatch in pairs(sourcebatches) do
-        _build_files(target, sourcebatch, jobs)
+
+        -- compute the sub-progress range
+        sourcestop = sourcestart + #sourcebatch.sourcefiles
+        local progress_start = (sourcestart * (progress.start + progress.stop)) / sourcetotal
+        local progress_stop  = (sourcestop * (progress.start + progress.stop)) / sourcetotal
+        opt.progress = {start = progress_start, stop = progress_stop}
+        sourcestart = sourcestop
+
+        -- build files
+        _build_files(target, sourcebatch, opt)
     end
 
     -- build source batches with custom rules after building other sources
     for _, sourcebatch in pairs(sourcebatches) do
-        if sourcebatch.rulename then
-            _build_files_for_rule(target, sourcebatch, jobs, "after")
-        end
+        _build_files_with_rule(target, sourcebatch, opt, "after")
     end
 end
 
 -- build objects for the given target
 function build(target, buildinfo)
 
-    -- init source index and count
-    buildinfo.sourceindex = 0
-    buildinfo.sourcecount = target:sourcecount()
+    -- compute the progress range
+    local progress = {}
+    progress.start = (buildinfo.targetindex * 100) / buildinfo.targetcount
+    progress.stop  = ((buildinfo.targetindex + 1) * 100) / buildinfo.targetcount
 
     -- build source files
-    build_sourcefiles(target, buildinfo, target:sourcebatches())
+    build_sourcefiles(target, target:sourcebatches(), {progress = progress})
 end
 
