@@ -251,8 +251,9 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
  
     -- save compiler flags
     local compflags=nil
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if not sourcebatch.rulename then
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind then
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local flags = compiler.compflags(sourcefile, {target = target})
                 if sourcekind == "cc" or sourcekind == "cxx" then
@@ -526,7 +527,8 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
         local sourcebatches = target:sourcebatches()        
         -- c/cxx files
         vcprojfile:enter("<Filter Name=\"Source Files\">")
-            for sourcekind, sourcebatch in pairs(sourcebatches) do
+            for _, sourcebatch in pairs(sourcebatches) do
+                local sourcekind = sourcebatch.sourcekind
                 if sourcekind ~= "mrc" then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -540,7 +542,8 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
 
         -- *.rc files
         vcprojfile:enter("<Filter Name=\"Resource Files\">")
-            for sourcekind, sourcebatch in pairs(sourcebatches) do
+            for _, sourcebatch in pairs(sourcebatches) do
+                local sourcekind = sourcebatch.sourcekind
                 if sourcekind == "mrc" then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do

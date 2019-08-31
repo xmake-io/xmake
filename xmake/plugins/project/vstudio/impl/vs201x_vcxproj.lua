@@ -457,8 +457,9 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         local files_count = 0
         local first_flags = nil
         targetinfo.sourceflags = {}
-        for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
-            if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
+        for _, sourcebatch in pairs(targetinfo.sourcebatches) do
+            local sourcekind = sourcebatch.sourcekind
+            if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
                     -- make compiler flags
@@ -715,8 +716,9 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source file infos
         local sourceinfos = {}
         for _, targetinfo in ipairs(target.info) do
-            for sourcekind, sourcebatch in pairs(targetinfo.sourcebatches) do
-                if not sourcebatch.rulename and (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
+            for _, sourcebatch in pairs(targetinfo.sourcebatches) do
+                local sourcekind = sourcebatch.sourcekind
+                if (sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" or sourcekind == "mrc") then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                         local objectfile    = objectfiles[idx]

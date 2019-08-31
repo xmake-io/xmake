@@ -65,8 +65,8 @@ rule("cuda.devlink")
 
         -- get object files
         local objectfiles = nil
-        for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-            if sourcekind == "cu" then
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.sourcekind == "cu" then
                 objectfiles = sourcebatch.objectfiles
             end
         end

@@ -209,62 +209,13 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     makefile:print("")
 end
  
--- make each objects
-function _make_each_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
+-- make objects
+function _make_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
 
     -- make them
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
         _make_object(makefile, target, sourcebatch.sourcefiles[index], objectfile, sourceflags)
     end
-end
- 
--- make single object
-function _make_single_object(makefile, target, sourcekind, sourcebatch, sourceflags)
-
-    -- get source and object files
-    local sourcefiles = sourcebatch.sourcefiles
-    local objectfiles = sourcebatch.objectfiles
-    local dependfiles = sourcebatch.dependfiles
-
-    -- get program
-    local program = platform.tool(sourcekind)
-
-    -- make command
-    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. ")"
-    local command = compiler.compcmd(sourcefiles, objectfiles, {compflags = macro})
-
-    -- replace program to $(XX)
-    local p, e = command:find(program, 1, true)
-    if p then
-        command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
-    end
-
-    -- replace ccache to $(CCACHE)
-    local ccache = false
-    p, e = command:find("ccache", 1, true)
-    if p then
-        command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
-        ccache = true
-    end
-
-    -- make head
-    makefile:printf("%s:", objectfiles)
-
-    -- make dependence
-    for _, sourcefile in ipairs(sourcefiles) do
-        makefile:printf(" %s", sourcefile)
-    end
-    makefile:print("")
-
-    -- make body
-    for _, sourcefile in ipairs(sourcefiles) do
-        makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
-    end
-    _mkdir(makefile, path.directory(objectfiles))
-    makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
-
-    -- make tail
-    makefile:print("")
 end
 
 -- make phony
@@ -360,15 +311,12 @@ function _make_target(makefile, target, targetflags)
     makefile:print("")
 
     -- build source batches
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if not sourcebatch.rulename then
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind then
             -- compile source files to single object at once
             local sourceflags = targetflags[target:name() .. '_' .. sourcekind:upper()]
-            if type(sourcebatch.objectfiles) == "string" then
-                _make_single_object(makefile, target, sourcekind, sourcebatch, sourceflags)
-            else
-                _make_each_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
-            end
+            _make_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
         end
     end
 end
@@ -412,8 +360,9 @@ function _make_all(makefile)
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
-            for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-                if not sourcebatch.rulename then
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                local sourcekind = sourcebatch.sourcekind
+                if sourcekind then
                     local commonflags, sourceflags = _make_common_flags(target, sourcekind, sourcebatch)
                     makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(commonflags))
                     targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
