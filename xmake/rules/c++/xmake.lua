@@ -18,13 +18,20 @@
 -- @file        xmake.lua
 --
 
+-- define rule: c.build
+rule("c.build")
+    set_extensions(".c")    
+    on_build_files(function (target, sourcefiles, opt)
+        import("build.object")(target, sourcefiles, opt)
+    end)
+
 -- define rule: cpp.build
 rule("cpp.build")
-    set_extensions(".c", ".cpp", ".cc", ".cxx")    
+    set_extensions(".cpp", ".cc", ".cxx")    
     on_build_files(function (target, sourcefiles, opt)
         import("build.object")(target, sourcefiles, opt)
     end)
 
 -- define rule: cpp
 rule("cpp")
-    add_deps("cpp.build")
+    add_deps("cpp.build", "c.build")
