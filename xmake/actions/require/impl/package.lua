@@ -206,6 +206,7 @@ end
 -- add some builtin configurations to package
 function _add_package_configurations(package)
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
+    package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
