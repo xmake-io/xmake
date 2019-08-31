@@ -40,7 +40,7 @@ language("objc++")
     set_mixingkinds("mm", "mxx", "cc", "cxx", "as")
 
     -- add rules
-    add_rules("cpp.pcheader")
+    add_rules("objc++")
 
     -- on load
     on_load("load")

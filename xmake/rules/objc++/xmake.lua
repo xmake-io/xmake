@@ -18,20 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define rule: c.build
-rule("c.build")
-    set_extensions(".c")    
+-- define rule: objc.build
+rule("objc.build")
+    set_extensions(".m")    
     on_build_files(function (target, sourcefiles, opt)
         import("private.action.build.object")(target, sourcefiles, opt)
     end)
 
--- define rule: cpp.build
-rule("cpp.build")
-    set_extensions(".cpp", ".cc", ".cxx")    
+-- define rule: objc++.build
+rule("objc++.build")
+    set_extensions(".mm")    
     on_build_files(function (target, sourcefiles, opt)
         import("private.action.build.object")(target, sourcefiles, opt)
     end)
 
--- define rule: cpp
-rule("cpp")
-    add_deps("cpp.build", "c.build")
+-- define rule: objc
+rule("objc++")
+    add_deps("objc++.build", "objc.build")
