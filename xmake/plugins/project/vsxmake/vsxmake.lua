@@ -141,15 +141,17 @@ function make(version)
                 raise("invalid vs version, run `xmake f --vs=201x`")
             end
         end
-        vprint("using project kind vs%d", version)
-    end
-
-    -- check
-    if version < 2010 then
-        raise("vsxmake does not support vs version lower than 2010")
     end
 
     return function(outputdir)
+
+        -- trace
+        vprint("using project kind vs%d", version)
+
+        -- check
+        assert(version >= 2010, "vsxmake does not support vs version lower than 2010")
+
+        -- get info and params
         local info = getinfo(outputdir, vsinfo(version))
         local paramsprovidersln = _buildparams(info)
 

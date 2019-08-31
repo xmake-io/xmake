@@ -34,17 +34,18 @@ function make(version)
                 raise("invalid vs version, run `xmake f --vs=201x`")
             end
         end
-        vprint("using project kind vs%d", version)
     end
 
     -- get vs version info
     local info = vsinfo(version)
     if version < 2010 then
         return function(outputdir)
+            vprint("using project kind vs%d", version)
             vs200x.make(outputdir, info)
         end
     else
         return function(outputdir)
+            vprint("using project kind vs%d", version)
             vs201x.make(outputdir, info)
         end
     end
