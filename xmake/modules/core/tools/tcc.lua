@@ -55,12 +55,6 @@ function init(self)
     ,   ["-s"]  = "-s"
     ,   ["-S"]  = "-S"
     })
-
-    -- init buildmodes
-    self:set("buildmodes",
-    {
-        ["object:sources"] = false
-    })
 end
 
 -- make the strip flag

@@ -31,12 +31,6 @@ function init(self)
 
     -- init the file formats
     self:set("formats", { static = "$(name).a" })
-
-    -- init buildmodes
-    self:set("buildmodes",
-    {
-        ["object:sources"] = true
-    })
 end
 
 -- make the optimize flag

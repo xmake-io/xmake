@@ -34,12 +34,6 @@ function init(self)
 
     -- init dcflags for the kind: shared
     self:set("shared.dcflags", "-fPIC")
-
-    -- init buildmodes
-    self:set("buildmodes",
-    {
-        ["object:sources"] = false
-    })
 end
 
 -- make the optimize flag

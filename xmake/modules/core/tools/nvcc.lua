@@ -49,12 +49,6 @@ function init(self)
     ,   ["-Wextra"]        = "-Wreorder"
     ,   ["-Weverything"]   = "-Wreorder"
     })
-
-    -- init buildmodes
-    self:set("buildmodes",
-    {
-        ["object:sources"] = false
-    })
 end
 
 -- make the symbol flag
