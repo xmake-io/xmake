@@ -21,8 +21,8 @@
 -- define rule: swift.build
 rule("swift.build")
     set_extensions(".swift")    
-    on_build_files(function (target, sourcefiles, opt)
-        import("private.action.build.object")(target, sourcefiles, opt)
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
 -- define rule: swift

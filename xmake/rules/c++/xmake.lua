@@ -18,18 +18,32 @@
 -- @file        xmake.lua
 --
 
+-- define rule: c.build.pcheader
+rule("c.build.pcheader")
+    before_build(function (target, opt)
+        import("private.action.build.pcheader")(target, "c", opt)
+    end)
+
 -- define rule: c.build
 rule("c.build")
     set_extensions(".c")    
-    on_build_files(function (target, sourcefiles, opt)
-        import("private.action.build.object")(target, sourcefiles, opt)
+    add_deps("c.build.pcheader")
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
+    end)
+
+-- define rule: cpp.build.pcheader
+rule("cpp.build.pcheader")
+    before_build(function (target, opt)
+        import("private.action.build.pcheader")(target, "cxx", opt)
     end)
 
 -- define rule: cpp.build
 rule("cpp.build")
     set_extensions(".cpp", ".cc", ".cxx")    
-    on_build_files(function (target, sourcefiles, opt)
-        import("private.action.build.object")(target, sourcefiles, opt)
+    add_deps("cpp.build.pcheader")
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
 -- define rule: cpp

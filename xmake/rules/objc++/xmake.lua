@@ -21,15 +21,17 @@
 -- define rule: objc.build
 rule("objc.build")
     set_extensions(".m")    
-    on_build_files(function (target, sourcefiles, opt)
-        import("private.action.build.object")(target, sourcefiles, opt)
+    add_deps("c.build.pcheader")
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
 -- define rule: objc++.build
 rule("objc++.build")
     set_extensions(".mm")    
-    on_build_files(function (target, sourcefiles, opt)
-        import("private.action.build.object")(target, sourcefiles, opt)
+    add_deps("cpp.build.pcheader")
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
 -- define rule: objc
