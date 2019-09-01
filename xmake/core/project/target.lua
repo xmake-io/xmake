@@ -868,13 +868,14 @@ function _instance:filerules(sourcefile)
         extension2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
             for _, extension in ipairs(table.wrap(r:get("extensions"))) do
+                extension = extension:lower()
                 extension2rules[extension] = extension2rules[extension] or {}
                 table.insert(extension2rules[extension], r)
             end
         end
         self._EXTENSION2RULES = extension2rules
     end
-    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile)])) do
+    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile):lower()])) do
         table.insert(rules, r)
     end
 
