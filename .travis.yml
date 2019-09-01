@@ -34,6 +34,5 @@ script:
   - travis_wait 60 xmake lua -v -D tests/run.lua
   - scripts/archive-all.sh
   - scripts/makeself/build-runfile.sh 
-  - ls -l scripts/makeself/xmake.gz.run
   - scripts/makeself/xmake.gz.run --info
 
