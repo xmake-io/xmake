@@ -27,4 +27,4 @@ rule("swift.build")
 
 -- define rule: swift
 rule("swift")
-    add_deps("swift.build")
+    add_deps("swift.build", "utils.merge.object")
