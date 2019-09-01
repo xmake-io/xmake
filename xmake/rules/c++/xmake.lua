@@ -48,4 +48,4 @@ rule("cpp.build")
 
 -- define rule: cpp
 rule("cpp")
-    add_deps("cpp.build", "c.build", "utils.merge.object")
+    add_deps("cpp.build", "c.build", "utils.merge.object", "utils.merge.archive")

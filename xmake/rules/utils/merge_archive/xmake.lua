@@ -18,53 +18,57 @@
 -- @file        xmake.lua
 --
 
--- define rule: utils.merge.object
-rule("utils.merge.object")
+-- define rule: utils.merge.archive
+rule("utils.merge.archive")
 
     -- set extensions
-    set_extensions(".o", ".obj")
+    set_extensions(".a", ".lib")
 
     -- on build file
-    on_build_file(function (target, sourcefile_obj, opt)
+    on_build_file(function (target, sourcefile_lib, opt)
 
         -- imports
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("core.tool.extractor")
+        import("core.project.target", {alias = "project_target"})
 
-        -- get object file
-        local objectfile = target:objectfile(sourcefile_obj)
+        -- get object directory of the archive file
+        local objectdir = target:objectfile(sourcefile_lib) .. ".dir"
 
-        -- add objectfile
-        table.insert(target:objectfiles(), objectfile)
+        -- add objectfiles
+        local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
+        table.join2(target:objectfiles(), objectfiles)
 
         -- load dependent info 
-        local dependfile = target:dependfile(objectfile)
+        local dependfile = target:dependfile(objectdir)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile)}) then
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectdir)}) then
             return 
         end
 
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${dim color.build.object}inserting.$(mode) %s", sourcefile_obj)
-            print("copying %s to %s", sourcefile_obj, objectfile)
+            cprint("${dim color.build.object}inserting.$(mode) %s", sourcefile_lib)
+            print("extracting %s to %s", sourcefile_lib, objectdir)
         else
-            cprint("${color.build.object}inserting.$(mode) %s", sourcefile_obj)
+            cprint("${color.build.object}inserting.$(mode) %s", sourcefile_lib)
         end
 
         -- flush io buffer to update progress info
         io.flush()
 
-        -- insert this object file
-        os.cp(sourcefile_obj, objectfile)
+        -- extract the archive library 
+        os.tryrm(objectdir)
+        extractor.extract(sourcefile_lib, objectdir)
 
         -- update files to the dependent file
         dependinfo.files = {}
-        table.insert(dependinfo.files, sourcefile_obj)
+        table.insert(dependinfo.files, sourcefile_lib)
         depend.save(dependinfo, dependfile)
     end)
 

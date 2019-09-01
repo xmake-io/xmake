@@ -27,4 +27,4 @@ rule("dlang.build")
 
 -- define rule: dlang
 rule("dlang")
-    add_deps("dlang.build", "utils.merge.object")
+    add_deps("dlang.build", "utils.merge.object", "utils.merge.archive")

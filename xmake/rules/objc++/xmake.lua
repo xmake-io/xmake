@@ -36,4 +36,4 @@ rule("objc++.build")
 
 -- define rule: objc
 rule("objc++")
-    add_deps("objc++.build", "objc.build", "utils.merge.object")
+    add_deps("objc++.build", "objc.build", "utils.merge.object", "utils.merge.archive")

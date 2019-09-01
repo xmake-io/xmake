@@ -27,4 +27,4 @@ rule("asm.build")
 
 -- define rule: asm
 rule("asm")
-    add_deps("asm.build", "utils.merge.object")
+    add_deps("asm.build", "utils.merge.object", "utils.merge.archive")
