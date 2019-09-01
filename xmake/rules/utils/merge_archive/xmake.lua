@@ -37,16 +37,14 @@ rule("utils.merge.archive")
         -- get object directory of the archive file
         local objectdir = target:objectfile(sourcefile_lib) .. ".dir"
 
-        -- add objectfiles
-        local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
-        table.join2(target:objectfiles(), objectfiles)
-
         -- load dependent info 
         local dependfile = target:dependfile(objectdir)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectdir)}) then
+            local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
+            table.join2(target:objectfiles(), objectfiles)
             return 
         end
 
@@ -65,6 +63,10 @@ rule("utils.merge.archive")
         -- extract the archive library 
         os.tryrm(objectdir)
         extractor.extract(sourcefile_lib, objectdir)
+
+        -- add objectfiles
+        local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
+        table.join2(target:objectfiles(), objectfiles)
 
         -- update files to the dependent file
         dependinfo.files = {}

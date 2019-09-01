@@ -12,7 +12,7 @@ target("merge_object")
 
     -- save object file
     after_build_file(function (target, sourcefile)
-        os.cp(target:objectfile(sourcefile), "$(buildir)/merge_object")
+        os.cp(target:objectfile(sourcefile), "$(buildir)/merge_object/")
     end)
 
 -- add target
