@@ -145,14 +145,9 @@ function build_sourcefiles(target, sourcebatches, opt)
 end
 
 -- build objects for the given target
-function build(target, buildinfo)
-
-    -- compute the progress range
-    local progress = {}
-    progress.start = (buildinfo.targetindex * 100) / buildinfo.targetcount
-    progress.stop  = ((buildinfo.targetindex + 1) * 100) / buildinfo.targetcount
+function build(target, opt)
 
     -- build source files
-    build_sourcefiles(target, target:sourcebatches(), {progress = progress})
+    build_sourcefiles(target, target:sourcebatches(), opt)
 end
 

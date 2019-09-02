@@ -39,6 +39,9 @@ language("rust")
     -- set mixing kinds
     set_mixingkinds("rc")
 
+    -- add rules
+    add_rules("rust")
+
     -- on load
     on_load("load")
 

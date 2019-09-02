@@ -71,7 +71,7 @@ function _do_link_target(target, opt)
     local verbose = option.get("verbose")
 
     -- trace progress into
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress.stop)
     if verbose then
         cprint("${dim color.build.target}linking.$(mode) %s", path.filename(targetfile))
     else
@@ -150,14 +150,11 @@ function _link_target(target, opt)
 end
 
 -- build binary target
-function build(target, buildinfo)
+function build(target, opt)
 
     -- build objects
-    object.build(target, buildinfo)
-
-    -- get progress
-    local progress = (buildinfo.targetindex + 1) * 100 / buildinfo.targetcount
+    object.build(target, opt)
 
     -- link target
-    _link_target(target, {progress = progress})
+    _link_target(target, opt)
 end

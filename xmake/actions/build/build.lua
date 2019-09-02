@@ -33,39 +33,40 @@ function _clean_target(target)
 end
 
 -- do build the given target
-function _do_build_target(target)
+function _do_build_target(target, opt)
 
     -- build target
     if not target:isphony() then
-        import("kinds." .. target:targetkind()).build(target, _g)
+        import("kinds." .. target:targetkind()).build(target, opt)
     end
 end
 
 -- on build the given target
-function _on_build_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
+function _on_build_target(target, opt)
 
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
         local on_build = r:script("build")
         if on_build then
-            on_build(target, {origin = _do_build_target})
+            on_build(target, opt)
             done = true
         end
     end
     if done then return end
 
     -- do build
-    _do_build_target(target)
+    _do_build_target(target, opt)
 end
 
 -- build the given target 
 function _build_target(target)
+
+    -- has been disabled?
+    if target:get("enabled") == false then
+        _g.targetindex = _g.targetindex + 1
+        return 
+    end
 
     -- enter the environments of the target packages
     local oldenvs = {}
@@ -74,18 +75,15 @@ function _build_target(target)
         os.addenv(name, unpack(values))
     end
 
+    -- compute the progress range
+    local progress = {}
+    progress.start = (_g.targetindex * 100) / _g.targetcount
+    progress.stop  = ((_g.targetindex + 1) * 100) / _g.targetcount
+
     -- the target scripts
     local scripts =
     {
         function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
-            end
-
-            -- get progress
-            local progress = _g.targetindex * 100 / _g.targetcount
 
             -- do before build for target
             local before_build = target:script("build_before")
@@ -101,16 +99,15 @@ function _build_target(target)
                 end
             end
         end
-    ,   target:script("build", _on_build_target)
     ,   function (target)
 
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
+            -- do build
+            local on_build = target:script("build", _on_build_target)
+            if on_build then
+                on_build(target, {origin = _do_build_target, progress = progress})
             end
-
-            -- get progress
-            local progress = (_g.targetindex + 1) * 100 / _g.targetcount
+        end
+    ,   function (target)
 
             -- do after build for target
             local after_build = target:script("build_after")
@@ -137,7 +134,7 @@ function _build_target(target)
     for i = 1, 3 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, {origin = (i == 2 and _do_build_target or nil)})
+            script(target)
         end
     end
 
