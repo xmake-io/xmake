@@ -18,13 +18,13 @@
 -- @file        xmake.lua
 --
 
--- define rule: go.build
-rule("go.build")
-    set_extensions(".go")    
+-- define rule: rust.build
+rule("rust.build")
+    set_extensions(".rs")    
     on_build_files(function (target, sourcebatch, opt)
-        import("build.object")(target, sourcebatch, opt)
+        import("build.target")(target, sourcebatch, opt)
     end)
 
 -- define rule: cpp
-rule("go")
-    add_deps("go.build")
+rule("rust")
+    add_deps("rust.build")
