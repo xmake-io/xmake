@@ -39,6 +39,9 @@ language("golang")
     -- set mixing kinds
     set_mixingkinds("gc")
 
+    -- add rules
+    add_rules("go")
+
     -- on load
     on_load("load")
 
