@@ -43,6 +43,11 @@ function _make_runpath_on_windows(target)
             insert(linkdir)
         end
     end
+    for _, pkg in ipairs(target:orderpkgs()) do
+        for _, linkdir in ipairs(pkg:get("linkdirs")) do
+            insert(linkdir)
+        end
+    end
     for _, dep in ipairs(target:orderdeps()) do
         if dep:targetkind() == "shared" then
             insert(dep:targetdir())
