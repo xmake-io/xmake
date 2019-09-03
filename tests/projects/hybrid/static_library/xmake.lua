@@ -13,5 +13,7 @@ target("demo")
 target("demo2")
     set_kind("binary")
     add_files("src/main2.cpp", "src/*.d") 
-
+    if not is_plat("macosx") then
+        set_enabled(false)
+    end
 
