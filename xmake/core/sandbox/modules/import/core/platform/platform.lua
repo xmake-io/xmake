@@ -37,7 +37,7 @@ end
 
 -- get the platform os
 function sandbox_core_platform.os()
-    return assert(platform.os())
+    return platform.os()
 end
 
 -- get the all platforms
