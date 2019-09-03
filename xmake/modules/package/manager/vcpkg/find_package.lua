@@ -82,6 +82,15 @@ function main(name, opt)
                     table.insert(result.links, target.linkname(path.filename(line)))
                 end
             end
+
+            -- add shared library directory (/bin/) to linkdirs for running with PATH on windows
+            if plat == "windows" and line:endswith(".dll") then
+                if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/bin/", 1, true) then
+                    result = result or {}
+                    result.linkdirs = result.linkdirs or {}
+                    table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
+                end
+            end
         end
     end
 
