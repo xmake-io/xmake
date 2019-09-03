@@ -63,13 +63,13 @@ function _checkout(package, url, sourcedir, url_alias)
     if package:branch() then
 
         -- only shadow clone this branch 
-        git.clone(url, {depth = 1, branch = package:branch(), outputdir = packagedir})
+        git.clone(url, {depth = 1, recursive = true, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
     else
 
         -- clone whole history and tags
-        git.clone(url, {outputdir = packagedir})
+        git.clone(url, {outputdir = packagedir, recursive = true})
 
         -- attempt to checkout the given version
         git.checkout(package:revision(url_alias) or package:tag(), {repodir = packagedir})
