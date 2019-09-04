@@ -3,10 +3,10 @@
 int main(int argc, char** argv)
 {
     test1();
-    test2();
 #ifdef MACOSX
+    test2();
     test3();
-    test4();
 #endif
+    test4();
     return 0;
 }
