@@ -18,6 +18,13 @@
 -- @file        xmake.lua
 --
 
+-- define rule: win.sdk.resource
+rule("win.sdk.resource")
+    set_extensions(".rc")    
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
+    end)
+
 -- define rule: application
 rule("win.sdk.application")
 

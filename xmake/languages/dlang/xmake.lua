@@ -39,6 +39,9 @@ language("dlang")
     -- set mixing kinds
     set_mixingkinds("dc", "cc", "cxx", "as")
 
+    -- add rules
+    add_rules("dlang")
+
     -- on load
     on_load("load")
 

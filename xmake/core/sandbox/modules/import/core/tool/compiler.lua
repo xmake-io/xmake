@@ -43,16 +43,6 @@ function sandbox_core_tool_compiler.load(sourcekind, opt)
     return instance
 end
 
--- get the build mode of compiler
-function sandbox_core_tool_compiler.buildmode(sourcekind, name, opt)
- 
-    -- get the compiler instance
-    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
-
-    -- get build mode
-    return instance:buildmode(name)
-end
-
 -- make command for compiling source file
 function sandbox_core_tool_compiler.compcmd(sourcefiles, objectfile, opt)
     return os.args(table.join(sandbox_core_tool_compiler.compargv(sourcefiles, objectfile, opt)))

@@ -39,6 +39,9 @@ language("swift")
     -- set mixing kinds
     set_mixingkinds("sc", "mm", "mxx", "cc", "cxx")
 
+    -- add rules
+    add_rules("swift")
+
     -- on load
     on_load("load")
 

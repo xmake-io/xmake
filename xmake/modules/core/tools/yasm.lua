@@ -43,12 +43,6 @@ function init(self)
     ,   ["-ftrapv"]                 = ""
     ,   ["-fsanitize=address"]      = ""
     })
-
-    -- init buildmodes
-    self:set("buildmodes", 
-    {
-        ["object:sources"]      = false
-    })
 end
 
 -- make the warning flag

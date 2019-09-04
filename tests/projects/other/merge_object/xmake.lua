@@ -10,6 +10,11 @@ target("merge_object")
     -- add files
     add_files("src/interface.c") 
 
+    -- save object file
+    after_build_file(function (target, sourcefile)
+        os.cp(target:objectfile(sourcefile), "$(buildir)/merge_object/")
+    end)
+
 -- add target
 target("test")
 
@@ -21,5 +26,9 @@ target("test")
 
     -- add files
     add_files("src/test.c") 
-    add_files("build/.objs/merge_object/src/interface.c.o")
+    if is_plat("windows") then
+        add_files("$(buildir)/merge_object/interface.c.obj")
+    else
+        add_files("$(buildir)/merge_object/interface.c.o")
+    end
 

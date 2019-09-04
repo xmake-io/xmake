@@ -74,8 +74,9 @@ function _make_targetinfo(mode, arch, target)
     local firstcompflags = nil
     targetinfo.compflags = {}
     targetinfo.compargvs = {}
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if not sourcebatch.rulename then
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind then
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local compflags = compiler.compflags(sourcefile, {target = target})
                 if not firstcompflags and (sourcekind == "cc" or sourcekind == "cxx") then

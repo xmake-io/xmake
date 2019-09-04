@@ -19,7 +19,7 @@
 --
 
 -- define rule: device-link 
-rule("cuda.devlink")
+rule("cuda.build.devlink")
 
     -- add rule: cuda environment
     add_deps("cuda.env")
@@ -36,7 +36,7 @@ rule("cuda.devlink")
         import("core.platform.platform")
 
         -- disable devlink?
-        if target:values("cuda.devlink") == false then
+        if target:values("cuda.build.devlink") == false then
             return
         end
 
@@ -65,8 +65,8 @@ rule("cuda.devlink")
 
         -- get object files
         local objectfiles = nil
-        for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-            if sourcekind == "cu" then
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.sourcekind == "cu" then
                 objectfiles = sourcebatch.objectfiles
             end
         end

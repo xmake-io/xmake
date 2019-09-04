@@ -24,12 +24,6 @@ import("core.project.project")
 
 -- init it
 function init(self)
-
-    -- init buildmodes
-    self:set("buildmodes",
-    {
-        ["object:sources"] = false
-    })
 end
 
 -- make the define flag

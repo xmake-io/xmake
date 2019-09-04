@@ -48,19 +48,10 @@ function _make_object(target, sourcefile, objectfile)
     _g.firstline = false
 end
  
--- make each objects
-function _make_each_objects(target, sourcekind, sourcebatch)
+-- make objects
+function _make_objects(target, sourcekind, sourcebatch)
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
         _make_object(target, sourcebatch.sourcefiles[index], objectfile)
-    end
-end
- 
--- make single object
-function _make_single_object(target, sourcekind, sourcebatch)
-
-    -- not supported now, ignore it directly
-    for _, sourcefile in ipairs(table.wrap(sourcebatch.sourcefiles)) do
-        cprint("${bright yellow}warning: ${default yellow}ignore[%s]: %s", target:name(), sourcefile)
     end
 end
 
@@ -73,13 +64,10 @@ function _make_target(target)
     target:set("pcxxheader", nil)
 
     -- build source batches
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
-        if not sourcebatch.rulename then
-            if type(sourcebatch.objectfiles) == "string" then
-                _make_single_object(target, sourcekind, sourcebatch)
-            else
-                _make_each_objects(target, sourcekind, sourcebatch)
-            end
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind then
+            _make_objects(target, sourcekind, sourcebatch)
         end
     end
 end

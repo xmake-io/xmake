@@ -39,6 +39,9 @@ language("asm")
     -- set mixing kinds
     set_mixingkinds("as")
 
+    -- add rules
+    add_rules("asm")
+
     -- on load
     on_load("load")
 

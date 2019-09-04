@@ -49,24 +49,29 @@ function _prepare_jobs_for_target(jobs, target, filepatterns)
 
     local newbatches = {}
     local sourcecount = 0
-    for sourcekind, sourcebatch in pairs(target:sourcebatches()) do
+    for rulename, sourcebatch in pairs(target:sourcebatches()) do
         local objectfiles = sourcebatch.objectfiles
         local dependfiles = sourcebatch.dependfiles
+        local sourcekind  = sourcebatch.sourcekind
         for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
             if _match_sourcefiles(sourcefile, filepatterns) then
-                local newbatch = newbatches[sourcekind] 
+                local newbatch = newbatches[rulename] 
                 if not newbatch then
                     newbatch             = {}
                     newbatch.sourcekind  = sourcekind
-                    newbatch.rulename    = sourcebatch.rulename
+                    newbatch.rulename    = rulename
                     newbatch.sourcefiles = {}
-                    newbatch.objectfiles = {}
-                    newbatch.dependfiles = {}
                 end
                 table.insert(newbatch.sourcefiles, sourcefile)
-                table.insert(newbatch.objectfiles, objectfiles[idx])
-                table.insert(newbatch.dependfiles, dependfiles[idx])
-                newbatches[sourcekind] = newbatch
+                if objectfiles then
+                    newbatch.objectfiles = newbatch.objectfiles or {}
+                    table.insert(newbatch.objectfiles, objectfiles[idx])
+                end
+                if dependfiles then
+                    newbatch.dependfiles = newbatch.dependfiles or {}
+                    table.insert(newbatch.dependfiles, dependfiles[idx])
+                end
+                newbatches[rulename] = newbatch
                 sourcecount = sourcecount + 1
             end
         end
@@ -117,11 +122,11 @@ function _prepare_jobs(targetname, filepatterns)
     end
 
     -- get source total count
-    local sourcecount = 0
+    local sourcetotal = 0
     for _, job in ipairs(jobs) do
-        sourcecount = sourcecount + job.sourcecount
+        sourcetotal = sourcetotal + job.sourcecount
     end
-    return jobs, sourcecount
+    return jobs, sourcetotal
 end
 
 -- convert all sourcefiles to lua pattern
@@ -179,22 +184,28 @@ function main(targetname, sourcefiles)
     local filepatterns = _get_file_patterns(sourcefiles)
 
     -- prepare jobs
-    local jobs, sourcecount = _prepare_jobs(targetname, filepatterns)
-    if #jobs == 0 or sourcecount == 0 then
+    local jobs, sourcetotal = _prepare_jobs(targetname, filepatterns)
+    if #jobs == 0 or sourcetotal == 0 then
         return
     end
 
     -- enter toolchains environment
     environment.enter("toolchains")
 
-    -- build source files for all jobs
-    _g.finished = {}
-    _g.targetindex = 0
-    _g.targetcount = 1
-    _g.sourceindex = 1
-    _g.sourcecount = sourcecount
+    -- build source files
+    local sourcestart = 1
+    local sourcestop  = 0
     for _, job in ipairs(jobs) do
-        object.build_sourcefiles(job.target, _g, job.sourcebatches)
+
+        -- compute the sub-progress range
+        sourcestop = sourcestart + job.sourcecount
+        local progress_start = (sourcestart * 100) / sourcetotal
+        local progress_stop  = (sourcestop * 100) / sourcetotal
+        local progress = {start = progress_start, stop = progress_stop}
+        sourcestart = sourcestop
+
+        -- build files
+        object.build_sourcefiles(job.target, job.sourcebatches, {progress = progress})
     end
 
     -- leave toolchains environment

@@ -37,15 +37,6 @@ function init(self)
 
     -- init the file formats
     self:set("formats", { static = "lib$(name).rlib" })
-
-    -- init buildmodes
-    self:set("buildmodes", 
-    {
-        ["object:sources"] = false  -- compile multiple source filess to the single object
-    ,   ["binary:sources"] = true   -- build multiple source files to the binary target file
-    ,   ["static:sources"] = true   -- build multiple source files to the static target file
-    ,   ["shared:sources"] = true   -- build multiple source files to the shared target file
-    })
 end
 
 -- make the optimize flag

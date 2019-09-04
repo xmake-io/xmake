@@ -33,6 +33,9 @@ language("msrc")
     -- set mixing kinds
     set_mixingkinds("mrc")
 
+    -- add rules
+    add_rules("win.sdk.resource")
+
     -- on load
     on_load("load")
 

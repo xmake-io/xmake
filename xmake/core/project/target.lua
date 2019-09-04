@@ -868,13 +868,14 @@ function _instance:filerules(sourcefile)
         extension2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
             for _, extension in ipairs(table.wrap(r:get("extensions"))) do
+                extension = extension:lower()
                 extension2rules[extension] = extension2rules[extension] or {}
                 table.insert(extension2rules[extension], r)
             end
         end
         self._EXTENSION2RULES = extension2rules
     end
-    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile)])) do
+    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile):lower()])) do
         table.insert(rules, r)
     end
 
@@ -946,19 +947,6 @@ function _instance:sourcefiles()
         return {}, false
     end
 
-    -- the patterns
-    local patterns = 
-    {
-        {"([%w%*]+)%.obj|",     "%%1|",  "object"}
-    ,   {"([%w%*]+)%.obj$",     "%%1",   "object"}
-    ,   {"([%w%*]+)%.o|",       "%%1|",  "object"}
-    ,   {"([%w%*]+)%.o$",       "%%1",   "object"}
-    ,   {"([%w%*]+)%.lib|",     "%%1|",  "static"}
-    ,   {"([%w%*]+)%.lib$",     "%%1",   "static"}
-    ,   {"lib([%w%*]+)%.a|",    "%%1|",  "static"}
-    ,   {"lib([%w%*]+)%.a$",    "%%1",   "static"}
-    }
-
     -- match files
     local i = 1
     local count = 0
@@ -971,15 +959,6 @@ function _instance:sourcefiles()
         if file:startswith("__del_") then
             file = file:sub(7)
             deleted = true
-        end
-
-        -- normalize *.[o|obj] and [lib]*.[a|lib] filename
-        for _, pattern in ipairs(patterns) do
-            file, count = file:gsub(pattern[1], target.filename(pattern[2], pattern[3]))
-            if count > 0 then
-                -- disable cache because the object and library files will be modified if them depend on previous target file
-                cache = false
-            end
         end
 
         -- match source files
@@ -1023,9 +1002,6 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-
-    -- translate: [lib]xxx*.[a|lib] => xxx/*.[o|obj] object file
-    sourcefile = sourcefile:gsub(target.filename("([%%w%%-_]+)", "static"):gsub("%.", "%%.") .. "$", "%1/*")
 
     -- get relative directory in the autogen directory
     local relativedir = nil
@@ -1075,10 +1051,8 @@ function _instance:objectfiles()
 
     -- get object files from source batches
     local objectfiles = {}
-    for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
-        if not sourcebatch.rulename then
-            table.join2(objectfiles, sourcebatch.objectfiles)
-        end
+    for _, sourcebatch in pairs(self:sourcebatches()) do
+        table.join2(objectfiles, sourcebatch.objectfiles)
     end
 
     -- get object files from all dependent targets (object kind)
@@ -1285,10 +1259,8 @@ function _instance:dependfiles()
 
     -- get dependent files from source batches
     local dependfiles = {}
-    for sourcekind, sourcebatch in pairs(self:sourcebatches()) do
-        if not sourcebatch.rulename then
-            table.join2(dependfiles, sourcebatch.dependfiles)
-        end
+    for _, sourcebatch in pairs(self:sourcebatches()) do
+        table.join2(dependfiles, sourcebatch.dependfiles)
     end
 
     -- cache it
@@ -1346,104 +1318,45 @@ function _instance:sourcebatches()
         return self._SOURCEBATCHES, false
     end
 
-    -- the extensional source kinds
-    local sourcekinds_ext = 
-    {
-        [".o"]   = "obj"
-    ,   [".obj"] = "obj"
-    ,   [".a"]   = "lib"
-    ,   [".lib"] = "lib"
-    }
-
     -- make source batches for each source kinds
     local sourcebatches = {}
     for _, sourcefile in ipairs(sourcefiles) do
 
-        -- add file rules
-        local builtin_rule = true
+        -- get file rules
         local filerules = self:filerules(sourcefile)
+        if #filerules == 0 then
+            os.raise("unknown source file: %s", sourcefile)
+        end
+
+        -- add source batch for the file rules
         for _, filerule in ipairs(filerules) do
 
-            -- get source kind
-            local sourcekind = "__rule_" .. filerule:name()
+            -- get rule name
+            local rulename = filerule:name()
 
             -- make this batch
-            local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
-            sourcebatches[sourcekind] = sourcebatch
+            local sourcebatch = sourcebatches[rulename] or {sourcefiles = {}}
+            sourcebatches[rulename] = sourcebatch
 
-            -- add source kind to this batch
-            sourcebatch.sourcekind = sourcekind
-
-            -- add source rule to this batch
-            sourcebatch.rulename = filerule:name()
+            -- save the rule name
+            sourcebatch.rulename = rulename
 
             -- add source file to this batch
             table.insert(sourcebatch.sourcefiles, sourcefile)
 
-            -- override `on_build_xxx` in filerules? disable the builtin-rule
-            if filerule:get("build_file") or filerule:get("build_files") or filerule:get("build") then
-                builtin_rule = false
-            end
-        end
-
-        -- add builtin rule
-        if builtin_rule then
-
-            -- get source kind
-            sourcekind = language.sourcekind_of(sourcefile)
-            if not sourcekind then
-                local sourcekind_ext = sourcekinds_ext[path.extension(sourcefile):lower()]
-                if sourcekind_ext then
-                    sourcekind = sourcekind_ext
-                end
-            end
+            -- attempt to get source kind from the builtin languages
+            local sourcekind = language.sourcekind_of(sourcefile)
             if sourcekind then
 
-                -- make this batch
-                local sourcebatch = sourcebatches[sourcekind] or {sourcefiles = {}}
-                sourcebatches[sourcekind] = sourcebatch
-
-                -- add source kind to this batch
+                -- save source kind
                 sourcebatch.sourcekind = sourcekind
 
-                -- add source file to this batch
-                table.insert(sourcebatch.sourcefiles, sourcefile)
-
-            elseif #filerules == 0 then
-                os.raise("unknown source file: %s", sourcefile)
-            end
-        end
-    end
-
-    -- insert object files to source batches
-    for sourcekind, sourcebatch in pairs(sourcebatches) do
-
-        -- skip source files with the custom rule
-        if not sourcebatch.rulename then
-
-            -- this batch support to compile multiple objects at the same time?
-            local instance = compiler.load(sourcekind, self)
-            if instance and instance:buildmode("object:sources") then
-
-                -- get the first source file
-                local sourcefile = sourcebatch.sourcefiles[1]
-
-                -- insert single object file for all source files
-                sourcebatch.objectfiles = self:objectfile(path.join(path.directory(sourcefile), "__" .. sourcekind))
-
-                -- insert single dependent file for all source files
-                sourcebatch.dependfiles = self:dependfile(sourcebatch.objectfiles)
-
-            else
-
-                -- insert object files for each source files
-                sourcebatch.objectfiles = {}
-                sourcebatch.dependfiles = {}
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    local objectfile = self:objectfile(sourcefile)
-                    table.insert(sourcebatch.objectfiles, objectfile)
-                    table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
-                end
+                -- insert object files to source batches
+                sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+                sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+                local objectfile = self:objectfile(sourcefile)
+                table.insert(sourcebatch.objectfiles, objectfile)
+                table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
             end
         end
     end

@@ -524,15 +524,5 @@ function builder:format(targetkind)
     end
 end
 
--- get buildmode of the tool
-function builder:buildmode(name)
-
-    -- get it
-    local buildmodes = self:get("buildmodes")
-    if buildmodes then
-        return buildmodes[name]
-    end
-end
-
 -- return module
 return builder

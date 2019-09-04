@@ -39,6 +39,9 @@ language("objc++")
     -- set mixing kinds
     set_mixingkinds("mm", "mxx", "cc", "cxx", "as")
 
+    -- add rules
+    add_rules("objc++")
+
     -- on load
     on_load("load")
 

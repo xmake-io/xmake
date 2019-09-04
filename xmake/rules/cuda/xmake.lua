@@ -18,9 +18,15 @@
 -- @file        xmake.lua
 --
 
+-- define rule: cuda.build
+rule("cuda.build")
+    set_extensions(".cu")    
+    add_deps("cuda.build.devlink")
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object")(target, sourcebatch, opt)
+    end)
+
 -- define rule: cuda
 rule("cuda")
-
-    -- add rules
-    add_deps("cuda.devlink", "cuda.gencodes")
+    add_deps("cuda.build", "cuda.gencodes")
 
