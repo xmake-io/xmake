@@ -92,7 +92,7 @@ rule("cuda.build.devlink")
         local verbose = option.get("verbose")
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress.start)
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress.stop)
         if verbose then
             cprint("${dim color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
         else
