@@ -18,22 +18,10 @@
 -- @file        xmake.lua
 --
 
--- define rule: objc.build
-rule("objc.build")
-    set_extensions(".m")    
-    add_deps("c.build.pcheader")
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object")(target, sourcebatch, opt)
+-- define rule: c++.build.modules
+rule("c++.build.modules")
+    set_extensions(".mpp")    
+    before_build_files(function (target, sourcebatch, opt)
+        print(sourcebatch)
     end)
 
--- define rule: objc++.build
-rule("objc++.build")
-    set_extensions(".mm")    
-    add_deps("c++.build.pcheader")
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object")(target, sourcebatch, opt)
-    end)
-
--- define rule: objc
-rule("objc++")
-    add_deps("objc++.build", "objc.build", "utils.merge.object", "utils.merge.archive")

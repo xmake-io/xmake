@@ -32,20 +32,20 @@ rule("c.build")
         import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
--- define rule: cpp.build.pcheader
-rule("cpp.build.pcheader")
+-- define rule: c++.build.pcheader
+rule("c++.build.pcheader")
     before_build(function (target, opt)
         import("private.action.build.pcheader")(target, "cxx", opt)
     end)
 
--- define rule: cpp.build
-rule("cpp.build")
+-- define rule: c++.build
+rule("c++.build")
     set_extensions(".cpp", ".cc", ".cxx")    
-    add_deps("cpp.build.pcheader")
+    add_deps("c++.build.pcheader")
     on_build_files(function (target, sourcebatch, opt)
         import("private.action.build.object")(target, sourcebatch, opt)
     end)
 
 -- define rule: cpp
-rule("cpp")
-    add_deps("cpp.build", "c.build", "utils.merge.object", "utils.merge.archive")
+rule("c++")
+    add_deps("c++.build", "c.build", "utils.merge.object", "utils.merge.archive")

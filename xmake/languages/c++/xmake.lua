@@ -40,7 +40,7 @@ language("c++")
     set_mixingkinds("cc", "cxx", "as", "mrc")
 
     -- add rules
-    add_rules("cpp")
+    add_rules("c++")
 
     -- on load
     on_load("load")
