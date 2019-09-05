@@ -2,6 +2,16 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#563](https://github.com/xmake-io/xmake/pull/563): Separate build rules for specific language files from action/build 
+
+### Bugs fixed
+
+* [#567](https://github.com/xmake-io/xmake/issues/567): Fix out of memory for serialize 
+* [#566](https://github.com/xmake-io/xmake/issues/566): Fix link order problem with remote packages 
+* [#565](https://github.com/xmake-io/xmake/issues/565): Fix run path for vcpkg packages
+
 ## v2.2.8
 
 ### New features
@@ -626,6 +636,16 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#563](https://github.com/xmake-io/xmake/pull/563): 重构构建逻辑，将特定语言的构建抽离到独立的rules中去 
+
+### Bugs修复
+
+* [#567](https://github.com/xmake-io/xmake/issues/567): 修复序列化对象时候出现的内存溢出问题 
+* [#566](https://github.com/xmake-io/xmake/issues/566): 修复安装远程依赖的链接顺序问题
+* [#565](https://github.com/xmake-io/xmake/issues/565): 修复vcpkg包的运行PATH设置问题
 
 ## v2.2.8
 
