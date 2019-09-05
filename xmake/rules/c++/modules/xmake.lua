@@ -20,8 +20,32 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
-    set_extensions(".mpp")    
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx") 
+    before_load(function (target)
+        --target:add("cxxflags", "-fprebuilt-module-path=")
+    end)
     before_build_files(function (target, sourcebatch, opt)
-        print(sourcebatch)
+
+        -- imports
+        import("core.tool.compiler")
+
+        -- attempt to compile the module files as cxx
+        sourcebatch.sourcekind = "cxx"
+        sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+        sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local objectfile = target:objectfile(sourcefile)
+            table.insert(sourcebatch.objectfiles, objectfile)
+            table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
+        end
+
+        -- do compile
+        local compinst = compiler.load("cxx")
+        if compinst:name() == "clang" then
+            opt.configs = {cxxflags = {"-fmodules-ts", "--precompile"}}
+        else
+            raise("compiler(%s): does not support module!", compinst:name())
+        end
+        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 

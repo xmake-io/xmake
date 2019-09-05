@@ -38,7 +38,7 @@ function _do_build_file(target, sourcefile, opt)
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
-    local compflags = compinst:compflags({target = target, sourcefile = sourcefile})
+    local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = opt.configs})
 
     -- load dependent info 
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
@@ -97,7 +97,7 @@ function _build_object(target, sourcebatch, index, opt)
     local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / #sourcebatch.sourcefiles
 
     -- init build option
-    local opt = {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now}
+    local opt = {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now, configs = opt.configs}
 
     -- do before build
     local before_build_file = target:script("build_file_before")
