@@ -198,11 +198,13 @@ function serialize._makeref(pathsegs, opt)
         return "ref()"
     end
 
+    -- use replicas to avoid infinite generation of nested strings, e.g ref("\"xx\"") => ref("\\\"xx\\\"") => ..
+    local pathrefs = {}
     for i, v in ipairs(pathsegs) do
-        pathsegs[i] = serialize._make(v, opt)
+        pathrefs[i] = serialize._make(v, opt)
     end
 
-    return "ref(" .. table.concat(pathsegs, opt.indentstr and ", " or ",") .. ")"
+    return "ref(" .. table.concat(pathrefs, opt.indentstr and ", " or ",") .. ")"
 end
 
 function serialize._resolveref(root, fenv, ...)
