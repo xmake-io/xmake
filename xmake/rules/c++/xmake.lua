@@ -41,7 +41,7 @@ rule("c++.build.pcheader")
 -- define rule: c++.build
 rule("c++.build")
     set_extensions(".cpp", ".cc", ".cxx")    
-    add_deps("c++.build.pcheader")
+    add_deps("c++.build.pcheader", "c++.build.modules")
     on_build_files(function (target, sourcebatch, opt)
         import("private.action.build.object")(target, sourcebatch, opt)
     end)

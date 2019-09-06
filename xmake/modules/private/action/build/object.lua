@@ -56,11 +56,13 @@ function _do_build_file(target, sourcefile, opt)
     local exists_ccache = ccache.exists()
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
-    if verbose then
-        cprint("${dim color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
-    else
-        cprint("${color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+    if not opt.quiet then
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
+        if verbose then
+            cprint("${dim color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+        else
+            cprint("${color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+        end
     end
 
     -- trace verbose info
@@ -97,7 +99,7 @@ function _build_object(target, sourcebatch, index, opt)
     local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / #sourcebatch.sourcefiles
 
     -- init build option
-    local opt = {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now, configs = opt.configs}
+    local opt = table.join(opt, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now})
 
     -- do before build
     local before_build_file = target:script("build_file_before")

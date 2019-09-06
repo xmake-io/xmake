@@ -48,6 +48,7 @@ function _instance.new(name, info, project)
     instance._NAME    = name
     instance._INFO    = info
     instance._PROJECT = project
+    instance._CACHEID = 1
     return instance
 end
 
@@ -239,6 +240,11 @@ function _instance:_visibility(opt)
     return visibility
 end
 
+-- invalidate the previous cache key
+function _instance:_invalidate()
+    self._CACHEID = self._CACHEID + 1
+end
+
 -- get the target info
 --
 -- e.g. 
@@ -298,16 +304,19 @@ end
 -- set the value to the target info
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
+    self:_invalidate()
 end
 
 -- add the value to the target info
 function _instance:add(name, ...)
     self._INFO:apival_add(name, ...)
+    self:_invalidate()
 end
 
 -- remove the value to the target info
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
+    self:_invalidate()
 end
 
 -- get the extra configuration
@@ -385,6 +394,11 @@ end
 -- get the target name
 function _instance:name()
     return self._NAME
+end
+
+-- get the cache key 
+function _instance:cachekey()
+    return string.format("%s_%d", tostring(self), self._CACHEID)
 end
 
 -- get the target version

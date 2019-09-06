@@ -21,9 +21,6 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx") 
-    before_load(function (target)
-        --target:add("cxxflags", "-fprebuilt-module-path=")
-    end)
     before_build_files(function (target, sourcebatch, opt)
 
         -- imports
@@ -34,7 +31,7 @@ rule("c++.build.modules")
         sourcebatch.objectfiles = sourcebatch.objectfiles or {}
         sourcebatch.dependfiles = sourcebatch.dependfiles or {}
         for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local objectfile = target:objectfile(sourcefile)
+            local objectfile = target:objectfile(sourcefile) .. ".pcm"
             table.insert(sourcebatch.objectfiles, objectfile)
             table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
         end
@@ -42,10 +39,32 @@ rule("c++.build.modules")
         -- do compile
         local compinst = compiler.load("cxx")
         if compinst:name() == "clang" then
-            opt.configs = {cxxflags = {"-fmodules-ts", "--precompile"}}
+
+            -- compile module files to *.pcm
+            opt = table.join(opt, {configs = {cxxflags = {"-fmodules-ts", "--precompile", "-x c++-module"}}})
+            import("private.action.build.object")(target, sourcebatch, opt)
+
+            -- compile *.pcm to object files
+            local modulefiles = {}
+            for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local modulefile = sourcebatch.objectfiles[idx]
+                local objectfile = target:objectfile(sourcefile) 
+                sourcebatch.sourcefiles[idx] = modulefile
+                sourcebatch.objectfiles[idx] = objectfile
+                sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
+                table.insert(modulefiles, modulefile)
+            end
+            opt.configs = {cxxflags = {"-fmodules-ts"}}
+            opt.quiet   = true
+            import("private.action.build.object")(target, sourcebatch, opt)
+
+            -- add module files
+            target:add("cxxflags", "-fmodules-ts")
+            for _, modulefile in ipairs(modulefiles) do
+                target:add("cxxflags", "-fmodule-file=" .. modulefile)
+            end
         else
             raise("compiler(%s): does not support module!", compinst:name())
         end
-        import("private.action.build.object")(target, sourcebatch, opt)
     end)
 

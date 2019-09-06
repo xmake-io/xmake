@@ -307,7 +307,7 @@ function builder:_add_flags_from_target(flags, target)
     local cache = self._TARGETFLAGS
 
     -- get flags from cache first
-    local key = tostring(target)
+    local key = target:cachekey()
     local targetflags = cache[key]
     if not targetflags then
     
