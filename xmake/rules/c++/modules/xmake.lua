@@ -26,19 +26,19 @@ rule("c++.build.modules")
         -- imports
         import("core.tool.compiler")
 
-        -- attempt to compile the module files as cxx
-        sourcebatch.sourcekind = "cxx"
-        sourcebatch.objectfiles = sourcebatch.objectfiles or {}
-        sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-        for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-            local objectfile = target:objectfile(sourcefile) .. ".pcm"
-            table.insert(sourcebatch.objectfiles, objectfile)
-            table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
-        end
-
         -- do compile
         local compinst = compiler.load("cxx")
-        if compinst:name() == "clang" then
+        if compinst:name() == "clang" and compinst:has_flags("-fmodules-ts") then
+
+            -- attempt to compile the module files as cxx
+            sourcebatch.sourcekind = "cxx"
+            sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+            sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local objectfile = target:objectfile(sourcefile) .. ".pcm"
+                table.insert(sourcebatch.objectfiles, objectfile)
+                table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
+            end
 
             -- compile module files to *.pcm
             opt = table.join(opt, {configs = {cxxflags = {"-fmodules-ts", "--precompile", "-x c++-module"}}})
@@ -62,6 +62,32 @@ rule("c++.build.modules")
             target:add("cxxflags", "-fmodules-ts")
             for _, modulefile in ipairs(modulefiles) do
                 target:add("cxxflags", "-fmodule-file=" .. modulefile)
+            end
+        elseif compinst:name() == "cl" and compinst:has_flags("/experimental:module") then
+
+            -- attempt to compile the module files as cxx
+            local modulefiles = {}
+            opt = table.join(opt, {configs = {}})
+            sourcebatch.sourcekind = "cxx"
+            sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+            sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local objectfile = target:objectfile(sourcefile) 
+                local dependfile = target:dependfile(objectfile)
+                local modulefile = objectfile .. ".pcm"
+
+                -- compile module file to *.pcm
+                local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
+                opt.configs.cxxflags = {"/experimental:module /module:interface /module:output " .. os.args(modulefile), "/TP"}
+                import("private.action.build.object")(target, singlebatch, opt)
+                table.insert(modulefiles, modulefile)
+                table.insert(sourcebatch.objectfiles, objectfile)
+                table.insert(sourcebatch.dependfiles, dependfile)
+            end
+
+            -- add module files
+            for _, modulefile in ipairs(modulefiles) do
+                target:add("cxxflags", "/experimental:module /module:reference " .. os.args(modulefile))
             end
         else
             raise("compiler(%s): does not support module!", compinst:name())
