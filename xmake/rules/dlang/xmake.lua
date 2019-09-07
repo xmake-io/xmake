@@ -21,9 +21,7 @@
 -- define rule: dlang.build
 rule("dlang.build")
     set_extensions(".d")    
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object")(target, sourcebatch, opt)
-    end)
+    on_build_files("private.action.build.object")
 
 -- define rule: dlang
 rule("dlang")

@@ -28,9 +28,7 @@ rule("c.build.pcheader")
 rule("c.build")
     set_extensions(".c")    
     add_deps("c.build.pcheader")
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object")(target, sourcebatch, opt)
-    end)
+    on_build_files("private.action.build.object")
 
 -- define rule: c++.build.pcheader
 rule("c++.build.pcheader")
@@ -42,9 +40,7 @@ rule("c++.build.pcheader")
 rule("c++.build")
     set_extensions(".cpp", ".cc", ".cxx")    
     add_deps("c++.build.pcheader", "c++.build.modules")
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object")(target, sourcebatch, opt)
-    end)
+    on_build_files("private.action.build.object")
 
 -- define rule: cpp
 rule("c++")

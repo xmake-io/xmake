@@ -21,9 +21,7 @@
 -- define rule: go.build
 rule("go.build")
     set_extensions(".go")    
-    on_build_files(function (target, sourcebatch, opt)
-        import("build.object")(target, sourcebatch, opt)
-    end)
+    on_build_files("build.object")
 
 -- define rule: cpp
 rule("go")

@@ -21,9 +21,7 @@
 -- define rule: rust.build
 rule("rust.build")
     set_extensions(".rs")    
-    on_build(function (target, opt)
-        import("build.target")(target, opt)
-    end)
+    on_build("build.target")
 
 -- define rule: cpp
 rule("rust")
