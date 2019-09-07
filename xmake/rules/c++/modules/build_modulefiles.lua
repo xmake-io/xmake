@@ -59,6 +59,35 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 end
 
+-- build module files using gcc
+function _build_modulefiles_gcc(target, sourcebatch, opt)
+
+    -- attempt to compile the module files as cxx
+    local modulefiles = {}
+    opt = table.join(opt, {configs = {}})
+    sourcebatch.sourcekind = "cxx"
+    sourcebatch.objectfiles = sourcebatch.objectfiles or {}
+    sourcebatch.dependfiles = sourcebatch.dependfiles or {}
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local objectfile = target:objectfile(sourcefile) 
+        local dependfile = target:dependfile(objectfile)
+        local modulefile = objectfile .. ".pcm"
+
+        -- compile module file to *.pcm
+        local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
+        opt.configs.cxxflags = {"-fmodules-ts", "-fmodule-output=" .. modulefile, "-x c++"}
+        import("private.action.build.object")(target, singlebatch, opt)
+        table.insert(modulefiles, modulefile)
+        table.insert(sourcebatch.objectfiles, objectfile)
+        table.insert(sourcebatch.dependfiles, dependfile)
+    end
+
+    -- add module files
+    for _, modulefile in ipairs(modulefiles) do
+        target:add("cxxflags", "-fmodules-ts", "-fmodule-file=" .. modulefile)
+    end
+end
+
 -- build module files using msvc
 function _build_modulefiles_msvc(target, sourcebatch, opt)
 
@@ -95,6 +124,8 @@ function main(target, sourcebatch, opt)
     local compinst = compiler.load("cxx")
     if compinst:name() == "clang" and compinst:has_flags("-fmodules-ts") then
         _build_modulefiles_clang(target, sourcebatch, opt)
+    elseif compinst:name() == "gcc" and compinst:has_flags("-fmodules-ts") then
+        _build_modulefiles_gcc(target, sourcebatch, opt)
     elseif compinst:name() == "cl" and compinst:has_flags("/experimental:module") then
         _build_modulefiles_msvc(target, sourcebatch, opt)
     else
