@@ -25,7 +25,7 @@
 -- @code
 -- includes("qt_add_static_plugins.lua")
 -- target("test")
---     add_rules("qt.application")
+--     add_rules("qt.quickapp")
 --     add_files("src/*.c")
 --     qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg", "Qt5Svg"}})
 -- @endcode

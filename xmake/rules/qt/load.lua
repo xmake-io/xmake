@@ -212,5 +212,16 @@ function main(target, opt)
 
     -- add some static third-party links if exists
     target:add("links", _find_static_links(qt.linkdirs, is_plat("windows") and "qt*.lib" or "libqt*.a"))
+
+    -- is gui application?
+    if opt.gui then
+        -- add -subsystem:windows for windows platform
+        if is_plat("windows") then
+            target:add("defines", "_WINDOWS")
+            target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
+        elseif is_plat("mingw") then
+            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
+        end
+    end
 end
 

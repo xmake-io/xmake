@@ -79,17 +79,7 @@ rule("qt.widgetapp")
 
     -- after load
     after_load(function (target)
-
-        -- load common flags to target
-        import("load")(target, {frameworks = {"QtGui", "QtWidgets", "QtCore"}})
-
-        -- add -subsystem:windows for windows platform
-        if is_plat("windows") then
-            target:add("defines", "_WINDOWS")
-            target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
-        elseif is_plat("mingw") then
-            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
-        end
+        import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
     -- deploy application for android after build
@@ -111,17 +101,7 @@ rule("qt.quickapp")
 
     -- after load
     after_load(function (target)
-
-        -- load common flags to target
-        import("load")(target, {frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
-
-        -- add -subsystem:windows for windows platform
-        if is_plat("windows") then
-            target:add("defines", "_WINDOWS")
-            target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
-        elseif is_plat("mingw") then
-            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
-        end
+        import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
     end)
 
     -- deploy application for android after build
