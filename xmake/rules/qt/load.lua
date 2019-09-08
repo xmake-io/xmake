@@ -56,6 +56,19 @@ function _find_static_links(linkdirs, libpattern)
     return links
 end
 
+-- add plugins
+function _add_plugins(target, plugins)
+    for name, plugin in pairs(plugins) do
+        target:values_add("qt.plugins", name)
+        if plugin.links then
+            target:values_add("qt.links", unpack(table.wrap(plugin.links)))
+        end
+        if plugin.linkdirs then
+            target:values_add("qt.linkdirs", unpack(table.wrap(plugin.linkdirs)))
+        end
+    end
+end
+
 -- the main entry
 function main(target, opt)
 
@@ -105,6 +118,9 @@ function main(target, opt)
     target:add("defines", "QT_DEPRECATED_WARNINGS")
 
     -- add plugins
+    if opt.plugins then
+        _add_plugins(target, opt.plugins)
+    end
     local plugins = target:values("qt.plugins")
     if plugins then
         local importfile = path.join(config.buildir(), ".qt", "plugin", target:name(), "static_import.cpp")
@@ -223,5 +239,6 @@ function main(target, opt)
             target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
         end
     end
+
 end
 

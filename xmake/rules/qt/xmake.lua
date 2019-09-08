@@ -88,6 +88,34 @@ rule("qt.widgetapp")
     -- install application for android
     on_install("android", "install.android")
 
+-- define rule: qt static widgetapp
+rule("qt.widgetapp_static")
+
+    -- add rules
+    add_deps("qt.ui", "qt.moc")
+
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", is_plat("android") and "shared" or "binary")
+    end)
+
+    -- after load
+    after_load(function (target)
+        local plugins = {}
+        if is_plat("macosx") then
+            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "cups"}}
+        elseif is_plat("windows") then
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "qwindows"}}
+        end
+        import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
+    end)
+
+    -- deploy application for android after build
+    after_build("android", "deploy.android")
+
+    -- install application for android
+    on_install("android", "install.android")
+
 -- define rule: qt quickapp
 rule("qt.quickapp")
 
@@ -102,6 +130,34 @@ rule("qt.quickapp")
     -- after load
     after_load(function (target)
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
+    end)
+
+    -- deploy application for android after build
+    after_build("android", "deploy.android")
+
+    -- install application for android
+    on_install("android", "install.android")
+
+-- define rule: qt static quickapp
+rule("qt.quickapp_static")
+
+    -- add rules
+    add_deps("qt.qrc", "qt.moc")
+
+    -- we must set kind before target.on_load(), may we will use target in on_load()
+    before_load(function (target)
+        target:set("kind", is_plat("android") and "shared" or "binary")
+    end)
+
+    -- after load
+    after_load(function (target)
+        local plugins = {}
+        if is_plat("macosx") then
+            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "cups"}}
+        elseif is_plat("windows") then
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "qwindows"}}
+        end
+        import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
     end)
 
     -- deploy application for android after build
