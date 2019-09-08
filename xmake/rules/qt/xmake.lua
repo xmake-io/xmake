@@ -70,7 +70,7 @@ rule("qt.console")
 rule("qt.widgetapp")
 
     -- add rules
-    add_deps("qt.qrc", "qt.ui", "qt.moc")
+    add_deps("qt.ui", "qt.moc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
@@ -102,7 +102,7 @@ rule("qt.widgetapp")
 rule("qt.quickapp")
 
     -- add rules
-    add_deps("qt.qrc", "qt.ui", "qt.moc")
+    add_deps("qt.qrc", "qt.moc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
