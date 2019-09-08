@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("qt_demo")
 
     -- add rules
-    add_rules("qt.application")
+    add_rules("qt.quickapp")
 
     -- add headers
     add_headerfiles("src/*.h")
@@ -15,6 +15,4 @@ target("qt_demo")
     add_files("src/*.cpp") 
     add_files("src/qml.qrc")
 
-    -- add frameworks
-    add_frameworks("QtQuick")
 

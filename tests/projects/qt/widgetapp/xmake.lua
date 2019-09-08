@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 target("qt_demo")
 
     -- add rules
-    add_rules("qt.application")
+    add_rules("qt.widgetapp")
 
     -- add headers
     add_headerfiles("src/*.h")
@@ -18,6 +18,4 @@ target("qt_demo")
     -- add files with Q_OBJECT meta (only for qt.moc)
     add_files("src/mainwindow.h") 
 
-    -- add frameworks
-    add_frameworks("QtWidgets")
 

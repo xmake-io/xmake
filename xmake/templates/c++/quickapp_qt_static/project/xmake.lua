@@ -9,7 +9,7 @@ includes("qt_add_static_plugins.lua")
 target("[targetname]")
 
     -- add rules
-    add_rules("qt.application")
+    add_rules("qt.quickapp")
 
     -- add headers
     add_headerfiles("src/*.h")
@@ -17,9 +17,6 @@ target("[targetname]")
     -- add files
     add_files("src/*.cpp") 
     add_files("src/qml.qrc")
-
-    -- add frameworks
-    add_frameworks("QtQuick")
 
     -- add plugin: QXXXIntegrationPlugin
     if is_plat("macosx") then
