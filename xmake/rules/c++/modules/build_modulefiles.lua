@@ -59,9 +59,11 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 end
 
+-- TODO
 -- build module files using gcc
 function _build_modulefiles_gcc(target, sourcebatch, opt)
 
+    --[[
     -- attempt to compile the module files as cxx
     local modulefiles = {}
     opt = table.join(opt, {configs = {}})
@@ -85,7 +87,8 @@ function _build_modulefiles_gcc(target, sourcebatch, opt)
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodules-ts", "-fmodule-file=" .. modulefile)
-    end
+    end]]
+    raise("compiler(gcc): not implemented for c++ module!")
 end
 
 -- build module files using msvc
@@ -129,7 +132,7 @@ function main(target, sourcebatch, opt)
     elseif compinst:name() == "cl" and compinst:has_flags("/experimental:module") then
         _build_modulefiles_msvc(target, sourcebatch, opt)
     else
-        raise("compiler(%s): does not support module!", compinst:name())
+        raise("compiler(%s): does not support c++ module!", compinst:name())
     end
 end
 
