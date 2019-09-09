@@ -236,7 +236,7 @@ function main(target, opt)
             target:add("defines", "_WINDOWS")
             target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
         elseif is_plat("mingw") then
-            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
+            target:add("ldflags", "-mwindows", {force = true})
         end
     end
 
