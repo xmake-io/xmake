@@ -141,22 +141,30 @@ colors._keys24 =
 -- the escape string
 colors._escape = string.char(27) .. '[%sm'
 
--- support 8 colors?
+-- get colorterm setting
 --
 -- COLORTERM: color8, color256, truecolor, nocolor
 --
+function colors._colorterm()
+    local colorterm = colors._COLORTERM
+    if colorterm == nil then
+        colorterm = os.getenv("XMAKE_COLORTERM") or os.getenv("COLORTERM") or ""
+        colors._COLORTERM = colorterm
+    end
+    return colorterm
+end
+
+-- support 8 colors?
 function colors.color8()
 
-    -- get $COLORTERM
-    colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
-
     -- no color?
-    if colors._COLORTERM == "nocolor" then
+    local colorterm = colors._colorterm()
+    if colorterm == "nocolor" then
         return false
     end
 
     -- has 8 colors?
-    if colors._COLORTERM == "color8" or os.host() ~= "windows" then
+    if colorterm == "color8" or os.host() ~= "windows" then
         return true
     end
 
@@ -166,21 +174,16 @@ function colors.color8()
 end
 
 -- support 256 colors?
---
--- COLORTERM: color8, color256, truecolor, nocolor
---
 function colors.color256()
 
-    -- get $COLORTERM
-    colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
-
     -- no color?
-    if colors._COLORTERM == "nocolor" then
+    local colorterm = colors._colorterm()
+    if colorterm == "nocolor" then
         return false
     end
 
     -- has 256 colors?
-    return colors._COLORTERM == "color256" or os.host() ~= "windows"
+    return colorterm == "color256" or os.host() ~= "windows"
 end
 
 -- support 24bits true color
@@ -200,11 +203,19 @@ end
 --
 function colors.truecolor()
 
-    -- get $COLORTERM
-    colors._COLORTERM = colors._COLORTERM or os.getenv("COLORTERM") or ""
-
     -- support true color?
-    return colors._COLORTERM:find("truecolor", 1, true) or colors._COLORTERM:find("24bit", 1, true)
+    local colorterm = colors._colorterm()
+    return colorterm:find("truecolor", 1, true) or colorterm:find("24bit", 1, true)
+end
+
+-- support emoji?
+function colors.emoji()
+    local emoji = colors._EMOJI
+    if emoji == nil then
+        emoji = not os.getenv("XMAKE_COLORTERM_NOEMOJI")
+        colors._EMOJI = emoji
+    end
+    return emoji
 end
 
 -- make rainbow truecolor code by the index of characters
@@ -380,7 +391,7 @@ function colors.translate(str, opt)
                 elseif block:startswith("$") then
                     -- plain text, do not translate emoji
                     table.insert(text_buffer, block:sub(2))
-                else
+                elseif colors.emoji() then
                     -- get emoji code
                     local emoji_code = emoji.translate(block)
                     if emoji_code then
