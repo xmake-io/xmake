@@ -124,6 +124,11 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     if excludesfile then
         os.tryrm(excludesfile)
     end
+    
+    -- remove unused pax_global_header file after extracting .tar file
+    if extension == ".tar" then
+        os.tryrm(path.join(outputdir, "pax_global_header"))
+    end
 
     -- continue to extract *.tar file
     if outputdir_old then
