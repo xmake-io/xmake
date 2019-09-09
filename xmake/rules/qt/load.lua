@@ -232,11 +232,8 @@ function main(target, opt)
     -- is gui application?
     if opt.gui then
         -- add -subsystem:windows for windows platform
-        if is_plat("windows") then
-            target:add("defines", "_WINDOWS")
+        if is_plat("windows", "mingw") then
             target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
-        elseif is_plat("mingw") then
-            target:add("ldflags", "-Wl,-subsystem:windows", {force = true})
         end
     end
 

@@ -5,6 +5,7 @@
 ### Change
 
 * [#563](https://github.com/xmake-io/xmake/pull/563): Separate build rules for specific language files from action/build 
+* [#570](https://github.com/xmake-io/xmake/issues/570): Add `qt.widgetapp` and `qt.quickapp` rules
 
 ### Bugs fixed
 
@@ -640,6 +641,7 @@
 ### 改进
 
 * [#563](https://github.com/xmake-io/xmake/pull/563): 重构构建逻辑，将特定语言的构建抽离到独立的rules中去 
+* [#570](https://github.com/xmake-io/xmake/issues/570): 改进Qt构建，将`qt.application`拆分成`qt.widgetapp`和`qt.quickapp`两个构建规则
 
 ### Bugs修复
 
