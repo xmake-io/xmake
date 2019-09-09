@@ -37,20 +37,27 @@ rule("win.sdk.application")
     after_load(function (target)
 
         -- set subsystem: windows
-        local subsystem = false
-        for _, ldflag in ipairs(target:get("ldflags")) do
-            ldflag = ldflag:lower()
-            if ldflag:find("[/%-]subsystem:") then
-                subsystem = true
-                break
+        if is_plat("mingw") then
+            target:add("ldflags", "-mwindows", {force = true})
+        else
+            local subsystem = false
+            for _, ldflag in ipairs(target:get("ldflags")) do
+                ldflag = ldflag:lower()
+                if ldflag:find("[/%-]subsystem:") then
+                    subsystem = true
+                    break
+                end
             end
-        end
-        if not subsystem then
-            target:add("ldflags", "-subsystem:windows", {force = true})
+            if not subsystem then
+                target:add("ldflags", "-subsystem:windows", {force = true})
+            end
         end
 
         -- add links
-        target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")
-        target:add("links", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "comctl32")
-        target:add("links", "cfgmgr32", "comdlg32", "setupapi", "strsafe", "shlwapi")
+        target:add("syslinks", "kernel32", "user32", "gdi32", "winspool", "comdlg32", "advapi32")
+        target:add("syslinks", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "comctl32")
+        target:add("syslinks", "comdlg32", "setupapi", "shlwapi")
+        if not is_plat("mingw") then
+            target:add("syslinks", "strsafe")
+        end
     end)
