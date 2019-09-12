@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#569](https://github.com/xmake-io/xmake/pull/569): Add c++ modules build rules
+
 ### Change
 
 * [#563](https://github.com/xmake-io/xmake/pull/563): Separate build rules for specific language files from action/build 
@@ -637,6 +641,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#569](https://github.com/xmake-io/xmake/pull/569): 增加对c++模块的实验性支持
 
 ### 改进
 
