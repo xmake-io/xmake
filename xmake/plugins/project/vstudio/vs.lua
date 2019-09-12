@@ -45,6 +45,7 @@ function make(version)
         end
     else
         return function(outputdir)
+            utils.warning("please use the new vs project generator, .e.g xmake project -k vsxmake")
             vprint("using project kind vs%d", version)
             vs201x.make(outputdir, info)
         end
