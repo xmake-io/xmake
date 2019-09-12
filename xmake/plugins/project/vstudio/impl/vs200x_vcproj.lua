@@ -410,7 +410,7 @@ end
 function _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfile, vcprojdir)
 
     -- get the target key
-    local key = tostring(target)
+    local key = target:cachekey()
 
     -- make flags cache
     _g.flags = _g.flags or {}

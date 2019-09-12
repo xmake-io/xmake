@@ -33,9 +33,18 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
     -- get rule instance
     local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
+    -- get progress
+    local progress = opt.progress
+
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
     if on_build_files then
+        opt = table.copy(opt)
+        if suffix == "before" then
+            opt.progress = {start = progress.start, stop = progress.start}
+        elseif suffix == "after" then
+            opt.progress = {start = progress.stop, stop = progress.stop}
+        end
         on_build_files(target, sourcebatch, opt)
     else
         -- get the build file script
@@ -45,9 +54,6 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
             -- get the max job count
             local jobs = tonumber(option.get("jobs") or "4")
 
-            -- get progress range
-            local progress = opt.progress
-
             -- run build jobs for each source file 
             local curdir = os.curdir()
             local sourcecount = #sourcebatch.sourcefiles
@@ -56,7 +62,7 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
                 -- force to set the current directory first because the other jobs maybe changed it
                 os.cd(curdir)
 
-                -- calculate progress
+                -- get current progress
                 local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / sourcecount
                 if suffix == "before" then
                     progress_now = progress.start
@@ -86,6 +92,8 @@ function _build_files(target, sourcebatch, opt)
     -- do before build
     local before_build_files = target:script("build_files_before")
     if before_build_files then
+        opt = table.copy(opt)
+        opt.progress = {start = progress.start, stop = progress.start}
         before_build_files(target, sourcebatch, opt)
     end
 
@@ -102,6 +110,8 @@ function _build_files(target, sourcebatch, opt)
     -- do after build
     local after_build_files = target:script("build_files_after")
     if after_build_files then
+        opt = table.copy(opt)
+        opt.progress = {start = progress.stop, stop = progress.stop}
         after_build_files(target, sourcebatch, opt)
     end
 end

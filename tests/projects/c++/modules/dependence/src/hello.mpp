@@ -1,0 +1,26 @@
+export module hello;
+
+export namespace hello {
+#ifdef _MSC_VER
+    int data__;
+#else
+    extern int data__;
+#endif
+    void say_hello();
+
+    class say {
+    public:
+        say(int data);
+        void hello();
+    
+    private:
+        int data_;
+    };
+}
+
+#ifndef _MSC_VER
+export namespace {
+    void anonymous() {
+    }
+}
+#endif

@@ -18,11 +18,8 @@
 -- @file        xmake.lua
 --
 
--- define rule: swift.build
-rule("swift.build")
-    set_extensions(".swift")    
-    on_build_files("private.action.build.object")
+-- define rule: c++.build.modules
+rule("c++.build.modules")
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx") 
+    before_build_files("build_modulefiles")
 
--- define rule: swift
-rule("swift")
-    add_deps("swift.build", "utils.merge.object")
