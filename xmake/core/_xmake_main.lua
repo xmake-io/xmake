@@ -47,7 +47,8 @@ function _loadfile_impl(filepath, mode, opt)
             binary = true -- read file by binary mode, will be faster
             displaypath = path.translate("@programdir/" .. path.relative(filepath, xmake._PROGRAM_DIR))
         elseif filepath:startswith(xmake._PROJECT_DIR) then
-            displaypath = path.translate("@projectdir/" .. path.relative(filepath, xmake._PROJECT_DIR))
+            local projectname = path.filename(xmake._PROJECT_DIR)
+            displaypath = path.translate("@projectdir(" .. projectname .. ")/" .. path.relative(filepath, xmake._PROJECT_DIR))
         end
     end
 
