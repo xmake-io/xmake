@@ -93,6 +93,19 @@ function buildenvs(package)
         envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
         envs.LDFLAGS   = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
         envs.SHFLAGS   = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
+        if package:is_plat("mingw") then
+            -- fix linker error, @see https://github.com/xmake-io/xmake/issues/574
+            -- libtool: line 1855: lib: command not found
+            envs.ARFLAGS = nil
+            local ld = envs.LD
+            if ld then
+                if ld:endswith("x86_64-w64-mingw32-g++") then
+                    envs.LD = path.join(path.directory(ld), "x86_64-w64-mingw32-ld")
+                elseif ld:endswith("i686-w64-mingw32-g++") then
+                    envs.LD = path.join(path.directory(ld), "i686-w64-mingw32-ld")
+                end
+            end
+        end
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
