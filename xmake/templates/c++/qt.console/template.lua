@@ -1,8 +1,8 @@
 -- set name
-set_name("quickapp_qt")
+set_name("qt.console")
 
 -- set description
-set_description("The Quick Application (Qt)")
+set_description("The Console Program (Qt)")
 
 -- set project directory
 set_projectdir("project")

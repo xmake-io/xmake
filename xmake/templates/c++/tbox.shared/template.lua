@@ -1,8 +1,8 @@
 -- set name
-set_name("static_tbox")
+set_name("tbox.shared")
 
 -- set description
-set_description("The Static Library (tbox)")
+set_description("The Shared Library (tbox)")
 
 -- set project directory
 set_projectdir("project")

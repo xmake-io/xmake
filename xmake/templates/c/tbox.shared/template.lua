@@ -1,5 +1,5 @@
 -- set name
-set_name("shared_tbox")
+set_name("tbox.shared")
 
 -- set description
 set_description("The Shared Library (tbox)")
@@ -12,7 +12,7 @@ add_macros("targetname", "$(targetname)")
 
 -- add macro files
 add_macrofiles("xmake.lua")
-add_macrofiles("src/_demo/main.cpp")
+add_macrofiles("src/_demo/main.c")
 add_macrofiles("src/_demo/xmake.lua")
 add_macrofiles("src/_library/xmake.lua")
 

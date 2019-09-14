@@ -160,11 +160,6 @@ function template.templates(language)
             table.insert(templates, results:info())
         end
     end
-
-    -- sort templates
-    table.sort(templates, function(a, b) return a.description < b.description end)
-
-    -- ok?
     return templates
 end
 
@@ -180,7 +175,6 @@ function template.create(language, templateid, targetname)
     if not templateid then
         return false, "no template id!"
     end
-
 
     -- get interpreter
     local interp = template._interpreter()

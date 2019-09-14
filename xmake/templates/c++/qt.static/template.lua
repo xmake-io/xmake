@@ -1,8 +1,8 @@
 -- set name
-set_name("quickapp_qt_static")
+set_name("qt.static")
 
 -- set description
-set_description("The Quick Application (Qt/Static)")
+set_description("The Static Library (Qt)")
 
 -- set project directory
 set_projectdir("project")

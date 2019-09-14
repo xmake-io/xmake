@@ -1,8 +1,8 @@
 -- set name
-set_name("console_qt")
+set_name("tbox.console")
 
 -- set description
-set_description("The Console Program (Qt)")
+set_description("The Console Program (tbox)")
 
 -- set project directory
 set_projectdir("project")
@@ -11,5 +11,5 @@ set_projectdir("project")
 add_macros("targetname", "$(targetname)")
 
 -- add macro files
-add_macrofiles("xmake.lua")
+add_macrofiles("src/xmake.lua")
 

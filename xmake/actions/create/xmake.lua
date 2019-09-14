@@ -64,20 +64,27 @@ task("create")
                                                                 -- import template
                                                                 import("core.project.template")
 
-                                                                -- make description
+                                                                -- get templates
                                                                 local templates = {}
-                                                                local description = {}
                                                                 for _, l in ipairs(template.languages()) do
                                                                     for _, t in ipairs(template.templates(l)) do
                                                                         templates[t.name] = templates[t.name] or {}
                                                                         table.insert(templates[t.name], l)
                                                                     end
                                                                 end
-                                                                for name, languages in pairs(templates) do
-                                                                    table.insert(description, "    - " .. name .. ": " .. table.concat(languages, ", "))
-                                                                end
 
-                                                                -- get it
+                                                                -- get sorted templates
+                                                                local templates_sorted = {}
+                                                                for name, languages in pairs(templates) do
+                                                                    table.insert(templates_sorted, {name = name, languages = languages})
+                                                                end
+                                                                table.sort(templates_sorted, function(a, b) return a.name < b.name end)
+
+                                                                -- make description
+                                                                local description = {}
+                                                                for _, t in ipairs(templates_sorted) do
+                                                                    table.insert(description, "    - " .. t.name .. ": " .. table.concat(t.languages, ", "))
+                                                                end
                                                                 return description
                                                             end                                                             }
 

@@ -1,8 +1,8 @@
 -- set name
-set_name("shared_tbox")
+set_name("tbox.static")
 
 -- set description
-set_description("The Shared Library (tbox)")
+set_description("The Static Library (tbox)")
 
 -- set project directory
 set_projectdir("project")
@@ -12,7 +12,7 @@ add_macros("targetname", "$(targetname)")
 
 -- add macro files
 add_macrofiles("xmake.lua")
-add_macrofiles("src/_demo/main.c")
+add_macrofiles("src/_demo/main.cpp")
 add_macrofiles("src/_demo/xmake.lua")
 add_macrofiles("src/_library/xmake.lua")
 

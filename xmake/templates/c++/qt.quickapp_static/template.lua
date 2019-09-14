@@ -1,8 +1,8 @@
 -- set name
-set_name("shared_qt")
+set_name("qt.quickapp_static")
 
 -- set description
-set_description("The Share Library (Qt)")
+set_description("The Quick Application (Qt/Static)")
 
 -- set project directory
 set_projectdir("project")

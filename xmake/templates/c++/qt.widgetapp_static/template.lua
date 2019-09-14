@@ -1,8 +1,8 @@
 -- set name
-set_name("widgetapp_qt")
+set_name("qt.widgetapp_static")
 
 -- set description
-set_description("The Widget Application (Qt)")
+set_description("The Widget Application (Qt/Static)")
 
 -- set project directory
 set_projectdir("project")
