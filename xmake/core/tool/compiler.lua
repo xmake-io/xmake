@@ -73,9 +73,12 @@ function compiler._load_tool(sourcekind, target)
     -- get program from target
     local program = nil
     if target then
-        local tools = target:get("tools")
-        if tools then
-            program = tools[sourcekind]
+        program = target:get("toolchain." .. sourcekind)
+        if not program then
+            local tools = target:get("tools") -- TODO: deprecated
+            if tools then
+                program = tools[sourcekind]
+            end
         end
     end
 

@@ -80,9 +80,12 @@ function linker._load_tool(targetkind, sourcekinds, target)
         -- get program from target
         local program = nil
         if target then
-            local tools = target:get("tools")
-            if tools then
-                program = tools[_linkerinfo.linkerkind]
+            program = target:get("toolchain." .. _linkerinfo.linkerkind)
+            if not program then
+                local tools = target:get("tools") -- TODO: deprecated
+                if tools then
+                    program = tools[_linkerinfo.linkerkind]
+                end
             end
         end
 

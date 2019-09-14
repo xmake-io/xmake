@@ -242,6 +242,42 @@ function deprecated_project._api_target_set_headerdir(interp)
                                         end)
 end
 
+-- set_tools for target
+function deprecated_project._api_target_set_tools(interp)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("target", "set_tools")
+    assert(apifunc)
+
+    -- register api
+    interp:_api_within_scope_set("target", "set_tools", function (key, value, ...) 
+
+                                            -- deprecated
+                                            deprecated.add("set_tools(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
+                                          
+                                            -- dispatch it
+                                            apifunc(key, value, ...)
+                                        end)
+end
+
+-- add_tools for target
+function deprecated_project._api_target_add_tools(interp)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("target", "add_tools")
+    assert(apifunc)
+
+    -- register api
+    interp:_api_within_scope_set("target", "add_tools", function (key, value, ...) 
+
+                                            -- deprecated
+                                            deprecated.add("add_tools(%s, %s)", "add_toolchain(%s, %s)", tostring(key), tostring(value))
+                                          
+                                            -- dispatch it
+                                            apifunc(key, value, ...)
+                                        end)
+end
+
 -- enable options?
 function deprecated_project._api_is_option(interp, ...)
 
@@ -294,6 +330,10 @@ function deprecated_project.api_register(interp)
 
     -- register api: set_headerdir() to target
     deprecated_project._api_target_set_headerdir(interp)
+
+    -- register api: set_tools/add_tools() to target
+    deprecated_project._api_target_set_tools(interp)
+    deprecated_project._api_target_add_tools(interp)
 end
 
 -- return module: deprecated_project

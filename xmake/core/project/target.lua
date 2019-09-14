@@ -1602,6 +1602,7 @@ function target.apis()
             "target.set_values"
         ,   "target.set_configvar"
         ,   "target.set_runenv"
+        ,   "target.set_toolchain"
             -- target.add_xxx
         ,   "target.add_values"
         ,   "target.add_runenvs"
@@ -1626,8 +1627,8 @@ function target.apis()
     ,   dictionary =
         {
             -- target.set_xxx
-            "target.set_tools"
-        ,   "target.add_tools"
+            "target.set_tools" -- TODO: deprecated
+        ,   "target.add_tools" -- TODO: deprecated
         }
     ,   script =
         {
