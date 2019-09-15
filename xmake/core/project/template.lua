@@ -32,6 +32,7 @@ local option            = require("base/option")
 local sandbox           = require("sandbox/sandbox")
 local project           = require("project/project")
 local interpreter       = require("base/interpreter")
+local deprecated        = require("base/deprecated")
 
 -- the interpreter
 function template._interpreter()
@@ -207,18 +208,28 @@ function template.create(language, templateid, targetname)
     -- load all templates for the given language
     local templates = template.templates(language)
 
+    -- TODO: deprecated
+    -- in order to be compatible with the old version template
+    local templates_old = { quickapp_qt  = "qt.quickapp", 
+                            widgetapp_qt = "qt.widgetapp",
+                            console_qt   = "qt.console",
+                            static_qt    = "qt.static",
+                            shared_qt    = "qt.shared",
+                            console_tbox = "tbox.console",
+                            static_tbox  = "tbox.static",
+                            shared_tbox  = "tbox.shared"}
+    if templates_old[templateid] then
+        deprecated.add("template(" .. templates_old[templateid] .. ")", "template(" .. templateid .. ")")
+        templateid = templates_old[templateid]
+    end
+
     -- get the given template module
     local module = nil
     if templates then 
-        local id = tonumber(templateid)
-        if type(id) == "number" then
-            module = templates[id] 
-        else
-            for _, t in ipairs(templates) do
-                if t.name == templateid then
-                    module = t
-                    break
-                end
+        for _, t in ipairs(templates) do
+            if t.name == templateid then
+                module = t
+                break
             end
         end
     end
