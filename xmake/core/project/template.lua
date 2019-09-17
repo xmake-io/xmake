@@ -135,7 +135,7 @@ function template.templates(language)
 
     -- load all templates
     local templates = {}
-    local templatefiles = os.files(path.join(os.programdir(), "templates", language, "**", "template.lua"))
+    local templatefiles = os.files(path.join(os.programdir(), "templates", language, "*", "template.lua"))
     if templatefiles then
 
         -- load template
