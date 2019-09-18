@@ -1,25 +1,9 @@
--- set name
-set_name("tbox.static")
-
--- set description
-set_description("The Static Library (tbox)")
-
--- set project directory
-set_projectdir("project")
-
--- add macros
-add_macros("targetname", "$(targetname)")
-
--- add macro files
-add_macrofiles("xmake.lua")
-add_macrofiles("src/_demo/main.c")
-add_macrofiles("src/_demo/xmake.lua")
-add_macrofiles("src/_library/xmake.lua")
-
--- set create script
-on_create(function ()
-
-    -- rename target directory
-    os.mv("src/_library", "src/$(targetname)")
-    os.mv("src/_demo", "src/$(targetname)_demo")
-end)
+template("tbox.static")
+    add_configfiles("xmake.lua")
+    add_configfiles("src/_demo/main.c")
+    add_configfiles("src/_demo/xmake.lua")
+    add_configfiles("src/_library/xmake.lua")
+    after_create(function (template)
+        os.mv("src/_library", "src/${TARGETNAME}")
+        os.mv("src/_demo", "src/${TARGETNAME}_demo")
+    end)

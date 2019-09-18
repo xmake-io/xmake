@@ -6,12 +6,12 @@ add_rules("mode.debug", "mode.release")
 includes("qt_add_static_plugins.lua")
 
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- add rules
     add_rules("qt.quickapp_static")
 
-    -- add headers
+    -- add headerfiles
     add_headerfiles("src/*.h")
 
     -- add files
@@ -22,3 +22,4 @@ target("[targetname]")
     qt_add_static_plugins("QtQuick2Plugin", {linkdirs = "qml/QtQuick.2", links = "qtquick2plugin"})
     qt_add_static_plugins("QtQuick2WindowPlugin", {linkdirs = "qml/QtQuick/Window.2", links = "windowplugin"})
 
+${FAQ}

@@ -5,7 +5,7 @@ target("demo")
     set_kind("binary")
 
     -- add deps
-    add_deps("[targetname]")
+    add_deps("${TARGETNAME}")
 
     -- add defines
     add_defines("__tb_prefix__=\"demo\"")

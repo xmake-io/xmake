@@ -43,6 +43,9 @@ function _create_project(tempinst, sourcedir, targetname)
     -- copy the project files
     os.cp(path.join(sourcedir, "*"), projectdir) 
 
+    -- enter the project directory
+    os.cd(projectdir)
+
     -- get the builtin variables 
     local builtinvars = _get_builtinvars(tempinst, targetname)
 
@@ -58,6 +61,12 @@ function _create_project(tempinst, sourcedir, targetname)
 
     -- generate .gitignore
     os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
+
+    -- do after_create
+    local after_create = tempinst:get("create_after")
+    if after_create then
+        after_create(tempinst)
+    end
 end
 
 -- create project or files from template

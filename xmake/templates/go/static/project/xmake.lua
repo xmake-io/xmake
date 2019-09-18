@@ -1,26 +1,3 @@
--- the debug mode
-if is_mode("debug") then
-    
-    -- enable the debug symbols
-    set_symbols("debug")
-
-    -- disable optimization
-    set_optimize("none")
-end
-
--- the release mode
-if is_mode("release") then
-
-    -- set the symbols visibility: hidden
-    set_symbols("hidden")
-
-    -- enable fastest optimization
-    set_optimize("fastest")
-
-    -- strip all symbols
-    set_strip("all")
-end
-
 -- add target
 target("module")
 
@@ -31,7 +8,7 @@ target("module")
     add_files("src/test/*.go") 
 
 -- add target
-target("[targetname]_demo")
+target("${TARGETNAME}_demo")
 
     -- set kind
     set_kind("binary")
@@ -48,3 +25,4 @@ target("[targetname]_demo")
     -- add include directory
     add_includedirs("$(buildir)")
 
+${FAQ}

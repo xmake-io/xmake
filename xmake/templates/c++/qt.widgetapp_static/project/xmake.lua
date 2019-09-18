@@ -6,12 +6,12 @@ add_rules("mode.debug", "mode.release")
 includes("qt_add_static_plugins.lua")
 
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- add rules
     add_rules("qt.widgetapp_static")
 
-    -- add headers
+    -- add headerfiles
     add_headerfiles("src/*.h")
 
     -- add files
@@ -23,3 +23,5 @@ target("[targetname]")
 
     -- add plugin: QSvgPlugin (optional)
     qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg", "Qt5Svg"}})
+
+${FAQ}

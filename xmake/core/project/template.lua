@@ -82,8 +82,8 @@ function template._interpreter()
         }
     ,   script =
         {
-            -- on_xxx
-            "template.on_create"
+            -- after_xxx
+            "template.after_create"
         }
     }
 
