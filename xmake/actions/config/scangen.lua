@@ -21,7 +21,6 @@
 -- imports
 import("core.project.config")
 import("core.project.project")
-import("core.project.template")
 import("core.language.language")
 
 -- scan project and generate xmake.lua automaticlly if the project codes exist
@@ -145,7 +144,7 @@ function main()
         end
 
         -- add FAQ 
-        file:print(template.faq())
+        file:print(io.readfile(path.join(os.programdir(), "scripts", "faq.lua")))
     
         -- exit file
         file:close()

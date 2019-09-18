@@ -68,8 +68,8 @@ task("create")
                                                                 local templates = {}
                                                                 for _, l in ipairs(template.languages()) do
                                                                     for _, t in ipairs(template.templates(l)) do
-                                                                        templates[t.name] = templates[t.name] or {}
-                                                                        table.insert(templates[t.name], l)
+                                                                        templates[t:name()] = templates[t:name()] or {}
+                                                                        table.insert(templates[t:name()], l)
                                                                     end
                                                                 end
 
