@@ -43,7 +43,16 @@ function _find_ndkdir(sdkdir)
 end
 
 -- find the sdk version of ndk
-function _find_ndk_sdkver(sdkdir)
+function _find_ndk_sdkver(sdkdir, arch)
+
+    -- try to select the best compatible version
+    local sdkver = "16"
+    if arch == "arm64-v8a" then
+        sdkver = "21"
+    end
+    if os.isdir(path.join(sdkdir, "platforms", "android-" .. sdkver)) then
+        return sdkver
+    end
 
     -- find the max version
     local sdkver_max = 0
@@ -55,15 +64,15 @@ function _find_ndk_sdkver(sdkdir)
         if count > 0 then
 
             -- get the max version
-            local sdkver = tonumber(version)
-            if sdkver > sdkver_max then
-                sdkver_max = sdkver
+            local sdkver_now = tonumber(version)
+            if sdkver_now > sdkver_max then
+                sdkver_max = sdkver_now
             end
         end
     end
 
     -- get the max sdk version
-    return sdkver_max > 0 and sdkver_max or nil
+    return sdkver_max > 0 and tostring(sdkver_max) or nil
 end
 
 -- find the toolchains version of ndk
@@ -116,7 +125,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     end
 
     -- find the sdk version
-    local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir)
+    local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir, arch)
     if not sdkver then
         return {}
     end
