@@ -82,7 +82,7 @@ function main()
             install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
             -- trace
-            cprint("${bright}install ok!${clear}${ok_hand}")
+            cprint("${bright}install ok!${clear}")
         end,
 
         catch
@@ -103,7 +103,7 @@ function main()
                             install(targetname or ifelse(option.get("all"), "__all", "__def"))
 
                             -- trace
-                            cprint("${bright}install ok!${clear}${ok_hand}")
+                            cprint("${bright}install ok!${clear}")
 
                             -- ok
                             return true
@@ -131,7 +131,7 @@ function main()
                         sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir"), option.get("prefix")})
 
                         -- trace
-                        cprint("${bright}install ok!${clear}${ok_hand}")
+                        cprint("${bright}install ok!${clear}")
                     end
                 end
             end

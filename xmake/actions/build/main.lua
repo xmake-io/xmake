@@ -90,6 +90,6 @@ function main()
 
     -- trace
     if option.get("rebuild") then
-        cprint("${bright}build ok!${clear}${ok_hand}")
+        cprint("${bright}build ok!${clear}")
     end
 end

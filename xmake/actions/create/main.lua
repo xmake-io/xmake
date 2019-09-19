@@ -140,5 +140,5 @@ function main()
     _create_project_or_files(option.get("language"), option.get("template"), targetname)
 
     -- trace
-    cprint("${bright}create ok!${ok_hand}")
+    cprint("${bright}create ok!")
 end
