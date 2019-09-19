@@ -29,46 +29,6 @@ function _get_builtinvars(tempinst, targetname)
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 
--- create project from template
-function _create_project(tempinst, sourcedir, targetname)
-
-    -- get project directory
-    local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
-
-    -- ensure the project directory 
-    if not os.isdir(projectdir) then 
-        os.mkdir(projectdir)
-    end
-
-    -- copy the project files
-    os.cp(path.join(sourcedir, "*"), projectdir) 
-
-    -- enter the project directory
-    os.cd(projectdir)
-
-    -- get the builtin variables 
-    local builtinvars = _get_builtinvars(tempinst, targetname)
-
-    -- replace all variables
-    for _, configfile in ipairs(tempinst:get("configfiles")) do
-        local pattern = "%${(.-)}"
-        io.gsub(configfile, "(" .. pattern .. ")", function(_, variable) 
-            variable = variable:trim()
-            local value = builtinvars[variable] 
-            return type(value) == "function" and value() or value
-        end)
-    end
-
-    -- generate .gitignore
-    os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
-
-    -- do after_create
-    local after_create = tempinst:get("create_after")
-    if after_create then
-        after_create(tempinst, {targetname = targetname})
-    end
-end
-
 -- create project or files from template
 function _create_project_or_files(language, templateid, targetname)
 
@@ -108,15 +68,49 @@ function _create_project_or_files(language, templateid, targetname)
     end
     assert(tempinst and tempinst:scriptdir(), "invalid template id: %s!", templateid)
 
+    -- get project directory
+    local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
+
+    -- ensure the project directory 
+    if not os.isdir(projectdir) then 
+        os.mkdir(projectdir)
+    end
+
+    -- enter the project directory
+    os.cd(projectdir)
+
     -- create project
     local sourcedir = path.join(tempinst:scriptdir(), "project")
     if os.isdir(sourcedir) then
-        _create_project(tempinst, sourcedir, targetname)
-    else
-        raise("template(%s): project and files not found!", templateid)
+        os.cp(path.join(sourcedir, "*"), projectdir) 
+        os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
+    end
+
+    -- create files
+    sourcedir = path.join(tempinst:scriptdir(), "files")
+    if os.isdir(sourcedir) then
+        os.cp(path.join(sourcedir, "*"), projectdir) 
+    end
+
+    -- get the builtin variables 
+    local builtinvars = _get_builtinvars(tempinst, targetname)
+
+    -- replace all variables
+    for _, configfile in ipairs(tempinst:get("configfiles")) do
+        local pattern = "%${(.-)}"
+        io.gsub(configfile, "(" .. pattern .. ")", function(_, variable) 
+            variable = variable:trim()
+            local value = builtinvars[variable] 
+            return type(value) == "function" and value() or value
+        end)
+    end
+
+    -- do after_create
+    local after_create = tempinst:get("create_after")
+    if after_create then
+        after_create(tempinst, {targetname = targetname})
     end
 end
-
 
 -- main
 function main()
