@@ -80,16 +80,24 @@ function _create_project_or_files(language, templateid, targetname)
     os.cd(projectdir)
 
     -- create project
+    local filedirs = {}
     local sourcedir = path.join(tempinst:scriptdir(), "project")
     if os.isdir(sourcedir) then
-        os.cp(path.join(sourcedir, "*"), projectdir) 
+        for _, filedir in ipairs(os.filedirs(path.join(sourcedir, "*"))) do
+            os.cp(filedir, projectdir)
+            table.insert(filedirs, path.relative(filedir, sourcedir))
+        end
         os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
+        table.insert(filedirs, ".gitignore")
     end
 
     -- create files
     sourcedir = path.join(tempinst:scriptdir(), "files")
     if os.isdir(sourcedir) then
-        os.cp(path.join(sourcedir, "*"), projectdir) 
+        for _, filedir in ipairs(os.filedirs(path.join(sourcedir, "*"))) do
+            os.cp(filedir, projectdir)
+            table.insert(filedirs, path.relative(filedir, sourcedir))
+        end
     end
 
     -- get the builtin variables 
@@ -110,6 +118,17 @@ function _create_project_or_files(language, templateid, targetname)
     if after_create then
         after_create(tempinst, {targetname = targetname})
     end
+
+    -- trace
+    for _, filedir in ipairs(filedirs) do
+        if os.isdir(filedir) then
+            for _, file in ipairs(os.files(path.join(filedir, "**"))) do
+                print("  > %s", file)
+            end
+        else
+            print("  > %s", filedir)
+        end
+    end
 end
 
 -- main
@@ -119,10 +138,10 @@ function main()
     os.cd(os.workingdir())
 
     -- the target name
-    local targetname = option.get("target") or option.get("name") or path.basename(project.directory()) or "demo"
+    local targetname = option.get("target") or path.basename(project.directory()) or "demo"
 
     -- trace
-    cprint("${bright}create %s ...", targetname)
+    cprint("${bright}create %s files ...", targetname)
 
     -- create project or files from template
     _create_project_or_files(option.get("language"), option.get("template"), targetname)

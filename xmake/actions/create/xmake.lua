@@ -38,8 +38,7 @@ task("create")
                 -- options
             ,   options = 
                 {
-                    {'n', "name",       "kv", nil,          "The project name."                                             }
-                ,   {'l', "language",   "kv", "c",          "The project language"
+                    {'l', "language",   "kv", "c",          "The project language"
 
                                                             -- show the description of all languages
                                                           , function ()

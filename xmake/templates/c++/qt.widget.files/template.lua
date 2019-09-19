@@ -1,0 +1,2 @@
+template("qt.widget.files")
+
