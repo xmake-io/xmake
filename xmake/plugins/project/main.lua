@@ -81,5 +81,5 @@ function main()
     environment.leave("toolchains")
 
     -- trace
-    cprint("${bright}create ok!${ok_hand}")
+    cprint("${bright}create ok!")
 end

@@ -66,4 +66,6 @@ else add_syslinks("pthread", "dl", "m", "c") end
 add_requires("tbox", {debug = is_mode("debug")})
 
 -- include project sources
-includes("src/[targetname]", "src/[targetname]_demo") 
+includes("src/${TARGETNAME}", "src/${TARGETNAME}_demo") 
+
+${FAQ}

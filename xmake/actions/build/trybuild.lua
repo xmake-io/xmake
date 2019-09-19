@@ -146,7 +146,7 @@ function main(targetname)
 
     -- trace
     if ok then
-        cprint("${bright}build ok!${clear}${ok_hand}")
+        cprint("${bright}build ok!${clear}")
     else
         raise("build failed!")
     end

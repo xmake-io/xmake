@@ -386,7 +386,7 @@ function task.tasks()
     for _, dir in ipairs(dirs) do
 
         -- get files
-        local files = os.match(path.join(dir, "**/xmake.lua"))
+        local files = os.files(path.join(dir, "*", "xmake.lua"))
         if files then
             for _, filepath in ipairs(files) do
 

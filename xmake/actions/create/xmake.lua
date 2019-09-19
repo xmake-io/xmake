@@ -38,8 +38,7 @@ task("create")
                 -- options
             ,   options = 
                 {
-                    {'n', "name",       "kv", nil,          "The project name."                                             }
-                ,   {'l', "language",   "kv", "c",          "The project language"
+                    {'l', "language",   "kv", "c++",        "The project language"
 
                                                             -- show the description of all languages
                                                           , function ()
@@ -68,8 +67,8 @@ task("create")
                                                                 local templates = {}
                                                                 for _, l in ipairs(template.languages()) do
                                                                     for _, t in ipairs(template.templates(l)) do
-                                                                        templates[t.name] = templates[t.name] or {}
-                                                                        table.insert(templates[t.name], l)
+                                                                        templates[t:name()] = templates[t:name()] or {}
+                                                                        table.insert(templates[t:name()], l)
                                                                     end
                                                                 end
 

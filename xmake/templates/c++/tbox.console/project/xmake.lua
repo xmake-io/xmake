@@ -67,3 +67,5 @@ add_requires("tbox", {debug = is_mode("debug")})
 
 -- include project sources
 includes("src") 
+
+${FAQ}

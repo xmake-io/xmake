@@ -47,20 +47,5 @@ function sandbox_core_project_template.templates(language)
     return templates
 end
 
--- create project from template
-function sandbox_core_project_template.create(language, templateid, targetname)
-
-    -- create it
-    local ok, errors = template.create(language, templateid, targetname)
-    if not ok then
-        raise(errors)
-    end
-end
-
--- get FAQ
-function sandbox_core_project_template.faq()
-    return template.faq()
-end
-
 -- return module
 return sandbox_core_project_template

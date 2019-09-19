@@ -3,7 +3,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- define target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- set kind
     set_kind("binary")
@@ -28,3 +28,5 @@ target("[targetname]")
 
     -- -- generate PTX code from the highest SM architecture to guarantee forward-compatibility
     -- add_cugencodes("compute_75")
+
+${FAQ}

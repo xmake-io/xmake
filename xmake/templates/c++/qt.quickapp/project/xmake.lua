@@ -3,16 +3,16 @@
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- add rules
     add_rules("qt.quickapp")
 
-    -- add headers
+    -- add headerfiles
     add_headerfiles("src/*.h")
 
     -- add files
     add_files("src/*.cpp") 
     add_files("src/qml.qrc")
 
-
+${FAQ}

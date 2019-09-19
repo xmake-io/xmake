@@ -3,7 +3,7 @@
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- set kind
     set_kind("static")
@@ -12,15 +12,15 @@ target("[targetname]")
     add_files("src/interface.cpp") 
 
 -- add target
-target("[targetname]_demo")
+target("${TARGETNAME}_demo")
 
     -- set kind
     set_kind("binary")
 
     -- add deps
-    add_deps("[targetname]")
+    add_deps("${TARGETNAME}")
 
     -- add files
     add_files("src/test.cpp") 
 
-
+${FAQ}

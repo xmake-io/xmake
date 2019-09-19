@@ -23,6 +23,107 @@ import("core.base.option")
 import("core.project.project")
 import("core.project.template")
 
+-- get the builtin variables
+function _get_builtinvars(tempinst, targetname)
+    return {TARGETNAME = targetname, 
+            FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
+end
+
+-- create project from template
+function _create_project(language, templateid, targetname)
+
+    -- check the language
+    assert(language, "no language!")
+
+    -- check the template id
+    assert(templateid, "no template id!")
+
+    -- load all templates for the given language
+    local templates = template.templates(language)
+
+    -- TODO: deprecated
+    -- in order to be compatible with the old version template
+    local templates_new = { quickapp_qt  = "qt.quickapp", 
+                            widgetapp_qt = "qt.widgetapp",
+                            console_qt   = "qt.console",
+                            static_qt    = "qt.static",
+                            shared_qt    = "qt.shared",
+                            console_tbox = "tbox.console",
+                            static_tbox  = "tbox.static",
+                            shared_tbox  = "tbox.shared"}
+    if templates_new[templateid] then
+        cprint("${yellow}deprecated: please uses template(%s) instead of template(%s)!", templates_new[templateid], templateid)
+        templateid = templates_new[templateid]
+    end
+
+    -- get the given template instance
+    local tempinst = nil
+    if templates then 
+        for _, t in ipairs(templates) do
+            if t:name() == templateid then
+                tempinst = t
+                break
+            end
+        end
+    end
+    assert(tempinst and tempinst:scriptdir(), "invalid template id: %s!", templateid)
+
+    -- get project directory
+    local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
+
+    -- ensure the project directory 
+    if not os.isdir(projectdir) then 
+        os.mkdir(projectdir)
+    end
+
+    -- enter the project directory
+    os.cd(projectdir)
+
+    -- create project
+    local filedirs = {}
+    local sourcedir = path.join(tempinst:scriptdir(), "project")
+    if os.isdir(sourcedir) then
+        for _, filedir in ipairs(os.filedirs(path.join(sourcedir, "*"))) do
+            os.cp(filedir, projectdir)
+            table.insert(filedirs, path.relative(filedir, sourcedir))
+        end
+        os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
+        table.insert(filedirs, ".gitignore")
+    else
+        raise("template(%s): project not found!", templateid)
+    end
+
+    -- get the builtin variables 
+    local builtinvars = _get_builtinvars(tempinst, targetname)
+
+    -- replace all variables
+    for _, configfile in ipairs(tempinst:get("configfiles")) do
+        local pattern = "%${(.-)}"
+        io.gsub(configfile, "(" .. pattern .. ")", function(_, variable) 
+            variable = variable:trim()
+            local value = builtinvars[variable] 
+            return type(value) == "function" and value() or value
+        end)
+    end
+
+    -- do after_create
+    local after_create = tempinst:get("create_after")
+    if after_create then
+        after_create(tempinst, {targetname = targetname})
+    end
+
+    -- trace
+    for _, filedir in ipairs(filedirs) do
+        if os.isdir(filedir) then
+            for _, file in ipairs(os.files(path.join(filedir, "**"))) do
+                cprint("  ${green}[+]: ${clear}%s", file)
+            end
+        else
+            cprint("  ${green}[+]: ${clear}%s", filedir)
+        end
+    end
+end
+
 -- main
 function main()
 
@@ -30,14 +131,14 @@ function main()
     os.cd(os.workingdir())
 
     -- the target name
-    local targetname = option.get("target") or option.get("name") or path.basename(project.directory()) or "demo"
+    local targetname = option.get("target") or path.basename(project.directory()) or "demo"
 
     -- trace
     cprint("${bright}create %s ...", targetname)
 
     -- create project from template
-    template.create(option.get("language"), option.get("template"), targetname)
+    _create_project(option.get("language"), option.get("template"), targetname)
 
     -- trace
-    cprint("${bright}create ok!${ok_hand}")
+    cprint("${bright}create ok!")
 end

@@ -1,19 +1,8 @@
-
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
--- add frameworks
-add_frameworks("Foundation", "CoreFoundation")
-
--- for macosx or ios
-if is_os("macosx", "ios") then
-
-    -- enable arc?
-    add_mxflags("-fobjc-arc")
-end
-
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- set kind
     set_kind("binary")
@@ -21,3 +10,12 @@ target("[targetname]")
     -- add files
     add_files("src/*.m") 
 
+    -- add frameworks
+    add_frameworks("Foundation", "CoreFoundation")
+
+    -- for macosx or ios
+    if is_os("macosx", "ios") then
+        add_mxflags("-fobjc-arc")
+    end
+
+${FAQ}

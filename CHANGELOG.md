@@ -11,6 +11,7 @@
 * [#563](https://github.com/xmake-io/xmake/pull/563): Separate build rules for specific language files from action/build 
 * [#570](https://github.com/xmake-io/xmake/issues/570): Add `qt.widgetapp` and `qt.quickapp` rules
 * [#576](https://github.com/xmake-io/xmake/issues/576): Uses `set_toolchain` instead of `add_tools` and `set_tools`
+* Improve `xmake create` action
 
 ### Bugs fixed
 
@@ -652,6 +653,7 @@
 * [#563](https://github.com/xmake-io/xmake/pull/563): 重构构建逻辑，将特定语言的构建抽离到独立的rules中去 
 * [#570](https://github.com/xmake-io/xmake/issues/570): 改进Qt构建，将`qt.application`拆分成`qt.widgetapp`和`qt.quickapp`两个构建规则
 * [#576](https://github.com/xmake-io/xmake/issues/576): 使用`set_toolchain`替代`add_tools`和`set_tools`，解决老接口使用歧义，提供更加易理解的设置方式
+* 改进`xmake create`创建模板工程
 
 ### Bugs修复
 

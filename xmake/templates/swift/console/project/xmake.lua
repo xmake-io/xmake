@@ -1,9 +1,8 @@
-
 -- add modes: debug and release 
 add_rules("mode.debug", "mode.release")
 
 -- add target
-target("[targetname]")
+target("${TARGETNAME}")
 
     -- set kind
     set_kind("binary")
@@ -11,3 +10,4 @@ target("[targetname]")
     -- add files
     add_files("src/*.swift") 
 
+${FAQ}

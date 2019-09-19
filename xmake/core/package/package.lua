@@ -1145,10 +1145,7 @@ function package.load_from_system(packagename)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, scopeinfo.new("package", packageinfo))
-    if not instance then
-        return nil, errors
-    end
+    local instance = _instance.new(packagename, scopeinfo.new("package", packageinfo))
 
     -- mark as system or 3rd package
     instance._isSys = true
@@ -1195,10 +1192,7 @@ function package.load_from_project(packagename, project)
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packages[packagename])
-    if not instance then
-        return nil, errors
-    end
+    local instance = _instance.new(packagename, packages[packagename])
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
@@ -1259,10 +1253,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- new an instance
-    local instance, errors = _instance.new(packagename, packageinfo, path.directory(scriptpath))
-    if not instance then
-        return nil, errors
-    end
+    local instance = _instance.new(packagename, packageinfo, path.directory(scriptpath))
 
     -- save repository
     instance._REPO = repo
