@@ -83,7 +83,7 @@ function _create_project_or_files(language, templateid, targetname)
 
     -- TODO: deprecated
     -- in order to be compatible with the old version template
-    local templates_old = { quickapp_qt  = "qt.quickapp", 
+    local templates_new = { quickapp_qt  = "qt.quickapp", 
                             widgetapp_qt = "qt.widgetapp",
                             console_qt   = "qt.console",
                             static_qt    = "qt.static",
@@ -91,9 +91,9 @@ function _create_project_or_files(language, templateid, targetname)
                             console_tbox = "tbox.console",
                             static_tbox  = "tbox.static",
                             shared_tbox  = "tbox.shared"}
-    if templates_old[templateid] then
---        deprecated.add("template(" .. templates_old[templateid] .. ")", "template(" .. templateid .. ")")
-        templateid = templates_old[templateid]
+    if templates_new[templateid] then
+        cprint("${yellow}deprecated: please uses template(%s) instead of template(%s)!", templates_new[templateid], templateid)
+        templateid = templates_new[templateid]
     end
 
     -- get the given template instance
