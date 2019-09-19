@@ -29,8 +29,8 @@ function _get_builtinvars(tempinst, targetname)
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 
--- create project or files from template
-function _create_project_or_files(language, templateid, targetname)
+-- create project from template
+function _create_project(language, templateid, targetname)
 
     -- check the language
     assert(language, "no language!")
@@ -136,8 +136,8 @@ function main()
     -- trace
     cprint("${bright}create %s ...", targetname)
 
-    -- create project or files from template
-    _create_project_or_files(option.get("language"), option.get("template"), targetname)
+    -- create project from template
+    _create_project(option.get("language"), option.get("template"), targetname)
 
     -- trace
     cprint("${bright}create ok!")
