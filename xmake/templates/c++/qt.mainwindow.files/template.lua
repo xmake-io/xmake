@@ -1,2 +1,0 @@
-template("qt.mainwindow.files")
-

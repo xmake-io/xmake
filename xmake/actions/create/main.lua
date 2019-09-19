@@ -89,15 +89,8 @@ function _create_project_or_files(language, templateid, targetname)
         end
         os.cp(path.join(os.programdir(), "scripts", "gitignore"), path.join(projectdir, ".gitignore"))
         table.insert(filedirs, ".gitignore")
-    end
-
-    -- create files
-    sourcedir = path.join(tempinst:scriptdir(), "files")
-    if os.isdir(sourcedir) then
-        for _, filedir in ipairs(os.filedirs(path.join(sourcedir, "*"))) do
-            os.cp(filedir, projectdir)
-            table.insert(filedirs, path.relative(filedir, sourcedir))
-        end
+    else
+        raise("template(%s): project not found!", templateid)
     end
 
     -- get the builtin variables 
@@ -123,10 +116,10 @@ function _create_project_or_files(language, templateid, targetname)
     for _, filedir in ipairs(filedirs) do
         if os.isdir(filedir) then
             for _, file in ipairs(os.files(path.join(filedir, "**"))) do
-                print("  > %s", file)
+                cprint("  ${green}[+]: ${clear}%s", file)
             end
         else
-            print("  > %s", filedir)
+            cprint("  ${green}[+]: ${clear}%s", filedir)
         end
     end
 end
@@ -141,7 +134,7 @@ function main()
     local targetname = option.get("target") or path.basename(project.directory()) or "demo"
 
     -- trace
-    cprint("${bright}create %s files ...", targetname)
+    cprint("${bright}create %s ...", targetname)
 
     -- create project or files from template
     _create_project_or_files(option.get("language"), option.get("template"), targetname)
