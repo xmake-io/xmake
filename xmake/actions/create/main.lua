@@ -65,7 +65,7 @@ function _create_project(tempinst, sourcedir, targetname)
     -- do after_create
     local after_create = tempinst:get("create_after")
     if after_create then
-        after_create(tempinst)
+        after_create(tempinst, {targetname = targetname})
     end
 end
 
