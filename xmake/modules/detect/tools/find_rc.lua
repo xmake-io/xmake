@@ -37,6 +37,11 @@ import("lib.detect.find_programver")
 --
 function main(opt)
 
+    -- not on windows?
+    if not is_host("windows") then
+        return 
+    end
+
     -- init options
     opt         = opt or {}
     opt.check   = opt.check or "-?"

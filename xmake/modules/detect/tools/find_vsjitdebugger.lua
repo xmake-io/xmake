@@ -39,7 +39,7 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- not on windows?
-    if os.host() ~= "windows" then
+    if not is_host("windows") then
         return 
     end
 

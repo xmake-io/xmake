@@ -28,6 +28,7 @@ import("detect.tools.find_lldb")
 import("detect.tools.find_windbg")
 import("detect.tools.find_x64dbg")
 import("detect.tools.find_ollydbg")
+import("detect.tools.find_devenv")
 import("detect.tools.find_vsjitdebugger")
 
 -- run gdb
@@ -198,6 +199,27 @@ function _run_vsjitdebugger(program, argv)
     return true
 end
 
+-- run devenv
+function _run_devenv(program, argv)
+
+    -- find devenv
+    local devenv = find_devenv({program = config.get("debugger")})
+    if not devenv then
+        return false
+    end
+
+    -- patch arguments
+    argv = argv or {}
+    table.insert(argv, 1, "/DebugExe")
+    table.insert(argv, 2, program)
+
+    -- run it
+    os.execv(devenv, argv)
+
+    -- ok
+    return true
+end
+
 -- run program with debugger
 --
 -- @param program   the program name
@@ -229,6 +251,7 @@ function main(program, argv)
         table.insert(debuggers, 1, {"ollydbg",          _run_ollydbg})
         table.insert(debuggers, 1, {"x64dbg",           _run_x64dbg})
         table.insert(debuggers, 1, {"vsjitdebugger",    _run_vsjitdebugger})
+        table.insert(debuggers, 1, {"devenv",           _run_devenv})
     end
 
     -- get debugger from the configure
