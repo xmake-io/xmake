@@ -40,6 +40,7 @@ task("project")
                 {
                     {'k', "kind",      "kv", "makefile",    "Set the project kind." 
                                                        ,    "    - makefile"
+                                                       ,    "    - xmakefile (makefile with xmake)"
                                                        ,    "    - cmakelists"
                                                        ,    "    - compile_flags"
                                                        ,    "    - compile_commands (clang compilation database with json format)"
