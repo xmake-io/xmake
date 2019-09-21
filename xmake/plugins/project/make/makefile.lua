@@ -23,6 +23,7 @@ import("core.tool.compiler")
 import("core.project.project")
 import("core.language.language")
 import("core.platform.platform")
+import("lib.detect.find_tool")
 
 -- get log makefile
 function _logfile()
@@ -71,6 +72,18 @@ function _remove(makefile, filedirs)
     for _, filedir in ipairs(filedirs) do
         _tryrm(makefile, filedir)
     end
+end
+
+-- get program from target toolchains
+function _get_program_from_target(target, toolkind)
+    local program = target:get("toolchain." .. toolkind)
+    if not program then
+        local tools = target:get("tools") -- TODO: deprecated
+        if tools then
+            program = tools[toolkind]
+        end
+    end
+    return program
 end
 
 -- make common flags
@@ -132,14 +145,19 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     local sourcekind = language.sourcekind_of(sourcefile)
 
     -- get program
-    local program = platform.tool(sourcekind)
+    local program_global = false
+    local program = _get_program_from_target(target, sourcekind) 
+    if not program then 
+        program = platform.tool(sourcekind)
+        program_global = true
+    end
 
     -- get complier flags
     local compflags = sourceflags[sourcefile]
 
     -- make command
-    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. ")"
-    local command = compiler.compcmd(sourcefile, objectfile, {compflags = table.join(macro, compflags)})
+    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. "FLAGS)"
+    local command = compiler.compcmd(sourcefile, objectfile, {target = target, compflags = table.join(macro, compflags)})
 
     -- replace program to $(XX)
     local p, e = command:find("\"" .. program .. "\"", 1, true)
@@ -147,15 +165,20 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
         p, e = command:find(program, 1, true)
     end
     if p then
-        command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+        if program_global then
+            command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+        else
+            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
+        end
     end
 
     -- replace ccache to $(CCACHE)
-    local ccache = false
-    p, e = command:find("ccache", 1, true)
-    if p then
-        command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
-        ccache = true
+    local ccache = find_tool("ccache")
+    if ccache then
+        p, e = command:find(ccache.program, 1, true)
+        if p then
+            command = format("%s$(%s)%s", command:sub(1, p - 1), "CCACHE", command:sub(e + 1))
+        end
     end
 
     -- make head
@@ -224,7 +247,12 @@ function _make_target(makefile, target, targetflags)
     local linkerkind = target:linker():kind()
 
     -- get program
-    local program = platform.tool(linkerkind)
+    local program_global = false
+    local program = _get_program_from_target(target, linkerkind) 
+    if not program then 
+        program = platform.tool(linkerkind)
+        program_global = true
+    end
 
     -- get command
     local command = target:linkcmd()
@@ -232,7 +260,7 @@ function _make_target(makefile, target, targetflags)
     -- replace linkflags to $(XX)
     local p, e = command:find(os.args(target:linkflags()), 1, true)
     if p then
-        command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+        command = format("%s$(%s_%sFLAGS)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
     end
 
     -- replace program to $(XX)
@@ -241,7 +269,11 @@ function _make_target(makefile, target, targetflags)
         p, e = command:find(program, 1, true)
     end
     if p then
-        command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+        if program_global then
+            command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+        else
+            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+        end
     end
 
     -- make body
@@ -289,7 +321,10 @@ end
 function _make_all(makefile)
 
     -- make variables for ccache
-    makefile:print("CCACHE=ccache")
+    local ccache = find_tool("ccache")
+    if ccache then
+        makefile:print("CCACHE=" .. ccache.program)
+    end
 
     -- make variables for source kinds
     for sourcekind, _ in pairs(language.sourcekinds()) do
@@ -320,19 +355,35 @@ function _make_all(makefile)
         target:set("pcxxheader", nil)
     end
 
-    -- make variables for target flags
+    -- make variables for target 
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
+
+            -- make target linker
+            local program = _get_program_from_target(target, target:linker():kind())
+            if program then
+                makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), program)
+            end
+
+            -- make target flags
             for _, sourcebatch in pairs(target:sourcebatches()) do
                 local sourcekind = sourcebatch.sourcekind
                 if sourcekind then
+
+                    -- make source compiler
+                    local program = _get_program_from_target(target, sourcekind)
+                    if program then
+                        makefile:print("%s_%s=%s", targetname, sourcekind:upper(), program)
+                    end
+
+                    -- make source flags
                     local commonflags, sourceflags = _make_common_flags(target, sourcekind, sourcebatch)
-                    makefile:print("%s_%s=%s", targetname, sourcekind:upper(), os.args(commonflags))
+                    makefile:print("%s_%sFLAGS=%s", targetname, sourcekind:upper(), os.args(commonflags))
                     targetflags[targetname .. '_' .. sourcekind:upper()] = sourceflags
                 end
             end
-            makefile:print("%s_%s=%s", targetname, target:linker():kind():upper(), os.args(target:linkflags()))
+            makefile:print("%s_%sFLAGS=%s", targetname, target:linker():kind():upper(), os.args(target:linkflags()))
         end
     end
     makefile:print("")
