@@ -21,61 +21,81 @@
 -- imports
 import("core.project.project")
 
+-- make head
+function _make_head(makefile)
+
+    -- verbose?
+    makefile:print("ifeq (%$(V),1)")
+    makefile:print("VERBOSE=-v")
+    makefile:print("else")
+    makefile:print("VERBOSE=")
+    makefile:print("endif")
+    makefile:print("")
+
+    -- diagnosis?
+    makefile:print("ifeq (%$(D),1)")
+    makefile:print("DIAGNOSIS=-D")
+    makefile:print("else")
+    makefile:print("DIAGNOSIS=")
+    makefile:print("endif")
+    makefile:print("")
+end
+
 -- make build
 function _make_build(makefile)
     makefile:print(".PHONY: build")
     makefile:print("")
     makefile:print("build: ")
-    makefile:print("\t@xmake --build %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake --build %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make rebuild
 function _make_rebuild(makefile)
     makefile:print("rebuild: ")
-    makefile:print("\t@xmake --rebuild %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake --rebuild %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make install
 function _make_install(makefile)
     makefile:print("install: ")
-    makefile:print("\t@xmake install %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake install %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make uninstall
 function _make_uninstall(makefile)
     makefile:print("uninstall: ")
-    makefile:print("\t@xmake uninstall %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake uninstall %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make package
 function _make_package(makefile)
     makefile:print("package: ")
-    makefile:print("\t@xmake package %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake package %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make clean
 function _make_clean(makefile)
     makefile:print("clean: ")
-    makefile:print("\t@xmake clean %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake clean %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make run
 function _make_run(makefile)
     makefile:print("run: ")
-    makefile:print("\t@xmake run %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake run %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
 -- make debug
 function _make_debug(makefile)
     makefile:print("debug: ")
-    makefile:print("\t@xmake run -d %$(VERBOSE) %$(TARGET)")
+    makefile:print("\t@xmake run -d %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("")
 end
 
@@ -84,15 +104,15 @@ function _make_config(makefile)
     makefile:print("ifneq (%$(PLAT),)")
     makefile:print("ifneq (%$(ARCH),)")
     makefile:print("ifneq (%$(MODE),)")
-    makefile:print("CONFIG=xmake config -c %$(VERBOSE) -p %$(PLAT) -a %$(ARCH) -m %$(MODE) %$(TARGET)")
+    makefile:print("CONFIG=xmake config -c %$(VERBOSE) %$(DIAGNOSIS) -p %$(PLAT) -a %$(ARCH) -m %$(MODE) %$(TARGET)")
     makefile:print("else")
-    makefile:print("CONFIG=xmake config -c %$(VERBOSE) -p %$(PLAT) -a %$(ARCH) %$(TARGET)")
+    makefile:print("CONFIG=xmake config -c %$(VERBOSE) %$(DIAGNOSIS) -p %$(PLAT) -a %$(ARCH) %$(TARGET)")
     makefile:print("endif")
     makefile:print("else")
-    makefile:print("CONFIG=xmake config -c %$(VERBOSE) -p %$(PLAT) %$(TARGET)")
+    makefile:print("CONFIG=xmake config -c %$(VERBOSE) %$(DIAGNOSIS) -p %$(PLAT) %$(TARGET)")
     makefile:print("endif")
     makefile:print("else")
-    makefile:print("CONFIG=xmake config -c %$(VERBOSE) %$(TARGET)")
+    makefile:print("CONFIG=xmake config -c %$(VERBOSE) %$(DIAGNOSIS) %$(TARGET)")
     makefile:print("endif")
     makefile:print("config: ")
     makefile:print("\t@%$(CONFIG)")
@@ -108,13 +128,8 @@ function make(outputdir)
     -- open the makefile
     local makefile = io.open(path.join(outputdir, "makefile"), "w")
 
-    -- verbose?
-    makefile:print("ifeq (%$(V),1)")
-    makefile:print("VERBOSE=-v")
-    makefile:print("else")
-    makefile:print("VERBOSE=")
-    makefile:print("endif")
-    makefile:print("")
+    -- make head
+    _make_head(makefile)
 
     -- make build
     _make_build(makefile)
