@@ -125,47 +125,11 @@ function _make_common_flags(target, sourcekind, sourcebatch)
     return commonflags, sourceflags_
 end
 
--- make the object for the *.[o|obj] source file
-function _make_object_for_object(makefile, target, sourcefile, objectfile)
-
-    -- make command
-    local cmd = format("xmake l cp %s %s", sourcefile, objectfile)
-
-    -- make head
-    makefile:printf("%s:", objectfile)
-
-    -- make dependence
-    makefile:print(" %s", sourcefile)
-
-    -- make body
-    makefile:print("\t@echo inserting.$(mode) %s", sourcefile)
-    makefile:print("\t@%s", cmd)
-
-    -- make tail
-    makefile:print("")
-
-end
-
--- make the object for the *.[a|lib] source file
-function _make_object_for_static(makefile, target, sourcefile, objectfile)
-
-    -- not supported
-    raise("source file: %s not supported!", sourcefile)
-end
-
 -- make the object
 function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
 
     -- get the source file kind
     local sourcekind = language.sourcekind_of(sourcefile)
-
-    -- make the object for the *.o/obj source makefile
-    if sourcekind == "obj" then 
-        return _make_object_for_object(makefile, target, sourcefile, objectfile)
-    -- make the object for the *.[a|lib] source file
-    elseif sourcekind == "lib" then 
-        return _make_object_for_static(makefile, target, sourcefile, objectfile)
-    end
 
     -- get program
     local program = platform.tool(sourcekind)
