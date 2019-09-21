@@ -5,6 +5,7 @@
 ### New features
 
 * [#569](https://github.com/xmake-io/xmake/pull/569): Add c++ modules build rules
+* Add `xmake project -k xmakefile` generator
 
 ### Change
 
@@ -647,6 +648,7 @@
 ### 新特性
 
 * [#569](https://github.com/xmake-io/xmake/pull/569): 增加对c++模块的实验性支持
+* 添加`xmake project -k xmakefile`生成器
 
 ### 改进
 
