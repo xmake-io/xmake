@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.platform.platform")
 import("core.platform.environment")
+import("private.action.update.fetch_version")
 
 -- statistics is enabled?
 function _is_enabled()
@@ -117,6 +118,15 @@ function main()
         import("devel.git.clone")
         clone("https://github.com/xmake-io/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
         print("post to traffic ok!")
+    end
+
+    -- fetch the lastest version
+    local versionfile = path.join(os.tmpdir(), "lastest_version")
+    if not os.isfile(versionfile) then
+        local fetchinfo = fetch_version()
+        if fetchinfo then
+            io.save(versionfile, fetchinfo)
+        end
     end
 
     -- download the xmake-stats releases to update the release stats info in github

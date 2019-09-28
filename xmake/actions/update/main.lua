@@ -29,7 +29,7 @@ import("net.fasturl")
 import("core.base.privilege")
 import("privilege.sudo")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
-import("get_version")
+import("private.action.update.fetch_version")
 
 -- the installer filename for windows
 local win_installer_name = "xmake-installer.exe"
@@ -266,7 +266,10 @@ function main()
     environment.enter()
 
     -- has been installed?
-    local is_official, mainurls, version, tags, branches = get_version(option.get("xmakever"))
+    local fetchinfo   = assert(fetch_version(option.get("xmakever")), "cannot fetch xmake version info!")
+    local is_official = fetchinfo.is_official
+    local mainurls    = fetchinfo.urls
+    local version     = fetchinfo.version
     if is_official and xmake.version():eq(version) then
         cprint("${bright}xmake %s has been installed!", version)
         return
@@ -312,7 +315,7 @@ function main()
             {
                 function ()
                     os.tryrm(sourcedir)
-                    -- all user provided urls are considered as git url since check has been performed in get_version
+                    -- all user provided urls are considered as git url since check has been performed in fetch_version
                     if is_official and not git.checkurl(url) then
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, win_installer_name))

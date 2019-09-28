@@ -14,8 +14,8 @@
 --
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
--- @file        get_version.lua
+-- @author      OpportunityLiu, ruki
+-- @file        fetch_version.lua
 --
 
 -- imports
@@ -36,8 +36,11 @@ local official_sources =
 
 -- get version and url of provided xmakever
 function main(xmakever)
+
+    -- init xmakever
     xmakever = xmakever or "lastest"
 
+    -- parse url and commit
     local commitish = nil
     local custom_url = nil
     local seg = xmakever:split('#', { plain = true, limit = 2, strict = true })
@@ -79,7 +82,6 @@ function main(xmakever)
             break
         end
     end
-
-    return (urls == official_sources), urls, (version or "master"), tags, branches
+    return {is_official = (urls == official_sources), urls = urls, version = (version or "master"), tags = tags, branches = branches}
 end
 

@@ -800,6 +800,26 @@ function option.defaults(task)
     return defaults
 end
 
+-- show update tips
+function option.show_update_tips()
+
+    -- show lastest version 
+    local versionfile = path.join(os.tmpdir(), "lastest_version")
+    if os.isfile(versionfile) then
+        local versioninfo = io.load(versionfile)
+        if versioninfo and versioninfo.version and semver.compare(versioninfo.version, xmake._VERSION_SHORT) > 0 then
+            local updatetips = string.format([[
+  ╔════════════════════════════════════════════════════════════════════════════╗
+  ║ ${bright yellow}A new version of xmake is available!${clear}                                       ║
+  ║                                                                            ║
+  ║ To update to the latest version ${bright}%s${clear}, run "xmake update".                ║
+  ╚════════════════════════════════════════════════════════════════════════════╝
+]], versioninfo.version)
+            io.print(colors.translate(updatetips))
+        end
+    end
+end
+
 -- show logo
 function option.show_logo()
 
@@ -842,6 +862,9 @@ function option.show_logo()
 
     -- show footer
     io.print(colors.translate(footer))
+
+    -- show update tips
+    option.show_update_tips()
 end
 
 -- show the menu 
