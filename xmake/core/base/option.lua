@@ -808,13 +808,24 @@ function option.show_update_tips()
     if os.isfile(versionfile) then
         local versioninfo = io.load(versionfile)
         if versioninfo and versioninfo.version and semver.compare(versioninfo.version, xmake._VERSION_SHORT) > 0 then
-            local updatetips = string.format([[
+            local updatetips = nil
+            if os.host() == "windows" then
+                updatetips = string.format([[
+   ==========================================================================
+  | ${bright yellow}A new version of xmake is available!${clear}                                     |
+  |                                                                          |
+  | To update to the latest version ${bright}%s${clear}, run "xmake update".              |
+   ==========================================================================
+]], versioninfo.version)
+            else
+                updatetips = string.format([[
   ╔════════════════════════════════════════════════════════════════════════════╗
   ║ ${bright yellow}A new version of xmake is available!${clear}                                       ║
   ║                                                                            ║
   ║ To update to the latest version ${bright}%s${clear}, run "xmake update".                ║
   ╚════════════════════════════════════════════════════════════════════════════╝
 ]], versioninfo.version)
+            end
             io.print(colors.translate(updatetips))
         end
     end
