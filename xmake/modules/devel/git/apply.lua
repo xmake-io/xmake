@@ -38,10 +38,7 @@ import("lib.detect.find_tool")
 function main(patchfile, opt)
 
     -- find git
-    local git = find_tool("git")
-    if not git then
-        return 
-    end
+    local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
     opt = opt or {}

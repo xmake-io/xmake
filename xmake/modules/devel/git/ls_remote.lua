@@ -42,10 +42,7 @@ import("lib.detect.find_tool")
 function main(reftype, url)
 
     -- find git
-    local git = find_tool("git")
-    if not git then
-        return 
-    end
+    local git = assert(find_tool("git"), "git not found!")
 
     -- init reference type
     reftype = reftype or "refs"

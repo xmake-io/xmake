@@ -39,10 +39,7 @@ import("lib.detect.find_tool")
 function main(url, opt)
 
     -- find git
-    local git = find_tool("git")
-    if not git then
-        return 
-    end
+    local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
     local argv = {"clone", url}

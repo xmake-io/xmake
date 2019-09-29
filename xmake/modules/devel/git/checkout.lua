@@ -42,10 +42,7 @@ function main(commit, opt)
     opt = opt or {}
 
     -- find git
-    local git = find_tool("git")
-    if not git then
-        return 
-    end
+    local git = assert(find_tool("git"), "git not found!")
 
     -- init argv
     local argv = {"checkout", commit}

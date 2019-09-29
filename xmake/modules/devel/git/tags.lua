@@ -37,7 +37,5 @@ import("ls_remote")
 -- @endcode
 --
 function main(url)
-
-    -- get tags
     return ls_remote("tags", url)
 end

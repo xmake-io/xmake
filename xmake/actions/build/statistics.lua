@@ -24,6 +24,7 @@ import("core.project.config")
 import("core.platform.platform")
 import("core.platform.environment")
 import("private.action.update.fetch_version")
+import("private.action.require.packagenv")
 
 -- statistics is enabled?
 function _is_enabled()
@@ -109,21 +110,29 @@ function main()
     -- enter environment
     environment.enter("toolchains")
 
+    -- enter the environments of git
+    packagenv.enter("git")
+
     -- get the project directory name
     local projectname = path.basename(os.projectdir())
 
     -- clone the xmake-stats repo to update the traffic(git clones) info in github
     local outputdir = path.join(os.tmpdir(), "stats", os.date("%y%m%d"), projectname)
     if not os.isdir(outputdir) then
-        import("devel.git.clone")
-        clone("https://github.com/xmake-io/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
-        print("post to traffic ok!")
+        try
+        {
+            function ()
+                import("devel.git.clone")
+                clone("https://github.com/xmake-io/xmake-stats.git", {depth = 1, branch = "master", outputdir = outputdir})
+                print("post to traffic ok!")
+            end
+        }
     end
 
     -- fetch the lastest version
     local versionfile = path.join(os.tmpdir(), "lastest_version")
     if not os.isfile(versionfile) then
-        local fetchinfo = fetch_version()
+        local fetchinfo = try { function () return fetch_version() end }
         if fetchinfo then
             io.save(versionfile, fetchinfo)
         end
@@ -136,6 +145,9 @@ function main()
         download(format("https://github.com/xmake-io/xmake-stats/releases/download/v%s/%s", xmake:version():shortstr(), os.host()), releasefile)
         print("post to releases ok!")
     end
+
+    -- leave the environments of git
+    packagenv.leave("git")
 
     -- leave environment
     environment.leave("toolchains")

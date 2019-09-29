@@ -37,7 +37,5 @@ import("ls_remote")
 -- @endcode
 --
 function main(url)
-
-    -- get branches
     return ls_remote("heads", url)
 end
