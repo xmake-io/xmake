@@ -36,7 +36,7 @@ function _is_enabled()
     end
 
     -- is in ci(travis/appveyor/...)? need not post it
-    local ci = (os.getenv("CI") or ""):lower()
+    local ci = (os.getenv("CI") or os.getenv("GITHUB_ACTIONS") or ""):lower()
     if ci == "true" then
         os.setenv("XMAKE_STATS", "false")
         return false
