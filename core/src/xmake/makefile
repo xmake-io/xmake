@@ -36,6 +36,7 @@ xmake_C_FILES 			+= \
 						os/setenv \
 						os/getenv \
 						os/getenvs \
+						os/cpuinfo \
 						os/readlink \
 						os/emptydir \
 						os/strerror \

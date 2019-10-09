@@ -55,6 +55,7 @@ sandbox_os.addenvp      = os.addenvp
 sandbox_os.getenvs      = os.getenvs
 sandbox_os.pbpaste      = os.pbpaste
 sandbox_os.pbcopy       = os.pbcopy
+sandbox_os.cpuinfo      = os.cpuinfo
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.filesize     = os.filesize
 sandbox_os.workingdir   = os.workingdir

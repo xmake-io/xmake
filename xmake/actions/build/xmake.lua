@@ -43,7 +43,8 @@ task("build")
                 ,   {'a', "all",        "k",  nil,          "Build all targets."                                            }
 
                 ,   {}
-                ,   {'j', "jobs",       "kv", "4",          "Specifies the number of jobs to build simultaneously."         }
+                ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)), 
+                                                            "Specifies the number of jobs to build simultaneously."         }
                 ,   {'w', "warning",    "k",  false,        "Enable the warnings output."                                   }
                 ,   {'t', "try",        "k",  false,        "Try building project using third-party buildsystem."           }
                 ,   {nil, "files",      "kv", nil,          "Build the given source files.",
