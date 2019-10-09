@@ -13,6 +13,7 @@
 * [#570](https://github.com/xmake-io/xmake/issues/570): Add `qt.widgetapp` and `qt.quickapp` rules
 * [#576](https://github.com/xmake-io/xmake/issues/576): Uses `set_toolchain` instead of `add_tools` and `set_tools`
 * Improve `xmake create` action
+* [#589](https://github.com/xmake-io/xmake/issues/589): Improve the default build jobs number to optimize build speed
 
 ### Bugs fixed
 
@@ -656,6 +657,7 @@
 * [#570](https://github.com/xmake-io/xmake/issues/570): 改进Qt构建，将`qt.application`拆分成`qt.widgetapp`和`qt.quickapp`两个构建规则
 * [#576](https://github.com/xmake-io/xmake/issues/576): 使用`set_toolchain`替代`add_tools`和`set_tools`，解决老接口使用歧义，提供更加易理解的设置方式
 * 改进`xmake create`创建模板工程
+* [#589](https://github.com/xmake-io/xmake/issues/589): 改进默认的构建任务数，充分利用cpu core来提速整体编译速度
 
 ### Bugs修复
 
