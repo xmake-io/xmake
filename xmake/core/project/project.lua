@@ -539,6 +539,8 @@ function project._load_targets()
                     end
                 end
                 table.insert(t._ORDERULES, r)
+            else
+                return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
 
