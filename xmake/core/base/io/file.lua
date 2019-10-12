@@ -52,19 +52,36 @@ end
 
 -- close file
 function _file:close()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_close(self._FILE)
+
+    -- close it
+    ok, errors = io.file_close(self._FILE)
     if ok then
         self._FILE = nil
     end
     return ok, errors
 end
 
+-- ensure the file is opened
+function _file:_ensure_opened()
+    if not self._FILE then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
 -- tostring(file)
 function _file:__tostring()
-    return "<file: " .. self:name() .. ">"
+    local name = self:path()
+    if not name or #name > 16 then
+        name = self:name()
+    end
+    return "<file: " .. name .. ">"
 end
 
 -- gc(file)
@@ -81,85 +98,120 @@ end
 
 -- get file rawfd
 function _file:rawfd()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- get rawfd
     local result, errors = io.file_rawfd(self._FILE)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- get file size
 function _file:size()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- get file size
     local result, errors = io.file_size(self._FILE)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- read data from file
 function _file:read(fmt, opt)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- read it
     opt = opt or {}
     local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
     if errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- write data to file
 function _file:write(...)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_write(self._FILE, ...)
+
+    -- write it
+    ok, errors = io.file_write(self._FILE, ...)
     if not ok and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end
 
 -- seek offset at file
 function _file:seek(whence, offset)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- seek it
     local result, errors = io.file_seek(self._FILE, whence, offset)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- flush data to file
 function _file:flush()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_flush(self._FILE)
+
+    -- flush it
+    ok, errors = io.file_flush(self._FILE)
     if not ok and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end
 
 -- this file is a tty?
 function _file:isatty()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_isatty(self._FILE)
+
+    -- is a tty?
+    ok, errors = io.file_isatty(self._FILE)
     if ok == nil and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end

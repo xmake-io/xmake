@@ -60,14 +60,19 @@ end
 -- @return          ok, errors
 --
 function _filelock:lock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- lock it
     if self._LOCKED_NUM > 0 or io.filelock_lock(self._LOCK, opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
-        return false, string.format("filelock(%s): lock %s failed!", self:name(), self:path())
+        return false, string.format("%s: lock failed!", self)
     end
 end
 
@@ -78,22 +83,32 @@ end
 -- @return          ok, errors
 --
 function _filelock:trylock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- unlock it
     if self._LOCKED_NUM > 0 or io.filelock_trylock(self._LOCK, opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
-        return false, string.format("filelock(%s): trylock %s failed!", self:name(), self:path())
+        return false, string.format("%s: trylock failed!", self)
     end
 end
 
 -- unlock file
 function _filelock:unlock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- unlock it
     if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self._LOCK)) then
         if self._LOCKED_NUM > 0 then
             self._LOCKED_NUM = self._LOCKED_NUM - 1
@@ -102,16 +117,21 @@ function _filelock:unlock(opt)
         end
         return true
     else
-        return false, string.format("filelock(%s): unlock %s failed!", self:name(), self:path())
+        return false, string.format("%s: unlock failed!", self)
     end
 end
 
 -- close filelock
 function _filelock:close()
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok = io.filelock_close(self._LOCK)
+
+    -- close filelock
+    ok = io.filelock_close(self._LOCK)
     if ok then
         self._LOCK = nil
         self._LOCKED_NUM = 0
@@ -119,9 +139,21 @@ function _filelock:close()
     return ok
 end
 
+-- ensure the filelock is opened
+function _filelock:_ensure_opened()
+    if not self._LOCK then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
 -- tostring(filelock)
 function _filelock:__tostring()
-    return "<filelock: " .. self:name() .. ">"
+    local name = self:path()
+    if not name or #name > 16 then
+        name = self:name()
+    end
+    return "<filelock: " .. name .. ">"
 end
 
 -- gc(filelock)

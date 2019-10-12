@@ -48,14 +48,27 @@ end
 
 -- close socket
 function _socket:close()
-    if not self._SOCK then
-        return false, string.format("%s has been closed!", tostring(self))
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok = io.socket_close(self._SOCK)
+
+    -- close it
+    ok = io.socket_close(self._SOCK)
     if ok then
         self._SOCK = nil
     end
     return ok
+end
+
+-- ensure the socket is opened
+function _socket:_ensure_opened()
+    if not self._SOCK then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
 end
 
 -- tostring(socket)
