@@ -31,7 +31,7 @@ function _find_android_sdkdir(sdkdir)
 
     -- get sdk directory
     if not sdkdir then
-        sdkdir = os.getenv("ANDROID_SDK_ROOT")
+        sdkdir = os.getenv("ANDROID_SDK_HOME") or os.getenv("ANDROID_SDK_ROOT")
         if not sdkdir and is_host("macosx") then
             sdkdir = "~/Library/Android/sdk"
         end
