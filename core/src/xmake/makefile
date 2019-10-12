@@ -60,6 +60,8 @@ xmake_C_FILES 			+= \
 						io/filelock_unlock \
 						io/filelock_trylock \
 						io/filelock_close \
+						io/socket_open \
+						io/socket_close \
 						path/relative \
 						path/absolute \
 						path/translate \

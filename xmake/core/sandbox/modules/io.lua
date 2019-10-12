@@ -29,8 +29,10 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
+local sandbox_io_socket   = sandbox_io_socket or {}
 sandbox_io._file          = sandbox_io._file or io._file
 sandbox_io._filelock      = sandbox_io._filelock or io._filelock
+sandbox_io._socket        = sandbox_io._socket or io._socket
 sandbox_io.lines          = io.lines
 
 -- get file size
@@ -270,6 +272,29 @@ function sandbox_io.openlock(filepath)
         lock[name] = func
     end
     return lock
+end
+
+-- open socket
+function sandbox_io.opensock()
+
+    -- open sock
+    local sock, errors = io.opensock()
+    if not sock then
+        raise(errors)
+    end
+
+    -- hook socket interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_io_socket) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = sock["_" .. name] or sock[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        sock[name] = func
+    end
+    return sock
 end
 
 -- load object from the given file
