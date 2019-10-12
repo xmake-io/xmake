@@ -1,7 +1,7 @@
 /*!A cross-platform build utility based on Lua
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use this sock except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
@@ -14,15 +14,15 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file_isatty.c
+ * @author      ruki
+ * @sock        socket_rawfd.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_isatty"
+#define TB_TRACE_MODULE_NAME    "socket_rawfd"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,24 +31,32 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// socket to fd
+#define xm_io_sock2fd(sock)            (lua_Number)tb_sock2fd(sock)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
-// io.file_isatty(file)
-tb_int_t xm_io_file_isatty(lua_State* lua)
+/* io.socket_rawfd(sock)
+ */
+tb_int_t xm_io_socket_rawfd(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
-        xm_io_return_error(lua, "isatty(invalid file)!");
+        xm_io_return_error(lua, "get rawfd for invalid sock!");
 
-    // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
-    tb_check_return_val(file, 0);
+    // get socket
+    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(sock, 0);
 
-    // is tty?
-    lua_pushboolean(lua, xm_io_file_is_tty(file));
+    // return result
+    lua_pushnumber(lua, xm_io_sock2fd(sock));
     return 1;
 }

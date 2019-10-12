@@ -168,6 +168,23 @@ function sandbox_io_filelock.close(lock)
     end
 end
 
+-- get socket rawfd
+function sandbox_io_socket.rawfd(sock)
+    local result, errors = sock:_rawfd()
+    if not result then
+        raise(errors)
+    end
+    return result
+end
+
+-- close socket
+function sandbox_io_socket.close(sock)
+    local ok, errors = sock:_close()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- gsub the given file and return replaced data
 function sandbox_io.gsub(filepath, pattern, replace, opt)
 

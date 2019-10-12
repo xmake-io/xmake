@@ -59,11 +59,7 @@ tb_int_t xm_io_socket_open(lua_State* lua)
     else if (!tb_strcmp(socktype, "icmp"))
         t = TB_SOCKET_TYPE_ICMP;
     else
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "invalid socket type!");
-        return 2;
-    }
+        xm_io_return_error(lua, "invalid socket type!");
 
     // map address family
     tb_size_t f = TB_IPADDR_FAMILY_NONE;
@@ -72,11 +68,7 @@ tb_int_t xm_io_socket_open(lua_State* lua)
     else if (!tb_strcmp(family, "ipv6"))
         f = TB_IPADDR_FAMILY_IPV6;
     else
-    {
-        lua_pushnil(lua);
-        lua_pushliteral(lua, "invalid address family!");
-        return 2;
-    }
+        xm_io_return_error(lua, "invalid address family!");
 
     // init socket
     tb_socket_ref_t sock = tb_socket_init(t, f);

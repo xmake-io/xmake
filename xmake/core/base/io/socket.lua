@@ -46,6 +46,23 @@ function _socket:family()
     return self._FAMILY
 end
 
+-- get socket rawfd
+function _socket:rawfd()
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
+    end
+
+    -- get rawfd
+    local result, errors = io.socket_rawfd(self._SOCK)
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- close socket
 function _socket:close()
 
@@ -73,7 +90,8 @@ end
 
 -- tostring(socket)
 function _socket:__tostring()
-    return string.format("<socket: %s/%s>", self:type(), self:family())
+    local rawfd = self:rawfd() or "closed"
+    return string.format("<socket: %s%s/%s>", self:type(), self:family() == "ipv6" and "6" or "4", rawfd)
 end
 
 -- gc(socket)

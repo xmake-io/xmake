@@ -42,7 +42,7 @@ tb_int_t xm_io_file_close(lua_State* lua)
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
-        xm_io_file_return_error(lua, "close(invalid file)!");
+        xm_io_return_error(lua, "close(invalid file)!");
 
     // get file
     xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
@@ -88,6 +88,6 @@ tb_int_t xm_io_file_close(lua_State* lua)
         lua_pushboolean(lua, tb_true);
         return 1;
     }
-    else xm_io_file_return_error(lua, "cannot close this file!");
+    else xm_io_return_error(lua, "cannot close this file!");
 }
 

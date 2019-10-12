@@ -111,6 +111,7 @@ tb_int_t xm_io_filelock_close(lua_State* lua);
 
 // the io/socket functions
 tb_int_t xm_io_socket_open(lua_State* lua);
+tb_int_t xm_io_socket_rawfd(lua_State* lua);
 tb_int_t xm_io_socket_close(lua_State* lua);
 
 // the path functions
@@ -246,6 +247,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "filelock_unlock",    xm_io_filelock_unlock  }
 ,   { "filelock_close",     xm_io_filelock_close   }
 ,   { "socket_open",        xm_io_socket_open      }
+,   { "socket_rawfd",       xm_io_socket_rawfd     }
 ,   { "socket_close",       xm_io_socket_close     }
 ,   { tb_null,              tb_null                }
 };
