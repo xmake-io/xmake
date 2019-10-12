@@ -105,10 +105,10 @@ function _toolchains()
     sh:add("clang", "clang++")
 
     -- init the static library archiver
-    ar:add({name = "ar", cross = cross}, "llvm-ar")
+    ar:add({name = "ar", cross = cross, pathes = gcc_toolchain_bin}, "llvm-ar")
 
     -- init the static library extractor
-    ex:add({name = "ar", cross = cross}, "llvm-ar")
+    ex:add({name = "ar", cross = cross, pathes = gcc_toolchain_bin}, "llvm-ar")
 
     -- init the static library index generator
     ranlib:add({name = "ranlib", cross = cross, pathes = gcc_toolchain_bin}, "ranlib")
