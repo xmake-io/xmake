@@ -84,11 +84,17 @@ function _socket:__gc()
 end
 
 -- open a socket
+--
+-- @param socktype      the socket type, e.g. tcp, udp, icmp
+-- @param family        the address family, e.g. ipv4, ipv6
+--
+-- @return the socket instance
+--
 function io.opensock(socktype, family)
-    local sock = io.socket_open(socktype, family)
+    local sock, errors = io.socket_open(socktype, family)
     if sock then
         return _socket.new(socktype, family, sock)
     else
-        return nil, string.format("failed to open socket!")
+        return nil, errors or string.format("failed to open socket(%s/%s)!", socktype, family)
     end
 end
