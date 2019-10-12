@@ -121,7 +121,7 @@ end
 
 -- tostring(filelock)
 function _filelock:__tostring()
-    return "filelock: " .. self:name()
+    return "<filelock: " .. self:name() .. ">"
 end
 
 -- gc(filelock)

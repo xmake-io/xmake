@@ -27,23 +27,29 @@ local table  = require("base/table")
 local string = require("base/string")
 
 -- new a socket
-function _socket.new(sock)
-    local socket = table.inherit(_socket)
-    socket._SOCK = sock
-    socket._NAME = ""
+function _socket.new(socktype, family, sock)
+    local socket   = table.inherit(_socket)
+    socket._SOCK   = sock
+    socket._TYPE   = socktype
+    socket._FAMILY = family
     setmetatable(socket, _socket)
     return socket
 end
 
--- get the socket name 
-function _socket:name()
-    return self._NAME
+-- get socket type
+function _socket:type()
+    return self._TYPE
+end
+
+-- get socket family
+function _socket:family()
+    return self._FAMILY
 end
 
 -- close socket
 function _socket:close()
     if not self._SOCK then
-        return false, string.format("socket(%s) has been closed!", self:name())
+        return false, string.format("%s has been closed!", tostring(self))
     end
     local ok = io.socket_close(self._SOCK)
     if ok then
@@ -54,7 +60,7 @@ end
 
 -- tostring(socket)
 function _socket:__tostring()
-    return "socket: " .. self:name()
+    return string.format("<socket: %s/%s>", self:type(), self:family())
 end
 
 -- gc(socket)
@@ -65,12 +71,10 @@ function _socket:__gc()
 end
 
 -- open a socket
-function io.opensock()
-
-    -- open it
-    local sock = io.socket_open()
+function io.opensock(socktype, family)
+    local sock = io.socket_open(socktype, family)
     if sock then
-        return _socket.new(filepath, sock)
+        return _socket.new(socktype, family, sock)
     else
         return nil, string.format("failed to open socket!")
     end

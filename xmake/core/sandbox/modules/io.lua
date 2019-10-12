@@ -272,10 +272,10 @@ function sandbox_io.openlock(filepath)
 end
 
 -- open socket
-function sandbox_io.opensock()
+function sandbox_io.opensock(socktype, family)
 
     -- open sock
-    local sock, errors = io.opensock()
+    local sock, errors = io.opensock(socktype, family)
     if not sock then
         raise(errors)
     end

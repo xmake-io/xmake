@@ -64,7 +64,7 @@ end
 
 -- tostring(file)
 function _file:__tostring()
-    return "file: " .. self:name()
+    return "<file: " .. self:name() .. ">"
 end
 
 -- gc(file)
