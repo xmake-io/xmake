@@ -30,9 +30,6 @@ local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
 local sandbox_io_socket   = sandbox_io_socket or {}
-sandbox_io._file          = sandbox_io._file or io._file
-sandbox_io._filelock      = sandbox_io._filelock or io._filelock
-sandbox_io._socket        = sandbox_io._socket or io._socket
 sandbox_io.lines          = io.lines
 
 -- get file size
