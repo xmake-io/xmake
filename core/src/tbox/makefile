@@ -218,7 +218,8 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/hostname \
 						tbox/src/tbox/platform/ifaddrs \
 						tbox/src/tbox/platform/ltimer \
-						tbox/src/tbox/platform/memory \
+						tbox/src/tbox/platform/native_memory \
+						tbox/src/tbox/platform/virtual_memory \
 						tbox/src/tbox/platform/mutex \
 						tbox/src/tbox/platform/page \
 						tbox/src/tbox/platform/path \
