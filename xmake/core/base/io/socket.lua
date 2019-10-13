@@ -30,8 +30,8 @@ local string = require("base/string")
 function _socket.new(socktype, family, sock)
     local socket   = table.inherit(_socket)
     socket._SOCK   = sock
-    socket._TYPE   = socktype
-    socket._FAMILY = family
+    socket._TYPE   = socktype or "tcp"
+    socket._FAMILY = family or "ipv4"
     setmetatable(socket, _socket)
     return socket
 end
@@ -58,6 +58,23 @@ function _socket:rawfd()
     -- get rawfd
     local result, errors = io.socket_rawfd(self._SOCK)
     if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
+-- connect socket 
+function _socket:connect(addr, port)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- connect it
+    local result, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+    if result < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
     return result, errors

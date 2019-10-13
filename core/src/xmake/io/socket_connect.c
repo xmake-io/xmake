@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        socket_open.c
+ * @file        socket_connect.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_open"
+#define TB_TRACE_MODULE_NAME    "socket_connect"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,41 +31,39 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-/*
- * io.socket_open(socktype, family)
- */
-tb_int_t xm_io_socket_open(lua_State* lua)
+// io.socket_connect(sock, addr, port, family)
+tb_int_t xm_io_socket_connect(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get socket type 
-    tb_char_t const* socktype = lua_tostring(lua, 1);
+    // is user data?
+    if (!lua_isuserdata(lua, 1)) 
+        return 0;
 
-    // get address family 
-    tb_char_t const* family = lua_tostring(lua, 2);
+    // get socket
+    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(sock, 0);
 
-    // map socket type
-    tb_size_t t = TB_SOCKET_TYPE_TCP;
-    if (socktype) 
-    {
-        if (!tb_strcmp(socktype, "udp"))
-            t = TB_SOCKET_TYPE_UDP;
-        else if (!tb_strcmp(socktype, "icmp"))
-            t = TB_SOCKET_TYPE_ICMP;
-    }
+    // get address
+    tb_char_t const* address = lua_tostring(lua, 2);
+    tb_assert_and_check_return_val(address, 0);
 
-    // map address family
-    tb_size_t f = TB_IPADDR_FAMILY_IPV4;
-    if (family && !tb_strcmp(family, "ipv6"))
-        f = TB_IPADDR_FAMILY_IPV6;
+    // get port
+    tb_size_t port = (tb_size_t)luaL_checknumber(lua, 3);
 
-    // init socket
-    tb_socket_ref_t sock = tb_socket_init(t, f);
-    if (sock) lua_pushlightuserdata(lua, (tb_pointer_t)sock);
-    else lua_pushnil(lua);
+    // get family
+    tb_char_t const* family = lua_tostring(lua, 4);
+
+    // init address
+    tb_ipaddr_t addr;
+    tb_ipaddr_set(&addr, address, port, (family && !tb_strcmp(family, "ipv6"))? TB_IPADDR_FAMILY_IPV6 : TB_IPADDR_FAMILY_IPV4);
+
+    // connect socket
+    lua_pushnumber(lua, (tb_int_t)tb_socket_connect(sock, &addr));
     return 1;
 }
+

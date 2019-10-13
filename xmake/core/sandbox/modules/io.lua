@@ -168,6 +168,15 @@ function sandbox_io_filelock.close(lock)
     end
 end
 
+-- connect socket 
+function sandbox_io_socket.connect(sock, addr, port)
+    local result, errors = sock:_connect(addr, port)
+    if result < 0 and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- get socket rawfd
 function sandbox_io_socket.rawfd(sock)
     local result, errors = sock:_rawfd()
