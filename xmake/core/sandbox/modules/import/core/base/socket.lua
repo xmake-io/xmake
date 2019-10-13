@@ -97,6 +97,38 @@ function sandbox_core_base_socket.open_udp6()
     return sandbox_core_base_socket.open("udp", "ipv6")
 end
 
+-- open and connect tcp/ipv4 socket
+function sandbox_core_base_socket.connect4(addr, port, timeout)
+    local sock = sandbox_core_base_socket.open_tcp4()
+    local ok = 0
+    repeat
+        ok = sock:connect(addr, port)
+        -- TODO wait
+    until ok ~= 0
+    if ok > 0 then
+        return sock
+    else
+        sock:close()
+        raise("connect %s:%s failed!", addr, port)
+    end
+end
+
+-- open and connect tcp/ipv6 socket
+function sandbox_core_base_socket.connect6(addr, port)
+    local sock = sandbox_core_base_socket.open_tcp6()
+    local ok = 0
+    repeat
+        ok = sock:connect(addr, port)
+        -- TODO wait
+    until ok ~= 0
+    if ok > 0 then
+        return sock
+    else
+        sock:close()
+        raise("connect %s:%s failed!", addr, port)
+    end
+end
+
 -- return module
 return sandbox_core_base_socket
 
