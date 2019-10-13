@@ -29,7 +29,6 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_io          = sandbox_io or {}
 local sandbox_io_file     = sandbox_io_file or {}
 local sandbox_io_filelock = sandbox_io_filelock or {}
-local sandbox_io_socket   = sandbox_io_socket or {}
 sandbox_io.lines          = io.lines
 
 -- get file size
@@ -168,32 +167,6 @@ function sandbox_io_filelock.close(lock)
     end
 end
 
--- connect socket 
-function sandbox_io_socket.connect(sock, addr, port)
-    local result, errors = sock:_connect(addr, port)
-    if result < 0 and errors then
-        raise(errors)
-    end
-    return result
-end
-
--- get socket rawfd
-function sandbox_io_socket.rawfd(sock)
-    local result, errors = sock:_rawfd()
-    if not result then
-        raise(errors)
-    end
-    return result
-end
-
--- close socket
-function sandbox_io_socket.close(sock)
-    local ok, errors = sock:_close()
-    if not ok then
-        raise(errors)
-    end
-end
-
 -- gsub the given file and return replaced data
 function sandbox_io.gsub(filepath, pattern, replace, opt)
 
@@ -295,29 +268,6 @@ function sandbox_io.openlock(filepath)
         lock[name] = func
     end
     return lock
-end
-
--- open socket
-function sandbox_io.opensock(socktype, family)
-
-    -- open sock
-    local sock, errors = io.opensock(socktype, family)
-    if not sock then
-        raise(errors)
-    end
-
-    -- hook socket interfaces
-    local hooked = {}
-    for name, func in pairs(sandbox_io_socket) do
-        if not name:startswith("_") and type(func) == "function" then
-            hooked["_" .. name] = sock["_" .. name] or sock[name]
-            hooked[name] = func
-        end
-    end
-    for name, func in pairs(hooked) do
-        sock[name] = func
-    end
-    return sock
 end
 
 -- load object from the given file

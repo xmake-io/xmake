@@ -19,35 +19,36 @@
 --
 
 -- define module
-local io        = io or {}
-local _socket   = _socket or {}
+local io          = io or {}
+local socket      = socket or {}
+local _instance   = _instance or {}
 
 -- load modules
 local table  = require("base/table")
 local string = require("base/string")
 
 -- new a socket
-function _socket.new(socktype, family, sock)
-    local socket   = table.inherit(_socket)
+function _instance.new(socktype, family, sock)
+    local socket   = table.inherit(_instance)
     socket._SOCK   = sock
     socket._TYPE   = socktype or "tcp"
     socket._FAMILY = family or "ipv4"
-    setmetatable(socket, _socket)
+    setmetatable(socket, _instance)
     return socket
 end
 
 -- get socket type
-function _socket:type()
+function _instance:type()
     return self._TYPE
 end
 
 -- get socket family
-function _socket:family()
+function _instance:family()
     return self._FAMILY
 end
 
 -- get socket rawfd
-function _socket:rawfd()
+function _instance:rawfd()
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -64,7 +65,7 @@ function _socket:rawfd()
 end
 
 -- connect socket 
-function _socket:connect(addr, port)
+function _instance:connect(addr, port)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -81,7 +82,7 @@ function _socket:connect(addr, port)
 end
 
 -- close socket
-function _socket:close()
+function _instance:close()
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -98,7 +99,7 @@ function _socket:close()
 end
 
 -- ensure the socket is opened
-function _socket:_ensure_opened()
+function _instance:_ensure_opened()
     if not self._SOCK then
         return false, string.format("%s: has been closed!", self)
     end
@@ -106,13 +107,13 @@ function _socket:_ensure_opened()
 end
 
 -- tostring(socket)
-function _socket:__tostring()
+function _instance:__tostring()
     local rawfd = self:rawfd() or "closed"
     return string.format("<socket: %s%s/%s>", self:type(), self:family() == "ipv6" and "6" or "4", rawfd)
 end
 
 -- gc(socket)
-function _socket:__gc()
+function _instance:__gc()
     if self._SOCK and io.socket_close(self._SOCK) then
         self._SOCK = nil
     end
@@ -125,11 +126,14 @@ end
 --
 -- @return the socket instance
 --
-function io.opensock(socktype, family)
+function socket.open(socktype, family)
     local sock, errors = io.socket_open(socktype, family)
     if sock then
-        return _socket.new(socktype, family, sock)
+        return _instance.new(socktype, family, sock)
     else
         return nil, errors or string.format("failed to open socket(%s/%s)!", socktype, family)
     end
 end
+
+-- return module
+return socket
