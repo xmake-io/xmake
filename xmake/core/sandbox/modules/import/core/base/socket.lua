@@ -28,6 +28,21 @@ local raise     = require("sandbox/modules/raise")
 local sandbox_core_base_socket            = sandbox_core_base_socket or {}
 local sandbox_core_base_socket_instance   = sandbox_core_base_socket_instance or {}
 
+-- export the socket types
+sandbox_core_base_socket.TCP     = socket.TCP
+sandbox_core_base_socket.UDP     = socket.UDP
+sandbox_core_base_socket.ICMP    = socket.ICMP
+
+-- export the socket families
+sandbox_core_base_socket.IPV4    = socket.IPV4
+sandbox_core_base_socket.IPV6    = socket.IPV6
+
+-- export the socket events
+sandbox_core_base_socket.EV_RECV = socket.EV_RECV
+sandbox_core_base_socket.EV_SEND = socket.EV_SEND
+sandbox_core_base_socket.EV_CONN = socket.EV_SEND
+sandbox_core_base_socket.EV_ACPT = socket.EV_RECV
+
 -- wait socket events
 function sandbox_core_base_socket_instance.wait(sock, events, timeout)
     local result, errors = sock:_wait(events, timeout)
