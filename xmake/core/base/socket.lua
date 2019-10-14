@@ -96,6 +96,23 @@ function _instance:bind(addr, port)
     return result, errors
 end
 
+-- listen socket 
+function _instance:listen(backlog)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- listen it
+    local result, errors = io.socket_listen(self._SOCK, backlog or 10)
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- connect socket 
 function _instance:connect(addr, port)
 

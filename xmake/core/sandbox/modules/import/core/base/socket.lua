@@ -46,6 +46,15 @@ function sandbox_core_base_socket_instance.bind(sock, addr, port)
     return result
 end
 
+-- listen socket 
+function sandbox_core_base_socket_instance.listen(backlog)
+    local result, errors = sock:_listen(backlog)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- connect socket 
 function sandbox_core_base_socket_instance.connect(sock, addr, port)
     local result, errors = sock:_connect(addr, port)
@@ -95,42 +104,36 @@ function sandbox_core_base_socket.open(socktype, family)
     return sock
 end
 
--- open udp/ipv4 socket
-function sandbox_core_base_socket.udp4()
-    return sandbox_core_base_socket.open(socket.UDP, socket.IPV4)
+-- open tcp socket
+function sandbox_core_base_socket.tcp(opt)
+    opt = opt or {}
+    return sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
 end
 
--- open udp/ipv6 socket
-function sandbox_core_base_socket.udp6()
-    return sandbox_core_base_socket.open(socket.UDP, socket.IPV6)
+-- open udp socket
+function sandbox_core_base_socket.udp(opt)
+    opt = opt or {}
+    return sandbox_core_base_socket.open(socket.UDP, opt.family or socket.IPV4)
 end
 
--- open and bind tcp/ipv4 socket
-function sandbox_core_base_socket.bind4(addr, port)
-    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV4)
+-- open and bind tcp socket
+function sandbox_core_base_socket.bind(addr, port, opt)
+    opt = opt or {}
+    local sock = sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
     if sock:bind(addr, port) then
         return sock
     end
     sock:close()
-    raise("bind4 %s:%s failed!", addr, port)
+    raise("bind %s:%s failed!", addr, port)
 end
 
--- open and bind tcp/ipv6 socket
-function sandbox_core_base_socket.bind6(addr, port)
-    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV6)
-    if sock:bind(addr, port) then
-        return sock
-    end
-    sock:close()
-    raise("bind6 %s:%s failed!", addr, port)
-end
-
--- open and connect tcp/ipv4 socket
-function sandbox_core_base_socket.connect4(addr, port, timeout)
-    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV4)
+-- open and connect tcp socket
+function sandbox_core_base_socket.connect(addr, port, opt)
+    opt = opt or {}
+    local sock = sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
     local ok = sock:connect(addr, port)
     if ok == 0 then
-        ok = sock:wait(socket.EV_CONN, timeout)
+        ok = sock:wait(socket.EV_CONN, opt.timeout or -1)
         if ok == socket.EV_CONN then
             ok = sock:connect(addr, port)
         end
@@ -139,25 +142,7 @@ function sandbox_core_base_socket.connect4(addr, port, timeout)
         return sock
     else
         sock:close()
-        raise("connect4 %s:%s failed!", addr, port)
-    end
-end
-
--- open and connect tcp/ipv6 socket
-function sandbox_core_base_socket.connect6(addr, port, timeout)
-    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV6)
-    local ok = sock:connect(addr, port)
-    if ok == 0 then
-        ok = sock:wait(socket.EV_CONN, timeout)
-        if ok == socket.EV_CONN then
-            ok = sock:connect(addr, port)
-        end
-    end
-    if ok > 0 then
-        return sock
-    else
-        sock:close()
-        raise("connect6 %s:%s failed!", addr, port)
+        raise("connect %s:%s failed!", addr, port)
     end
 end
 

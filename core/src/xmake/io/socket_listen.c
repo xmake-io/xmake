@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        socket_wait.c
+ * @file        socket_listen.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "socket_wait"
+#define TB_TRACE_MODULE_NAME    "socket_listen"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,8 +34,8 @@
  * interfaces
  */
 
-// io.socket_wait(sock, events, timeout)
-tb_int_t xm_io_socket_wait(lua_State* lua)
+// io.socket_listen(sock, backlog)
+tb_int_t xm_io_socket_listen(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -48,14 +48,11 @@ tb_int_t xm_io_socket_wait(lua_State* lua)
     tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
     tb_check_return_val(sock, 0);
 
-    // get events
-    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 2);
+    // get backlog
+    tb_size_t backlog = (tb_size_t)luaL_checknumber(lua, 2);
 
-    // get timeout
-    tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 3);
-
-    // wait socket
-    lua_pushnumber(lua, (tb_int_t)tb_socket_wait(sock, events, timeout));
+    // listen socket
+    lua_pushnumber(lua, (tb_int_t)tb_socket_listen(sock, backlog));
     return 1;
 }
 
