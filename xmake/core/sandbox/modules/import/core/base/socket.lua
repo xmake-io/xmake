@@ -77,29 +77,19 @@ function sandbox_core_base_socket.open(socktype, family)
     return sock
 end
 
--- open tcp/ipv4 socket
-function sandbox_core_base_socket.open_tcp4()
-    return sandbox_core_base_socket.open("tcp", "ipv4")
-end
-
--- open tcp/ipv6 socket
-function sandbox_core_base_socket.open_tcp6()
-    return sandbox_core_base_socket.open("tcp", "ipv6")
-end
-
 -- open udp/ipv4 socket
-function sandbox_core_base_socket.open_udp4()
-    return sandbox_core_base_socket.open("udp", "ipv4")
+function sandbox_core_base_socket.udp4()
+    return sandbox_core_base_socket.open(socket.UDP, socket.IPV4)
 end
 
 -- open udp/ipv6 socket
-function sandbox_core_base_socket.open_udp6()
-    return sandbox_core_base_socket.open("udp", "ipv6")
+function sandbox_core_base_socket.udp6()
+    return sandbox_core_base_socket.open(socket.UDP, socket.IPV6)
 end
 
 -- open and connect tcp/ipv4 socket
 function sandbox_core_base_socket.connect4(addr, port, timeout)
-    local sock = sandbox_core_base_socket.open_tcp4()
+    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV4)
     local ok = 0
     repeat
         ok = sock:connect(addr, port)
@@ -114,8 +104,8 @@ function sandbox_core_base_socket.connect4(addr, port, timeout)
 end
 
 -- open and connect tcp/ipv6 socket
-function sandbox_core_base_socket.connect6(addr, port)
-    local sock = sandbox_core_base_socket.open_tcp6()
+function sandbox_core_base_socket.connect6(addr, port, timeout)
+    local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV6)
     local ok = 0
     repeat
         ok = sock:connect(addr, port)

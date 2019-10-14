@@ -43,28 +43,27 @@ tb_int_t xm_io_socket_open(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get socket type 
-    tb_char_t const* socktype = lua_tostring(lua, 1);
+    tb_size_t socktype = (tb_size_t)luaL_checknumber(lua, 1);
 
     // get address family 
-    tb_char_t const* family = lua_tostring(lua, 2);
+    tb_size_t family = (tb_size_t)luaL_checknumber(lua, 2);
 
     // map socket type
-    tb_size_t t = TB_SOCKET_TYPE_TCP;
-    if (socktype) 
+    switch (socktype) 
     {
-        if (!tb_strcmp(socktype, "udp"))
-            t = TB_SOCKET_TYPE_UDP;
-        else if (!tb_strcmp(socktype, "icmp"))
-            t = TB_SOCKET_TYPE_ICMP;
+    case 2:
+        socktype = TB_SOCKET_TYPE_UDP;
+        break;
+    case 3:
+        socktype = TB_SOCKET_TYPE_ICMP;
+        break;
+    default:
+        socktype = TB_SOCKET_TYPE_TCP;
+        break;
     }
 
-    // map address family
-    tb_size_t f = TB_IPADDR_FAMILY_IPV4;
-    if (family && !tb_strcmp(family, "ipv6"))
-        f = TB_IPADDR_FAMILY_IPV6;
-
     // init socket
-    tb_socket_ref_t sock = tb_socket_init(t, f);
+    tb_socket_ref_t sock = tb_socket_init(socktype, family);
     if (sock) lua_pushlightuserdata(lua, (tb_pointer_t)sock);
     else lua_pushnil(lua);
     return 1;

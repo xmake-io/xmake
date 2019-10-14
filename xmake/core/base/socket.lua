@@ -19,22 +19,31 @@
 --
 
 -- define module
-local io          = io or {}
 local socket      = socket or {}
 local _instance   = _instance or {}
 
 -- load modules
+local io     = require("base/io")
 local table  = require("base/table")
 local string = require("base/string")
 
+-- the socket types
+socket.TCP   = 1
+socket.UDP   = 2
+socket.ICMP  = 3
+
+-- the socket families
+socket.IPV4  = 1
+socket.IPV6  = 2
+
 -- new a socket
 function _instance.new(socktype, family, sock)
-    local socket   = table.inherit(_instance)
-    socket._SOCK   = sock
-    socket._TYPE   = socktype or "tcp"
-    socket._FAMILY = family or "ipv4"
-    setmetatable(socket, _instance)
-    return socket
+    local instance   = table.inherit(_instance)
+    instance._SOCK   = sock
+    instance._TYPE   = socktype or socket.TCP
+    instance._FAMILY = family or socket.IPV4
+    setmetatable(instance, _instance)
+    return instance
 end
 
 -- get socket type
@@ -109,7 +118,8 @@ end
 -- tostring(socket)
 function _instance:__tostring()
     local rawfd = self:rawfd() or "closed"
-    return string.format("<socket: %s%s/%s>", self:type(), self:family() == "ipv6" and "6" or "4", rawfd)
+    local types = {"tcp", "udp", "icmp"}
+    return string.format("<socket: %s%s/%s>", types[self:type()], self:family() == socket.IPV6 and "6" or "4", rawfd)
 end
 
 -- gc(socket)

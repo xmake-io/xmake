@@ -56,11 +56,11 @@ tb_int_t xm_io_socket_connect(lua_State* lua)
     tb_size_t port = (tb_size_t)luaL_checknumber(lua, 3);
 
     // get family
-    tb_char_t const* family = lua_tostring(lua, 4);
+    tb_size_t family = (tb_size_t)luaL_checknumber(lua, 4);
 
     // init address
     tb_ipaddr_t addr;
-    tb_ipaddr_set(&addr, address, port, (family && !tb_strcmp(family, "ipv6"))? TB_IPADDR_FAMILY_IPV6 : TB_IPADDR_FAMILY_IPV4);
+    tb_ipaddr_set(&addr, address, port, family);
 
     // connect socket
     lua_pushnumber(lua, (tb_int_t)tb_socket_connect(sock, &addr));
