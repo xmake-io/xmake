@@ -234,8 +234,8 @@ function main(platform)
                 platform:add("ldflags", "-lc++_static", "-lc++abi")
                 platform:add("shflags", "-lc++_static", "-lc++abi")
             elseif ndk_cxxstl == "llvmstl_shared" then
-                platform:add("ldflags", "-lc++_shared", "-lc++")
-                platform:add("shflags", "-lc++_shared", "-lc++")
+                platform:add("ldflags", "-lc++_shared", "-lc++abi")
+                platform:add("shflags", "-lc++_shared", "-lc++abi")
             elseif ndk_cxxstl == "gnustl_static" then
                 platform:add("ldflags", "-lgnustl_static")
                 platform:add("shflags", "-lgnustl_static")
