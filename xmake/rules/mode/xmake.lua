@@ -51,7 +51,11 @@ rule("mode.release")
 
             -- enable fastest optimization
             if not target:get("optimize") then
-                target:set("optimize", "fastest")
+                if is_plat("android", "iphoneos") then
+                    target:set("optimize", "smallest")
+                else
+                    target:set("optimize", "fastest")
+                end
             end
 
             -- strip all symbols
