@@ -36,12 +36,18 @@ socket.ICMP  = 3
 socket.IPV4  = 1
 socket.IPV6  = 2
 
+-- the socket events
+socket.EV_RECV = 1
+socket.EV_SEND = 2
+socket.EV_CONN = socket.EV_SEND
+socket.EV_ACPT = socket.EV_RECV
+
 -- new a socket
 function _instance.new(socktype, family, sock)
     local instance   = table.inherit(_instance)
     instance._SOCK   = sock
-    instance._TYPE   = socktype or socket.TCP
-    instance._FAMILY = family or socket.IPV4
+    instance._TYPE   = socktype 
+    instance._FAMILY = family
     setmetatable(instance, _instance)
     return instance
 end
@@ -84,6 +90,23 @@ function _instance:connect(addr, port)
 
     -- connect it
     local result, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+    if result < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
+-- wait socket events
+function _instance:wait(events, timeout)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- wait it
+    local result, errors = io.socket_wait(self._SOCK, events, timeout or -1)
     if result < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -137,6 +160,8 @@ end
 -- @return the socket instance
 --
 function socket.open(socktype, family)
+    socktype = socktype or socket.TCP
+    family   = family or socket.IPV4
     local sock, errors = io.socket_open(socktype, family)
     if sock then
         return _instance.new(socktype, family, sock)

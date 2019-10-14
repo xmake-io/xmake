@@ -28,6 +28,15 @@ local raise     = require("sandbox/modules/raise")
 local sandbox_core_base_socket            = sandbox_core_base_socket or {}
 local sandbox_core_base_socket_instance   = sandbox_core_base_socket_instance or {}
 
+-- wait socket events
+function sandbox_core_base_socket_instance.wait(sock, events, timeout)
+    local result, errors = sock:_wait(events, timeout)
+    if result < 0 and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- connect socket 
 function sandbox_core_base_socket_instance.connect(sock, addr, port)
     local result, errors = sock:_connect(addr, port)
@@ -90,11 +99,13 @@ end
 -- open and connect tcp/ipv4 socket
 function sandbox_core_base_socket.connect4(addr, port, timeout)
     local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV4)
-    local ok = 0
-    repeat
-        ok = sock:connect(addr, port)
-        -- TODO wait
-    until ok ~= 0
+    local ok = sock:connect(addr, port)
+    if ok == 0 then
+        ok = sock:wait(socket.EV_CONN, timeout)
+        if ok == socket.EV_CONN then
+            ok = sock:connect(addr, port)
+        end
+    end
     if ok > 0 then
         return sock
     else
@@ -106,11 +117,13 @@ end
 -- open and connect tcp/ipv6 socket
 function sandbox_core_base_socket.connect6(addr, port, timeout)
     local sock = sandbox_core_base_socket.open(socket.TCP, socket.IPV6)
-    local ok = 0
-    repeat
-        ok = sock:connect(addr, port)
-        -- TODO wait
-    until ok ~= 0
+    local ok = sock:connect(addr, port)
+    if ok == 0 then
+        ok = sock:wait(socket.EV_CONN, timeout)
+        if ok == socket.EV_CONN then
+            ok = sock:connect(addr, port)
+        end
+    end
     if ok > 0 then
         return sock
     else
