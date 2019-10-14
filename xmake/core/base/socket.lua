@@ -113,6 +113,23 @@ function _instance:listen(backlog)
     return result, errors
 end
 
+-- accept socket 
+function _instance:accept()
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- accept it
+    local result, errors = io.socket_accept(self._SOCK)
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- connect socket 
 function _instance:connect(addr, port)
 

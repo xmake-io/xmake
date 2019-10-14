@@ -47,8 +47,17 @@ function sandbox_core_base_socket_instance.bind(sock, addr, port)
 end
 
 -- listen socket 
-function sandbox_core_base_socket_instance.listen(backlog)
+function sandbox_core_base_socket_instance.listen(sock, backlog)
     local result, errors = sock:_listen(backlog)
+    if not result and errors then
+        raise(errors)
+    end
+    return result
+end
+
+-- accept socket 
+function sandbox_core_base_socket_instance.accept(sock)
+    local result, errors = sock:_accept()
     if not result and errors then
         raise(errors)
     end
@@ -125,6 +134,26 @@ function sandbox_core_base_socket.bind(addr, port, opt)
     end
     sock:close()
     raise("bind %s:%s failed!", addr, port)
+end
+
+-- open and accept tcp socket
+function sandbox_core_base_socket.accept(addr, port, opt)
+    opt = opt or {}
+    local sock = socket.bind(addr, port, opt)
+    sock:listen()
+    local sock_client = nil
+    repeat 
+        local ok = sock:wait(socket.EV_ACPT, opt.timeout or -1)
+        if ok == socket.EV_ACPT then
+            sock_client = sock:accept()
+        end
+    until sock_client ~= nil
+    if ok > 0 then
+        return sock
+    else
+        sock:close()
+        raise("connect %s:%s failed!", addr, port)
+    end
 end
 
 -- open and connect tcp socket

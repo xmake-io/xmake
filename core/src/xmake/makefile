@@ -65,6 +65,7 @@ xmake_C_FILES 			+= \
 						io/socket_wait \
 						io/socket_bind \
 						io/socket_listen \
+						io/socket_accept \
 						io/socket_connect \
 						io/socket_close \
 						path/relative \
