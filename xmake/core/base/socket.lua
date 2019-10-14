@@ -79,6 +79,23 @@ function _instance:rawfd()
     return result, errors
 end
 
+-- bind socket 
+function _instance:bind(addr, port)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- bind it
+    local result, errors = io.socket_bind(self._SOCK, addr, port, self:family())
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- connect socket 
 function _instance:connect(addr, port)
 
