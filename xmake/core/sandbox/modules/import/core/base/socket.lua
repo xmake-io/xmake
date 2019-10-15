@@ -105,6 +105,15 @@ function sandbox_core_base_socket_instance.connect(sock, addr, port)
     return result
 end
 
+-- send data to socket 
+function sandbox_core_base_socket_instance.send(sock, data, start, last)
+    local result, errors = sock:_send(data, start, last)
+    if result < 0 and errors then
+        raise(errors)
+    end
+    return result
+end
+
 -- get socket rawfd
 function sandbox_core_base_socket_instance.rawfd(sock)
     local result, errors = sock:_rawfd()

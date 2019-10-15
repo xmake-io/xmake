@@ -1,7 +1,12 @@
 import("core.base.socket")
 
 function main()
-    local sock = socket.connect("127.0.0.1", 9001)
-    print(sock)
+    local addr = "127.0.0.1"
+    local port = 9001
+    print("%s: connect %s:%d ..", sock, addr, port)
+    local sock = socket.connect(addr, port)
+    print("%s: connected!", sock)
+    local send = sock:send("hello")
+    print("%s: send %d", sock, send)
     sock:close()
 end

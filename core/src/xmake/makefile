@@ -67,6 +67,7 @@ xmake_C_FILES 			+= \
 						io/socket_listen \
 						io/socket_accept \
 						io/socket_connect \
+						io/socket_send \
 						io/socket_close \
 						path/relative \
 						path/absolute \

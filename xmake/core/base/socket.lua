@@ -150,6 +150,23 @@ function _instance:connect(addr, port)
     return result, errors
 end
 
+-- send data to socket 
+function _instance:send(data, start, last)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- send it
+    local result, errors = io.socket_send(self._SOCK, data, start, last)
+    if result < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- wait socket events
 function _instance:wait(events, timeout)
 
