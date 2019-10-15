@@ -127,6 +127,9 @@ function _instance:accept()
     if not result and errors then
         errors = string.format("%s: %s", self, errors)
     end
+    if result then
+        result = _instance.new(self:type(), self:family(), result)
+    end
     return result, errors
 end
 

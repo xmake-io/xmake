@@ -43,6 +43,23 @@ sandbox_core_base_socket.EV_SEND = socket.EV_SEND
 sandbox_core_base_socket.EV_CONN = socket.EV_SEND
 sandbox_core_base_socket.EV_ACPT = socket.EV_RECV
 
+-- wrap socket
+function _socket_wrap(sock)
+
+    -- hook socket interfaces
+    local hooked = {}
+    for name, func in pairs(sandbox_core_base_socket_instance) do
+        if not name:startswith("_") and type(func) == "function" then
+            hooked["_" .. name] = sock["_" .. name] or sock[name]
+            hooked[name] = func
+        end
+    end
+    for name, func in pairs(hooked) do
+        sock[name] = func
+    end
+    return sock
+end
+
 -- wait socket events
 function sandbox_core_base_socket_instance.wait(sock, events, timeout)
     local result, errors = sock:_wait(events, timeout)
@@ -76,7 +93,7 @@ function sandbox_core_base_socket_instance.accept(sock)
     if not result and errors then
         raise(errors)
     end
-    return result
+    return result and _socket_wrap(result) or nil
 end
 
 -- connect socket 
@@ -113,19 +130,7 @@ function sandbox_core_base_socket.open(socktype, family)
     if not sock then
         raise(errors)
     end
-
-    -- hook socket interfaces
-    local hooked = {}
-    for name, func in pairs(sandbox_core_base_socket_instance) do
-        if not name:startswith("_") and type(func) == "function" then
-            hooked["_" .. name] = sock["_" .. name] or sock[name]
-            hooked[name] = func
-        end
-    end
-    for name, func in pairs(hooked) do
-        sock[name] = func
-    end
-    return sock
+    return _socket_wrap(sock)
 end
 
 -- open tcp socket
@@ -149,26 +154,6 @@ function sandbox_core_base_socket.bind(addr, port, opt)
     end
     sock:close()
     raise("bind %s:%s failed!", addr, port)
-end
-
--- open and accept tcp socket
-function sandbox_core_base_socket.accept(addr, port, opt)
-    opt = opt or {}
-    local sock = socket.bind(addr, port, opt)
-    sock:listen()
-    local sock_client = nil
-    repeat 
-        local ok = sock:wait(socket.EV_ACPT, opt.timeout or -1)
-        if ok == socket.EV_ACPT then
-            sock_client = sock:accept()
-        end
-    until sock_client ~= nil
-    if ok > 0 then
-        return sock
-    else
-        sock:close()
-        raise("connect %s:%s failed!", addr, port)
-    end
 end
 
 -- open and connect tcp socket
