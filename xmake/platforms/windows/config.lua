@@ -71,7 +71,8 @@ function _toolchains()
     mrc:add("rc.exe")
 
     -- init the assember
-    if config.get("arch"):find("64") then
+    local arch = config.get("arch")
+    if arch and arch:find("64") then
         as:add("ml64.exe")
     else
         as:add("ml.exe")
