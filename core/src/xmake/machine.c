@@ -118,6 +118,7 @@ tb_int_t xm_io_socket_listen(lua_State* lua);
 tb_int_t xm_io_socket_accept(lua_State* lua);
 tb_int_t xm_io_socket_connect(lua_State* lua);
 tb_int_t xm_io_socket_send(lua_State* lua);
+tb_int_t xm_io_socket_recv(lua_State* lua);
 tb_int_t xm_io_socket_close(lua_State* lua);
 
 // the path functions
@@ -260,6 +261,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "socket_accept",      xm_io_socket_accept    }
 ,   { "socket_connect",     xm_io_socket_connect   }
 ,   { "socket_send",        xm_io_socket_send      }
+,   { "socket_recv",        xm_io_socket_recv      }
 ,   { "socket_close",       xm_io_socket_close     }
 ,   { tb_null,              tb_null                }
 };

@@ -167,6 +167,24 @@ function _instance:send(data, start, last)
     return result, errors
 end
 
+-- TODO
+-- recv data from socket 
+function _instance:recv(size)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- recv it
+    local result, errors = io.socket_recv(self._SOCK, data, size)
+    if not result and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return result, errors
+end
+
 -- wait socket events
 function _instance:wait(events, timeout)
 
