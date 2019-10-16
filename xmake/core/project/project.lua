@@ -520,13 +520,19 @@ function project._load_targets()
         t._RULES      = t._RULES or {}
         t._ORDERULES  = t._ORDERULES or {}
         local rulenames = {}
+        local extensions = {}
         table.join2(rulenames, t:get("rules"))
         for _, sourcefile in ipairs(table.wrap(t:get("files"))) do
-            local lang = language.load_ex(path.extension(sourcefile))
-            if lang and lang:rules() then
-                table.join2(rulenames, lang:rules())
+            local extension = path.extension((sourcefile:gsub("|.*$", "")))
+            if not extensions[extension] then
+                local lang = language.load_ex(extension)
+                if lang and lang:rules() then
+                    table.join2(rulenames, lang:rules())
+                end
+                extensions[extension] = true
             end
         end
+        rulenames = table.unique(rulenames)
         for _, rulename in ipairs(rulenames) do
             local r = project.rule(rulename) or rule.rule(rulename)
             if r then
