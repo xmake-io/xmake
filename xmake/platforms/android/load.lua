@@ -55,6 +55,7 @@ function main(platform)
         ,   ["x86_64"]      = "x86_64-none-linux-android"
         ,   ["mips"]        = "mipsel-none-linux-android"
         }
+        assert(targets[arch], "unknown arch(%s) for android!", arch)
         platform:add("cxflags", "-target " .. targets[arch])
         platform:add("asflags", "-target " .. targets[arch])
         platform:add("ldflags", "-target " .. targets[arch])
