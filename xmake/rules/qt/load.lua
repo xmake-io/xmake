@@ -234,7 +234,18 @@ function main(target, opt)
         -- add -subsystem:windows for windows platform
         if is_plat("windows") then
             target:add("defines", "_WINDOWS")
-            target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
+            local subsystem = false
+            for _, ldflag in ipairs(target:get("ldflags")) do
+                ldflag = ldflag:lower()
+                if ldflag:find("[/%-]subsystem:") then
+                    subsystem = true
+                    break
+                end
+            end
+            -- maybe user will set subsystem to console
+            if not subsystem then
+                target:add("ldflags", "-subsystem:windows", "-entry:mainCRTStartup", {force = true})
+            end
         elseif is_plat("mingw") then
             target:add("ldflags", "-mwindows", {force = true})
         end
