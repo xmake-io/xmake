@@ -47,7 +47,8 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
-    if os.isdir(packagedir) then
+    if os.isdir(packagedir) and 
+        not (option.get("force") and package:branch()) then -- we need disable cache if we force to clone from the given branch
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
