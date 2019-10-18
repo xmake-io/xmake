@@ -25,23 +25,6 @@ import("net.http")
 import("devel.git")
 import("utils.archive")
 
--- empty chars
-function _emptychars()
-
-    -- get left width
-    local width = os.getwinsize()["width"] - 1
-    if not width or width <= 0 then
-        width = 64
-    end
-
-    -- make empty chars
-    local emptychars = ""
-    for i = 1, width do
-        emptychars = emptychars .. " "
-    end
-    return emptychars
-end
-
 -- checkout codes from git
 function _checkout(package, url, sourcedir, url_alias)
 
@@ -52,7 +35,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
-        printf("\r" .. _emptychars() .. "\r")
+        utils.clearline()
         return 
     end
 
@@ -81,8 +64,8 @@ function _checkout(package, url, sourcedir, url_alias)
     os.mv(sourcedir .. ".tmp", sourcedir)
 
     -- trace
-    printf("\r" .. _emptychars())
-    cprint("\r${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
+    utils.clearline()
+    cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
 end
 
 -- download codes from ftp/http/https
@@ -134,11 +117,9 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     package:originfile_set(path.absolute(packagefile))
 
     -- trace
+    utils.clearline()
     if not cached then
-        printf("\r" .. _emptychars())
-        cprint("\r${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
-    else
-        printf("\r" .. _emptychars() .. "\r")
+        cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
     end
 end
 
@@ -219,11 +200,11 @@ function main(package)
                     end
 
                     -- trace
-                    printf("\r" .. _emptychars())
+                    utils.clearline()
                     if git.checkurl(url) then
-                        cprint("\r${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
+                        cprint("${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
                     else
-                        cprint("\r${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
+                        cprint("${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
                     end
 
                     -- failed? break it

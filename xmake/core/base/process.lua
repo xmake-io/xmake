@@ -79,7 +79,7 @@ end
 
 -- tostring(subprocess)
 function _subprocess:__tostring()
-    return "subprocess: " .. self:name()
+    return "<subprocess: " .. self:name() .. ">"
 end
 
 -- gc(subprocess)
@@ -163,7 +163,7 @@ function process.asyncrun(task, waitchars)
 
     -- trace
     local waitindex = 0
-    local waitchars = waitchars or {'\\', '|', '/', '-'}
+    local waitchars = waitchars or {'\\', '-', '/', '|'}
     utils.printf(waitchars[waitindex + 1])
     io.flush()
 
@@ -242,7 +242,22 @@ function process.runjobs(jobfunc, total, comax, timeout, timer)
 
         -- timer is triggered? call timer
         if timer and os.mclock() - time > timeout then
-            timer(indices)
+            local tips = nil
+            if #procs > 0 then
+                local names = {}
+                for _, proc in ipairs(procs) do
+                    table.insert(names, proc:name())
+                end
+                names = table.unique(names)
+                if #names > 0 then
+                    names = table.concat(names, ",")
+                    if #names > 16 then
+                        names = names:sub(1, 16) .. ".."
+                    end
+                    tips = string.format("(%d/%s)", #procs, names)
+                end
+            end
+            timer(indices, tips)
             time = os.mclock()
         end
 

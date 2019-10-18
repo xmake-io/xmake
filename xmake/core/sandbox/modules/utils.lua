@@ -167,6 +167,31 @@ function sandbox_utils.dprintf(format, ...)
     end
 end
 
+-- clear the current terminal line
+function sandbox_utils.clearline()
+
+    -- get empty line chars
+    local emptychars = sandbox_utils._EMPTYCHARS
+    if not emptychars then
+
+        -- get left width
+        local width = os.getwinsize()["width"] - 1
+        if not width or width <= 0 then
+            width = 64
+        end
+
+        -- make empty chars
+        emptychars = ""
+        for i = 1, width do
+            emptychars = emptychars .. " "
+        end
+        sandbox_utils._EMPTYCHARS = emptychars
+    end
+
+    -- clear line 
+    sandbox_utils.printf("\r" .. emptychars .. "\r")
+end
+
 -- assert
 function sandbox_utils.assert(value, format, ...)
 

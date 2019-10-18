@@ -510,7 +510,7 @@ end
 function _install_packages(packages_install, packages_download)
 
     local waitindex = 0
-    local waitchars = {'\\', '|', '/', '-'}
+    local waitchars = {'\\', '-', '/', '|'}
     local packages_installing = {}
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
@@ -609,7 +609,7 @@ function _install_packages(packages_install, packages_download)
         packages_installing[index] = nil
         packages_downloading[index] = nil
 
-    end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices) 
+    end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices, tips) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") then
@@ -634,14 +634,15 @@ function _install_packages(packages_install, packages_download)
         end
        
         -- trace
-        cprintf("\r${yellow}  => ${clear}")
+        utils.clearline()
+        cprintf("${yellow}  => ${clear}")
         if #downloading > 0 then
             cprintf("downloading ${magenta}%s${clear}", table.concat(downloading, ", "))
         end
         if #installing > 0 then
             cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
-        cprintf(" .. %s", waitchars[waitindex + 1])
+        cprintf(" .. ${dim}%s${clear}%s", tips and (tips .. " ") or "", waitchars[waitindex + 1])
         io.flush()
     end)
 end

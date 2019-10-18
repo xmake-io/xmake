@@ -26,23 +26,6 @@ import("test")
 import("patch")
 import(".utils.filter")
 
--- empty chars
-function _emptychars()
-
-    -- get left width
-    local width = os.getwinsize()["width"] - 1
-    if not width or width <= 0 then
-        width = 64
-    end
-
-    -- make empty chars
-    local emptychars = ""
-    for i = 1, width do
-        emptychars = emptychars .. " "
-    end
-    return emptychars
-end
-
 -- patch pkgconfig if not exists
 function _patch_pkgconfig(package)
 
@@ -216,8 +199,8 @@ function main(package)
             package:envs_leave()
 
             -- trace
-            printf("\r" .. _emptychars())
-            cprint("\r${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:name(), package:version_str() or "")
+            utils.clearline()
+            cprint("${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:name(), package:version_str() or "")
         end,
 
         catch
@@ -235,8 +218,8 @@ function main(package)
                 end
 
                 -- trace
-                printf("\r" .. _emptychars())
-                cprint("\r${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:name(), package:version_str() or "")
+                utils.clearline()
+                cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:name(), package:version_str() or "")
 
                 -- leave the package environments
                 package:envs_leave()
