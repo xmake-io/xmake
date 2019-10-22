@@ -319,7 +319,7 @@ function utils.confirm(opt)
 
         -- get answer
         io.flush()
-        confirm = option.boolean(io.read():trim())
+        confirm = option.boolean((io.read() or "false"):trim())
         if type(confirm) ~= "boolean" then
             confirm = default
         end
