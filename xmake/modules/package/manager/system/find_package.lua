@@ -19,12 +19,15 @@
 --
 
 -- imports
+import("lib.detect.find_file")
 import("lib.detect.find_path")
 import("lib.detect.find_library")
 import("lib.detect.pkg_config")
+import("detect.sdks.find_xcode")
+import("core.project.config")
 
 -- find package from the unix-like system directories
-function _find_package_from_unixdirs(name, opt)
+function _find_package_from_unixdirs(name, links, opt)
       
     -- add default search includedirs on pc host
     local includedirs = table.wrap(opt.includedirs)
@@ -52,23 +55,6 @@ function _find_package_from_unixdirs(name, opt)
                 table.insert(linkdirs, "/opt/lib64")
             end
         end
-    end
-
-    -- attempt to get links from pkg-config
-    local pkginfo = nil
-    local version = nil
-    local links = table.wrap(opt.links)
-    if #links == 0 then
-        pkginfo = pkg_config.libinfo(name)
-        if pkginfo then
-            links = table.wrap(pkginfo.links)
-            version = pkginfo.version
-        end
-    end
-
-    -- uses name as links directly e.g. libname.a
-    if #links == 0 then
-        links = table.wrap(name)
     end
 
     -- find library 
@@ -102,15 +88,47 @@ function _find_package_from_unixdirs(name, opt)
     elseif result and result.links and opt.includedirs then
         result.includedirs = opt.includedirs
     end
+    return result
+end
 
-    -- not found? only add links
-    if not result and pkginfo and pkginfo.links then
-        result = {links = pkginfo.links}
+-- find package from the xcode directories
+function _find_package_from_xcodedirs(name, links, opt)
+
+    -- find xcode first
+    local xcode = find_xcode(config.get("xcode"), {plat = opt.plat, arch = opt.arch})
+    if not xcode then
+        return 
     end
 
-    -- save version
-    if result and version then
-        result.version = version
+    -- get sdk root directory
+    local platname = nil
+    if opt.plat == "macosx" then
+        platname = "MacOSX"
+    elseif opt.plat == "iphoneos" then
+        platname = (opt.arch == "i386" or opt.arch == "x86_64") and "iPhoneSimulator" or "iPhoneOS"
+    elseif opt.plat == "watchos" then
+        platname = opt.arch == "i386" and "WatchSimulator" or "WatchOS"
+    end
+    local sdk_rootdir = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode.sdkver)
+
+    -- init include and link directories
+    local linkdirs    = {path.join(sdk_rootdir, "usr", "lib")}
+    local includedirs = {path.join(sdk_rootdir, "usr", "include")}
+
+    -- find library 
+    local result = nil
+    for _, link in ipairs(links) do
+        if find_file("lib" .. link .. ".tbd", linkdirs) then
+            result          = result or {}
+            result.links    = table.join(result.links or {}, link)
+        end
+    end
+    if result then
+        -- we need not add linkdirs again if we are building target on the current platform (with -isysroot)
+        if config.plat() ~= opt.plat or config.arch() ~= opt.arch then
+            result.linkdirs    = linkdirs
+            result.includedirs = includedirs
+        end
     end
     return result
 end
@@ -125,6 +143,23 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
+    -- attempt to get links from pkg-config
+    local pkginfo = nil
+    local version = nil
+    local links = table.wrap(opt.links)
+    if #links == 0 then
+        pkginfo = pkg_config.libinfo(name)
+        if pkginfo then
+            links = table.wrap(pkginfo.links)
+            version = pkginfo.version
+        end
+    end
+
+    -- uses name as links directly e.g. libname.a
+    if #links == 0 then
+        links = table.wrap(name)
+    end
+
     -- init finders
     local finders = {}
     if opt.plat == os.host() and opt.arch == os.arch() then
@@ -132,12 +167,24 @@ function main(name, opt)
             table.insert(finders, _find_package_from_unixdirs)
         end
     end
+    if opt.plat == "macosx" or opt.plat == "iphoneos" or opt.plat == "watchos" then
+        table.insert(finders, _find_package_from_xcodedirs)
+    end
 
     -- find package
     for _, finder in ipairs(finders) do
-        local result = finder(name, opt)
+        local result = finder(name, links, opt)
         if result ~= nil then
+            -- save version
+            if version then
+                result.version = version
+            end
             return result
         end
+    end
+
+    -- not found? only add links
+    if not result and pkginfo and pkginfo.links then
+        return {links = pkginfo.links}
     end
 end
