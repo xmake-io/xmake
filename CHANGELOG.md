@@ -14,12 +14,14 @@
 * [#576](https://github.com/xmake-io/xmake/issues/576): Uses `set_toolchain` instead of `add_tools` and `set_tools`
 * Improve `xmake create` action
 * [#589](https://github.com/xmake-io/xmake/issues/589): Improve the default build jobs number to optimize build speed
+* [#598](https://github.com/xmake-io/xmake/issues/598): Improve find_package to support .tbd libraries on macOS
 
 ### Bugs fixed
 
 * [#567](https://github.com/xmake-io/xmake/issues/567): Fix out of memory for serialize 
 * [#566](https://github.com/xmake-io/xmake/issues/566): Fix link order problem with remote packages 
 * [#565](https://github.com/xmake-io/xmake/issues/565): Fix run path for vcpkg packages
+* [#597](https://github.com/xmake-io/xmake/issues/597): Fix run `xmake require` command too slowly
 
 ## v2.2.8
 
@@ -658,12 +660,14 @@
 * [#576](https://github.com/xmake-io/xmake/issues/576): 使用`set_toolchain`替代`add_tools`和`set_tools`，解决老接口使用歧义，提供更加易理解的设置方式
 * 改进`xmake create`创建模板工程
 * [#589](https://github.com/xmake-io/xmake/issues/589): 改进默认的构建任务数，充分利用cpu core来提速整体编译速度
+* [#598](https://github.com/xmake-io/xmake/issues/598): 改进`find_package`支持在macOS上对.tbd系统库文件的查找
 
 ### Bugs修复
 
 * [#567](https://github.com/xmake-io/xmake/issues/567): 修复序列化对象时候出现的内存溢出问题 
 * [#566](https://github.com/xmake-io/xmake/issues/566): 修复安装远程依赖的链接顺序问题
 * [#565](https://github.com/xmake-io/xmake/issues/565): 修复vcpkg包的运行PATH设置问题
+* [#597](https://github.com/xmake-io/xmake/issues/597): 修复xmake require安装包时间过长问题
 
 ## v2.2.8
 
