@@ -23,18 +23,9 @@ import("lib.detect.find_path")
 import("lib.detect.find_library")
 import("lib.detect.pkg_config")
 
--- find package from the system directories
---
--- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
---
-function main(name, opt)
-       
-    -- only support the current host platform and architecture
-    if opt.plat ~= os.host() or opt.arch ~= os.arch() then
-        return
-    end
-
+-- find package from the unix-like system directories
+function _find_package_from_unixdirs(name, opt)
+      
     -- add default search includedirs on pc host
     local includedirs = table.wrap(opt.includedirs)
     if #includedirs == 0 then
@@ -121,7 +112,32 @@ function main(name, opt)
     if result and version then
         result.version = version
     end
-
-    -- ok
     return result
+end
+
+-- find package from the system directories
+--
+-- @param name  the package name
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+--
+function main(name, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- init finders
+    local finders = {}
+    if opt.plat == os.host() and opt.arch == os.arch() then
+        if opt.plat ~= "windows" then
+            table.insert(finders, _find_package_from_unixdirs)
+        end
+    end
+
+    -- find package
+    for _, finder in ipairs(finders) do
+        local result = finder(name, opt)
+        if result ~= nil then
+            return result
+        end
+    end
 end
