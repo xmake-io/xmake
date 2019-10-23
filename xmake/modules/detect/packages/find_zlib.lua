@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_path")
 import("lib.detect.find_library")
+import("package.manager.find_package")
 
 -- find zlib 
 --
@@ -68,8 +69,14 @@ function main(opt)
                 end
             end
         end
-
-        -- ok
         return result
     end
+
+    -- find it by the builtin script first
+    local result = opt.find_package("zlib", opt)
+    if not result then
+        -- find it from the link name: z 
+        result = find_package("system::z", opt)
+    end
+    return result
 end
