@@ -248,6 +248,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
 
         -- clear the current scope if be not belong to the current scope kind 
         if scopes._CURRENT and scopes._CURRENT_KIND ~= scope_kind then
+            os.raise("%s() cannot be called in %s(), because it's belong to %s scope!", apiname, scopes._CURRENT_KIND, scope_kind == "__rootkind" and "root" or scope_kind)
             scopes._CURRENT = nil
         end
 
