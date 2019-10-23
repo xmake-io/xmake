@@ -49,11 +49,9 @@ local menu =
     -- the tasks: xmake [task]
 ,   function () 
         local tasks = task.tasks() or {}
-        local ok, protasks_or_errors = pcall(project.tasks)
+        local ok, project_tasks = pcall(project.tasks)
         if ok then
-            table.join2(tasks, protasks_or_errors)
-        else
-            utils.cprint("${dim}%s", protasks_or_errors)
+            table.join2(tasks, project_tasks)
         end
         return task.menu(tasks) 
     end
