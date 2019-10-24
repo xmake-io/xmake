@@ -48,8 +48,14 @@ function main(name, opt)
         arch = "x64"
     end
 
+    -- init triplet
+    local triplet = arch .. "-" .. plat
+    if opt.plat == "windows" and opt.vs_runtime == "MT" then
+        triplet = triplet .. "-static"
+    end
+
     -- init argv
-    local argv = {"install", string.format("%s:%s-%s", name, arch, plat)}
+    local argv = {"install", name .. ":" .. triplet}
 
     -- install package
     os.vrunv(path.join(vcpkgdir, "vcpkg"), argv)

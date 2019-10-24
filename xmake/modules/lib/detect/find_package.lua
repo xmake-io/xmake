@@ -31,7 +31,8 @@ import("package.manager.find_package")
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x", 
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
---                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"}
+--                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"
+--                     pkgconfigs = {..}}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --

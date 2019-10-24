@@ -27,7 +27,7 @@ import("core.project.target")
 
 -- find package from the brew package manager
 --
--- @param name  the package name, e.g. zlib, pcre/libpcre16
+-- @param name  the package name, e.g. zlib, pcre
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
@@ -55,8 +55,12 @@ function main(name, opt)
     -- get the vcpkg info directory
     local infodir = path.join(installdir, "vcpkg", "info")
 
-    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows.list
-    local infofile = find_file(format("%s_*_%s-%s.list", name, arch, plat), infodir)
+    -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
+    local triplet = arch .. "-" .. plat
+    if plat == "windows" and opt.pkgconfigs and opt.pkgconfigs.vs_runtime == "MT" then
+        triplet = triplet .. "-static"
+    end
+    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodir)
 
     -- save includedirs, linkdirs and links
     local result = nil
@@ -74,7 +78,7 @@ function main(name, opt)
 
             -- get linkdirs and links
             if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") then
-                if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
+                if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
                     result = result or {}
                     result.links = result.links or {}
                     result.linkdirs = result.linkdirs or {}

@@ -840,6 +840,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package("xmake::" .. self:name(), {version = self:version_str(),
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
+                                                                      pkgconfigs = self:configs(),
                                                                       force = opt.force}) 
             if fetchinfo then
                 isSys = self._isSys
@@ -851,6 +852,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_package(self:name(), {force = opt.force, 
                                                          version = require_ver, 
                                                          mode = self:mode(),
+                                                         pkgconfigs = self:configs(),
                                                          cachekey = "fetch_package_system",
                                                          system = true})
             if fetchinfo then 
