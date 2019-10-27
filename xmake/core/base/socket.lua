@@ -241,10 +241,10 @@ function _instance:recv(size, opt)
     local recv = 0
     local real = 0
     local wait = false
-    local data_or_errors = nil
+    local data_or_errors = opt.prevdata
     if opt.block then
         while recv < size do
-            real, data_or_errors = io.socket_recv(self._SOCK, size - recv)
+            real, data_or_errors = io.socket_recv(self._SOCK, size - recv, data_or_errors)
             if real > 0 then
                 recv = recv + real
                 wait = false

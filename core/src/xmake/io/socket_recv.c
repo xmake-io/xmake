@@ -48,7 +48,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
     tb_check_return_val(sock, 0);
 
-    // get size
+    // get data and size
     tb_byte_t data[8192];
     tb_long_t size = 0;
     if (lua_isnumber(lua, 2)) size = (tb_long_t)lua_tonumber(lua, 2);
@@ -61,12 +61,24 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (size > sizeof(data)) 
         size = sizeof(data);
 
+
     // recv data
     tb_long_t real = tb_socket_recv(sock, data, size);
     lua_pushnumber(lua, (tb_int_t)real);
     if (real > 0)
     {
-        lua_pushlstring(lua, (tb_char_t const*)data, real);
+        // init result
+        luaL_Buffer result;
+        luaL_buffinit(lua, &result);
+
+        // prepend the previous data and size first
+        size_t prev_size = 0;
+        tb_char_t const* prev_data = luaL_optlstring(lua, 3, "", &prev_size);
+        if (prev_data && prev_size) luaL_addlstring(&result, prev_data, prev_size);
+        luaL_addlstring(&result, (tb_char_t const*)data, real);
+
+        // save result
+        luaL_pushresult(&result);
         return 2;
     }
     return 1;
