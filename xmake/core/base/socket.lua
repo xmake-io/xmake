@@ -160,14 +160,13 @@ function _instance:send(data, start, last)
     end
 
     -- send it
-    local result, errors = io.socket_send(self._SOCK, data, start, last)
-    if result < 0 and errors then
+    local real, errors = io.socket_send(self._SOCK, data, start, last)
+    if real < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return result, errors
+    return real, errors
 end
 
--- TODO
 -- recv data from socket 
 function _instance:recv(size)
 
@@ -178,11 +177,11 @@ function _instance:recv(size)
     end
 
     -- recv it
-    local result, errors = io.socket_recv(self._SOCK, data, size)
-    if not result and errors then
-        errors = string.format("%s: %s", self, errors)
+    local real, data_or_errors = io.socket_recv(self._SOCK, size)
+    if real < 0 and data_or_errors then
+        data_or_errors = string.format("%s: %s", self, data_or_errors)
     end
-    return result, errors
+    return real, data_or_errors
 end
 
 -- wait socket events

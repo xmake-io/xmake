@@ -107,11 +107,20 @@ end
 
 -- send data to socket 
 function sandbox_core_base_socket_instance.send(sock, data, start, last)
-    local result, errors = sock:_send(data, start, last)
-    if result < 0 and errors then
+    local real, errors = sock:_send(data, start, last)
+    if real < 0 and errors then
         raise(errors)
     end
-    return result
+    return real
+end
+
+-- recv data from socket 
+function sandbox_core_base_socket_instance.recv(sock, size)
+    local real, data_or_errors = sock:_recv(data, size)
+    if real < 0 and data_or_errors then
+        raise(data_or_errors)
+    end
+    return real, data_or_errors
 end
 
 -- get socket rawfd

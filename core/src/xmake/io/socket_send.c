@@ -54,12 +54,24 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     tb_assert_and_check_return_val(data, 0);
 
     // get start
-    tb_size_t start = 1;
-    if (lua_isnumber(lua, 3)) start = lua_tonumber(lua, 3);
+    tb_long_t start = 1;
+    if (lua_isnumber(lua, 3)) start = (tb_long_t)lua_tonumber(lua, 3);
+    if (start < 1 || start > datasize)
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushfstring(lua, "invalid start position(%ld)!", start);
+        return 2;
+    }
 
     // get last
-    tb_size_t last = (tb_size_t)datasize;
-    if (lua_isnumber(lua, 4)) last = lua_tonumber(lua, 4);
+    tb_long_t last = (tb_long_t)datasize;
+    if (lua_isnumber(lua, 4)) last = (tb_long_t)lua_tonumber(lua, 4);
+    if (last < start - 1 || last > datasize + start - 1)
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushfstring(lua, "invalid last position(%ld)!", last);
+        return 2;
+    }
 
     // send data
     tb_long_t real = tb_socket_send(sock, (tb_byte_t const*)data + start - 1, last - start + 1);

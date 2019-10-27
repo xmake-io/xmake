@@ -34,7 +34,7 @@
  * implementation
  */
 
-// io.socket_recv(file, data, start, last)
+// real, data_or_errors = io.socket_recv(file, size)
 tb_int_t xm_io_socket_recv(lua_State* lua)
 {
     // check
@@ -48,21 +48,26 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
     tb_check_return_val(sock, 0);
 
-    // get data
-    size_t datasize = 0;
-    tb_char_t const* data = luaL_checklstring(lua, 2, &datasize);
-    tb_assert_and_check_return_val(data, 0);
-
-    // get start
-    tb_size_t start = 1;
-    if (lua_isnumber(lua, 3)) start = lua_tonumber(lua, 3);
-
-    // get last
-    tb_size_t last = (tb_size_t)datasize;
-    if (lua_isnumber(lua, 4)) last = lua_tonumber(lua, 4);
+    // get size
+    tb_byte_t data[8192];
+    tb_long_t size = 0;
+    if (lua_isnumber(lua, 2)) size = (tb_long_t)lua_tonumber(lua, 2);
+    if (size < 0)
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushfstring(lua, "invalid size(%ld)!", size);
+        return 2;
+    }
+    if (size > sizeof(data)) 
+        size = sizeof(data);
 
     // recv data
-    tb_long_t real = tb_socket_recv(sock, (tb_byte_t const*)data + start - 1, last - start + 1);
+    tb_long_t real = tb_socket_recv(sock, data, size);
     lua_pushnumber(lua, (tb_int_t)real);
+    if (real > 0)
+    {
+        lua_pushlstring(lua, (tb_char_t const*)data, real);
+        return 2;
+    }
     return 1;
 }
