@@ -6,7 +6,7 @@ function main()
     print("connect %s:%d ..", addr, port)
     local sock = socket.connect(addr, port)
     print("%s: connected!", sock)
-    local send = sock:send("hello")
+    local send = sock:send("hello world..")
     print("%s: send %d", sock, send)
     sock:close()
 end

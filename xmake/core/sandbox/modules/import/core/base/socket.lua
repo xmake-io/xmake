@@ -115,8 +115,8 @@ function sandbox_core_base_socket_instance.send(sock, data, start, last)
 end
 
 -- recv data from socket 
-function sandbox_core_base_socket_instance.recv(sock, size)
-    local real, data_or_errors = sock:_recv(data, size)
+function sandbox_core_base_socket_instance.recv(sock, size, opt)
+    local real, data_or_errors = sock:_recv(size, opt)
     if real < 0 and data_or_errors then
         raise(data_or_errors)
     end

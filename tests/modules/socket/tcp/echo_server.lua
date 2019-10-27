@@ -11,7 +11,7 @@ function main()
         local sock_client = sock:accept()
         if sock_client then
             print("%s: accepted", sock_client) 
-            local recv, data = sock_client:recv(8192)
+            local recv, data = sock_client:recv(13, {block = true})
             print("%s: recv %d, data: %s", sock_client, recv, data or "")
             sock_client:close()
         end

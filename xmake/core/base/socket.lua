@@ -127,7 +127,7 @@ function _instance:accept(opt)
     if not sock and not errors then
         opt = opt or {}
         local events, waiterrs = self:wait(socket.EV_ACPT, opt.timeout or -1)
-        if events == socket.EV_CONN then
+        if events == socket.EV_ACPT then
             sock, errors = io.socket_accept(self._SOCK)
         else
             errors = waiterrs
@@ -186,7 +186,7 @@ function _instance:send(data, start, last)
 end
 
 -- recv data from socket 
-function _instance:recv(size)
+function _instance:recv(size, opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -195,11 +195,36 @@ function _instance:recv(size)
     end
 
     -- recv it
-    local real, data_or_errors = io.socket_recv(self._SOCK, size)
-    if real < 0 and data_or_errors then
-        data_or_errors = string.format("%s: %s", self, data_or_errors)
+    opt = opt or {}
+    local recv = 0
+    local real = 0
+    local wait = false
+    local data_or_errors = nil
+    if opt.block then
+        while recv < size do
+            real, data_or_errors = io.socket_recv(self._SOCK, size - recv)
+            if real > 0 then
+                recv = recv + real
+                wait = false
+            elseif real == 0 and not wait then
+                local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
+                if events == socket.EV_RECV then
+                    wait = true
+                else
+                    data_or_errors = waiterrs
+                    break
+                end
+            else
+                break
+            end
+        end
+    else
+        recv, data_or_errors = io.socket_recv(self._SOCK, size)
+        if recv < 0 and data_or_errors then
+            data_or_errors = string.format("%s: %s", self, data_or_errors)
+        end
     end
-    return real, data_or_errors
+    return recv, data_or_errors
 end
 
 -- wait socket events
