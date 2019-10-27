@@ -11,8 +11,19 @@ function main()
         local sock_client = sock:accept()
         if sock_client then
             print("%s: accepted", sock_client) 
-            local recv, data = sock_client:recv(13, {block = true})
-            print("%s: recv %d, data: %s", sock_client, recv, data or "")
+            local count = 0
+            local result = nil
+            while true do
+                local recv, data = sock_client:recv(13, {block = true})
+                if recv > 0 then
+                    result = data
+                    sock_client:send(data, {block = true})
+                    count = count + 1
+                else
+                    break
+                end
+            end
+            print("%s: recv: %s, count: %d", sock_client, result or "", count)
             sock_client:close()
         end
     end
