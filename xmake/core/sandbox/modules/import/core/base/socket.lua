@@ -106,8 +106,8 @@ function sandbox_core_base_socket_instance.connect(sock, addr, port, opt)
 end
 
 -- send data to socket 
-function sandbox_core_base_socket_instance.send(sock, data, start, last)
-    local real, errors = sock:_send(data, start, last)
+function sandbox_core_base_socket_instance.send(sock, data, opt)
+    local real, errors = sock:_send(data, opt)
     if real < 0 and errors then
         raise(errors)
     end
