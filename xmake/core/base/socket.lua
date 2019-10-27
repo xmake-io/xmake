@@ -89,11 +89,11 @@ function _instance:bind(addr, port)
     end
 
     -- bind it
-    local result, errors = io.socket_bind(self._SOCK, addr, port, self:family())
-    if not result and errors then
+    local ok, errors = io.socket_bind(self._SOCK, addr, port, self:family())
+    if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return result, errors
+    return ok, errors
 end
 
 -- listen socket 
@@ -106,15 +106,15 @@ function _instance:listen(backlog)
     end
 
     -- listen it
-    local result, errors = io.socket_listen(self._SOCK, backlog or 10)
-    if not result and errors then
+    local ok, errors = io.socket_listen(self._SOCK, backlog or 10)
+    if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return result, errors
+    return ok, errors
 end
 
 -- accept socket 
-function _instance:accept()
+function _instance:accept(opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -123,18 +123,27 @@ function _instance:accept()
     end
 
     -- accept it
-    local result, errors = io.socket_accept(self._SOCK)
-    if not result and errors then
+    local sock, errors = io.socket_accept(self._SOCK)
+    if not sock and not errors then
+        opt = opt or {}
+        local events, waiterrs = self:wait(socket.EV_ACPT, opt.timeout or -1)
+        if events == socket.EV_CONN then
+            sock, errors = io.socket_accept(self._SOCK)
+        else
+            errors = waiterrs
+        end
+    end
+    if not sock and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    if result then
-        result = _instance.new(self:type(), self:family(), result)
+    if sock then
+        sock = _instance.new(self:type(), self:family(), sock)
     end
-    return result, errors
+    return sock, errors
 end
 
 -- connect socket 
-function _instance:connect(addr, port)
+function _instance:connect(addr, port, opt)
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
@@ -143,11 +152,20 @@ function _instance:connect(addr, port)
     end
 
     -- connect it
-    local result, errors = io.socket_connect(self._SOCK, addr, port, self:family())
-    if result < 0 and errors then
+    local ok, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+    if ok == 0 then
+        opt = opt or {}
+        local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
+        if events == socket.EV_CONN then
+            ok, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+        else
+            errors = waiterrs
+        end
+    end
+    if ok < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return result, errors
+    return ok, errors
 end
 
 -- send data to socket 
@@ -194,11 +212,11 @@ function _instance:wait(events, timeout)
     end
 
     -- wait it
-    local result, errors = io.socket_wait(self._SOCK, events, timeout or -1)
-    if result < 0 and errors then
+    local events, errors = io.socket_wait(self._SOCK, events, timeout or -1)
+    if events < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return result, errors
+    return events, errors
 end
 
 -- close socket
@@ -256,6 +274,46 @@ function socket.open(socktype, family)
     else
         return nil, errors or string.format("failed to open socket(%s/%s)!", socktype, family)
     end
+end
+
+-- open tcp socket
+function socket.tcp(opt)
+    opt = opt or {}
+    return socket.open(socket.TCP, opt.family or socket.IPV4)
+end
+
+-- open udp socket
+function socket.udp(opt)
+    opt = opt or {}
+    return socket.open(socket.UDP, opt.family or socket.IPV4)
+end
+
+-- open and bind tcp socket
+function socket.bind(addr, port, opt)
+    local sock, errors = socket.tcp(opt)
+    if not sock then
+        return nil, errors
+    end
+    local ok, errors = sock:bind(addr, port)
+    if not ok then
+        sock:close()
+        return nil, string.format("bind %s:%s failed, errors: %s!", addr, port, errors or "")
+    end
+    return sock
+end
+
+-- open and connect tcp socket
+function socket.connect(addr, port, opt)
+    local sock, errors = socket.tcp(opt)
+    if not sock then
+        return nil, errors
+    end
+    local ok, errors = sock:connect(addr, port, opt)
+    if ok <= 0 then
+        sock:close()
+        return nil, string.format("connect %s:%s failed, errors: %s!", addr, port, errors or "")
+    end
+    return sock
 end
 
 -- return module

@@ -62,47 +62,47 @@ end
 
 -- wait socket events
 function sandbox_core_base_socket_instance.wait(sock, events, timeout)
-    local result, errors = sock:_wait(events, timeout)
-    if result < 0 and errors then
+    local events, errors = sock:_wait(events, timeout)
+    if events < 0 and errors then
         raise(errors)
     end
-    return result
+    return events
 end
 
 -- bind socket 
 function sandbox_core_base_socket_instance.bind(sock, addr, port)
-    local result, errors = sock:_bind(addr, port)
-    if not result and errors then
+    local ok, errors = sock:_bind(addr, port)
+    if not ok and errors then
         raise(errors)
     end
-    return result
+    return ok
 end
 
 -- listen socket 
 function sandbox_core_base_socket_instance.listen(sock, backlog)
-    local result, errors = sock:_listen(backlog)
-    if not result and errors then
+    local ok, errors = sock:_listen(backlog)
+    if not ok and errors then
         raise(errors)
     end
-    return result
+    return ok
 end
 
 -- accept socket 
-function sandbox_core_base_socket_instance.accept(sock)
-    local result, errors = sock:_accept()
-    if not result and errors then
+function sandbox_core_base_socket_instance.accept(sock, opt)
+    local client_sock, errors = sock:_accept(opt)
+    if not client_sock and errors then
         raise(errors)
     end
-    return result and _socket_wrap(result) or nil
+    return client_sock and _socket_wrap(client_sock) or nil
 end
 
 -- connect socket 
-function sandbox_core_base_socket_instance.connect(sock, addr, port)
-    local result, errors = sock:_connect(addr, port)
-    if result < 0 and errors then
+function sandbox_core_base_socket_instance.connect(sock, addr, port, opt)
+    local ok, errors = sock:_connect(addr, port, opt)
+    if ok < 0 and errors then
         raise(errors)
     end
-    return result
+    return ok
 end
 
 -- send data to socket 
@@ -142,8 +142,6 @@ end
 
 -- open socket
 function sandbox_core_base_socket.open(socktype, family)
-
-    -- open sock
     local sock, errors = socket.open(socktype, family)
     if not sock then
         raise(errors)
@@ -153,44 +151,38 @@ end
 
 -- open tcp socket
 function sandbox_core_base_socket.tcp(opt)
-    opt = opt or {}
-    return sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
+    local sock, errors = socket.tcp(opt)
+    if not sock then
+        raise(errors)
+    end
+    return _socket_wrap(sock)
 end
 
 -- open udp socket
 function sandbox_core_base_socket.udp(opt)
-    opt = opt or {}
-    return sandbox_core_base_socket.open(socket.UDP, opt.family or socket.IPV4)
+    local sock, errors = socket.udp(opt)
+    if not sock then
+        raise(errors)
+    end
+    return _socket_wrap(sock)
 end
 
 -- open and bind tcp socket
 function sandbox_core_base_socket.bind(addr, port, opt)
-    opt = opt or {}
-    local sock = sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
-    if sock:bind(addr, port) then
-        return sock
+    local sock, errors = socket.bind(addr, port, opt)
+    if not sock then
+        raise(errors)
     end
-    sock:close()
-    raise("bind %s:%s failed!", addr, port)
+    return _socket_wrap(sock)
 end
 
 -- open and connect tcp socket
 function sandbox_core_base_socket.connect(addr, port, opt)
-    opt = opt or {}
-    local sock = sandbox_core_base_socket.open(socket.TCP, opt.family or socket.IPV4)
-    local ok = sock:connect(addr, port)
-    if ok == 0 then
-        ok = sock:wait(socket.EV_CONN, opt.timeout or -1)
-        if ok == socket.EV_CONN then
-            ok = sock:connect(addr, port)
-        end
+    local sock, errors = socket.connect(addr, port, opt)
+    if not sock then
+        raise(errors)
     end
-    if ok > 0 then
-        return sock
-    else
-        sock:close()
-        raise("connect %s:%s failed!", addr, port)
-    end
+    return _socket_wrap(sock)
 end
 
 -- return module
