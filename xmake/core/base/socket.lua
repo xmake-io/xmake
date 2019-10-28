@@ -246,6 +246,7 @@ function _instance:sendfile(file, opt)
     local errors = nil
     if opt.block then
         while start < last do
+            -- TODO pass file/handle, improve block send
             real, errors = io.socket_sendfile(self._SOCK, file, start, last)
             if real > 0 then
                 send = send + real
