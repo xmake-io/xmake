@@ -114,6 +114,15 @@ function sandbox_core_base_socket_instance.send(sock, data, opt)
     return real
 end
 
+-- send file to socket 
+function sandbox_core_base_socket_instance.sendfile(sock, file, opt)
+    local real, errors = sock:_sendfile(file, opt)
+    if real < 0 and errors then
+        raise(errors)
+    end
+    return real
+end
+
 -- recv data from socket 
 function sandbox_core_base_socket_instance.recv(sock, size, opt)
     local real, data_or_errors = sock:_recv(size, opt)

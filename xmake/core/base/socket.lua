@@ -220,6 +220,58 @@ function _instance:send(data, opt)
     return send, errors
 end
 
+-- send file to socket 
+function _instance:sendfile(file, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- init start and last
+    opt = opt or {}
+    local start = opt.start or 1
+    local last = opt.last or file:size()
+
+    -- check start and last
+    if start > last or start < 1 then
+        return -1, string.format("%s: invalid start(%d) and last(%d)!", self, start, last)
+    end
+
+    -- send it
+    local send = 0
+    local real = 0
+    local wait = false
+    local errors = nil
+    if opt.block then
+        while start < last do
+            real, errors = io.socket_sendfile(self._SOCK, file, start, last)
+            if real > 0 then
+                send = send + real
+                start = start + real
+                wait = false
+            elseif real == 0 and not wait then
+                local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
+                if events == socket.EV_SEND then
+                    wait = true
+                else
+                    errors = waiterrs
+                    break
+                end
+            else
+                break
+            end
+        end
+    else
+        send, errors = io.socket_sendfile(self._SOCK, file, start, last)
+        if send < 0 and errors then
+            errors = string.format("%s: %s", self, errors)
+        end
+    end
+    return send, errors
+end
+
 -- recv data from socket 
 function _instance:recv(size, opt)
 
