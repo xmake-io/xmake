@@ -43,11 +43,22 @@ function _find_ndkdir(sdkdir)
 end
 
 -- find the sdk version of ndk
-function _find_ndk_sdkver(sdkdir, arch)
+function _find_ndk_sdkver(sdkdir, bindir, arch)
+
+    -- uses llvm stl?
+    local use_llvm = false
+    local ndk_cxxstl = config.get("ndk_cxxstl")
+    if ndk_cxxstl then
+        if ndk_cxxstl:startswith("llvmstl") then
+            use_llvm = true
+        end
+    elseif bindir and bindir:find("llvm", 1, true) then
+        use_llvm = true
+    end
 
     -- try to select the best compatible version
     local sdkver = "16"
-    if arch == "arm64-v8a" then
+    if use_llvm or arch == "arm64-v8a" then
         sdkver = "21"
     end
     if os.isdir(path.join(sdkdir, "platforms", "android-" .. sdkver)) then
@@ -125,7 +136,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     end
 
     -- find the sdk version
-    local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir, arch)
+    local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir, bindir, arch)
     if not sdkver then
         return {}
     end
