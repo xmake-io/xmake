@@ -35,6 +35,15 @@ function sandbox_core_theme.instance()
     end
 end
 
+-- load the given theme
+function sandbox_core_theme.load(name)
+    local instance, errors = theme.load(name)
+    if not instance then
+        raise("load theme(%s) failed, %s", name, errors)
+    end
+    return instance
+end
+
 -- get the theme configuration
 function sandbox_core_theme.get(name)
     local value = theme.get(name)

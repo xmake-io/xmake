@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.theme.theme")
 import("menuconf", {alias = "menuconf_show"})
 
 -- main
@@ -61,6 +62,12 @@ function main()
     -- check the global configure 
     if changed or option.get("clean") then
         global.check()
+    end
+
+    -- load and check theme
+    local themename = option.get("theme")
+    if themename then
+        theme.load(themename)
     end
   
     -- save it

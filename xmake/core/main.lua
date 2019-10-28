@@ -181,12 +181,10 @@ function main.entry()
     end
 
     -- load theme
-    local theme_inst, errors = theme.load(global.get("theme") or "default")
-    if not theme_inst then
-        utils.error(errors)
-        return -1
+    local theme_inst = theme.load(global.get("theme")) or theme.load("default")
+    if theme_inst then
+        colors.theme_set(theme_inst)
     end
-    colors.theme_set(theme_inst)
 
     -- init option 
     ok, errors = option.init(menu)
