@@ -40,9 +40,13 @@ tb_int_t xm_io_socket_connect(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
+    // check socket
     if (!lua_isuserdata(lua, 1)) 
-        return 0;
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushliteral(lua, "invalid socket!");
+        return 2;
+    }
 
     // get socket
     tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
@@ -53,10 +57,10 @@ tb_int_t xm_io_socket_connect(lua_State* lua)
     tb_assert_and_check_return_val(address, 0);
 
     // get port
-    tb_size_t port = (tb_size_t)luaL_checknumber(lua, 3);
+    tb_uint16_t port = (tb_uint16_t)luaL_checknumber(lua, 3);
 
     // get family
-    tb_size_t family = (tb_size_t)luaL_checknumber(lua, 4);
+    tb_uint8_t family = (tb_uint8_t)luaL_checknumber(lua, 4);
 
     // init address
     tb_ipaddr_t addr;
