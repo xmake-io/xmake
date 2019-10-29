@@ -223,8 +223,14 @@ end
 -- send file to socket 
 function _instance:sendfile(file, opt)
 
-    -- ensure opened
+    -- ensure the socket opened
     local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- ensure the file opened
+    local ok, errors = file:_ensure_opened()
     if not ok then
         return -1, errors
     end
@@ -246,8 +252,7 @@ function _instance:sendfile(file, opt)
     local errors = nil
     if opt.block then
         while start < last do
-            -- TODO pass file/handle, improve block send
-            real, errors = io.socket_sendfile(self._SOCK, file, start, last)
+            real, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
             if real > 0 then
                 send = send + real
                 start = start + real
@@ -265,7 +270,7 @@ function _instance:sendfile(file, opt)
             end
         end
     else
-        send, errors = io.socket_sendfile(self._SOCK, file, start, last)
+        send, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end
@@ -314,7 +319,7 @@ function _instance:recv(size, opt)
             end
         end
     else
-        recv, data_or_errors = io.socket_recv(self._SOCK, size)
+        recv, data_or_errors = io.socket_recv(self._SOCK, size, data_or_errors)
         if recv < 0 and data_or_errors then
             data_or_errors = string.format("%s: %s", self, data_or_errors)
         end

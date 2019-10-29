@@ -65,6 +65,9 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (size > sizeof(data)) 
         size = sizeof(data);
 
+    // get the previous data and size first
+    size_t prev_size = 0;
+    tb_char_t const* prev_data = luaL_optlstring(lua, 3, "", &prev_size);
 
     // recv data
     tb_long_t real = tb_socket_recv(sock, data, size);
@@ -75,9 +78,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
         luaL_Buffer result;
         luaL_buffinit(lua, &result);
 
-        // prepend the previous data and size first
-        size_t prev_size = 0;
-        tb_char_t const* prev_data = luaL_optlstring(lua, 3, "", &prev_size);
+        // prepend the previous data
         if (prev_data && prev_size) luaL_addlstring(&result, prev_data, prev_size);
         luaL_addlstring(&result, (tb_char_t const*)data, real);
 
