@@ -43,7 +43,7 @@ tb_int_t xm_io_socket_bind(lua_State* lua)
     // check socket
     if (!lua_isuserdata(lua, 1)) 
     {
-        lua_pushboolean(lua, false);
+        lua_pushboolean(lua, tb_false);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }

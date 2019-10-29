@@ -25,6 +25,6 @@ function main()
             break
         end
     end
-    print("%s: recv ok, size: %d!", sock, recv)
+    print("%s: recv ok, size: %d, #data: %d!", sock, recv, #data)
     sock:close()
 end
