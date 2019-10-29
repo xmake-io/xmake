@@ -34,7 +34,7 @@
  * implementation
  */
 
-// real, data_or_errors = io.socket_recv(sock, size)
+// real, data, errors = io.socket_recv(sock, size, prev_data)
 tb_int_t xm_io_socket_recv(lua_State* lua)
 {
     // check
@@ -44,6 +44,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (!lua_isuserdata(lua, 1)) 
     {
         lua_pushnumber(lua, -1);
+        lua_pushnil(lua);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
@@ -59,6 +60,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (size < 0)
     {
         lua_pushnumber(lua, -1);
+        lua_pushnil(lua);
         lua_pushfstring(lua, "invalid size(%ld)!", size);
         return 2;
     }
@@ -84,6 +86,11 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
 
         // save result
         luaL_pushresult(&result);
+        return 2;
+    }
+    else if (prev_data && prev_size)
+    {
+        lua_pushlstring(lua, prev_data, prev_size);
         return 2;
     }
     return 1;

@@ -299,10 +299,11 @@ function _instance:recv(size, opt)
     local recv = 0
     local real = 0
     local wait = false
-    local data_or_errors = opt.prevdata
+    local data = opt.prevdata
+    local errors = nil
     if opt.block then
         while recv < size do
-            real, data_or_errors = io.socket_recv(self._SOCK, size - recv, data_or_errors)
+            real, data, errors = io.socket_recv(self._SOCK, size - recv, data)
             if real > 0 then
                 recv = recv + real
                 wait = false
@@ -311,7 +312,7 @@ function _instance:recv(size, opt)
                 if events == socket.EV_RECV then
                     wait = true
                 else
-                    data_or_errors = waiterrs
+                    errors = waiterrs
                     break
                 end
             else
@@ -319,12 +320,12 @@ function _instance:recv(size, opt)
             end
         end
     else
-        recv, data_or_errors = io.socket_recv(self._SOCK, size, data_or_errors)
-        if recv < 0 and data_or_errors then
-            data_or_errors = string.format("%s: %s", self, data_or_errors)
-        end
+        recv, data, errors = io.socket_recv(self._SOCK, size, data)
     end
-    return recv, data_or_errors
+    if recv < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return recv, data, errors
 end
 
 -- wait socket events

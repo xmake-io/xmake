@@ -12,6 +12,7 @@ function main()
     local wait = false
     while true do
         real, data = sock:recv(8192, {prevdata = data})
+        print(real, type(data))
         if real > 0 then
             recv = recv + real
             wait = false
