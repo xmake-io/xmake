@@ -296,7 +296,7 @@ function nf_pcxxheader(self, pcheaderfile, target)
 end
 
 -- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
+function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
     local flags_extra = {}
@@ -310,8 +310,20 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
         table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")))
     end
 
-    -- make link args
-    return self:program(), table.join("-o", targetfile, objectfiles, flags, flags_extra)
+    -- init arguments
+    local argv = table.join("-o", targetfile, objectfiles, flags, flags_extra)
+
+    -- too long arguments for windows? 
+    if is_host("windows") then
+        opt = opt or {}
+        local args = os.args(argv)
+        if #args > 1024 and not opt.rawargs then
+            local argsfile = os.tmpfile(args) .. ".args.txt" 
+            io.writefile(argsfile, args)
+            argv = {"@" .. argsfile}
+        end
+    end
+    return self:program(), argv
 end
 
 -- link the target file

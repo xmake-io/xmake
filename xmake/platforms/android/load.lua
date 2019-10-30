@@ -232,11 +232,19 @@ function main(platform)
 
             -- add c++ stl links
             if ndk_cxxstl == "llvmstl_static" then
-                platform:add("ldflags", "-lc++_static", "-lc++abi", "-lunwind", "-latomic")
-                platform:add("shflags", "-lc++_static", "-lc++abi", "-lunwind", "-latomic")
+                platform:add("ldflags", "-lc++_static", "-lc++abi")
+                platform:add("shflags", "-lc++_static", "-lc++abi")
+                if arch == "armv7-a" or arch == "armv5te" then
+                    platform:add("ldflags", "-lunwind", "-latomic")
+                    platform:add("shflags", "-lunwind", "-latomic")
+                end
             elseif ndk_cxxstl == "llvmstl_shared" then
-                platform:add("ldflags", "-lc++_shared", "-lc++abi", "-lunwind", "-latomic")
-                platform:add("shflags", "-lc++_shared", "-lc++abi", "-lunwind", "-latomic")
+                platform:add("ldflags", "-lc++_shared", "-lc++abi")
+                platform:add("shflags", "-lc++_shared", "-lc++abi")
+                if arch == "armv7-a" or arch == "armv5te" then
+                    platform:add("ldflags", "-lunwind", "-latomic")
+                    platform:add("shflags", "-lunwind", "-latomic")
+                end
             elseif ndk_cxxstl == "gnustl_static" then
                 platform:add("ldflags", "-lgnustl_static")
                 platform:add("shflags", "-lgnustl_static")
