@@ -12,6 +12,7 @@ xmake_CONFIG 			= y
 
 # core files
 xmake_C_FILES 			+= \
+						ffi \
 						xmake \
 						machine \
 						os/argv \

@@ -7,9 +7,6 @@ target("demo")
     -- make as a binary
     set_kind("binary")
 
-    -- set basename of target file
-    set_basename("xmake")
-
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 
@@ -49,6 +46,6 @@ target("demo")
 
     -- copy target to the build directory
     after_build(function (target)
-        os.cp(target:targetfile(), "$(buildir)")
+        os.cp(target:targetfile(), "$(buildir)/xmake.exe")
     end)
 
