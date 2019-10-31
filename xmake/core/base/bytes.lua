@@ -65,14 +65,16 @@ function _instance.new(...)
             instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.xm_ffi_free)
             instance._MANAGED = true
         end
-        instance._SIZE   = size
+        instance._SIZE     = size
+        instance._READONLY = false
     elseif type(arg1) == "string" then
         -- bytes(str): mounts a buffer from the given string
         local str = arg1
-        instance._SIZE    = #str
-        instance._CDATA   = ffi.cast("unsigned char*", str)
-        instance._REF     = str -- keep ref for GC
-        instance._MANAGED = false
+        instance._SIZE     = #str
+        instance._CDATA    = ffi.cast("unsigned char*", str)
+        instance._REF      = str -- keep ref for GC
+        instance._MANAGED  = false
+        instance._READONLY = true
     elseif type(arg1) == "table" then
         if type(arg2) == 'number' then
             -- bytes(bytes, start, last): mounts a buffer from another one, with start/last limits:
@@ -82,10 +84,11 @@ function _instance.new(...)
             if start < 1 or last > b:size() then
                 os.raise("incorrect bounds(%d-%d) for bytes(...)!", start, last)
             end
-            instance._SIZE    = last - start + 1
-            instance._CDATA   = b:cdata() - 1 + start
-            instance._REF     = b -- keep lua ref for GC
-            instance._MANAGED = false
+            instance._SIZE     = last - start + 1
+            instance._CDATA    = b:cdata() - 1 + start
+            instance._REF      = b -- keep lua ref for GC
+            instance._MANAGED  = false
+            instance._READONLY = b:readonly()
         elseif type(arg2) == "table" then
             -- bytes(bytes1, bytes2, bytes3, ...): allocates and concat buffer from list of byte buffers
             instance._SIZE = 0
@@ -98,7 +101,8 @@ function _instance.new(...)
                 ffi.copy(instance._CDATA + offset, b:cdata(), b:size())
                 offset = offset + b:size()
             end
-            instance._MANAGED = true
+            instance._MANAGED  = true
+            instance._READONLY = false
         elseif not arg2 and arg1:size() then
             -- bytes(bytes): allocates a buffer from another one (strict replica, sharing memory)
             local b = arg1
@@ -107,10 +111,11 @@ function _instance.new(...)
             if start < 1 or last > b:size() then
                 os.raise("incorrect bounds(%d-%d)!", start, last)
             end
-            instance._SIZE    = last - start + 1
-            instance._CDATA   = b:cdata() - 1 + start
-            instance._REF     = b -- keep lua ref for GC
-            instance._MANAGED = false
+            instance._SIZE     = last - start + 1
+            instance._CDATA    = b:cdata() - 1 + start
+            instance._REF      = b -- keep lua ref for GC
+            instance._MANAGED  = false
+            instance._READONLY = b:readonly()
         end
     end
     if instance:cdata() == nil then
@@ -128,6 +133,11 @@ end
 -- get bytes data
 function _instance:cdata()
     return self._CDATA
+end
+
+-- readonly?
+function _instance:readonly()
+    return self._READONLY
 end
 
 -- bytes:ipairs()
@@ -148,11 +158,14 @@ end
 
 -- copy bytes 
 function _instance:copy(src)
+    if self:readonly() then
+        os.raise("%s: cannot be modified!", self)
+    end
     if type(src) == 'string' then
         src = bytes(src)
     end
     if src:size() ~= self:size() then
-        os.raise("cannot copy bytes, src and dst must have same size(%d->%d)!", src:size(), self:size())
+        os.raise("%s: cannot copy bytes, src and dst must have same size(%d->%d)!", self, src:size(), self:size())
     end
     ffi.copy(self:cdata(), src:cdata(), self:size())
     return self
@@ -179,7 +192,7 @@ end
 function _instance:__index(key)
     if type(key) == "number" then
         if key < 1 or key > self:size() then 
-            os.raise("bytes index(%d/%d) out of bounds!", key, self:size()) 
+            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size()) 
         end
         return self._CDATA[key - 1]
     elseif type(key) == "table" then
@@ -189,15 +202,18 @@ function _instance:__index(key)
     return rawget(self, key)
 end
 
--- get byte or bytes slice at the given index position
+-- set byte or bytes slice at the given index position
 --
 -- bytes[1] = 0x1
 -- bytes[{1, 2}] = bytes(2)
 --
 function _instance:__newindex(key, value)
+    if self:readonly() then
+        os.raise("%s: cannot modify value at index[%s]!", self, key)
+    end
     if type(key) == "number" then
         if key < 1 or key > self:size() then 
-            os.raise("bytes index(%d/%d) out of bounds!", key, self:size()) 
+            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size()) 
         end
         self._CDATA[key - 1] = value
         return
@@ -220,10 +236,14 @@ end
 -- tostring(bytes)
 function _instance:__tostring()
     local parts = {}
-    for i = 1, tonumber(self:size()) do
+    local size = self:size()
+    if size > 16 then
+        size = 16
+    end
+    for i = 1, size do
         parts[i] = bit.tohex(self[i], 2)
     end
-    return "<bytes: " .. table.concat(parts, " ") .. ">"
+    return "<bytes(" .. self:size() .. "): " .. table.concat(parts, " ") .. (self:size() > 16 and "..>" or ">")
 end
 
 -- new an bytes instance
