@@ -15,30 +15,9 @@
 -- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ipairs.lua
+-- @file        bytes.lua
 --
 
 -- load modules
-local table = require("base/table")
-
--- improve ipairs, wrap nil and single value
-function sandbox_ipairs(t)
-
-    -- exists the custom ipairs?
-    if type(t) == "table" and t.ipairs then
-        return t:ipairs()
-    end
-
-    -- wrap table and return iterator
-    return function (t, i)
-        i = i + 1
-        local v = t[i]
-        if v ~= nil then
-            return i, v
-        end
-    end, table.wrap(t), 0
-end
-
--- load module
-return sandbox_ipairs
+return require("base/bytes")
 

@@ -219,18 +219,16 @@ function _file:_ensure_opened()
     return true
 end
 
--- iterator of lines
-function _file._lines_iter(data)
-    local l = data.file:read("l", data.opt)
-    if not l and data.opt.close_on_finished then
-        data.file:close()
-    end
-    return l
-end
-
--- read all lines from a file
+-- read all lines from file
 function _file:lines(opt)
-    return _file._lines_iter, { file = assert(self), opt = opt or {} }
+    opt = opt or {}
+    return function()
+        local l = self:read("l", opt)
+        if not l and opt.close_on_finished then
+            self:close()
+        end
+        return l
+    end
 end
 
 -- print file
