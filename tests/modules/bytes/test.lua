@@ -30,3 +30,7 @@ function test_index(t)
     t:will_raise(function() b[100] = string.byte('2') end)
 end
 
+function test_concat(t)
+    t:are_equal((bytes("123") .. bytes("456")):str(), "123456")
+    t:are_equal(bytes(bytes("123"), bytes("456")):str(), "123456")
+end
