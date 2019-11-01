@@ -104,6 +104,21 @@ function _instance.new(...)
             end
             instance._MANAGED  = true
             instance._READONLY = false
+        elseif not arg2 and arg1[1] and type(arg1[1]) == 'table' then
+            -- bytes({bytes1, bytes2, ...}) : allocates and concat buffer from a list of byte buffers (table)
+            args = arg1
+            instance._SIZE = 0
+            for _, b in ipairs(args) do
+                instance._SIZE = instance._SIZE + b:size()
+            end
+            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.xm_ffi_malloc(instance._SIZE)), ffi.C.xm_ffi_free)
+            local offset = 0
+            for _, b in ipairs(args) do
+                ffi.copy(instance._CDATA + offset, b._CDATA, b:size())
+                offset = offset + b:size()
+            end
+            instance._MANAGED  = true
+            instance._READONLY = false
         elseif not arg2 and arg1:size() then
             -- bytes(bytes): allocates a buffer from another one (strict replica, sharing memory)
             local b = arg1

@@ -6,6 +6,7 @@ function test_ctor(t)
     t:are_equal(bytes("123456789"):size(), 9)
     t:are_equal(bytes(10):size(), 10)
     t:are_equal(bytes(bytes("123"), bytes("456"), bytes("789")):str(), "123456789")
+    t:are_equal(bytes({bytes("123"), bytes("456"), bytes("789")}):str(), "123456789")
 end
 
 function test_clone(t)
