@@ -23,9 +23,10 @@ local bytes = bytes or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit = require('bit')
-local ffi = require('ffi')
-local os  = require("base/os")
+local bit   = require('bit')
+local ffi   = require('ffi')
+local os    = require("base/os")
+local utils = require("base/utils")
 
 -- define ffi interfaces
 ffi.cdef[[
@@ -178,10 +179,168 @@ function _instance:clone()
     return new
 end
 
+-- dump whole bytes data
+function _instance:dump()
+
+    -- dump head
+    utils.print("")
+
+    -- walk
+    local i    = 0
+    local n    = 147
+    local p    = 0
+    local e    = self:size()
+    local line = nil
+    while p < e do
+        line = ""
+        if p + 0x20 <= e then
+
+            -- dump offset
+            line = line .. string.format("${yellow}%08X ${green}", p)
+
+            -- dump data
+            for i = 0, 0x20 - 1 do
+                if (i % 4) == 0 then
+                    line = line .. " "
+                end
+                line = line .. string.format(" %02X", self[p + i + 1])
+            end
+
+            -- dump spaces
+            line = line .. "  "
+
+            -- dump characters
+            line = line .. "${magenta}"
+            for i = 0, 0x20 - 1 do
+                local v = self[p + i + 1]
+                if v > 0x1f and v < 0x7f then
+                    line = line .. string.format("%c", v)
+                else
+                    line = line .. '.'
+                end
+            end
+            line = line .. "${clear}"
+
+            -- dump line
+            utils.cprint(line)
+
+            -- next line
+            p = p + 0x20
+
+        elseif p < e then
+
+            -- init padding
+            local padding = n - 0x20
+
+            -- dump offset
+            line = line .. string.format("${yellow}%08X ${green}", p)
+            if padding >= 9 then
+                padding = padding - 9
+            end
+
+            -- dump data
+            local left = e - p
+            for i = 0, left - 1 do
+                if (i % 4) == 0 then
+                    line = line .. " "
+                    if padding then
+                        padding = padding - 1
+                    end
+                end
+                line = line .. string.format(" %02X", self[p + i + 1])
+                if padding >= 3 then
+                    padding = padding - 3
+                end
+            end
+
+            -- dump spaces
+            while padding > 0 do
+                line = line .. " "
+                padding = padding - 1
+            end
+                
+            -- dump characters
+            line = line .. "${magenta}"
+            for i = 0, left - 1 do
+                local v = self[p + i + 1]
+                if v > 0x1f and v < 0x7f then
+                    line = line .. string.format("%c", v)
+                else
+                    line = line .. '.'
+                end
+            end
+            line = line .. "${clear}"
+
+
+            -- dump line
+            utils.cprint(line)
+
+            -- next line
+            p = p + left
+
+        else 
+            break
+        end
+    end
+end
+
 -- convert bytes to string
 function _instance:str(i, j)
     local offset = i and i - 1 or 0
     return ffi.string(self:cdata() + offset, (j or self:size()) - offset)
+end
+
+-- get uint8 value
+function _instance:u8(offset)
+    return self[offset]
+end
+
+-- get sint8 value
+function _instance:s8(offset)
+    local value = self[offset]
+    return value < 0x80 and value or -0x100 + value
+end
+
+-- get uint16 little-endian value
+function _instance:u16le(offset)
+    return bit.lshift(self[offset + 1], 8) + self[offset]
+end
+
+-- get uint16 big-endian value
+function _instance:u16be(offset)
+    return bit.lshift(self[offset], 8) + self[offset + 1]
+end
+
+-- get sint16 little-endian value
+function _instance:s16le(offset)
+    local value = self:u16le(offset)
+    return value < 0x8000 and value or -0x10000 + value
+end
+
+-- get sint16 big-endian value
+function _instance:s16be(offset)
+    local value = self:u16be(offset)
+    return value < 0x8000 and value or -0x10000 + value
+end
+
+-- get uint32 little-endian value
+function _instance:u32le(offset)
+    return self[offset + 3] * 0x1000000 + bit.lshift(self[offset + 2], 16) + bit.lshift(self[offset + 1], 8) + self[offset]
+end
+
+-- get uint32 big-endian value
+function _instance:u32be(offset)
+   return self[offset] * 0x1000000 + bit.lshift(self[offset + 1], 16) + bit.lshift(self[offset + 2], 8) + self[offset + 3]
+end
+
+-- get sint32 little-endian value
+function _instance:s32le(offset)
+   return bit.tobit(self:u32le(offset))
+end
+
+-- get sint32 big-endian value
+function _instance:s32be(offset)
+   return bit.tobit(self:u32be(offset))
 end
 
 -- get byte or bytes slice at the given index position
@@ -237,13 +396,13 @@ end
 function _instance:__tostring()
     local parts = {}
     local size = self:size()
-    if size > 16 then
-        size = 16
+    if size > 8 then
+        size = 8
     end
     for i = 1, size do
-        parts[i] = bit.tohex(self[i], 2)
+        parts[i] = "0x" .. bit.tohex(self[i], 2)
     end
-    return "<bytes(" .. self:size() .. "): " .. table.concat(parts, " ") .. (self:size() > 16 and "..>" or ">")
+    return "<bytes(" .. self:size() .. "): " .. table.concat(parts, " ") .. (self:size() > 8 and "..>" or ">")
 end
 
 -- new an bytes instance
