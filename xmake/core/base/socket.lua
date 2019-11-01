@@ -24,6 +24,7 @@ local _instance   = _instance or {}
 
 -- load modules
 local io     = require("base/io")
+local bytes  = require("base/bytes")
 local table  = require("base/table")
 local string = require("base/string")
 
@@ -193,7 +194,8 @@ function _instance:send(data, opt)
     local wait = false
     local errors = nil
     if opt.block then
-        while start < last do
+        local size = last + 1 - start
+        while start <= last do
             real, errors = io.socket_send(self._SOCK, data, start, last)
             if real > 0 then
                 send = send + real
@@ -210,6 +212,9 @@ function _instance:send(data, opt)
             else
                 break
             end
+        end
+        if send ~= size then
+            send = -1
         end
     else
         send, errors = io.socket_send(self._SOCK, data, start, last)
@@ -251,7 +256,8 @@ function _instance:sendfile(file, opt)
     local wait = false
     local errors = nil
     if opt.block then
-        while start < last do
+        local size = last + 1 - start
+        while start <= last do
             real, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
             if real > 0 then
                 send = send + real
@@ -268,6 +274,9 @@ function _instance:sendfile(file, opt)
             else
                 break
             end
+        end
+        if send ~= size then
+            send = -1
         end
     else
         send, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
@@ -299,33 +308,42 @@ function _instance:recv(size, opt)
     local recv = 0
     local real = 0
     local wait = false
-    local data = opt.prevdata
-    local errors = nil
+    local data_or_errors = nil
     if opt.block then
+        local results = {}
         while recv < size do
-            real, data, errors = io.socket_recv(self._SOCK, size - recv, data)
+            real, data_or_errors = io.socket_recv(self._SOCK, size - recv)
             if real > 0 then
                 recv = recv + real
                 wait = false
+                table.insert(results, bytes(data_or_errors))
             elseif real == 0 and not wait then
                 local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
                     wait = true
                 else
-                    errors = waiterrs
+                    data_or_errors = waiterrs
                     break
                 end
             else
                 break
             end
         end
+        if recv == size then
+            data_or_errors = bytes(results)
+        else
+            recv = -1
+        end
     else
-        recv, data, errors = io.socket_recv(self._SOCK, size, data)
+        recv, data_or_errors = io.socket_recv(self._SOCK, size)
+        if recv > 0 then
+            data_or_errors = bytes(data_or_errors)
+        end
     end
-    if recv < 0 and errors then
-        errors = string.format("%s: %s", self, errors)
+    if recv < 0 and data_or_errors then
+        data_or_errors = string.format("%s: %s", self, data_or_errors)
     end
-    return recv, data, errors
+    return recv, data_or_errors
 end
 
 -- wait socket events

@@ -125,11 +125,11 @@ end
 
 -- recv data from socket 
 function sandbox_core_base_socket_instance.recv(sock, size, opt)
-    local real, data, errors = sock:_recv(size, opt)
-    if real < 0 and errors then
-        raise(errors)
+    local real, data_or_errors = sock:_recv(size, opt)
+    if real < 0 and data_or_errors then
+        raise(data_or_errors)
     end
-    return real, data
+    return real, data_or_errors
 end
 
 -- get socket rawfd

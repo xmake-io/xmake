@@ -42,6 +42,7 @@ ffi.cdef[[
 -- bytes(bytes, start, last): mounts a buffer from another one, with start/last limits
 -- bytes(bytes1, bytes2, bytes3, ...): allocates and concat buffer from list of byte buffers
 -- bytes(bytes): allocates a buffer from another one (strict replica, sharing memory)
+-- bytes({bytes1, bytes2, ...}): allocates and concat buffer from a list of byte buffers (table)
 --
 function _instance.new(...)
     local args = {...}
@@ -105,7 +106,7 @@ function _instance.new(...)
             instance._MANAGED  = true
             instance._READONLY = false
         elseif not arg2 and arg1[1] and type(arg1[1]) == 'table' then
-            -- bytes({bytes1, bytes2, ...}) : allocates and concat buffer from a list of byte buffers (table)
+            -- bytes({bytes1, bytes2, ...}): allocates and concat buffer from a list of byte buffers (table)
             args = arg1
             instance._SIZE = 0
             for _, b in ipairs(args) do

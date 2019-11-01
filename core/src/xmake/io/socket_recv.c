@@ -34,7 +34,7 @@
  * implementation
  */
 
-// real, data, errors = io.socket_recv(sock, size, prev_data)
+// real, data_or_errors = io.socket_recv(sock, size)
 tb_int_t xm_io_socket_recv(lua_State* lua)
 {
     // check
@@ -44,7 +44,6 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (!lua_isuserdata(lua, 1)) 
     {
         lua_pushnumber(lua, -1);
-        lua_pushnil(lua);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
@@ -60,37 +59,18 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     if (size < 0)
     {
         lua_pushnumber(lua, -1);
-        lua_pushnil(lua);
         lua_pushfstring(lua, "invalid size(%ld)!", size);
         return 2;
     }
     if (size > sizeof(data)) 
         size = sizeof(data);
 
-    // get the previous data and size first
-    size_t prev_size = 0;
-    tb_char_t const* prev_data = luaL_optlstring(lua, 3, "", &prev_size);
-
     // recv data
     tb_long_t real = tb_socket_recv(sock, data, size);
     lua_pushnumber(lua, (tb_int_t)real);
     if (real > 0)
     {
-        // init result
-        luaL_Buffer result;
-        luaL_buffinit(lua, &result);
-
-        // prepend the previous data
-        if (prev_data && prev_size) luaL_addlstring(&result, prev_data, prev_size);
-        luaL_addlstring(&result, (tb_char_t const*)data, real);
-
-        // save result
-        luaL_pushresult(&result);
-        return 2;
-    }
-    else if (prev_data && prev_size)
-    {
-        lua_pushlstring(lua, prev_data, prev_size);
+        lua_pushlstring(lua, (tb_char_t const*)data, real);
         return 2;
     }
     return 1;
