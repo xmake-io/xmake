@@ -47,12 +47,6 @@
     <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)' == ''">
-    <WindowsTargetPlatformVersion Condition="'$(VisualStudioVersion)' == '14.0'">10.0.10240.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(VisualStudioVersion)' == '15.0'">10.0.14393.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(VisualStudioVersion)' == '16.0'">10.0.17763.0</WindowsTargetPlatformVersion>
-    <WindowsTargetPlatformVersion Condition="'$(WindowsTargetPlatformVersion)' == ''">10.0</WindowsTargetPlatformVersion>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(PlatformToolset)' == ''">
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '10.0'">v100</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '11.0'">v110</PlatformToolset>
@@ -90,9 +84,19 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);$(XmakeDefines)</PreprocessorDefinitions>
-      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx17'))">stdcpp17</LanguageStandard>
-      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
+    
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx11'))">stdcpp11</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx17'))">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx1z'))">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx20'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx2a'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx11'))">stdcpp11</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx14'))">stdcpp14</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx17'))">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx1z'))">stdcpp17</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpplatest</LanguageStandard>
+      <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2a'))">stdcpplatest</LanguageStandard>
     </ClCompile>
   </ItemDefinitionGroup>
 
