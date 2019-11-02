@@ -29,7 +29,6 @@
  * includes
  */
 #include "xmake.h"
-#include "ffi.h"
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   include <windows.h>
 #   include <io.h>
@@ -692,9 +691,6 @@ xm_machine_ref_t xm_machine_init()
             }
         }
 #endif
-
-        // bind ffi interfaces
-        xm_ffi_bind();
 
         // ok
         ok = tb_true;

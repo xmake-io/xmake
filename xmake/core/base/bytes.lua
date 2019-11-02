@@ -30,8 +30,8 @@ local utils = require("base/utils")
 
 -- define ffi interfaces
 ffi.cdef[[
-    void* xm_ffi_malloc(unsigned long size);
-    void  xm_ffi_free(void* data);
+    void* malloc(size_t size);
+    void  free(void* data);
 ]]
 
 -- new a bytes instance
@@ -55,7 +55,7 @@ function _instance.new(...)
             -- bytes(size, ptr [, manage]): mounts buffer on existing storage (manage memory or not)
             local manage = arg3
             if manage then
-                instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.xm_ffi_free)
+                instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
                 instance._MANAGED = true
             else
                 instance._CDATA   = ffi.cast("unsigned char*", ptr)
@@ -63,8 +63,8 @@ function _instance.new(...)
             end
         else
             -- bytes(size): allocates a buffer of given size
-            ptr = ffi.C.xm_ffi_malloc(size)
-            instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.xm_ffi_free)
+            ptr = ffi.C.malloc(size)
+            instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
             instance._MANAGED = true
         end
         instance._SIZE     = size
@@ -97,7 +97,7 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.xm_ffi_malloc(instance._SIZE)), ffi.C.xm_ffi_free)
+            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(instance._SIZE)), ffi.C.free)
             local offset = 0
             for _, b in ipairs(args) do
                 ffi.copy(instance._CDATA + offset, b:cdata(), b:size())
@@ -112,7 +112,7 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.xm_ffi_malloc(instance._SIZE)), ffi.C.xm_ffi_free)
+            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(instance._SIZE)), ffi.C.free)
             local offset = 0
             for _, b in ipairs(args) do
                 ffi.copy(instance._CDATA + offset, b._CDATA, b:size())
