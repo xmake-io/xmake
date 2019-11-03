@@ -346,6 +346,101 @@ function _instance:recv(size, opt)
     return recv, data_or_errors
 end
 
+-- send udp data to peer 
+function _instance:sendto(data, addr, port, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- check address
+    if not addr or not port then
+        return -1, string.format("%s: sendto empty address!", self)
+    end
+
+    -- send it
+    opt = opt or {}
+    local send = 0
+    local wait = false
+    local errors = nil
+    if opt.block then
+        while true do
+            send, errors = io.socket_sendto(self._SOCK, data, addr, port, self:family())
+            if send == 0 and not wait then
+                local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
+                if events == socket.EV_SEND then
+                    wait = true
+                else
+                    errors = waiterrs
+                    break
+                end
+            else
+                break
+            end
+        end
+    else
+        send, errors = io.socket_sendto(self._SOCK, data, addr, port, self:family())
+        if send < 0 and errors then
+            errors = string.format("%s: %s", self, errors)
+        end
+    end
+    return send, errors
+end
+
+-- recv udp data from peer 
+function _instance:recvfrom(size, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- check size
+    if size == 0 then
+        return 0
+    elseif size == nil or size < 0 then
+        return -1, string.format("%s: invalid size(%d)!", self, size)
+    end
+
+    -- recv it
+    opt = opt or {}
+    local recv = 0
+    local wait = false
+    local data_or_errors = nil
+    if opt.block then
+        while true do
+            recv, data_or_errors, addr, port = io.socket_recvfrom(self._SOCK, size)
+            if recv > 0 then
+                data_or_errors = bytes(data_or_errors)
+                break
+            elseif recv == 0 and not wait then
+                local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
+                if events == socket.EV_RECV then
+                    wait = true
+                else
+                    recv = -1
+                    data_or_errors = waiterrs
+                    break
+                end
+            else
+                break
+            end
+        end
+    else
+        recv, data_or_errors, addr, port = io.socket_recvfrom(self._SOCK, size)
+        if recv > 0 then
+            data_or_errors = bytes(data_or_errors)
+        end
+    end
+    if recv < 0 and data_or_errors then
+        data_or_errors = string.format("%s: %s", self, data_or_errors)
+    end
+    return recv, data_or_errors, addr, port
+end
+
 -- wait socket events
 function _instance:wait(events, timeout)
 

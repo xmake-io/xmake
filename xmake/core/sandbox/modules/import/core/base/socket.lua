@@ -132,6 +132,24 @@ function sandbox_core_base_socket_instance.recv(sock, size, opt)
     return real, data_or_errors
 end
 
+-- send udp data to peer 
+function sandbox_core_base_socket_instance.sendto(sock, data, addr, port, opt)
+    local real, errors = sock:_sendto(data, addr, port, opt)
+    if real < 0 and errors then
+        raise(errors)
+    end
+    return real
+end
+
+-- recv udp data from peer 
+function sandbox_core_base_socket_instance.recvfrom(sock, size, opt)
+    local real, data_or_errors, addr, port = sock:_recvfrom(size, opt)
+    if real < 0 and data_or_errors then
+        raise(data_or_errors)
+    end
+    return real, data_or_errors, addr, port
+end
+
 -- get socket rawfd
 function sandbox_core_base_socket_instance.rawfd(sock)
     local result, errors = sock:_rawfd()
