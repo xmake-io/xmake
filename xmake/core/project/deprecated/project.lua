@@ -271,7 +271,7 @@ function deprecated_project._api_target_add_tools(interp)
     interp:_api_within_scope_set("target", "add_tools", function (key, value, ...) 
 
                                             -- deprecated
-                                            deprecated.add("add_tools(%s, %s)", "add_toolchain(%s, %s)", tostring(key), tostring(value))
+                                            deprecated.add("add_tools(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
                                           
                                             -- dispatch it
                                             apifunc(key, value, ...)
