@@ -198,10 +198,6 @@ end
 -- dump whole bytes data
 function _instance:dump()
 
-    -- dump head
-    utils.print("")
-
-    -- walk
     local i    = 0
     local n    = 147
     local p    = 0
