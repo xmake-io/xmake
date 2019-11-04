@@ -47,6 +47,6 @@ target("demo")
 
     -- copy target to the build directory
     after_build(function (target)
-        os.cp(target:targetfile(), "$(buildir)/xmake.exe")
+        os.cp(target:targetfile(), path.join(get_config("buildir"), path.filename(target:targetfile())))
     end)
 
