@@ -23,7 +23,8 @@ function main()
                     break
                 end
             end
-            print("%s: recv: %s, count: %d", sock_client, result or "", count)
+            print("%s: recv: %d, count: %d", sock_client, result and result:size() or 0, count)
+            result:dump()
             sock_client:close()
         end
     end

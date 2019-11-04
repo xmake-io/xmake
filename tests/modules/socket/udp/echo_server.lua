@@ -11,7 +11,7 @@ function main()
         print("%s: recv %d bytes from: %s:%d", sock, recv, peer_addr, peer_port)
         if data then
             data:dump()
-            sock:sendto(data:str(), peer_addr, peer_port)
+            sock:sendto(data, peer_addr, peer_port)
         end
     end
     sock:close()

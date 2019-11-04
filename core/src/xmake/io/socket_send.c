@@ -53,14 +53,39 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     tb_check_return_val(sock, 0);
 
     // get data
-    size_t datasize = 0;
-    tb_char_t const* data = luaL_checklstring(lua, 2, &datasize);
-    tb_assert_and_check_return_val(data, 0);
+    tb_size_t        size = 0;
+    tb_byte_t const* data = tb_null;
+    if (lua_istable(lua, 2))
+    {
+        // get data address
+        lua_pushstring(lua, "data");
+        lua_gettable(lua, 2);
+        data = (tb_byte_t const*)(tb_size_t)(tb_long_t)lua_tonumber(lua, -1);
+        lua_pop(lua, 1);
+
+        // get data size
+        lua_pushstring(lua, "size");
+        lua_gettable(lua, 2);
+        size = (tb_size_t)lua_tonumber(lua, -1);
+        lua_pop(lua, 1);
+    }
+    else
+    {
+        size_t datasize = 0;
+        data = (tb_byte_t const*)luaL_checklstring(lua, 2, &datasize);
+        size = (tb_size_t)datasize;
+    }
+    if (!data || !size)
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushfstring(lua, "invalid data(%p) and size(%zu)!", data, size);
+        return 2;
+    }
 
     // get start
     tb_long_t start = 1;
     if (lua_isnumber(lua, 3)) start = (tb_long_t)lua_tonumber(lua, 3);
-    if (start < 1 || start > datasize)
+    if (start < 1 || start > size)
     {
         lua_pushnumber(lua, -1);
         lua_pushfstring(lua, "invalid start position(%ld)!", start);
@@ -68,9 +93,9 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     }
 
     // get last
-    tb_long_t last = (tb_long_t)datasize;
+    tb_long_t last = (tb_long_t)size;
     if (lua_isnumber(lua, 4)) last = (tb_long_t)lua_tonumber(lua, 4);
-    if (last < start - 1 || last > datasize + start - 1)
+    if (last < start - 1 || last > size + start - 1)
     {
         lua_pushnumber(lua, -1);
         lua_pushfstring(lua, "invalid last position(%ld)!", last);
@@ -78,7 +103,7 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     }
 
     // send data
-    tb_long_t real = tb_socket_send(sock, (tb_byte_t const*)data + start - 1, last - start + 1);
+    tb_long_t real = tb_socket_send(sock, data + start - 1, last - start + 1);
     lua_pushnumber(lua, (tb_int_t)real);
     return 1;
 }

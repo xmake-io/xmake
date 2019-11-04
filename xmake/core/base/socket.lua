@@ -178,10 +178,17 @@ function _instance:send(data, opt)
         return -1, errors
     end
 
+    -- data is bytes? unpack the raw address
+    local datasize = #data
+    if type(data) == "table" and data.caddr then
+        datasize = data:size()
+        data = {data = data:caddr(), size = data:size()}
+    end
+
     -- init start and last
     opt = opt or {}
     local start = opt.start or 1
-    local last = opt.last or #data
+    local last = opt.last or datasize
 
     -- check start and last
     if start > last or start < 1 then
@@ -355,9 +362,19 @@ function _instance:sendto(data, addr, port, opt)
         return -1, errors
     end
 
+    -- only for udp
+    if self:type() ~= socket.UDP then
+        return -1, string.format("%s: sendto() only for udp socket!", self)
+    end
+
     -- check address
     if not addr or not port then
         return -1, string.format("%s: sendto empty address!", self)
+    end
+
+    -- data is bytes? unpack the raw address
+    if type(data) == "table" and data.caddr then
+        data = {data = data:caddr(), size = data:size()}
     end
 
     -- send it
@@ -396,6 +413,11 @@ function _instance:recvfrom(size, opt)
     local ok, errors = self:_ensure_opened()
     if not ok then
         return -1, errors
+    end
+
+    -- only for udp
+    if self:type() ~= socket.UDP then
+        return -1, string.format("%s: sendto() only for udp socket!", self)
     end
 
     -- check size

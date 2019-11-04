@@ -152,6 +152,11 @@ function _instance:cdata()
     return self._CDATA
 end
 
+-- get data address
+function _instance:caddr()
+    return tonumber(ffi.cast('long', self:cdata()))
+end
+
 -- readonly?
 function _instance:readonly()
     return self._READONLY
