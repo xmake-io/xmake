@@ -14,15 +14,15 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file_isatty.c
+ * @author      ruki
+ * @file        socket_listen.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_isatty"
+#define TB_TRACE_MODULE_NAME    "socket_listen"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,24 +31,28 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-// io.file_isatty(file)
-tb_int_t xm_io_file_isatty(lua_State* lua)
+// io.socket_listen(sock, backlog)
+tb_int_t xm_io_socket_listen(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
     if (!lua_isuserdata(lua, 1)) 
-        xm_io_return_error(lua, "isatty(invalid file)!");
+        return 0;
 
-    // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
-    tb_check_return_val(file, 0);
+    // get socket
+    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(sock, 0);
 
-    // is tty?
-    lua_pushboolean(lua, xm_io_file_is_tty(file));
+    // get backlog
+    tb_size_t backlog = (tb_size_t)luaL_checknumber(lua, 2);
+
+    // listen socket
+    lua_pushnumber(lua, (tb_int_t)tb_socket_listen(sock, backlog));
     return 1;
 }
+

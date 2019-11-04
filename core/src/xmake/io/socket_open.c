@@ -14,15 +14,15 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file_isatty.c
+ * @author      ruki
+ * @file        socket_open.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_isatty"
+#define TB_TRACE_MODULE_NAME    "socket_open"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -34,21 +34,37 @@
  * implementation
  */
 
-// io.file_isatty(file)
-tb_int_t xm_io_file_isatty(lua_State* lua)
+/*
+ * io.socket_open(socktype, family)
+ */
+tb_int_t xm_io_socket_open(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
-        xm_io_return_error(lua, "isatty(invalid file)!");
+    // get socket type 
+    tb_size_t socktype = (tb_size_t)luaL_checknumber(lua, 1);
 
-    // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
-    tb_check_return_val(file, 0);
+    // get address family 
+    tb_size_t family = (tb_size_t)luaL_checknumber(lua, 2);
 
-    // is tty?
-    lua_pushboolean(lua, xm_io_file_is_tty(file));
+    // map socket type
+    switch (socktype) 
+    {
+    case 2:
+        socktype = TB_SOCKET_TYPE_UDP;
+        break;
+    case 3:
+        socktype = TB_SOCKET_TYPE_ICMP;
+        break;
+    default:
+        socktype = TB_SOCKET_TYPE_TCP;
+        break;
+    }
+
+    // init socket
+    tb_socket_ref_t sock = tb_socket_init(socktype, family);
+    if (sock) lua_pushlightuserdata(lua, (tb_pointer_t)sock);
+    else lua_pushnil(lua);
     return 1;
 }

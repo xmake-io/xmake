@@ -109,6 +109,21 @@ tb_int_t xm_io_filelock_unlock(lua_State* lua);
 tb_int_t xm_io_filelock_trylock(lua_State* lua);
 tb_int_t xm_io_filelock_close(lua_State* lua);
 
+// the io/socket functions
+tb_int_t xm_io_socket_open(lua_State* lua);
+tb_int_t xm_io_socket_rawfd(lua_State* lua);
+tb_int_t xm_io_socket_wait(lua_State* lua);
+tb_int_t xm_io_socket_bind(lua_State* lua);
+tb_int_t xm_io_socket_listen(lua_State* lua);
+tb_int_t xm_io_socket_accept(lua_State* lua);
+tb_int_t xm_io_socket_connect(lua_State* lua);
+tb_int_t xm_io_socket_send(lua_State* lua);
+tb_int_t xm_io_socket_sendto(lua_State* lua);
+tb_int_t xm_io_socket_sendfile(lua_State* lua);
+tb_int_t xm_io_socket_recv(lua_State* lua);
+tb_int_t xm_io_socket_recvfrom(lua_State* lua);
+tb_int_t xm_io_socket_close(lua_State* lua);
+
 // the path functions
 tb_int_t xm_path_relative(lua_State* lua);
 tb_int_t xm_path_absolute(lua_State* lua);
@@ -241,6 +256,19 @@ static luaL_Reg const g_io_functions[] =
 ,   { "filelock_trylock",   xm_io_filelock_trylock }
 ,   { "filelock_unlock",    xm_io_filelock_unlock  }
 ,   { "filelock_close",     xm_io_filelock_close   }
+,   { "socket_open",        xm_io_socket_open      }
+,   { "socket_rawfd",       xm_io_socket_rawfd     }
+,   { "socket_wait",        xm_io_socket_wait      }
+,   { "socket_bind",        xm_io_socket_bind      }
+,   { "socket_listen",      xm_io_socket_listen    }
+,   { "socket_accept",      xm_io_socket_accept    }
+,   { "socket_connect",     xm_io_socket_connect   }
+,   { "socket_send",        xm_io_socket_send      }
+,   { "socket_sendto",      xm_io_socket_sendto    }
+,   { "socket_sendfile",    xm_io_socket_sendfile  }
+,   { "socket_recv",        xm_io_socket_recv      }
+,   { "socket_recvfrom",    xm_io_socket_recvfrom  }
+,   { "socket_close",       xm_io_socket_close     }
 ,   { tb_null,              tb_null                }
 };
 

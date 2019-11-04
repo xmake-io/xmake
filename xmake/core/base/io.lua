@@ -55,10 +55,15 @@ end
 
 -- close file
 function _file:close()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_close(self._FILE)
+
+    -- close file
+    ok, errors = io.file_close(self._FILE)
     if ok then
         self._FILE = nil
     end
@@ -67,7 +72,11 @@ end
 
 -- tostring(file)
 function _file:__tostring()
-    return "file: " .. self:name()
+    local str = self:path()
+    if #str > 16 then
+        str = ".." .. str:sub(#str - 16, #str)
+    end
+    return "<file: " .. str .. ">"
 end
 
 -- gc(file)
@@ -84,101 +93,142 @@ end
 
 -- get file rawfd
 function _file:rawfd()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- get file rawfd
     local result, errors = io.file_rawfd(self._FILE)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- get file size
 function _file:size()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- get file size
     local result, errors = io.file_size(self._FILE)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- read data from file
 function _file:read(fmt, opt)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
+
+    -- read file
     opt = opt or {}
     local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
     if errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- write data to file
 function _file:write(...)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_write(self._FILE, ...)
+
+    -- write file
+    ok, errors = io.file_write(self._FILE, ...)
     if not ok and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end
 
 -- seek offset at file
 function _file:seek(whence, offset)
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- seek file
     local result, errors = io.file_seek(self._FILE, whence, offset)
     if not result and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return result, errors
 end
 
 -- flush data to file
 function _file:flush()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok, errors = io.file_flush(self._FILE)
+
+    -- flush file
+    ok, errors = io.file_flush(self._FILE)
     if not ok and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end
 
 -- this file is a tty?
 function _file:isatty()
-    if not self._FILE then
-        return false, string.format("file(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return nil, errors
     end
-    local ok, errors = io.file_isatty(self._FILE)
+
+    -- is a tty?
+    ok, errors = io.file_isatty(self._FILE)
     if ok == nil and errors then
-        errors = string.format("file(%s): %s", self:name(), errors)
+        errors = string.format("%s: %s", self, errors)
     end
     return ok, errors
 end
 
--- iterator of lines
-function _file._lines_iter(data)
-    local l = data.file:read("l", data.opt)
-    if not l and data.opt.close_on_finished then
-        data.file:close()
+-- ensure the file is opened
+function _file:_ensure_opened()
+    if not self._FILE then
+        return false, string.format("%s: has been closed!", self)
     end
-    return l
+    return true
 end
 
--- read all lines from a file
+-- read all lines from file
 function _file:lines(opt)
-    return _file._lines_iter, { file = assert(self), opt = opt or {} }
+    opt = opt or {}
+    return function()
+        local l = self:read("l", opt)
+        if not l and opt.close_on_finished then
+            self:close()
+        end
+        return l
+    end
 end
 
 -- print file
@@ -245,14 +295,19 @@ end
 -- @return          ok, errors
 --
 function _filelock:lock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- lock it
     if self._LOCKED_NUM > 0 or io.filelock_lock(self._LOCK, opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
-        return false, string.format("filelock(%s): lock %s failed!", self:name(), self:path())
+        return false, string.format("%s: lock failed!", self)
     end
 end
 
@@ -263,22 +318,32 @@ end
 -- @return          ok, errors
 --
 function _filelock:trylock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- try lock it
     if self._LOCKED_NUM > 0 or io.filelock_trylock(self._LOCK, opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
-        return false, string.format("filelock(%s): trylock %s failed!", self:name(), self:path())
+        return false, string.format("%s: trylock failed!", self)
     end
 end
 
 -- unlock file
 function _filelock:unlock(opt)
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
+
+    -- unlock it
     if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self._LOCK)) then
         if self._LOCKED_NUM > 0 then
             self._LOCKED_NUM = self._LOCKED_NUM - 1
@@ -287,16 +352,21 @@ function _filelock:unlock(opt)
         end
         return true
     else
-        return false, string.format("filelock(%s): unlock %s failed!", self:name(), self:path())
+        return false, string.format("%s: unlock failed!", self)
     end
 end
 
 -- close filelock
 function _filelock:close()
-    if not self._LOCK then
-        return false, string.format("filelock(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok = io.filelock_close(self._LOCK)
+
+    -- close it
+    ok = io.filelock_close(self._LOCK)
     if ok then
         self._LOCK = nil
         self._LOCKED_NUM = 0
@@ -304,9 +374,21 @@ function _filelock:close()
     return ok
 end
 
+-- ensure the file is opened
+function _filelock:_ensure_opened()
+    if not self._LOCK then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
+end
+
 -- tostring(filelock)
 function _filelock:__tostring()
-    return "filelock: " .. self:name()
+    local str = self:path()
+    if #str > 16 then
+        str = ".." .. str:sub(#str - 16, #str)
+    end
+    return "<filelock: " .. str .. ">"
 end
 
 -- gc(filelock)

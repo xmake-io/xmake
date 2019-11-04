@@ -14,15 +14,15 @@
  *
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
- * @author      OpportunityLiu
- * @file        file_isatty.c
+ * @author      ruki
+ * @file        socket_connect.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "file_isatty"
+#define TB_TRACE_MODULE_NAME    "socket_connect"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,24 +31,43 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * interfaces
  */
 
-// io.file_isatty(file)
-tb_int_t xm_io_file_isatty(lua_State* lua)
+// io.socket_connect(sock, addr, port, family)
+tb_int_t xm_io_socket_connect(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
+    // check socket
     if (!lua_isuserdata(lua, 1)) 
-        xm_io_return_error(lua, "isatty(invalid file)!");
+    {
+        lua_pushnumber(lua, -1);
+        lua_pushliteral(lua, "invalid socket!");
+        return 2;
+    }
 
-    // get file
-    xm_io_file_t* file = (xm_io_file_t*)lua_touserdata(lua, 1);
-    tb_check_return_val(file, 0);
+    // get socket
+    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_check_return_val(sock, 0);
 
-    // is tty?
-    lua_pushboolean(lua, xm_io_file_is_tty(file));
+    // get address
+    tb_char_t const* address = lua_tostring(lua, 2);
+    tb_assert_and_check_return_val(address, 0);
+
+    // get port
+    tb_uint16_t port = (tb_uint16_t)luaL_checknumber(lua, 3);
+
+    // get family
+    tb_uint8_t family = (tb_uint8_t)luaL_checknumber(lua, 4);
+
+    // init address
+    tb_ipaddr_t addr;
+    tb_ipaddr_set(&addr, address, port, family);
+
+    // connect socket
+    lua_pushnumber(lua, (tb_int_t)tb_socket_connect(sock, &addr));
     return 1;
 }
+

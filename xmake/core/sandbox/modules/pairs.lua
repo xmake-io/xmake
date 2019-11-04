@@ -21,45 +21,18 @@
 -- load modules
 local table = require("base/table")
 
--- pairs
---
--- e.g.
---
--- @code
--- 
--- local t = {a = "a", b = "b", c = "c", d = "d", e = "e", f = "f"}
---
--- for key, val in pairs(t) do
---      print("%s: %s", key, val)
--- end
---
--- for key, val in pairs(t, function (v) return v:upper() end) do
---      print("%s: %s", key, val)
--- end
---  
--- for key, val in pairs(t, function (v, a, b) return v:upper() .. a .. b end, "a", "b") do
---      print("%s: %s", key, val)
--- end
---
--- @endcode
---
-function sandbox_pairs(t, filter, ...)
+-- improve pairs, wrap nil/single value
+function sandbox_pairs(t)
 
-    -- has filter?
-    local has_filter = type(filter) == "function"
-
-    -- init iterator
-    local args = {...}
-    local iter = function (t, i)
-        local k, v = next(t, i)
-        if v and has_filter then
-            v = filter(v, unpack(args))
-        end
-        return k, v
+    -- exists the custom ipairs?
+    if type(t) == "table" and t.pairs then
+        return t:pairs()
     end
 
-    -- return iterator and initialized state
-    return iter, table.wrap(t), nil
+    -- wrap table and return iterator
+    return function (t, i)
+        return next(t, i)
+    end, table.wrap(t), nil
 end
 
 -- load module

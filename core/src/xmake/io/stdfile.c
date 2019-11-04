@@ -167,6 +167,6 @@ tb_int_t xm_io_stdfile(lua_State* lua)
         lua_pushlightuserdata(lua, (tb_pointer_t)file);
         return 1;
     }
-    else xm_io_file_return_error(lua, "invalid stdfile type!");
+    else xm_io_return_error(lua, "invalid stdfile type!");
 }
 

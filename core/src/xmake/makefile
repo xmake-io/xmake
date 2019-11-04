@@ -60,6 +60,19 @@ xmake_C_FILES 			+= \
 						io/filelock_unlock \
 						io/filelock_trylock \
 						io/filelock_close \
+						io/socket_open \
+						io/socket_rawfd \
+						io/socket_wait \
+						io/socket_bind \
+						io/socket_listen \
+						io/socket_accept \
+						io/socket_connect \
+						io/socket_send \
+						io/socket_sendto \
+						io/socket_sendfile \
+						io/socket_recv \
+						io/socket_recvfrom \
+						io/socket_close \
 						path/relative \
 						path/absolute \
 						path/translate \

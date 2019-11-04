@@ -7,9 +7,6 @@ target("demo")
     -- make as a binary
     set_kind("binary")
 
-    -- set basename of target file
-    set_basename("xmake")
-
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 
@@ -30,6 +27,7 @@ target("demo")
     -- add links
     if is_plat("windows") then
         add_links("ws2_32", "advapi32", "shell32")
+        add_ldflags("/export:malloc", "/export:free")
     elseif is_plat("android") then
         add_links("m", "c")
     elseif is_plat("macosx") then
@@ -49,6 +47,6 @@ target("demo")
 
     -- copy target to the build directory
     after_build(function (target)
-        os.cp(target:targetfile(), "$(buildir)")
+        os.cp(target:targetfile(), "$(buildir)/xmake" .. (is_plat("windows") and ".exe" or ""))
     end)
 

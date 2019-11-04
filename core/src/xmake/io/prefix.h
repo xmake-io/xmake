@@ -33,8 +33,8 @@
 #define xm_io_file_is_std(file)           ((file)->type != XM_IO_FILE_TYPE_FILE)
 #define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
 
-// return file error 
-#define xm_io_file_return_error(lua, error)       \
+// return io error 
+#define xm_io_return_error(lua, error)       \
     do                                            \
     {                                             \
         lua_pushnil(lua);                         \
