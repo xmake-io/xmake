@@ -20,6 +20,7 @@
 
 -- define module
 local socket      = socket or {}
+local _poller     = _poller or {}
 local _instance   = _instance or {}
 
 -- load modules
@@ -517,6 +518,45 @@ function _instance:__gc()
     if self._SOCK and io.socket_close(self._SOCK) then
         self._SOCK = nil
     end
+end
+
+-- insert socket events to poller
+function _poller:insert(sock, events)
+
+    -- ensure opened
+    local ok, errors = sock:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- insert it
+    return io.poller_insert(sock._SOCK, events)
+end
+
+-- modify socket events in poller
+function _poller:modify(sock, events)
+
+    -- ensure opened
+    local ok, errors = sock:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- modify it
+    return io.poller_modify(sock._SOCK, events)
+end
+
+-- remove socket from poller
+function _poller:remove(sock)
+
+    -- ensure opened
+    local ok, errors = sock:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- remove it
+    return io.poller_remove(sock._SOCK)
 end
 
 -- open a socket

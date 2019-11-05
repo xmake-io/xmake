@@ -60,6 +60,10 @@ xmake_C_FILES 			+= \
 						io/filelock_unlock \
 						io/filelock_trylock \
 						io/filelock_close \
+						io/poller \
+						io/poller_insert \
+						io/poller_remove \
+						io/poller_modify \
 						io/socket_open \
 						io/socket_rawfd \
 						io/socket_wait \
