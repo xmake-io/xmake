@@ -520,6 +520,21 @@ function _instance:__gc()
     end
 end
 
+-- get socket events from poller
+function _poller:events(sock)
+    return self._CACHE and self._CACHE[sock] or nil
+end
+
+-- set socket events to poller
+function _poller:events_set(sock, events)
+    local cache = self._CACHE 
+    if not cache then
+        cache = {}
+        self._CACHE = cache
+    end
+    cache[sock] = events
+end
+
 -- insert socket events to poller
 function _poller:insert(sock, events)
 
@@ -530,7 +545,13 @@ function _poller:insert(sock, events)
     end
 
     -- insert it
-    return io.poller_insert(sock._SOCK, events)
+    if not io.poller_insert(sock._SOCK, events) then
+        return false, string.format("insert %s events(%d) to poller failed!", sock, events)
+    end
+
+    -- save this socket events and save sock/ref for gc
+    self:events_set(sock, events)
+    return true
 end
 
 -- modify socket events in poller
@@ -543,7 +564,13 @@ function _poller:modify(sock, events)
     end
 
     -- modify it
-    return io.poller_modify(sock._SOCK, events)
+    if not io.poller_modify(sock._SOCK, events) then
+        return false, string.format("modify %s events(%d) to poller failed!", sock, events)
+    end
+
+    -- update this socket events 
+    self:events_set(sock, events)
+    return true
 end
 
 -- remove socket from poller
@@ -556,7 +583,13 @@ function _poller:remove(sock)
     end
 
     -- remove it
-    return io.poller_remove(sock._SOCK)
+    if not io.poller_remove(sock._SOCK) then
+        return false, string.format("remove %s from poller failed!", sock)
+    end
+
+    -- remove this socket events
+    self:events_set(sock, nil)
+    return true
 end
 
 -- open a socket
