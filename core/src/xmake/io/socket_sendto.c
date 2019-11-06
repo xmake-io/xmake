@@ -43,7 +43,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     // check socket
     if (!lua_isuserdata(lua, 1)) 
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
@@ -77,7 +77,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     }
     if (!data || !size)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid data(%p) and size(%zu)!", data, size);
         return 2;
     }
@@ -87,7 +87,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     tb_uint16_t      port = (tb_uint16_t)luaL_checknumber(lua, 4);
     if (!addr || !port)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid address!");
         return 2;
     }
@@ -101,6 +101,6 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
 
     // send data
     tb_long_t real = tb_socket_usend(sock, &ipaddr, data, size);
-    lua_pushnumber(lua, (tb_int_t)real);
+    lua_pushinteger(lua, (tb_int_t)real);
     return 1;
 }

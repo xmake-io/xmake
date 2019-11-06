@@ -43,7 +43,7 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     // check socket
     if (!lua_isuserdata(lua, 1)) 
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
@@ -77,7 +77,7 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     }
     if (!data || !size)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid data(%p) and size(%zu)!", data, size);
         return 2;
     }
@@ -87,7 +87,7 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     if (lua_isnumber(lua, 3)) start = (tb_long_t)lua_tonumber(lua, 3);
     if (start < 1 || start > size)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid start position(%ld)!", start);
         return 2;
     }
@@ -97,13 +97,13 @@ tb_int_t xm_io_socket_send(lua_State* lua)
     if (lua_isnumber(lua, 4)) last = (tb_long_t)lua_tonumber(lua, 4);
     if (last < start - 1 || last > size + start - 1)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid last position(%ld)!", last);
         return 2;
     }
 
     // send data
     tb_long_t real = tb_socket_send(sock, data + start - 1, last - start + 1);
-    lua_pushnumber(lua, (tb_int_t)real);
+    lua_pushinteger(lua, (tb_int_t)real);
     return 1;
 }

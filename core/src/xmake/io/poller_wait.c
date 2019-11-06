@@ -32,10 +32,27 @@
 #include "poller.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * private implementation
+ */
+static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_socket_ref_t sock, tb_size_t events, tb_cpointer_t priv)
+{
+    // check
+    lua_State* lua = (lua_State*)priv;
+    tb_assert_and_check_return(lua);
+
+    // save socket and events
+    lua_newtable(lua);
+    lua_pushlightuserdata(lua, (tb_pointer_t)sock);
+    lua_rawseti(lua, -2, 1);
+    lua_pushinteger(lua, (tb_int_t)events);
+    lua_rawseti(lua, -2, 2);
+}
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-// io.poller_wait(sock, events)
+// local events, count = io.poller_wait(timeout)
 tb_int_t xm_io_poller_wait(lua_State* lua)
 {
     // check
@@ -45,11 +62,31 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
     if (!lua_isuserdata(lua, 1)) 
         return 0;
 
-    // get socket
-    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
-    tb_check_return_val(sock, 0);
+    // get timeout
+    tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 1);
 
-    // TODO
-    return 0;
+    // wait it
+    lua_newtable(lua);
+    tb_long_t count = tb_poller_wait(xm_io_poller(), xm_io_poller_event, timeout);
+    if (count > 0)
+    {
+        lua_rawseti(lua, -2, (tb_int_t)count);
+        lua_pushinteger(lua, (tb_int_t)count);
+        return 2;
+    } 
+    else if (!count)
+    {
+        // timeout
+        lua_pop(lua, 1);
+        lua_pushnil(lua);
+        lua_pushinteger(lua, 0);
+        return 2;
+    }
+
+    // failed
+    lua_pop(lua, 1);
+    lua_pushnil(lua);
+    lua_pushinteger(lua, -1);
+    return 2;
 }
 

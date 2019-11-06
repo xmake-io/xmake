@@ -43,7 +43,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
     // check socket
     if (!lua_isuserdata(lua, 1)) 
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
         return 2;
     }
@@ -59,7 +59,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
     if (lua_isnumber(lua, 2)) size = (tb_long_t)lua_tonumber(lua, 2);
     if (size < 0)
     {
-        lua_pushnumber(lua, -1);
+        lua_pushinteger(lua, -1);
         lua_pushfstring(lua, "invalid size(%ld)!", size);
         return 2;
     }
@@ -69,7 +69,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
         data = tb_malloc_bytes(size);
         if (!data)
         {
-            lua_pushnumber(lua, -1);
+            lua_pushinteger(lua, -1);
             lua_pushfstring(lua, "malloc(%ld) failed!", size);
             return 2;
         }
@@ -80,7 +80,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
     tb_ipaddr_clear(&ipaddr);
     tb_int_t    retn = 1;
     tb_long_t   real = tb_socket_urecv(sock, &ipaddr, data, size);
-    lua_pushnumber(lua, (tb_int_t)real);
+    lua_pushinteger(lua, (tb_int_t)real);
     if (real > 0)
     {
         retn = 2;
@@ -91,7 +91,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
             if (ipstr) 
             {
                 lua_pushstring(lua, ipstr);
-                lua_pushnumber(lua, (tb_int_t)tb_ipaddr_port(&ipaddr));
+                lua_pushinteger(lua, (tb_int_t)tb_ipaddr_port(&ipaddr));
                 retn = 4;
             }
         }

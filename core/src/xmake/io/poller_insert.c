@@ -53,7 +53,7 @@ tb_int_t xm_io_poller_insert(lua_State* lua)
     tb_size_t events = (tb_size_t)luaL_checknumber(lua, 2);
 
     // insert events to poller
-    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(), sock, events, tb_null));
+    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(), sock, events, lua));
     return 1;
 }
 

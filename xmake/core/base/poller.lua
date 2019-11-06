@@ -97,5 +97,22 @@ function poller:remove(sock)
     return true
 end
 
+-- wait socket events in poller
+function poller:wait(timeout)
+
+    -- wait it
+    local sockevents, count = io.poller_wait(timeout or -1) 
+    if count < 0 then
+        return -1, "wait events in poller failed!"
+    end
+
+    -- TODO, wrap socket
+    if sockevents then
+        for i, v in ipairs(sockevents) do
+        end
+    end
+    return count, sockevents
+end
+
 -- return module
 return poller
