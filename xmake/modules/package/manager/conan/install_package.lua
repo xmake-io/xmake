@@ -157,6 +157,7 @@ function main(name, opt)
                    x86           = "x86",
                    armv7         = "armv7",
                    armv7s        = "armv7s",
+                   arm64         = "armv8",  -- for iphoneos
                    ["arm64-v8a"] = "armv8",
                    mips          = "mips",
                    mips64        = "mips64"}
@@ -188,6 +189,18 @@ function main(name, opt)
             table.insert(argv, "-s")
             table.insert(argv, "compiler.runtime=" .. opt.vs_runtime)
         end
+    elseif opt.plat == "iphoneos" then
+        -- TODO
+        local target_minver = config.get("target_minver")
+        if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then 
+            target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
+        end
+        if target_minver then
+            table.insert(argv, "-s")
+            table.insert(argv, "os.version=" .. target_minver)
+        end
+    elseif opt.plat == "android" then
+        -- TODO
     end
 
     -- set custom settings

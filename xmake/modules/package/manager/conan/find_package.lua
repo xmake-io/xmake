@@ -41,6 +41,7 @@ function _conan_get_arch(opt)
                    x86           = "x86",
                    armv7         = "armv7",
                    armv7s        = "armv7s",
+                   arm64         = "armv8",
                    ["arm64-v8a"] = "armv8",
                    mips          = "mips",
                    mips64        = "mips64"}
@@ -72,7 +73,7 @@ function main(name, opt)
     local plat = _conan_get_plat(opt)
     local arch = _conan_get_arch(opt)
     local mode = _conan_get_mode(opt)
-    if not plat and not arch and not mode then
+    if not plat or not arch or not mode then
         return 
     end
 
