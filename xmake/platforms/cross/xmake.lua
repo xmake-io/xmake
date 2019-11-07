@@ -24,6 +24,9 @@ platform("cross")
     -- set hosts
     set_hosts("macosx", "linux", "windows")
 
+    -- set archs
+    set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64")
+
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
 

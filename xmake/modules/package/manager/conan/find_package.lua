@@ -29,17 +29,22 @@ end
 
 -- get conan platform 
 function _conan_get_plat(opt)
-    local plats = {macosx = "Macos", windows = "Windows", linux = "Linux"}
+    local plats = {macosx = "Macos", windows = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
     return plats[opt.plat]
 end
 
 -- get conan architecture 
 function _conan_get_arch(opt)
-    if opt.plat == "windows" then
-        return opt.arch == "x64" and "x86_64" or "x86"
-    else
-        return opt.arch == "i386" and "x86" or opt.arch
-    end
+    local archs = {x86_64        = "x86_64",
+                   x64           = "x86_64",
+                   i386          = "x86",
+                   x86           = "x86",
+                   armv7         = "armv7",
+                   armv7s        = "armv7s",
+                   ["arm64-v8a"] = "armv8",
+                   mips          = "mips",
+                   mips64        = "mips64"}
+    return archs[opt.arch]
 end
 
 -- get conan mode

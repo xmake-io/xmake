@@ -141,25 +141,29 @@ function main(name, opt)
     end
 
     -- set platform
+    local plats = {macosx = "Macos", windows = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
     table.insert(argv, "-s")
-    if opt.plat == "macosx" then
-        table.insert(argv, "os=Macos")
-    elseif opt.plat == "linux" then
-        table.insert(argv, "os=Linux")
-    elseif opt.plat == "windows" then
-        table.insert(argv, "os=Windows")
+    local plat = plats[opt.plat]
+    if plat then
+        table.insert(argv, "os=" .. plat)
     else
         raise("cannot install package(%s) on platform(%s)!", name, opt.plat)
     end
 
     -- set architecture
+    local archs = {x86_64        = "x86_64",
+                   x64           = "x86_64",
+                   i386          = "x86",
+                   x86           = "x86",
+                   armv7         = "armv7",
+                   armv7s        = "armv7s",
+                   ["arm64-v8a"] = "armv8",
+                   mips          = "mips",
+                   mips64        = "mips64"}
     table.insert(argv, "-s")
-    if opt.arch == "x86_64" or opt.arch == "x64" then
-        table.insert(argv, "arch=x86_64")
-    elseif opt.arch == "i386" or opt.arch == "x86" then
-        table.insert(argv, "arch=x86")
-    elseif opt.plat == "linux" then
-        table.insert(argv, "arch=" .. opt.arch)
+    local arch = archs[opt.arch]
+    if arch then
+        table.insert(argv, "arch=" .. arch)
     else
         raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
     end
