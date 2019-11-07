@@ -158,6 +158,8 @@ function main(name, opt)
         table.insert(argv, "arch=x86_64")
     elseif opt.arch == "i386" or opt.arch == "x86" then
         table.insert(argv, "arch=x86")
+    elseif opt.plat == "linux" then
+        table.insert(argv, "arch=" .. opt.arch)
     else
         raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
     end
