@@ -15,6 +15,7 @@
 * Improve `xmake create` action
 * [#589](https://github.com/xmake-io/xmake/issues/589): Improve the default build jobs number to optimize build speed
 * [#598](https://github.com/xmake-io/xmake/issues/598): Improve find_package to support .tbd libraries on macOS
+* [#615](https://github.com/xmake-io/xmake/issues/615): Support to install and use other archs and ios conan packages
 
 ### Bugs fixed
 
@@ -661,6 +662,7 @@
 * 改进`xmake create`创建模板工程
 * [#589](https://github.com/xmake-io/xmake/issues/589): 改进默认的构建任务数，充分利用cpu core来提速整体编译速度
 * [#598](https://github.com/xmake-io/xmake/issues/598): 改进`find_package`支持在macOS上对.tbd系统库文件的查找
+* [#615](https://github.com/xmake-io/xmake/issues/615): 支持安装和使用其他arch和ios的conan包
 
 ### Bugs修复
 

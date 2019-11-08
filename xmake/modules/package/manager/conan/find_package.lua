@@ -40,9 +40,10 @@ function _conan_get_arch(opt)
                    i386          = "x86",
                    x86           = "x86",
                    armv7         = "armv7",
-                   armv7s        = "armv7s",
-                   arm64         = "armv8",
-                   ["arm64-v8a"] = "armv8",
+                   ["armv7-a"]   = "armv7",  -- for android
+                   armv7s        = "armv7s", -- for iphoneos
+                   arm64         = "armv8",  -- for iphoneos
+                   ["arm64-v8a"] = "armv8",  -- for android
                    mips          = "mips",
                    mips64        = "mips64"}
     return archs[opt.arch]

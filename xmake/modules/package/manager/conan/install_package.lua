@@ -41,6 +41,7 @@ function _conan_generate_conanfile(name, opt)
     local imports        = table.wrap(opt.imports)
     local build_requires = table.wrap(opt.build_requires)
 
+    -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
     -- generate it
     io.writefile("conanfile.txt", ([[
 [generators]
@@ -156,9 +157,10 @@ function main(name, opt)
                    i386          = "x86",
                    x86           = "x86",
                    armv7         = "armv7",
-                   armv7s        = "armv7s",
+                   ["armv7-a"]   = "armv7",  -- for android
+                   armv7s        = "armv7s", -- for iphoneos
                    arm64         = "armv8",  -- for iphoneos
-                   ["arm64-v8a"] = "armv8",
+                   ["arm64-v8a"] = "armv8",  -- for android
                    mips          = "mips",
                    mips64        = "mips64"}
     table.insert(argv, "-s")
@@ -190,7 +192,6 @@ function main(name, opt)
             table.insert(argv, "compiler.runtime=" .. opt.vs_runtime)
         end
     elseif opt.plat == "iphoneos" then
-        -- TODO
         local target_minver = config.get("target_minver")
         if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then 
             target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
@@ -200,7 +201,11 @@ function main(name, opt)
             table.insert(argv, "os.version=" .. target_minver)
         end
     elseif opt.plat == "android" then
-        -- TODO
+        local ndk_sdkver = config.get("ndk_sdkver")
+        if ndk_sdkver then
+            table.insert(argv, "-s")
+            table.insert(argv, "os.api_level=" .. ndk_sdkver)
+        end
     end
 
     -- set custom settings
