@@ -21,9 +21,26 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.platform.platform")
 import("lib.detect.find_tool")
 import("devel.git")
 import("net.fasturl")
+
+-- get build env
+function _conan_get_build_env(name, plat)
+    local value = config.get(name)
+    if value == nil then
+        value = platform.get(name, plat)
+    end
+    if value == nil then
+        value = platform.tool(name, plat)
+    end
+    value = table.unique(table.wrap(value))
+    if #value > 0 then
+        value = table.unwrap(value)
+        return value
+    end
+end
 
 -- get build directory
 function _conan_get_build_directory(name)
@@ -43,18 +60,26 @@ function _conan_generate_conanfile(name, opt)
 
     -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
     -- generate it
-    io.writefile("conanfile.txt", ([[
-[generators]
-xmake
-[requires]
-%s
-[options]
-%s
-[imports]
-%s
-[build_requires]
-%s
-    ]]):format(name, table.concat(options, "\n"), table.concat(imports, "\n"), table.concat(build_requires, "\n")))
+    local conanfile = io.open("conanfile.txt", "w")
+    if conanfile then
+        conanfile:print("[generators]")
+        conanfile:print("xmake")
+        conanfile:print("[requires]")
+        conanfile:print("%s", name)
+        if #options > 0 then
+            conanfile:print("[options]")
+            conanfile:print("%s", table.concat(options, "\n"))
+        end
+        if #imports > 0 then
+            conanfile:print("[imports]")
+            conanfile:print("%s", table.concat(imports, "\n"))
+        end
+        if #build_requires > 0 then
+            conanfile:print("[build_requires]")
+            conanfile:print("%s", table.concat(build_requires, "\n"))
+        end
+        conanfile:close()
+    end
 end
 
 -- install xmake generator
@@ -218,6 +243,36 @@ function main(name, opt)
     if opt.remote then
         table.insert(argv, "-r")
         table.insert(argv, opt.remote)
+    end
+
+    -- TODO set environments
+    if opt.plat == "android" then
+        local envs = {}
+        local cflags   = table.join(table.wrap(_conan_get_build_env("cxflags", opt.plat)), _conan_get_build_env("cflags", opt.plat))
+        local cxxflags = table.join(table.wrap(_conan_get_build_env("cxflags", opt.plat)), _conan_get_build_env("cxxflags", opt.plat))
+        envs.CC        = _conan_get_build_env("cc", opt.plat)
+        envs.CXX       = _conan_get_build_env("cxx", opt.plat)
+        envs.AS        = _conan_get_build_env("as", opt.plat)
+        envs.AR        = _conan_get_build_env("ar", opt.plat)
+        envs.LD        = _conan_get_build_env("ld", opt.plat)
+        envs.LDSHARED  = _conan_get_build_env("sh", opt.plat)
+        envs.CPP       = _conan_get_build_env("cpp", opt.plat)
+        envs.RANLIB    = _conan_get_build_env("ranlib", opt.plat)
+        envs.CFLAGS    = table.concat(cflags, ' ')
+        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.ASFLAGS   = table.concat(table.wrap(_conan_get_build_env("asflags", opt.plat)), ' ')
+        envs.ARFLAGS   = table.concat(table.wrap(_conan_get_build_env("arflags", opt.plat)), ' ')
+        envs.LDFLAGS   = table.concat(table.wrap(_conan_get_build_env("ldflags", opt.plat)), ' ')
+        envs.SHFLAGS   = table.concat(table.wrap(_conan_get_build_env("shflags", opt.plat)), ' ')
+        local ndk = config.get("ndk")
+        if ndk then
+            table.insert(argv, "-e")
+            table.insert(argv, "CONAN_CMAKE_FIND_ROOT_PATH=" .. path.join(ndk, "sysroot"))
+        end
+        for k, v in pairs(envs) do
+            table.insert(argv, "-e")
+            table.insert(argv, k .. "=" .. v)
+        end
     end
 
     -- do install
