@@ -25,19 +25,19 @@ local poller = poller or {}
 local io     = require("base/io")
 local string = require("base/string")
 
--- get socket events from poller
-function poller:events(sock)
+-- get socket wait data 
+function poller:_waitdata(sock)
     return self._CACHE and self._CACHE[sock] or nil
 end
 
--- set socket events to poller
-function poller:events_set(sock, events)
+-- set socket wait data
+function poller:_waitdata_set(sock, data)
     local cache = self._CACHE 
     if not cache then
         cache = {}
         self._CACHE = cache
     end
-    cache[sock] = events
+    cache[sock] = data
 end
 
 -- insert socket events to poller
@@ -54,8 +54,8 @@ function poller:insert(sock, events)
         return false, string.format("insert %s events(%d) to poller failed!", sock, events)
     end
 
-    -- save this socket events and save sock/ref for gc
-    self:events_set(sock, events)
+    -- save wait data and save sock/ref for gc
+    self:_waitdata_set(sock._SOCK, {sock, events})
     return true
 end
 
@@ -73,8 +73,8 @@ function poller:modify(sock, events)
         return false, string.format("modify %s events(%d) to poller failed!", sock, events)
     end
 
-    -- update this socket events 
-    self:events_set(sock, events)
+    -- update wait data for this socket
+    self:_waitdata_set(sock._SOCK, {sock, events})
     return true
 end
 
@@ -92,8 +92,8 @@ function poller:remove(sock)
         return false, string.format("remove %s from poller failed!", sock)
     end
 
-    -- remove this socket events
-    self:events_set(sock, nil)
+    -- remove wait data for this socket
+    self:_waitdata_set(sock, nil)
     return true
 end
 
@@ -106,12 +106,19 @@ function poller:wait(timeout)
         return -1, "wait events in poller failed!"
     end
 
-    -- TODO, wrap socket
+    -- wrap socket 
+    local results = {}
     if sockevents then
-        for i, v in ipairs(sockevents) do
+        for _, v in ipairs(sockevents) do
+            local sock     = v[1]
+            local events   = v[2]
+            local waitdata = self:_waitdata(sock)
+            if waitdata then
+                results[waitdata[1]] = events
+            end
         end
     end
-    return count, sockevents
+    return count, results
 end
 
 -- return module
