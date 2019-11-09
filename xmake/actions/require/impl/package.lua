@@ -374,8 +374,26 @@ function _load_packages(requires, opt)
             if not package._DEPS then
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
+
+                    -- get the extra configs dependent packages and inherit some builtin configs
+                    local extraconfs = package:extraconf("deps") or {}
+                    if not package:config("shared") then
+                        for _, depstr in ipairs(deps) do
+                            local depconf = extraconfs[depstr]
+                            if not depconf then
+                                depconf = {}
+                                extraconfs[depstr] = depconf
+                            end
+                            depconf.configs = depconf.configs or {}
+                            if depconf.configs.vs_runtime == nil then
+                                depconf.configs.vs_runtime = package:config("vs_runtime")
+                            end
+                        end
+                    end
+
+                    -- load dependent packages
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requires_extra = package:get("__extra_deps"), parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
+                    for _, dep in ipairs(_load_packages(deps, {requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
