@@ -54,7 +54,7 @@ function main(name, opt)
         if not result then
             -- attempt to get includedir variable from pkg-config/xx.pc 
             local varinfo = pkg_config.variables(pcname, "includedir", opt)
-            if varinfo.includedir then
+            if varinfo and varinfo.includedir then
                 result = result or {}
                 result.version = pkg_config.version(pcname, opt)
                 result.includedirs = varinfo.includedir
