@@ -197,9 +197,15 @@ elif [[ "$SHELL" = */bash ]]; then
 fi
 ' >> ~/.xmake/profile
 
-    if   [[ "$SHELL" = */zsh ]]; then write_profile ~/.zshrc
-    elif [[ "$SHELL" = */ksh ]]; then write_profile ~/.kshrc
-    elif [[ "$SHELL" = */bash ]]; then write_profile ~/.bashrc
+    if   [[ "$SHELL" = */zsh ]]; then 
+        write_profile ~/.zshrc
+    elif [[ "$SHELL" = */ksh ]]; then 
+        write_profile ~/.kshrc
+    elif [[ "$SHELL" = */bash ]]; then 
+        write_profile ~/.bashrc
+        if [ "$(uname)" == "Darwin" ]; then
+            write_profile ~/.bash_profile
+        fi
     else write_profile ~/.profile 
     fi
     
