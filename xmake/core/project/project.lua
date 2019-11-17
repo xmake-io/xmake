@@ -291,6 +291,16 @@ function project.file()
     return os.projectfile()
 end
 
+-- get the global rcfile: ~/.xmakerc.lua
+function project.rcfile()
+    local xmakerc = project._XMAKE_RCFILE
+    if xmakerc == nil then
+        xmakerc = os.getenv("XMAKE_RCFILE") or "~/.xmakerc.lua"
+        project._XMAKE_RCFILE = xmakerc
+    end
+    return xmakerc
+end
+
 -- get the project directory
 function project.directory()
     return os.projectdir()
@@ -329,7 +339,16 @@ function project._load(force, disable_filter)
     local interp = project.interpreter()
 
     -- load script
-    local ok, errors = interp:load(project.file())
+    local ok, errors = interp:load(project.file(), {on_load_data = function (data) 
+            local xmakerc_file = project.rcfile()
+            if xmakerc_file and os.isfile(xmakerc_file) then
+                local rcdata = io.readfile(xmakerc_file)
+                if rcdata then
+                    data = rcdata .. "\n" .. data
+                end
+            end
+            return data
+        end})
     if not ok then
         return false, (errors or "load project file failed!")
     end

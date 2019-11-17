@@ -66,6 +66,11 @@ function _loadfile_impl(filepath, mode, opt)
     end
     io.file_close(file)
 
+    -- do on_load()
+    if opt.on_load then
+        data = opt.on_load(data) or data
+    end
+
     -- load script from string
     return load(data, "@" .. displaypath, mode)
 end

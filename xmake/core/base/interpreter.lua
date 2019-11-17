@@ -691,13 +691,17 @@ function interpreter.new()
 end
 
 -- load script file, e.g. xmake.lua 
-function interpreter:load(file)
+--
+-- @param opt   {on_load_data = function (data) return data end}
+--
+function interpreter:load(file, opt)
 
     -- check
     assert(self and self._PUBLIC and self._PRIVATE and file)
 
     -- load the script
-    local script, errors = loadfile(file)
+    opt = opt or {}
+    local script, errors = loadfile(file, "bt", {on_load = opt.on_load_data})
     if not script then
         return nil, errors
     end
