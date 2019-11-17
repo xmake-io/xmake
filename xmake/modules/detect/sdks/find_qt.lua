@@ -97,6 +97,7 @@ function _find_sdkdir(sdkdir, sdkver)
         end
     else
         table.insert(pathes, "~/Qt")
+        table.insert(pathes, "~/Qt*")
     end
 
     -- attempt to find qmake
