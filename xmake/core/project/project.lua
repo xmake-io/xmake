@@ -295,7 +295,13 @@ end
 function project.rcfile()
     local xmakerc = project._XMAKE_RCFILE
     if xmakerc == nil then
-        xmakerc = os.getenv("XMAKE_RCFILE") or "~/.xmakerc.lua"
+        xmakerc = "/etc/xmakerc.lua"
+        if not os.isfile(xmakerc) then
+            xmakerc = "~/.xmakerc.lua"
+            if not os.isfile(xmakerc) then
+                xmakerc = path.join(global.directory(), "xmakerc.lua")
+            end
+        end
         project._XMAKE_RCFILE = xmakerc
     end
     return xmakerc

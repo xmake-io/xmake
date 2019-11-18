@@ -145,6 +145,11 @@ function sandbox_core_project.file()
     return project.file()
 end
 
+-- get the project rcfile
+function sandbox_core_project.rcfile()
+    return project.rcfile()
+end
+
 -- get the project directory
 function sandbox_core_project.directory()
     return project.directory()
