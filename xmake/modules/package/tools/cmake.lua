@@ -89,7 +89,11 @@ function install(package, configs, opt)
     local oldir = os.cd(buildir)
 
     -- init arguments
-    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install")}
+    --
+    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
+    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
+    -- 
+    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DDCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
     if is_plat("windows") and is_arch("x64") then
         table.insert(argv, "-A")
         table.insert(argv, "x64")
