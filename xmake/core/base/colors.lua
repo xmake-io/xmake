@@ -334,6 +334,13 @@ function colors.translate(str, opt)
             nocolors = true
         end
 
+        -- is plain theme? no colors and no emoji
+        local noemoji = not colors.emoji()
+        if theme and theme:name() == "plain" then
+            nocolors = true
+            noemoji = true
+        end
+
         -- get keys
         local keys = colors.color256() and colors._keys256 or colors._keys8
         if colors.truecolor() then
@@ -391,7 +398,7 @@ function colors.translate(str, opt)
                 elseif block:startswith("$") then
                     -- plain text, do not translate emoji
                     table.insert(text_buffer, block:sub(2))
-                elseif colors.emoji() then
+                elseif not noemoji then
                     -- get emoji code
                     local emoji_code = emoji.translate(block)
                     if emoji_code then
