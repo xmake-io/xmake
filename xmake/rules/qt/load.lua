@@ -135,6 +135,10 @@ function main(target, opt)
         end
     end
 
+    -- backup the user syslinks, we need add them behind the qt syslinks
+    local syslinks_user = target:get("syslinks")
+    target:set("syslinks", nil)
+
     -- add qt links and directories
     for _, qt_linkdir in ipairs(target:values("qt.linkdirs")) do
         local linkdir = path.join(qt.sdkdir, qt_linkdir)
@@ -142,7 +146,7 @@ function main(target, opt)
             target:add("linkdirs", linkdir)
         end
     end
-    target:add("links", target:values("qt.links"))
+    target:add("syslinks", target:values("qt.links"))
 
     -- add frameworks
     if opt.frameworks then
@@ -166,14 +170,22 @@ function main(target, opt)
                     target:add("includedirs", path.join(frameworkdir, "Headers"))
                     useframeworks = true
                 else
-                    target:add("links", _link(framework, major))
+                    target:add("syslinks", _link(framework, major))
                     target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                 end
             else 
-                target:add("links", _link(framework, major))
+                target:add("syslinks", _link(framework, major))
                 target:add("includedirs", path.join(qt.sdkdir, "include", framework))
             end
         end
+    end
+
+    -- add some static third-party links if exists
+    target:add("syslinks", _find_static_links(qt.linkdirs, is_plat("windows") and "qt*.lib" or "libqt*.a"))
+
+    -- add user syslinks
+    if syslinks_user then
+        target:add("syslinks", syslinks_user)
     end
 
     -- add includedirs, linkdirs 
@@ -217,7 +229,7 @@ function main(target, opt)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
         target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-g++"))
         target:add("linkdirs", qt.linkdirs)
-        target:add("links", "mingw32")
+        target:add("syslinks", "mingw32")
     elseif is_plat("android") then
         target:set("frameworks", nil)
         target:add("includedirs", path.join(qt.sdkdir, "include"))
@@ -225,9 +237,6 @@ function main(target, opt)
         target:add("rpathdirs", qt.linkdirs)
         target:add("linkdirs", qt.linkdirs)
     end
-
-    -- add some static third-party links if exists
-    target:add("links", _find_static_links(qt.linkdirs, is_plat("windows") and "qt*.lib" or "libqt*.a"))
 
     -- is gui application?
     if opt.gui then
