@@ -141,6 +141,7 @@ function _make_targetinfo(mode, arch, target)
     ,   arch = arch
     ,   plat = config.get("plat")
     ,   vsarch = (arch == "x86" and "Win32" or arch)
+    ,   sdkver = config.get("vs_sdkver")
     }
 
     -- write only if not default
@@ -344,7 +345,9 @@ function main(outputdir, vsinfo)
                     if tgtdir then _target.targetdir = path.relative(tgtdir, _target.vcxprojdir) end
                     _target._sub = _target._sub or {}
                     _target._sub[mode] = _target._sub[mode] or {}
-                    _target._sub[mode][arch] = _make_targetinfo(mode, arch, target)
+                    local tgtinfo = _make_targetinfo(mode, arch, target)
+                    _target._sub[mode][arch] = tgtinfo
+                    _target.sdkver = tgtinfo.sdkver
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
