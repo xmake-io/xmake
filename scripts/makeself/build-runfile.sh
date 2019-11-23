@@ -40,7 +40,7 @@ perl -pi -e "s/#xmake-version#/$version/g" ./lsm
 
 # make run file
 cd $tmpdir
-wget https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -O ./makeself-2.4.0.run
+curl -fsSL https://github.com/megastep/makeself/releases/download/release-2.4.0/makeself-2.4.0.run -o ./makeself-2.4.0.run
 sh ./makeself-2.4.0.run
 ./makeself-2.4.0/makeself.sh \
     --gzip \
