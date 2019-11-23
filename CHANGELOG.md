@@ -7,6 +7,7 @@
 * [#569](https://github.com/xmake-io/xmake/pull/569): Add c++ modules build rules
 * Add `xmake project -k xmakefile` generator
 * [620](https://github.com/xmake-io/xmake/issues/620): Add global `~/.xmakerc.lua` for all projects.
+* [593](https://github.com/xmake-io/xmake/pull/593): Add `core.base.socket` module.
 
 ### Change
 
@@ -655,6 +656,7 @@
 * [#569](https://github.com/xmake-io/xmake/pull/569): 增加对c++模块的实验性支持
 * 添加`xmake project -k xmakefile`生成器
 * [620](https://github.com/xmake-io/xmake/issues/620): 添加全局`~/.xmakerc.lua`配置文件，对所有本地工程生效.
+* [593](https://github.com/xmake-io/xmake/pull/593): 添加`core.base.socket`模块，为下一步远程编译和分布式编译做准备。
 
 ### 改进
 
