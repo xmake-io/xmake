@@ -22,7 +22,6 @@
     <XmakeProjectDir>#projectdir#</XmakeProjectDir>
     <XmakeProjectFile>#projectfile#</XmakeProjectFile>
     <XmakeTarget>#target#</XmakeTarget>
-    <WindowsTargetPlatformVersion>#sdkver#</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="XmakeProgram">
     <XmakeProgramDir Condition="'$(XmakeProgramDir)' == ''">$(XMAKE_PROGRAM_DIR)</XmakeProgramDir>

@@ -93,9 +93,9 @@
       Text="$(XmakeProjectFile) not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in vcxproj file" />
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
-    <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" Importance="High" />
+    <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" />
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
-      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags) $(XmakeTarget)" EchoOff="true" />
+      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
     <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" />
@@ -130,6 +130,7 @@ MSBuild Properties:
     XmakeFilename: $(XmakeFilename)
     XmakeKind: $(XmakeKind)
     XmakeCudaVersion: $(XmakeCudaVersion)
+    XmakeWindowsSdkVersion: $(XmakeWindowsSdkVersion)
     XmakeMfcKind: $(XmakeMfcKind)
     XmakeDefines: $(XmakeDefines)
     XmakeLanguages: $(XmakeLanguages)
