@@ -130,6 +130,7 @@ MSBuild Properties:
     XmakeFilename: $(XmakeFilename)
     XmakeKind: $(XmakeKind)
     XmakeCudaVersion: $(XmakeCudaVersion)
+    XmakeWindowsSdkVersion: $(XmakeWindowsSdkVersion)
     XmakeMfcKind: $(XmakeMfcKind)
     XmakeDefines: $(XmakeDefines)
     XmakeLanguages: $(XmakeLanguages)

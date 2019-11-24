@@ -47,6 +47,10 @@
     <XmakeRebuildFile Condition="'$(XmakeRebuildFile)' == ''">false</XmakeRebuildFile>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(WindowsTargetPlatformVersion)' == '' And '$(XmakeWindowsSdkVersion)' != ''">
+    <WindowsTargetPlatformVersion>$(XmakeWindowsSdkVersion)</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(PlatformToolset)' == ''">
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '10.0'">v100</PlatformToolset>
     <PlatformToolset Condition="'$(VisualStudioVersion)' == '11.0'">v110</PlatformToolset>

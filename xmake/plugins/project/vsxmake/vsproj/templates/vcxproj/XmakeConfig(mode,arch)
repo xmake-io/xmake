@@ -8,6 +8,7 @@
     <XmakeDefines>#defines#</XmakeDefines>
     <XmakeLanguages>#languages#</XmakeLanguages>
     <XmakeCudaVersion>#cudaver#</XmakeCudaVersion>
+    <XmakeWindowsSdkVersion>#sdkver#</XmakeWindowsSdkVersion>
     <XmakeMfcKind>#mfckind#</XmakeMfcKind>
     <XmakeRunEnvs>#runenvs#</XmakeRunEnvs>
     <XmakeConfigFlags>#configflags#</XmakeConfigFlags>
