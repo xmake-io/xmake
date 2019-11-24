@@ -125,10 +125,18 @@ function _trycp(file, target, targetname)
     targetname = targetname or path.filename(file)
     local targetfile = path.join(target, targetname)
     if os.isfile(targetfile) then
-        dprint("skipped file %s", path.relative(targetfile))
+        dprint("skipped file %s since the file already exists", path.relative(targetfile))
         return
     end
-    os.cp(file,targetfile)
+    os.cp(file, targetfile)
+end
+
+function _writefileifneeded(file, content)
+    if os.isfile(file) and io.readfile(file) == content then
+        dprint("skipped file %s since the file has the same content", path.relative(file))
+        return
+    end
+    io.writefile(file, content)
 end
 
 -- make
@@ -157,7 +165,7 @@ function make(version)
 
         -- write solution file
         local sln = path.join(info.solution_dir, info.slnfile .. ".sln")
-        io.writefile(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidersln))
+        _writefileifneeded(sln, render(template_sln, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidersln))
 
         -- add solution custom file
         _trycp(template_props, info.solution_dir)
@@ -169,10 +177,10 @@ function make(version)
 
             -- write project file
             local proj = path.join(proj_dir, target .. ".vcxproj")
-            io.writefile(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
+            _writefileifneeded(proj, render(template_vcx, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
 
             local projfil = path.join(proj_dir, target .. ".vcxproj.filters")
-            io.writefile(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
+            _writefileifneeded(projfil, render(template_fil, "#([A-Za-z0-9_,%.%*%(%)]+)#", paramsprovidertarget))
 
             -- add project custom file
             _trycp(template_props, proj_dir)
