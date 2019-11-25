@@ -13,6 +13,7 @@ tbox_CONFIG 			= n
 # core files
 tbox_C_FILES 			+= \
 						tbox/src/tbox/tbox \
+						tbox/src/tbox/hash/md5 \
 						tbox/src/tbox/hash/bkdr \
 						tbox/src/tbox/hash/fnv32 \
 						tbox/src/tbox/hash/adler32 \
