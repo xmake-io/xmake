@@ -34,7 +34,7 @@ function _make_for_target(target)
     local configprefix = target:configprefix()
 
     -- open the file
-    local file = _g.configfiles[configheader] or io.open(path.join(os.tmpdir(), hash.uuid(configheader)), "w")
+    local file = _g.configfiles[configheader] or io.open(path.join(os.tmpdir(), hash.uuid4(configheader)), "w")
 
     -- make the head
     if _g.configfiles[configheader] then file:print("") end
@@ -161,7 +161,7 @@ function main()
         configfile_tmp:close()
 
         -- update file if the content is changed
-        local configpath_tmp = path.join(os.tmpdir(), hash.uuid(configpath))
+        local configpath_tmp = path.join(os.tmpdir(), hash.uuid4(configpath))
         if os.isfile(configpath_tmp) then
             if os.isfile(configpath) then
                 if io.readfile(configpath_tmp) ~= io.readfile(configpath) then

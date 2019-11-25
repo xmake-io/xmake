@@ -666,7 +666,7 @@ function _instance:buildhash()
         if configs then
             str = str .. string.serialize(configs, true)
         end
-        self._BUILDHASH = hash.uuid(str):gsub('-', ''):lower()
+        self._BUILDHASH = hash.uuid4(str):gsub('-', ''):lower()
     end
     return self._BUILDHASH
 end

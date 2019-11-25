@@ -24,7 +24,7 @@ import("core.project.config")
 
 -- get build directory
 function _get_buildir()
-    _g.buildir = _g.buildir or ("build_" .. hash.uuid():split('%-')[1])
+    _g.buildir = _g.buildir or ("build_" .. hash.uuid4():split('%-')[1])
     return _g.buildir
 end
 

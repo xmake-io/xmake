@@ -82,7 +82,7 @@ xmake_C_FILES 			+= \
 						path/absolute \
 						path/translate \
 						path/is_absolute \
-						hash/uuid \
+						hash/uuid4 \
 						hash/sha256 \
 						string/trim \
 						string/convert \

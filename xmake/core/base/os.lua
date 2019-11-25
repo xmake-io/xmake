@@ -537,7 +537,7 @@ end
 
 -- generate the temporary file path
 function os.tmpfile(key)
-    return path.join(os.tmpdir(), "_" .. (hash.uuid(key):gsub("-", "")))                                                        
+    return path.join(os.tmpdir(), "_" .. (hash.uuid4(key):gsub("-", "")))                                                        
 end
 
 -- run command

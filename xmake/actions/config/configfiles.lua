@@ -124,7 +124,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         end
     else
         -- generate to the temporary file first
-        local dstfile_tmp = path.join(os.tmpdir(), hash.uuid(srcfile))
+        local dstfile_tmp = path.join(os.tmpdir(), hash.uuid4(srcfile))
         os.tryrm(dstfile_tmp)
         os.cp(srcfile, dstfile_tmp)
 

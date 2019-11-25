@@ -25,7 +25,7 @@ local raise = require("sandbox/modules/raise")
 local sandbox_hash = sandbox_hash or {}
 
 -- make a new uuid
-function sandbox_hash.uuid(name)
+function sandbox_hash.uuid4(name)
     return sandbox_hash.uuid4(name)
 end
 

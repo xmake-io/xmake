@@ -39,12 +39,12 @@ function _make_projects(slnfile, vsinfo)
         if not target:isphony() then
 
             -- enter project
-            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid(targetname))
+            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
 
             -- add dependences
             for _, dep in ipairs(target:get("deps")) do
                 slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:print("{%s} = {%s}", hash.uuid(dep), hash.uuid(dep))
+                slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
                 slnfile:leave("EndProjectSection")
             end
 
@@ -75,8 +75,8 @@ function _make_global(slnfile, vsinfo)
         if not target:isphony() then
             for _, mode in ipairs(vsinfo.modes) do
                 for _, arch in ipairs(vsinfo.archs) do
-                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
-                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid(targetname), mode, arch, mode, arch)
+                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
+                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
                 end
             end
         end

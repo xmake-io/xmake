@@ -280,7 +280,7 @@ function main(outputdir, vsinfo)
     end
 
     vsinfo.xmake_info = format("xmake version %s", xmake.version())
-    vsinfo.solution_id = hash.uuid(project.directory() .. vsinfo.solution_dir)
+    vsinfo.solution_id = hash.uuid4(project.directory() .. vsinfo.solution_dir)
     vsinfo.vs_version = vsinfo.project_version .. ".0"
 
     -- init modes
@@ -337,7 +337,7 @@ function main(outputdir, vsinfo)
                     -- init target info
                     _target.target = targetname
                     _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
-                    _target.target_id = hash.uuid(targetname)
+                    _target.target_id = hash.uuid4(targetname)
                     _target.kind = target:targetkind()
                     _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
                     _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
@@ -382,7 +382,7 @@ function main(outputdir, vsinfo)
                     dirs[dir] =
                     {
                         dir = _escape(dir),
-                        dir_id = hash.uuid(dir)
+                        dir_id = hash.uuid4(dir)
                     }
                 end
                 dir = path.directory(dir)

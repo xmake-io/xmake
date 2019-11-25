@@ -84,7 +84,7 @@ function install(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = "build_" .. hash.uuid():split('%-')[1]
+    local buildir = "build_" .. hash.uuid4():split('%-')[1]
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 

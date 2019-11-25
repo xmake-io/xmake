@@ -39,12 +39,12 @@ function _make_projects(slnfile, vsinfo)
         if not target:isphony() then 
 
             -- enter project
-            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid(targetname))
+            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
 
             -- add dependences
             for _, dep in ipairs(target:get("deps")) do
                 slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:print("{%s} = {%s}", hash.uuid(dep), hash.uuid(dep))
+                slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
                 slnfile:leave("EndProjectSection")
             end
 
@@ -69,8 +69,8 @@ function _make_global(slnfile, vsinfo)
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
-            slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", hash.uuid(targetname))
-            slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", hash.uuid(targetname))
+            slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", hash.uuid4(targetname))
+            slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", hash.uuid4(targetname))
         end
     end
     slnfile:leave("EndGlobalSection")

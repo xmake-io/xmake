@@ -187,7 +187,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
 
     -- make Globals
     vcxprojfile:enter("<PropertyGroup Label=\"Globals\">")
-        vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", hash.uuid(targetname))
+        vcxprojfile:print("<ProjectGuid>{%s}</ProjectGuid>", hash.uuid4(targetname))
         vcxprojfile:print("<RootNamespace>%s</RootNamespace>", targetname)
         if vsinfo.vstudio_version >= "2015" then
             vcxprojfile:print("<WindowsTargetPlatformVersion>%s</WindowsTargetPlatformVersion>", _get_platform_sdkver(target, vsinfo))
