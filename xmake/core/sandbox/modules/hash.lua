@@ -26,27 +26,24 @@ local sandbox_hash = sandbox_hash or {}
 
 -- make a new uuid
 function sandbox_hash.uuid(name)
+    return sandbox_hash.uuid4(name)
+end
 
-    -- make it
-    local uuid = hash.uuid(name)
+-- make a new uuid v4
+function sandbox_hash.uuid4(name)
+    local uuid = hash.uuid4(name)
     if not uuid then
         raise("cannot make uuid %s", name)
     end
-
-    -- ok?
     return uuid
 end
 
 -- make sha256 from the given file
 function sandbox_hash.sha256(file)
-
-    -- make it
     local sha256 = hash.sha256(file)
     if not sha256 then
         raise("cannot make sha256 for %s", file)
     end
-
-    -- ok?
     return sha256
 end
 

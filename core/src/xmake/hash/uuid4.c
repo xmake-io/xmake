@@ -15,14 +15,14 @@
  * Copyright (C) 2015 - 2019, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        uuid.c
+ * @file        uuid4.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "uuid"
+#define TB_TRACE_MODULE_NAME                "uuid4"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -33,7 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_hash_uuid(lua_State* lua)
+tb_int_t xm_hash_uuid4(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
@@ -41,10 +41,8 @@ tb_int_t xm_hash_uuid(lua_State* lua)
     // get the name  
     tb_char_t const* name = luaL_optstring(lua, 1, tb_null);
 
-    // make uuid
+    // make uuid, use version 4 
     tb_char_t uuid[37];
-	lua_pushstring(lua, tb_uuid_make_cstr(uuid, name));
-
-    // ok
+	lua_pushstring(lua, tb_uuid4_make_cstr(uuid, name));
     return 1;
 }
