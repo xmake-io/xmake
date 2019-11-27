@@ -143,14 +143,6 @@ function sandbox_io_filelock.lock(lock, opt)
     end
 end
 
--- try to lock filelock
-function sandbox_io_filelock.trylock(lock, opt)
-    local ok, errors = lock:_trylock(opt)
-    if not ok then
-        raise(errors)
-    end
-end
-
 -- unlock filelock
 function sandbox_io_filelock.unlock(lock)
     local ok, errors = lock:_unlock()

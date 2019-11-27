@@ -38,6 +38,9 @@ function main()
         return trybuild() 
     end
 
+    -- post statistics before locking project
+    statistics.post()
+
     -- lock the whole project
     project.lock()
 
@@ -49,9 +52,6 @@ function main()
 
     -- enter project directory
     local oldir = os.cd(project.directory())
-
-    -- post statistics
-    statistics.post()
 
     -- clean up temporary files once a day
     cleaner.cleanup()

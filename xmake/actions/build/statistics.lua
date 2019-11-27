@@ -57,6 +57,9 @@ end
 --
 function post()
 
+    -- enter project directory
+    local oldir = os.cd(os.projectdir())
+
     -- get the project directory name
     local projectname = path.basename(os.projectdir())
 
@@ -91,6 +94,9 @@ function post()
             end
         end
     }
+
+    -- leave project directory
+    os.cd(oldir)
 end
 
 -- the main function
