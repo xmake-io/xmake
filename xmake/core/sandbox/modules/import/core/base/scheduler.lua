@@ -25,9 +25,17 @@ local sandbox_core_base_scheduler = sandbox_core_base_scheduler or {}
 local scheduler = require("base/scheduler")
 local raise     = require("sandbox/modules/raise")
 
+-- run a new coroutine function 
+function sandbox_core_base_scheduler.run(func, ...)
+    local ok, errors = scheduler:run(func, ...)
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- run loop
-function sandbox_core_base_scheduler.runloop(main)
-    local ok, errors = scheduler:runloop(main)
+function sandbox_core_base_scheduler.runloop(opt)
+    local ok, errors = scheduler:runloop(opt)
     if not ok then
         raise(errors)
     end
