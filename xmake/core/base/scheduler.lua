@@ -27,16 +27,9 @@ local option    = require("base/option")
 local string    = require("base/string")
 local coroutine = require("base/coroutine")
 
--- TODO
--- the socket loop coroutine
-function scheduler:_co_loop_socket()
-    print("socket loop")
-end
-
--- TODO
--- the process loop coroutine
-function scheduler:_co_loop_process()
-    print("process loop")
+-- TODO we need support socket/pipe io and processes as same time
+function scheduler:_co_poller_loop()
+    print("poller loop")
 end
 
 -- get all ready coroutines
