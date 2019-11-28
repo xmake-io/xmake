@@ -23,10 +23,11 @@ local socket      = socket or {}
 local _instance   = _instance or {}
 
 -- load modules
-local io     = require("base/io")
-local bytes  = require("base/bytes")
-local table  = require("base/table")
-local string = require("base/string")
+local io        = require("base/io")
+local bytes     = require("base/bytes")
+local table     = require("base/table")
+local string    = require("base/string")
+local scheduler = require("base/scheduler")
 
 -- the socket types
 socket.TCP   = 1
@@ -472,8 +473,14 @@ function _instance:wait(events, timeout)
         return -1, errors
     end
 
-    -- wait it
-    local events, errors = io.socket_wait(self._SOCK, events, timeout or -1)
+    -- wait events
+    local events = -1
+    local errors = nil
+    if scheduler.runing() then
+        events, errors = scheduler.wait(self._SOCK, events, timeout or -1)
+    else
+        events, errors = io.socket_wait(self._SOCK, events, timeout or -1)
+    end
     if events < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end

@@ -58,9 +58,33 @@ function scheduler:run(func, ...)
     return true
 end
 
+-- get the current running coroutine in scheduler
+function scheduler:running()
+    return self._RUNNING and coroutine.running() or nil
+end
+
+-- wait socket/pipe and process events
+function scheduler:wait(object, events, timeout)
+
+    -- ensure to run on coroutine with scheduler
+    if not self:running() then
+        return -1, "please wait events on coroutine with scheduler!"
+    end
+
+    -- TODO
+end
+
 -- TODO
 -- run loop, schedule coroutine with socket/io and sub-processes
 function scheduler:runloop(opt)
+
+    -- ensure only one scheduler
+    if self._RUNNING then
+        return false, "there is already a running scheduler!"
+    end
+
+    -- start scheduler
+    self._RUNNING = true
 
     -- run loop
     local coroutines_ready = self:_coroutines_ready()
@@ -80,6 +104,9 @@ function scheduler:runloop(opt)
             table.remove(coroutines_ready, 1)
         end
     end
+
+    -- stop scheduler
+    self._RUNNING = false
     return true
 end
 
