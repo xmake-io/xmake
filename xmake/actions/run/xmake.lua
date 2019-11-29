@@ -43,7 +43,7 @@ task("run")
                 {
                     {'d', "debug",      "k",   nil,          "Run and debug the given target."                                    }
                 ,   {'a', "all",        "k",   nil,          "Run all targets."                                                   }
-                ,   {'w', "workdir",    "kv",  nil,          "Work directory of runing targets, default is folder of targetfile",
+                ,   {'w', "workdir",    "kv",  nil,          "Work directory of running targets, default is folder of targetfile",
                                                              "e.g.",
                                                              "    --workdir=.",
                                                              "    --workdir=`pwd`"                                                }
