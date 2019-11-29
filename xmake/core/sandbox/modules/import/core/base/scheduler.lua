@@ -50,5 +50,10 @@ function sandbox_core_base_scheduler.runloop(opt)
     end
 end
 
+-- get the current running coroutine instance
+function sandbox_core_base_scheduler.running()
+    return scheduler:running()
+end
+
 -- return module
 return sandbox_core_base_scheduler

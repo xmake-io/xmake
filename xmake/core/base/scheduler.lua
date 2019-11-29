@@ -92,6 +92,53 @@ function _coroutine:__gc()
     self._RAWCO = nil
 end
 
+-- get the main loop coroutine
+function scheduler:_co_mainloop()
+    return self._CO_MAINLOOP
+end
+
+-- create the coroutine instance
+function scheduler:_co_create(func)
+    local rawco = coroutine.create(func)
+    if not rawco then
+        return nil, "create coroutine failed!"
+    end
+    return _coroutine.new(rawco)
+end
+
+-- suspend the current coroutine 
+function scheduler:_co_suspend(...)
+
+    -- get the next ready coroutine first
+    local co_next = self:_co_next_ready()
+
+    -- make the running coroutine as suspended
+    self:_co_mark_suspended(self:running())
+
+    -- switch to next coroutine 
+    if (co_next ~= self:running()) then
+        return self:_co_switch(co_next, ...)
+    end
+    
+    -- no more coroutine? switch to mainloop coroutine
+    return self:_co_switch(self:_co_mainloop(), ...)
+end
+
+-- TODO
+-- resume the given coroutine
+function scheduler:_co_resume()
+end
+
+-- switch to the given coroutine
+function scheduler:_co_switch(co, ...)
+
+    -- mark it as the running coroutine
+    self._RUNNING = co
+
+    -- switch to this coroutine
+    return co:resume(...)
+end
+
 -- TODO we need support socket/pipe io and processes as same time
 function scheduler:_poller_loop()
     print("poller loop")
@@ -117,43 +164,50 @@ function scheduler:_poller_loop_ensure()
     return true
 end
 
+-- the scheduler loop coroutine
+function scheduler:_mainloop(opt)
+
+    -- run loop
+    local co_list_ready = self:_co_list_ready()
+    while co_list_ready:size() > 0 do
+
+        -- get the first ready coroutine
+        local co_ready = co_list_ready:first()
+
+        -- switch to this coroutine
+        local ok, result_or_errors = self:_co_switch(co_ready)
+        if not ok then
+            os.raise(result_or_errors)
+        end
+           
+        -- this coroutine has been finished? we remove it from the ready queue
+        if co_ready:is_dead() then
+            self:_co_mark_dead(co_ready)
+        end
+    end
+end
+
 -- start scheduler loop
 function scheduler:_startloop()
-    self._RUNNING = true
+    self._RUNNING = nil
+    self._CO_MAINLOOP = nil
     self._POLLER_STARTED = false
 end
 
 -- stop scheduler loop
 function scheduler:_stoploop()
-    self._RUNNING = false
+    self._RUNNING = nil
+    self._CO_MAINLOOP = nil
     self._POLLER_STARTED = false
-end
-
--- create the coroutine instance
-function scheduler:_co_create(func)
-    local rawco = coroutine.create(func)
-    if not rawco then
-        return nil, "create coroutine failed!"
-    end
-    return _coroutine.new(rawco)
-end
-
--- TODO
--- suspend the current coroutine 
-function scheduler:_co_suspend()
-    coroutine.yield()
-end
-
--- TODO
--- resume the given coroutine
-function scheduler:_co_resume()
 end
 
 -- get all ready coroutines list
 -- 
 -- ready: ready -> ready -> .. -> running -> .. -> ready -> ..->
---         |                                                    |
+--         |                                                    |   <-> poller_loop
 --          ---------------------------<------------------------
+--                                |        |
+--                                 mainloop
 --
 function scheduler:_co_list_ready()
     local co_list_ready = self._CO_LIST_READY
@@ -162,6 +216,44 @@ function scheduler:_co_list_ready()
         self._CO_LIST_READY = co_list_ready
     end
     return co_list_ready
+end
+
+-- get all suspended coroutines list
+function scheduler:_co_list_suspended()
+    local co_list_suspended = self._CO_LIST_SUSPENDED
+    if not co_list_suspended then
+        co_list_suspended = dlist()
+        self._CO_LIST_SUSPENDED = co_list_suspended
+    end
+    return co_list_suspended
+end
+
+-- get the next ready coroutine
+function scheduler:_co_next_ready()
+    return self:_co_list_ready():next(self:running())
+end
+
+-- mark the given coroutine as suspended
+function scheduler:_co_mark_suspended(co)
+
+    -- cannot be mainloop coroutine
+    assert(co ~= self:_co_mainloop())
+
+    -- remove this coroutine from the ready coroutines
+    self:_co_list_ready():remove(co)
+
+    -- append this coroutine to suspended coroutines
+    self:_co_list_suspended():push(co)
+end
+
+-- mark the given coroutine as dead
+function scheduler:_co_mark_dead(co)
+
+    -- cannot be mainloop coroutine
+    assert(co ~= self:_co_mainloop())
+
+    -- remove this coroutine from the ready coroutines
+    self:_co_list_ready():remove(co)
 end
 
 -- run new coroutine function, it will insert to the pending queue
@@ -177,7 +269,7 @@ end
 
 -- get the current running coroutine in scheduler
 function scheduler:running()
-    return self._RUNNING and coroutine.running() or nil
+    return self._RUNNING 
 end
 
 -- wait socket events
@@ -219,23 +311,18 @@ function scheduler:runloop(opt)
     -- start scheduler
     self:_startloop()
 
-    -- run loop
-    local co_list_ready = self:_co_list_ready()
-    while co_list_ready:size() > 0 do
+    -- create the main loop
+    local co_mainloop, errors = self:_co_create(self._mainloop)
+    if not co_mainloop then
+        return false, errors 
+    end
+    co_mainloop:name_set("mainloop")
+    self._CO_MAINLOOP = co_mainloop
 
-        -- get the first ready coroutine
-        local co_ready = co_list_ready:first()
-
-        -- switch to this coroutine
-        local ok, result_or_errors = co_ready:resume()
-        if not ok then
-            return false, result_or_errors
-        end
-           
-        -- this coroutine has been finished? we remove it from the ready queue
-        if co_ready:is_dead() then
-            co_list_ready:shift()
-        end
+    -- start the main loop
+    local ok, errors = self:_co_switch(co_mainloop, self, opt)
+    if not ok then
+        return false, errors
     end
 
     -- stop scheduler
