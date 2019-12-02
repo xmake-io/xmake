@@ -44,13 +44,13 @@ if is_plat("windows") then
     if is_mode("release") then
 
         -- link libcmt.lib
-        add_cxflags("-MT") 
+        add_cxflags("-MT")
 
     -- the debug mode
     elseif is_mode("debug") then
 
         -- link libcmtd.lib
-        add_cxflags("-MTd") 
+        add_cxflags("-MTd")
     end
 
     -- no msvcrt.lib
@@ -58,14 +58,14 @@ if is_plat("windows") then
 end
 
 -- add syslinks
-if is_plat("windows") then add_syslinks("ws2_32") 
-elseif is_plat("android") then add_syslinks("m", "c") 
+if is_plat("windows") then add_syslinks("ws2_32")
+elseif is_plat("android") then add_syslinks("m", "c")
 else add_syslinks("pthread", "dl", "m", "c") end
 
 -- add requires
 add_requires("tbox", {debug = is_mode("debug")})
 
 -- include project sources
-includes("src") 
+includes("src")
 
 ${FAQ}

@@ -1,5 +1,5 @@
 
--- add modes: debug and release 
+-- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
 -- enable unicode
@@ -16,7 +16,7 @@ target("UMDFSkeleton")
 
     -- add files
     add_files("*.cpp", {rule = "wdk.tracewpp"})
-    add_files("*.rc", "*.inx") 
+    add_files("*.rc", "*.inx")
 
     -- set umdf sdk version
     set_values("wdk.umdf.sdkver", "1.9")

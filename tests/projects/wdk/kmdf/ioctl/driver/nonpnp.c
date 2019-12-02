@@ -1187,7 +1187,7 @@ Return Value:
         goto End;
     }
 
-    #pragma prefast(suppress:6387, "If outBuf==NULL at this point, then outBufLen==0") 
+    #pragma prefast(suppress:6387, "If outBuf==NULL at this point, then outBufLen==0")
     status = WdfRequestProbeAndLockUserBufferForWrite(Request,
                             outBuf,
                             outBufLen,

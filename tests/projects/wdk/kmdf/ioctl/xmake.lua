@@ -1,5 +1,5 @@
 
--- add modes: debug and release 
+-- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
 -- add include directories
@@ -25,6 +25,6 @@ target("app")
     add_rules("wdk.env.kmdf", "wdk.binary")
 
     -- add files
-    add_files("exe/*.c") 
+    add_files("exe/*.c")
     add_files("exe/*.inf")
 

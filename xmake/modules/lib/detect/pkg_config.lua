@@ -150,7 +150,7 @@ function libinfo(name, opt)
         for _, flag in ipairs(flags:split('%s')) do
 
             -- get links
-            local link = flag:match("%-l(.*)") 
+            local link = flag:match("%-l(.*)")
             if link then
                 result.links = result.links or {}
                 table.insert(result.links, link)
@@ -158,7 +158,7 @@ function libinfo(name, opt)
        
             -- get linkdirs
             local linkdirs = nil
-            local linkdir = flag:match("%-L(.*)") 
+            local linkdir = flag:match("%-L(.*)")
             if linkdir and os.isdir(linkdir) then
                 result.linkdirs = result.linkdirs or {}
                 table.insert(result.linkdirs, linkdir)
@@ -166,7 +166,7 @@ function libinfo(name, opt)
        
             -- get includedirs
             local includedirs = nil
-            local includedir = flag:match("%-I(.*)") 
+            local includedir = flag:match("%-I(.*)")
             if includedir and os.isdir(includedir) then
                 result.includedirs = result.includedirs or {}
                 table.insert(result.includedirs, includedir)

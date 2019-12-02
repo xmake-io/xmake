@@ -11,7 +11,7 @@ target("demo")
     add_defines("__tb_prefix__=\"demo\"")
 
     -- add files
-    add_files("*.cpp") 
+    add_files("*.cpp")
 
     -- add packages
     add_packages("tbox")

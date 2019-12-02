@@ -20,6 +20,6 @@
 
 -- define rule: c++.build.modules
 rule("c++.build.modules")
-    set_extensions(".mpp", ".mxx", ".cppm", ".ixx") 
+    set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
     before_build_files("build_modulefiles")
 

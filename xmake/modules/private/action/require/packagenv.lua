@@ -33,7 +33,7 @@ function _enter_package(package_name, envs, installdir)
     end
 
     -- add the new environments
-    oldenvs.PATH = os.getenv("PATH") 
+    oldenvs.PATH = os.getenv("PATH")
     for name, values in pairs(envs) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" then

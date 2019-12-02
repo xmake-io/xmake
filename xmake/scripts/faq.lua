@@ -2,11 +2,11 @@
 -- FAQ
 --
 -- You can enter the project directory firstly before building project.
---   
+--
 --   $ cd projectdir
--- 
+--
 -- 1. How to build project?
---   
+--
 --   $ xmake
 --
 -- 2. How to configure project?
@@ -27,12 +27,12 @@
 --
 -- 5. How to install target to the system directory or other output directory?
 --
---   $ xmake install 
+--   $ xmake install
 --   $ xmake install -o installdir
 --
 -- 6. Add some frequently-used compilation flags in xmake.lua
 --
--- @code 
+-- @code
 --    -- add debug and release modes
 --    add_rules("mode.debug", "mode.release")
 --
@@ -45,9 +45,9 @@
 --    -- set language: c99, c++11
 --    set_languages("c99", "c++11")
 --
---    -- set optimization: none, faster, fastest, smallest 
+--    -- set optimization: none, faster, fastest, smallest
 --    set_optimize("fastest")
---    
+--
 --    -- add include search directories
 --    add_includedirs("/usr/include", "/usr/local/include")
 --

@@ -8,7 +8,7 @@ target("pdcurses")
     add_includedirs("pdcurses", {public = true})
 
     -- add the common source files
-    add_files("pdcurses/pdcurses/*.c", "pdcurses/win32/*.c") 
+    add_files("pdcurses/pdcurses/*.c", "pdcurses/win32/*.c")
 
     -- add defines
     add_defines("PDC_WIDE")

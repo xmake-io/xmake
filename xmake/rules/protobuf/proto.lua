@@ -32,7 +32,7 @@ function main(target, sourcekind, sourcefile_proto, opt)
     -- find protoc
     local protoc = target:data("protobuf.protoc")
     if not protoc and sourcekind == "cxx" then
-        protoc = find_tool("protoc") 
+        protoc = find_tool("protoc")
         if protoc and protoc.program then
             target:data_set("protobuf.protoc", protoc.program)
         end

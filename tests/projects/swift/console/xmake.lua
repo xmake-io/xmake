@@ -8,5 +8,5 @@ target("console_swift")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.swift") 
+    add_files("src/*.swift")
 

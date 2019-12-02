@@ -28,7 +28,7 @@ target("static_library_c")
     set_kind("static")
 
     -- add files
-    add_files("s r c/interface.c") 
+    add_files("s r c/interface.c")
 
 -- add target
 target("test")
@@ -40,6 +40,6 @@ target("test")
     add_deps("static_library_c")
 
     -- add files
-    add_files("s r c/test.c") 
+    add_files("s r c/test.c")
 
 

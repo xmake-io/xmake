@@ -748,7 +748,7 @@ end
 function _instance:targetdir()
 
     -- the target directory
-    local targetdir = self:get("targetdir") 
+    local targetdir = self:get("targetdir")
     if not targetdir then
 
         -- get build directory

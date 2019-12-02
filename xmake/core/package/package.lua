@@ -267,7 +267,7 @@ function _instance:lock(opt)
     if self:filelock():trylock(opt) then
         return true
     elseif option.get("diagnosis") then
-        utils.warning("the current package is being accessed by other processes, please waiting!") 
+        utils.warning("the current package is being accessed by other processes, please waiting!")
     end
     local ok, errors = self:filelock():lock(opt)
     if not ok then

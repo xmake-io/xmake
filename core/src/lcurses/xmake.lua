@@ -11,7 +11,7 @@ target("lcurses")
     end
 
     -- add the common source files
-    add_files("lcurses.c") 
+    add_files("lcurses.c")
   
     -- add options
     if is_plat("windows") then

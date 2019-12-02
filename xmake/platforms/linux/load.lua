@@ -28,7 +28,7 @@ function main(platform)
     if config.get("cross") or config.get("bin") or config.get("sdk") then 
 
         -- init linkdirs and includedirs
-        local sdkdir = config.get("sdk") 
+        local sdkdir = config.get("sdk")
         if sdkdir then
             local includedir = path.join(sdkdir, "include")
             if os.isdir(includedir) then

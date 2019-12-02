@@ -128,9 +128,9 @@ function main(package)
             -- the package scripts
             local scripts =
             {
-                package:script("install_before") 
+                package:script("install_before")
             ,   package:script("install")
-            ,   package:script("install_after") 
+            ,   package:script("install_after")
             }
 
             -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 

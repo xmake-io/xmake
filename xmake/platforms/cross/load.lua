@@ -25,7 +25,7 @@ import("core.project.config")
 function main(platform)
 
     -- init linkdirs and includedirs
-    local sdkdir = config.get("sdk") 
+    local sdkdir = config.get("sdk")
     if sdkdir then
         local includedir = path.join(sdkdir, "include")
         if os.isdir(includedir) then
