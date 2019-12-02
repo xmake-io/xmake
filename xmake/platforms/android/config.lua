@@ -56,7 +56,7 @@ end
 function _toolchains()
 
     -- get cross
-    local cross = config.get("cross") 
+    local cross = config.get("cross")
 
     -- get gcc toolchain bin directory
     local gcc_toolchain_bin = nil

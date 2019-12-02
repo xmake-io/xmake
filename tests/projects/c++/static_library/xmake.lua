@@ -8,7 +8,7 @@ target("static_library_c++")
     set_kind("static")
 
     -- add files
-    add_files("src/interface.cpp") 
+    add_files("src/interface.cpp")
 
 -- add target
 target("test")
@@ -20,6 +20,6 @@ target("test")
     add_deps("static_library_c++")
 
     -- add files
-    add_files("src/test.cpp") 
+    add_files("src/test.cpp")
 
 

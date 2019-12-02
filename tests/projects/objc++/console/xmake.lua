@@ -18,5 +18,5 @@ target("console_objc++")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.mm") 
+    add_files("src/*.mm")
 

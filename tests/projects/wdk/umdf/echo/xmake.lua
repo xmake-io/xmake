@@ -1,5 +1,5 @@
 
--- add modes: debug and release 
+-- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
 -- enable unicode
@@ -19,7 +19,7 @@ target("echo")
 --    set_values("wdk.sign.certfile", path.join(os.projectdir(), "xxx.cer"))
 
     -- add files
-    add_files("driver/*.c") 
+    add_files("driver/*.c")
     add_files("driver/*.inx")
 
     -- add includedirs
@@ -32,5 +32,5 @@ target("app")
     add_rules("wdk.env.umdf", "wdk.binary")
 
     -- add files
-    add_files("exe/*.cpp") 
+    add_files("exe/*.cpp")
 

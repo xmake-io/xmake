@@ -5,7 +5,7 @@ target("module")
     set_kind("static")
 
     -- add files
-    add_files("src/test/*.go") 
+    add_files("src/test/*.go")
 
 -- add target
 target("${TARGETNAME}_demo")
@@ -17,7 +17,7 @@ target("${TARGETNAME}_demo")
     add_deps("module")
 
     -- add files
-    add_files("src/*.go") 
+    add_files("src/*.go")
 
     -- add link directory
     add_linkdirs("$(buildir)")

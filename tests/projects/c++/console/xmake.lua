@@ -8,5 +8,5 @@ target("console_c++")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.cpp") 
+    add_files("src/*.cpp")
 

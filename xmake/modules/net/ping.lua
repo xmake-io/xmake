@@ -44,7 +44,7 @@ function main(hosts, opt)
     -- do not force ping? enable cache
     local cacheinfo = nil
     if not opt.force then
-        cacheinfo = cache.load("net.ping") 
+        cacheinfo = cache.load("net.ping")
     end
 
     -- run tasks

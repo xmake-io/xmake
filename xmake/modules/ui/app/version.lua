@@ -38,7 +38,7 @@ function app:init()
     self:background_set("blue")
 
     -- disable color code output
-    os.setenv("COLORTERM", "nocolor") 
+    os.setenv("COLORTERM", "nocolor")
 
     -- get version info
     local version = os.iorun("xmake --version")

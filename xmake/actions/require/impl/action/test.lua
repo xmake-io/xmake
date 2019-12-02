@@ -28,9 +28,9 @@ function main(package)
     -- the package scripts
     local scripts =
     {
-        package:script("test_before") 
+        package:script("test_before")
     ,   package:script("test")
-    ,   package:script("test_after") 
+    ,   package:script("test_after")
     }
 
     -- enter the test directory

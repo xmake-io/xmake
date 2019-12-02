@@ -79,13 +79,13 @@ function _instance:_do_check()
 
         -- get conditions
         local links    = self:get("links")
-        local snippets = self:get(kind .. "snippets") 
+        local snippets = self:get(kind .. "snippets")
         local types    = self:get(kind .. "types")
         local funcs    = self:get(kind .. "funcs")
         local includes = self:get(kind .. "includes")
 
         -- TODO it is deprecated
-        local snippet  = self:get(kind .. "snippet") 
+        local snippet  = self:get(kind .. "snippet")
         if snippet then
             snippets = table.join(snippets or {}, snippet)
         end

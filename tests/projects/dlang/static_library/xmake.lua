@@ -8,7 +8,7 @@ target("interfaces")
     set_kind("static")
 
     -- add files
-    add_files("src/interfaces.d") 
+    add_files("src/interfaces.d")
 
 -- add target
 target("test")
@@ -20,7 +20,7 @@ target("test")
     add_deps("interfaces")
 
     -- add files
-    add_files("src/main.d") 
+    add_files("src/main.d")
 
     -- add links
     add_links("interfaces")

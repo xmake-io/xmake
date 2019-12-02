@@ -52,7 +52,7 @@ function main(opt)
     if vcvarsall then
         for _, vsvars in pairs(vcvarsall) do
             if vsvars.DevEnvdir and os.isexec(path.join(vsvars.DevEnvdir, "devenv.exe")) then
-                program = path.join(vsvars.DevEnvdir, "devenv.exe") 
+                program = path.join(vsvars.DevEnvdir, "devenv.exe")
             end
         end
     end

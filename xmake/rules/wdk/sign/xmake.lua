@@ -103,7 +103,7 @@ rule("wdk.sign")
         end
 
         -- get sign mode
-        local signmode = target:values("wdk.sign.mode") 
+        local signmode = target:values("wdk.sign.mode")
         if not signmode then
             return 
         end

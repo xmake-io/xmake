@@ -61,12 +61,12 @@ function main(target, filepath, mode)
 
     -- init arguments
     local argv = {"sign", "/v", "/t", timestamp}
-    local company = target:values("wdk.sign.company") 
+    local company = target:values("wdk.sign.company")
     if company then
         table.insert(argv, "/n")
         table.insert(argv, company)
     end
-    local certfile = target:values("wdk.sign.certfile") 
+    local certfile = target:values("wdk.sign.certfile")
     if certfile then
         table.insert(argv, "/ac")
         table.insert(argv, certfile)

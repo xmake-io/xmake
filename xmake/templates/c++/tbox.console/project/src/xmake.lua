@@ -11,5 +11,5 @@ target("${TARGETNAME}")
     add_packages("tbox")
 
     -- add files
-    add_files("*.cpp") 
+    add_files("*.cpp")
 

@@ -28,7 +28,7 @@ target("luajit")
     add_includedirs("luajit/src", {public = true})
 
     -- add the common source files
-    add_files("luajit/src/*.c|ljamalg.c|luajit.c") 
+    add_files("luajit/src/*.c|ljamalg.c|luajit.c")
     if is_plat("windows") then
         add_files(autogendir .. "/lj_vm.obj")
     else

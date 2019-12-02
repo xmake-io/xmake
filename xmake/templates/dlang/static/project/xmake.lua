@@ -1,4 +1,4 @@
--- add modes: debug and release 
+-- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
 -- add target
@@ -8,7 +8,7 @@ target("${TARGETNAME}")
     set_kind("static")
 
     -- add files
-    add_files("src/interfaces.d") 
+    add_files("src/interfaces.d")
 
 -- add target
 target("${TARGETNAME}_demo")
@@ -20,6 +20,6 @@ target("${TARGETNAME}_demo")
     add_deps("${TARGETNAME}")
 
     -- add files
-    add_files("src/main.d") 
+    add_files("src/main.d")
 
 ${FAQ}

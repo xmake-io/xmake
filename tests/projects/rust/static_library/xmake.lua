@@ -8,7 +8,7 @@ target("interfaces")
     set_kind("static")
 
     -- add files
-    add_files("src/interfaces.rs") 
+    add_files("src/interfaces.rs")
 
 -- add target
 target("test")
@@ -20,7 +20,7 @@ target("test")
     add_deps("interfaces")
 
     -- add files
-    add_files("src/main.rs") 
+    add_files("src/main.rs")
 
     -- add link directory
     add_linkdirs("$(buildir)/$(mode)/$(arch)")

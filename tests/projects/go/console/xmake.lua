@@ -8,5 +8,5 @@ target("console_go")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.go") 
+    add_files("src/*.go")
 

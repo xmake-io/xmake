@@ -8,5 +8,5 @@ target("console_rust")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.rs") 
+    add_files("src/*.rs")
 

@@ -236,7 +236,7 @@ add_rules("mode.debug", "mode.release")
 
 target("console")
     set_kind("binary")
-    add_files("src/*.c") 
+    add_files("src/*.c")
     if is_mode("debug") then
         add_defines("DEBUG")
     end

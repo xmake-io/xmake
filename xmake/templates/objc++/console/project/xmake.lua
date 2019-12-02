@@ -1,4 +1,4 @@
--- add modes: debug and release 
+-- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
 -- add target
@@ -8,7 +8,7 @@ target("${TARGETNAME}")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.mm") 
+    add_files("src/*.mm")
 
     -- for macosx or ios
     if is_os("macosx", "ios") then

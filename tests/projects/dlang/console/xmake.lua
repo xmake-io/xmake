@@ -8,5 +8,5 @@ target("console_dlang")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.d") 
+    add_files("src/*.d")
 

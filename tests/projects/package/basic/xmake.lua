@@ -14,7 +14,7 @@ target("console")
     set_kind("binary")
 
     -- add files
-    add_files("src/*.c") 
+    add_files("src/*.c")
 
     -- add packages
     add_packages("tbox", "zlib", "pcre2", "luajit")
