@@ -38,7 +38,7 @@ local official_sources =
 function main(xmakever)
 
     -- init xmakever
-    xmakever = xmakever or "lastest"
+    xmakever = xmakever or "latest"
 
     -- parse url and commit
     local commitish = nil
@@ -64,7 +64,7 @@ function main(xmakever)
     else
         urls = official_sources
     end
-    commitish = (commitish and #commitish > 0) and commitish or "lastest"
+    commitish = (commitish and #commitish > 0) and commitish or "latest"
 
     -- sort urls
     if #urls > 1 then

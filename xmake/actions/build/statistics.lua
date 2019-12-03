@@ -135,8 +135,8 @@ function main()
         }
     end
 
-    -- fetch the lastest version
-    local versionfile = path.join(os.tmpdir(), "lastest_version")
+    -- fetch the latest version
+    local versionfile = path.join(os.tmpdir(), "latest_version")
     if not os.isfile(versionfile) then
         local fetchinfo = try { function () return fetch_version() end }
         if fetchinfo then

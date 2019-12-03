@@ -68,13 +68,13 @@ function _parse_require(require_str, requires_extra, parentinfo)
     --
     -- e.g. 
     -- 
-    -- lastest
+    -- latest
     -- >=1.5.1 <1.6.0  
     -- master || >1.4
     -- ~1.2.3
     -- ^1.1
     --
-    local version = "lastest"
+    local version = "latest"
     if #splitinfo > 1 then
         version = table.concat(table.slice(splitinfo, 2), " ")
     end
@@ -233,10 +233,10 @@ function _select_package_version(package, requireinfo)
         local source = nil
         local version = nil
         local require_version = requireinfo.version
-        if #package:versions() > 0 and (require_version == "lastest" or require_version:find('.', 1, true)) then -- select version?
+        if #package:versions() > 0 and (require_version == "latest" or require_version:find('.', 1, true)) then -- select version?
             version, source = semver.select(require_version, package:versions())
         elseif has_giturl then -- select branch?
-            version, source = require_version ~= "lastest" and require_version or "master", "branches"
+            version, source = require_version ~= "latest" and require_version or "master", "branches"
         else
             raise("package(%s %s): not found!", package:name(), require_version)
         end

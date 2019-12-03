@@ -34,7 +34,7 @@ function main(package)
     }
 
     -- enter the test directory
-    local testdir = path.join(os.tmpdir(), "pkgtest", package:name(), package:version_str() or "lastest")
+    local testdir = path.join(os.tmpdir(), "pkgtest", package:name(), package:version_str() or "latest")
     if os.isdir(testdir) then
         os.tryrm(testdir)
     end

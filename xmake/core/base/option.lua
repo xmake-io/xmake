@@ -803,8 +803,8 @@ end
 -- show update tips
 function option.show_update_tips()
 
-    -- show lastest version 
-    local versionfile = path.join(os.tmpdir(), "lastest_version")
+    -- show latest version 
+    local versionfile = path.join(os.tmpdir(), "latest_version")
     if os.isfile(versionfile) then
         local versioninfo = io.load(versionfile)
         if versioninfo and versioninfo.version and semver.compare(versioninfo.version, xmake._VERSION_SHORT) > 0 then
