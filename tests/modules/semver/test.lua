@@ -28,7 +28,7 @@ function test_semver_select(t)
                         , {"master", "dev"})
 
     _check_semver_select(t, {"1.5.1", "versions"}
-                        , "lastest"
+                        , "latest"
                         , {"1.4.0", "1.5.0", "1.5.1"})
 end
 

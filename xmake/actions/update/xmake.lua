@@ -44,7 +44,7 @@ task("update")
                 ,   {nil, "xmakever",    "v",   nil,   "The given xmake version, or a git source (and branch). ",
                                                        "e.g.",
                                                        "    from official source: ",
-                                                       "        lastest, ~2.2.3, dev, master", 
+                                                       "        latest, ~2.2.3, dev, master", 
                                                        "    from custom source:", 
                                                        "        https://github.com/xmake-io/xmake", 
                                                        "        github:xmake-io/xmake#~2.2.3",

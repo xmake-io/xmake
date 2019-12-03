@@ -108,7 +108,7 @@ static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx
     // no matches
     return tb_false;
 }
-static tb_bool_t xm_semver_select_lastest_from_versions_tags(lua_State* lua, tb_int_t fromidx, semver_t* semver, semvers_t* matches)
+static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State* lua, tb_int_t fromidx, semver_t* semver, semvers_t* matches)
 {
     // clear matches
     semvers_pclear(matches);
@@ -157,7 +157,7 @@ static tb_bool_t xm_semver_select_lastest_from_versions_tags(lua_State* lua, tb_
 
 /* select version
  *
- * local versioninfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"lastest", "dev"})
+ * local versioninfo, errors = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"latest", "dev"})
  */
 tb_int_t xm_semver_select(lua_State* lua)
 {
@@ -206,18 +206,18 @@ tb_int_t xm_semver_select(lua_State* lua)
             break;
         }
 
-        // select the lastest version from the tags and versions if be lastest
-        if (!tb_strcmp(range_str, "lastest"))
+        // select the latest version from the tags and versions if be latest
+        if (!tb_strcmp(range_str, "latest"))
         {
-            // attempt to select lastest version from the versions list
-            if (xm_semver_select_lastest_from_versions_tags(lua, 2, &semver, &matches)) 
+            // attempt to select latest version from the versions list
+            if (xm_semver_select_latest_from_versions_tags(lua, 2, &semver, &matches)) 
             {
                 ok = tb_true;
                 break;
             }
 
-            // attempt to select lastest version from the tags list
-            if (xm_semver_select_lastest_from_versions_tags(lua, 3, &semver, &matches)) 
+            // attempt to select latest version from the tags list
+            if (xm_semver_select_latest_from_versions_tags(lua, 3, &semver, &matches)) 
             {
                 ok = tb_true;
                 break;
