@@ -476,7 +476,7 @@ function _instance:wait(events, timeout)
     -- wait events
     local events = -1
     local errors = nil
-    if scheduler:running() then
+    if scheduler:co_running() then
         events, errors = scheduler:waitsock(self._SOCK, events, timeout or -1)
     else
         events, errors = io.socket_wait(self._SOCK, events, timeout or -1)

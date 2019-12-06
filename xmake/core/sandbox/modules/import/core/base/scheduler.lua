@@ -25,13 +25,37 @@ local sandbox_core_base_scheduler = sandbox_core_base_scheduler or {}
 local scheduler = require("base/scheduler")
 local raise     = require("sandbox/modules/raise")
 
--- run a new coroutine function 
-function sandbox_core_base_scheduler.run(func, ...)
-    local co, errors = scheduler:run(func, ...)
+-- start a new coroutine task 
+function sandbox_core_base_scheduler.co_start(cotask, ...)
+    local co, errors = scheduler:co_start(cotask, ...)
     if not co then
         raise(errors)
     end
     return co
+end
+
+-- start a new named coroutine task 
+function sandbox_core_base_scheduler.co_start_named(coname, cotask, ...)
+    local co, errors = scheduler:co_start_named(coname, cotask, ...)
+    if not co then
+        raise(errors)
+    end
+    return co
+end
+
+-- resume the given coroutine
+function sandbox_core_base_scheduler.co_resume(co, ...)
+    return scheduler:resume(co:thread(), ...)
+end
+
+-- suspend the current coroutine
+function sandbox_core_base_scheduler.co_suspend(...)
+    return scheduler:co_suspend(...)
+end
+
+-- get the current running coroutine 
+function sandbox_core_base_scheduler.co_running()
+    return scheduler:co_running()
 end
 
 -- sleep some times (ms)
@@ -48,11 +72,6 @@ function sandbox_core_base_scheduler.runloop(opt)
     if not ok then
         raise(errors)
     end
-end
-
--- get the current running coroutine instance
-function sandbox_core_base_scheduler.running()
-    return scheduler:running()
 end
 
 -- return module
