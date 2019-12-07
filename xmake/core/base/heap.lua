@@ -16,7 +16,7 @@ local ffi --init on demand so that the module can be used without luajit
 local assert, floor = assert, math.floor
 
 -- heap algorithm working over abstract API that counts from one.
-function heap.makeheap(add, remove, swap, length, cmp)
+function heap._make(add, remove, swap, length, cmp)
 
     local function moveup(child)
         local parent = floor(child / 2)
@@ -78,7 +78,7 @@ function heap.cdataheap(h)
     local cmp = h.cmp and
         function(i, j) return h.cmp(t[i], t[j]) end or
         function(i, j) return t[i] < t[j] end
-    local push, pop, rebalance = heap.makeheap(add, rem, swap, length, cmp)
+    local push, pop, rebalance = heap._make(add, rem, swap, length, cmp)
 
     local function get(i, box)
         assert(i >= 1 and i <= n, "invalid index")
@@ -121,7 +121,7 @@ function heap.valueheap(h)
     local cmp = h.cmp and
         function(i, j) return h.cmp(t[i], t[j]) end or
         function(i, j) return t[i] < t[j] end
-    local push, pop, rebalance = heap.makeheap(add, rem, swap, length, cmp)
+    local push, pop, rebalance = heap._make(add, rem, swap, length, cmp)
 
     local function get(i)
         assert(i >= 1 and i <= n, "invalid index")
