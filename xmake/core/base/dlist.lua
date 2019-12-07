@@ -205,5 +205,10 @@ function dlist:ritems()
     return iter, self, nil
 end
 
+-- new dlist
+function dlist:new()
+    return self()
+end
+
 -- return module: dlist
 return dlist

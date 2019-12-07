@@ -43,7 +43,7 @@ function panel:init(name, bounds)
     self:option_set("selectable", true)
 
     -- init child views
-    self._VIEWS = dlist()
+    self._VIEWS = dlist:new()
 
     -- init views cache
     self._VIEWS_CACHE = {}

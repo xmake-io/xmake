@@ -31,7 +31,7 @@ function timer:_tasks()
 end
 
 -- post timer task at the absolute time and will be auto-remove it after be expired
-function timer:post_at(when, period, repeat, task)
+function timer:post_at(when, period, is_repeat, task)
     -- TODO
 end
 
