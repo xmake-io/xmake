@@ -19,7 +19,7 @@
 --
 
 -- load modules
-local object = require("ui/object")
+local object = require("base/object")
 
 -- define module
 local dlist = dlist or object { _init = {"_length"} } {0}
