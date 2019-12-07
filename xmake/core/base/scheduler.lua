@@ -26,6 +26,7 @@ local _coroutine = _coroutine or {}
 local table     = require("base/table")
 local option    = require("base/option")
 local string    = require("base/string")
+local poller    = require("base/poller")
 local coroutine = require("base/coroutine")
 
 -- new a coroutine instance
@@ -85,6 +86,7 @@ end
 -- wait the current coroutine
 function scheduler:_co_wait()
     -- TODO
+    self:co_suspend()
 end
 
 -- wake the given coroutine
@@ -145,13 +147,60 @@ end
 -- sleep some times (ms)
 function scheduler:sleep(ms)
 
-    -- TODO
-    self:wait()
+    print("sleep", ms)
+
+    self:_co_wait()
     return true
+end
+
+-- the loop is started?
+function scheduler:is_started()
+    return self._STARTED
+end
+
+-- stop the scheduler loop
+function scheduler:stop()
+    -- TODO post a kill signal to poller
+    self._STARTED = false
 end
 
 -- run loop, schedule coroutine with socket/io and sub-processes
 function scheduler:runloop(opt)
+
+    -- start loop
+    self._STARTED = true
+
+    -- run loop
+    opt = opt or {}
+    local ok = true
+    local errors = nil
+    local timeout = opt.timeout or -1
+    while self._STARTED do 
+
+        -- wait events
+        local count, events = poller:wait(timeout)
+        if count < 0 then
+            ok = false
+            errors = events
+            break
+        end
+
+        -- spank the timer and trigger all timeout tasks
+        -- TODO
+
+        -- resume all suspended tasks with events
+        -- TODO
+    end
+
+    -- mark the loop as stopped first
+    self._STARTED = false
+
+    -- TODO resume all suspended tasks
+    -- we cannot suspend them now, all tasks will be exited directly and free all resources.
+    -- ...
+
+    -- finished
+    return ok, errors
 end
 
 -- return module: scheduler

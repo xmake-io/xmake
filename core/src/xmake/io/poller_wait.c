@@ -58,10 +58,6 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
-        return 0;
-
     // get timeout
     tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 1);
 

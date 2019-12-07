@@ -13,4 +13,18 @@ function test_runjobs(t)
     t:are_equal(count, 100)
 end
 
+function test_sleep(t)
+
+    --[[
+    local task = function (a)
+        local dt = os.mclock()
+        scheduler.sleep(500)
+        dt = os.mclock() - dt
+        t:require(dt > 100 and dt < 1000)
+    end
+    for i = 1, 3 do
+        scheduler.co_start(task)
+    end
+    scheduler.runloop()]]
+end
 
