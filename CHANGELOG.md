@@ -18,6 +18,7 @@
 * [#589](https://github.com/xmake-io/xmake/issues/589): Improve the default build jobs number to optimize build speed
 * [#598](https://github.com/xmake-io/xmake/issues/598): Improve find_package to support .tbd libraries on macOS
 * [#615](https://github.com/xmake-io/xmake/issues/615): Support to install and use other archs and ios conan packages
+* [#629](https://github.com/xmake-io/xmake/issues/629): Improve hash.uuid and implement uuid v4
 
 ### Bugs fixed
 
@@ -25,6 +26,7 @@
 * [#566](https://github.com/xmake-io/xmake/issues/566): Fix link order problem with remote packages 
 * [#565](https://github.com/xmake-io/xmake/issues/565): Fix run path for vcpkg packages
 * [#597](https://github.com/xmake-io/xmake/issues/597): Fix run `xmake require` command too slowly
+* [#634](https://github.com/xmake-io/xmake/issues/634): Fix mode.coverage rule and check flags
 
 ## v2.2.8
 
@@ -667,6 +669,7 @@
 * [#589](https://github.com/xmake-io/xmake/issues/589): 改进默认的构建任务数，充分利用cpu core来提速整体编译速度
 * [#598](https://github.com/xmake-io/xmake/issues/598): 改进`find_package`支持在macOS上对.tbd系统库文件的查找
 * [#615](https://github.com/xmake-io/xmake/issues/615): 支持安装和使用其他arch和ios的conan包
+* [#629](https://github.com/xmake-io/xmake/issues/629): 改进hash.uuid并且实现uuid v4
 
 ### Bugs修复
 
@@ -674,6 +677,7 @@
 * [#566](https://github.com/xmake-io/xmake/issues/566): 修复安装远程依赖的链接顺序问题
 * [#565](https://github.com/xmake-io/xmake/issues/565): 修复vcpkg包的运行PATH设置问题
 * [#597](https://github.com/xmake-io/xmake/issues/597): 修复xmake require安装包时间过长问题
+* [#634](https://github.com/xmake-io/xmake/issues/634): 修复mode.coverage构建规则，并且改进flags检测
 
 ## v2.2.8
 
