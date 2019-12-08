@@ -41,6 +41,7 @@ function _try_running(...)
 
     local argv = {...}
     local errors = nil
+    print(argv)
     return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
@@ -86,31 +87,24 @@ end
 -- try running to check flags
 function _check_try_running(flags, opt, islinker)
 
+    -- get extension
+    -- @note we need detect extension for ndk/clang++.exe: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+    local extension = opt.program:endswith("++") and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
+
+    -- make an stub source file
+    local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. extension)
+    if not os.isfile(sourcefile) then
+        io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+    end
+
     -- check flags for linker
     if islinker then
-
-        -- get extension
-        -- @note we need detect extension for ndk/clang++.exe: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
-        local extension = opt.program:endswith("++") and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
-
-        -- make an stub source file
-        local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. extension)
-        if not os.isfile(sourcefile) then
-            io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
-        end
-
-        -- check it
-        return _try_running(opt.program, table.join(flags, "-o", os.nuldev(), sourcefile))
+        return _try_running(opt.program, table.join(flags, "-o", os.tmpfile(), sourcefile))
     end
 
-    -- get language
-    local lang = "c"
-    if opt.toolkind and (opt.toolkind == "cxx" or opt.toolkind == "mxx") then
-        lang = "c++"
-    end
-    
     -- check flags for compiler
-    return _try_running(opt.program, table.join(flags, "-S", "-o", os.nuldev(), "-x" .. lang, os.nuldev(true)))
+    -- @note we cannot use os.nuldev() as the output file, maybe run failed for some flags, e.g. --coverage
+    return _try_running(opt.program, table.join(flags, "-S", "-o", os.tmpfile(), sourcefile))
 end
 
 -- has_flags(flags)?
