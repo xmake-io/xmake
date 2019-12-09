@@ -25,24 +25,64 @@ local object = require("base/object")
 -- define module: timer
 local timer  = timer or object()
 
+-- tostring(timer)
+function timer:__tostring()
+    return string.format("<timer: %s>", self:name())
+end
+
 -- get all timer tasks
 function timer:_tasks()
     return self._TASKS
 end
 
+-- post timer task after delay and will be auto-remove it after be expired
+function timer:post(func, delay, opt)
+    return self:post_at(task, os.mclock() + delay, delay, opt)
+end
+
 -- post timer task at the absolute time and will be auto-remove it after be expired
-function timer:post_at(when, period, is_repeat, task)
+--
+-- we can mark the returned task as canceled to cancel the pending task, e.g. task.cancel = true
+--
+function timer:post_at(func, when, period, opt)
+    opt = opt or {}
+    local task = {when = when, func = func, period = period, continuous = opt.continuous, cancel = false}
+    self:_tasks():push(task)
+    return task
+end
+
+-- post timer task after the relative time and will be auto-remove it after be expired
+function timer:post_after(func, after, period, opt)
+    return self:post_at(func, os.mclock() + after, period, opt)
+end
+
+-- get the delay of next task
+function timer:delay()
+    local delay = -1
+    local tasks = self:_tasks()
+    if tasks:length() > 0 then
+        local task = tasks:peek()
+        if task then
+            local now = os.mclock()
+            delay = task.when > now and task.when - now or 0
+        end
+    end
+    return delay
+end
+
+-- run the timer loop
+function timer:runloop()
     -- TODO
 end
 
 -- get timer name
 function timer:name()
-    return self._NAME
+    return self._NAME 
 end
 
 -- init timer
 function timer:init(name)
-    self._NAME  = name
+    self._NAME  = name or "none"
     self._TASKS = heap.valueheap {cmp = function(a, b)
         return a.when < b.when
     end}
