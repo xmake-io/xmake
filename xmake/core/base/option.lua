@@ -212,6 +212,11 @@ function option.init(menu)
         if not argkv_end and key:startswith("--") then
             key = key:sub(3)
             prefix = 2
+        -- -kvalue?
+        elseif not argkv_end and key:startswith("-") and #key > 2 then
+            value = key:sub(3)
+            key = key:sub(2, 2)
+            prefix = 1
         -- -k?
         elseif not argkv_end and key:startswith("-") then
             key = key:sub(2)
@@ -220,15 +225,11 @@ function option.init(menu)
 
         -- check key
         if prefix and #key == 0 then
-
-            -- print menu
             option.show_menu(context.taskname)
-
-            -- invalid option
             return false, "invalid option: " .. arg
         end
 
-        -- --key=value or -k value or -k?
+        -- --key=value or -kvalue or -k value or -k?
         if prefix ~= 0 then
 
             -- find this option
@@ -258,42 +259,26 @@ function option.init(menu)
 
             -- not found?
             if not opt then
-
-                -- print menu
                 option.show_menu(context.taskname)
-
-                -- invalid option
                 return false, "invalid option: " .. arg
             end
 
-            -- -k value? continue to get the value
+            -- -k value or -kvalue? continue to get the value
             if prefix == 1 and opt[3] == "kv" then
-
-                -- get the next idx and arg
-                idx, arg = _iter(_s, _k)
-
-                -- exists value?
-                _k = idx
-                if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
-
-                    -- print menu
-                    option.show_menu(context.taskname)
-
-                    -- invalid option
-                    return false, "invalid option: " .. option._ifelse(idx, arg, key)
+                if type(value) ~= "string" then
+                    idx, arg = _iter(_s, _k)
+                    _k = idx
+                    if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
+                        option.show_menu(context.taskname)
+                        return false, "invalid option: " .. option._ifelse(idx, arg, key)
+                    end
+                    value = arg
                 end
-
-                -- get value
-                value = arg
             end
 
             -- check mode
             if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
-
-                -- print menu
                 option.show_menu(context.taskname)
-
-                -- invalid option
                 return false, "invalid option: " .. arg
             end
 
@@ -486,6 +471,11 @@ function option.parse(argv, options)
         if not argkv_end and key:startswith("--") then
             key = key:sub(3)
             prefix = 2
+        -- -kvalue?
+        elseif not argkv_end and key:startswith("-") and #key > 2 then
+            value = key:sub(3)
+            key = key:sub(2, 2)
+            prefix = 1
         -- -k?
         elseif not argkv_end and key:startswith("-") then
             key = key:sub(2)
@@ -494,12 +484,10 @@ function option.parse(argv, options)
 
         -- check key
         if prefix and #key == 0 then
-
-            -- failed
             return nil, "invalid option: " .. arg
         end
 
-        -- --key=value or -k value or -k?
+        -- --key=value or -kvalue or -k value or -k?
         if prefix ~= 0 then
 
             -- find this option
@@ -529,33 +517,23 @@ function option.parse(argv, options)
 
             -- not found?
             if not opt then
-
-                -- failed
                 return nil, "invalid option: " .. arg
             end
 
-            -- -k value? continue to get the value
+            -- -k value or -kvalue? continue to get the value
             if prefix == 1 and opt[3] == "kv" then
-
-                -- get the next idx and arg
-                idx, arg = _iter(_s, _k)
-
-                -- exists value?
-                _k = idx
-                if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
-
-                    -- failed
-                    return nil, "invalid option: " .. option._ifelse(idx, arg, key)
+                if type(value) ~= "string" then
+                    idx, arg = _iter(_s, _k)
+                    _k = idx
+                    if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
+                        return nil, "invalid option: " .. option._ifelse(idx, arg, key)
+                    end
+                    value = arg
                 end
-
-                -- get value
-                value = arg
             end
 
             -- check mode
             if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
-
-                -- failed
                 return nil, "invalid option: " .. arg
             end
 

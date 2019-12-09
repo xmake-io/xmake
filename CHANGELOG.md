@@ -19,6 +19,7 @@
 * [#598](https://github.com/xmake-io/xmake/issues/598): Improve find_package to support .tbd libraries on macOS
 * [#615](https://github.com/xmake-io/xmake/issues/615): Support to install and use other archs and ios conan packages
 * [#629](https://github.com/xmake-io/xmake/issues/629): Improve hash.uuid and implement uuid v4
+* [#639](https://github.com/xmake-io/xmake/issues/639): Improve to parse argument options to support -jN
 
 ### Bugs fixed
 
@@ -670,6 +671,7 @@
 * [#598](https://github.com/xmake-io/xmake/issues/598): 改进`find_package`支持在macOS上对.tbd系统库文件的查找
 * [#615](https://github.com/xmake-io/xmake/issues/615): 支持安装和使用其他arch和ios的conan包
 * [#629](https://github.com/xmake-io/xmake/issues/629): 改进hash.uuid并且实现uuid v4
+* [#639](https://github.com/xmake-io/xmake/issues/639): 改进参数解析器支持`-jN`风格传参
 
 ### Bugs修复
 
