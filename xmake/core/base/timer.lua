@@ -37,7 +37,7 @@ end
 
 -- post timer task after delay and will be auto-remove it after be expired
 function timer:post(func, delay, opt)
-    return self:post_at(task, os.mclock() + delay, delay, opt)
+    return self:post_at(func, os.mclock() + delay, delay, opt)
 end
 
 -- post timer task at the absolute time and will be auto-remove it after be expired
@@ -58,7 +58,7 @@ end
 
 -- get the delay of next task
 function timer:delay()
-    local delay = -1
+    local delay = nil
     local tasks = self:_tasks()
     if tasks:length() > 0 then
         local task = tasks:peek()
@@ -70,9 +70,32 @@ function timer:delay()
     return delay
 end
 
--- run the timer loop
-function timer:runloop()
-    -- TODO
+-- run the timer next loop
+function timer:next()
+    local tasks = self:_tasks()
+    while tasks:length() > 0 do
+        local triggered = false
+        local task = tasks:peek()
+        if task then
+            -- timeout?
+            local now = os.mclock()
+            if task.when <= now then
+                tasks:pop()
+                if task.continuous and not task.cancel then
+                    task.when = now + task.period
+                    tasks:push(task)
+                end
+                -- run timer task
+                if task.func then
+                    task.func(task.cancel)
+                    triggered = true
+                end
+            end
+        end
+        if not triggered then
+            break
+        end
+    end
 end
 
 -- get timer name

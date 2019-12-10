@@ -27,6 +27,7 @@ local table     = require("base/table")
 local option    = require("base/option")
 local string    = require("base/string")
 local poller    = require("base/poller")
+local timer     = require("base/timer")
 local coroutine = require("base/coroutine")
 
 -- new a coroutine instance
@@ -83,15 +84,24 @@ function _coroutine:__gc()
     self._THREAD = nil
 end
 
+-- get the timer of scheduler
+function scheduler:_timer()
+    local t = self._TIMER
+    if t == nil then
+        t = timer:new()
+        self._TIMER = t
+    end
+    return t
+end
+
 -- wait the current coroutine
-function scheduler:_co_wait()
-    -- TODO
-    self:co_suspend()
+function scheduler:_co_wait(...)
+    return self:co_suspend(...)
 end
 
 -- wake the given coroutine
-function scheduler:_co_wake(co)
-    -- TODO
+function scheduler:_co_wake(co, ...)
+    return self:co_resume(co, ...)
 end
 
 -- start a new coroutine task
@@ -146,27 +156,27 @@ end
 
 -- sleep some times (ms)
 function scheduler:sleep(ms)
-
-    print(require("sys"))
-    print("sleep", ms)
-
-    self:_co_wait()
+    local running = self:co_running()
+    if not running then
+        return false, "we must call sleep() in coroutine with scheduler!"
+    end
+    self:_timer():post(function (cancel) 
+        self:co_resume(running)
+    end, ms)
+    self:co_suspend()
     return true
-end
-
--- the loop is started?
-function scheduler:is_started()
-    return self._STARTED
 end
 
 -- stop the scheduler loop
 function scheduler:stop()
     -- TODO post a kill signal to poller
+    -- stop timer and cancel all tasks
     self._STARTED = false
+    return true
 end
 
 -- run loop, schedule coroutine with socket/io and sub-processes
-function scheduler:runloop(opt)
+function scheduler:runloop()
 
     -- start loop
     self._STARTED = true
@@ -175,8 +185,11 @@ function scheduler:runloop(opt)
     opt = opt or {}
     local ok = true
     local errors = nil
-    local timeout = opt.timeout or -1
+    local timeout = -1
     while self._STARTED do 
+
+        -- get the next timeout
+        timeout = self:_timer():delay() or 1000
 
         -- wait events
         local count, events = poller:wait(timeout)
@@ -187,7 +200,7 @@ function scheduler:runloop(opt)
         end
 
         -- spank the timer and trigger all timeout tasks
-        -- TODO
+        self:_timer():next()
 
         -- resume all suspended tasks with events
         -- TODO

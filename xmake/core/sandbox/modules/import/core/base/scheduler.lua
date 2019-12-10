@@ -66,9 +66,18 @@ function sandbox_core_base_scheduler.sleep(ms)
     end
 end
 
+
+-- stop loop
+function sandbox_core_base_scheduler.stop()
+    local ok, errors = scheduler:stop()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- run loop
-function sandbox_core_base_scheduler.runloop(opt)
-    local ok, errors = scheduler:runloop(opt)
+function sandbox_core_base_scheduler.runloop()
+    local ok, errors = scheduler:runloop()
     if not ok then
         raise(errors)
     end

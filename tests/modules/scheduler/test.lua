@@ -15,16 +15,20 @@ end
 
 function test_sleep(t)
 
-    --[[
+    local count = 0
     local task = function (a)
         local dt = os.mclock()
         scheduler.sleep(500)
         dt = os.mclock() - dt
         t:require(dt > 100 and dt < 1000)
+        count = count + 1
+        if count == 3 then
+            scheduler.stop()
+        end
     end
     for i = 1, 3 do
         scheduler.co_start(task)
     end
-    scheduler.runloop()]]
+    scheduler.runloop()
 end
 
