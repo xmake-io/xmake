@@ -18,7 +18,7 @@ function test_sleep(t)
     local count = 0
     local task = function (a)
         local dt = os.mclock()
-        scheduler.sleep(500)
+        os.sleep(500)
         dt = os.mclock() - dt
         t:require(dt > 100 and dt < 1000)
         count = count + 1

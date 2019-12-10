@@ -25,6 +25,7 @@ local utils     = require("base/utils")
 local xmake     = require("base/xmake")
 local option    = require("base/option")
 local semver    = require("base/semver")
+local scheduler = require("base/scheduler")
 local sandbox   = require("sandbox/sandbox")
 local vformat   = require("sandbox/modules/vformat")
 
@@ -41,7 +42,6 @@ sandbox_os.args         = os.args
 sandbox_os.argv         = os.argv
 sandbox_os.argw         = os.argw
 sandbox_os.mtime        = os.mtime
-sandbox_os.sleep        = os.sleep
 sandbox_os.raise        = os.raise
 sandbox_os.fscase       = os.fscase
 sandbox_os.isroot       = os.isroot
@@ -479,6 +479,18 @@ function sandbox_os.readlink(symlink)
         os.raise("cannot read link(%s)", symlink)
     end
     return result
+end
+
+-- sleep (support in coroutine)
+function sandbox_os.sleep(ms)
+    if scheduler:co_running() then
+        local ok, errors = scheduler:sleep(ms)
+        if not ok then
+            raise(errors)
+        end
+    else
+        os.sleep(ms)
+    end
 end
 
 -- get xmake version
