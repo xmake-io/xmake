@@ -28,13 +28,13 @@ function _listen(addr, port)
         local sock_client = sock:accept()
         if sock_client then
             print("%s: accepted", sock_client) 
-            scheduler.run(_session, sock_client) 
+            scheduler.co_start(_session, sock_client) 
         end
     end
     sock:close()
 end
 
 function main()
-    scheduler.run(_listen, "127.0.0.1", 9001)
+    scheduler.co_start(_listen, "127.0.0.1", 9001)
     scheduler.runloop()
 end

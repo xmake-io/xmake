@@ -25,13 +25,18 @@ local poller = poller or {}
 local io     = require("base/io")
 local string = require("base/string")
 
+-- the poller object type
+poller.OT_SOCK = 1
+poller.OT_PROC = 2
+poller.OT_PIPE = 3
+
 -- get socket wait data 
-function poller:_waitdata(sock)
+function poller:_sockdata(sock)
     return self._CACHE and self._CACHE[sock] or nil
 end
 
 -- set socket wait data
-function poller:_waitdata_set(sock, data)
+function poller:_sockdata_set(sock, data)
     local cache = self._CACHE 
     if not cache then
         cache = {}
@@ -41,7 +46,7 @@ function poller:_waitdata_set(sock, data)
 end
 
 -- insert socket events to poller
-function poller:insert(sock, events)
+function poller:_insert_sock(sock, events, udata)
 
     -- ensure opened
     local ok, errors = sock:_ensure_opened()
@@ -50,17 +55,17 @@ function poller:insert(sock, events)
     end
 
     -- insert it
-    if not io.poller_insert(sock._SOCK, events) then
-        return false, string.format("insert %s events(%d) to poller failed!", sock, events)
+    if not io.poller_insert(sock:csock(), events) then
+        return false, string.format("%s: insert events(%d) to poller failed!", sock, events)
     end
 
-    -- save wait data and save sock/ref for gc
-    self:_waitdata_set(sock._SOCK, {sock, events})
+    -- save socket data and save sock/ref for gc
+    self:_sockdata_set(sock:csock(), udata)
     return true
 end
 
 -- modify socket events in poller
-function poller:modify(sock, events)
+function poller:_modify_sock(sock, events, udata)
 
     -- ensure opened
     local ok, errors = sock:_ensure_opened()
@@ -69,17 +74,17 @@ function poller:modify(sock, events)
     end
 
     -- modify it
-    if not io.poller_modify(sock._SOCK, events) then
-        return false, string.format("modify %s events(%d) to poller failed!", sock, events)
+    if not io.poller_modify(sock:csock(), events) then
+        return false, string.format("%s: modify events(%d) to poller failed!", sock, events)
     end
 
-    -- update wait data for this socket
-    self:_waitdata_set(sock._SOCK, {sock, events})
+    -- update socket data for this socket
+    self:_sockdata_set(sock:csock(), udata)
     return true
 end
 
 -- remove socket from poller
-function poller:remove(sock)
+function poller:_remove_sock(sock)
 
     -- ensure opened
     local ok, errors = sock:_ensure_opened()
@@ -88,34 +93,56 @@ function poller:remove(sock)
     end
 
     -- remove it
-    if not io.poller_remove(sock._SOCK) then
-        return false, string.format("remove %s from poller failed!", sock)
+    if not io.poller_remove(sock:csock()) then
+        return false, string.format("%s: remove events from poller failed!", sock)
     end
 
-    -- remove wait data for this socket
-    self:_waitdata_set(sock, nil)
+    -- remove socket data for this socket
+    self:_sockdata_set(sock, nil)
     return true
+end
+
+-- insert object events to poller
+function poller:insert(otype, obj, events, udata)
+    if otype == poller.OT_SOCK then
+        return self:_insert_sock(obj, events, udata)
+    end
+    return false, string.format("invalid poller object type(%d)!", otype)
+end
+
+-- modify object events in poller
+function poller:modify(otype, obj, events, udata)
+    if otype == poller.OT_SOCK then
+        return self:_modify_sock(obj, events, udata)
+    end
+    return false, string.format("invalid poller object type(%d)!", otype)
+end
+
+-- remove socket from poller
+function poller:remove(otype, obj)
+    if otype == poller.OT_SOCK then
+        return self:_remove_sock(obj)
+    end
+    return false, string.format("invalid poller object type(%d)!", otype)
 end
 
 -- wait socket events in poller
 function poller:wait(timeout)
 
     -- wait it
-    local sockevents, count = io.poller_wait(timeout or -1) 
+    local events, count = io.poller_wait(timeout or -1) 
     if count < 0 then
         return -1, "wait events in poller failed!"
     end
 
     -- wrap socket 
     local results = {}
-    if sockevents then
-        for _, v in ipairs(sockevents) do
-            local sock     = v[1]
-            local events   = v[2]
-            local waitdata = self:_waitdata(sock)
-            if waitdata then
-                results[waitdata[1]] = events
-            end
+    if events then
+        for _, v in ipairs(events) do
+            -- TODO only socket events now. It will be proc/pipe events in the future
+            local csock      = v[1]
+            local sockevents = v[2]
+            table.insert(results, {poller.OT_SOCK,  sockevents, self:_sockdata(csock)})
         end
     end
     return count, results

@@ -64,6 +64,11 @@ function _instance:family()
     return self._FAMILY
 end
 
+-- get cdata socket
+function _instance:csock()
+    return self._SOCK
+end
+
 -- get socket rawfd
 function _instance:rawfd()
 
@@ -74,7 +79,7 @@ function _instance:rawfd()
     end
 
     -- get rawfd
-    local result, errors = io.socket_rawfd(self._SOCK)
+    local result, errors = io.socket_rawfd(self:csock())
     if not result and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -91,7 +96,7 @@ function _instance:bind(addr, port)
     end
 
     -- bind it
-    local ok, errors = io.socket_bind(self._SOCK, addr, port, self:family())
+    local ok, errors = io.socket_bind(self:csock(), addr, port, self:family())
     if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -108,7 +113,7 @@ function _instance:listen(backlog)
     end
 
     -- listen it
-    local ok, errors = io.socket_listen(self._SOCK, backlog or 10)
+    local ok, errors = io.socket_listen(self:csock(), backlog or 10)
     if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -125,12 +130,12 @@ function _instance:accept(opt)
     end
 
     -- accept it
-    local sock, errors = io.socket_accept(self._SOCK)
+    local sock, errors = io.socket_accept(self:csock())
     if not sock and not errors then
         opt = opt or {}
         local events, waiterrs = self:wait(socket.EV_ACPT, opt.timeout or -1)
         if events == socket.EV_ACPT then
-            sock, errors = io.socket_accept(self._SOCK)
+            sock, errors = io.socket_accept(self:csock())
         else
             errors = waiterrs
         end
@@ -154,12 +159,12 @@ function _instance:connect(addr, port, opt)
     end
 
     -- connect it
-    local ok, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+    local ok, errors = io.socket_connect(self:csock(), addr, port, self:family())
     if ok == 0 then
         opt = opt or {}
         local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
         if events == socket.EV_CONN then
-            ok, errors = io.socket_connect(self._SOCK, addr, port, self:family())
+            ok, errors = io.socket_connect(self:csock(), addr, port, self:family())
         else
             errors = waiterrs
         end
@@ -204,7 +209,7 @@ function _instance:send(data, opt)
     if opt.block then
         local size = last + 1 - start
         while start <= last do
-            real, errors = io.socket_send(self._SOCK, data, start, last)
+            real, errors = io.socket_send(self:csock(), data, start, last)
             if real > 0 then
                 send = send + real
                 start = start + real
@@ -225,7 +230,7 @@ function _instance:send(data, opt)
             send = -1
         end
     else
-        send, errors = io.socket_send(self._SOCK, data, start, last)
+        send, errors = io.socket_send(self:csock(), data, start, last)
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end
@@ -266,7 +271,7 @@ function _instance:sendfile(file, opt)
     if opt.block then
         local size = last + 1 - start
         while start <= last do
-            real, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
+            real, errors = io.socket_sendfile(self:csock(), file._FILE, start, last)
             if real > 0 then
                 send = send + real
                 start = start + real
@@ -287,7 +292,7 @@ function _instance:sendfile(file, opt)
             send = -1
         end
     else
-        send, errors = io.socket_sendfile(self._SOCK, file._FILE, start, last)
+        send, errors = io.socket_sendfile(self:csock(), file._FILE, start, last)
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end
@@ -320,7 +325,7 @@ function _instance:recv(size, opt)
     if opt.block then
         local results = {}
         while recv < size do
-            real, data_or_errors = io.socket_recv(self._SOCK, size - recv)
+            real, data_or_errors = io.socket_recv(self:csock(), size - recv)
             if real > 0 then
                 recv = recv + real
                 wait = false
@@ -343,7 +348,7 @@ function _instance:recv(size, opt)
             recv = -1
         end
     else
-        recv, data_or_errors = io.socket_recv(self._SOCK, size)
+        recv, data_or_errors = io.socket_recv(self:csock(), size)
         if recv > 0 then
             data_or_errors = bytes(data_or_errors)
         end
@@ -385,7 +390,7 @@ function _instance:sendto(data, addr, port, opt)
     local errors = nil
     if opt.block then
         while true do
-            send, errors = io.socket_sendto(self._SOCK, data, addr, port, self:family())
+            send, errors = io.socket_sendto(self:csock(), data, addr, port, self:family())
             if send == 0 and not wait then
                 local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
@@ -399,7 +404,7 @@ function _instance:sendto(data, addr, port, opt)
             end
         end
     else
-        send, errors = io.socket_sendto(self._SOCK, data, addr, port, self:family())
+        send, errors = io.socket_sendto(self:csock(), data, addr, port, self:family())
         if send < 0 and errors then
             errors = string.format("%s: %s", self, errors)
         end
@@ -435,7 +440,7 @@ function _instance:recvfrom(size, opt)
     local data_or_errors = nil
     if opt.block then
         while true do
-            recv, data_or_errors, addr, port = io.socket_recvfrom(self._SOCK, size)
+            recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), size)
             if recv > 0 then
                 data_or_errors = bytes(data_or_errors)
                 break
@@ -453,7 +458,7 @@ function _instance:recvfrom(size, opt)
             end
         end
     else
-        recv, data_or_errors, addr, port = io.socket_recvfrom(self._SOCK, size)
+        recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), size)
         if recv > 0 then
             data_or_errors = bytes(data_or_errors)
         end
@@ -474,17 +479,17 @@ function _instance:wait(events, timeout)
     end
 
     -- wait events
-    local events = -1
+    local result = -1
     local errors = nil
     if scheduler:co_running() then
-        events, errors = scheduler:waitsock(self._SOCK, events, timeout or -1)
+        result, errors = scheduler:waitsock(self, events, timeout or -1)
     else
-        events, errors = io.socket_wait(self._SOCK, events, timeout or -1)
+        result, errors = io.socket_wait(self:csock(), events, timeout or -1)
     end
-    if events < 0 and errors then
+    if result < 0 and errors then
         errors = string.format("%s: %s", self, errors)
     end
-    return events, errors
+    return result, errors
 end
 
 -- close socket
@@ -497,7 +502,7 @@ function _instance:close()
     end
 
     -- close it
-    ok = io.socket_close(self._SOCK)
+    ok = io.socket_close(self:csock())
     if ok then
         self._SOCK = nil
     end
@@ -506,7 +511,7 @@ end
 
 -- ensure the socket is opened
 function _instance:_ensure_opened()
-    if not self._SOCK then
+    if not self:csock() then
         return false, string.format("%s: has been closed!", self)
     end
     return true
@@ -521,7 +526,7 @@ end
 
 -- gc(socket)
 function _instance:__gc()
-    if self._SOCK and io.socket_close(self._SOCK) then
+    if self:csock() and io.socket_close(self:csock()) then
         self._SOCK = nil
     end
 end

@@ -32,6 +32,13 @@
 #include "poller.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * globals
+ */
+
+// we need only one global poller and main thread, so it is thread-safe.
+static tb_int_t g_events_count = 0;
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
 static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_socket_ref_t sock, tb_size_t events, tb_cpointer_t priv)
@@ -46,6 +53,7 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_socket_ref_t sock
     lua_rawseti(lua, -2, 1);
     lua_pushinteger(lua, (tb_int_t)events);
     lua_rawseti(lua, -2, 2);
+    lua_rawseti(lua, -2, ++g_events_count);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -63,10 +71,10 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
 
     // wait it
     lua_newtable(lua);
+    g_events_count = 0;
     tb_long_t count = tb_poller_wait(xm_io_poller(), xm_io_poller_event, timeout);
     if (count > 0)
     {
-        lua_rawseti(lua, -2, (tb_int_t)count);
         lua_pushinteger(lua, (tb_int_t)count);
         return 2;
     } 

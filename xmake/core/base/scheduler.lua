@@ -94,16 +94,6 @@ function scheduler:_timer()
     return t
 end
 
--- wait the current coroutine
-function scheduler:_co_wait(...)
-    return self:co_suspend(...)
-end
-
--- wake the given coroutine
-function scheduler:_co_wake(co, ...)
-    return self:co_resume(co, ...)
-end
-
 -- start a new coroutine task
 function scheduler:co_start(cotask, ...)
     return self:co_start_named(nil, cotask, ...)
@@ -150,19 +140,61 @@ end
 -- wait socket events
 function scheduler:waitsock(sock, events, timeout)
 
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return -1, "we must call waitsock() in coroutine with scheduler!"
+    end
+
+    io.print("wait sock: %s events: %d timeout: %d", sock, events, timeout)
+
+    -- the socket events callback
+    local function sockevents_cb(sockevents)
+        -- TODO
+        self:co_resume(running, sockevents)
+    end
+
+    -- add socket events to poller
     -- TODO
-    return 0
+    
+    -- insert socket to poller for waiting events
+    local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
+    if not ok then
+        return -1, errors
+    end
+
+    -- register timeout task to timer
+    if timeout > 0 then
+        self:_timer():post(function (cancel) 
+            -- TODO
+            self:co_resume(running, 0)
+        end, timeout)
+    end
+
+    -- wait
+    return self:co_suspend()
 end
 
 -- sleep some times (ms)
 function scheduler:sleep(ms)
+
+    -- we need not do sleep 
+    if ms == 0 then
+        return true
+    end
+
+    -- get the running coroutine
     local running = self:co_running()
     if not running then
         return false, "we must call sleep() in coroutine with scheduler!"
     end
+
+    -- register timeout task to timer
     self:_timer():post(function (cancel) 
         self:co_resume(running)
     end, ms)
+
+    -- wait
     self:co_suspend()
     return true
 end
@@ -199,11 +231,24 @@ function scheduler:runloop()
             break
         end
 
+        -- resume all suspended tasks with events
+        for _, e in ipairs(events) do
+            local otype = e[1]
+            if otype == poller.OT_SOCK then
+                local sockevents = e[2]
+                local sockfunc   = e[3]
+                if sockfunc then
+                    sockfunc(sockevents)
+                end
+            else
+                ok = false
+                errors = string.format("invalid poller object type(%d)", otype)
+                break
+            end
+        end
+
         -- spank the timer and trigger all timeout tasks
         self:_timer():next()
-
-        -- resume all suspended tasks with events
-        -- TODO
     end
 
     -- mark the loop as stopped first

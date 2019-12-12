@@ -22,7 +22,7 @@ end
 function main(count)
     count = count and tonumber(count) or 1
     for i = 1, count do
-        scheduler.run(_session, "127.0.0.1", 9001)
+        scheduler.co_start(_session, "127.0.0.1", 9001)
     end
     scheduler.runloop()
 end
