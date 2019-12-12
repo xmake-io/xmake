@@ -35,8 +35,9 @@
  * globals
  */
 
-// we need only one global poller and main thread, so it is thread-safe.
-static tb_int_t g_events_count = 0;
+// we need only one global lua state/poller in main thread, so it is thread-safe.
+static lua_State* g_lua = tb_null;
+static tb_int_t   g_events_count = 0;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
@@ -44,16 +45,15 @@ static tb_int_t g_events_count = 0;
 static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_socket_ref_t sock, tb_size_t events, tb_cpointer_t priv)
 {
     // check
-    lua_State* lua = (lua_State*)priv;
-    tb_assert_and_check_return(lua);
+    tb_assert_and_check_return(g_lua && !g_events_count);
 
     // save socket and events
-    lua_newtable(lua);
-    lua_pushlightuserdata(lua, (tb_pointer_t)sock);
-    lua_rawseti(lua, -2, 1);
-    lua_pushinteger(lua, (tb_int_t)events);
-    lua_rawseti(lua, -2, 2);
-    lua_rawseti(lua, -2, ++g_events_count);
+    lua_newtable(g_lua);
+    lua_pushlightuserdata(g_lua, (tb_pointer_t)sock);
+    lua_rawseti(g_lua, -2, 1);
+    lua_pushinteger(g_lua, (tb_int_t)events);
+    lua_rawseti(g_lua, -2, 2);
+    lua_rawseti(g_lua, -2, ++g_events_count);
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -69,9 +69,12 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
     // get timeout
     tb_long_t timeout = (tb_long_t)luaL_checknumber(lua, 1);
 
+    // pass lua and count to the events callback
+    g_lua = lua;
+    g_events_count = 0;
+
     // wait it
     lua_newtable(lua);
-    g_events_count = 0;
     tb_long_t count = tb_poller_wait(xm_io_poller(), xm_io_poller_event, timeout);
     if (count > 0)
     {

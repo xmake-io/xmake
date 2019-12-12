@@ -146,8 +146,6 @@ function scheduler:waitsock(sock, events, timeout)
         return -1, "we must call waitsock() in coroutine with scheduler!"
     end
 
-    io.print("wait sock: %s events: %d timeout: %d", sock, events, timeout)
-
     -- the socket events callback
     local function sockevents_cb(sockevents)
         -- TODO
