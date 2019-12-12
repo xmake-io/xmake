@@ -38,7 +38,7 @@ socket.ICMP  = 3
 socket.IPV4  = 1
 socket.IPV6  = 2
 
--- the socket events
+-- the socket events, @see tbox/platform/socket.h
 socket.EV_RECV = 1
 socket.EV_SEND = 2
 socket.EV_CONN = socket.EV_SEND

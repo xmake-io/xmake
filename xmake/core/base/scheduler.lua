@@ -94,6 +94,21 @@ function scheduler:_timer()
     return t
 end
 
+-- get socket events 
+function scheduler:_sockevents(csock)
+    return self._SOCKEVENTS and self._SOCKEVENTS[csock] or nil
+end
+
+-- set socket events
+function scheduler:_sockevents_set(csock, data)
+    local sockevents = self._SOCKEVENTS 
+    if not sockevents then
+        sockevents = {}
+        self._SOCKEVENTS = sockevents
+    end
+    sockevents[csock] = data
+end
+
 -- start a new coroutine task
 function scheduler:co_start(cotask, ...)
     return self:co_start_named(nil, cotask, ...)
@@ -147,18 +162,23 @@ function scheduler:waitsock(sock, events, timeout)
     end
 
     -- the socket events callback
-    local function sockevents_cb(sockevents)
+    local function sockevents_cb(events)
+
         -- TODO
-        self:co_resume(running, sockevents)
+        self:co_resume(running, events)
     end
 
-    -- add socket events to poller
-    -- TODO
-    
-    -- insert socket to poller for waiting events
-    local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
-    if not ok then
-        return -1, errors
+    -- get the previous socket events
+    local events_prev = self:_sockevents(sock:csock())
+    if events_prev then
+        -- TODO
+        print("not impl")
+    else
+        -- insert socket to poller for waiting events
+        local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
+        if not ok then
+            return -1, errors
+        end
     end
 
     -- register timeout task to timer

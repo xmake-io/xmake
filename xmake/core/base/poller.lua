@@ -30,19 +30,29 @@ poller.OT_SOCK = 1
 poller.OT_PROC = 2
 poller.OT_PIPE = 3
 
--- get socket wait data 
-function poller:_sockdata(sock)
-    return self._CACHE and self._CACHE[sock] or nil
+-- the poller events, @see tbox/platform/poller.h
+poller.EV_SOCK_RECV    = 1
+poller.EV_SOCK_SEND    = 2
+poller.EV_SOCK_CONN    = poller.EV_SOCK_SEND
+poller.EV_SOCK_ACPT    = poller.EV_SOCK_RECV
+poller.EV_SOCK_CLEAR   = 0x0010 -- edge trigger. after the event is retrieved by the user, its state is reset
+poller.EV_SOCK_ONESHOT = 0x0010 -- causes the event to return only the first occurrence of the filter being triggered
+poller.EV_SOCK_EOF     = 0x0100 -- the event flag will be marked if the connection be closed in the edge trigger
+poller.EV_SOCK_ERROR   = 0x0200 -- socket error after waiting
+
+-- get socket data 
+function poller:_sockdata(csock)
+    return self._SOCKDATA and self._SOCKDATA[csock] or nil
 end
 
--- set socket wait data
-function poller:_sockdata_set(sock, data)
-    local cache = self._CACHE 
-    if not cache then
-        cache = {}
-        self._CACHE = cache
+-- set socket data
+function poller:_sockdata_set(csock, data)
+    local sockdata = self._SOCKDATA 
+    if not sockdata then
+        sockdata = {}
+        self._SOCKDATA = sockdata
     end
-    cache[sock] = data
+    sockdata[csock] = data
 end
 
 -- insert socket events to poller
