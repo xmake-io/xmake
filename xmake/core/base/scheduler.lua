@@ -29,6 +29,7 @@ local string    = require("base/string")
 local poller    = require("base/poller")
 local timer     = require("base/timer")
 local coroutine = require("base/coroutine")
+local bit       = require("bit")
 
 -- new a coroutine instance
 function _coroutine.new(name, thread)
@@ -96,7 +97,7 @@ end
 
 -- get socket events 
 function scheduler:_sockevents(csock)
-    return self._SOCKEVENTS and self._SOCKEVENTS[csock] or nil
+    return self._SOCKEVENTS and self._SOCKEVENTS[csock] or 0
 end
 
 -- set socket events
@@ -161,16 +162,39 @@ function scheduler:waitsock(sock, events, timeout)
         return -1, "we must call waitsock() in coroutine with scheduler!"
     end
 
-    -- the socket events callback
-    local function sockevents_cb(events)
+    -- enable edge-trigger mode if be supported
+    if poller:support(poller.OT_SOCK, poller.EV_SOCK_CLEAR) then
+        events = bit.bor(events, poller.EV_SOCK_CLEAR)
+    end
 
-        -- TODO
-        self:co_resume(running, events)
+    -- the socket events callback
+    local function sockevents_cb(sockevents)
+
+        -- get the previous socket events
+        local events_prev = self:_sockevents(sock:csock())
+        local events_wait = bit.band(events_prev, 0xffff)
+        local events_save = bit.rshift(events_prev, 16)
+
+        -- TODO is waiting?
+        if true then
+        
+            -- eof for edge trigger?
+            if bit.band(sockevents, poller.EV_SOCK_EOF) ~= 0 then
+                -- cache this eof as next recv/send event
+                sockevents  = bit.band(sockevents, bit.bnot(poller.EV_SOCK_EOF))
+                events_save = bit.bor(events_save, events_wait)
+                self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_save, 16), events_wait))
+            end
+            self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
+        else
+            -- cache socket events
+            -- TODO
+        end
     end
 
     -- get the previous socket events
     local events_prev = self:_sockevents(sock:csock())
-    if events_prev then
+    if events_prev ~= 0 then
         -- TODO
         print("not impl")
     else

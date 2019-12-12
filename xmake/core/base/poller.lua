@@ -112,6 +112,14 @@ function poller:_remove_sock(sock)
     return true
 end
 
+-- support events?
+function poller:support(otype, events)
+    if otype == poller.OT_SOCK then
+        return io.poller_support(events)
+    end
+    return false, string.format("invalid poller object type(%d)!", otype)
+end
+
 -- insert object events to poller
 function poller:insert(otype, obj, events, udata)
     if otype == poller.OT_SOCK then

@@ -65,6 +65,7 @@ xmake_C_FILES 			+= \
 						io/poller_insert \
 						io/poller_remove \
 						io/poller_modify \
+						io/poller_support \
 						io/socket_open \
 						io/socket_rawfd \
 						io/socket_wait \

@@ -128,6 +128,7 @@ tb_int_t xm_io_socket_close(lua_State* lua);
 tb_int_t xm_io_poller_insert(lua_State* lua);
 tb_int_t xm_io_poller_modify(lua_State* lua);
 tb_int_t xm_io_poller_remove(lua_State* lua);
+tb_int_t xm_io_poller_support(lua_State* lua);
 tb_int_t xm_io_poller_wait(lua_State* lua);
 
 // the path functions
@@ -278,6 +279,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "poller_insert",      xm_io_poller_insert    }
 ,   { "poller_modify",      xm_io_poller_modify    }
 ,   { "poller_remove",      xm_io_poller_remove    }
+,   { "poller_support",     xm_io_poller_support   }
 ,   { "poller_wait",        xm_io_poller_wait      }
 ,   { tb_null,              tb_null                }
 };
