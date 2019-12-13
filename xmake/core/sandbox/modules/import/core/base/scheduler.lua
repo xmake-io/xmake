@@ -58,6 +58,11 @@ function sandbox_core_base_scheduler.co_running()
     return scheduler:co_running()
 end
 
+-- get the all coroutine task count
+function sandbox_core_base_scheduler.co_count()
+    return scheduler:co_count()
+end
+
 -- sleep some times (ms)
 function sandbox_core_base_scheduler.sleep(ms)
     local ok, errors = scheduler:sleep(ms)

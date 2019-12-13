@@ -121,8 +121,12 @@ function scheduler:co_start_named(coname, cotask, ...)
     co = _coroutine.new(coname, coroutine.create(function(...) 
         cotask(...)
         self:co_tasks()[co:thread()] = nil
+        if self:co_count() > 0 then
+            self._CO_COUNT = self:co_count() - 1
+        end
     end))
     self:co_tasks()[co:thread()] = co
+    self._CO_COUNT = self:co_count() + 1
     local ok, errors = scheduler:co_resume(co, ...)
     if not ok then
         return nil, errors
@@ -154,6 +158,11 @@ function scheduler:co_tasks()
         self._CO_TASKS = cotasks
     end
     return cotasks
+end
+
+-- get all coroutine count
+function scheduler:co_count()
+    return self._CO_COUNT or 0
 end
 
 -- wait socket events
