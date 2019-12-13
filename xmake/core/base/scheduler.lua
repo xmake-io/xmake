@@ -202,7 +202,7 @@ function scheduler:waitsock(sock, events, timeout)
         local events_prev_save = bit.rshift(events_prev, 16)
 
         -- return the cached events directly if the waiting events exists cache
-        if events_prev_save ~= 0 and bit.band(events_prev, events) ~= 0 then
+        if events_prev_save ~= 0 and bit.band(events_prev_wait, events) ~= 0 then
 
             -- check error?
             if bit.band(events_prev_save, poller.EV_SOCK_ERROR) ~= 0 then
@@ -218,9 +218,9 @@ function scheduler:waitsock(sock, events, timeout)
         end
 
         -- modify socket from poller for waiting events if the waiting events has been changed 
-        if events_prev_save ~= events then
+        if events_prev_wait ~= events then
             -- modify socket events
-            local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
+            local ok, errors = poller:modify(poller.OT_SOCK, sock, events, sockevents_cb)
             if not ok then
                 return -1, errors
             end
@@ -240,6 +240,9 @@ function scheduler:waitsock(sock, events, timeout)
             self:co_resume(running, 0)
         end, timeout)
     end
+
+    -- save waiting events 
+    self:_sockevents_set(sock:csock(), events)
 
     -- wait
     return self:co_suspend()
