@@ -117,10 +117,13 @@ end
 
 -- start a new named coroutine task
 function scheduler:co_start_named(coname, cotask, ...)
-    local co = _coroutine.new(coname, coroutine.create(cotask))
+    local co
+    co = _coroutine.new(coname, coroutine.create(function(...) 
+        cotask(...)
+        self:co_tasks()[co:thread()] = nil
+    end))
     self:co_tasks()[co:thread()] = co
     local ok, errors = scheduler:co_resume(co, ...)
-    self:co_tasks()[co:thread()] = nil
     if not ok then
         return nil, errors
     end
@@ -172,8 +175,8 @@ function scheduler:waitsock(sock, events, timeout)
 
         -- get the previous socket events
         local events_prev = self:_sockevents(sock:csock())
-        local events_wait = bit.band(events_prev, 0xffff)
-        local events_save = bit.rshift(events_prev, 16)
+        local events_prev_wait = bit.band(events_prev, 0xffff)
+        local events_prev_save = bit.rshift(events_prev, 16)
 
         -- TODO is waiting?
         if true then
@@ -182,8 +185,8 @@ function scheduler:waitsock(sock, events, timeout)
             if bit.band(sockevents, poller.EV_SOCK_EOF) ~= 0 then
                 -- cache this eof as next recv/send event
                 sockevents  = bit.band(sockevents, bit.bnot(poller.EV_SOCK_EOF))
-                events_save = bit.bor(events_save, events_wait)
-                self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_save, 16), events_wait))
+                events_prev_save = bit.bor(events_prev_save, events_prev_wait)
+                self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_prev_save, 16), events_prev_wait))
             end
             self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
         else
@@ -195,10 +198,35 @@ function scheduler:waitsock(sock, events, timeout)
     -- get the previous socket events
     local events_prev = self:_sockevents(sock:csock())
     if events_prev ~= 0 then
-        -- TODO
-        print("not impl")
+        local events_prev_wait = bit.band(events_prev, 0xffff)
+        local events_prev_save = bit.rshift(events_prev, 16)
+
+        -- return the cached events directly if the waiting events exists cache
+        if events_prev_save ~= 0 and bit.band(events_prev, events) ~= 0 then
+
+            -- check error?
+            if bit.band(events_prev_save, poller.EV_SOCK_ERROR) ~= 0 then
+                self:_sockevents_set(sock:csock(), events_prev_wait)
+                return -1, string.format("%s: socket events error!", sock)
+            end
+
+            -- clear cache events
+            self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(bit.band(events_prev_save, bit.bnot(events)), 16), events_prev_wait))
+
+            -- return the cached events
+            return bit.band(events_prev_save, events)
+        end
+
+        -- modify socket from poller for waiting events if the waiting events has been changed 
+        if events_prev_save ~= events then
+            -- modify socket events
+            local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
+            if not ok then
+                return -1, errors
+            end
+        end
     else
-        -- insert socket to poller for waiting events
+        -- insert socket events
         local ok, errors = poller:insert(poller.OT_SOCK, sock, events, sockevents_cb)
         if not ok then
             return -1, errors

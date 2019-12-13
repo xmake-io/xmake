@@ -17,6 +17,7 @@ function _session(addr, port)
     end
     print("%s: send ok, count: %d!", sock, count)
     sock:close()
+    scheduler.stop()
 end
 
 function main(count)
