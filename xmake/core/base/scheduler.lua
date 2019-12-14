@@ -166,7 +166,7 @@ function scheduler:co_count()
 end
 
 -- wait socket events
-function scheduler:waitsock(sock, events, timeout)
+function scheduler:sock_wait(sock, events, timeout)
 
     -- get the running coroutine
     local running = self:co_running()
@@ -255,6 +255,23 @@ function scheduler:waitsock(sock, events, timeout)
 
     -- wait
     return self:co_suspend()
+end
+
+-- cancel socket events
+function scheduler:sock_cancel(sock)
+
+    -- get the previous socket events
+    local events_prev = self:_sockevents(sock:csock())
+    if events_prev ~= 0 then
+
+        -- remove the waiting socket from the poller
+        local ok, errors = poller:remove(poller.OT_SOCK, sock)
+        if not ok then
+            return false, errors
+        end
+        self:_sockevents_set(sock:csock(), 0)
+    end
+    return true
 end
 
 -- sleep some times (ms)

@@ -482,7 +482,7 @@ function _instance:wait(events, timeout)
     local result = -1
     local errors = nil
     if scheduler:co_running() then
-        result, errors = scheduler:waitsock(self, events, timeout or -1)
+        result, errors = scheduler:sock_wait(self, events, timeout or -1)
     else
         result, errors = io.socket_wait(self:csock(), events, timeout or -1)
     end
@@ -499,6 +499,14 @@ function _instance:close()
     local ok, errors = self:_ensure_opened()
     if not ok then
         return false, errors
+    end
+
+    -- cancel socket events from the scheduler
+    if scheduler:co_running() then
+        ok, errors = scheduler:sock_cancel(self)
+        if not ok then
+            return false, errors
+        end
     end
 
     -- close it
