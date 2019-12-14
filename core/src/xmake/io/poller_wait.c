@@ -45,7 +45,7 @@ static tb_int_t   g_events_count = 0;
 static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_socket_ref_t sock, tb_size_t events, tb_cpointer_t priv)
 {
     // check
-    tb_assert_and_check_return(g_lua && !g_events_count);
+    tb_assert_and_check_return(g_lua);
 
     // save socket and events
     lua_newtable(g_lua);

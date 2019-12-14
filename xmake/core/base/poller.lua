@@ -153,6 +153,11 @@ function poller:wait(timeout)
         return -1, "wait events in poller failed!"
     end
 
+    -- check count
+    if count > 0 and count ~= #events then
+        return -1, string.format("events(%d) != %d in poller!", #events, count)
+    end
+
     -- wrap socket 
     local results = {}
     if events then
