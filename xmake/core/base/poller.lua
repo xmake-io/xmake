@@ -70,7 +70,7 @@ function poller:_insert_sock(sock, events, udata)
     end
 
     -- save socket data and save sock/ref for gc
-    self:_sockdata_set(sock:csock(), udata)
+    self:_sockdata_set(sock:csock(), {sock, udata})
     return true
 end
 
@@ -89,7 +89,7 @@ function poller:_modify_sock(sock, events, udata)
     end
 
     -- update socket data for this socket
-    self:_sockdata_set(sock:csock(), udata)
+    self:_sockdata_set(sock:csock(), {sock, udata})
     return true
 end
 
@@ -165,7 +165,11 @@ function poller:wait(timeout)
             -- TODO only socket events now. It will be proc/pipe events in the future
             local csock      = v[1]
             local sockevents = v[2]
-            table.insert(results, {poller.OT_SOCK,  sockevents, self:_sockdata(csock)})
+            local sockdata   = self:_sockdata(csock)
+            if not sockdata then
+                return -1, string.format("no socket data for csock(%d)!", csock)
+            end
+            table.insert(results, {poller.OT_SOCK,  sockdata[1], sockevents, sockdata[2]})
         end
     end
     return count, results
