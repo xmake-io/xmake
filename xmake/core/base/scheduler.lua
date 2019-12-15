@@ -297,8 +297,8 @@ function scheduler:sock_wait(sock, events, timeout)
     local timer_task = nil
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
-            print(cancel, running)
             if not cancel and running:is_suspended() then
+                self:_co_suspended_set(sock, nil)
                 self:co_resume(running, 0)
             end
         end, timeout)
