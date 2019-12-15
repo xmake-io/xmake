@@ -71,8 +71,8 @@ function _coroutine:is_running()
 end
 
 -- is suspended?
-function _coroutine:is_suspend()
-    return self:status() == "suspend"
+function _coroutine:is_suspended()
+    return self:status() == "suspended"
 end
 
 -- tostring(socket)
@@ -180,6 +180,7 @@ function scheduler:sock_wait(sock, events, timeout)
     end
 
     -- the socket events callback
+    local timer_task = nil
     local function sockevents_cb(sockevents)
 
         -- get the previous socket events
@@ -187,8 +188,8 @@ function scheduler:sock_wait(sock, events, timeout)
         local events_prev_wait = bit.band(events_prev, 0xffff)
         local events_prev_save = bit.rshift(events_prev, 16)
 
-        -- TODO is waiting?
-        if true then
+        -- is waiting?
+        if running:is_suspended() then
         
             -- eof for edge trigger?
             if bit.band(sockevents, poller.EV_SOCK_EOF) ~= 0 then
@@ -197,10 +198,18 @@ function scheduler:sock_wait(sock, events, timeout)
                 events_prev_save = bit.bor(events_prev_save, events_prev_wait)
                 self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_prev_save, 16), events_prev_wait))
             end
+
+            -- cancel timer task if exists
+            if timer_task then
+                timer_task.cancel = true
+            end
+
+            -- resume this coroutine task
             self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
         else
             -- cache socket events
-            -- TODO
+            events_prev_save = events
+            self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_prev_save, 16), events_prev_wait))
         end
     end
 
@@ -244,9 +253,10 @@ function scheduler:sock_wait(sock, events, timeout)
 
     -- register timeout task to timer
     if timeout > 0 then
-        self:_timer():post(function (cancel) 
-            -- TODO
-            self:co_resume(running, 0)
+        timer_task = self:_timer():post(function (cancel) 
+            if running:is_suspended() then
+                self:co_resume(running, 0)
+            end
         end, timeout)
     end
 
@@ -290,7 +300,9 @@ function scheduler:sleep(ms)
 
     -- register timeout task to timer
     self:_timer():post(function (cancel) 
-        self:co_resume(running)
+        if running:is_suspended() then
+            self:co_resume(running)
+        end
     end, ms)
 
     -- wait
