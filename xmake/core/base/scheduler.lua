@@ -397,7 +397,7 @@ function scheduler:runloop()
     local ok = true
     local errors = nil
     local timeout = -1
-    while self._STARTED do 
+    while self._STARTED and self:co_count() > 0 do 
 
         -- get the next timeout
         timeout = self:_timer():delay() or 1000

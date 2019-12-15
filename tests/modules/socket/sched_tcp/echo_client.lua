@@ -17,9 +17,6 @@ function _session(addr, port)
     end
     print("%s: send ok, count: %d!", sock, count)
     sock:close()
-    if scheduler.co_count() == 1 then
-        scheduler.stop()
-    end
 end
 
 function main(count)

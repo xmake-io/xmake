@@ -31,9 +31,6 @@ function _session(addr, port)
     end
     print("%s: recv ok, size: %d, #data: %d!", sock, recv, data and data:size() or 0)
     sock:close()
-    if scheduler.co_count() == 1 then
-        scheduler.stop()
-    end
 end
 
 function main(count)
