@@ -146,6 +146,11 @@ function scheduler:_sockevents_cb(sock, sockevents)
             timer_task.cancel = true
         end
 
+        -- the scheduler has been stopped? mark events as error to stop the coroutine
+        if not self._STARTED then
+            sockevents = poller.EV_SOCK_ERROR
+        end
+
         -- resume this coroutine task
         self:_co_suspended_set(sock, nil)
         self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
@@ -188,9 +193,14 @@ function scheduler:co_start_named(coname, cotask, ...)
     end))
     self:co_tasks()[co:thread()] = co
     self._CO_COUNT = self:co_count() + 1
-    local ok, errors = scheduler:co_resume(co, ...)
-    if not ok then
-        return nil, errors
+    if self._STARTED then
+        local ok, errors = self:co_resume(co, ...)
+        if not ok then
+            return nil, errors
+        end
+    else
+        self._CO_READY_TASKS = self._CO_READY_TASKS or {}
+        table.insert(self._CO_READY_TASKS, {co, table.pack(...)})
     end
     return co
 end
@@ -233,6 +243,11 @@ function scheduler:sock_wait(sock, events, timeout)
     local running = self:co_running()
     if not running then
         return -1, "we must call waitsock() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return -1, "the scheduler is stopped!"
     end
 
     -- enable edge-trigger mode if be supported
@@ -282,6 +297,7 @@ function scheduler:sock_wait(sock, events, timeout)
     local timer_task = nil
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
+            print(cancel, running)
             if not cancel and running:is_suspended() then
                 self:co_resume(running, 0)
             end
@@ -331,6 +347,11 @@ function scheduler:sleep(ms)
         return false, "we must call sleep() in coroutine with scheduler!"
     end
 
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
+    end
+
     -- register timeout task to timer
     self:_timer():post(function (cancel) 
         if running:is_suspended() then
@@ -356,6 +377,20 @@ function scheduler:runloop()
 
     -- start loop
     self._STARTED = true
+
+    -- start all ready coroutine tasks
+    local co_ready_tasks = self._CO_READY_TASKS
+    if co_ready_tasks then
+        for _, task in pairs(co_ready_tasks) do
+            local co   = task[1]
+            local argv = task[2]
+            local ok, errors = self:co_resume(co, table.unpack(argv))
+            if not ok then
+                return false, errors
+            end
+        end
+    end
+    self._CO_READY_TASKS = nil
 
     -- run loop
     opt = opt or {}
@@ -399,9 +434,20 @@ function scheduler:runloop()
     -- mark the loop as stopped first
     self._STARTED = false
 
-    -- TODO resume all suspended tasks
+    -- resume all suspended tasks after stopping scheduler
     -- we cannot suspend them now, all tasks will be exited directly and free all resources.
-    -- ...
+    local co_suspended_tasks = self._CO_SUSPENDED_TASKS
+    if co_suspended_tasks then
+        for _, co in pairs(co_suspended_tasks) do
+            local ok, errors = self:co_resume(co)
+            if not ok then
+                return false, errors
+            end
+        end
+    end
+
+    -- cancel all timeout tasks and trigger them
+    self:_timer():kill()
 
     -- finished
     return ok, errors

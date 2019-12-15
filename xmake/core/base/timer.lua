@@ -98,6 +98,21 @@ function timer:next()
     end
 end
 
+-- kill all timer tasks
+function timer:kill()
+    local tasks = self:_tasks()
+    while tasks:length() > 0 do
+        local task = tasks:peek()
+        if task then
+            tasks:pop()
+            if task.func then
+                -- cancel it
+                task.func(true)
+            end
+        end
+    end
+end
+
 -- get timer name
 function timer:name()
     return self._NAME 
