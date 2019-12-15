@@ -75,6 +75,16 @@ function _coroutine:is_suspended()
     return self:status() == "suspended"
 end
 
+-- get the current timer task
+function _coroutine:_timer_task()
+    return self._TIMER_TASK
+end
+
+-- set the timer task
+function _coroutine:_timer_task_set(task)
+    self._TIMER_TASK = task
+end
+
 -- tostring(socket)
 function _coroutine:__tostring()
     return string.format("<co: %s/%s>", self:thread(), self:name())
@@ -180,7 +190,6 @@ function scheduler:sock_wait(sock, events, timeout)
     end
 
     -- the socket events callback
-    local timer_task = nil
     local function sockevents_cb(sockevents)
 
         -- get the previous socket events
@@ -200,6 +209,7 @@ function scheduler:sock_wait(sock, events, timeout)
             end
 
             -- cancel timer task if exists
+            local timer_task = running:_timer_task()
             if timer_task then
                 timer_task.cancel = true
             end
@@ -252,13 +262,15 @@ function scheduler:sock_wait(sock, events, timeout)
     end
 
     -- register timeout task to timer
+    local timer_task = nil
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
-            if running:is_suspended() then
+            if not cancel and running:is_suspended() then
                 self:co_resume(running, 0)
             end
         end, timeout)
     end
+    running:_timer_task_set(timer_task)
 
     -- save waiting events 
     self:_sockevents_set(sock:csock(), events)
