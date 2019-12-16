@@ -77,12 +77,11 @@ function timer:next()
         local triggered = false
         local task = tasks:peek()
         if task then
-            -- timeout?
-            local now = os.mclock()
-            if task.when <= now then
+            -- timeout or canceled?
+            if task.cancel or task.when <= os.mclock() then
                 tasks:pop()
                 if task.continuous and not task.cancel then
-                    task.when = now + task.period
+                    task.when = os.mclock() + task.period
                     tasks:push(task)
                 end
                 -- run timer task
