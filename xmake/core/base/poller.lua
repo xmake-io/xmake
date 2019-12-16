@@ -120,6 +120,11 @@ function poller:support(otype, events)
     return false, string.format("invalid poller object type(%d)!", otype)
 end
 
+-- spank poller to break the wait() and return all triggered events
+function poller:spank()
+    io.poller_spank()
+end
+
 -- insert object events to poller
 function poller:insert(otype, obj, events, udata)
     if otype == poller.OT_SOCK then

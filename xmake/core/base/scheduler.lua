@@ -129,7 +129,7 @@ function scheduler:_sockevents_cb(sock, sockevents)
     local events_prev_save = bit.rshift(events_prev, 16)
 
     -- is waiting?
-    local running = self:_co_suspended(sock)
+    local running = self:_co_sock_suspended(sock)
     if running and running:is_suspended() then
     
         -- eof for edge trigger?
@@ -152,7 +152,7 @@ function scheduler:_sockevents_cb(sock, sockevents)
         end
 
         -- resume this coroutine task
-        self:_co_suspended_set(sock, nil)
+        self:_co_sock_suspended_set(sock, nil)
         self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
     else
         -- cache socket events
@@ -162,18 +162,32 @@ function scheduler:_sockevents_cb(sock, sockevents)
 end
 
 -- get the suspended coroutine task
-function scheduler:_co_suspended(key)
-    return self._CO_SUSPENDED_TASKS and self._CO_SUSPENDED_TASKS[key] or nil
+function scheduler:_co_sock_suspended(sock)
+    return self._CO_SOCK_SUSPENDED_TASKS and self._CO_SOCK_SUSPENDED_TASKS[sock] or nil
 end
 
 -- set the suspended coroutine task
-function scheduler:_co_suspended_set(key, co)
-    local co_suspended_tasks = self._CO_SUSPENDED_TASKS 
-    if not co_suspended_tasks then
-        co_suspended_tasks = {}
-        self._CO_SUSPENDED_TASKS = co_suspended_tasks
+function scheduler:_co_sock_suspended_set(sock, co)
+    local co_sock_suspended_tasks = self._CO_SOCK_SUSPENDED_TASKS 
+    if not co_sock_suspended_tasks then
+        co_sock_suspended_tasks = {}
+        self._CO_SOCK_SUSPENDED_TASKS = co_sock_suspended_tasks
     end
-    co_suspended_tasks[key] = co
+    co_sock_suspended_tasks[sock] = co
+end
+
+-- cancel and resume all suspended socket tasks after stopping scheduler
+-- we cannot suspend them forever, all tasks will be exited directly and free all resources.
+function scheduler:_co_sock_suspended_cancel_all()
+    local co_sock_suspended_tasks = self._CO_SOCK_SUSPENDED_TASKS
+    if co_sock_suspended_tasks then
+        for _, co in pairs(co_sock_suspended_tasks) do
+            local ok, errors = self:co_resume(co, -1) 
+            if not ok then
+                return false, errors
+            end
+        end
+    end
 end
 
 -- start a new coroutine task
@@ -298,7 +312,7 @@ function scheduler:sock_wait(sock, events, timeout)
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
             if not cancel and running:is_suspended() then
-                self:_co_suspended_set(sock, nil)
+                self:_co_sock_suspended_set(sock, nil)
                 self:co_resume(running, 0)
             end
         end, timeout)
@@ -309,7 +323,7 @@ function scheduler:sock_wait(sock, events, timeout)
     self:_sockevents_set(sock:csock(), events)
 
     -- save the suspended coroutine
-    self:_co_suspended_set(sock, running)
+    self:_co_sock_suspended_set(sock, running)
 
     -- wait
     return self:co_suspend()
@@ -328,7 +342,7 @@ function scheduler:sock_cancel(sock)
             return false, errors
         end
         self:_sockevents_set(sock:csock(), 0)
-        self:_co_suspended_set(sock, nil)
+        self:_co_sock_suspended_set(sock, nil)
     end
     return true
 end
@@ -366,9 +380,9 @@ end
 
 -- stop the scheduler loop
 function scheduler:stop()
-    -- TODO post a kill signal to poller
-    -- stop timer and cancel all tasks
+    -- mark scheduler status as stopped and spank the poller:wait()
     self._STARTED = false
+    poller:spank()
     return true
 end
 
@@ -434,17 +448,8 @@ function scheduler:runloop()
     -- mark the loop as stopped first
     self._STARTED = false
 
-    -- resume all suspended tasks after stopping scheduler
-    -- we cannot suspend them now, all tasks will be exited directly and free all resources.
-    local co_suspended_tasks = self._CO_SUSPENDED_TASKS
-    if co_suspended_tasks then
-        for _, co in pairs(co_suspended_tasks) do
-            local ok, errors = self:co_resume(co)
-            if not ok then
-                return false, errors
-            end
-        end
-    end
+    -- cancel all suspended tasks after stopping scheduler
+    self:_co_sock_suspended_cancel_all()
 
     -- cancel all timeout tasks and trigger them
     self:_timer():kill()
