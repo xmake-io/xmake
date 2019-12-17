@@ -154,7 +154,7 @@ end
 
 -- get data address
 function _instance:caddr()
-    return tonumber(ffi.cast('long', self:cdata()))
+    return tonumber(ffi.cast('unsigned long', self:cdata()))
 end
 
 -- readonly?
