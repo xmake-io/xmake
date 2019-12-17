@@ -322,14 +322,15 @@ function _instance:recv(size, opt)
     local real = 0
     local wait = false
     local data_or_errors = nil
+    local data = bytes(8192)
     if opt.block then
         local results = {}
         while recv < size do
-            real, data_or_errors = io.socket_recv(self:csock(), size - recv)
+            real, data_or_errors = io.socket_recv(self:csock(), data:caddr(), math.min(8192, size - recv))
             if real > 0 then
                 recv = recv + real
                 wait = false
-                table.insert(results, bytes(data_or_errors))
+                table.insert(results, bytes(data, 1, real))
             elseif real == 0 and not wait then
                 local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
@@ -348,9 +349,9 @@ function _instance:recv(size, opt)
             recv = -1
         end
     else
-        recv, data_or_errors = io.socket_recv(self:csock(), size)
+        recv, data_or_errors = io.socket_recv(self:csock(), data:caddr(), math.min(8192, size))
         if recv > 0 then
-            data_or_errors = bytes(data_or_errors)
+            data_or_errors = bytes(data, 1, recv)
         end
     end
     if recv < 0 and data_or_errors then
