@@ -265,7 +265,7 @@ function scheduler:sock_wait(sock, events, timeout)
     end
 
     -- enable edge-trigger mode if be supported
-    if poller:support(poller.OT_SOCK, poller.EV_SOCK_CLEAR) then
+    if self._SUPPORT_EV_SOCK_CLEAR then
         events = bit.bor(events, poller.EV_SOCK_CLEAR)
     end
 
@@ -391,6 +391,11 @@ function scheduler:runloop()
 
     -- start loop
     self._STARTED = true
+
+    -- ensure poller has been initialized first (for windows/iocp) and check edge-trigger mode (for epoll/kqueue)
+    if poller:support(poller.OT_SOCK, poller.EV_SOCK_CLEAR) then
+        self._SUPPORT_EV_SOCK_CLEAR = true
+    end
 
     -- start all ready coroutine tasks
     local co_ready_tasks = self._CO_READY_TASKS
