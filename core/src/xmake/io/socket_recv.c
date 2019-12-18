@@ -76,10 +76,5 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     // recv data
     tb_long_t real = tb_socket_recv(sock, data, size);
     lua_pushinteger(lua, (tb_int_t)real);
-    if (real > 0)
-    {
-        lua_pushlstring(lua, (tb_char_t const*)data, real);
-        return 2;
-    }
     return 1;
 }

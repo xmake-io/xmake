@@ -48,7 +48,7 @@ socket.EV_ACPT = socket.EV_RECV
 function _instance.new(socktype, family, sock)
     local instance   = table.inherit(_instance)
     instance._SOCK   = sock
-    instance._TYPE   = socktype 
+    instance._TYPE   = socktype
     instance._FAMILY = family
     setmetatable(instance, _instance)
     return instance
@@ -322,15 +322,16 @@ function _instance:recv(size, opt)
     local real = 0
     local wait = false
     local data_or_errors = nil
-    local data = bytes(8192)
     if opt.block then
         local results = {}
         while recv < size do
-            real, data_or_errors = io.socket_recv(self:csock(), data:caddr(), math.min(8192, size - recv))
+            local buff = self:_recvbuff()
+            real, data_or_errors = io.socket_recv(self:csock(), buff:caddr(), math.min(buff:size(), size - recv))
             if real > 0 then
                 recv = recv + real
                 wait = false
-                table.insert(results, bytes(data, 1, real))
+                table.insert(results, bytes(buff, 1, real))
+                self:_recvbuff_clear()
             elseif real == 0 and not wait then
                 local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
@@ -349,9 +350,11 @@ function _instance:recv(size, opt)
             recv = -1
         end
     else
-        recv, data_or_errors = io.socket_recv(self:csock(), data:caddr(), math.min(8192, size))
+        local buff = self:_recvbuff()
+        recv, data_or_errors = io.socket_recv(self:csock(), buff:caddr(), math.min(buff:size(), size))
         if recv > 0 then
-            data_or_errors = bytes(data, 1, recv)
+            data_or_errors = bytes(buff, 1, recv)
+            self:_recvbuff_clear()
         end
     end
     if recv < 0 and data_or_errors then
@@ -441,9 +444,11 @@ function _instance:recvfrom(size, opt)
     local data_or_errors = nil
     if opt.block then
         while true do
-            recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), size)
+            local buff = self:_recvbuff()
+            recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), buff:caddr(), math.min(buff:size(), size))
             if recv > 0 then
-                data_or_errors = bytes(data_or_errors)
+                data_or_errors = bytes(buff, 1, recv)
+                self:_recvbuff_clear()
                 break
             elseif recv == 0 and not wait then
                 local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
@@ -459,9 +464,11 @@ function _instance:recvfrom(size, opt)
             end
         end
     else
-        recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), size)
+        local buff = self:_recvbuff()
+        recv, data_or_errors, addr, port = io.socket_recvfrom(self:csock(), buff:caddr(), math.min(buff:size(), size))
         if recv > 0 then
-            data_or_errors = bytes(data_or_errors)
+            data_or_errors = bytes(buff, 1, recv)
+            self:_recvbuff_clear()
         end
     end
     if recv < 0 and data_or_errors then
@@ -516,6 +523,21 @@ function _instance:close()
         self._SOCK = nil
     end
     return ok
+end
+
+-- get the recv buffer
+function _instance:_recvbuff()
+    local recvbuff = self._RECVBUFF
+    if not recvbuff then
+        recvbuff = bytes(8192)
+        self._RECVBUFF = recvbuff
+    end
+    return recvbuff
+end
+
+-- clear the recv buffer 
+function _instance:_recvbuff_clear()
+    self._RECVBUFF = nil
 end
 
 -- ensure the socket is opened
