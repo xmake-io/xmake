@@ -12,7 +12,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- 
--- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        main.lua
@@ -44,7 +44,7 @@ local menu =
     title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on Lua${clear}"
 
     -- copyright
-,   copyright = "Copyright (C) 2015-2019 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
+,   copyright = "Copyright (C) 2015-2020 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}\nCopyright (C) 2005-2015 Mike Pall, ${underline}luajit.org${clear}"
 
     -- the tasks: xmake [task]
 ,   function () 
