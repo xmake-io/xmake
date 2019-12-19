@@ -37,6 +37,7 @@ socket.ICMP  = 3
 -- the socket families
 socket.IPV4  = 1
 socket.IPV6  = 2
+socket.UNIX  = 3
 
 -- the socket events, @see tbox/platform/socket.h
 socket.EV_RECV = 1

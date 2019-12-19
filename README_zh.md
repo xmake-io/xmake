@@ -60,8 +60,8 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 如果你想要了解更多，请参考：
 
-* [在线文档](https://xmake.io/#/zh/)
-* [项目主页](https://xmake.io/cn)
+* [在线文档](https://xmake.io/#/zh-cn/getting_started)
+* [项目主页](https://xmake.io/#/zh-cn/)
 * [Github](https://github.com/xmake-io/xmake)
 * [Gitee](https://gitee.com/tboox/xmake)
 
