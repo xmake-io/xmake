@@ -56,15 +56,21 @@ tb_int_t xm_io_socket_bind(lua_State* lua)
     tb_char_t const* address = lua_tostring(lua, 2);
     tb_assert_and_check_return_val(address, 0);
 
-    // get port
-    tb_uint16_t port = (tb_uint16_t)luaL_checknumber(lua, 3);
-
     // get family
     tb_uint8_t family = (tb_uint8_t)luaL_checknumber(lua, 4);
 
     // init address
     tb_ipaddr_t addr;
-    tb_ipaddr_set(&addr, address, port, family);
+    if (family == TB_IPADDR_FAMILY_UNIX) 
+    {
+        tb_bool_t is_abstract = (tb_bool_t)lua_toboolean(lua, 3);
+        tb_ipaddr_unix_set_cstr(&addr, address, is_abstract);
+    }
+    else
+    {
+        tb_uint16_t port = (tb_uint16_t)luaL_checknumber(lua, 3);
+        tb_ipaddr_set(&addr, address, port, family);
+    }
 
     // bind socket
     lua_pushboolean(lua, tb_socket_bind(sock, &addr));

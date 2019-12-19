@@ -194,6 +194,15 @@ function sandbox_core_base_socket.udp(opt)
     return _socket_wrap(sock)
 end
 
+-- open unix socket
+function sandbox_core_base_socket.unix(opt)
+    local sock, errors = socket.unix(opt)
+    if not sock then
+        raise(errors)
+    end
+    return _socket_wrap(sock)
+end
+
 -- open and bind tcp socket
 function sandbox_core_base_socket.bind(addr, port, opt)
     local sock, errors = socket.bind(addr, port, opt)
@@ -203,9 +212,27 @@ function sandbox_core_base_socket.bind(addr, port, opt)
     return _socket_wrap(sock)
 end
 
+-- open and bind tcp socket from the unix socket
+function sandbox_core_base_socket.bind_unix(addr, opt)
+    local sock, errors = socket.bind_unix(addr, opt)
+    if not sock then
+        raise(errors)
+    end
+    return _socket_wrap(sock)
+end
+
 -- open and connect tcp socket
 function sandbox_core_base_socket.connect(addr, port, opt)
     local sock, errors = socket.connect(addr, port, opt)
+    if not sock then
+        raise(errors)
+    end
+    return _socket_wrap(sock)
+end
+
+-- open and connect tcp socket from the unix socket
+function sandbox_core_base_socket.connect_unix(addr, opt)
+    local sock, errors = socket.connect_unix(addr, opt)
     if not sock then
         raise(errors)
     end

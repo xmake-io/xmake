@@ -104,6 +104,29 @@ function _instance:bind(addr, port)
     return ok, errors
 end
 
+-- bind socket from the unix address
+function _instance:bind_unix(addr, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- must be unix socket
+    if self:family() ~= socket.UNIX then
+        return -1, string.format("%s: must be unix socket!", self)
+    end
+ 
+    -- bind it
+    opt = opt or {}
+    local ok, errors = io.socket_bind(self:csock(), addr, opt.is_abstract, self:family())
+    if not ok and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return ok, errors
+end
+
 -- listen socket 
 function _instance:listen(backlog)
 
@@ -166,6 +189,37 @@ function _instance:connect(addr, port, opt)
         local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
         if events == socket.EV_CONN then
             ok, errors = io.socket_connect(self:csock(), addr, port, self:family())
+        else
+            errors = waiterrs
+        end
+    end
+    if ok < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return ok, errors
+end
+
+-- connect socket from the unix address
+function _instance:connect_unix(addr, opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- must be unix socket
+    if self:family() ~= socket.UNIX then
+        return -1, string.format("%s: must be unix socket!", self)
+    end
+
+    -- connect it
+    opt = opt or {}
+    local ok, errors = io.socket_connect(self:csock(), addr, opt.is_abstract, self:family())
+    if ok == 0 then
+        local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
+        if events == socket.EV_CONN then
+            ok, errors = io.socket_connect(self:csock(), addr, opt.is_abstract, self:family())
         else
             errors = waiterrs
         end
@@ -593,6 +647,11 @@ function socket.udp(opt)
     return socket.open(socket.UDP, opt.family or socket.IPV4)
 end
 
+-- open unix socket
+function socket.unix(opt)
+    return socket.open(socket.TCP, socket.UNIX)
+end
+
 -- open and bind tcp socket
 function socket.bind(addr, port, opt)
     local sock, errors = socket.tcp(opt)
@@ -607,6 +666,20 @@ function socket.bind(addr, port, opt)
     return sock
 end
 
+-- open and bind tcp socket from the unix address
+function socket.bind_unix(addr, opt)
+    local sock, errors = socket.unix(opt)
+    if not sock then
+        return nil, errors
+    end
+    local ok, errors = sock:bind_unix(addr, opt)
+    if not ok then
+        sock:close()
+        return nil, string.format("bind unix://%s failed, errors: %s!", addr, errors or "")
+    end
+    return sock
+end
+
 -- open and connect tcp socket
 function socket.connect(addr, port, opt)
     local sock, errors = socket.tcp(opt)
@@ -617,6 +690,20 @@ function socket.connect(addr, port, opt)
     if ok <= 0 then
         sock:close()
         return nil, string.format("connect %s:%s failed, errors: %s!", addr, port, errors or "")
+    end
+    return sock
+end
+
+-- open and connect tcp socket from the unix address
+function socket.connect_unix(addr, opt)
+    local sock, errors = socket.unix(opt)
+    if not sock then
+        return nil, errors
+    end
+    local ok, errors = sock:connect_unix(addr, opt)
+    if ok <= 0 then
+        sock:close()
+        return nil, string.format("connect unix://%s failed, errors: %s!", addr, errors or "")
     end
     return sock
 end
