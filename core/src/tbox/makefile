@@ -150,6 +150,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/network/impl/http/option \
 						tbox/src/tbox/network/impl/http/status \
 						tbox/src/tbox/network/impl/network \
+						tbox/src/tbox/network/unixaddr \
 						tbox/src/tbox/network/ipaddr \
 						tbox/src/tbox/network/ipv4 \
 						tbox/src/tbox/network/ipv6 \
