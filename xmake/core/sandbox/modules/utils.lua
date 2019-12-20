@@ -170,6 +170,11 @@ end
 -- clear the current terminal line
 function sandbox_utils.clearline()
 
+    -- we need not clear line if is not a tty
+    if not io.isatty() then
+        return 
+    end
+
     -- get empty line chars
     local emptychars = sandbox_utils._EMPTYCHARS
     if not emptychars then

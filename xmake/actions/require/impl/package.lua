@@ -527,6 +527,10 @@ end
 -- install packages
 function _install_packages(packages_install, packages_download)
 
+    -- we need hide wait characters if is not a tty
+    local show_wait = io.isatty() 
+
+    -- do install
     local waitindex = 0
     local waitchars = {'\\', '-', '/', '|'}
     local packages_installing = {}
@@ -630,7 +634,7 @@ function _install_packages(packages_install, packages_download)
     end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices, tips) 
 
         -- do not print progress info if be verbose 
-        if option.get("verbose") then
+        if option.get("verbose") or not show_wait then
             return 
         end
  

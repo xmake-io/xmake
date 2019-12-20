@@ -23,6 +23,7 @@ local process   = process or {}
 local _subprocess = _subprocess or {}
 
 -- load modules
+local io        = require("base/io")
 local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
@@ -161,10 +162,15 @@ function process.asyncrun(task, waitchars)
     -- create a coroutine task
     task = coroutine.create(task)
 
+    -- we need hide wait characters if is not a tty
+    local show_wait = io.isatty() 
+
     -- trace
     local waitindex = 0
     local waitchars = waitchars or {'\\', '-', '/', '|'}
-    utils.printf(waitchars[waitindex + 1])
+    if show_wait then
+        utils.printf(waitchars[waitindex + 1])
+    end
     io.flush()
 
     -- start and wait this task
@@ -172,8 +178,10 @@ function process.asyncrun(task, waitchars)
     if not ok then
 
         -- remove wait charactor
-        utils.printf("\b")
-        io.flush()
+        if show_wait then
+            utils.printf("\b")
+            io.flush()
+        end
 
         -- failed
         return false, errors
@@ -183,8 +191,10 @@ function process.asyncrun(task, waitchars)
     while coroutine.status(task) ~= "dead" do
 
         -- trace
-        waitindex = ((waitindex + 1) % #waitchars)
-        utils.printf("\b" .. waitchars[waitindex + 1])
+        if show_wait then
+            waitindex = ((waitindex + 1) % #waitchars)
+            utils.printf("\b" .. waitchars[waitindex + 1])
+        end
         io.flush()
 
         -- wait some time
@@ -195,8 +205,10 @@ function process.asyncrun(task, waitchars)
         if not ok then
 
             -- remove wait charactor
-            utils.printf("\b")
-            io.flush()
+            if show_wait then
+                utils.printf("\b")
+                io.flush()
+            end
 
             -- failed
             return false, errors
@@ -204,8 +216,10 @@ function process.asyncrun(task, waitchars)
     end
 
     -- remove wait charactor
-    utils.printf("\b")
-    io.flush()
+    if show_wait then
+        utils.printf("\b")
+        io.flush()
+    end
 
     -- ok
     return true
