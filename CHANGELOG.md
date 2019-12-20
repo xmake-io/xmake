@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.2.9
+
 ### New features
 
 * [#569](https://github.com/xmake-io/xmake/pull/569): Add c++ modules build rules
@@ -653,6 +655,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.2.9
 
 ### 新特性
 

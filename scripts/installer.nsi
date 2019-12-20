@@ -21,10 +21,10 @@
     !define MINOR 2
 !endif
 !ifndef ALTER
-    !define ALTER 8
+    !define ALTER 9
 !endif
 !ifndef BUILD
-    !define BUILD 201908260000
+    !define BUILD 201912200000
 !endif
 
 !define VERSION ${MAJOR}.${MINOR}.${ALTER}
