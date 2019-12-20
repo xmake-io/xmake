@@ -141,7 +141,10 @@ function os._ramdir()
     end
     if ramdir_root == nil then
         if os.host() == "linux" and os.isdir("/dev/shm") then
-            ramdir_root = "/dev/shm"
+            if io.writefile("/dev/shm/.xmake_test", "test") then
+                ramdir_root = "/dev/shm"
+                os.rm("/dev/shm/.xmake_test")
+            end
         elseif os.host() == "macosx" and os.isdir("/Volumes/RAM") then
             -- @note we need the user to execute the command to create it.
             -- diskutil partitionDisk `hdiutil attach -nomount ram://8388608` GPT APFS "RAM" 0
