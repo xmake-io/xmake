@@ -148,7 +148,7 @@ function task._translate_menu(menu)
                                                                   , "    1. The Given Command Argument"
                                                                   , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
                                                                   , "    3. The Current Directory"                             })
-            table.insert(options, 13, {})
+            table.insert(options, 13, {category = "action"})
             menu._common_options = true
         end
     end

@@ -900,7 +900,7 @@ function option.show_menu(task)
 
     -- print options
     if taskmenu.options then
-        option.show_options(taskmenu.options)
+        option.show_options(taskmenu.options, task)
     end
 end  
 
@@ -1024,24 +1024,21 @@ function option.show_main()
 
     -- print options
     if main.options then
-        option.show_options(main.options)
+        option.show_options(main.options, "build")
     end
 end  
 
 -- show the options menu 
-function option.show_options(options)
+function option.show_options(options, taskname)
 
     -- check
     assert(options)
 
-    -- print header
-    io.print("")
-    io.print(colors.translate("${bright}Options: "))
-    
     -- the padding spaces
     local padding = 42
 
     -- remove repeat empty lines
+    local is_action = false
     local emptyline_count = 0
     local printed_options = {}
     for _, opt in ipairs(options) do
@@ -1053,11 +1050,31 @@ function option.show_options(options)
         if emptyline_count < 2 then
             table.insert(printed_options, opt)
         end
+        if opt.category and opt.category == "action" then
+            is_action = true
+        end
+    end
+
+    -- print header
+    io.print("")
+    if is_action then
+        io.print(colors.translate("${bright}Common options: "))
+    else
+        io.print(colors.translate("${bright}Options: "))
     end
 
     -- print options
     options = printed_options
     for _, opt in ipairs(options) do
+
+        -- the following options are belong action? show sub-command section
+        --
+        -- @see core/base/task.lua: translate menu 
+        --
+        if opt.category and opt.category == "action" then
+            io.print("")
+            io.print(colors.translate("${bright}Sub-command options (" .. taskname .. "): "))
+        end
         
         -- init the option info
         local option_info   = ""
