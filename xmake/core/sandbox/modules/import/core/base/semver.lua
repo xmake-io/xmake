@@ -48,6 +48,11 @@ function sandbox_core_base_semver.parse(version)
     return result
 end
 
+-- is valid version?
+function sandbox_core_base_semver.is_valid(version)
+    return semver.parse(version) ~= nil
+end
+
 -- compare two version strings
 --
 -- semver.compare('1.2.3', '1.3.0') > 0?

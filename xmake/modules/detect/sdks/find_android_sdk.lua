@@ -50,7 +50,7 @@ function _find_sdk_build_toolver(sdkdir)
     local toolver_max = "0"
     for _, dir in ipairs(os.dirs(path.join(sdkdir, "build-tools", "*"))) do
         local toolver = path.filename(dir)
-        if semver.compare(toolver, toolver_max) > 0 then
+        if semver.is_valid(toolver) and semver.compare(toolver, toolver_max) > 0 then
             toolver_max = toolver
         end
     end
