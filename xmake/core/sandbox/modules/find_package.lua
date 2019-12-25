@@ -15,32 +15,12 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_packages.lua
+-- @file        find_package.lua
 --
 
 -- return module
-return function (...)
-    
-    -- get find_package
+return function (name, opt)
     local find_package = require("sandbox/modules/import/core/sandbox/module").import("lib.detect.find_package", {anonymous = true})
-
-    -- get packages and options
-    local pkgs = {...}
-    local opts = pkgs[#pkgs]
-    if type(opts) == "table" then
-        pkgs = table.slice(pkgs, 1, #pkgs - 1)
-    else 
-        opts = {}
-    end
-
-    -- find all packages
-    local packages = {}
-    for _, pkgname in ipairs(pkgs) do
-        local pkg = find_package(pkgname, opts)
-        if pkg then
-            table.insert(packages, pkg)
-        end
-    end
-    return packages
+    return find_package(name, opt)
 end
 
