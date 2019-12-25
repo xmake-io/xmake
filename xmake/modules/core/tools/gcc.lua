@@ -445,7 +445,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
-                    if dependinfo and self:kind() ~= "as" then
+                    if dependinfo then
                         local files = dependinfo.files or {}
                         table.join2(files, parse_deps(depfile))
                         dependinfo.files = table.unique(files)

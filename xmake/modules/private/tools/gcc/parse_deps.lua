@@ -56,8 +56,8 @@ end
 --
 function main(depsfile)
 
+    -- get deps data
     local depsdata = io.readfile(depsfile, { continuation = "\\"})
-    -- check
     if not depsdata or #depsdata == 0 then
         return {}
     end
