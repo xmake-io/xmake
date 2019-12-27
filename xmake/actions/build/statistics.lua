@@ -144,14 +144,6 @@ function main()
         end
     end
 
-    -- download the xmake-stats releases to update the release stats info in github
-    local releasefile = outputdir .. ".release"
-    if not os.isfile(releasefile) then
-        import("net.http.download")
-        download(format("https://github.com/xmake-io/xmake-stats/releases/download/v%s/%s", xmake:version():shortstr(), os.host()), releasefile)
-        print("post to releases ok!")
-    end
-
     -- leave the environments of git
     packagenv.leave("git")
 
