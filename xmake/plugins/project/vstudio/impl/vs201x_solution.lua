@@ -22,6 +22,27 @@
 import("core.project.project")
 import("vsfile")
 
+local function _make_platforms(arch)
+
+    -- check mixed platforms
+    local x64, x86
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            local arch = target:get("arch")
+            if arch == "x64" then
+                x64 = true
+            elseif arch == "x86" then
+                x86 = true
+            end
+        end
+    end
+
+    if x64 and x86 or arch == "x86" and x64 or arch == "x64" and x86 then
+        return "Mixed Platforms"
+    end
+    return arch
+end
+
 -- make header
 function _make_header(slnfile, vsinfo)
     slnfile:print("Microsoft Visual Studio Solution File, Format Version %s.00", vsinfo.solution_version)
@@ -64,7 +85,8 @@ function _make_global(slnfile, vsinfo)
     slnfile:enter("GlobalSection(SolutionConfigurationPlatforms) = preSolution")
     for _, mode in ipairs(vsinfo.modes) do
         for _, arch in ipairs(vsinfo.archs) do
-            slnfile:print("%s|%s = %s|%s", mode, arch, mode, arch)
+            local platforms = _make_platforms(arch)
+            slnfile:print("%s|%s = %s|%s", mode, platforms, mode, platforms)
         end
     end
     slnfile:leave("EndGlobalSection")
@@ -75,8 +97,9 @@ function _make_global(slnfile, vsinfo)
         if not target:isphony() then
             for _, mode in ipairs(vsinfo.modes) do
                 for _, arch in ipairs(vsinfo.archs) do
-                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
-                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
+                    local platforms = _make_platforms(arch)
+                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, platforms, mode, target:get("arch") or arch)
+                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, platforms, mode, target:get("arch") or arch)
                 end
             end
         end

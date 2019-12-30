@@ -252,7 +252,8 @@ function make(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:isphony() then
+                local _arch = target:get("arch")
+                if not target:isphony() and (not _arch or _arch == arch) then
 
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
@@ -267,14 +268,14 @@ function make(outputdir, vsinfo)
                     _target.kind = target:targetkind()
                     _target.scriptdir = target:scriptdir()
                     _target.info = _target.info or {}
-                    table.insert(_target.info, _make_targetinfo(mode, arch, target))
+                    table.insert(_target.info, _make_targetinfo(mode, _arch or arch, target))
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                     _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
                     -- make target headers
-                    _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
+                    _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == #vsinfo.archs)
                 end
             end
 
