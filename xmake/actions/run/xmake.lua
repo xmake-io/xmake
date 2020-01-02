@@ -48,8 +48,8 @@ task("run")
                                                              "    --workdir=.",
                                                              "    --workdir=`pwd`"                                                }
                 ,   {}
-                ,   {nil, "target",     "v",   nil,          "Run the given target."                                              }
-                ,   {nil, "arguments",  "vs",  nil,         "The target arguments"                                                }
+                ,   {nil, "target",     "v",   nil,          "The target name. It will run all default targets if this parameter is not specified." }
+                ,   {nil, "arguments",  "vs",  nil,          "The target arguments"                                               }
                 }
             }
 

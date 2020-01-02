@@ -44,7 +44,7 @@ task("package")
                     {'o', "outputdir",  "kv", nil,          "Set the output directory."                                     }
                 ,   {'a', "all",        "k",  nil,          "Package all targets."                                          }
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Package a given target."                                       }   
+                ,   {nil, "target",     "v",  nil,          "The target name. It will package all default targets if this parameter is not specified."  }   
                 }
             } 
 

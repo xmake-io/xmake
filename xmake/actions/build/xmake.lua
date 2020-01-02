@@ -55,7 +55,7 @@ task("build")
                                                             "    - xmake --files='src/main.c" .. path.envsep() .. "src/test.c'"  }
                
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Build the given target."                                       } 
+                ,   {nil, "target",     "v",  nil,          "The target name. It will build all default targets if this parameter is not specified." } 
                 }
             }
 

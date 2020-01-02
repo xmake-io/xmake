@@ -49,7 +49,7 @@ task("install")
                 ,   {'a', "all",        "k",  nil,      "Install all targets."                      }
 
                 ,   {                                                                               }
-                ,   {nil, "target",     "v",  nil,      "Install the given target."                 }
+                ,   {nil, "target",     "v",  nil,      "The target name. It will install all default targets if this parameter is not specified."                }
                 }
             }
 

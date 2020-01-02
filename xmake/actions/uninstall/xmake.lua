@@ -51,7 +51,7 @@ task("uninstall")
                                                         "    $ xmake uninstall --prefix=local",
                                                         "or  $ PREFIX=local xmake uninstall"          }
                 ,   {                                                                                 }
-                ,   {nil, "target",     "v",  nil,      "Uninstall the given target."                 }
+                ,   {nil, "target",     "v",  nil,      "The target name. It will uninstall all default targets if this parameter is not specified."  }
                 }
             }
 
