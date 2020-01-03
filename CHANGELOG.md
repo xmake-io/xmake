@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* Fix incremental compilation for checking the dependent file 
+* Fix log output for parsing xmake-vscode/problem info
+
 ## v2.2.9
 
 ### New features
@@ -655,6 +660,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs修复
+
+* 修复增量编译检测依赖文件的一些问题
+* 修复log输出导致xmake-vscode插件解析编译错误信息失败问题
 
 ## v2.2.9
 
