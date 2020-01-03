@@ -80,7 +80,7 @@ end
 function log:flush()
     local file = self:file()
     if file then
-        io.flush(file)
+        file:flush()
     end
 end
 
