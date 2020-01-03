@@ -47,30 +47,17 @@ function is_changed(dependinfo, opt)
     end
 
     -- check the dependent files are changed?
-    local lastmtime = nil
-    _g.file_results = _g.file_results or {}
+    local lastmtime = opt.lastmtime or 0
+    _g.files_mtime = _g.files_mtime or {}
+    local files_mtime = _g.files_mtime
     for _, file in ipairs(files) do
 
-        -- optimization: this file has been not checked?
-        local status = _g.file_results[file]
-        if status == nil then
+        -- get and cache the file mtime
+        local mtime = files_mtime[file] or (os.isfile(file) and os.mtime(file) or nil)
+        files_mtime[file] = mtime
 
-            -- optimization: only uses the mtime of first object file
-            lastmtime = lastmtime or opt.lastmtime or 0
-
-            -- source and header files have been changed?
-            if not os.isfile(file) or os.mtime(file) > lastmtime then
-
-                -- mark this file as changed
-                _g.file_results[file] = true
-                return true
-            end
-
-            -- mark this file as not changed
-            _g.file_results[file] = false
-        
-        -- has been checked and changed?
-        elseif status then
+        -- source and header files have been changed?
+        if mtime == nil or mtime > lastmtime then
             return true
         end
     end
