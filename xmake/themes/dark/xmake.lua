@@ -26,15 +26,15 @@ theme("dark")
     set_color("success", "green")
 
     -- the failure status 
-    set_text("failure", "failed")
+    set_text("failure", "$failed")
     set_color("failure", "red")
 
     -- the nothing status 
-    set_text("nothing", "no")
+    set_text("nothing", "$no")
     set_color("nothing", "red")
 
     -- the error info
-    set_text("error", "error")
+    set_text("error", "$error")
     set_color("error", "red")
 
     -- the warning info

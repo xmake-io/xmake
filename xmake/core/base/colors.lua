@@ -272,6 +272,7 @@ end
 -- @param opt          options
 --                       patch_reset: wrap str with `"${reset}"`?
 --                       ignore_unknown: ignore unknown codes like `"${unknown_code}"`?
+--                       plain: false
 --
 -- 8 colors:
 --
@@ -336,7 +337,7 @@ function colors.translate(str, opt)
 
         -- is plain theme? no colors and no emoji
         local noemoji = not colors.emoji()
-        if theme and theme:name() == "plain" then
+        if opt.plain or (theme and theme:name() == "plain") then
             nocolors = true
             noemoji = true
         end
@@ -438,7 +439,7 @@ function colors.ignore(str)
     end
 
     -- ignore it
-    return (string.gsub(str, "(%${(.-)})", ""))
+    return colors.translate(str, {plain = true})
 end
 
 -- get theme
