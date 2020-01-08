@@ -76,10 +76,8 @@ function main()
                     if ok then return end
                 end
 
-                -- show tips
-                cprint("${bright color.error}error: ${clear}failed to uninstall, may permission denied!")
-
                 -- continue to uninstall with administrator permission?
+                local ok = false
                 if sudo.has() then
 
                     -- confirm to uninstall?
@@ -91,8 +89,10 @@ function main()
 
                         -- trace
                         cprint("${bright}uninstall ok!${clear}")
+                        ok = true
                     end
                 end
+                assert(ok, "uninstall failed, error: %s", errors or "unknown")
             end
         }
     }

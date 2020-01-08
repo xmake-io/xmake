@@ -90,9 +90,6 @@ function main()
             -- failed or not permission? request administrator permission and install it again
             function (errors)
 
-                -- trace
-                vprint(errors)
-
                 -- try get privilege
                 if privilege.get() then
                     local ok = try
@@ -117,10 +114,8 @@ function main()
                     if ok then return end
                 end
 
-                -- show tips
-                cprint("${bright color.error}error: ${clear}installation failed, may permission denied!")
-
                 -- continue to install with administrator permission?
+                local ok = false
                 if sudo.has() then
 
                     -- confirm to install?
@@ -132,8 +127,10 @@ function main()
 
                         -- trace
                         cprint("${bright}install ok!${clear}")
+                        ok = true
                     end
                 end
+                assert(ok, "install failed, error: %s", errors or "unknown")
             end
         }
     }
