@@ -842,11 +842,11 @@ function _instance:installdir()
     if not installdir then
 
         -- get it from target
-        installdir = self:get("installdir")
+        installdir = baseoption.get("installdir")
         if not installdir then
 
             -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
-            installdir = baseoption.get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
+            installdir = self:get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
             if installdir then
                 installdir = installdir:trim()
             end
