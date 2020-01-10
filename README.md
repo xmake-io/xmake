@@ -165,7 +165,79 @@ $ xmake f --menu
 * WinSDK Application
 * MFC Application
 
-## Builtin Plugins
+## More Examples
+
+Debug and release modes:
+
+```lua
+add_rules("mode.debug", "mode.release")
+
+target("console")
+    set_kind("binary")
+    add_files("src/*.c")
+    if is_mode("debug") then
+        add_defines("DEBUG")
+    end
+```
+
+Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo) or third-party repositories:
+
+```lua
+add_requires("tbox >1.6.1", "libuv master", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "zlib 1.20.*")
+add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl", optional = true, debug = true}) 
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl", "zlib")
+```
+
+Find and use local packages:
+
+```lua
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    on_load(function (target)
+        target:add(find_packages("zlib", "openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
+    end)
+```
+
+Qt QuickApp Program:
+
+```lua
+target("test")
+    add_rules("qt.quickapp")
+    add_files("src/*.cpp")
+    add_files("src/qml.qrc")
+```
+
+Cuda Program:
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.cu")
+    add_cugencodes("native")
+    add_cugencodes("compute_30")
+```
+
+WDK/UMDF Driver Program:
+
+```lua
+target("echo")
+    add_rules("wdk.driver", "wdk.env.umdf")
+    add_files("driver/*.c") 
+    add_files("driver/*.inx")
+    add_includedirs("exe")
+
+target("app")
+    add_rules("wdk.binary", "wdk.env.umdf")
+    add_files("exe/*.cpp")
+```
+
+More wdk driver program examples (umdf/kmdf/wdm), please see [WDK Program Examples](https://xmake.io/#/guide/project_examples?id=wdk-driver-program)
+
+## Plugins
 
 #### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
 
@@ -173,18 +245,6 @@ $ xmake f --menu
 $ xmake project -k vs2017 -m "debug,release"
 $ xmake project -k cmakelists
 $ xmake project -k compile_commands
-```
-
-#### Macros script plugin
-
-```bash
-$ xmake m -b                        # start to record
-$ xmake f -p iphoneos -m debug
-$ xmake
-$ xmake f -p android --ndk=~/files/android-ndk-r16b
-$ xmake
-$ xmake m -e                        # stop to record
-$ xmake m .                         # playback commands
 ```
 
 #### Run the custom lua script plugin
@@ -195,15 +255,9 @@ $ xmake l -c "print('hello xmake!')"
 $ xmake l lib.detect.find_tool gcc
 ```
 
-#### Generate doxygen document plugin
+More builtin plugins, please see: [Builtin plugins](https://xmake.io/#/plugin/builtin_plugins)
 
-```bash
-$ xmake doxygen [srcdir]
-```
-
-## More Plugins
-
-Please download and install from the plugins repository [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
+Please download and install more other plugins from the plugins repository [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
 
 ## IDE/Editor Integration
 
@@ -220,54 +274,6 @@ Please download and install from the plugins repository [xmake-plugins](https://
 <img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="650px" />
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
-
-## More Examples
-
-Debug and release modes:
-
-```lua
-add_rules("mode.debug", "mode.release")
-
-target("console")
-    set_kind("binary")
-    add_files("src/*.c")
-    if is_mode("debug") then
-        add_defines("DEBUG")
-    end
-```
-
-Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo):
-
-```lua
-add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
-add_requires("tbox >1.6.1", {optional = true, debug = true})
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib")
-```
-
-Download and use packages in third-party package manager:
-
-```lua
-add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
-add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl"}) 
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    add_packages("pcre2", "openssl")
-```
-
-Find and use local packages:
-
-```lua
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    on_load(function (target)
-        target:add(find_packages("zlib", "openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
-    end)
-```
 
 ## Project Examples
 

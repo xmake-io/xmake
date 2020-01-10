@@ -170,7 +170,79 @@ $ xmake f --menu
 * WinSDK应用程序
 * MFC应用程序
 
-## 内置插件
+## 更多例子
+
+Debug和Release模式：
+
+```lua
+add_rules("mode.debug", "mode.release")
+
+target("console")
+    set_kind("binary")
+    add_files("src/*.c")
+    if is_mode("debug") then
+        add_defines("DEBUG")
+    end
+```
+
+下载和使用在[xmake-repo](https://github.com/xmake-io/xmake-repo)和第三方包仓库的依赖包：
+
+```lua
+add_requires("tbox >1.6.1", "libuv master", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "zlib 1.20.*")
+add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl", optional = true, debug = true}) 
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl", "zlib")
+```
+
+查找和使用本地已安装的包：
+
+```lua
+target("test")
+    set_kind("shared")
+    add_files("src/*.c")
+    on_load(function (target)
+        target:add(find_packages("zlib", "openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
+    end)
+```
+
+Qt QuickApp应用程序:
+
+```lua
+target("test")
+    add_rules("qt.quickapp")
+    add_files("src/*.cpp")
+    add_files("src/qml.qrc")
+```
+
+Cuda程序:
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.cu")
+    add_cugencodes("native")
+    add_cugencodes("compute_30")
+```
+
+WDK/UMDF驱动程序:
+
+```lua
+target("echo")
+    add_rules("wdk.driver", "wdk.env.umdf")
+    add_files("driver/*.c") 
+    add_files("driver/*.inx")
+    add_includedirs("exe")
+
+target("app")
+    add_rules("wdk.binary", "wdk.env.umdf")
+    add_files("exe/*.cpp")
+```
+
+更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/#/zh-cn/guide/project_examples?id=wdk%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f)
+
+## 插件
 
 #### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
 
@@ -178,18 +250,6 @@ $ xmake f --menu
 $ xmake project -k vs2017 -m "debug,release"
 $ xmake project -k cmakelists
 $ xmake project -k compile_commands
-```
-
-#### 宏记录脚本和回放插件
-
-```bash
-$ xmake m -b                        # 开始记录
-$ xmake f -p iphoneos -m debug
-$ xmake 
-$ xmake f -p android --ndk=~/files/android-ndk-r16b
-$ xmake
-$ xmake m -e                        # 结束记录
-$ xmake m .                         # 回放命令
 ```
 
 #### 加载自定义lua脚本插件
@@ -200,15 +260,9 @@ $ xmake l -c "print('hello xmake!')"
 $ xmake l lib.detect.find_tool gcc
 ```
 
-#### 生成doxygen文档插件
+更多内置插件见相关文档：[内置插件文档](https://xmake.io/#/zh-cn/plugin/builtin_plugins)
 
-```bash
-$ xmake doxygen [srcdir]
-```
-
-## 更多插件
-
-请到插件仓库进行下载安装: [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
+其他扩展插件，请到插件仓库进行下载安装: [xmake-plugins](https://github.com/xmake-io/xmake-plugins).
 
 ## IDE和编辑器插件
 
@@ -225,54 +279,6 @@ $ xmake doxygen [srcdir]
 <img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="650px" />
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
-
-## 更多例子
-
-Debug和Release模式：
-
-```lua
-add_rules("mode.debug", "mode.release")
-
-target("console")
-    set_kind("binary")
-    add_files("src/*.c")
-    if is_mode("debug") then
-        add_defines("DEBUG")
-    end
-```
-
-下载和使用在[xmake-repo](https://github.com/xmake-io/xmake-repo)的依赖包：
-
-```lua
-add_requires("libuv master", "ffmpeg", "zlib 1.20.*")
-add_requires("tbox >1.6.1", {optional = true, debug = true})
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    add_packages("libuv", "ffmpeg", "tbox", "zlib")
-```
-
-下载和使用第三方包管理器的依赖包：
-
-```lua
-add_requires("brew::pcre2/libpcre2-8", {alias = "pcre2"})
-add_requires("conan::OpenSSL/1.0.2n@conan/stable", {alias = "openssl"}) 
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    add_packages("pcre2", "openssl")
-```
-
-查找和使用本地已安装的包：
-
-```lua
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    on_load(function (target)
-        target:add(find_packages("zlib", "openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
-    end)
-```
 
 ## 项目例子
 
