@@ -180,6 +180,18 @@ target("console")
     end
 ```
 
+Custom scripts:
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    after_build(function (target)
+        print("hello: %s", target:name())
+        os.exec("echo %s", target:targetfile())
+    end)
+```
+
 Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo) or third-party repositories:
 
 ```lua
@@ -189,17 +201,6 @@ target("test")
     set_kind("binary")
     add_files("src/*.c")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
-```
-
-Find and use local packages:
-
-```lua
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    on_load(function (target)
-        target:add(find_packages("openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
-    end)
 ```
 
 Qt QuickApp Program:

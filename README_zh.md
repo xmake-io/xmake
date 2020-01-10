@@ -185,6 +185,18 @@ target("console")
     end
 ```
 
+自定义脚本:
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    after_build(function (target)
+        print("hello: %s", target:name())
+        os.exec("echo %s", target:targetfile())
+    end)
+```
+
 下载和使用在[xmake-repo](https://github.com/xmake-io/xmake-repo)和第三方包仓库的依赖包：
 
 ```lua
@@ -194,17 +206,6 @@ target("test")
     set_kind("binary")
     add_files("src/*.c")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
-```
-
-查找和使用本地已安装的包：
-
-```lua
-target("test")
-    set_kind("shared")
-    add_files("src/*.c")
-    on_load(function (target)
-        target:add(find_packages("openssl", "brew::pcre2/libpcre2-8", "conan::OpenSSL/1.0.2n@conan/stable"))
-    end)
 ```
 
 Qt QuickApp应用程序:
