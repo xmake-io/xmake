@@ -259,6 +259,14 @@ $ xmake project -k compile_commands
 $ xmake l ./test.lua
 $ xmake l -c "print('hello xmake!')"
 $ xmake l lib.detect.find_tool gcc
+$ xmake l
+> print("hello xmake!")
+> {1, 2, 3}
+< { 
+    1,
+    2,
+    3 
+  }
 ```
 
 更多内置插件见相关文档：[内置插件文档](https://xmake.io/#/zh-cn/plugin/builtin_plugins)
