@@ -242,7 +242,8 @@ More wdk driver program examples (umdf/kmdf/wdm), please see [WDK Program Exampl
 #### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
 
 ```bash
-$ xmake project -k vs2017 -m "debug,release"
+$ xmake project -k vsxmake -m "debug;release" # New vsproj generator (Recommended)
+$ xmake project -k vs -m "debug;release"
 $ xmake project -k cmakelists
 $ xmake project -k compile_commands
 ```

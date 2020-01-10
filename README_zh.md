@@ -247,7 +247,8 @@ target("app")
 #### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
 
 ```bash
-$ xmake project -k vs2017 -m "debug,release"
+$ xmake project -k vsxmake -m "debug;release" # 新版vs工程生成插件（推荐）
+$ xmake project -k vs -m "debug;release"
 $ xmake project -k cmakelists
 $ xmake project -k compile_commands
 ```
