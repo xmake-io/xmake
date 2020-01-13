@@ -42,9 +42,12 @@ function main(opt)
     opt.check   = opt.check or "--help"
     opt.command = opt.command or "--help"
     opt.parse   = "(%d+%.?%d*)%s"
-    
+
     -- find program
     local program = find_program(opt.program or "7z", opt)
+    if not program and not opt.program then
+        program = find_program("7za", opt)
+    end
 
     -- find program version
     local version = nil
