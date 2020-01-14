@@ -31,6 +31,13 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+
+// the max waited processes count at same time
+#define XM_PROCESS_WAIT_MAXN        (256)
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
@@ -64,7 +71,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
 
     // get the processes count
     tb_long_t count = lua_objlen(lua, 1);
-    if (count <= 0 || count > 64)
+    if (count <= 0 || count > XM_PROCESS_WAIT_MAXN)
     {
         // error
         lua_pushfstring(lua, "invalid process count(%d) for process.waitlist", count);
@@ -74,7 +81,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
 
     // get the processes
     tb_int_t            i = 0;
-    tb_process_ref_t    processes[64 + 1];
+    tb_process_ref_t    processes[XM_PROCESS_WAIT_MAXN + 1];
     for (i = 0; i < count; i++)
     {
         // get proclist[i]
@@ -111,7 +118,7 @@ tb_int_t xm_process_waitlist(lua_State* lua)
     tb_long_t timeout = (tb_long_t)luaL_checkinteger(lua, 2);
 
     // wait it
-    tb_process_waitinfo_t infolist[64];
+    tb_process_waitinfo_t infolist[XM_PROCESS_WAIT_MAXN];
     tb_long_t infosize = tb_process_waitlist(processes, infolist, tb_arrayn(infolist), timeout);
 
     // save process info count
