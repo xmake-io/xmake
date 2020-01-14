@@ -80,6 +80,6 @@ function main(package)
 
     -- do all patches
     for _, patchinfo in ipairs(patches) do
-        _patch(package, patchinfo[1], patchinfo[2])
+        _patch(package, patchinfo.url, patchinfo.sha256)
     end
 end

@@ -918,13 +918,34 @@ function _instance:patches()
                 patches = {}
                 patchinfos = table.wrap(patchinfos)
                 for idx = 1, #patchinfos, 2 do
-                    table.insert(patches , {patchinfos[idx], patchinfos[idx + 1]})
+                    table.insert(patches , {url = patchinfos[idx], sha256 = patchinfos[idx + 1]})
                 end
             end
         end
         self._PATCHES = patches or false
     end
     return patches and patches or nil
+end
+
+-- get the resources of the current version
+function _instance:resources()
+    local resources = self._RESOURCES
+    if resources == nil then
+        local resourceinfos = self:get("resources")
+        if resourceinfos then
+            local version_str = self:version_str()
+            resourceinfos = resourceinfos[version_str]
+            if resourceinfos then
+                resources = {}
+                resourceinfos = table.wrap(resourceinfos)
+                for idx = 1, #resourceinfos, 3 do
+                    table.insert(resources, {name = resourceinfos[idx], url = resourceinfos[idx + 1], sha256 = resourceinfos[idx + 2]})
+                end
+            end
+        end
+        self._RESOURCES = resources or false
+    end
+    return resources and resources or nil
 end
 
 -- has the given c funcs?
@@ -1078,6 +1099,7 @@ function package.apis()
         {
             -- package.add_xxx
             "package.add_patches"
+        ,   "package.add_resources"
         }
     ,   dictionary = 
         {
