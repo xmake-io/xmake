@@ -35,7 +35,7 @@
  */
 
 // the max waited processes count at same time
-#define XM_PROCESS_WAIT_MAXN        (256)
+#define XM_PROCESS_WAIT_MAXN        (512)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
