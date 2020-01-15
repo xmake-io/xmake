@@ -183,40 +183,35 @@ function option.init(menu)
     local context = option.save()
     assert(context)
 
-    -- parse _ARGV
-    local argv     = table.copy(xmake._ARGV)
-    local task_arg = "build"
-    if argv[1] and not argv[1]:startswith('-') then
-        -- regard it as command name
-        task_arg = argv[1]
-        table.remove(argv, 1)
-    end
+    -- check command
+    if xmake._COMMAND then
 
-    -- find the current task
-    for taskname, taskinfo in pairs(main.tasks) do
+        -- find the current task
+        for taskname, taskinfo in pairs(main.tasks) do
 
-        -- ok?
-        if taskname == task_arg or taskinfo.shortname == task_arg then
-            -- save this task
-            context.taskname = taskname
-            break
+            -- ok?
+            if taskname == xmake._COMMAND or taskinfo.shortname == xmake._COMMAND then
+                -- save this task
+                context.taskname = taskname
+                break
+            end
         end
-    end
 
-    -- not found?
-    if not context.taskname or not menu[context.taskname] then
+        -- not found?
+        if not context.taskname or not menu[context.taskname] then
 
-        -- print the main menu
-        option.show_main()
+            -- print the main menu
+            option.show_main()
 
-        -- invalid task
-        return false, "invalid task: " .. task_arg
+            -- invalid task
+            return false, "invalid task: " .. xmake._COMMAND
+        end
     end
 
     local options = table.wrap(option.taskmenu().options)
 
     -- parse remain parts
-    local results, err = option.parse(argv, options, {populate_defaults = false})
+    local results, err = option.parse(xmake._COMMAND_ARGV, options, { populate_defaults = false })
     if not results then
         option.show_menu(context.taskname)
         return false, err
@@ -281,7 +276,11 @@ function option.parse(argv, options, opt)
             if match_opt and ((arg.type == "option" and match_opt[3] ~= "k") or (arg.type == "flag" and match_opt[3] == "k")) then
                 results[match_opt[2] or match_opt[1]] = option.boolean(arg.value)
             else
-                return nil, string.format("Invalid %s: %s", arg.type, arg)
+                if opt.allow_unknown then
+                    results[arg.key] = option.boolean(arg.value)
+                else
+                    return nil, string.format("Invalid %s: %s", arg.type, arg)
+                end
             end
 
         elseif arg.type == "arg" then
@@ -333,6 +332,23 @@ function option.parse(argv, options, opt)
             else
 
                 -- failed
+                if opt.allow_unknown then
+                    if arg.key then
+                        results[arg.key] = arg.value
+                    else
+                        -- the option
+                        local o = results["$ARGS"]
+                        if not o then
+                            results["$ARGS"] = {}
+                            o = results["$ARGS"]
+                        end
+
+                        -- append value
+                        table.insert(o, arg.value)
+                    end
+                else
+                    return nil, string.format("Invalid %s: %s", arg.type, arg)
+                end
                 return nil, "invalid argument: " .. arg.value
             end
         end

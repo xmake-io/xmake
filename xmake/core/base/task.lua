@@ -32,6 +32,37 @@ local sandbox       = require("sandbox/sandbox")
 local config        = require("project/config")
 local sandbox_os    = require("sandbox/modules/os")
 
+function task.common_options()
+    if not task._COMMON_OPTIONS then
+        task._COMMON_OPTIONS =
+        {
+            {'q', "quiet",     "k",  nil, "Quiet operation."                                         }
+        ,   {'y', "yes",       "k",  nil, "Input yes by default if need user confirm."               }
+        ,   {nil, "confirm",   "kv", nil, "Input the given result if need user confirm.",
+                                          "    - y|yes",
+                                          "    - n|no",
+                                          "    - d|def"}
+        ,   {'v', "verbose",   "k",  nil, "Print lots of verbose information for users."             }
+        ,   {nil, "root",      "k",  nil, "Allow to run xmake as root."                              }
+        ,   {'D', "diagnosis", "k",  nil, "Print lots of diagnosis information (backtrace, check info ..) only for developers."
+                                        , "And we can append -v to get more whole information."
+                                        , "    e.g. $ xmake -v -D"}
+        ,   {nil, "profile",   "k",  nil, "Print performance data only for developers."              }
+        ,   {nil, "version",   "k",  nil, "Print the version number and exit."                       }
+        ,   {'h', "help",      "k",  nil, "Print this help message and exit."                        }
+        ,   {}
+        ,   {'F', "file",      "kv", nil, "Read a given xmake.lua file."                             }
+        ,   {'P', "project",   "kv", nil, "Change to the given project directory."
+                                        , "Search priority:"
+                                        , "    1. The Given Command Argument"
+                                        , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                        , "    3. The Current Directory"                             }
+        ,   {category = "action"}
+        }
+    end
+    return task._COMMON_OPTIONS
+end
+
 -- the directories of tasks
 function task._directories()
 
@@ -127,28 +158,9 @@ function task._translate_menu(menu)
 
         -- add common options, we need avoid repeat because the main/build task will be inserted twice
         if not menu._common_options then
-            table.insert(options, 1,  {'q', "quiet",     "k",  nil, "Quiet operation."                                         })
-            table.insert(options, 2,  {'y', "yes",       "k",  nil, "Input yes by default if need user confirm."               })
-            table.insert(options, 3,  {nil, "confirm",   "kv", nil, "Input the given result if need user confirm.",
-                                                                    "    - y|yes",
-                                                                    "    - n|no",
-                                                                    "    - d|def"})
-            table.insert(options, 4,  {'v', "verbose",   "k",  nil, "Print lots of verbose information for users."             })
-            table.insert(options, 5,  {nil, "root",      "k",  nil, "Allow to run xmake as root."                              })
-            table.insert(options, 6,  {'D', "diagnosis", "k",  nil, "Print lots of diagnosis information (backtrace, check info ..) only for developers."
-                                                                  , "And we can append -v to get more whole information."
-                                                                  , "    e.g. $ xmake -v -D"})
-            table.insert(options, 7,  {nil, "profile",   "k",  nil, "Print performance data only for developers."              })
-            table.insert(options, 8,  {nil, "version",   "k",  nil, "Print the version number and exit."                       })
-            table.insert(options, 9,  {'h', "help",      "k",  nil, "Print this help message and exit."                        })
-            table.insert(options, 10, {})
-            table.insert(options, 11, {'F', "file",      "kv", nil, "Read a given xmake.lua file."                             })
-            table.insert(options, 12, {'P', "project",   "kv", nil, "Change to the given project directory."
-                                                                  , "Search priority:"
-                                                                  , "    1. The Given Command Argument"
-                                                                  , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                                                  , "    3. The Current Directory"                             })
-            table.insert(options, 13, {category = "action"})
+            for i, v in ipairs(task.common_options()) do
+                table.insert(options, i, v)
+            end
             menu._common_options = true
         end
     end

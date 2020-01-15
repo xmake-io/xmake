@@ -118,33 +118,31 @@ function main._find_root(projectfile)
     return projectfile
 end
 
+function main._basicparse()
+
+    -- check command
+    if xmake._ARGV[1] and not xmake._ARGV[1]:startswith('-') then
+        -- regard it as command name
+        xmake._COMMAND = xmake._ARGV[1]
+        xmake._COMMAND_ARGV = table.move(xmake._ARGV, 2, -1, 1, {})
+    else
+        xmake._COMMAND_ARGV = xmake._ARGV
+    end
+
+    -- parse options
+    local options, err = option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
+    if not options then
+        utils.error(err)
+    end
+
+    return options.project, options.file
+end
+
 -- the init function for main
 function main._init()
 
-    local argv = table.copy(xmake._ARGV)
-    if argv[1] and not argv[1]:startswith('-') then
-        -- regard it as command name
-        table.remove(argv, 1)
-    end
-    local pargv = cli.parsev(argv)
-
     -- get project directory and project file from the argument option
-    local opt_projectdir, opt_projectfile
-    for _, arg in ipairs(pargv) do
-        if arg.type == 'option' then
-            if (arg.short and arg.key == 'P') or arg.key == 'project' then
-                if opt_projectdir then
-                    return nil, "Duplicate arguments for PROJECT"
-                end
-                opt_projectdir = arg.value
-            elseif (arg.short and arg.key == 'F') or arg.key == 'file' then
-                if opt_projectfile then
-                    return nil, "Duplicate arguments for FILE"
-                end
-                opt_projectfile = arg.value
-            end
-        end
-    end
+    local opt_projectdir, opt_projectfile = main._basicparse()
 
     -- init the project directory
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
@@ -166,7 +164,7 @@ function main._init()
 
     -- find the root project file
     if not os.isfile(projectfile) or (not opt_projectdir and not opt_projectfile) then
-        projectfile = main._find_root(projectfile) 
+        projectfile = main._find_root(projectfile)
     end
 
     -- update and enter project
