@@ -53,11 +53,11 @@ function cli._make_arg(value, argv, argi)
 end
 
 function cli._make_flag(key, short, argv, argi)
-    return cli._make_segment('flag', #key == 1 and ('-' .. key) or ('--' .. key), argv, argi, { key = key, value = true, short = short or false })
+    return cli._make_segment('flag', short and ('-' .. key) or ('--' .. key), argv, argi, { key = key, value = true, short = short or false })
 end
 
 function cli._make_option(key, value, short, argv, argi)
-    return cli._make_segment('option', #key == 1 and ('-' .. key .. value) or ('--' .. key .. '=' .. value), argv, argi, { key = key, value = value, short = short or false })
+    return cli._make_segment('option', short and ('-' .. key .. value) or ('--' .. key .. '=' .. value), argv, argi, { key = key, value = value, short = short or false })
 end
 
 function cli.parse(args, ...)
