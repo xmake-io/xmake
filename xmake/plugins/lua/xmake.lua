@@ -54,10 +54,12 @@ task("lua")
         if script then
 
             local args = option.get("arguments") or {}
+            args.n = #args
             for i, value in ipairs(args) do
                 if value:startswith('@') then
                     local v, err = string.deserialize(value:sub(2))
                     if err then
+                        -- for strings that failed to deserialize, regaed it as a normal string, just show a warning message
                         utils.warning(err)
                     else
                         args[i] = v
@@ -70,13 +72,13 @@ task("lua")
 
                 -- run the given lua script file (xmake lua /tmp/script.lua)
                 vprint("running given lua script file: %s", path.relative(script))
-                import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(unpack(args))
+                import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(table.unpack(args, 1, args.n))
 
             elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
 
                 -- run builtin lua script (xmake lua echo "hello xmake")
                 vprint("running builtin lua script: %s", script)
-                import("scripts." .. script, {anonymous = true})(unpack(args))
+                import("scripts." .. script, {anonymous = true})(table.unpack(args, 1, args.n))
             else
 
                 -- attempt to find the builtin module
@@ -91,11 +93,11 @@ task("lua")
                 if object then
                     -- run builtin modules (xmake lua core.xxx.xxx)
                     vprint("running builtin module: %s", script)
-                    result = table.pack(object(unpack(args)))
+                    result = table.pack(object(table.unpack(args, 1, args.n)))
                 else
                     -- run imported modules (xmake lua core.xxx.xxx)
                     vprint("running imported module: %s", script)
-                    result = table.pack(import(script, {anonymous = true})(unpack(args)))
+                    result = table.pack(import(script, {anonymous = true})(table.unpack(args, 1, args.n)))
                 end
                 if result and result.n ~= 0 then utils.dump(unpack(result, 1, result.n)) end
             end

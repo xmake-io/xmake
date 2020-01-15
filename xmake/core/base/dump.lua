@@ -88,17 +88,27 @@ function dump._print_function(func, as_key)
 end
 
 -- print value with default format
-function dump._print_default(value)
+function dump._print_default_scalar(value)
     io.write(dump._translate("${reset}${color.dump.default}"), dump._format("text.dump.default_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print udata value with scalar format
 function dump._print_udata_scalar(value)
+    local metatable = debug.getmetatable(value)
+    local tostringmethod = metatable and (rawget(metatable, "__todisplay") or rawget(metatable, "__tostring"))
+    if tostringmethod then
+        value = tostringmethod(value)
+    end
     io.write(dump._translate("${reset}${color.dump.udata}"), dump._format("text.dump.udata_format", "%s", value), dump._translate("${reset}"))
 end
 
 -- print table value with scalar format
 function dump._print_table_scalar(value)
+    local metatable = debug.getmetatable(value)
+    local tostringmethod = metatable and (rawget(metatable, "__todisplay") or rawget(metatable, "__tostring"))
+    if tostringmethod then
+        value = tostringmethod(value)
+    end
     io.write(dump._translate("${reset}${color.dump.table}"), dump._format("text.dump.table_format", "%s", value), dump._translate("${reset}"))
 end
 
@@ -117,7 +127,7 @@ function dump._print_scalar(value, as_key)
     elseif type(value) == "table" then
         dump._print_table_scalar(value)
     else
-        dump._print_default(value)
+        dump._print_default_scalar(value)
     end
 end
 
