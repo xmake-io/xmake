@@ -939,13 +939,36 @@ function _instance:resources()
                 resources = {}
                 resourceinfos = table.wrap(resourceinfos)
                 for idx = 1, #resourceinfos, 3 do
-                    table.insert(resources, {name = resourceinfos[idx], url = resourceinfos[idx + 1], sha256 = resourceinfos[idx + 2]})
+                    local name = resourceinfos[idx]
+                    resources[name] = {url = resourceinfos[idx + 1], sha256 = resourceinfos[idx + 2]}
                 end
             end
         end
         self._RESOURCES = resources or false
     end
     return resources and resources or nil
+end
+
+-- get the the given resource 
+function _instance:resource(name)
+    local resources = self:resources()
+    return resources and resources[name] or nil
+end
+
+-- get the the given resource file
+function _instance:resourcefile(name)
+    local resource = self:resource(name)
+    if resource and resource.url then
+        return path.join(self:cachedir(), "resources", name, (path.filename(resource.url):gsub("%?.+$", "")))
+    end
+end
+
+-- get the the given resource directory
+function _instance:resourcedir(name)
+    local resource = self:resource(name)
+    if resource and resource.url then
+        return path.join(self:cachedir(), "resources", name, (path.filename(resource.url):gsub("%?.+$", "")) .. ".dir")
+    end
 end
 
 -- has the given c funcs?

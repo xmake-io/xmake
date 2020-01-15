@@ -23,7 +23,8 @@ import("core.base.option")
 import("core.project.target")
 import("lib.detect.find_file")
 import("test")
-import("patch")
+import("patch_sources")
+import("download_resources")
 import(".utils.filter")
 
 -- patch pkgconfig if not exists
@@ -153,8 +154,11 @@ function main(package)
                         dep:envs_enter()
                     end
 
-                    -- patch it first 
-                    patch(package)
+                    -- download package resources
+                    download_resources(package)
+
+                    -- patch source codes of package
+                    patch_sources(package)
 
                     -- do install
                     for i = 1, 3 do

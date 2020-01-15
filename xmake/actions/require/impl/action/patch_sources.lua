@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        patch.lua
+-- @file        patch_sources.lua
 --
 
 -- imports
