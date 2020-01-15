@@ -57,7 +57,7 @@ function cli._make_flag(key, short, argv, argi)
 end
 
 function cli._make_option(key, value, short, argv, argi)
-    return cli._make_segment('option', short and ('-' .. key .. value) or ('--' .. key .. '=' .. value), argv, argi, { key = key, value = value, short = short or false })
+    return cli._make_segment('option', short and ('-' .. key .. ' ' .. value) or ('--' .. key .. '=' .. value), argv, argi, { key = key, value = value, short = short or false })
 end
 
 function cli.parse(args, ...)
