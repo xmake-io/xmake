@@ -23,7 +23,6 @@ local main = main or {}
 
 -- load modules
 local os            = require("base/os")
-local cli           = require("base/cli")
 local log           = require("base/log")
 local path          = require("base/path")
 local utils         = require("base/utils")
@@ -130,19 +129,18 @@ function main._basicparse()
     end
 
     -- parse options
-    local options, err = option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
-    if not options then
-        utils.error(err)
-    end
-
-    return options.project, options.file
+    return option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
 end
 
 -- the init function for main
 function main._init()
 
     -- get project directory and project file from the argument option
-    local opt_projectdir, opt_projectfile = main._basicparse()
+    local options, err = main._basicparse()
+    if not options then
+        return false, err
+    end
+    local opt_projectdir, opt_projectfile = options.project, options.file
 
     -- init the project directory
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
