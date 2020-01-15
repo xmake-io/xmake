@@ -22,8 +22,11 @@
 local option = option or {}
 
 -- load modules
+local cli       = require("base/cli")
 local table     = require("base/table")
 local colors    = require("base/colors")
+
+local dump    = require("base/dump")
 
 -- ifelse, a? b : c
 function option._ifelse(a, b, c)
@@ -180,377 +183,111 @@ function option.init(menu)
     local context = option.save()
     assert(context)
 
-    -- parse _ARGV 
-    local argv      = xmake._ARGV
-    local argkv_end = false
-    local _iter, _s, _k = ipairs(argv)
-    while true do
+    -- parse _ARGV
+    local argv     = table.copy(xmake._ARGV)
+    local task_arg = "build"
+    if argv[1] and not argv[1]:startswith('-') then
+        -- regard it as command name
+        task_arg = argv[1]
+        table.remove(argv, 1)
+    end
 
-        -- the idx and arg
-        local idx, arg = _iter(_s, _k)
+    -- find the current task
+    for taskname, taskinfo in pairs(main.tasks) do
 
-        -- end?
-        _k = idx
-        if idx == nil then break end
-
-        -- parse key and value
-        local key, value
-        local i = arg:find("=", 1, true)
- 
-        -- key=value?
-        if i and not argkv_end then
-            key = arg:sub(1, i - 1)
-            value = arg:sub(i + 1)
-        -- only key?
-        else
-            key = arg
-            value = true
-        end
-
-        -- --key?
-        local prefix = 0
-        if not argkv_end and key:startswith("--") then
-            key = key:sub(3)
-            prefix = 2
-        -- -kvalue?
-        elseif not argkv_end and key:startswith("-") and #key > 2 then
-            value = key:sub(3)
-            key = key:sub(2, 2)
-            prefix = 1
-        -- -k?
-        elseif not argkv_end and key:startswith("-") then
-            key = key:sub(2)
-            prefix = 1
-        end
-
-        -- check key
-        if prefix and #key == 0 then
-            option.show_menu(context.taskname)
-            return false, "invalid option: " .. arg
-        end
-
-        -- --key=value or -kvalue or -k value or -k?
-        if prefix ~= 0 then
-
-            -- find this option
-            local opt = nil
-            local longname = nil
-            for _, o in ipairs(option.taskmenu().options) do
-
-                -- check
-                assert(o)
-
-                -- the short name
-                local shortname = o[1]
-
-                -- the long name 
-                longname = o[2]
-
-                -- --key?
-                if prefix == 2 and key == longname then
-                    opt = o
-                    break 
-                -- k?
-                elseif prefix == 1 and key == shortname then
-                    opt = o
-                    break
-                end
-            end
-
-            -- not found?
-            if not opt then
-                option.show_menu(context.taskname)
-                return false, "invalid option: " .. arg
-            end
-
-            -- -k value or -kvalue? continue to get the value
-            if prefix == 1 and opt[3] == "kv" then
-                if type(value) ~= "string" then
-                    idx, arg = _iter(_s, _k)
-                    _k = idx
-                    if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
-                        option.show_menu(context.taskname)
-                        return false, "invalid option: " .. option._ifelse(idx, arg, key)
-                    end
-                    value = arg
-                end
-            end
-
-            -- check mode
-            if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
-                option.show_menu(context.taskname)
-                return false, "invalid option: " .. arg
-            end
-
-            -- value is "true" or "false", translate it
-            value = option.boolean(value)
-
-            -- save option
-            context.options[longname] = value
-
-        -- task?
-        elseif idx == 1 then
-
-            -- find the current task
-            for taskname, taskinfo in pairs(main.tasks) do
-
-                -- ok?
-                if taskname == key or taskinfo.shortname == key then
-                    -- save this task
-                    context.taskname = taskname 
-                    break 
-                end
-            end
-
-            -- not found?
-            if not context.taskname or not menu[context.taskname] then
-
-                -- print the main menu
-                option.show_main()
-
-                -- invalid task
-                return false, "invalid task: " .. key
-            end
-
-        -- value?
-        else 
-
-            -- stop to parse key-value arguments
-            argkv_end = true
-
-            -- find a value option with name
-            local opt = nil
-            for _, o in ipairs(option.taskmenu().options) do
-
-                -- the mode
-                local mode = o[3]
-
-                -- the name
-                local name = o[2]
-
-                -- check
-                assert(o and ((mode ~= "v" and mode ~= "vs") or name))
-
-                -- is value and with name?
-                if mode == "v" and name and not context.options[name] then
-                    opt = o
-                    break 
-                -- is values and with name?
-                elseif mode == "vs" and name then
-                    opt = o
-                    break
-                end
-            end
-
-            -- ok? save this value with name opt[2]
-            if opt then 
-
-                -- the mode
-                local mode = opt[3]
-
-                -- the name
-                local name = opt[2]
-
-                -- save value
-                if mode == "v" then
-                    context.options[name] = key
-                elseif mode == "vs" then
-                    -- the option
-                    local o = context.options[name]
-                    if not o then
-                        context.options[name] = {}
-                        o = context.options[name]
-                    end
-
-                    -- append value
-                    table.insert(o, key)
-                end
-            else
-            
-                -- print menu
-                option.show_menu(context.taskname)
-
-                -- invalid option
-                return false, "invalid option: " .. arg
-            end
+        -- ok?
+        if taskname == task_arg or taskinfo.shortname == task_arg then
+            -- save this task
+            context.taskname = taskname
+            break
         end
     end
+
+    -- not found?
+    if not context.taskname or not menu[context.taskname] then
+
+        -- print the main menu
+        option.show_main()
+
+        -- invalid task
+        return false, "invalid task: " .. task_arg
+    end
+
+    local options = table.wrap(option.taskmenu().options)
+
+    -- parse remain parts
+    local results, err = option.parse(argv, options, {populate_defaults = false})
+    if not results then
+        option.show_menu(context.taskname)
+        return false, err
+    end
+
+    -- finish parsing
+    context.options = results
 
     -- init the default value
-    for _, o in ipairs(table.wrap(option.taskmenu().options)) do
-
-        -- the long name
-        local longname = o[2]
-
-        -- key=value?
-        if o[3] == "kv" then
-
-            -- the key
-            local key = longname or o[1]
-            assert(key)
-
-            -- save the default value 
-            context.defaults[key] = o[4]    
-        -- value with name?
-        elseif o[3] == "v" and longname then
-            -- save the default value 
-            context.defaults[longname] = o[4]    
-        end
-    end
+    option.populate_defaults(options, context.defaults)
 
     -- ok
     return true
 end
 
--- find the value of a given name from the arguments
--- only for kv mode and need not check it using menu
---
-function option.find(argv, name, shortname)
-
-    -- check
-    assert(argv and (name or shortname))
-
-    -- find it
-    local nextvalue = false
-    for _, arg in ipairs(argv) do
-
-        -- get this value
-        if nextvalue then return arg end
-
-        -- --name=value?
-        if name and arg:startswith("--" .. name .. "=") then
-                    
-            -- get value
-            local i = arg:find("=", 1, true)
-            if i then return arg:sub(i + 1) end
-
-        -- -shortname value?
-        elseif shortname and arg == ("-" .. shortname) then
- 
-            -- get value
-            nextvalue = true
-        end
-    end
-end
-
 -- parse arguments with the given options
-function option.parse(argv, options)
+function option.parse(argv, options, opt)
 
     -- check
     assert(argv and options)
+    opt = opt or { populate_defaults = true }
 
     -- parse arguments
     local results   = {}
-    local argkv_end = false
-    local _iter, _s, _k = ipairs(argv)
-    while true do
+    local flags = {}
+    for _, o in ipairs(options) do
 
-        -- the idx and arg
-        local idx, arg = _iter(_s, _k)
+        -- the mode
+        local mode = o[3]
 
-        -- end?
-        _k = idx
-        if idx == nil then break end
+        -- the name
+        local name = o[2]
 
-        -- parse key and value
-        local key, value
-        local i = arg:find("=", 1, true)
+        -- check
+        assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
-        -- key=value?
-        if i and not argkv_end then
-            key = arg:sub(1, i - 1)
-            value = arg:sub(i + 1)
-        -- only key?
-        else
-            key = arg
-            value = true
+        -- fill short flags
+        if o[3] == 'k' and o[1] then
+            table.insert(flags, o[1])
         end
+    end
 
-        -- --key?
-        local prefix = 0
-        if not argkv_end and key:startswith("--") then
-            key = key:sub(3)
-            prefix = 2
-        -- -kvalue?
-        elseif not argkv_end and key:startswith("-") and #key > 2 then
-            value = key:sub(3)
-            key = key:sub(2, 2)
-            prefix = 1
-        -- -k?
-        elseif not argkv_end and key:startswith("-") then
-            key = key:sub(2)
-            prefix = 1
-        end
+    -- run parser
+    local pargs = cli.parsev(argv, flags)
 
-        -- check key
-        if prefix and #key == 0 then
-            return nil, "invalid option: " .. arg
-        end
+    -- save parse results
+    for i, arg in ipairs(pargs) do
+        if arg.type == "option" or arg.type == "flag" then
 
-        -- --key=value or -kvalue or -k value or -k?
-        if prefix ~= 0 then
-
-            -- find this option
-            local opt = nil
-            local longname = nil
-            for _, o in ipairs(options) do
-
-                -- check
-                assert(o)
-
-                -- the short name
-                local shortname = o[1]
-
-                -- the long name
-                longname = o[2]
-
-                -- --key?
-                if prefix == 2 and key == longname then
-                    opt = o
-                    break 
-                -- k?
-                elseif prefix == 1 and key == shortname then
-                    opt = o
+            -- find option or flag
+            local name_idx = arg.short and 1 or 2
+            local match_opt = nil
+            for _, o in pairs(options) do
+                local name = o[name_idx]
+                if name == arg.key then
+                    match_opt = o
                     break
                 end
             end
 
-            -- not found?
-            if not opt then
-                return nil, "invalid option: " .. arg
-            end
-
-            -- -k value or -kvalue? continue to get the value
-            if prefix == 1 and opt[3] == "kv" then
-                if type(value) ~= "string" then
-                    idx, arg = _iter(_s, _k)
-                    _k = idx
-                    if idx == nil or (arg:startswith("-") and not arg:find("%s")) then 
-                        return nil, "invalid option: " .. option._ifelse(idx, arg, key)
-                    end
-                    value = arg
-                end
-            end
-
-            -- check mode
-            if (opt[3] == "k" and type(value) ~= "boolean") or (opt[3] == "kv" and type(value) ~= "string") then
-                return nil, "invalid option: " .. arg
-            end
-
-            -- value is "true" or "false", translate it
-            value = option.boolean(value)
-
             -- save option
-            results[longname] = value
+            if match_opt and ((arg.type == "option" and match_opt[3] ~= "k") or (arg.type == "flag" and match_opt[3] == "k")) then
+                results[match_opt[2] or match_opt[1]] = option.boolean(arg.value)
+            else
+                return nil, string.format("Invalid %s: %s", arg.type, arg)
+            end
 
-        -- value?
-        else 
-
-            -- stop to parse key-value arguments
-            argkv_end = true
+        elseif arg.type == "arg" then
 
             -- find a value option with name
-            local opt = nil
+            local match_opt = nil
             for _, o in ipairs(options) do
 
                 -- the mode
@@ -559,32 +296,29 @@ function option.parse(argv, options)
                 -- the name
                 local name = o[2]
 
-                -- check
-                assert(o and ((mode ~= "v" and mode ~= "vs") or name))
-
                 -- is value and with name?
                 if mode == "v" and name and not results[name] then
-                    opt = o
-                    break 
+                    match_opt = o
+                    break
                 -- is values and with name?
                 elseif mode == "vs" and name then
-                    opt = o
+                    match_opt = o
                     break
                 end
             end
 
             -- ok? save this value with name opt[2]
-            if opt then 
+            if match_opt then
 
                 -- the mode
-                local mode = opt[3]
+                local mode = match_opt[3]
 
                 -- the name
-                local name = opt[2]
+                local name = match_opt[2]
 
                 -- save value
                 if mode == "v" then
-                    results[name] = key
+                    results[name] = arg.value
                 elseif mode == "vs" then
                     -- the option
                     local o = results[name]
@@ -594,18 +328,32 @@ function option.parse(argv, options)
                     end
 
                     -- append value
-                    table.insert(o, key)
+                    table.insert(o, arg.value)
                 end
             else
-           
-                -- failed
-                return nil, "invalid option: " .. arg
-            end
 
+                -- failed
+                return nil, "invalid argument: " .. arg.value
+            end
         end
     end
 
     -- init the default value
+    if opt.populate_defaults then
+        option.populate_defaults(options, results)
+    end
+
+    -- ok
+    return results
+end
+
+-- fill defined with option's default value, in place
+function option.populate_defaults(options, defined)
+
+    -- check
+    assert(options and defined)
+
+    -- populate the default value
     for _, o in ipairs(options) do
 
         -- the long name
@@ -614,27 +362,30 @@ function option.parse(argv, options)
         -- key=value?
         if o[3] == "kv" then
 
+            local shortname = o[1]
             -- the key
-            local key = longname or o[1]
+            local key = longname or shortname
             assert(key)
 
-            -- save the default value 
-            if results[key] == nil then
-                results[key] = o[4]
+            -- move value to key if needed
+            if shortname and defined[shortname] ~= nil then
+                defined[key], defined[shortname] = defined[shortname], nil
+            end
+
+            -- save the default value
+            if defined[key] == nil then
+                defined[key] = o[4]
             end
 
         -- value with name?
         elseif o[3] == "v" and longname then
 
-            -- save the default value 
-            if results[longname] == nil then
-                results[longname] = o[4]    
+            -- save the default value
+            if defined[longname] == nil then
+                defined[longname] = o[4]
             end
         end
     end
-
-    -- ok
-    return results
 end
 
 
@@ -648,7 +399,7 @@ function option.taskmenu(task)
 
     -- check
     assert(option._MENU)
-   
+
     -- the current task
     task = task or option.taskname() or "main"
 
@@ -749,32 +500,7 @@ function option.defaults(task)
 
     -- get the default options for the given task
     local defaults = {}
-    if taskmenu then
-        for _, o in ipairs(taskmenu.options) do
-
-            -- the long name
-            local longname = o[2]
-
-            -- key=value?
-            if o[3] == "kv" then
-
-                -- the key
-                local key = longname or o[1]
-                assert(key)
-
-                -- save the default value 
-                defaults[key] = o[4]    
-
-            -- value with name?
-            elseif o[3] == "v" and longname then
-
-                -- save the default value 
-                defaults[longname] = o[4] 
-            end
-        end
-    end
-
-    -- ok?
+    option.populate_defaults(taskmenu.options, defaults)
     return defaults
 end
 
@@ -982,12 +708,12 @@ function option.show_main()
             -- print category name
             io.print("")
             io.print(colors.translate(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
-            
+
             -- the padding spaces
             local padding = 42
 
             -- get width of console
-            local console_width = os.getwinsize()["width"]
+            local console_width = math.max(os.getwinsize().width, 80)
 
             -- print tasks
             for taskname, taskinfo in pairs(categorytask) do
@@ -999,7 +725,7 @@ function option.show_main()
                 else
                     taskline = taskline .. "   "
                 end
-                
+
                 -- append the task name
                 taskline = taskline .. taskname
 
@@ -1044,7 +770,7 @@ function option.show_options(options, taskname)
     for _, opt in ipairs(options) do
         if not opt[1] and not opt[2] then
             emptyline_count = emptyline_count + 1
-        else 
+        else
             emptyline_count = 0
         end
         if emptyline_count < 2 then
@@ -1067,13 +793,13 @@ function option.show_options(options, taskname)
     options = printed_options
     for _, opt in ipairs(options) do
 
-        -- the following options are belong action? show sub-command section
+        -- the following options are belong action? show command section
         --
-        -- @see core/base/task.lua: translate menu 
+        -- @see core/base/task.lua: translate menu
         --
         if opt.category and opt.category == "action" then
             io.print("")
-            io.print(colors.translate("${bright}Sub-command options (" .. taskname .. "): "))
+            io.print(colors.translate("${bright}Command options (" .. taskname .. "): "))
         end
         
         -- init the option info
@@ -1116,7 +842,7 @@ function option.show_options(options, taskname)
         option_info = colors.translate("${color.menu.option.name}" .. option_info .. "${clear}")
 
         -- get width of console
-        local console_width = os.getwinsize()["width"]
+        local console_width = math.max(os.getwinsize().width, 80)
 
         -- append the option description
         local description = opt[5]

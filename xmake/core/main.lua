@@ -23,6 +23,7 @@ local main = main or {}
 
 -- load modules
 local os            = require("base/os")
+local cli           = require("base/cli")
 local log           = require("base/log")
 local path          = require("base/path")
 local utils         = require("base/utils")
@@ -120,11 +121,30 @@ end
 -- the init function for main
 function main._init()
 
-    -- get project directory from the argument option
-    local opt_projectdir = option.find(xmake._ARGV, "project", "P")
+    local argv = table.copy(xmake._ARGV)
+    if argv[1] and not argv[1]:startswith('-') then
+        -- regard it as command name
+        table.remove(argv, 1)
+    end
+    local pargv = cli.parsev(argv)
 
-    -- get project file from the argument option
-    local opt_projectfile = option.find(xmake._ARGV, "file", "F")
+    -- get project directory and project file from the argument option
+    local opt_projectdir, opt_projectfile
+    for _, arg in ipairs(pargv) do
+        if arg.type == 'option' then
+            if (arg.short and arg.key == 'P') or arg.key == 'project' then
+                if opt_projectdir then
+                    return nil, "Duplicate arguments for PROJECT"
+                end
+                opt_projectdir = arg.value
+            elseif (arg.short and arg.key == 'F') or arg.key == 'file' then
+                if opt_projectfile then
+                    return nil, "Duplicate arguments for FILE"
+                end
+                opt_projectfile = arg.value
+            end
+        end
+    end
 
     -- init the project directory
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
@@ -165,16 +185,22 @@ function main._init()
     else
         os.addenv("PATH", os.programdir())
     end
+
+    return true
 end
 
 -- the main entry function
 function main.entry()
 
-    -- init 
-    main._init()
+    -- init
+    local ok, errors = main._init()
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
 
     -- load global configuration
-    local ok, errors = global.load()
+    ok, errors = global.load()
     if not ok then
         utils.error(errors)
         return -1

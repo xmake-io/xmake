@@ -53,18 +53,30 @@ task("lua")
         -- get script
         if script then
 
+            local args = option.get("arguments") or {}
+            for i, value in ipairs(args) do
+                if value:startswith('@') then
+                    local v, err = string.deserialize(value:sub(2))
+                    if err then
+                        utils.warning(err)
+                    else
+                        args[i] = v
+                    end
+                end
+            end
+
             -- import and run script
             if path.extension(script) == ".lua" and os.isfile(script) then
 
                 -- run the given lua script file (xmake lua /tmp/script.lua)
                 vprint("running given lua script file: %s", path.relative(script))
-                import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(unpack(option.get("arguments") or {}))
+                import(path.basename(script), {rootdir = path.directory(script), anonymous = true})(unpack(args))
 
             elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
 
                 -- run builtin lua script (xmake lua echo "hello xmake")
                 vprint("running builtin lua script: %s", script)
-                import("scripts." .. script, {anonymous = true})(unpack(option.get("arguments") or {}))
+                import("scripts." .. script, {anonymous = true})(unpack(args))
             else
 
                 -- attempt to find the builtin module
@@ -79,13 +91,13 @@ task("lua")
                 if object then
                     -- run builtin modules (xmake lua core.xxx.xxx)
                     vprint("running builtin module: %s", script)
-                    result = object(unpack(option.get("arguments") or {}))
+                    result = table.pack(object(unpack(args)))
                 else
                     -- run imported modules (xmake lua core.xxx.xxx)
                     vprint("running imported module: %s", script)
-                    result = import(script, {anonymous = true})(unpack(option.get("arguments") or {}))
+                    result = table.pack(import(script, {anonymous = true})(unpack(args)))
                 end
-                if result ~= nil then utils.dump(result) end
+                if result and result.n ~= 0 then utils.dump(unpack(result, 1, result.n)) end
             end
         else
             -- enter interactive mode
@@ -115,9 +127,11 @@ task("lua")
                                                             "    - xmake lua (enter interactive mode)",
                                                             "    - xmake lua /tmp/script.lua",
                                                             "    - xmake lua echo 'hello xmake'",
-                                                            "    - xmake lua core.xxx.xxx",                   
+                                                            "    - xmake lua core.xxx.xxx",
                                                             "    - xmake lua -c 'print(...)' hello xmake!"   }
-                ,   {nil, "arguments",  "vs", nil,          "The script arguments."                          }
+                ,   {nil, "arguments",  "vs", nil,          "The script arguments, use '@' to enable deserializing.",
+                                                            "e.g.",
+                                                            "    - xmake lua lib.detect.find_tool tar @{version=true}" }
                 }
             }
 

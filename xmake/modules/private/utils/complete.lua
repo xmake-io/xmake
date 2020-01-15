@@ -63,7 +63,7 @@ function _complete_option(options, segs, name)
     local current_options = try
     {
         function()
-            return option.raw_parse(segs, options)
+            return option.raw_parse(segs, options, { populate_defaults = false })
         end
     }
     -- current options is invalid

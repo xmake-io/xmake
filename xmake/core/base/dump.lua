@@ -278,7 +278,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     printed_set, first_level = dump._get_printed_set(printed_set, value)
     io.write(first_indent)
     local metatable = debug.getmetatable(value)
-    local tostringmethod = metatable and rawget(metatable, "__tostring")
+    local tostringmethod = metatable and (rawget(metatable, "__todisplay") or rawget(metatable, "__tostring"))
     if not first_level and tostringmethod then
         local ok, strrep = pcall(tostringmethod, value, value)
         if ok then

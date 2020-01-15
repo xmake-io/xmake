@@ -442,6 +442,70 @@ function colors.ignore(str)
     return colors.translate(str, {plain = true})
 end
 
+-- make a table with colors
+--
+-- @param data         table data, array of array of strings with colors, eg: {{"1", "2", "3"}, {"4", "5", "6"}}
+-- @param opt          options
+--                       plain: false
+--                       sep: table colunm sepertor, default is ' | '
+--                       colunms: colunm attributes, eg: {{align = 'left', min_width = 80}, {align = 'center'}, {align = 'right', min_width = 120}}
+function colors.table(data, opt)
+
+    assert(data)
+
+    local opt = opt or {}
+    if opt.sep == nil then opt.sep = ' | ' end
+    opt.patch_reset = true
+    opt.ignore_unknown = true
+    local sep = colors.translate(opt.sep, opt)
+
+    local tab = {}
+    local col_width = {}
+    -- 'l' 'r' 'c'
+    local col_align = {}
+
+    if opt.colunms then
+        for i = 1, table.maxn(opt.colunms or {}) do
+            local v = opt.colunms[i] or {}
+            col_width[i] = v.min_width or 0
+            col_align[i] = (v.align or 'l'):sub(1, 1):lower()
+        end
+    end
+
+    for i, row in ipairs(data) do
+        tab[i] = {}
+        for j, cell in ipairs(row) do
+            local str = tostring(cell)
+            local value = colors.translate(str, opt)
+            local len = opt.plain and #value or #colors.ignore(str)
+            tab[i][j] = { str = value, len = len }
+            col_width[j] = math.max(len, col_width[j] or 0)
+        end
+    end
+
+    local empty_cell = { str = "", len = 0 }
+    local rows = {}
+    for i, row in ipairs(tab) do
+        local cells = {}
+        for j = 1, #col_width do
+            local cell = row[j] or empty_cell
+            if col_align[j] == 'r' then
+                cells[j] = string.rep(' ', col_width[j] - cell.len) .. cell.str
+            elseif col_align[j] == 'c' then
+                local padding = col_width[j] - cell.len
+                local lp = math.floor(padding / 2)
+                local rp = math.ceil(padding / 2)
+                cells[j] = string.rep(' ', lp) .. cell.str .. string.rep(' ', rp)
+            else
+                cells[j] = cell.str .. string.rep(' ', col_width[j] - cell.len)
+            end
+        end
+        rows[i] = table.concat(cells, sep)
+    end
+    rows[#rows + 1] = ""
+    return table.concat(rows, '\n')
+end
+
 -- get theme
 function colors.theme()
     return colors._THEME

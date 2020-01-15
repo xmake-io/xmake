@@ -42,7 +42,7 @@ function utils.dump(...)
         local info = debug.getinfo(2)
         local line = info.currentline
         if not line or line < 0 then line = info.linedefined end
-        io.write(string.format("dump form %s %s:%s\n", info.name or "<anonymous>", info.source, line))
+        io.write(string.format("dump from %s %s:%s\n", info.name or "<anonymous>", info.source, line))
     end
 
     local values = table.pack(...)
@@ -325,6 +325,14 @@ function utils.confirm(opt)
         end
     end
     return confirm
+end
+
+function utils.table(data, opt)
+    utils.printf(colors.table(data, opt))
+end
+
+function utils.vtable(data, opt)
+    utils.vprintf(colors.table(data, opt))
 end
 
 -- return module
