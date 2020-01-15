@@ -79,6 +79,8 @@ function main(package)
 
     -- download all resources
     for name, resourceinfo in pairs(resources) do
-        _download(package, name, resourceinfo.url, resourceinfo.sha256)
+        -- we use wrap to support urls table and only get the first url now
+        -- TODO maybe we will download resource from the multiple urls in the future
+        _download(package, name, table.wrap(resourceinfo.url)[1], resourceinfo.sha256)
     end
 end
