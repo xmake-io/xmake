@@ -139,7 +139,7 @@ colors._keys24 =
 }
 
 -- the escape string
-colors._escape = string.char(27) .. '[%sm'
+colors._escape = '\x1b[%sm'
 
 -- get colorterm setting
 --
@@ -453,17 +453,20 @@ function colors.table(data, opt)
 
     assert(data)
 
-    local opt = opt or {}
+    -- init options
+    opt = opt or {}
     if opt.sep == nil then opt.sep = ' | ' end
     opt.patch_reset = true
     opt.ignore_unknown = true
     local sep = colors.translate(opt.sep, opt)
 
+    -- formartted cells
     local tab = {}
     local col_width = {}
     -- 'l' 'r' 'c'
     local col_align = {}
 
+    -- load column options
     if opt.colunms then
         for i = 1, table.maxn(opt.colunms or {}) do
             local v = opt.colunms[i] or {}
@@ -472,6 +475,7 @@ function colors.table(data, opt)
         end
     end
 
+    -- format cells
     for i, row in ipairs(data) do
         tab[i] = {}
         for j, cell in ipairs(row) do
@@ -483,25 +487,34 @@ function colors.table(data, opt)
         end
     end
 
+    -- render cells
     local empty_cell = { str = "", len = 0 }
     local rows = {}
     for i, row in ipairs(tab) do
         local cells = {}
         for j = 1, #col_width do
+
+            -- use empty cell if not defined
             local cell = row[j] or empty_cell
+
             if col_align[j] == 'r' then
+                -- right align
                 cells[j] = string.rep(' ', col_width[j] - cell.len) .. cell.str
             elseif col_align[j] == 'c' then
+                -- centered
                 local padding = col_width[j] - cell.len
                 local lp = math.floor(padding / 2)
                 local rp = math.ceil(padding / 2)
                 cells[j] = string.rep(' ', lp) .. cell.str .. string.rep(' ', rp)
             else
-                cells[j] = cell.str .. string.rep(' ', col_width[j] - cell.len)
+                --left align, emit tailing spaces for last colunm
+                cells[j] = cell.str .. ((j == #col_width) and "" or string.rep(' ', col_width[j] - cell.len))
             end
         end
         rows[i] = table.concat(cells, sep)
     end
+
+    -- concat rendered rows
     rows[#rows + 1] = ""
     return table.concat(rows, '\n')
 end

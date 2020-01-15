@@ -147,18 +147,10 @@ end
 -- the command line
 function option.cmdline()
 
-    -- make command 
-    local line = "xmake"
-    local argv = xmake._ARGV
-    for _, arg in ipairs(argv) do
-        if arg:find("%s") then
-            arg = "\"" .. arg .. "\""
-        end
-        line = line .. " " .. arg
+    if not xmake._ARGS then
+        xmake._ARGS = os.args(xmake._ARGV)
     end
-
-    -- ok?
-    return line
+    return "xmake " .. xmake._ARGS
 end
 
 -- init the option
@@ -693,79 +685,62 @@ function option.show_main()
             end
 
             -- the category task
-            local categorytask = categories[categoryname] or {}
-            categories[categoryname] = categorytask
+            local category = categories[categoryname] or { name = categoryname, tasks = {} }
+            categories[categoryname] = category
 
             -- add task to the category
-            categorytask[taskname] = taskinfo
+            category.tasks[taskname] = taskinfo
         end
 
         -- sort categories
-        local categories_sorted = {}
-        for categoryname, categorytask in pairs(categories) do
-            if categoryname == "action" then
-                table.insert(categories_sorted, 1, {categoryname, categorytask})
-            else
-                table.insert(categories_sorted, {categoryname, categorytask})
+        categories = table.values(categories)
+        table.sort(categories, function (a, b)
+            if a.name == 'action' then
+                return true
             end
-        end
+            return a.name < b.name
+        end)
 
         -- dump tasks by categories
-        for _, categoryinfo in ipairs(categories_sorted) do
+        local tablecontent = {}
+        for _, category in ipairs(categories) do
 
             -- the category name and task
-            local categoryname = categoryinfo[1]
-            local categorytask = categoryinfo[2]
-            assert(categoryname and categorytask)
+            assert(category.name and category.tasks)
 
             -- print category name
-            io.print("")
-            io.print(colors.translate(string.format("${bright}%s%ss: ", string.sub(categoryname, 1, 1):upper(), string.sub(categoryname, 2))))
+            table.insert(tablecontent, {})
+            table.insert(tablecontent, {string.format("${bright}%s%ss: ", string.sub(category.name, 1, 1):upper(), string.sub(category.name, 2))})
 
             -- the padding spaces
             local padding = 42
 
-            -- get width of console
-            local console_width = math.max(os.getwinsize().width, 80)
+            -- get width of right colunm
+            local right_width = math.max(os.getwinsize().width, 60) - 41
 
             -- print tasks
-            for taskname, taskinfo in pairs(categorytask) do
+            for taskname, taskinfo in pairs(category.tasks) do
 
                 -- init the task line
-                local taskline = "    "
-                if taskinfo.shortname then
-                    taskline = taskline .. taskinfo.shortname .. ", "
-                else
-                    taskline = taskline .. "   "
+                local taskline = string.format("${color.menu.main.task.name}    %s%s",
+                    taskinfo.shortname and (taskinfo.shortname .. ", ") or "   ",
+                    taskname)
+
+                local taskdesc = cli.wordwrap(taskinfo.description or "", right_width)
+                table.insert(tablecontent, {taskline, taskdesc[1]})
+                for i = 2, #taskdesc do
+                    table.insert(tablecontent, {"", taskdesc[i]})
                 end
-
-                -- append the task name
-                taskline = taskline .. taskname
-
-                -- append spaces
-                for i = (#taskline), padding do
-                    taskline = taskline .. " "
-                end
-
-                -- append color
-                taskline = colors.translate("${color.menu.main.task.name}" .. taskline .. "${clear}")
-
-                -- append the task description
-                if taskinfo.description then
-                    taskline = option._inwidth_append(taskline, taskinfo.description, padding + 1 - 18, console_width, console_width - padding - 1 + 18)
-                end
-
-                -- print task line
-                io.print(colors.translate(taskline))
             end
         end
+        io.write(colors.table(tablecontent, {sep = "    ", colunms = {{min_width=40}, {}}}))
     end
 
     -- print options
     if main.options then
         option.show_options(main.options, "build")
     end
-end  
+end
 
 -- show the options menu 
 function option.show_options(options, taskname)
