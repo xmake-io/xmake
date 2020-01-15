@@ -26,8 +26,6 @@ local cli       = require("base/cli")
 local table     = require("base/table")
 local colors    = require("base/colors")
 
-local dump    = require("base/dump")
-
 -- ifelse, a? b : c
 function option._ifelse(a, b, c)
     if a then return b else return c end
@@ -347,9 +345,8 @@ function option.parse(argv, options, opt)
                         table.insert(o, arg.value)
                     end
                 else
-                    return nil, string.format("Invalid %s: %s", arg.type, arg)
+                    return nil, "invalid argument: " .. arg.value
                 end
-                return nil, "invalid argument: " .. arg.value
             end
         end
     end
