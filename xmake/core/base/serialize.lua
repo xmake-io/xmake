@@ -41,7 +41,11 @@ function serialize._keywords()
 end
 
 function serialize._makestring(str, opt)
-    return string.format("%q", str)
+    if string.find(str, "\\", 1, true) and not string.find(str, "[%c%]%\n]") then
+        return string.format("[[%s]]", str)
+    else
+        return string.format("%q", str)
+    end
 end
 
 function serialize._makedefault(val, opt)
