@@ -41,17 +41,18 @@ task("uninstall")
                 -- options
             ,   options = 
                 {
-                    {nil, "installdir", "kv", nil,      "Set the install directory.",
-                                                        "e.g.",
-                                                        "    $ xmake uninstall -o /usr/local",
-                                                        "or  $ DESTDIR=/usr/local xmake uninstall",
-                                                        "or  $ INSTALLDIR=/usr/local xmake uninstall" }
-                ,   {'p', "prefix",     "kv", nil,      "Set the prefix directory.",
-                                                        "e.g.",
-                                                        "    $ xmake uninstall --prefix=local",
-                                                        "or  $ PREFIX=local xmake uninstall"          }
-                ,   {                                                                                 }
-                ,   {nil, "target",     "v",  nil,      "The target name. It will uninstall all default targets if this parameter is not specified."  }
+                    {nil, "installdir", "kv", nil   , "Set the install directory.",
+                                                      "e.g.",
+                                                      "    $ xmake uninstall -o /usr/local",
+                                                      "or  $ DESTDIR=/usr/local xmake uninstall",
+                                                      "or  $ INSTALLDIR=/usr/local xmake uninstall" }
+                ,   {'p', "prefix",     "kv", nil   , "Set the prefix directory.",
+                                                      "e.g.",
+                                                      "    $ xmake uninstall --prefix=local",
+                                                      "or  $ PREFIX=local xmake uninstall"          }
+                ,   {                                                                               }
+                ,   {nil, "target",     "v",  nil   , "The target name. It will uninstall all default targets if this parameter is not specified."
+                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
                 }
             }
 

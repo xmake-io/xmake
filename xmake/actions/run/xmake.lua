@@ -41,15 +41,16 @@ task("run")
                 -- options
             ,   options = 
                 {
-                    {'d', "debug",      "k",   nil,          "Run and debug the given target."                                    }
-                ,   {'a', "all",        "k",   nil,          "Run all targets."                                                   }
-                ,   {'w', "workdir",    "kv",  nil,          "Work directory of running targets, default is folder of targetfile",
-                                                             "e.g.",
-                                                             "    --workdir=.",
-                                                             "    --workdir=`pwd`"                                                }
-                ,   {}
-                ,   {nil, "target",     "v",   nil,          "The target name. It will run all default targets if this parameter is not specified." }
-                ,   {nil, "arguments",  "vs",  nil,          "The target arguments"                                               }
+                    {'d', "debug",      "k",   nil  , "Run and debug the given target."                                    }
+                ,   {'a', "all",        "k",   nil  , "Run all targets."                                                   }
+                ,   {'w', "workdir",    "kv",  nil  , "Work directory of running targets, default is folder of targetfile",
+                                                      "e.g.",
+                                                      "    --workdir=.",
+                                                      "    --workdir=`pwd`"                                                }
+                ,   {}  
+                ,   {nil, "target",     "v",   nil  , "The target name. It will run all default targets if this parameter is not specified."
+                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
+                ,   {nil, "arguments",  "vs",  nil  , "The target arguments"                                               }
                 }
             }
 

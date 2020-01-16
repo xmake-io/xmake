@@ -41,15 +41,16 @@ task("install")
                 -- options
             ,   options = 
                 {
-                    {'o', "installdir", "kv", nil,      "Set the install directory.",
-                                                        "e.g.",
-                                                        "    $ xmake install -o /usr/local",
-                                                        "or  $ DESTDIR=/usr/local xmake install",
-                                                        "or  $ INSTALLDIR=/usr/local xmake install" }
-                ,   {'a', "all",        "k",  nil,      "Install all targets."                      }
+                    {'o', "installdir", "kv", nil   , "Set the install directory.",
+                                                      "e.g.",
+                                                      "    $ xmake install -o /usr/local",
+                                                      "or  $ DESTDIR=/usr/local xmake install",
+                                                      "or  $ INSTALLDIR=/usr/local xmake install" }
+                ,   {'a', "all",        "k",  nil   , "Install all targets."                      }
 
                 ,   {                                                                               }
-                ,   {nil, "target",     "v",  nil,      "The target name. It will install all default targets if this parameter is not specified."                }
+                ,   {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified."
+                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
                 }
             }
 

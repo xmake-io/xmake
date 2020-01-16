@@ -148,8 +148,9 @@ end
 --                               -- 2 numbers - min and max width (nil for not set, eg: {nil, 50});
 --                               -- a number - width, num is equivalent to {num, num};
 --                               -- nil - no limit, equivalent to {nil, nil}
---                               -- "auto" - use remain space of console, only one "auto" colunm is allowed
+--                               -- "auto" - use remain space of console, only one "auto" column is allowed
 --                             align = {"l", "r", "c"} -- align mode for each column, "left", "center" or "right"
+--                                                     -- or use a string for the whole table
 --                             sep = "${dim} | ", -- table colunm sepertor, default is " | ", use "" to hide
 --                           }
 --                     priority of style and align: cell > row > col
@@ -159,7 +160,7 @@ function text.table(data, opt)
     assert(data)
 
     -- init options
-    opt = opt or { patch_reset = false, ignore_unknown = true }
+    opt = opt or { ignore_unknown = true }
     data.sep = data.sep or " | "
     opt.patch_reset = false
 
@@ -216,6 +217,12 @@ function text.table(data, opt)
         data.sep = style .. data.sep .. "${reset}"
     end
 
+    local align = "l"
+    if type(data.align) == "string" then
+        align = data.align
+        data.align = {}
+    end
+
     local sep = colors.translate(data.sep, opt)
     local sep_len = #colors.ignore(data.sep, opt)
 
@@ -247,7 +254,7 @@ function text.table(data, opt)
         end
 
         -- load align
-        cols[i].align = (data.align[i] or "l"):sub(1, 1):lower()
+        cols[i].align = (data.align[i] or align):sub(1, 1):lower()
         -- load style
         cols[i].style = data.style[i] or style
     end

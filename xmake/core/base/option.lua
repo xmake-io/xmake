@@ -804,11 +804,11 @@ function option.show_options(options, taskname)
             end
 
             -- append values
-            local values = opt.values
+            local values, ok = opt.values
             if type(values) == "function" then
-                values = values()
+                ok, values = pcall(values)
             end
-            if values then
+            if ok and values then
                 for _, value in ipairs(table.wrap(values)) do
                     table.insert(desp_strs, "    - " .. tostring(value))
                 end
