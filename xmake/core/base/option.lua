@@ -25,6 +25,7 @@ local option = option or {}
 local cli       = require("base/cli")
 local table     = require("base/table")
 local colors    = require("base/colors")
+local text      = require("base/text")
 
 -- ifelse, a? b : c
 function option._ifelse(a, b, c)
@@ -66,51 +67,6 @@ function option._context()
     local contexts = option._CONTEXTS
     if contexts then
         return contexts[#contexts]
-    end
-end
-
--- get line length
-function option._get_linelen(st)
-    local poss = st:reverse():find("\n")
-    if not poss then return (#st) end
-    local start_pos, _ = poss
-    return start_pos - 1
-end
-
--- get last space
-function option._get_lastspace(st)
-    local poss = st:reverse():find("[%s-]")
-    if not poss then return (#st) end
-    local start_pos, _ = poss
-    return (#st) - start_pos + 1
-end
-
--- append spaces in width
-function option._inwidth_append(dst, st, padding, width, remain_width)
-    
-    if padding >= width then
-        return dst .. st
-    end
-
-    local white_padding = string.rep(" ", padding)
-    if remain_width == nil then 
-        -- TODO because of colored string, it's wrong sometimes
-        remain_width = width - option._get_linelen(dst) 
-    end
-
-    if remain_width <= 0 then
-        return option._inwidth_append(dst .. "\n" .. white_padding, st, padding, width, width - padding)
-    end
-    
-    if (#st) <= remain_width then
-        return dst .. st
-    end
-    
-    local lastspace = option._get_lastspace(st:sub(1, remain_width))
-    if lastspace + 1 > (#st) then
-        return dst .. st
-    else
-        return option._inwidth_append(dst .. st:sub(1, lastspace) .. "\n" .. white_padding, st:sub(lastspace + 1):ltrim(), padding, width, width - padding)
     end
 end
 
@@ -633,7 +589,7 @@ function option.show_menu(task)
     if taskmenu.options then
         option.show_options(taskmenu.options, task)
     end
-end  
+end
 
 -- show the main menu
 function option.show_main()
@@ -710,30 +666,26 @@ function option.show_main()
 
             -- print category name
             table.insert(tablecontent, {})
-            table.insert(tablecontent, {string.format("${bright}%s%ss: ", string.sub(category.name, 1, 1):upper(), string.sub(category.name, 2))})
-
-            -- the padding spaces
-            local padding = 42
-
-            -- get width of right colunm
-            local right_width = math.max(os.getwinsize().width, 60) - 41
+            table.insert(tablecontent, {{string.format("%s%ss: ", string.sub(category.name, 1, 1):upper(), string.sub(category.name, 2)), style="${reset bright}"}})
 
             -- print tasks
             for taskname, taskinfo in pairs(category.tasks) do
 
                 -- init the task line
-                local taskline = string.format("${color.menu.main.task.name}    %s%s",
+                local taskline = string.format("    %s%s",
                     taskinfo.shortname and (taskinfo.shortname .. ", ") or "   ",
                     taskname)
-
-                local taskdesc = cli.wordwrap(taskinfo.description or "", right_width)
-                table.insert(tablecontent, {taskline, taskdesc[1]})
-                for i = 2, #taskdesc do
-                    table.insert(tablecontent, {"", taskdesc[i]})
-                end
+                table.insert(tablecontent, {taskline, taskinfo.description or ""})
             end
         end
-        io.write(colors.table(tablecontent, {sep = "    ", colunms = {{min_width=40}, {}}}))
+
+        -- set table styles
+        tablecontent.style = {"${color.menu.main.task.name}"}
+        tablecontent.width = {nil, "auto"}
+        tablecontent.sep = "    "
+
+        -- print table
+        io.write(text.table(tablecontent))
     end
 
     -- print options
@@ -747,9 +699,6 @@ function option.show_options(options, taskname)
 
     -- check
     assert(options)
-
-    -- the padding spaces
-    local padding = 42
 
     -- remove repeat empty lines
     local is_action = false
@@ -769,27 +718,28 @@ function option.show_options(options, taskname)
         end
     end
 
+    local tablecontent = {}
+
     -- print header
-    io.print("")
+    table.insert(tablecontent, {})
     if is_action then
-        io.print(colors.translate("${bright}Common options: "))
+        table.insert(tablecontent, {{"Common options:", style="${reset bright}"}})
     else
-        io.print(colors.translate("${bright}Options: "))
+        table.insert(tablecontent, {{"Options:", style="${reset bright}"}})
     end
 
     -- print options
-    options = printed_options
-    for _, opt in ipairs(options) do
+    for _, opt in ipairs(printed_options) do
 
         -- the following options are belong action? show command section
         --
         -- @see core/base/task.lua: translate menu
         --
         if opt.category and opt.category == "action" then
-            io.print("")
-            io.print(colors.translate("${bright}Command options (" .. taskname .. "): "))
+            table.insert(tablecontent, {})
+            table.insert(tablecontent, {{"Command options(" .. taskname .. "):", style="${reset bright}"}})
         end
-        
+
         -- init the option info
         local option_info   = ""
 
@@ -821,104 +771,58 @@ function option.show_options(options, taskname)
             option_info = option_info .. "    ..."
         end
 
-        -- append spaces
-        for i = (#option_info), padding do
-            option_info = option_info .. " "
+        -- get description
+        local description = table.move(opt, 5, table.maxn(opt), 1, {})
+        if #description == 0 then
+            description[1] = ""
         end
 
-        -- append color
-        option_info = colors.translate("${color.menu.option.name}" .. option_info .. "${clear}")
-
-        -- get width of console
-        local console_width = math.max(os.getwinsize().width, 80)
-
-        -- append the option description
-        local description = opt[5]
-        if description then
-            option_info = option._inwidth_append(option_info, description, padding + 1, console_width, console_width - padding - 1)
+        -- transform description
+        local desp_strs = {}
+        for _, v in ipairs(description) do
+            if type(v) == "function" then
+                v = v()
+            end
+            if type(v) == "string" then
+                table.insert(desp_strs, v)
+            elseif type(v) == "table" then
+                table.move(v, 1, #v, #desp_strs + 1, desp_strs)
+            end
         end
 
         -- append the default value
         if default then
             local defaultval = tostring(default)
             if type(default) == "boolean" then
-                defaultval = option._ifelse(default, "y", "n")
+                defaultval = default and "y" or "n"
             end
-            option_info  = option._inwidth_append(option_info, " (default: ", padding + 1, console_width)
-            local origin_width = option._get_linelen(option_info)
-            option_info  = option_info .. "${bright}"
-            option_info  = option._inwidth_append(option_info, defaultval, padding + 1, console_width, console_width - origin_width)
-            origin_width = option._ifelse(origin_width + #defaultval > console_width, option._get_linelen(option_info), origin_width + (#(tostring(default))))
-            option_info  = option_info .. "${clear}"
-            option_info  = option._inwidth_append(option_info, ")", padding + 1, console_width, console_width - origin_width)
+            local def_desp = colors.translate(string.format(" (default: ${bright}%s${clear})", defaultval))
+            desp_strs[1] = desp_strs[1] .. def_desp
         end
 
-        -- print option info
-        io.print(colors.translate(option_info))
-
-        -- print more description if exists
-        for i = 6, 64 do
-
-            -- the description, @note some option may be nil
-            local description = opt[i]
-            if not description then break end
-
-            -- is function? get results
-            if type(description) == "function" then
-                description = description()
-            end
-
-            -- the description is string?
-            if type(description) == "string" then
-
-                -- make spaces 
-                local spaces = ""
-                for i = 0, padding do
-                    spaces = spaces .. " "
-                end
-
-                -- print this description
-                io.print(option._inwidth_append(spaces, description, padding + 1, console_width))
-
-            -- the description is table?
-            elseif type(description) == "table" then
-
-                -- print all descriptions
-                for _, v in pairs(description) do
-
-                    -- make spaces 
-                    local spaces = ""
-                    for i = 0, padding do
-                        spaces = spaces .. " "
-                    end
-
-                    -- print this description
-                    io.print(option._inwidth_append(spaces, v, padding + 1, console_width))
-                end
-            end
-        end
-
-        -- print values
+        -- append values
         local values = opt.values
         if type(values) == "function" then
             values = values()
         end
         if values then
-            
             for _, value in ipairs(table.wrap(values)) do
-
-                -- make spaces 
-                local spaces = ""
-                for i = 0, padding do
-                    spaces = spaces .. " "
-                end
-
-                -- print this value
-                io.print(option._inwidth_append(spaces, "    - " .. tostring(value), padding + 1, console_width))
+                table.insert(desp_strs, "    - " .. tostring(value))
             end
         end
+
+        -- insert row
+        table.insert(tablecontent, {option_info, desp_strs})
     end
-end  
+
+    -- set table styles
+    tablecontent.style = {"${color.menu.option.name}"}
+    tablecontent.width = {nil, "auto"}
+    tablecontent.sep = "    "
+
+    -- print table
+    io.write(text.table(tablecontent))
+end
 
 -- return module: option
 return option
