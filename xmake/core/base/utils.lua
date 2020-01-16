@@ -28,6 +28,7 @@ local string = require("base/string")
 local log    = require("base/log")
 local io     = require("base/io")
 local dump   = require("base/dump")
+local text   = require("base/text")
 
 -- dump values
 function utils.dump(...)
@@ -319,11 +320,11 @@ function utils.confirm(opt)
 end
 
 function utils.table(data, opt)
-    utils.printf(colors.table(data, opt))
+    utils.printf(text.table(data, opt))
 end
 
 function utils.vtable(data, opt)
-    utils.vprintf(colors.table(data, opt))
+    utils.vprintf(text.table(data, opt))
 end
 
 -- return module

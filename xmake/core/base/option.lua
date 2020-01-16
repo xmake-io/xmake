@@ -195,7 +195,7 @@ function option.parse(argv, options, opt)
         assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
         -- fill short flags
-        if o[3] == 'k' and o[1] then
+        if o[3] == "k" and o[1] then
             table.insert(flags, o[1])
         end
     end
@@ -651,7 +651,7 @@ function option.show_main()
         -- sort categories
         categories = table.values(categories)
         table.sort(categories, function (a, b)
-            if a.name == 'action' then
+            if a.name == "action" then
                 return true
             end
             return a.name < b.name

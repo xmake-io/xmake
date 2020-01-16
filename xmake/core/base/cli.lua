@@ -49,15 +49,15 @@ function cli._make_segment(type, string, argv, argi, obj)
 end
 
 function cli._make_arg(value, argv, argi)
-    return cli._make_segment('arg', value, argv, argi, { value = value })
+    return cli._make_segment("arg", value, argv, argi, { value = value })
 end
 
 function cli._make_flag(key, short, argv, argi)
-    return cli._make_segment('flag', short and ('-' .. key) or ('--' .. key), argv, argi, { key = key, value = true, short = short or false })
+    return cli._make_segment("flag", short and ("-" .. key) or ("--" .. key), argv, argi, { key = key, value = true, short = short or false })
 end
 
 function cli._make_option(key, value, short, argv, argi)
-    return cli._make_segment('option', short and ('-' .. key .. ' ' .. value) or ('--' .. key .. '=' .. value), argv, argi, { key = key, value = value, short = short or false })
+    return cli._make_segment("option", short and ("-" .. key .. " " .. value) or ("--" .. key .. "=" .. value), argv, argi, { key = key, value = value, short = short or false })
 end
 
 function cli.parse(args, ...)
@@ -74,17 +74,17 @@ function cli.parsev(argv, flags)
 
     while index <= #argv do
         value = argv[index]
-        if raw or not value:startswith('-') or #value < 2 then
-            -- all args after '--' or first arg, args don't start with '-', and short args (include a single char '-')
+        if raw or not value:startswith("-") or #value < 2 then
+            -- all args after "--" or first arg, args don"t start with "-", and short args (include a single char "-")
             raw = true
             table.insert(parsed, cli._make_arg(value, argv, index))
-        elseif value == '--' then
-            -- stop parsing after '--'
+        elseif value == "--" then
+            -- stop parsing after "--"
             raw = true
-            table.insert(parsed, cli._make_segment('sep', '--', argv, index, {}))
-        elseif value:startswith('--') then
-            -- '--key:value', '--key=value', '--long-flag'
-            local sep = value:find('[=:]', 3, false)
+            table.insert(parsed, cli._make_segment("sep", "--", argv, index, {}))
+        elseif value:startswith("--") then
+            -- "--key:value", "--key=value", "--long-flag"
+            local sep = value:find("[=:]", 3, false)
             if sep then
                 table.insert(parsed, cli._make_option(value:sub(3, sep - 1), value:sub(sep + 1), false, argv, index))
             else

@@ -66,10 +66,10 @@ function text.wordwrap(str, width, opt)
     opt = opt or {}
 
     -- split to lines
-    if type(str) == 'table' then
-        str = table.concat(str, '\n')
+    if type(str) == "table" then
+        str = table.concat(str, "\n")
     end
-    local lines = tostring(str):split('\n', {plain = true, strict = true})
+    local lines = tostring(str):split("\n", {plain = true, strict = true})
 
     local result = {}
     local actual_width = 0
@@ -77,7 +77,7 @@ function text.wordwrap(str, width, opt)
     -- handle lines
     for _, v in ipairs(lines) do
 
-        -- remove tailing spaces, include '\r', which will be produced by `('l1\r\nl2'):split(...)`
+        -- remove tailing spaces, include "\r", which will be produced by `("l1\r\nl2"):split(...)`
         v = v:rtrim()
 
         while #v > width do
@@ -140,17 +140,17 @@ end
 -- @param data         table data, array of array of cells with optional styles
 --                       eg: {
 --                             {"1", nil, "3"},  -- use nil to make previous cell to span next column
---                             {"4", "5", {"line1", "line2", style="${yellow}", align = 'r'}}, -- multi-line content & set style or align for cell
---                             {"7", "8", {"9", style="${reset}${red}"}, style="${bright}", align = 'c'}, -- set style or align for row
+--                             {"4", "5", {"line1", "line2", style="${yellow}", align = "r"}}, -- multi-line content & set style or align for cell
+--                             {"7", "8", {"9", style="${reset}${red}"}, style="${bright}", align = "c"}, -- set style or align for row
 --                             style = {"${underline}"}, -- set style for columns
 --                                                       -- or use "${underline}" for all columns
 --                             width = { 20, {10, 50}, "auto"},
 --                               -- 2 numbers - min and max width (nil for not set, eg: {nil, 50});
 --                               -- a number - width, num is equivalent to {num, num};
 --                               -- nil - no limit, equivalent to {nil, nil}
---                               -- "auto" - use remain space of console, only one 'auto' colunm is allowed
---                             align = {'l', 'r', 'c'} -- align mode for each column, 'left', 'center' or 'right'
---                             sep = "${dim} | ", -- table colunm sepertor, default is ' | ', use '' to hide
+--                               -- "auto" - use remain space of console, only one "auto" colunm is allowed
+--                             align = {"l", "r", "c"} -- align mode for each column, "left", "center" or "right"
+--                             sep = "${dim} | ", -- table colunm sepertor, default is " | ", use "" to hide
 --                           }
 --                     priority of style and align: cell > row > col
 -- @param opt          options for color rendering and word warpping
@@ -160,9 +160,8 @@ function text.table(data, opt)
 
     -- init options
     opt = opt or { patch_reset = false, ignore_unknown = true }
+    data.sep = data.sep or " | "
     opt.patch_reset = false
-    local sep = colors.translate(data.sep or ' | ', opt)
-    local sep_len = #colors.ignore(data.sep or ' | ', opt)
 
     -- col ordered cells
     local cols = {}
@@ -214,7 +213,11 @@ function text.table(data, opt)
     if type(data.style) == "string" then
         style = data.style
         data.style = {}
+        data.sep = style .. data.sep .. "${reset}"
     end
+
+    local sep = colors.translate(data.sep, opt)
+    local sep_len = #colors.ignore(data.sep, opt)
 
     -- index of auto col
     local auto_col = nil
@@ -226,7 +229,7 @@ function text.table(data, opt)
             local wl, wu
             if w == nil then
                 wl, wu = 0, math.huge
-            elseif type(w) == 'number' then
+            elseif type(w) == "number" then
                 if math.isnan(w) or math.isinf(w) then
                     wl, wu = 0, math.huge
                 else
@@ -239,12 +242,12 @@ function text.table(data, opt)
             wu = wu or math.huge
             data.width[i] = {wl, wu}
         else
-            assert(not auto_col, 'Only one "auto" colunm is allowed.')
+            assert(not auto_col, "Only one 'auto' colunm is allowed.")
             auto_col = i
         end
 
         -- load align
-        cols[i].align = (data.align[i] or 'l'):sub(1, 1):lower()
+        cols[i].align = (data.align[i] or "l"):sub(1, 1):lower()
         -- load style
         cols[i].style = data.style[i] or style
     end
@@ -299,6 +302,7 @@ function text.table(data, opt)
 
     -- reorder
     for i = 1, n_row do
+        local d_row = data[i] or {}
         local row = {}
         local line = 1
         for j = 1, n_col do
@@ -310,6 +314,15 @@ function text.table(data, opt)
             row[j] = cell
         end
         row.line = line
+
+        -- load align
+        if d_row.align then
+            row.align = d_row.align:sub(1, 1):lower()
+        end
+
+        -- load style
+        row.style = d_row.style or ""
+
         rows[i] = row
     end
 
@@ -341,18 +354,18 @@ function text.table(data, opt)
                 end
 
                 local padded
-                if cell.align == 'r' then
+                if cell.align == "r" then
                     -- right align
-                    padded = string.rep(' ', width - #str) .. str
-                elseif cell.align == 'c' then
+                    padded = string.rep(" ", width - #str) .. str
+                elseif cell.align == "c" then
                     -- centered
                     local padding = width - #str
                     local lp = math.floor(padding / 2)
                     local rp = math.ceil(padding / 2)
-                    padded = string.rep(' ', lp) .. str .. string.rep(' ', rp)
+                    padded = string.rep(" ", lp) .. str .. string.rep(" ", rp)
                 else
                     --left align, emit tailing spaces for last colunm
-                    padded = str .. ((j + span == n_col + 1) and "" or string.rep(' ', width - #str))
+                    padded = str .. ((j + span == n_col + 1) and "" or string.rep(" ", width - #str))
                 end
                 table.insert(cells, cell.style .. padded .. reset)
                 j = j + span
@@ -363,7 +376,7 @@ function text.table(data, opt)
 
     -- concat rendered rows
     results[#results + 1] = ""
-    return table.concat(results, '\n')
+    return table.concat(results, "\n")
 end
 
 -- return module
