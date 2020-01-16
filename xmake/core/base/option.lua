@@ -27,11 +27,6 @@ local table     = require("base/table")
 local colors    = require("base/colors")
 local text      = require("base/text")
 
--- ifelse, a? b : c
-function option._ifelse(a, b, c)
-    if a then return b else return c end
-end
-
 -- translate the menu
 function option._translate(menu)
 
@@ -731,88 +726,97 @@ function option.show_options(options, taskname)
     -- print options
     for _, opt in ipairs(printed_options) do
 
-        -- the following options are belong action? show command section
-        --
-        -- @see core/base/task.lua: translate menu
-        --
         if opt.category and opt.category == "action" then
+
+            -- the following options are belong action? show command section
+            --
+            -- @see core/base/task.lua: translate menu
+            --
             table.insert(tablecontent, {})
-            table.insert(tablecontent, {{"Command options(" .. taskname .. "):", style="${reset bright}"}})
-        end
+            table.insert(tablecontent, {{"Command options (" .. taskname .. "):", style="${reset bright}"}})
+        elseif opt[3] == nil then
 
-        -- init the option info
-        local option_info   = ""
+            -- insert empty line
+            table.insert(tablecontent, {})
+        else
 
-        -- append the shortname
-        local shortname = opt[1]
-        local name      = opt[2]
-        local mode      = opt[3]
-        local default   = opt[4]
-        if shortname then
-            option_info = option_info .. "    -" .. shortname
-            if mode == "kv" then
-                option_info = option_info .. " " .. option._ifelse(name, name:upper(), "XXX")
-            end
-        end
+            -- init the option info
+            local option_info
 
-        -- append the name
-        if name then
-            if mode == "v" then
-                option_info = option_info .. "    " .. name
-            elseif mode == "vs" then
-                option_info = option_info .. "    " .. name .. " ..."
+            -- append the shortname
+            local shortname = opt[1]
+            local name      = opt[2]
+            local mode      = opt[3]
+            local default   = opt[4]
+            if shortname then
+                if mode == "kv" then
+                    option_info = "    -" .. shortname .. " " .. (name and name:upper() or "XXX")
+                else
+                    option_info = "    -" .. shortname
+                end
             else
-                option_info = option_info .. option._ifelse(shortname, ", --", "        --") .. name
+                option_info = "      "
             end
-            if mode == "kv" then
-                option_info = option_info .. "=" .. option._ifelse(type(default) == "boolean", "[y|n]", name:upper())
-            end
-        elseif mode == "v" or mode == "vs" then
-            option_info = option_info .. "    ..."
-        end
 
-        -- get description
-        local description = table.move(opt, 5, table.maxn(opt), 1, {})
-        if #description == 0 then
-            description[1] = ""
-        end
-
-        -- transform description
-        local desp_strs = {}
-        for _, v in ipairs(description) do
-            if type(v) == "function" then
-                v = v()
+            -- append the name
+            if name then
+                local leading = (shortname and "," or " ") .. (mode:startswith("k") and " --" or "   ")
+                local kv
+                if mode:startswith("k") then
+                    kv = name
+                elseif mode == "vs" then
+                    kv = name .. " ..."
+                else
+                    kv = (name .. "=" .. ((type(default) == "boolean") and "[y|n]" or name:upper()))
+                end
+                option_info = option_info .. leading .. kv
+            elseif mode == "v" or mode == "vs" then
+                option_info = option_info .. "    ..."
             end
-            if type(v) == "string" then
-                table.insert(desp_strs, v)
-            elseif type(v) == "table" then
-                table.move(v, 1, #v, #desp_strs + 1, desp_strs)
-            end
-        end
 
-        -- append the default value
-        if default then
-            local defaultval = tostring(default)
-            if type(default) == "boolean" then
-                defaultval = default and "y" or "n"
+            -- get description
+            local description = table.move(opt, 5, table.maxn(opt), 1, {})
+            if #description == 0 then
+                description[1] = ""
             end
-            local def_desp = colors.translate(string.format(" (default: ${bright}%s${clear})", defaultval))
-            desp_strs[1] = desp_strs[1] .. def_desp
-        end
 
-        -- append values
-        local values = opt.values
-        if type(values) == "function" then
-            values = values()
-        end
-        if values then
-            for _, value in ipairs(table.wrap(values)) do
-                table.insert(desp_strs, "    - " .. tostring(value))
+            -- transform description
+            local desp_strs = {}
+            for _, v in ipairs(description) do
+                if type(v) == "function" then
+                    v = v()
+                end
+                if type(v) == "string" then
+                    table.insert(desp_strs, v)
+                elseif type(v) == "table" then
+                    table.move(v, 1, #v, #desp_strs + 1, desp_strs)
+                end
             end
-        end
 
-        -- insert row
-        table.insert(tablecontent, {option_info, desp_strs})
+            -- append the default value
+            if default then
+                local defaultval = tostring(default)
+                if type(default) == "boolean" then
+                    defaultval = default and "y" or "n"
+                end
+                local def_desp = colors.translate(string.format(" (default: ${bright}%s${clear})", defaultval))
+                desp_strs[1] = desp_strs[1] .. def_desp
+            end
+
+            -- append values
+            local values = opt.values
+            if type(values) == "function" then
+                values = values()
+            end
+            if values then
+                for _, value in ipairs(table.wrap(values)) do
+                    table.insert(desp_strs, "    - " .. tostring(value))
+                end
+            end
+
+            -- insert row
+            table.insert(tablecontent, {option_info, desp_strs})
+        end
     end
 
     -- set table styles
