@@ -289,7 +289,6 @@ function _instance:dump()
             end
             line = line .. "${clear}"
 
-
             -- dump line
             utils.cprint(line)
 

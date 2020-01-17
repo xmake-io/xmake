@@ -97,7 +97,6 @@ end
 
 -- the command line
 function option.cmdline()
-
     if not xmake._ARGS then
         xmake._ARGS = os.args(xmake._ARGV)
     end
@@ -127,24 +126,17 @@ function option.init(menu)
     -- check command
     if xmake._COMMAND then
 
-        -- find the current task
+        -- find the current task and save it
         for taskname, taskinfo in pairs(main.tasks) do
-
-            -- ok?
             if taskname == xmake._COMMAND or taskinfo.shortname == xmake._COMMAND then
-                -- save this task
                 context.taskname = taskname
                 break
             end
         end
 
-        -- not found?
+        -- not found? 
         if not context.taskname or not menu[context.taskname] then
-
-            -- print the main menu
             option.show_main()
-
-            -- invalid task
             return false, "invalid task: " .. xmake._COMMAND
         end
     end
@@ -180,13 +172,9 @@ function option.parse(argv, options, opt)
     local flags = {}
     for _, o in ipairs(options) do
 
-        -- the mode
+        -- get mode and name
         local mode = o[3]
-
-        -- the name
         local name = o[2]
-
-        -- check
         assert(o and ((mode ~= "v" and mode ~= "vs") or name))
 
         -- fill short flags
@@ -230,10 +218,8 @@ function option.parse(argv, options, opt)
             local match_opt = nil
             for _, o in ipairs(options) do
 
-                -- the mode
+                -- get mode and name
                 local mode = o[3]
-
-                -- the name
                 local name = o[2]
 
                 -- is value and with name?
@@ -250,10 +236,8 @@ function option.parse(argv, options, opt)
             -- ok? save this value with name opt[2]
             if match_opt then
 
-                -- the mode
+                -- get mode and name
                 local mode = match_opt[3]
-
-                -- the name
                 local name = match_opt[2]
 
                 -- save value
@@ -713,9 +697,8 @@ function option.show_options(options, taskname)
         end
     end
 
-    local tablecontent = {}
-
     -- print header
+    local tablecontent = {}
     table.insert(tablecontent, {})
     if is_action then
         table.insert(tablecontent, {{"Common options:", style="${reset bright}"}})

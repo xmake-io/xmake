@@ -154,7 +154,7 @@ end
 --                             sep = "${dim} | ", -- table colunm sepertor, default is " | ", use "" to hide
 --                           }
 --                     priority of style and align: cell > row > col
--- @param opt          options for color rendering and word warpping
+-- @param opt          options for color rendering and word wrapping
 function text.table(data, opt)
 
     assert(data)

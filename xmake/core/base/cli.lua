@@ -118,5 +118,6 @@ function cli.parsev(argv, flags)
 end
 
 cli._segment = segment
+
 -- return module
 return cli
