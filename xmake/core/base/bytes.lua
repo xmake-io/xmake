@@ -23,10 +23,11 @@ local bytes = bytes or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit   = require('bit')
-local ffi   = require('ffi')
-local os    = require("base/os")
-local utils = require("base/utils")
+local bit        = require('bit')
+local ffi        = require('ffi')
+local os         = require("base/os")
+local utils      = require("base/utils")
+local todisplay  = require("base/todisplay")
 
 -- define ffi interfaces
 ffi.cdef[[
@@ -409,8 +410,8 @@ function _instance:__concat(other)
     return new
 end
 
--- tostring(bytes)
-function _instance:__tostring()
+-- todisplay(bytes)
+function _instance:__todisplay()
     local parts = {}
     local size = self:size()
     if size > 8 then
@@ -419,7 +420,7 @@ function _instance:__tostring()
     for i = 1, size do
         parts[i] = "0x" .. bit.tohex(self[i], 2)
     end
-    return "<bytes(" .. self:size() .. "): " .. table.concat(parts, " ") .. (self:size() > 8 and "..>" or ">")
+    return "bytes${reset}(" .. todisplay(self:size()) .. ") <${color.dump.number}" .. table.concat(parts, " ") .. (self:size() > 8 and "${reset} ..>" or "${reset}>")
 end
 
 -- new an bytes instance
