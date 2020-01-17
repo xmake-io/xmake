@@ -42,7 +42,7 @@ end
 
 -- print number
 function todisplay._print_number(num)
-    return string.format("${reset}${color.dump.number}%g${reset}", num)
+    return string.format("${reset}${color.dump.number}%s${reset}", num)
 end
 
 -- print function
