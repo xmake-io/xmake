@@ -214,7 +214,7 @@ function _instance:dump()
         if p + 0x20 <= e then
 
             -- dump offset
-            line = line .. string.format("${yellow}%08X ${green}", p)
+            line = line .. string.format("${color.dump.anchor}%08X ${color.dump.number}", p)
 
             -- dump data
             for i = 0, 0x20 - 1 do
@@ -228,7 +228,7 @@ function _instance:dump()
             line = line .. "  "
 
             -- dump characters
-            line = line .. "${magenta}"
+            line = line .. "${color.dump.string}"
             for i = 0, 0x20 - 1 do
                 local v = self[p + i + 1]
                 if v > 0x1f and v < 0x7f then
@@ -251,7 +251,7 @@ function _instance:dump()
             local padding = n - 0x20
 
             -- dump offset
-            line = line .. string.format("${yellow}%08X ${green}", p)
+            line = line .. string.format("${color.dump.anchor}%08X ${color.dump.number}", p)
             if padding >= 9 then
                 padding = padding - 9
             end
@@ -278,7 +278,7 @@ function _instance:dump()
             end
                 
             -- dump characters
-            line = line .. "${magenta}"
+            line = line .. "${color.dump.string}"
             for i = 0, left - 1 do
                 local v = self[p + i + 1]
                 if v > 0x1f and v < 0x7f then
