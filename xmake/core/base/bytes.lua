@@ -433,8 +433,8 @@ setmetatable(bytes, {
     __call = function (_, ...) 
         return bytes.new(...) 
     end,
-    __tostring = function()
-        return "<bytes>"
+    __todisplay = function()
+        return todisplay(bytes.new)
     end
 })
 
