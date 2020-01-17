@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#665](https://github.com/xmake-io/xmake/issues/665): Support to parse *nix style command options, thanks [@OpportunityLiu](https://github.com/OpportunityLiu)
+
 ### Bugs fixed
 
 * Fix incremental compilation for checking the dependent file 
@@ -660,6 +664,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#665](https://github.com/xmake-io/xmake/issues/665): 支持 *nix style 的参数输入，感谢[@OpportunityLiu](https://github.com/OpportunityLiu)的贡献
 
 ### Bugs修复
 
