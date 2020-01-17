@@ -23,10 +23,11 @@ local bytes = bytes or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit   = require('bit')
-local ffi   = require('ffi')
-local os    = require("base/os")
-local utils = require("base/utils")
+local bit        = require('bit')
+local ffi        = require('ffi')
+local os         = require("base/os")
+local utils      = require("base/utils")
+local todisplay  = require("base/todisplay")
 
 -- define ffi interfaces
 ffi.cdef[[
@@ -213,7 +214,7 @@ function _instance:dump()
         if p + 0x20 <= e then
 
             -- dump offset
-            line = line .. string.format("${yellow}%08X ${green}", p)
+            line = line .. string.format("${color.dump.anchor}%08X ${color.dump.number}", p)
 
             -- dump data
             for i = 0, 0x20 - 1 do
@@ -227,7 +228,7 @@ function _instance:dump()
             line = line .. "  "
 
             -- dump characters
-            line = line .. "${magenta}"
+            line = line .. "${color.dump.string}"
             for i = 0, 0x20 - 1 do
                 local v = self[p + i + 1]
                 if v > 0x1f and v < 0x7f then
@@ -250,7 +251,7 @@ function _instance:dump()
             local padding = n - 0x20
 
             -- dump offset
-            line = line .. string.format("${yellow}%08X ${green}", p)
+            line = line .. string.format("${color.dump.anchor}%08X ${color.dump.number}", p)
             if padding >= 9 then
                 padding = padding - 9
             end
@@ -277,7 +278,7 @@ function _instance:dump()
             end
                 
             -- dump characters
-            line = line .. "${magenta}"
+            line = line .. "${color.dump.string}"
             for i = 0, left - 1 do
                 local v = self[p + i + 1]
                 if v > 0x1f and v < 0x7f then
@@ -409,8 +410,8 @@ function _instance:__concat(other)
     return new
 end
 
--- tostring(bytes)
-function _instance:__tostring()
+-- todisplay(bytes)
+function _instance:__todisplay()
     local parts = {}
     local size = self:size()
     if size > 8 then
@@ -419,7 +420,7 @@ function _instance:__tostring()
     for i = 1, size do
         parts[i] = "0x" .. bit.tohex(self[i], 2)
     end
-    return "<bytes(" .. self:size() .. "): " .. table.concat(parts, " ") .. (self:size() > 8 and "..>" or ">")
+    return "bytes${reset}(" .. todisplay(self:size()) .. ") <${color.dump.number}" .. table.concat(parts, " ") .. (self:size() > 8 and "${reset} ..>" or "${reset}>")
 end
 
 -- new an bytes instance
@@ -432,8 +433,8 @@ setmetatable(bytes, {
     __call = function (_, ...) 
         return bytes.new(...) 
     end,
-    __tostring = function()
-        return "<bytes>"
+    __todisplay = function()
+        return todisplay(bytes.new)
     end
 })
 

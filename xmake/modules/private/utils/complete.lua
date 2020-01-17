@@ -23,6 +23,11 @@ import("core.base.option")
 import("core.base.task")
 
 local use_spaces = true
+local raw_words = {}
+local word = ""
+local position = 0
+local has_space = false
+local reenter = false
 
 function _print_candidate(is_complate, ...)
     local candidate = format(...)
@@ -63,11 +68,24 @@ function _complete_option(options, segs, name)
     local current_options = try
     {
         function()
-            return option.raw_parse(segs, options)
+            return option.raw_parse(segs, options, { populate_defaults = false, allow_unknown = true })
         end
     }
     -- current options is invalid
     if not current_options then return end
+
+    -- current context is wrong
+    if not reenter and (current_options.file or current_options.project) then
+        local args = {"lua", "--root", "private.utils.complete", tostring(position), use_spaces and "reenter" or "nospace-reenter", table.unpack(raw_words) }
+        if current_options.file then
+            table.insert(args, 3, "--file=" .. current_options.file)
+        end
+        if current_options.project then
+            table.insert(args, 3, "--project=" .. current_options.project)
+        end
+        os.execv("xmake", args)
+        return
+    end
 
     local state = 0
     if name == "-" or name == "--" then
@@ -112,28 +130,7 @@ function _complete_option(options, segs, name)
     end
 end
 
-function main(position, config_use_spaces, ...)
-    local words = {...}
-    if config_use_spaces == "nospace" then
-        use_spaces = false
-    else
-        table.insert(words, 1, config_use_spaces)
-    end
-
-    local word = table.concat(words, " ") or ""
-    position = tonumber(position) or 0
-    local has_space = word:endswith(" ") or position > #word
-    word = word:trim()
-
-    if is_host("windows") then
-        if word:lower():startswith("xmake.exe") then
-            word = "xmake" .. word:sub(#"xmake.exe" + 1)
-        end
-    end
-
-    if word:lower():startswith("xmake ") then
-        word = word:sub(#"xmake " + 1)
-    end
+function _complete()
 
     local tasks = {}
     local shortnames = {}
@@ -167,4 +164,42 @@ function main(position, config_use_spaces, ...)
     if not has_space then segs[#segs] = nil end
 
     _complete_option(tasks[task_name].options, segs, incomplete_option)
+end
+
+function main(pos, config, ...)
+
+    raw_words = {...}
+    local words = {...}
+
+    local is_config = false
+    if config:find("nospace", 1, true) then
+        use_spaces = false
+        is_config = true
+    end
+    if config:find("reenter", 1, true) then
+        reenter = true
+        is_config = true
+    end
+
+    if not is_config then
+        table.insert(words, 1, config)
+    end
+
+    word = table.concat(words, " ") or ""
+    position = tonumber(pos) or 0
+    has_space = word:endswith(" ") or position > #word
+    word = word:trim()
+
+    -- normailize word to "xmake ..."
+    if is_host("windows") then
+        if word:lower():startswith("xmake.exe") then
+            word = "xmake" .. word:sub(#"xmake.exe" + 1)
+        end
+    end
+
+    if word:lower():startswith("xmake ") then
+        word = word:sub(#"xmake " + 1)
+    end
+
+    _complete()
 end

@@ -139,7 +139,7 @@ colors._keys24 =
 }
 
 -- the escape string
-colors._escape = string.char(27) .. '[%sm'
+colors._escape = '\x1b[%sm'
 
 -- get colorterm setting
 --

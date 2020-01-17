@@ -130,13 +130,14 @@ task("config")
                     end
 
                 ,   {category = "Other Configuration"}
-                ,   {nil, "debugger",   "kv", "auto",       "The Debugger"                                                  }
-                ,   {nil, "ccache",     "kv", true,         "Enable or disable the c/c++ compiler cache."         
-                                                    ,       "    --ccache=[y|n]"                                            }
-                ,   {'o', "buildir",    "kv", "build",      "Set the build directory."                                      }
+                ,   {nil, "debugger",   "kv", "auto"    , "The Debugger"                                                  }
+                ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."
+                                                        , "    --ccache=[y|n]"                                            }
+                ,   {'o', "buildir",    "kv", "build"   , "Set the build directory."                                      }
 
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Configure for the given target."                               }
+                ,   {nil, "target",     "v",  nil       , "Configure for the given target."
+                                                        , values = function () return table.keys(import("core.project.project").targets()) end }
                 }
             }
 

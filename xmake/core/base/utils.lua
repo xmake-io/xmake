@@ -28,8 +28,9 @@ local string = require("base/string")
 local log    = require("base/log")
 local io     = require("base/io")
 local dump   = require("base/dump")
+local text   = require("base/text")
 
--- dump value
+-- dump values
 function utils.dump(...)
     if option.get("quiet") then
         return ...
@@ -42,32 +43,23 @@ function utils.dump(...)
         local info = debug.getinfo(2)
         local line = info.currentline
         if not line or line < 0 then line = info.linedefined end
-        io.write(string.format("dump form %s %s:%s\n", info.name or "<anonymous>", info.source, line))
+        io.write(string.format("dump from %s %s:%s\n", info.name or "<anonymous>", info.source, line))
     end
 
     local values = table.pack(...)
     if values.n == 0 then
         return
     end
-    local indent = nil
-    local values_count = values.n
-    values.n = nil
-    -- use last input as indent if it is a string
-    if values_count > 1 and type(values[values_count]) == "string" then
-        indent = values[values_count]
-        values[values_count] = nil
-        values_count = values_count - 1
-    end
 
-    if values_count == 1 then
-        dump(values[1], indent or "", diagnosis)
+    if values.n == 1 then
+        dump(values[1], "", diagnosis)
     else
-        for i = 1, values_count do
-            dump(values[i], indent or string.format("%2d: ", i), diagnosis)
+        for i = 1, values.n do
+            dump(values[i], string.format("%2d: ", i), diagnosis)
         end
     end
 
-    return table.unpack(values, 1, values_count)
+    return table.unpack(values, 1, values.n)
 end
 
 -- print string with newline
@@ -325,6 +317,14 @@ function utils.confirm(opt)
         end
     end
     return confirm
+end
+
+function utils.table(data, opt)
+    utils.printf(text.table(data, opt))
+end
+
+function utils.vtable(data, opt)
+    utils.vprintf(text.table(data, opt))
 end
 
 -- return module

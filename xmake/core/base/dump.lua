@@ -22,7 +22,8 @@
 local dump = dump or {}
 
 -- load modules
-local colors  = require("base/colors")
+local colors    = require("base/colors")
+local todisplay = require("base/todisplay")
 
 -- format string with theme colors
 function dump._format(fmtkey, fmtdefault, ...)
@@ -48,15 +49,9 @@ end
 function dump._print_string(str, as_key)
     local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
     if quote then
-        io.write(dump._translate("${reset}${color.dump.string_quote}\"${reset}${color.dump.string}"))
+        io.write(dump._translate([[${reset}${color.dump.string_quote}"${reset}${color.dump.string}]]), str, dump._translate([[${reset}${color.dump.string_quote}"${reset}]]))
     else
-        io.write(dump._translate("${reset}${color.dump.string}"))
-    end
-    io.write(str)
-    if quote then
-        io.write(dump._translate("${reset}${color.dump.string_quote}\"${reset}"))
-    else
-        io.write(dump._translate("${reset}"))
+        io.write(dump._translate("${reset}${color.dump.string}"), str, dump._translate("${reset}"))
     end
 end
 
@@ -67,39 +62,21 @@ end
 
 -- print number
 function dump._print_number(num)
-    io.write(dump._translate("${reset}${color.dump.number}"), tostring(num), dump._translate("${reset}"))
+    io.write(dump._translate(todisplay(num)))
 end
 
 -- print function
 function dump._print_function(func, as_key)
-    io.write(dump._translate("${reset}${color.dump.function}"))
     if as_key then
-        io.write(dump._format("text.dump.default_format", "%s", func))
+        io.write(dump._translate("${reset}${color.dump.function}"), dump._format("text.dump.default_format", "%s", func), dump._translate("${reset}"))
     else
-        local funcinfo = debug.getinfo(func)
-        local srcinfo = funcinfo.short_src
-        if funcinfo.linedefined >= 0 then
-            srcinfo = srcinfo .. ":" .. funcinfo.linedefined
-        end
-        local funcname = funcinfo.name and (funcinfo.name .. " ") or ""
-        io.write(dump._translate("function ${bright}"), funcname, dump._translate("${reset}${dim}"), srcinfo)
+        io.write(dump._translate(todisplay(func)))
     end
-    io.write(dump._translate("${reset}"))
 end
 
 -- print value with default format
-function dump._print_default(value)
-    io.write(dump._translate("${reset}${color.dump.default}"), dump._format("text.dump.default_format", "%s", value), dump._translate("${reset}"))
-end
-
--- print udata value with scalar format
-function dump._print_udata_scalar(value)
-    io.write(dump._translate("${reset}${color.dump.udata}"), dump._format("text.dump.udata_format", "%s", value), dump._translate("${reset}"))
-end
-
--- print table value with scalar format
-function dump._print_table_scalar(value)
-    io.write(dump._translate("${reset}${color.dump.table}"), dump._format("text.dump.table_format", "%s", value), dump._translate("${reset}"))
+function dump._print_default_scalar(value)
+    io.write(dump._translate(todisplay(value)))
 end
 
 -- print scalar value
@@ -112,12 +89,8 @@ function dump._print_scalar(value, as_key)
         dump._print_string(value, as_key)
     elseif type(value) == "function" then
         dump._print_function(value, as_key)
-    elseif type(value) == "userdata" then
-        dump._print_udata_scalar(value)
-    elseif type(value) == "table" then
-        dump._print_table_scalar(value)
     else
-        dump._print_default(value)
+        dump._print_default_scalar(value)
     end
 end
 
@@ -278,12 +251,9 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     printed_set, first_level = dump._get_printed_set(printed_set, value)
     io.write(first_indent)
     local metatable = debug.getmetatable(value)
-    local tostringmethod = metatable and rawget(metatable, "__tostring")
+    local tostringmethod = metatable and (rawget(metatable, "__todisplay") or rawget(metatable, "__tostring"))
     if not first_level and tostringmethod then
-        local ok, strrep = pcall(tostringmethod, value, value)
-        if ok then
-            return dump._print_table_scalar(strrep)
-        end
+        return dump._print_default_scalar(value)
     end
 
     local inner_indent = remain_indent .. "  "

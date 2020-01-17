@@ -14,25 +14,10 @@
 -- 
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
--- @file        hashset.lua
+-- @author      ruki
+-- @file        todisplay.lua
 --
 
--- load modules
-local hashset = require("base/hashset")
-
-
--- define module
-local sandbox_hashset = sandbox_hashset or {}
-
--- inherit some builtin interfaces
-for key, value in pairs(hashset) do
-    if not key:startswith("_") then
-        sandbox_hashset[key] = value
-    end
-end
-
--- return module
-return sandbox_hashset
-
+-- load module
+return require("base/todisplay")
 

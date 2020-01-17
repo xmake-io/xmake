@@ -41,10 +41,11 @@ task("clean")
                 -- options
             ,   options = 
                 {
-                    {'a', "all",        "k",  nil,          "Clean all auto-generated files by xmake."                      }
+                    {'a', "all",        "k",  nil   , "Clean all auto-generated files by xmake."                      }
                 
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "The target name. It will clean all default targets if this parameter is not specified."                                   }      
+                ,   {nil, "target",     "v",  nil   , "The target name. It will clean all default targets if this parameter is not specified."
+                                                    ,  values = function () return table.keys(import("core.project.project").targets()) end }
                 }
             }
 

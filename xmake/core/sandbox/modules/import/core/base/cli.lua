@@ -15,24 +15,24 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      OpportunityLiu
--- @file        hashset.lua
+-- @file        cli.lua
 --
 
 -- load modules
-local hashset = require("base/hashset")
+local cli = require("base/cli")
 
 
 -- define module
-local sandbox_hashset = sandbox_hashset or {}
+local sandbox_cli = sandbox_cli or {}
 
 -- inherit some builtin interfaces
-for key, value in pairs(hashset) do
+for key, value in pairs(cli) do
     if not key:startswith("_") then
-        sandbox_hashset[key] = value
+        sandbox_cli[key] = value
     end
 end
 
 -- return module
-return sandbox_hashset
+return sandbox_cli
 
 

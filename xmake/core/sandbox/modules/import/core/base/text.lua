@@ -15,24 +15,24 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      OpportunityLiu
--- @file        hashset.lua
+-- @file        text.lua
 --
 
 -- load modules
-local hashset = require("base/hashset")
+local text = require("base/text")
 
 
 -- define module
-local sandbox_hashset = sandbox_hashset or {}
+local sandbox_text = sandbox_text or {}
 
 -- inherit some builtin interfaces
-for key, value in pairs(hashset) do
+for key, value in pairs(text) do
     if not key:startswith("_") then
-        sandbox_hashset[key] = value
+        sandbox_text[key] = value
     end
 end
 
 -- return module
-return sandbox_hashset
+return sandbox_text
 
 

@@ -117,14 +117,30 @@ function main._find_root(projectfile)
     return projectfile
 end
 
+function main._basicparse()
+
+    -- check command
+    if xmake._ARGV[1] and not xmake._ARGV[1]:startswith('-') then
+        -- regard it as command name
+        xmake._COMMAND = xmake._ARGV[1]
+        xmake._COMMAND_ARGV = table.move(xmake._ARGV, 2, #xmake._ARGV, 1, {})
+    else
+        xmake._COMMAND_ARGV = xmake._ARGV
+    end
+
+    -- parse options
+    return option.parse(xmake._COMMAND_ARGV, task.common_options(), { allow_unknown = true })
+end
+
 -- the init function for main
 function main._init()
 
-    -- get project directory from the argument option
-    local opt_projectdir = option.find(xmake._ARGV, "project", "P")
-
-    -- get project file from the argument option
-    local opt_projectfile = option.find(xmake._ARGV, "file", "F")
+    -- get project directory and project file from the argument option
+    local options, err = main._basicparse()
+    if not options then
+        return false, err
+    end
+    local opt_projectdir, opt_projectfile = options.project, options.file
 
     -- init the project directory
     local projectdir = opt_projectdir or xmake._PROJECT_DIR
@@ -146,7 +162,7 @@ function main._init()
 
     -- find the root project file
     if not os.isfile(projectfile) or (not opt_projectdir and not opt_projectfile) then
-        projectfile = main._find_root(projectfile) 
+        projectfile = main._find_root(projectfile)
     end
 
     -- update and enter project
@@ -165,16 +181,22 @@ function main._init()
     else
         os.addenv("PATH", os.programdir())
     end
+
+    return true
 end
 
 -- the main entry function
 function main.entry()
 
-    -- init 
-    main._init()
+    -- init
+    local ok, errors = main._init()
+    if not ok then
+        utils.error(errors)
+        return -1
+    end
 
     -- load global configuration
-    local ok, errors = global.load()
+    ok, errors = global.load()
     if not ok then
         utils.error(errors)
         return -1

@@ -23,10 +23,23 @@ local hashset      = hashset or {}
 local hashset_impl = hashset.__index or {}
 
 -- load modules
-local table  = require("base/table")
+local table      = require("base/table")
+local todisplay  = require("base/todisplay")
 
 -- representaion for nil key
-hashset._NIL = setmetatable({}, {__tostring = function() return "nil" end })
+hashset._NIL = setmetatable({}, { __todisplay = function() return "${reset}${color.dump.keyword}nil${reset}" end, __tostring = function() return "symbol(nil)" end })
+
+function hashset:__todisplay()
+    return string.format("hashset${reset}(%s) {%s}", todisplay(self._SIZE), table.concat(table.imap(table.keys(self._DATA), function (i, k)
+        if i > 10 then
+            return nil
+        elseif i == 10 and self._SIZE ~= 10 then
+            return "..."
+        else
+            return todisplay(k)
+        end
+    end), ", "))
+end
 
 function hashset._to_key(key)
     if key == nil then
@@ -93,6 +106,19 @@ function hashset_impl:to_array()
         end
     end
     return result
+end
+
+-- iterate keys of hashtable
+-- for _, key in instance:keys() do ... end
+function hashset_impl:keys()
+    return function (table, key)
+        local k, _ = next(table._DATA, key)
+        if k == hashset._NIL then
+            return k, nil
+        else
+            return k, k
+        end
+    end, self, nil
 end
 
 -- get size of hashset
