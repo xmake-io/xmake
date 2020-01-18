@@ -108,7 +108,7 @@ function _complete_option_kv(options, current, completing)
         return true
     end
 
-    local opcandi = {}
+    local opcandi = table.new(10, 0)
     for _, v in ipairs(options) do
         if current[v[2]] == nil then
             if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
@@ -213,8 +213,8 @@ end
 
 function _complete(argv, completing)
 
-    local tasks = {}
-    local shortnames = {}
+    local tasks = table.new(10, 0)
+    local shortnames = table.new(0, 10)
     for _, v in ipairs(task.names()) do
         local menu = option.taskmenu(v)
         tasks[v] = menu
