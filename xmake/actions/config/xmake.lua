@@ -78,11 +78,9 @@ task("config")
                 ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
                                                           , "    - debug"
                                                           , "    - release"
-                                                          , "    - ... (custom)"                                           } 
+                                                          , "    - ... (custom)"                                           }
                 ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
-                                                          , values = function () 
-                                                                return {"static", "shared", "binary"}
-                                                            end                                                            }
+                                                          , values = {"static", "shared", "binary"}                        }
                 ,   {nil, "host",       "kv", "$(host)",    "The Current Host Environment."                                }
 
                     -- show project menu options
@@ -137,7 +135,7 @@ task("config")
 
                 ,   {}
                 ,   {nil, "target",     "v",  nil       , "Configure for the given target."
-                                                        , values = function () return table.keys(import("core.project.project").targets()) end }
+                                                        , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
                 }
             }
 

@@ -787,11 +787,11 @@ function option.show_options(options, taskname)
             end
 
             -- append values
-            local values, ok = opt.values
+            local values = opt.values
             if type(values) == "function" then
-                ok, values = pcall(values)
+                values = values()
             end
-            if ok and values then
+            if values then
                 for _, value in ipairs(table.wrap(values)) do
                     table.insert(desp_strs, "    - " .. tostring(value))
                 end

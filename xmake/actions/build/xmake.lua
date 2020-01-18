@@ -56,7 +56,7 @@ task("build")
                
                 ,   {}
                 ,   {nil, "target",     "v",  nil   , "The target name. It will build all default targets if this parameter is not specified."
-                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
+                                                    , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
                 }
             }
 

@@ -70,7 +70,7 @@ function todisplay._print_default_scalar(value, style, formatkey)
                 formatkey = nil
             end
         elseif __tostring then
-            local ok, str = pcall(__todisplay, value)
+            local ok, str = pcall(__tostring, value)
             if ok then
                 value = str
             end

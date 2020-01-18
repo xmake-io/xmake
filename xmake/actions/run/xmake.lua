@@ -49,7 +49,7 @@ task("run")
                                                       "    --workdir=`pwd`"                                                }
                 ,   {}  
                 ,   {nil, "target",     "v",   nil  , "The target name. It will run all default targets if this parameter is not specified."
-                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
+                                                    , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
                 ,   {nil, "arguments",  "vs",  nil  , "The target arguments"                                               }
                 }
             }

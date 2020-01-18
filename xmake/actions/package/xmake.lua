@@ -45,7 +45,7 @@ task("package")
                 ,   {'a', "all",        "k",  nil   , "Package all targets."                                          }
                 ,   {}
                 ,   {nil, "target",     "v",  nil   , "The target name. It will package all default targets if this parameter is not specified."
-                                                    , values = function () return table.keys(import("core.project.project").targets()) end }
+                                                    , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
                 }
             } 
 
