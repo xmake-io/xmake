@@ -37,7 +37,7 @@ ffi.cdef[[
 
 -- new a bytes instance
 --
--- bytes(size): allocates a buffer of given size
+-- bytes(size[, init]): allocates a buffer of given size, init with given number or char value
 -- bytes(size, ptr [, manage]): mounts buffer on existing storage (manage memory or not)
 -- bytes(str): mounts a buffer from the given string
 -- bytes(bytes, start, last): mounts a buffer from another one, with start/last limits
@@ -51,9 +51,9 @@ function _instance.new(...)
     local instance = table.inherit(_instance)
     if type(arg1) == "number" then
         local size = arg1
-        local ptr = arg2 
-        if ptr then
+        if type(arg2) == "cdata" then
             -- bytes(size, ptr [, manage]): mounts buffer on existing storage (manage memory or not)
+            local ptr = arg2
             local manage = arg3
             if manage then
                 instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
@@ -63,8 +63,21 @@ function _instance.new(...)
                 instance._MANAGED = false
             end
         else
-            -- bytes(size): allocates a buffer of given size
-            ptr = ffi.C.malloc(size)
+            -- bytes(size[, init]): allocates a buffer of given size
+            local init
+            if arg2 then
+                if type(arg2) == "number" then
+                    init = arg2
+                elseif type(arg2) == "string" then
+                    init = arg2:byte()
+                else
+                    os.raise("invalid arguments #2 for bytes(size, ...), cdata, string, number or nil expected!")
+                end
+            end
+            local ptr = ffi.C.malloc(size)
+            if init then
+                ffi.fill(ptr, size, init)
+            end
             instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
             instance._MANAGED = true
         end
