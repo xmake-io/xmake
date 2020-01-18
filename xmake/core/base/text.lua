@@ -71,7 +71,7 @@ function text.wordwrap(str, width, opt)
     end
     local lines = tostring(str):split("\n", {plain = true, strict = true})
 
-    local result = {}
+    local result = table.new(#lines, 0)
     local actual_width = 0
 
     -- handle lines
@@ -110,7 +110,7 @@ function text.wordwrap(str, width, opt)
 end
 
 function text._format_cell(cell, width, opt)
-    local result = {}
+    local result = table.new(#cell, 0)
     local max_width = 0
     for _, v in ipairs(cell) do
         local lines, aw = text.wordwrap(tostring(v), width[2], opt)
@@ -165,7 +165,7 @@ function text.table(data, opt)
     opt.patch_reset = false
 
     -- col ordered cells
-    local cols = {}
+    local cols = table.new(1, 0)
     local n_row = table.maxn(data)
     local n_col = 1
 
@@ -193,7 +193,7 @@ function text.table(data, opt)
             end
             local col = cols[j]
             if not col then
-                col = {}
+                col = table.new(n_row, 0)
                 cols[j] = col
             end
             if cell then
@@ -206,21 +206,21 @@ function text.table(data, opt)
     end
 
     -- load column options
-    data.width = data.width or {}
-    data.align = data.align or {}
-    data.style = data.style or {}
+    data.width = data.width or table.new(n_col, 0)
+    data.align = data.align or table.new(n_col, 0)
+    data.style = data.style or table.new(n_col, 0)
 
     local style = ""
     if type(data.style) == "string" then
         style = data.style
-        data.style = {}
+        data.style = table.new(n_col, 0)
         data.sep = style .. data.sep .. "${reset}"
     end
 
     local align = "l"
     if type(data.align) == "string" then
         align = data.align
-        data.align = {}
+        data.align = table.new(n_col, 0)
     end
 
     local sep = colors.translate(data.sep, opt)
@@ -305,12 +305,12 @@ function text.table(data, opt)
     -- render cells
 
     -- row ordered cells
-    local rows = {}
+    local rows = table.new(n_row, 0)
 
     -- reorder
     for i = 1, n_row do
         local d_row = data[i] or {}
-        local row = {}
+        local row = table.new(n_col, 0)
         local line = 1
         for j = 1, n_col do
             local cell = cols[j][i]
@@ -333,11 +333,11 @@ function text.table(data, opt)
         rows[i] = row
     end
 
-    local results = {}
+    local results = table.new(n_row, 0)
     local reset = colors.translate("${reset}", opt)
     for i, row in ipairs(rows) do
         for l = 1, row.line do
-            local cells = {}
+            local cells = table.new(n_col, 0)
             local j = 1
             while j <= n_col do
 
