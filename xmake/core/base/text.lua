@@ -25,7 +25,7 @@ local text = text or {}
 local string    = require("base/string")
 local colors    = require("base/colors")
 local math      = require("base/math")
-local dump      = require("base/dump")
+local table     = require("base/table")
 
 -- @see https://unicode.org/reports/tr14/
 function text._lastwbr(str, width, wordbreak)

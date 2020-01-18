@@ -65,6 +65,7 @@ function _instance.new(...)
         else
             -- bytes(size): allocates a buffer of given size
             ptr = ffi.C.malloc(size)
+            ffi.fill(ptr, size, 0)
             instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
             instance._MANAGED = true
         end

@@ -760,13 +760,14 @@ function option.show_options(options, taskname)
             end
 
             -- get description
-            local description = table.move(opt, 5, table.maxn(opt), 1, {})
+            local optdespn = table.maxn(opt)
+            local description = table.move(opt, 5, optdespn, 1, table.new(optdespn - 5 + 1, 0))
             if #description == 0 then
                 description[1] = ""
             end
 
             -- transform description
-            local desp_strs = {}
+            local desp_strs = table.new(#description, 0)
             for _, v in ipairs(description) do
                 if type(v) == "function" then
                     v = v()
