@@ -745,12 +745,14 @@ function option.show_options(options, taskname)
             if name then
                 local leading = (shortname and "," or " ") .. (mode:startswith("k") and " --" or "   ")
                 local kv
-                if mode:startswith("k") then
+                if mode == "k" then
                     kv = name
+                elseif mode == "kv" then
+                    kv = (name .. "=" .. ((type(default) == "boolean") and "[y|n]" or name:upper()))
                 elseif mode == "vs" then
                     kv = name .. " ..."
                 else
-                    kv = (name .. "=" .. ((type(default) == "boolean") and "[y|n]" or name:upper()))
+                    kv = name
                 end
                 option_info = option_info .. leading .. kv
             elseif mode == "v" or mode == "vs" then
