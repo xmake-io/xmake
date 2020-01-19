@@ -18,6 +18,8 @@
 -- @file        cli.lua
 --
 
+-- @see https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html
+
 -- define module
 local cli = cli or {}
 local segment = cli._segment or {}
