@@ -100,6 +100,11 @@ function _complete_option_kv(options, current, completing)
         if type(values) == "function" then
             values = values(value)
         end
+        if values == nil and type(opt[4]) == "boolean" then
+            values = { "y", "n" }
+            -- ignore existing input
+            value = ""
+        end
         for _, v in ipairs(values) do
             if tostring(v):startswith(value) then
                 _print_candidate(true, "--%s=%s", name, v)
@@ -269,13 +274,15 @@ function main(pos, config, ...)
 
     local argv = os.argv(word)
 
-    -- normailize word to remove "xmake"
-    if is_host("windows") and argv[1] == "xmake.exe" then
-        argv[1] = "xmake"
-    end
+    if argv[1] then
 
-    if argv[1] == "xmake" then
-        table.remove(argv, 1)
+        -- normailize word to remove "xmake"
+        if is_host("windows") and argv[1]:lower() == "xmake.exe" then
+            argv[1] = "xmake"
+        end
+        if argv[1] == "xmake" then
+            table.remove(argv, 1)
+        end
     end
 
     if has_space then
