@@ -273,15 +273,15 @@ Please download and install more other plugins from the plugins repository [xmak
 
 * [xmake-vscode](https://github.com/xmake-io/xmake-vscode)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-vscode/master/res/problem.gif" width="650px" />
+<img src="https://raw.githubusercontent.com/xmake-io/xmake-vscode/master/res/problem.gif" width="650px" />
 
 * [xmake-sublime](https://github.com/xmake-io/xmake-sublime)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-sublime/master/res/problem.gif" width="650px" />
+<img src="https://raw.githubusercontent.com/xmake-io/xmake-sublime/master/res/problem.gif" width="650px" />
 
 * [xmake-idea](https://github.com/xmake-io/xmake-idea)
 
-<img src="https://raw.githubusercontent.com/tboox/xmake-idea/master/res/problem.gif" width="650px" />
+<img src="https://raw.githubusercontent.com/xmake-io/xmake-idea/master/res/problem.gif" width="650px" />
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 

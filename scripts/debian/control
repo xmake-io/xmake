@@ -5,7 +5,7 @@ Maintainer: ruki <waruqi@gmail.com>
 Build-Depends: debhelper (>=9)
 Standards-Version: 3.9.7
 Homepage: http://xmake.io
-#Vcs-Git: git@github.com:tboox/xmake.git
+#Vcs-Git: git@github.com:xmake-io/xmake.git
 #Vcs-Browser: https://github.com/xmake-io/xmake.git
 
 Package: xmake

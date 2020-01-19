@@ -31,8 +31,8 @@ import("lib.detect.find_tool")
 --
 -- import("devel.git")
 -- 
--- git.clone("git@github.com:tboox/xmake.git")
--- git.clone("git@github.com:tboox/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.clone("git@github.com:xmake-io/xmake.git")
+-- git.clone("git@github.com:xmake-io/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
 --
 -- @endcode
 --
