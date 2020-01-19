@@ -442,8 +442,8 @@ end
 
 -- register call function
 setmetatable(bytes, {
-    __call = function (_, ...) 
-        return bytes.new(...) 
+    __call = function (_, ...)
+        return bytes.new(...)
     end,
     __todisplay = function()
         return todisplay(bytes.new)
