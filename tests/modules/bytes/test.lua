@@ -1,3 +1,4 @@
+import("core.base.bytes")
 
 function test_ctor(t)
     t:are_equal(bytes("123456789"):str(), "123456789")
