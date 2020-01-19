@@ -18,8 +18,8 @@ target("xmake")
     add_configfiles("xmake.config.h.in")
 
     -- add includes directory
-    add_includedirs("$(projectdir)")
-    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)")
+    add_includedirs("..", {interface = true})
+    add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
 
     -- add the common source files
     add_files("**.c|winos/*.c")

@@ -10,9 +10,6 @@ target("demo")
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
 
-    -- set the object files directory
-    set_objectdir("$(buildir)/.objs")
-
     -- add includes directory
     add_includedirs("$(projectdir)", "$(projectdir)/src")
 

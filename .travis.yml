@@ -23,11 +23,11 @@ script:
   - scripts/get.sh __local__
   - source ~/.xmake/profile
   - xmake --version
-  - xmake -P core 
+  - xmake 
   - export XMAKE_PROGRAM_DIR=$PWD/xmake
-  - core/build/xmake --version
+  - build/xmake --version
   - export XMAKE_PROGRAM_DIR=~/.local/share/xmake
-  - cp core/build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp core/build/xmake "$XMAKE_PROGRAM_DIR"
+  - cp build/xmake "$XMAKE_PROGRAM_DIR" || sudo cp build/xmake "$XMAKE_PROGRAM_DIR"
   - xmake --version
   - xmake l private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
   - xmake --version
