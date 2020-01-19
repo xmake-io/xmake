@@ -129,8 +129,7 @@ task("config")
 
                 ,   {category = "Other Configuration"}
                 ,   {nil, "debugger",   "kv", "auto"    , "The Debugger"                                                  }
-                ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."
-                                                        , "    --ccache=[y|n]"                                            }
+                ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."                   }
                 ,   {'o', "buildir",    "kv", "build"   , "Set the build directory."                                      }
 
                 ,   {}
