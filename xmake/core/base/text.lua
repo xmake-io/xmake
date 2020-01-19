@@ -27,6 +27,100 @@ local colors    = require("base/colors")
 local math      = require("base/math")
 local table     = require("base/table")
 
+
+function text._iswbr(ch)
+    if not text._CHARWBR then
+        text._CHARWBR = {
+            [(' '):byte()] = 100,
+            [('\n'):byte()] = 100,
+            [('\t'):byte()] = 100,
+            [('\v'):byte()] = 100,
+            [('\f'):byte()] = 100,
+            [('\r'):byte()] = 100,
+            [('-'):byte()] = 90,
+            [(')'):byte()] = 50,
+            [(']'):byte()] = 50,
+            [('}'):byte()] = 50,
+            [(','):byte()] = 50,
+            [('='):byte()] = 40,
+            [('|'):byte()] = 40,
+        }
+    end
+    return text._CHARWBR[ch] or false
+end
+
+function text._charwidth(ch)
+    if ch == 0x09 then
+        -- TAB
+        return 4
+    elseif ch == 0x08 then
+        -- BS
+        return -1
+    elseif ch <= 0x1F or ch == 0x7F then
+        -- other control chars
+        return 0
+    else
+        return 1
+    end
+end
+
+function text._nextwbr(self, iter)
+    local ptr = iter.pos + 1
+    local width = iter.width
+    local str = self.str
+    local e = self.j
+
+    if ptr > e then
+        return nil
+    end
+
+    while ptr <= e do
+        local byte = str:byte(ptr)
+
+        -- ansi sequence, skip it
+        if byte == 27 and ptr + 2 <= e and str:byte(ptr + 1) == 91 then
+            local ansiend = false
+            ptr = ptr + 2
+            while ptr <= e do
+                local b = str:byte(ptr)
+                if b == 109 then
+                    ansiend = true
+                    break
+                end
+                ptr = ptr + 1
+            end
+            if not ansiend then
+                -- ansi sequence not finished in [i, j], no more wbr in the range
+                return nil
+            end
+        else
+            width = width + text._charwidth(byte)
+            local wbr = text._iswbr(byte)
+            if wbr then
+                return { pos = ptr, width = width, quality = wbr }
+            end
+        end
+        ptr = ptr + 1
+    end
+
+    -- wbr at end of string
+    return { pos = e, width = width, quality = 100 }
+end
+
+function text._iterwbr(str, i, j, wordbreak)
+    if not i then
+        i = 1
+    elseif i < 0 then
+        i = #str + 1 + i
+    end
+    if not j then
+        j = #str
+    elseif j < 0 then
+        j = #str + 1 + j
+    end
+    return text._nextwbr, { str = str, i = i, j = j, wordbreak = wordbreak }, { pos = i - 1, width = 0 }
+end
+
 -- @see https://unicode.org/reports/tr14/
 function text._lastwbr(str, width, wordbreak)
 
@@ -38,23 +132,27 @@ function text._lastwbr(str, width, wordbreak)
         return width
     else
 
-        if str:sub(width + 1, width + 1):find("[%s]") then
+        if (text._iswbr(str:byte(width + 1)) or -1) >= 100 then
             -- exact break
             return width
         end
 
-        local range = str:sub(1, width)
-        local range_r = range:reverse()
-        -- break at spaces and '-'' first, then try other candidates
-        local poss = range_r:find("[%s-]") or range_r:find("[%%=%)]")
-        if poss then
-            return #range - poss + 1
+        local wbr_candidate
+        for wbr in text._iterwbr(str, 1, #str, wordbreak) do
+            if not wbr_candidate then
+                -- not candidate yet? always use a wbr
+                wbr_candidate = wbr
+            elseif (wbr.quality >= wbr_candidate.quality or wbr.quality >= 80) and wbr.width <= width then
+                -- in range, replace with a higher quality wbr
+                wbr_candidate = wbr
+            end
+            if wbr.width > width then
+                break
+            end
         end
 
-        -- not found in range, try afterwards
-        poss = str:find("[%s-%%=%)]", width + 1)
-        if poss then
-            return poss
+        if wbr_candidate then
+            return wbr_candidate.pos
         end
 
         -- not found in all str
