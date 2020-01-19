@@ -1,5 +1,5 @@
 xmake v#xmake-version#, A cross-platform build utility based on Lua
-Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io
+Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io
 Copyright (C) 2005-2015 Mike Pall, luajit.org
                          _        
     __  ___ __  __  __ _| | ______

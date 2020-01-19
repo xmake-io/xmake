@@ -26,7 +26,7 @@ BEGIN
             VALUE "FileDescription", "XMake build utility"
             VALUE "FileVersion", XM_CONFIG_VERSION "+" STR(XM_CONFIG_VERSION_BUILD)
             VALUE "InternalName", "xmake"
-            VALUE "LegalCopyright", "Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
             VALUE "LegalTrademarks", ""
             VALUE "OriginalFilename", "xmake.exe"
             VALUE "ProductName", "XMake"
