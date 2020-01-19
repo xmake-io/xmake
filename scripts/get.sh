@@ -143,9 +143,9 @@ if [ 'x__install_only__' != "x$2" ]; then
 fi
 
 # make bytecodes
-export XMAKE_PROGRAM_DIR=$projectdir/xmake
+XMAKE_PROGRAM_DIR="$projectdir/xmake" \
+XMAKE_ROOT=y \
 $projectdir/core/src/demo/demo.b l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
-export XMAKE_PROGRAM_DIR=
 
 # do install
 if [ "$prefix" = "" ]; then
