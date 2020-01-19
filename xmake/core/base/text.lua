@@ -44,13 +44,15 @@ function text._lastwbr(str, width, wordbreak)
         end
 
         local range = str:sub(1, width)
-        local poss = range:reverse():find("[%s-]")
+        local range_r = range:reverse()
+        -- break at spaces and '-'' first, then try other candidates
+        local poss = range_r:find("[%s-]") or range_r:find("[%%=%)]")
         if poss then
             return #range - poss + 1
         end
 
         -- not found in range, try afterwards
-        poss = str:find("[%s-]", width + 1)
+        poss = str:find("[%s-%%=%)]", width + 1)
         if poss then
             return poss
         end

@@ -282,7 +282,7 @@ function main(pos, config, ...)
         _complete(argv, "")
     else
         local completing = table.remove(argv)
-        _complete(argv, completing)
+        _complete(argv, completing or "")
     end
 end
 
