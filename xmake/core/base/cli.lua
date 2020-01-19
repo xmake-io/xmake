@@ -60,10 +60,14 @@ function cli._make_option(key, value, short, argv, argi)
     return cli._make_segment("option", short and ("-" .. key .. " " .. value) or ("--" .. key .. "=" .. value), argv, argi, { key = key, value = value, short = short or false })
 end
 
-function cli.parse(args, ...)
-    return cli.parsev(os.argv(args), ...)
+-- parse a argv string, command & sub-command should be omitted before calling this function
+-- @see https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html
+function cli.parse(args, flags)
+    return cli.parsev(os.argv(args), flags)
 end
 
+-- parse a argv array, command & sub-command should be omitted before calling this function
+-- @see https://pubs.opengroup.org/onlinepubs/9699919799/basedefs/V1_chap12.html
 function cli.parsev(argv, flags)
 
     local parsed = {}

@@ -15,16 +15,16 @@
 
 ; xmake version Information
 !ifndef MAJOR
-    !define MAJOR 2
+  !error 'xmake major version is not defined!'
 !endif
 !ifndef MINOR
-    !define MINOR 2
+  !error 'xmake minor version is not defined!'
 !endif
 !ifndef ALTER
-    !define ALTER 9
+  !error 'xmake alter version is not defined!'
 !endif
 !ifndef BUILD
-    !define BUILD 201912200000
+  !error 'xmake build version is not defined!'
 !endif
 
 !define VERSION ${MAJOR}.${MINOR}.${ALTER}
@@ -137,7 +137,7 @@ VIFileVersion                            ${VERSION}.0
 VIAddVersionKey /LANG=0 ProductName      XMake
 VIAddVersionKey /LANG=0 Comments         "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
 VIAddVersionKey /LANG=0 CompanyName      "The TBOOX Open Source Group"
-VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-2019 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
 VIAddVersionKey /LANG=0 FileDescription  "XMake Installer - v${VERSION}"
 VIAddVersionKey /LANG=0 OriginalFilename "xmake-${ARCH}.exe"
 VIAddVersionKey /LANG=0 FileVersion      ${VERSION_FULL}
@@ -232,7 +232,7 @@ Section "XMake (required)" InstallExeutable
   ; Put file there
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
   File "..\*.md"
-  File "..\build\xmake.exe"
+  File "..\core\build\xmake.exe"
   File /r /x ".DS_Store" "..\winenv"
 
   WriteUninstaller "uninstall.exe"

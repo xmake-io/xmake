@@ -25,6 +25,29 @@ local table = table or {}
 table.clear = require("table.clear")
 table.new   = require("table.new")
 
+-- move values of table(a1) to table(a2)
+--
+-- disable the builtin implementation for android termux/arm64, it will crash when calling `table.move({1, 1}, 1, 2, 1, {})`
+--
+-- @see https://github.com/xmake-io/xmake/pull/667#issuecomment-575859604
+--
+if xmake._ARCH:startswith("arm") then
+    function table.move(a1, f, e, t, a2)
+        if a2 == nil then a2 = a1 end
+        assert(a1)
+        assert(a2)
+        if e >= f then
+            local d = t - f
+            if t > e or t <= f or a2 ~= a1 then
+                for i = f, e do a2[i + d] = a1[i] end
+            else
+                for i = e, f, -1 do a2[i + d] = a1[i] end
+            end
+        end
+        return a2
+    end
+end
+
 -- join all objects and tables
 function table.join(...)
 
@@ -346,27 +369,6 @@ function table.reverse(arr)
         revarr[i] = arr[l - i + 1]
     end
     return revarr
-end
-
--- move values of table(a1) to table(a2)
--- 
--- disable the builtin implementation for android termux/arm64, it will crash when calling `table.move({1, 1}, 1, 2, 1, {})`
---
--- @see https://github.com/xmake-io/xmake/pull/667#issuecomment-575859604
---
-if xmake._ARCH:startswith("arm") then
-    function table.move(a1, f, e, t, a2)
-        if a2 == nil then a2 = a1 end
-            if e >= f then
-                local d = t - f
-                if t > e or t <= f or a2 ~= a1 then
-                    for i = f, e do a2[i + d] = a1[i] end
-                else
-                    for i = e, f, -1 do a2[i + d] = a1[i] end
-                end
-            end
-        return a2
-    end
 end
 
 -- return module: table

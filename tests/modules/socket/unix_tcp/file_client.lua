@@ -1,4 +1,5 @@
 import("core.base.socket")
+import("core.base.bytes")
 
 function main(addr)
     addr = addr or path.join(os.tmpdir(), "file.socket")

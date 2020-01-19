@@ -1,4 +1,5 @@
 import("core.base.socket")
+import("core.base.bytes")
 
 function main()
     local addr = "127.0.0.1"

@@ -27,6 +27,7 @@ local log           = require("base/log")
 local path          = require("base/path")
 local utils         = require("base/utils")
 local option        = require("base/option")
+local table         = require("base/table")
 local global        = require("base/global")
 local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
@@ -123,7 +124,7 @@ function main._basicparse()
     if xmake._ARGV[1] and not xmake._ARGV[1]:startswith('-') then
         -- regard it as command name
         xmake._COMMAND = xmake._ARGV[1]
-        xmake._COMMAND_ARGV = table.move(xmake._ARGV, 2, #xmake._ARGV, 1, {})
+        xmake._COMMAND_ARGV = table.move(xmake._ARGV, 2, #xmake._ARGV, 1, table.new(#xmake._ARGV - 1, 0))
     else
         xmake._COMMAND_ARGV = xmake._ARGV
     end

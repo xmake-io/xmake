@@ -1,5 +1,6 @@
 import("core.base.socket")
 import("core.base.scheduler")
+import("core.base.bytes")
 
 function _session(addr, port)
     print("connect %s:%d ..", addr, port)

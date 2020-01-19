@@ -42,7 +42,7 @@ end
 
 -- print number
 function todisplay._print_number(num)
-    return string.format("${reset}${color.dump.number}%g${reset}", num)
+    return string.format("${reset}${color.dump.number}%s${reset}", num)
 end
 
 -- print function
@@ -70,7 +70,7 @@ function todisplay._print_default_scalar(value, style, formatkey)
                 formatkey = nil
             end
         elseif __tostring then
-            local ok, str = pcall(__todisplay, value)
+            local ok, str = pcall(__tostring, value)
             if ok then
                 value = str
             end

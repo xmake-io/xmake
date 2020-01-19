@@ -21,12 +21,11 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.base.cli")
 
-local use_spaces = true
 local raw_words = {}
-local word = ""
 local position = 0
-local has_space = false
+local use_spaces = true
 local reenter = false
 
 function _print_candidate(is_complate, ...)
@@ -64,7 +63,130 @@ function _complete_task(tasks, name)
     return has_candidate
 end
 
-function _complete_option(options, segs, name)
+function _complete_option_kv(options, current, completing)
+
+    local name, value
+    if completing == "-" or completing == "--" then
+        name = ""
+    elseif completing:startswith("--") then
+        local parg = cli.parsev({completing})[1]
+        if parg.type == "option" then
+            name, value = parg.key, parg.value
+        elseif parg.type == "flag" then
+            name = parg.key
+        end
+    elseif completing:startswith("-") then
+        -- search full names only
+        return true
+    end
+
+    if value then
+        -- complete values
+
+        -- find completion option
+        local opt
+        for _, v in ipairs(options) do
+            if v[3] == "kv" and (v[1] == name or v[2] == name) then
+                opt = v
+                break
+            end
+        end
+        if not opt then
+            return false
+        end
+
+        -- show candidates of values
+        local values = opt.values
+        if type(values) == "function" then
+            values = values(value)
+        end
+        if values == nil and type(opt[4]) == "boolean" then
+            values = { "y", "n" }
+            -- ignore existing input
+            value = ""
+        end
+        for _, v in ipairs(values) do
+            if tostring(v):startswith(value) then
+                _print_candidate(true, "--%s=%s", name, v)
+            end
+        end
+        return true
+    end
+
+    local opcandi = table.new(10, 0)
+    for _, v in ipairs(options) do
+        if current[v[2]] == nil then
+            if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
+        end
+    end
+
+    for _, v in ipairs(opcandi) do
+        -- startswith
+        if v[2]:startswith(name) then
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
+        end
+    end
+
+    if name == "" then
+        return true
+    end
+
+    for _, v in ipairs(opcandi) do
+        -- not startswith
+        if v[2]:find(name, 2, true) then
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
+        end
+    end
+
+    return true
+end
+
+function _complete_option_v(options, current, completing)
+    -- find completion option
+    local opt
+    local optvs
+    for _, v in ipairs(options) do
+        if v[3] == "v" and current[v[2] or v[1]] == nil then
+            opt = v
+        end
+        if v[3] == "vs" and not optvs then
+            optvs = v
+        end
+    end
+
+    if opt then
+        -- show candidates of values
+        local values = opt.values
+        if type(values) == "function" then
+            values = values(completing)
+        end
+        for _, v in ipairs(values) do
+            if tostring(v):startswith(completing) then
+                _print_candidate(true, "%s", v)
+            end
+        end
+        return true
+    end
+
+    if optvs then
+
+        -- show candidates of values
+        local values = optvs.values
+        if type(values) == "function" then
+            values = values(completing)
+        end
+        for _, v in ipairs(values) do
+            if tostring(v):startswith(completing) then
+                _print_candidate(true, "%s", v)
+            end
+        end
+        return true
+    end
+
+    return false
+end
+
+function _complete_option(options, segs, completing)
     local current_options = try
     {
         function()
@@ -72,7 +194,7 @@ function _complete_option(options, segs, name)
         end
     }
     -- current options is invalid
-    if not current_options then return end
+    if not current_options then return false end
 
     -- current context is wrong
     if not reenter and (current_options.file or current_options.project) then
@@ -84,56 +206,20 @@ function _complete_option(options, segs, name)
             table.insert(args, 3, "--project=" .. current_options.project)
         end
         os.execv("xmake", args)
-        return
+        return true
     end
 
-    local state = 0
-    if name == "-" or name == "--" then
-        name = ""
-    elseif name:startswith("--") then
-        state = 2
-        name = name:sub(3)
-    elseif name:startswith("-") then
-        state = 1
-        name = name:sub(2)
-    end
-
-    -- search full names only
-    if name == "" then state = 2 end
-
-    local opcandi = {}
-    for _, v in ipairs(options) do
-        if current_options[v[2]] == nil then
-            if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
-        end
-    end
-
-    for _, v in ipairs(opcandi) do
-        if (state == 2 or state == 0) and v[2]:startswith(name) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        elseif (state == 1 or state == 0) and v[1] and v[1]:startswith(name) then
-            _print_candidate(true, "-%s", v[1])
-        end
-    end
-
-    if name == "" then
-        return
-    end
-
-    for _, v in ipairs(opcandi) do
-        -- not startswith
-        if (state == 2 or state == 0) and v[2]:find(name, 2, true) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        elseif (state == 1 or state == 0) and v[1] and v[1]:find(name, 2, true) then
-            _print_candidate(true, "-%s", v[1])
-        end
+    if completing:startswith("-") then
+        return _complete_option_kv(options, current_options, completing)
+    else
+        return _complete_option_v(options, current_options, completing)
     end
 end
 
-function _complete()
+function _complete(argv, completing)
 
-    local tasks = {}
-    local shortnames = {}
+    local tasks = table.new(10, 0)
+    local shortnames = table.new(0, 10)
     for _, v in ipairs(task.names()) do
         local menu = option.taskmenu(v)
         tasks[v] = menu
@@ -142,34 +228,30 @@ function _complete()
         end
     end
 
-    if word:lower() == "xmake" then
-        _complete_task(tasks, "")
-        return
+    if #argv == 0 then
+        if _complete_task(tasks, completing) then return end
     end
 
-    local segs = word:split("%s")
-    local task_name = table.remove(segs, 1) or ""
-
-    if #segs == 0 and not has_space then
-        if _complete_task(tasks, task_name) then return end
+    local task_name = "build"
+    if argv[1] and not argv[1]:startswith("-") then
+        task_name = table.remove(argv, 1)
     end
 
     if shortnames[task_name] then task_name = shortnames[task_name] end
-    if not tasks[task_name] then
-        table.insert(segs, 1, task_name)
-        task_name = "run"
+
+    local options
+    if tasks[task_name] then
+        options = tasks[task_name].options
+    else
+        options = tasks["build"].options
     end
 
-    local incomplete_option = has_space and "" or segs[#segs]
-    if not has_space then segs[#segs] = nil end
-
-    _complete_option(tasks[task_name].options, segs, incomplete_option)
+    _complete_option(options, argv, completing)
 end
 
 function main(pos, config, ...)
 
     raw_words = {...}
-    local words = {...}
 
     local is_config = false
     if config:find("nospace", 1, true) then
@@ -182,24 +264,32 @@ function main(pos, config, ...)
     end
 
     if not is_config then
-        table.insert(words, 1, config)
+        table.insert(raw_words, 1, config)
     end
 
-    word = table.concat(words, " ") or ""
+    local word = table.concat(raw_words, " ") or ""
     position = tonumber(pos) or 0
-    has_space = word:endswith(" ") or position > #word
+    local has_space = word:endswith(" ") or position > #word
     word = word:trim()
 
-    -- normailize word to "xmake ..."
-    if is_host("windows") then
-        if word:lower():startswith("xmake.exe") then
-            word = "xmake" .. word:sub(#"xmake.exe" + 1)
+    local argv = os.argv(word)
+
+    if argv[1] then
+
+        -- normailize word to remove "xmake"
+        if is_host("windows") and argv[1]:lower() == "xmake.exe" then
+            argv[1] = "xmake"
+        end
+        if argv[1] == "xmake" then
+            table.remove(argv, 1)
         end
     end
 
-    if word:lower():startswith("xmake ") then
-        word = word:sub(#"xmake " + 1)
+    if has_space then
+        _complete(argv, "")
+    else
+        local completing = table.remove(argv)
+        _complete(argv, completing or "")
     end
-
-    _complete()
 end
+

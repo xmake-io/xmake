@@ -2,7 +2,7 @@ sudo: false
 language: c
 
 before_install:
-  - bash <(curl -s https://raw.githubusercontent.com/tboox/xmake/master/scripts/get.sh)
+  - bash <(curl -s https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh)
 
 install:
   - xmake

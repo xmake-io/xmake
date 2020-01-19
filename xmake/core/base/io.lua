@@ -24,9 +24,10 @@ local _file     = _file or {}
 local _filelock = _filelock or {}
 
 -- load modules
-local path   = require("base/path")
-local table  = require("base/table")
-local string = require("base/string")
+local path      = require("base/path")
+local table     = require("base/table")
+local string    = require("base/string")
+local todisplay = require("base/todisplay")
 
 -- save metatable and builtin functions
 io._file        = _file
@@ -34,10 +35,10 @@ io._filelock    = _filelock
 io._stdfile     = io._stdfile or io.stdfile
 
 -- new an file
-function _file.new(filepath, fileref)
+function _file.new(filepath, fileref, isstdfile)
     local file = table.inherit(_file)
     file._NAME = path.filename(filepath)
-    file._PATH = path.absolute(filepath)
+    file._PATH = isstdfile and filepath or path.absolute(filepath)
     file._FILE = fileref
     setmetatable(file, _file)
     return file
@@ -79,6 +80,30 @@ function _file:__tostring()
     return "<file: " .. str .. ">"
 end
 
+-- todisplay(file)
+function _file:__todisplay()
+    local size = _file.size(self)
+    local filepath = _file.path(self)
+    if not size then
+        return string.format("file${reset} %s", todisplay(filepath))
+    end
+
+    local unit = "B"
+    if size >= 1000 then
+        size = size / 1024
+        unit = "KiB"
+    end
+    if size >= 1000 then
+        size = size / 1024
+        unit = "MiB"
+    end
+    if size >= 1000 then
+        size = size / 1024
+        unit = "GiB"
+    end
+    return string.format("file${reset}(${color.dump.number}%.3f%s${reset}) %s", size, unit, todisplay(filepath))
+end
+
 -- gc(file)
 function _file:__gc()
     if self._FILE and io.file_close(self._FILE) then
@@ -88,7 +113,7 @@ end
 
 -- get file length
 function _file:__len()
-    return self:size()
+    return _file.size(self)
 end
 
 -- get file rawfd
@@ -223,9 +248,9 @@ end
 function _file:lines(opt)
     opt = opt or {}
     return function()
-        local l = self:read("l", opt)
+        local l = _file.read(self, "l", opt)
         if not l and opt.close_on_finished then
-            self:close()
+            _file.close(self)
         end
         return l
     end
@@ -233,12 +258,12 @@ end
 
 -- print file
 function _file:print(...)
-    return self:write(string.format(...), "\n")
+    return _file.write(self, string.format(...), "\n")
 end
 
 -- printf file
 function _file:printf(...)
-    return self:write(string.format(...))
+    return _file.write(self, string.format(...))
 end
 
 -- save object
@@ -247,13 +272,13 @@ function _file:save(object, opt)
     if errors then
         return false, errors
     else
-        return self:write(str)
+        return _file.write(self, str)
     end
 end
 
 -- load object
 function _file:load()
-    local data, err = self:read("*all")
+    local data, err = _file.read(self, "*all")
     if err then
         return nil, err
     end
@@ -273,12 +298,12 @@ function _filelock.new(lockpath, lock)
     return filelock
 end
 
--- get the filelock name 
+-- get the filelock name
 function _filelock:name()
     return self._NAME
 end
 
--- get the filelock path 
+-- get the filelock path
 function _filelock:path()
     return self._PATH
 end
@@ -384,11 +409,17 @@ end
 
 -- tostring(filelock)
 function _filelock:__tostring()
-    local str = self:path()
+    local str = _filelock.path(self)
     if #str > 16 then
         str = ".." .. str:sub(#str - 16, #str)
     end
     return "<filelock: " .. str .. ">"
+end
+
+-- todisplay(filelock)
+function _filelock:__todisplay()
+    local str = _filelock.path(self)
+    return "filelock${reset} " .. todisplay(str)
 end
 
 -- gc(filelock)
@@ -498,7 +529,7 @@ function io.stdfile(filepath)
         file = io._stdfile(3)
     end
     if file then
-        return _file.new(filepath, file)
+        return _file.new(filepath, file, true)
     else
         return nil, string.format("failed to get std file: %s", filepath)
     end

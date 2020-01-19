@@ -55,6 +55,12 @@ function option._translate(menu)
     return true
 end
 
+function option._modenarrow()
+    -- show menu in narrow mode?
+    local width = os.getwinsize().width
+    return width > 0 and width < 60
+end
+
 -- get the top context
 function option._context()
 
@@ -609,6 +615,8 @@ function option.show_main()
     -- print tasks
     if main.tasks then
 
+        local narrow = option._modenarrow()
+
         -- make task categories
         local categories = {}
         for taskname, taskinfo in pairs(main.tasks) do
@@ -651,7 +659,7 @@ function option.show_main()
             for taskname, taskinfo in pairs(category.tasks) do
 
                 -- init the task line
-                local taskline = string.format("    %s%s",
+                local taskline = string.format(narrow and "  %s%s" or "    %s%s",
                     taskinfo.shortname and (taskinfo.shortname .. ", ") or "   ",
                     taskname)
                 table.insert(tablecontent, {taskline, taskinfo.description or ""})
@@ -661,7 +669,7 @@ function option.show_main()
         -- set table styles
         tablecontent.style = {"${color.menu.main.task.name}"}
         tablecontent.width = {nil, "auto"}
-        tablecontent.sep = "    "
+        tablecontent.sep = narrow and "  " or "    "
 
         -- print table
         io.write(text.table(tablecontent))
@@ -697,6 +705,9 @@ function option.show_options(options, taskname)
         end
     end
 
+    -- narrow mode?
+    local narrow = option._modenarrow()
+
     -- print header
     local tablecontent = {}
     table.insert(tablecontent, {})
@@ -723,48 +734,49 @@ function option.show_options(options, taskname)
             table.insert(tablecontent, {})
         else
 
-            -- init the option info
-            local option_info
-
             -- append the shortname
             local shortname = opt[1]
             local name      = opt[2]
             local mode      = opt[3]
             local default   = opt[4]
+
+            local title1, title2
+            local kvplaceholder = mode == "kv" and ((type(default) == "boolean") and "[y|n]" or(name and name:upper() or "XXX"))
             if shortname then
                 if mode == "kv" then
-                    option_info = "    -" .. shortname .. " " .. (name and name:upper() or "XXX")
+                    title1 = "-" .. shortname .. " " .. kvplaceholder
                 else
-                    option_info = "    -" .. shortname
+                    title1 = "-" .. shortname
                 end
-            else
-                option_info = "      "
             end
 
             -- append the name
             if name then
-                local leading = (shortname and "," or " ") .. (mode:startswith("k") and " --" or "   ")
+                local leading = mode:startswith("k") and "--" or "  "
                 local kv
-                if mode:startswith("k") then
+                if mode == "k" then
                     kv = name
+                elseif mode == "kv" then
+                    kv = name .. "=" .. kvplaceholder
                 elseif mode == "vs" then
                     kv = name .. " ..."
                 else
-                    kv = (name .. "=" .. ((type(default) == "boolean") and "[y|n]" or name:upper()))
+                    kv = name
                 end
-                option_info = option_info .. leading .. kv
+                title2 = leading .. kv
             elseif mode == "v" or mode == "vs" then
-                option_info = option_info .. "    ..."
+                title2 = "    ..."
             end
 
             -- get description
-            local description = table.move(opt, 5, table.maxn(opt), 1, {})
+            local optdespn = table.maxn(opt)
+            local description = table.move(opt, 5, optdespn, 1, table.new(optdespn - 5 + 1, 0))
             if #description == 0 then
                 description[1] = ""
             end
 
             -- transform description
-            local desp_strs = {}
+            local desp_strs = table.new(#description, 0)
             for _, v in ipairs(description) do
                 if type(v) == "function" then
                     v = v()
@@ -787,25 +799,37 @@ function option.show_options(options, taskname)
             end
 
             -- append values
-            local values, ok = opt.values
+            local values = opt.values
             if type(values) == "function" then
-                ok, values = pcall(values)
+                values = values()
             end
-            if ok and values then
+            if values then
                 for _, value in ipairs(table.wrap(values)) do
                     table.insert(desp_strs, "    - " .. tostring(value))
                 end
             end
 
             -- insert row
-            table.insert(tablecontent, {option_info, desp_strs})
+            if narrow then
+                if title1 then
+                    table.insert(tablecontent, {{"  " .. title1, "   " .. title2 }, desp_strs})
+                else
+                    table.insert(tablecontent, {{"  " .. title2 }, desp_strs})
+                end
+            else
+                if title1 then
+                    table.insert(tablecontent, {"    " .. title1 .. ", " .. title2 , desp_strs})
+                else
+                    table.insert(tablecontent, {"        " .. title2 , desp_strs})
+                end
+            end
         end
     end
 
     -- set table styles
     tablecontent.style = {"${color.menu.option.name}"}
     tablecontent.width = {nil, "auto"}
-    tablecontent.sep = "    "
+    tablecontent.sep = narrow and "  " or "    "
 
     -- print table
     io.write(text.table(tablecontent))
