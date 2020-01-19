@@ -41,11 +41,13 @@ before_build:
 
 build_script:
   # self build
+  - ps: Push-Location ./core
   - ps: xmake config --arch=$env:platform
   - ps: xmake build
+  - ps: Pop-Location
   # use new xmake
   - ps: Set-AppveyorBuildVariable -Name XMAKE_PROGRAM_DIR -Value $(Resolve-Path ./xmake)
-  - ps: Copy-Item -Force .\build\xmake.exe $(Get-Command xmake).Path
+  - ps: Copy-Item -Force .\core\build\xmake.exe $(Get-Command xmake).Path
   - ps: (Get-Command xmake).FileVersionInfo.ProductVersion
   # use bitcodes
   - ps: xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
@@ -53,8 +55,8 @@ build_script:
 
 after_build:
   # publish exe
-  - ps: Push-AppveyorArtifact .\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
-  - ps: (Get-FileHash .\build\xmake.exe -Algorithm SHA256).Hash.ToLower() + " *xmake.exe`n" | Out-File ./shafile -Encoding ASCII -NoNewLine
+  - ps: Push-AppveyorArtifact .\core\build\xmake.exe -FileName xmake.exe -DeploymentName "xmake-executable"
+  - ps: (Get-FileHash .\core\build\xmake.exe -Algorithm SHA256).Hash.ToLower() + " *xmake.exe`n" | Out-File ./shafile -Encoding ASCII -NoNewLine
   # compose & publish installer
   - ps: Copy-Item C:\winenv\ . -Recurse
   - ps: $version = (Get-Command xmake).FileVersionInfo
@@ -70,7 +72,7 @@ after_build:
   # publish zip archive
   - ps: Copy-Item .\*.md .\xmake
   - ps: Copy-Item C:\winenv\ .\xmake -Recurse
-  - ps: Copy-Item .\build\xmake.exe .\xmake
+  - ps: Copy-Item .\core\build\xmake.exe .\xmake
   - ps: |-
         Add-Type -AssemblyName System.Text.Encoding
         Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -119,4 +121,3 @@ test_script:
       }
   - ps: Pop-Location
   - ps: if ($all_success) { Write-Host "All tests passed!" } else { Write-Error "Some tests failed!" }
-
