@@ -123,7 +123,11 @@ function cli.parsev(argv, flags)
 end
 
 function builder:get(key)
-    return rawget(self, key)
+    return rawget(self, builder)[key]
+end
+
+function builder:set(key, value)
+    rawget(self, builder)[key] = value
 end
 
 function builder:option()
@@ -151,6 +155,10 @@ function builder:__call(...)
     return newself
 end
 
+function builder:__newindex()
+    error("set value to a cli builder is meaningless and forbidden!")
+end
+
 function builder:__index(subcommand)
     -- check
     assert(subcommand ~= nil, "subcommand cannot be nil")
@@ -158,10 +166,11 @@ function builder:__index(subcommand)
     return builder.inhert(self, tostring(subcommand))
 end
 
+-- make a new builder, inhert all fields, and insert *appendargv* at the end of _ARGV
 function builder:inhert(appendargv)
 
-    -- copy other props
-    local newvalue = table.copy(self)
+    -- copy all props
+    local newvalue = table.copy(rawget(self, builder))
 
     -- copy and append argv
     local argv = builder.argv(self)
@@ -169,12 +178,17 @@ function builder:inhert(appendargv)
     newargv[newargv.n] = appendargv
 
     -- make new value
-    rawset(newvalue, "_ARGV", newargv)
+    newvalue._ARGV = newargv
     return builder.new(newvalue)
 end
 
+-- make a new builder
+-- a builder instance is { [builder] = { --[[data]] }}
+-- static builder is used as key to avoid confliction in __index
 function builder:new()
-    return setmetatable(self, builder)
+    self = self or {}
+    self._ARGV = self._ARGV or {n=0}
+    return setmetatable({[builder] = self}, builder)
 end
 
 -- make a cli command line builder
@@ -192,7 +206,7 @@ end
 --    git.submodule.update({init=true}) -- argv is { "submodule", "update", { { init = true }, n = 1 }, n = 3 }
 function cli.build(callback, opt)
     assert(callback)
-    return builder.new({ _CALLBACK = callback, _OPTION = opt, _ARGV = {n=0}})
+    return builder.new({ _CALLBACK = callback, _OPTION = opt})
 end
 
 cli._builder = builder
