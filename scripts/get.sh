@@ -98,7 +98,7 @@ install_tools()
 }
 test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\nPlease install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
 branch=master
-mirror=tboox
+mirror=xmake-io
 IFS=':'
 if [ x != "x$1" ]; then
     brancharr=($1)
@@ -116,12 +116,12 @@ fi
 projectdir=$tmpdir
 if [ 'x__local__' != "x$branch" ]; then
     if [ x != "x$2" ]; then
-        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     else 
-        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules --shallow-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 else
     if [ -d '.git' ]; then
@@ -167,34 +167,25 @@ install_profile()
     echo '
 if   [[ "$SHELL" = */zsh ]]; then
     # zsh parameter completion for xmake
-
     _xmake_zsh_complete() 
     {
     local completions=("$(XMAKE_SKIP_HISTORY=1 xmake lua --root private.utils.complete 0 nospace "$words")")
-
     reply=( "${(ps:\n:)completions}" )
     }
-
     compctl -f -S "" -K _xmake_zsh_complete xmake
-
 elif [[ "$SHELL" = */bash ]]; then
     # bash parameter completion for xmake
-
     _xmake_bash_complete()
     {
     local word=${COMP_WORDS[COMP_CWORD]}
-
     local completions
     completions="$(XMAKE_SKIP_HISTORY=1 xmake lua --root private.utils.complete "${COMP_POINT}" "conf" "${COMP_LINE}" 2>/dev/null)"
     if [ $? -ne 0 ]; then
         completions=""
     fi
-
     COMPREPLY=( $(compgen -W "$completions" -- "$word") )
     }
-
     complete -o default -o nospace -F _xmake_bash_complete xmake
-
 fi
 ' >> ~/.xmake/profile
 

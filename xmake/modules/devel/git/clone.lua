@@ -62,6 +62,14 @@ function main(url, opt)
         table.insert(argv, "--recursive")
     end
 
+    -- clone for submodules
+    if opt.recurse_submodules then
+        table.insert(argv, "--recurse-submodules")
+    end
+    if opt.shallow_submodules then
+        table.insert(argv, "--shallow-submodules")
+    end
+
     -- set outputdir
     if opt.outputdir then
         table.insert(argv, path.translate(opt.outputdir))
