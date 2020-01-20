@@ -98,7 +98,7 @@ function _complete_option_kv(options, current, completing)
         -- show candidates of values
         local values = opt.values
         if type(values) == "function" then
-            values = values(value)
+            values = values(value, current)
         end
         if values == nil and type(opt[4]) == "boolean" then
             values = { "y", "n" }
@@ -158,7 +158,7 @@ function _complete_option_v(options, current, completing)
         -- show candidates of values
         local values = opt.values
         if type(values) == "function" then
-            values = values(completing)
+            values = values(completing, current)
         end
         for _, v in ipairs(values) do
             if tostring(v):startswith(completing) then

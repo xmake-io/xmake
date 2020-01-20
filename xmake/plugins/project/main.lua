@@ -31,13 +31,11 @@ import("vsxmake.vsxmake")
 import("clang.compile_flags")
 import("clang.compile_commands")
 
--- make project
-function _make(kind)
+function makers()
 
     -- the maps
-    local maps = 
-    {
-        makefile         = makefile.make
+    return
+    {   makefile         = makefile.make
     ,   xmakefile        = xmakefile.make
     ,   cmakelists       = cmakelists.make
     ,   vs2002           = vs.make(2002)
@@ -61,6 +59,12 @@ function _make(kind)
     ,   compile_flags    = compile_flags.make
     ,   compile_commands = compile_commands.make
     }
+end
+
+-- make project
+function _make(kind)
+
+    local maps = makers()
     assert(maps[kind], "the project kind(%s) is not supported!", kind)
 
     -- make it

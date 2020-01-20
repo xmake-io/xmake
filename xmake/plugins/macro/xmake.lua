@@ -41,10 +41,10 @@ task("macro")
                 -- options
             ,   options = 
                 {
-                    {'b', "begin",      "k",  nil,  "Start to record macro."                          
+                    {'b', "begin",      "k",  nil,  "Start to record macro."
                                                 ,   "e.g."
                                                 ,   "Record macro with name: test"
-                                                ,   "    xmake macro --begin"                   
+                                                ,   "    xmake macro --begin"
                                                 ,   "    xmake config --plat=macosx"
                                                 ,   "    xmake clean"
                                                 ,   "    xmake -r"
@@ -68,9 +68,19 @@ task("macro")
                 ,   {}
                 ,   {nil, "name",       "v",  ".",  "Set the macro name."
                                                 ,   "e.g."
-                                                ,   "   Run the given macro:     xmake macro test"        
-                                                ,   "   Run the anonymous macro: xmake macro ."     
-                                                ,   "   Run the last command:    xmake macro .."    }
+                                                ,   "   Run the given macro:     xmake macro test"
+                                                ,   "   Run the anonymous macro: xmake macro ."
+                                                ,   "   Run the last command:    xmake macro .."
+                                                ,   values = function (complete, opt)
+                                                        -- hide in help menu
+                                                        if not complete then return end
+                                                        -- don't need name
+                                                        if opt.begin or opt.list or opt.clear then return end
+                                                        -- name should be given by user
+                                                        if opt["end"] or opt.import then return end
+
+                                                        return import("main.macros")(".")
+                                                    end                                             }
                 ,   {nil, "arguments",  "vs", nil,  "Set the macro arguments."                      }
                 }
             }

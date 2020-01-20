@@ -55,5 +55,10 @@ function sandbox_core_theme.get(name)
     end
 end
 
+-- find all themes
+function sandbox_core_theme.names()
+    return theme.names()
+end
+
 -- return module
 return sandbox_core_theme

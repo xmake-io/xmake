@@ -38,17 +38,46 @@ task("update")
                 -- options
             ,   options = 
                 {
-                    {nil, "uninstall",   "k",   nil,   "Uninstall the current xmake program."                     }
-                ,   {                                                                                             }
-                ,   {'s', "scriptonly",  "k",   nil,   "Update script only"                                       }
-                ,   {nil, "xmakever",    "v",   nil,   "The given xmake version, or a git source (and branch). ",
-                                                       "e.g.",
-                                                       "    from official source: ",
-                                                       "        latest, ~2.2.3, dev, master", 
-                                                       "    from custom source:", 
-                                                       "        https://github.com/xmake-io/xmake", 
-                                                       "        github:xmake-io/xmake#~2.2.3",
-                                                       "        git://github.com/xmake-io/xmake.git#master"       }
+                    {nil, "uninstall",   "k",   nil,    "Uninstall the current xmake program."                     }
+                ,   {                                                                                              }
+                ,   {'s', "scriptonly",  "k",   nil,    "Update script only"                                       }
+                ,   {nil, "xmakever",    "v",   nil,    "The given xmake version, or a git source (and branch). ",
+                                                        "e.g.",
+                                                        "    from official source: ",
+                                                        "        latest, ~2.2.3, dev, master", 
+                                                        "    from custom source:", 
+                                                        "        https://github.com/xmake-io/xmake", 
+                                                        "        github:xmake-io/xmake#~2.2.3",
+                                                        "        git://github.com/xmake-io/xmake.git#master",
+                                                        values = function (completing)
+                                                            if not completing then
+                                                                return
+                                                            end
+                                                            return try{ function ()
+                                                                import("private.action.update.fetch_version")
+
+                                                                local seg = completing:split('#', { plain = true, limit = 2, strict = true })
+                                                                if #seg == 1 then
+                                                                    if seg[1]:find(':', 1, true) then
+                                                                        -- incomplete custom source
+                                                                        return
+                                                                    else
+                                                                        seg[1] = ""
+                                                                    end
+                                                                end
+
+                                                                local versions = fetch_version(seg[1])
+                                                                if versions.is_official then
+                                                                    return table.join(versions.branches, table.reverse(versions.tags))
+                                                                else
+                                                                    local values = table.join(versions.branches, table.reverse(versions.tags))
+                                                                    for i, v in ipairs(values) do
+                                                                        values[i] = seg[1] .. "#" .. v
+                                                                    end
+                                                                    return values
+                                                                end
+                                                            end }
+                                                        end}
                 }
             }
 

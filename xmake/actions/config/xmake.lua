@@ -41,21 +41,20 @@ task("config")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k", nil,         "Clean the cached configure and configure all again."           }
-                ,   {nil, "menu",       "k", nil,         "Configure project with a menu-driven user interface."          }
-                ,   {nil, "require",    "kv", nil,        "Require all dependent packages?",
-                                                          "  - y: force to enable",
-                                                          "  - n: disable"                                                }
+                    {'c', "clean",      "k",    nil     ,   "Clean the cached configure and configure all again."           }
+                ,   {nil, "menu",       "k",    nil     ,   "Configure project with a menu-driven user interface."          }
+                ,   {nil, "require",    "kv",   nil     ,   "Require all dependent packages?",
+                                                            "  - y: force to enable",
+                                                            "  - n: disable"                                                }
 
                 ,   {category = "."}
-                ,   {'p', "plat",       "kv", "$(host)",  "Compile for the given platform."                               
-                                                          , values = function ()
+                ,   {'p', "plat",       "kv", "$(host)" ,   "Compile for the given platform."                               
+                                                        ,   values = function ()
                                                                 return import("core.platform.platform").plats()
-                                                            end                                                           }
-                ,   {'a', "arch",       "kv", "auto",       "Compile for the given architecture."                               
-
+                                                            end                                                             }
+                ,   {'a', "arch",       "kv", "auto"    ,   "Compile for the given architecture.",
                                                             -- show the description of all architectures
-                                                          , function () 
+                                                            function ()
 
                                                                 -- import platform 
                                                                 import("core.platform.platform")
@@ -74,14 +73,49 @@ task("config")
 
                                                                 -- get it
                                                                 return description
-                                                            end                                                            }
-                ,   {'m', "mode",       "kv", "release",    "Compile for the given mode." 
-                                                          , "    - debug"
-                                                          , "    - release"
-                                                          , "    - ... (custom)"                                           }
-                ,   {'k', "kind",       "kv", "static",     "Compile for the given target kind." 
-                                                          , values = {"static", "shared", "binary"}                        }
-                ,   {nil, "host",       "kv", "$(host)",    "The Current Host Environment."                                }
+                                                            end
+                                                        ,   values = function (completing, opt)
+                                                                if not completing then return end
+
+                                                                -- import
+                                                                import("core.platform.platform")
+                                                                import("core.base.hashset")
+
+                                                                -- make description
+                                                                local arches = hashset.new()
+
+                                                                if opt.plat then
+                                                                    local archs = platform.archs(opt.plat)
+                                                                    if archs then
+                                                                        for _, arch in ipairs(archs) do
+                                                                            arches:insert(arch)
+                                                                        end
+                                                                    end
+                                                                else
+                                                                    for _, plat in ipairs(platform.plats()) do
+                                                                        local archs = platform.archs(plat)
+                                                                        if archs then
+                                                                            for _, arch in ipairs(archs) do
+                                                                                arches:insert(arch)
+                                                                            end
+                                                                        end
+                                                                    end
+                                                                end
+
+                                                                -- get it
+                                                                return arches:to_array()
+                                                            end                                                             }
+                ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode.",
+                                                            "    - debug",
+                                                            "    - release",
+                                                            "    - ... (custom)"
+                                                        ,   values = function (completing)
+                                                                if not completing then return end
+                                                                return {"debug", "release", "profile", "check", "coverage"}
+                                                            end                                                             }
+                ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
+                                                        ,   values = {"static", "shared", "binary"}                         }
+                ,   {nil, "host",       "kv", "$(host)" ,   "The Current Host Environment."                                 }
 
                     -- show project menu options
                 ,   function () 

@@ -96,7 +96,21 @@ function theme.directories()
     return dirs
 end
 
--- load the given theme 
+-- find all themes
+function theme.names()
+
+    local paths = {}
+    for _, dir in ipairs(theme.directories()) do
+        table.join2(paths, (os.match(path.join(dir, "*", "xmake.lua"), "f")))
+    end
+    for i, v in ipairs(paths) do
+        local value = path.split(v)
+        paths[i] = value[#value - 1]
+    end
+    return paths
+end
+
+-- load the given theme
 function theme.load(name)
 
     -- find the theme script path
