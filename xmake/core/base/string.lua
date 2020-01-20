@@ -74,7 +74,7 @@ end
 function string:split(delimiter, opt)
     local result = {}
     local start = 1
-    local pos, epos = self:find(delimiter, start, opt and opt.plain) 
+    local pos, epos = self:find(delimiter, start, opt and opt.plain)
     while pos do
         local substr = self:sub(start, pos - 1)
         if (#substr > 0) or (opt and opt.strict) then
@@ -88,6 +88,10 @@ function string:split(delimiter, opt)
     end
     if start <= #self then
         table.insert(result, self:sub(start))
+    elseif opt and opt.strict and (not opt.limit or #result < opt.limit) then
+        if start == #self + 1 then
+            table.insert(result, "")
+        end
     end
     return result
 end
