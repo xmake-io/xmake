@@ -121,7 +121,7 @@ if [ 'x__local__' != "x$branch" ]; then
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     else 
-        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules --shallow-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 else
     if [ -d '.git' ]; then
