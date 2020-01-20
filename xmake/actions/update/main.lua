@@ -320,15 +320,7 @@ function main()
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, win_installer_name))
                     else
-                        if version:find('.', 1, true) then
-                            git.clone(url, {outputdir = sourcedir})
-                            git.checkout(version, {repodir = sourcedir})
-                            if not script_only then
-                                submodule.update({repodir = sourcedir, init = true, recursive = true})
-                            end
-                        else
-                            git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
-                        end
+                        git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
                     end
                     return true
                 end,
