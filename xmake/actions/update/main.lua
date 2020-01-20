@@ -250,7 +250,29 @@ end
 
 function _check_repo(sourcedir)
     -- this file will exists for long time
-    return os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua"))
+    if not os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua")) then
+        raise("invalid xmake repo, please check your input!")
+    end
+end
+
+function _check_win_installer(sourcedir)
+    local file = path.join(sourcedir, win_installer_name)
+    if not os.isfile(file) then
+        raise("installer not found at " .. sourcedir)
+    end
+
+    local fp = io.open(file, "rb")
+    local header = fp:read(math.min(1000, fp:size()))
+    fp:close()
+    if header:startswith("MZ") then
+        return
+    end
+    if header:find('\0', 1, true) or not option.get("verbose") then
+        raise("installer is broken")
+    else
+        -- may be a text file, print content for debug
+        raise("installer is broken: " .. header)
+    end
 end
 
 -- main
@@ -314,7 +336,7 @@ function main()
     vprint("prepared to download to temp dir %s ..", sourcedir)
 
     -- all user provided urls are considered as git url since check has been performed in fetch_version
-    local install_from_git = not is_official or git.checkurl(url)
+    local install_from_git = not is_official or git.checkurl(mainurls[1])
 
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
@@ -361,9 +383,9 @@ function main()
     environment.leave()
 
     if install_from_git then
-        if not _check_repo(sourcedir) then
-            raise("invalid xmake repo, please check your input!")
-        end
+        _check_repo(sourcedir)
+    else
+        _check_win_installer(sourcedir)
     end
 
     -- do install

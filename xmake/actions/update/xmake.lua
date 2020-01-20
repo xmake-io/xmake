@@ -68,6 +68,11 @@ task("update")
 
                                                                 local versions = fetch_version(seg[1])
                                                                 if versions.is_official then
+                                                                    for i,v in ipairs(versions.tags) do
+                                                                        if v:startswith("v") and #v > 5 then
+                                                                            versions.tags[i] = v:sub(2)
+                                                                        end
+                                                                    end
                                                                     return table.join(versions.branches, table.reverse(versions.tags))
                                                                 else
                                                                     local values = table.join(versions.branches, table.reverse(versions.tags))
