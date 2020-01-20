@@ -248,6 +248,11 @@ function _install_script(sourcedir)
     end
 end
 
+function _check_repo(sourcedir)
+    -- this file will exists for long time
+    return os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua"))
+end
+
 -- main
 function main()
 
@@ -308,6 +313,9 @@ function main()
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
     vprint("prepared to download to temp dir %s ..", sourcedir)
 
+    -- all user provided urls are considered as git url since check has been performed in fetch_version
+    local install_from_git = not is_official or git.checkurl(url)
+
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
             cprintf("\r${yellow}  => ${clear}downloading %s ..  ", url)
@@ -315,8 +323,7 @@ function main()
             {
                 function ()
                     os.tryrm(sourcedir)
-                    -- all user provided urls are considered as git url since check has been performed in fetch_version
-                    if is_official and not git.checkurl(url) then
+                    if not install_from_git then
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, win_installer_name))
                     else
@@ -352,6 +359,12 @@ function main()
 
     -- leave environment
     environment.leave()
+
+    if install_from_git then
+        if not _check_repo(sourcedir) then
+            raise("invalid xmake repo, please check your input!")
+        end
+    end
 
     -- do install
     if script_only then
