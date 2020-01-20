@@ -21,6 +21,7 @@
 -- define module
 local cli = cli or {}
 local segment = cli._segment or {}
+local builder = cli._builder or {}
 
 -- load modules
 local string    = require("base/string")
@@ -121,7 +122,80 @@ function cli.parsev(argv, flags)
     return parsed
 end
 
-cli._segment = segment
+function builder:get(key)
+    return rawget(self, key)
+end
 
+function builder:option()
+    return builder.get(self, "_OPTION")
+end
+
+function builder:argv()
+    return builder.get(self, "_ARGV")
+end
+
+function builder:callback()
+    return builder.get(self, "_CALLBACK")
+end
+
+function builder:__call(...)
+    local params = table.pack(...)
+    -- insert as a param group
+    local newself = builder.inhert(self, params)
+
+    local finish = table.pack(builder.callback(newself)(builder.argv(newself), builder.option(newself)))
+    if finish[0] ~= nil then
+        return table.unpack(finish, 1, finish.n)
+    end
+
+    return newself
+end
+
+function builder:__index(subcommand)
+    -- check
+    assert(subcommand ~= nil, "subcommand cannot be nil")
+    -- insert as string
+    return builder.inhert(self, tostring(subcommand))
+end
+
+function builder:inhert(appendargv)
+
+    -- copy other props
+    local newvalue = table.copy(self)
+
+    -- copy and append argv
+    local argv = builder.argv(self)
+    local newargv = table.move(argv, 1, argv.n, 1, { n = argv.n + 1 })
+    newargv[newargv.n] = appendargv
+
+    -- make new value
+    rawset(newvalue, "_ARGV", newargv)
+    return builder.new(newvalue)
+end
+
+function builder:new()
+    return setmetatable(self, builder)
+end
+
+-- make a cli command line builder
+-- @param callback - callback will be called when build finished, receive argv and opt as params, returns non-nil to indicate that build is finished
+-- @param opt - opt object that will be forwarded to callback transparently
+--
+-- @example
+--    git = cli.build(function(argv, opt)
+--         if --[[can make call]] then
+--             os.execv(...)
+--             return true
+--         end
+--    end, {})
+--    git.clone("github:xmake-io/xmake") -- argv is {"clone", { "github:xmake-io/xmake", n = 1}, n = 2 }
+--    git.submodule.update({init=true}) -- argv is { "submodule", "update", { { init = true }, n = 1 }, n = 3 }
+function cli.build(callback, opt)
+    assert(callback)
+    return builder.new({ _CALLBACK = callback, _OPTION = opt, _ARGV = {n=0}})
+end
+
+cli._builder = builder
+cli._segment = segment
 -- return module
 return cli
