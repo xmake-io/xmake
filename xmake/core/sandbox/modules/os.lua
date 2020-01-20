@@ -329,11 +329,11 @@ function sandbox_os.vrunv(program, argv, opt)
 
     -- echo command
     if option.get("verbose") then
-        print(vformat(program) .. " " .. table.concat(argv, " "))
+        print(vformat(program) .. " " .. sandbox_os.args(argv))
     end
 
     -- run it
-    utils.ifelse(option.get("verbose"), sandbox_os.execv, sandbox_os.runv)(program, argv, opt)  
+    (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
 end
 
 -- run command and return output and error data

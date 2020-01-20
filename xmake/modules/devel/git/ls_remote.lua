@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("main", { alias = "git" })
 
 -- ls_remote to given branch, tag or commit
 --
@@ -39,45 +38,18 @@ import("lib.detect.find_tool")
 --
 -- @endcode
 --
-function main(reftype, url)
+function main(...)
 
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
+    local params = table.pack(...)
 
-    -- init reference type
-    reftype = reftype or "refs"
+    if params.n <= 2 and (params[1] == nil or type(params[1]) == "string") and (params[2] == nil or type(params[2]) == "string") then
+        -- init reference type
+        local reftype = params[1] or "refs"
+        local url = params[2] or "."
 
-    -- init arguments
-    local argv = {"ls-remote", "--" .. reftype, url or "."}
-
-    -- trace
-    if option.get("verbose") then
-        print("%s %s", git.program, os.args(argv))
+        params = { { [reftype] = true }, url, n = 2 }
     end
 
     -- get refs
-    local data = os.iorunv(git.program, argv)
-
-    -- get commmits and tags
-    local refs = {}
-    for _, line in ipairs(data:split('\n')) do
-
-        -- parse commit and ref
-        local refinfo = line:split('%s')
-
-        -- get commit 
-        local commit = refinfo[1]
-
-        -- get ref
-        local ref = refinfo[2]
-
-        -- save this ref
-        local prefix = ifelse(reftype == "refs", "refs/", "refs/" .. reftype .. "/")
-        if ref and ref:startswith(prefix) and commit and #commit == 40 then
-            table.insert(refs, ref:sub(#prefix + 1))
-        end
-    end
-
-    -- ok
-    return refs
+    return git().ls_remote(table.unpack(params, 1, params.n))
 end

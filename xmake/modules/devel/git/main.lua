@@ -59,6 +59,9 @@ function _append_opts(argv, opts)
         opts.repodir = nil
     end
 
+    local opt = argv.opt or {}
+    argv.opt = opt
+
     for key, value in pairs(opts) do
         if type(value) == "table" then
             for _, v in ipairs(value) do
@@ -66,6 +69,13 @@ function _append_opts(argv, opts)
             end
         else
             _append_opt(argv, key, value)
+        end
+        if type(opt[key]) == "table" then
+            -- append for table
+            table.join2(opt[key], value)
+        else
+            -- otherwise, overwrite
+            opt[key] = value
         end
     end
 end
@@ -96,11 +106,50 @@ function _append_params(argv, params, last)
     end
 end
 
+local handlers = {
+    ["ls-remote"] = function (out, err, opt)
+
+        local reftype = "refs"
+        if opt.tags then reftype = "tags" end
+        if opt.heads then reftype = "heads" end
+
+        -- get commmits and tags
+        local refs = {}
+        for _, line in ipairs(out:split('\n')) do
+
+            -- parse commit and ref
+            local refinfo = line:split('%s')
+
+            -- get commit
+            local commit = refinfo[1]
+
+            -- get ref
+            local ref = refinfo[2]
+
+            -- save this ref
+            local prefix = (reftype == "refs") and "refs/" or ("refs/" .. reftype .. "/")
+            if ref and ref:startswith(prefix) and commit and #commit == 40 then
+                table.insert(refs, ref:sub(#prefix + 1))
+            end
+        end
+
+        -- ok
+        return refs
+    end
+}
+
 function _callback(argv, opt)
 
     local madeargv = {}
     local has_command
+    local handler = handlers
 
+    -- stop search builtin handlers
+    if opt.handler == false then
+        handler = nil
+    end
+
+    -- make argv, search handler
     for i = 1, argv.n do
         local arg = argv[i] or " "
         if type(arg) == "table" then
@@ -110,22 +159,53 @@ function _callback(argv, opt)
             if not has_command then
                 has_command = command ~= "submodule"
             end
+            if handler then
+                handler = handler[command]
+            end
         end
     end
 
+    -- not a command, continue builder
+    if not has_command then
+        return
+    end
+
+    -- find git
+    local git = assert(find_tool("git"), "git not found!")
+
+    -- get handler
+    local handlefunc = handler
+    -- if opt.handler is a callable, use it instead of builtin handler
+    if type(opt.handler) == "function" or type(opt.handler) == "table" then
+        handlefunc = opt.handler
+    end
+
+    -- set repodir
     if madeargv.repodir then
         table.insert(madeargv, 1, "-C")
         table.insert(madeargv, 2, path.absolute(madeargv.repodir))
-        madeargv.repodir = nil
     end
 
-    if has_command then
-        local git = assert(find_tool("git"), "git not found!")
-        os.vrunv(git.program, madeargv)
+    local verbose = option.get("verbose") or opt.verbose
+    if verbose then
+        print("%s %s", git.program, os.args(madeargv))
+    end
+
+    -- if opt.iorun is set, or a handler is available
+    if opt.iorun or (handlefunc and opt.iorun ~= false) then
+        local out, err = os.iorunv(git.program, madeargv)
+        if handlefunc then
+            return handlefunc(out, err, madeargv.opt or {})
+        else
+            return out, err
+        end
+    else
+        (opt.verbose and os.execv or os.runv)(git.program, madeargv)
         return true
     end
 end
 
-function main(opt)
-    return cli.build(_callback, nil)(opt)
+function main(opt, build_opt)
+    build_opt = build_opt or {}
+    return cli.build(_callback, build_opt)(opt)
 end
