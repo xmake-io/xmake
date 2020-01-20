@@ -349,11 +349,11 @@ function main()
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, win_installer_name))
                     else
-                        git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
+                        git.clone(url, {depth = 1, recurse_submodules = not script_only, shallow_submodules = true, branch = version, outputdir = sourcedir})
                     end
                     return true
                 end,
-                catch 
+                catch
                 {
                     function (errors)
                         vprint(errors)
