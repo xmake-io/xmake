@@ -26,7 +26,7 @@ import("core.sandbox.sandbox")
 -- get all lua scripts
 function scripts()
     local names = {}
-    local files = os.match(path.join(os.scriptdir(), "scripts/*.lua"))
+    local files = os.files(path.join(os.scriptdir(), "scripts/*.lua"))
     for _, file in ipairs(files) do
         table.insert(names, path.basename(file))
     end

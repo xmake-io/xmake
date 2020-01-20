@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,16 +39,21 @@ task("config")
             ,   shortname = 'f'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'c', "clean",      "k",    nil     ,   "Clean the cached configure and configure all again."           }
                 ,   {nil, "menu",       "k",    nil     ,   "Configure project with a menu-driven user interface."          }
-                ,   {nil, "require",    "kv",   nil     ,   "Require all dependent packages?",
-                                                            "  - y: force to enable",
-                                                            "  - n: disable"                                                }
+                ,   {nil, "require",    "kv",   nil     ,   "Require all dependent packages?"
+                                                        ,   values = function (complete)
+                                                                if complete then
+                                                                    return {"yes", "no"}
+                                                                else
+                                                                    return {"y: force to enable", "n: disable" }
+                                                                end
+                                                            end                                                             }
 
                 ,   {category = "."}
-                ,   {'p', "plat",       "kv", "$(host)" ,   "Compile for the given platform."                               
+                ,   {'p', "plat",       "kv", "$(host)" ,   "Compile for the given platform."
                                                         ,   values = function ()
                                                                 return import("core.platform.platform").plats()
                                                             end                                                             }
@@ -56,7 +61,7 @@ task("config")
                                                             -- show the description of all architectures
                                                             function ()
 
-                                                                -- import platform 
+                                                                -- import platform
                                                                 import("core.platform.platform")
 
                                                                 -- make description
@@ -74,8 +79,8 @@ task("config")
                                                                 -- get it
                                                                 return description
                                                             end
-                                                        ,   values = function (completing, opt)
-                                                                if not completing then return end
+                                                        ,   values = function (complete, opt)
+                                                                if not complete then return end
 
                                                                 -- import
                                                                 import("core.platform.platform")
@@ -105,44 +110,48 @@ task("config")
                                                                 -- get it
                                                                 return arches:to_array()
                                                             end                                                             }
-                ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode.",
-                                                            "    - debug",
-                                                            "    - release",
-                                                            "    - ... (custom)"
-                                                        ,   values = function (completing)
-                                                                if not completing then return end
-                                                                return {"debug", "release", "profile", "check", "coverage"}
+                ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
+                                                        ,   values = function (complete)
+                                                                
+                                                                local modes = try {
+                                                                    function() return import("core.project.project").modes() end
+                                                                } or {"debug", "release"}
+                                                                table.sort(modes)
+                                                                if not complete then
+                                                                    table.insert(modes, "... (custom)")
+                                                                end
+                                                                return modes
                                                             end                                                             }
                 ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
                                                         ,   values = {"static", "shared", "binary"}                         }
                 ,   {nil, "host",       "kv", "$(host)" ,   "The Current Host Environment."                                 }
 
                     -- show project menu options
-                ,   function () 
+                ,   function ()
 
-                        -- import project menu 
+                        -- import project menu
                         import("core.project.menu")
 
-                        -- get project menu options 
-                        return menu.options() 
+                        -- get project menu options
+                        return menu.options()
                     end
 
                 ,   {category = "Cross Complation Configuration"}
-                ,   {nil, "cross",      "kv", nil,          "The Cross Toolchains Prefix"   
+                ,   {nil, "cross",      "kv", nil,          "The Cross Toolchains Prefix"
                                                           , "e.g."
                                                           , "    - i386-mingw32-"
                                                           , "    - arm-linux-androideabi-"                                  }
-                ,   {nil, "bin",        "kv", nil,          "The Cross Toolchains Bin Directory" 
+                ,   {nil, "bin",        "kv", nil,          "The Cross Toolchains Bin Directory"
                                                           , "e.g."
                                                           , "    - sdk/bin (/arm-linux-gcc ..)"                             }
-                ,   {nil, "sdk",        "kv", nil,          "The Cross SDK Directory" 
+                ,   {nil, "sdk",        "kv", nil,          "The Cross SDK Directory"
                                                           , "e.g."
                                                           , "    - sdk/bin"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
 
                     -- show language menu options
-                ,   function () 
+                ,   function ()
 
                         -- import language menu
                         import("core.language.menu")
@@ -152,7 +161,7 @@ task("config")
                     end
 
                     -- show platform menu options
-                ,   function () 
+                ,   function ()
 
                         -- import platform menu
                         import("core.platform.menu")

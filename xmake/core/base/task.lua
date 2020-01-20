@@ -37,12 +37,8 @@ function task.common_options()
         {
             {'q', "quiet",     "k",  nil,   "Quiet operation."                                          }
         ,   {'y', "yes",       "k",  nil,   "Input yes by default if need user confirm."                }
-        ,   {nil, "confirm",   "kv", nil,   "Input the given result if need user confirm.",
-                                            "    - y|yes",
-                                            "    - n|no",
-                                            "    - d|def"
-                                        ,   values = function (complete)
-                                                if not complete then return end
+        ,   {nil, "confirm",   "kv", nil,   "Input the given result if need user confirm."
+                                        ,   values = function ()
                                                 return {"yes", "no", "def"}
                                             end                                                         }
         ,   {'v', "verbose",   "k",  nil,   "Print lots of verbose information for users."              }

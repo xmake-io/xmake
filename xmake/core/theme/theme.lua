@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -59,7 +59,7 @@ function theme._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define(theme._apis())
 
@@ -72,7 +72,7 @@ end
 
 -- get theme apis
 function theme._apis()
-    return 
+    return
     {
         keyvalues =
         {
@@ -90,7 +90,7 @@ function theme.directories()
     local dirs = theme._DIRS or {   path.join(global.directory(), "themes")
                                 ,   path.join(os.programdir(), "themes")
                                 }
-                                
+
     -- save directories to cache
     theme._DIRS = dirs
     return dirs
@@ -101,7 +101,7 @@ function theme.names()
 
     local paths = {}
     for _, dir in ipairs(theme.directories()) do
-        table.join2(paths, (os.match(path.join(dir, "*", "xmake.lua"), "f")))
+        table.join2(paths, (os.files(path.join(dir, "*", "xmake.lua"))))
     end
     for i, v in ipairs(paths) do
         local value = path.split(v)

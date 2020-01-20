@@ -52,7 +52,9 @@ task("lua")
                                                             "    - xmake lua core.xxx.xxx",
                                                             "    - xmake lua -c 'print(...)' hello xmake!"
                                                         ,   values = function (complete, opt)
-                                                                if not complete or opt.command or opt.list then return end
+                                                                if not complete or opt.command or opt.list then
+                                                                    return
+                                                                end
 
                                                                 return import("main.scripts")()
                                                             end                                                             }

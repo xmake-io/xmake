@@ -49,14 +49,14 @@ task("update")
                                                         "        https://github.com/xmake-io/xmake", 
                                                         "        github:xmake-io/xmake#~2.2.3",
                                                         "        git://github.com/xmake-io/xmake.git#master",
-                                                        values = function (completing)
-                                                            if not completing then
+                                                        values = function (complete)
+                                                            if not complete then
                                                                 return
                                                             end
                                                             return try{ function ()
                                                                 import("private.action.update.fetch_version")
 
-                                                                local seg = completing:split('#', { plain = true, limit = 2, strict = true })
+                                                                local seg = complete:split('#', { plain = true, limit = 2, strict = true })
                                                                 if #seg == 1 then
                                                                     if seg[1]:find(':', 1, true) then
                                                                         -- incomplete custom source
@@ -67,19 +67,19 @@ task("update")
                                                                 end
 
                                                                 local versions = fetch_version(seg[1])
+                                                                for i,v in ipairs(versions.tags) do
+                                                                    if v:startswith("v") and #v > 5 then
+                                                                        versions.tags[i] = v:sub(2)
+                                                                    end
+                                                                end
+                                                                local candidates = table.join("latest", versions.branches, table.reverse(versions.tags))
                                                                 if versions.is_official then
-                                                                    for i,v in ipairs(versions.tags) do
-                                                                        if v:startswith("v") and #v > 5 then
-                                                                            versions.tags[i] = v:sub(2)
-                                                                        end
-                                                                    end
-                                                                    return table.join(versions.branches, table.reverse(versions.tags))
+                                                                    return candidates
                                                                 else
-                                                                    local values = table.join(versions.branches, table.reverse(versions.tags))
-                                                                    for i, v in ipairs(values) do
-                                                                        values[i] = seg[1] .. "#" .. v
+                                                                    for i, v in ipairs(candidates) do
+                                                                        candidates[i] = seg[1] .. "#" .. v
                                                                     end
-                                                                    return values
+                                                                    return candidates
                                                                 end
                                                             end }
                                                         end}
