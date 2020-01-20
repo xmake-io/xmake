@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("main", { alias = "git" })
 
 -- clean files
 --
@@ -35,38 +34,14 @@ import("lib.detect.find_tool")
 --
 -- @endcode
 --
-function main(opt)
 
-    -- init options
-    opt = opt or {}
+function main(...)
 
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
-
-    -- init argv
-    local argv = {"clean", "-d"}
-
+    local opt = { d = true }
     -- verbose?
     if not option.get("verbose") then
-        table.insert(argv, "-q")
+        opt.q = true
     end
 
-    -- force?
-    if opt.force then
-        table.insert(argv, "-f")
-    end
-
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
-    -- clean it
-    os.vrunv(git.program, argv)
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    return git().clean(opt, ...)
 end

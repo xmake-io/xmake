@@ -11,31 +11,37 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
--- @author      ruki
--- @file        checkout.lua
+-- @author      OpportunityLiu
+-- @file        submodule.lua
 --
 
 -- imports
 import("main", { alias = "git" })
 
--- checkout to given branch, tag or commit
---
--- @param commit    the commit, tag or branch
--- @param opt       the argument options
---
--- @code
---
--- import("devel.git")
--- 
--- git.checkout("master", {repodir = "/tmp/xmake"})
--- git.checkout("v1.0.1", {repodir = "/tmp/xmake"})
---
--- @endcode
---
-function main(...)
+function main(opt)
+    return git().submodule(opt)
+end
 
-    return git().checkout(...)
+function add(...)
+    return main().add(...)
+end
+
+function init(...)
+    return main().init(...)
+end
+
+function update(...)
+
+    local params = {...}
+    if (params.n == 1 and params[1] and type(params[1]) == "table") or params.n == 0 then
+        local opt = params[1] or {}
+        local pathes = opt.pathes or {}
+        opt.pathes = nil
+        return main().update(table.unpack(table.wrap(pathes)), opt)
+    end
+
+    return main().update(...)
 end

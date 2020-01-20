@@ -144,7 +144,7 @@ function builder:__call(...)
     local newself = builder.inhert(self, params)
 
     local finish = table.pack(builder.callback(newself)(builder.argv(newself), builder.option(newself)))
-    if finish[0] ~= nil then
+    if finish[1] ~= nil then
         return table.unpack(finish, 1, finish.n)
     end
 

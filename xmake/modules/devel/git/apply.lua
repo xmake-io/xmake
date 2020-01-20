@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("main", { alias = "git" })
 
 -- apply remote commits
 --
@@ -35,26 +34,15 @@ import("lib.detect.find_tool")
 --
 -- @endcode
 --
-function main(patchfile, opt)
+function main(...)
 
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
-
-    -- init argv
-    opt = opt or {}
-    local argv = {"apply", "--reject", patchfile}
-
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
+    local params = table.pack(...)
+    for i = 1, params.n do
+        local p = params[i]
+        if type(p) == "string" then
+            params[i] = path.absolute(p)
+        end
     end
 
-    -- apply it
-    os.vrunv(git.program, argv)
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    return git().apply({reject = true}, table.unpack(params, 1, params.n))
 end

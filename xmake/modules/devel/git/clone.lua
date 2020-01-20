@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("main", { alias = "git" })
 
 -- clone url
 --
@@ -36,37 +35,14 @@ import("lib.detect.find_tool")
 --
 -- @endcode
 --
-function main(url, opt)
+function main(...)
 
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
-
-    -- init argv
-    local argv = {"clone", url}
-
-    -- set branch
-    opt = opt or {}
-    if opt.branch then
-        table.insert(argv, "-b")
-        table.insert(argv, opt.branch)
+    local params = {...}
+    if params and params[2] and params[2].outputdir then
+        local outputdir = params[2].outputdir
+        params[2].outputdir = nil
+        return git().clone(params[1], path.absolute(outputdir), params[2])
     end
 
-    -- set depth
-    if opt.depth then
-        table.insert(argv, "--depth")
-        table.insert(argv, ifelse(type(opt.depth) == "number", tostring(opt.depth), opt.depth))
-    end
-
-    -- recursive?
-    if opt.recursive then
-        table.insert(argv, "--recursive")
-    end
-
-    -- set outputdir
-    if opt.outputdir then
-        table.insert(argv, path.translate(opt.outputdir))
-    end
-
-    -- clone it
-    os.vrunv(git.program, argv)
+    return git().clone(...)
 end

@@ -19,8 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_tool")
+import("main", { alias = "git" })
 
 -- pull remote commits
 --
@@ -35,39 +34,16 @@ import("lib.detect.find_tool")
 --
 -- @endcode
 --
-function main(opt)
+function main(...)
 
-    -- init options
-    opt = opt or {}
-
-    -- find git
-    local git = assert(find_tool("git"), "git not found!")
-
-    -- init argv
-    local argv = {"pull"}
-
-    -- set remote
-    table.insert(argv, opt.remote or "origin")
-
-    -- set branch
-    table.insert(argv, opt.branch or "master")
-
-    -- set tags
-    if opt.tags then
-        table.insert(argv, "--tags")
+    local params = {...}
+    if (params.n == 1 and params[1] and type(params[1]) == "table") or params.n == 0 then
+        local opt = params[1] or {}
+        local remote = opt.remote or "origin"
+        local branch = opt.branch or "master"
+        opt.branch, opt.remote = nil, nil
+        return git().pull(remote, branch, opt)
     end
 
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
-    -- pull it
-    os.vrunv(git.program, argv)
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    return git().pull(...)
 end
