@@ -20,6 +20,7 @@
 
 -- imports
 import("main", { alias = "git" })
+import("asgiturl")
 
 -- clone url
 --
@@ -37,12 +38,22 @@ import("main", { alias = "git" })
 --
 function main(...)
 
-    local params = {...}
-    if params and params[2] and params[2].outputdir then
+    local params = table.pack(...)
+    if type(params[2]) == "table" and params[2].outputdir then
         local outputdir = params[2].outputdir
         params[2].outputdir = nil
-        return git().clone(params[1], path.absolute(outputdir), params[2])
+        table.insert(params, 2, path.absolute(outputdir))
+        params.n = params.n + 1
     end
 
-    return git().clone(...)
+    for i = 1, params.n do
+        -- the first string param is remote url, try format it
+        local param = params[i]
+        if type(param) == "string" then
+            params[i] = asgiturl(param) or param
+            break
+        end
+    end
+
+    return git().clone(table.unpack(params, 1, params.n))
 end
