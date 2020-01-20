@@ -98,7 +98,7 @@ install_tools()
 }
 test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\nPlease install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
 branch=master
-mirror=tboox
+mirror=xmake-io
 IFS=':'
 if [ x != "x$1" ]; then
     brancharr=($1)
@@ -116,12 +116,12 @@ fi
 projectdir=$tmpdir
 if [ 'x__local__' != "x$branch" ]; then
     if [ x != "x$2" ]; then
-        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     else 
-        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recursive $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules --shallow_submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 else
     if [ -d '.git' ]; then
