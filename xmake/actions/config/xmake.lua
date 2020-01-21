@@ -54,8 +54,25 @@ task("config")
 
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(host)" ,   "Compile for the given platform."
-                                                        ,   values = function ()
-                                                                return import("core.platform.platform").plats()
+                                                        ,   values = function (complete, opt)
+
+                                                                -- import
+                                                                import("core.platform.platform")
+                                                                import("core.base.hashset")
+
+                                                                if not complete or not opt.arch then
+                                                                    return platform.plats()
+                                                                end
+
+                                                                -- arch has given, find all supported platforms
+                                                                local plats = {}
+                                                                for _, plat in ipairs(platform.plats()) do
+                                                                    local archs = hashset.from(platform.archs(plat))
+                                                                    if archs:has(opt.arch) then
+                                                                        table.insert(plats, plat)
+                                                                    end
+                                                                end
+                                                                return plats
                                                             end                                                             }
                 ,   {'a', "arch",       "kv", "auto"    ,   "Compile for the given architecture.",
                                                             -- show the description of all architectures
@@ -86,36 +103,27 @@ task("config")
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
 
-                                                                -- make description
-                                                                local arches = hashset.new()
+                                                                -- get archs
+                                                                local archset = hashset.new()
 
-                                                                if opt.plat then
-                                                                    local archs = platform.archs(opt.plat)
+                                                                for _, plat in ipairs(opt.plat and { opt.plat } or platform.plats()) do
+                                                                    local archs = platform.archs(plat)
                                                                     if archs then
                                                                         for _, arch in ipairs(archs) do
-                                                                            arches:insert(arch)
-                                                                        end
-                                                                    end
-                                                                else
-                                                                    for _, plat in ipairs(platform.plats()) do
-                                                                        local archs = platform.archs(plat)
-                                                                        if archs then
-                                                                            for _, arch in ipairs(archs) do
-                                                                                arches:insert(arch)
-                                                                            end
+                                                                            archset:insert(arch)
                                                                         end
                                                                     end
                                                                 end
 
                                                                 -- get it
-                                                                return arches:to_array()
+                                                                return archset:to_array()
                                                             end                                                             }
                 ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
                                                         ,   values = function (complete)
                                                                 
-                                                                local modes = try {
-                                                                    function() return import("core.project.project").modes() end
-                                                                } or {"debug", "release"}
+                                                                local modes = (try { function()
+                                                                    return import("core.project.project").modes()
+                                                                end }) or {"debug", "release"}
                                                                 table.sort(modes)
                                                                 if not complete then
                                                                     table.insert(modes, "... (custom)")
@@ -171,13 +179,17 @@ task("config")
                     end
 
                 ,   {category = "Other Configuration"}
-                ,   {nil, "debugger",   "kv", "auto"    , "The Debugger"                                                  }
-                ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."                   }
-                ,   {'o', "buildir",    "kv", "build"   , "Set the build directory."                                      }
+                ,   {nil, "debugger",   "kv", "auto"    , "The Debugger"                                                    }
+                ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."                     }
+                ,   {'o', "buildir",    "kv", "build"   , "Set the build directory."                                        }
 
                 ,   {}
-                ,   {nil, "target",     "v",  nil       , "Configure for the given target."
-                                                        , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
+                ,   {nil, "target",     "v" , nil       , "Configure for the given target."
+                                                        , values = function ()
+                                                            return try { function ()
+                                                                return table.keys(import("core.project.project").targets())
+                                                            end }
+                                                        end                                                                 }
                 }
             }
 
