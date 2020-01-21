@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [[mirror:]branch] [commit/__install_only__]
+# usage: bash <(curl -s <my location>) [[mirror:]branch|__local__|__run__] [commit/__install_only__]
 
 set -o pipefail
 
@@ -14,6 +14,7 @@ if [ 0 -ne "$(id -u)" ]; then
         sudoprefix=
     fi
 else
+    export XMAKE_ROOT=y
     sudoprefix=
 fi
 
@@ -97,7 +98,7 @@ install_tools()
     { apk --version >/dev/null 2>&1 && $sudoprefix apk add gcc g++ make readline-dev ncurses-dev libc-dev linux-headers; }
 }
 test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\nPlease install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
-branch=master
+branch=__run__
 mirror=xmake-io
 IFS=':'
 if [ x != "x$1" ]; then
@@ -114,7 +115,24 @@ if [ x != "x$1" ]; then
     echo "Branch: $branch"
 fi
 projectdir=$tmpdir
-if [ 'x__local__' != "x$branch" ]; then
+if [ 'x__local__' == "x$branch" ]; then
+    if [ -d '.git' ]; then
+        git submodule update --init --recursive
+    fi
+    cp -r . $projectdir
+    cd $projectdir || my_exit 'Chdir Error'
+elif [ 'x__run__' == "x$branch" ]; then
+    version=$(git ls-remote --tags https://github.com/$mirror/xmake | tail -c 7)
+    if xz --version >/dev/null 2>&1
+    then
+        pack=xz
+    else
+        pack=gz
+    fi
+    mkdir -p $projectdir
+    remote_get_content https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run > $projectdir/xmake.run
+    sh $projectdir/xmake.run --noexec --target $projectdir
+else
     if [ x != "x$2" ]; then
         git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
@@ -123,12 +141,6 @@ if [ 'x__local__' != "x$branch" ]; then
     else 
         git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
-else
-    if [ -d '.git' ]; then
-        git submodule update --init --recursive
-    fi
-    cp -r . $projectdir
-    cd $projectdir || my_exit 'Chdir Error'
 fi
 
 # do build
@@ -144,7 +156,6 @@ fi
 
 # make bytecodes
 XMAKE_PROGRAM_DIR="$projectdir/xmake" \
-XMAKE_ROOT=y \
 $projectdir/core/src/demo/demo.b l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' $projectdir/xmake || my_exit 'generate bytecode failed!'
 
 # do install
