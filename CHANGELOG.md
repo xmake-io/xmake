@@ -5,6 +5,7 @@
 ### Change
 
 * [#665](https://github.com/xmake-io/xmake/issues/665): Support to parse *nix style command options, thanks [@OpportunityLiu](https://github.com/OpportunityLiu)
+* [#673](https://github.com/xmake-io/xmake/pull/673): Improve tab complete to support argument values
 
 ### Bugs fixed
 
@@ -668,6 +669,7 @@
 ### 改进
 
 * [#665](https://github.com/xmake-io/xmake/issues/665): 支持 *nix style 的参数输入，感谢[@OpportunityLiu](https://github.com/OpportunityLiu)的贡献
+* [#673](https://github.com/xmake-io/xmake/pull/673): 改进tab命令补全，增加对参数values的补全支持
 
 ### Bugs修复
 
