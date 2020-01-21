@@ -44,6 +44,8 @@ end
 
 function _complete_task(tasks, name)
     local has_candidate = false
+
+    -- match tasks starts with name first
     for k, _ in pairs(tasks) do
         if k:startswith(name) then
             _print_candidate(true, "%s", k)
@@ -51,18 +53,101 @@ function _complete_task(tasks, name)
         end
     end
 
-    if name == "" then
-        return has_candidate
-    end
+    if has_candidate then return true end
 
+    -- not found? keep searching
     for k, _ in pairs(tasks) do
-        -- not startswith
-        if k:find(name, 2, true) then
+        if k:find(name, 1, true) then
             _print_candidate(true, "%s", k)
             has_candidate = true
         end
     end
     return has_candidate
+end
+
+-- complete values of kv
+function _complete_option_kv_v(options, current, completing, name, value)
+
+    -- find completion option
+    local opt
+    for _, v in ipairs(options) do
+        if v[3] == "kv" and (v[1] == name or v[2] == name) then
+            opt = v
+            break
+        end
+    end
+    if not opt then
+        return false
+    end
+
+    -- show candidates of values
+    local values = opt.values
+    if type(values) == "function" then
+        values = values(value, current)
+    end
+    if values == nil and type(opt[4]) == "boolean" then
+        values = { "yes", "no" }
+        -- ignore existing input
+        value = ""
+    end
+
+    local has_candidate = false
+    -- match values starts with value first
+    for _, v in ipairs(values) do
+        if tostring(v):startswith(value) then
+            has_candidate = true
+            if no_key then
+                _print_candidate(true, "%s", v)
+            else
+                _print_candidate(true, "--%s=%s", name, v)
+            end
+        end
+    end
+    if has_candidate then return true end
+
+    -- not found? keep searching
+    for _, v in ipairs(values) do
+        if tostring(v):find(value, 1 , true) then
+            if no_key then
+                _print_candidate(true, "%s", v)
+            else
+                _print_candidate(true, "--%s=%s", name, v)
+            end
+        end
+    end
+
+    -- whether any candidates has been found, finish complete since we don't have more info
+    return true
+end
+
+-- complete keys of kv
+function _complete_option_kv_k(options, current, completing, name)
+
+    local opcandi = table.new(10, 0)
+    for _, v in ipairs(options) do
+        if current[v[2]] == nil then
+            if (v[3] == "kv" or v[3] == "k") and v[2] then table.insert(opcandi, v) end
+        end
+    end
+
+    local has_candidate = false
+    -- match keys starts with name first
+    for _, v in ipairs(opcandi) do
+        if v[2]:startswith(name) then
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
+        end
+    end
+
+    if has_candidate then return true end
+
+    -- not found? keep searching
+    for _, v in ipairs(opcandi) do
+        if v[2]:find(name, 1, true) then
+            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
+        end
+    end
+
+    return true
 end
 
 function _complete_option_kv(options, current, completing)
@@ -84,67 +169,11 @@ function _complete_option_kv(options, current, completing)
 
     if value then
         -- complete values
-
-        -- find completion option
-        local opt
-        for _, v in ipairs(options) do
-            if v[3] == "kv" and (v[1] == name or v[2] == name) then
-                opt = v
-                break
-            end
-        end
-        if not opt then
-            return false
-        end
-
-        -- show candidates of values
-        local values = opt.values
-        if type(values) == "function" then
-            values = values(value, current)
-        end
-        if values == nil and type(opt[4]) == "boolean" then
-            values = { "yes", "no" }
-            -- ignore existing input
-            value = ""
-        end
-        for _, v in ipairs(values) do
-            if tostring(v):startswith(value) then
-                if no_key then
-                    _print_candidate(true, "%s", v)
-                else
-                    _print_candidate(true, "--%s=%s", name, v)
-                end
-            end
-        end
-        return true
+        return _complete_option_kv_v(options, current, completing, name, value)
+    else
+        -- complete keys
+        return _complete_option_kv_k(options, current, completing, name)
     end
-
-    local opcandi = table.new(10, 0)
-    for _, v in ipairs(options) do
-        if current[v[2]] == nil then
-            if v[3] == "kv" or v[3] == "k" then table.insert(opcandi, v) end
-        end
-    end
-
-    for _, v in ipairs(opcandi) do
-        -- startswith
-        if v[2]:startswith(name) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        end
-    end
-
-    if name == "" then
-        return true
-    end
-
-    for _, v in ipairs(opcandi) do
-        -- not startswith
-        if v[2]:find(name, 2, true) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        end
-    end
-
-    return true
 end
 
 function _complete_option_v(options, current, completing)
@@ -204,12 +233,12 @@ function _complete_option(options, segs, completing)
 
     -- current context is wrong
     if not reenter and (current_options.file or current_options.project) then
-        local args = {"lua", "--root", "private.utils.complete", tostring(position), raw_config .. "-reenter", table.unpack(raw_words) }
+        local args = {"lua", "private.utils.complete", tostring(position), raw_config .. "-reenter", table.unpack(raw_words) }
         if current_options.file then
-            table.insert(args, 3, "--file=" .. current_options.file)
+            table.insert(args, 2, "--file=" .. current_options.file)
         end
         if current_options.project then
-            table.insert(args, 3, "--project=" .. current_options.project)
+            table.insert(args, 2, "--project=" .. current_options.project)
         end
         os.execv("xmake", args)
         return true
