@@ -248,6 +248,33 @@ function _install_script(sourcedir)
     end
 end
 
+function _check_repo(sourcedir)
+    -- this file will exists for long time
+    if not os.isfile(path.join(sourcedir, "xmake/core/_xmake_main.lua")) then
+        raise("invalid xmake repo, please check your input!")
+    end
+end
+
+function _check_win_installer(sourcedir)
+    local file = path.join(sourcedir, win_installer_name)
+    if not os.isfile(file) then
+        raise("installer not found at " .. sourcedir)
+    end
+
+    local fp = io.open(file, "rb")
+    local header = fp:read(math.min(1000, fp:size()))
+    fp:close()
+    if header:startswith("MZ") then
+        return
+    end
+    if header:find('\0', 1, true) or not option.get("verbose") then
+        raise("installer is broken")
+    else
+        -- may be a text file, print content for debug
+        raise("installer is broken: " .. header)
+    end
+end
+
 -- main
 function main()
 
@@ -308,6 +335,9 @@ function main()
     local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
     vprint("prepared to download to temp dir %s ..", sourcedir)
 
+    -- all user provided urls are considered as git url since check has been performed in fetch_version
+    local install_from_git = not is_official or git.checkurl(mainurls[1])
+
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
             cprintf("\r${yellow}  => ${clear}downloading %s ..  ", url)
@@ -315,16 +345,15 @@ function main()
             {
                 function ()
                     os.tryrm(sourcedir)
-                    -- all user provided urls are considered as git url since check has been performed in fetch_version
-                    if is_official and not git.checkurl(url) then
+                    if not install_from_git then
                         os.mkdir(sourcedir)
                         http.download(url, path.join(sourcedir, win_installer_name))
                     else
-                        git.clone(url, {depth = 1, recursive = not script_only, branch = version, outputdir = sourcedir})
+                        git.clone(url, {depth = 1, recurse_submodules = not script_only, branch = version, outputdir = sourcedir})
                     end
                     return true
                 end,
-                catch 
+                catch
                 {
                     function (errors)
                         vprint(errors)
@@ -352,6 +381,12 @@ function main()
 
     -- leave environment
     environment.leave()
+
+    if install_from_git then
+        _check_repo(sourcedir)
+    else
+        _check_win_installer(sourcedir)
+    end
 
     -- do install
     if script_only then

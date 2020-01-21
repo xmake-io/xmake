@@ -104,7 +104,7 @@ function path.split(p)
     -- check
     assert(p)
 
-    return p:split("/\\")
+    return p:split("[/\\]")
 end
 
 -- get the path seperator

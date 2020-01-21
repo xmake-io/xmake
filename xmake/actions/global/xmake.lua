@@ -41,16 +41,19 @@ task("global")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k", nil,       "Clean the cached configure and configure all again."     }
-                ,   {nil, "menu",       "k", nil,       "Configure with a menu-driven user interface."            }
+                    {'c', "clean",      "k" ,   nil     ,   "Clean the cached configure and configure all again."       }
+                ,   {nil, "menu",       "k" ,   nil     ,   "Configure with a menu-driven user interface."              }
 
                 ,   {category = "."}
-                ,   {nil, "theme",      "kv", "default","The theme name."                                         }
-                ,   {nil, "debugger",   "kv", "auto",   "The Debugger Program Path."                              }
+                ,   {nil, "theme",      "kv", "default" ,   "The theme name."
+                                                        ,   values = function () 
+                                                                return import("core.theme.theme.names")()
+                                                            end                                                         }
+                ,   {nil, "debugger",   "kv", "auto"    ,   "The Debugger Program Path."                                }
 
                     -- show platform menu options
                 ,   {category = "Platform Configuration"}
-                ,   function () 
+                ,   function ()
 
                         -- import platform menu
                         import("core.platform.menu")

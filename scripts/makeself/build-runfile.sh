@@ -22,7 +22,7 @@ mkdir -p $tmpdir/xmake/scripts
 cd $tmpdir/repo || exit
 cp -r ./xmake $tmpdir/xmake/xmake
 cp -r ./core $tmpdir/xmake
-cp ./scripts/get.sh $tmpdir/xmake/scripts
+cp ./scripts/*.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
 cd $tmpdir/xmake || exit

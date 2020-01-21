@@ -41,24 +41,32 @@ task("create")
                     {'l', "language",   "kv", "c++",        "The project language"
 
                                                             -- show the description of all languages
-                                                          , function ()
+                                                          , values = function (complete, opt)
 
                                                                 -- import template
                                                                 import("core.project.template")
 
-                                                                -- make description
-                                                                local description = {}
-                                                                for _, language in ipairs(template.languages()) do
-                                                                    table.insert(description, "    - " .. language)
-                                                                end
+                                                                -- get languages
+                                                                local languages = template.languages()
 
-                                                                -- get it
-                                                                return description
+                                                                if not complete or not opt.template then return languages end
+
+                                                                local accepted_lang = {}
+                                                                for _, l in ipairs(languages) do
+                                                                    for _, t in ipairs(template.templates(l)) do
+                                                                        if t:name() == opt.template then
+                                                                            table.insert(accepted_lang, l)
+                                                                            break
+                                                                        end
+                                                                    end
+                                                                end
+                                                                
+                                                                return accepted_lang
                                                             end                                                             }
-                ,   {'t', "template",   "kv", "console",    "Select the project template id or name of the given language."
+                ,   {'t', "template",   "kv", "console",    "Select the project template id or name of the given language.",
 
                                                             -- show the description of all templates
-                                                          , function ()
+                                                            function ()
 
                                                                 -- import template
                                                                 import("core.project.template")
@@ -85,6 +93,22 @@ task("create")
                                                                     table.insert(description, "    - " .. t.name .. ": " .. table.concat(t.languages, ", "))
                                                                 end
                                                                 return description
+                                                            end
+                                                        ,   values = function (complete, opt)
+                                                                if not complete then return end
+
+                                                                -- import template
+                                                                import("core.project.template")
+
+                                                                -- get templates
+                                                                local templates = {}
+                                                                for _, l in ipairs(opt.language and {opt.language} or template.languages()) do
+                                                                    for _, t in ipairs(template.templates(l)) do
+                                                                        table.insert(templates, t:name())
+                                                                    end
+                                                                end
+
+                                                                return templates
                                                             end                                                             }
 
                 ,   {}

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,6 @@ local task = task or {}
 -- load modules
 local os            = require("base/os")
 local table         = require("base/table")
-local utils         = require("base/utils")
 local string        = require("base/string")
 local global        = require("base/global")
 local interpreter   = require("base/interpreter")
@@ -36,27 +35,27 @@ function task.common_options()
     if not task._COMMON_OPTIONS then
         task._COMMON_OPTIONS =
         {
-            {'q', "quiet",     "k",  nil, "Quiet operation."                                         }
-        ,   {'y', "yes",       "k",  nil, "Input yes by default if need user confirm."               }
-        ,   {nil, "confirm",   "kv", nil, "Input the given result if need user confirm.",
-                                          "    - y|yes",
-                                          "    - n|no",
-                                          "    - d|def"}
-        ,   {'v', "verbose",   "k",  nil, "Print lots of verbose information for users."             }
-        ,   {nil, "root",      "k",  nil, "Allow to run xmake as root."                              }
-        ,   {'D', "diagnosis", "k",  nil, "Print lots of diagnosis information (backtrace, check info ..) only for developers."
-                                        , "And we can append -v to get more whole information."
-                                        , "    e.g. $ xmake -vD"}
-        ,   {nil, "profile",   "k",  nil, "Print performance data only for developers."              }
-        ,   {nil, "version",   "k",  nil, "Print the version number and exit."                       }
-        ,   {'h', "help",      "k",  nil, "Print this help message and exit."                        }
+            {'q', "quiet",     "k",  nil,   "Quiet operation."                                          }
+        ,   {'y', "yes",       "k",  nil,   "Input yes by default if need user confirm."                }
+        ,   {nil, "confirm",   "kv", nil,   "Input the given result if need user confirm."
+                                        ,   values = function ()
+                                                return {"yes", "no", "def"}
+                                            end                                                         }
+        ,   {'v', "verbose",   "k",  nil,   "Print lots of verbose information for users."              }
+        ,   {nil, "root",      "k",  nil,   "Allow to run xmake as root."                               }
+        ,   {'D', "diagnosis", "k",  nil,   "Print lots of diagnosis information (backtrace, check info ..) only for developers."
+                                        ,   "And we can append -v to get more whole information."
+                                        ,   "    e.g. $ xmake -vD"                                      }
+        ,   {nil, "profile",   "k",  nil,   "Print performance data only for developers."               }
+        ,   {nil, "version",   "k",  nil,   "Print the version number and exit."                        }
+        ,   {'h', "help",      "k",  nil,   "Print this help message and exit."                         }
         ,   {}
-        ,   {'F', "file",      "kv", nil, "Read a given xmake.lua file."                             }
-        ,   {'P', "project",   "kv", nil, "Change to the given project directory."
-                                        , "Search priority:"
-                                        , "    1. The Given Command Argument"
-                                        , "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
-                                        , "    3. The Current Directory"                             }
+        ,   {'F', "file",      "kv", nil,   "Read a given xmake.lua file."                              }
+        ,   {'P', "project",   "kv", nil,   "Change to the given project directory."
+                                        ,   "Search priority:"
+                                        ,   "    1. The Given Command Argument"
+                                        ,   "    2. The Envirnoment Variable: XMAKE_PROJECT_DIR"
+                                        ,   "    3. The Current Directory"                              }
         ,   {category = "action"}
         }
     end
@@ -85,14 +84,14 @@ function task._translate_menu(menu)
     -- translate options
     local options = menu.options
     if options then
-    
-        -- make full options 
+
+        -- make full options
         local options_full = {}
         for _, opt in ipairs(options) do
 
             -- this option is function? translate it
             if type(opt) == "function" then
-                
+
                 -- call menu script in the sandbox
                 local ok, results = sandbox.load(opt)
                 if ok then
@@ -180,7 +179,7 @@ function task._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
-  
+
     -- define apis
     interp:api_define(task.apis())
 
@@ -192,10 +191,10 @@ function task._interpreter()
 
         -- attempt to get it directly from the configure
         local result = config.get(variable)
-        if not result or type(result) ~= "string" then 
+        if not result or type(result) ~= "string" then
 
             -- init maps
-            local maps = 
+            local maps =
             {
                 host        = os.host()
             ,   tmpdir      = function () return os.tmpdir() end
@@ -212,7 +211,7 @@ function task._interpreter()
             if type(result) == "function" then
                 result = result()
             end
-        end 
+        end
 
         -- ok?
         return result
@@ -249,7 +248,7 @@ function task._bind(tasks, interp)
 
     -- get interpreter
     interp = interp or task._interpreter()
-    assert(interp) 
+    assert(interp)
 
     -- bind sandbox for menus
     for _, taskinst in pairs(tasks) do
@@ -261,8 +260,8 @@ function task._bind(tasks, interp)
             -- translate options
             local options = taskmenu.options
             if options then
-            
-                -- make full options 
+
+                -- make full options
                 local errors = nil
                 local options_full = {}
                 for _, opt in ipairs(options) do
@@ -283,7 +282,7 @@ function task._bind(tasks, interp)
                 options = options_full
                 taskmenu.options = options_full
 
-                -- bind sandbox for scripts in option 
+                -- bind sandbox for scripts in option
                 for _, opt in ipairs(options) do
 
                     -- bind description and values
@@ -352,18 +351,18 @@ function task._load(filepath)
     -- ok?
     return tasks
 end
- 
+
 -- get task apis
 function task.apis()
 
-    return 
+    return
     {
         values =
         {
             -- task.set_xxx
             "task.set_category"     -- main, action, plugin, task (default)
         }
-    ,   dictionary = 
+    ,   dictionary =
         {
             -- task.set_xxx
             "task.set_menu"
@@ -386,10 +385,10 @@ end
 
 -- get global tasks
 function task.tasks()
- 
+
     -- return it directly if exists
     if task._TASKS then
-        return task._TASKS 
+        return task._TASKS
     end
 
     -- load tasks
@@ -465,7 +464,7 @@ function task.menu(tasks)
                         if m then
 
                             -- add task
-                            mainmenu.tasks[name] = 
+                            mainmenu.tasks[name] =
                             {
                                 category    = inst:get("category")
                             ,   shortname   = m.shortname
@@ -504,7 +503,7 @@ function task:name()
     return self._NAME
 end
 
--- run given task 
+-- run given task
 function task:run(...)
 
     -- check

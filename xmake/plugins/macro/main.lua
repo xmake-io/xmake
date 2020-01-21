@@ -75,12 +75,10 @@ function _wfile(macroname)
     return path.join(path.join(config.directory(), "macros"), macroname .. ".lua")
 end
 
--- list macros
-function _list()
+-- get all macros
+function macros(anonymousname)
 
-    -- trace
-    cprint("${bright}macros:")
-
+    local results = {}
     -- find all macros
     for _, dir in ipairs(_directories()) do
         local macrofiles = os.match(path.join(dir, "*.lua"))
@@ -88,13 +86,27 @@ function _list()
 
             -- get macro name
             local macroname = path.basename(macrofile)
-            if macroname == "anonymous" then
-                macroname = ".<anonymous>"
+
+            if macroname == "anonymous" and anonymousname then
+                macroname = anonymousname
             end
 
-            -- show it
-            print("    " .. macroname)
+            table.insert(results, macroname)
         end
+    end
+    return results
+end
+
+-- list macros
+function _list()
+
+    -- trace
+    cprint("${bright}macros:")
+
+    -- find all macros
+    for _, macroname in ipairs(macros(".<anonymous>")) do
+        -- show it
+        print("    " .. macroname)
     end
 end
 

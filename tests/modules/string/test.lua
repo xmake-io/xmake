@@ -66,14 +66,23 @@ function test_split(t)
     t:are_equal(("1\n\n2\n3"):split('\n', {strict = true}), {"1", "", "2", "3"})
     t:are_equal(("abc123123xyz123abc"):split('123', {strict = true}), {"abc", "", "xyz", "abc"})
     t:are_equal(("abc123123xyz123abc"):split('[123]+', {strict = true}), {"abc", "xyz", "abc"})
+    t:are_equal(("123abc123123xyz123abc123"):split('[123]+', {strict = true}), {"", "abc", "xyz", "abc", ""})
+    t:are_equal(("123123"):split('[123]+', {strict = true}), {"", ""})
+    t:are_equal((""):split('[123]+', {strict = true}), {""})
 
     -- plain match and contains empty string
     t:are_equal(("1\n\n2\n3"):split('\n', {plain = true, strict = true}), {"1", "", "2", "3"})
     t:are_equal(("abc123123xyz123abc"):split('123', {plain = true, strict = true}), {"abc", "", "xyz", "abc"})
+    t:are_equal(("123abc123123xyz123abc123"):split('123', {plain = true, strict = true}), {"", "abc", "", "xyz", "abc", ""})
+    t:are_equal(("123"):split('123', {plain = true, strict = true}), {"", ""})
+    t:are_equal((""):split('123', {plain = true, strict = true}), {""})
 
     -- limit split count
     t:are_equal(("1\n\n2\n3"):split('\n', {limit = 2}), {"1", "2\n3"})
     t:are_equal(("1\n\n2\n3"):split('\n', {limit = 2, strict = true}), {"1", "\n2\n3"})
+    t:are_equal(("\n1\n\n2\n3"):split('\n', {limit = 2, strict = true}), {"", "1\n\n2\n3"})
     t:are_equal(("1.2.3.4.5"):split('%.', {limit = 3}), {"1", "2", "3.4.5"})
     t:are_equal(("123.45"):split('%.', {limit = 3}), {"123", "45"})
+    t:are_equal((""):split('123', {plain = true, limit = 2, strict = true}), {""})
+    t:are_equal(("123123"):split('123', {plain = true, limit = 2, strict = true}), {"", "123"})
 end

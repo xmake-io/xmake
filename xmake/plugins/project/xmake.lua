@@ -38,22 +38,29 @@ task("project")
                 -- options
             ,   options = 
                 {
-                    {'k', "kind",      "kv", "makefile",    "Set the project kind." 
-                                                       ,    "    - makefile"
-                                                       ,    "    - xmakefile (makefile with xmake)"
-                                                       ,    "    - cmakelists"
-                                                       ,    "    - compile_flags"
-                                                       ,    "    - compile_commands (clang compilation database with json format)"
-                                                       ,    "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"
-                                                       ,    "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
-                                                       ,    "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2019" }
-                ,   {'m', "modes",     "kv", nil,           "Set the project modes."
-                                                       ,    "    e.g. "
-                                                       ,    "    - xmake project -k vsxmake -m \"release" .. path.envsep() ..  "debug\"" }
-                ,   {'a', "archs",     "kv", nil,           "Set the project archs."
-                                                       ,    "    e.g. "
-                                                       ,    "    - xmake project -k vsxmake -a \"x86" .. path.envsep() ..  "x64\"" }
-                ,   {nil, "outputdir", "v",  ".",           "Set the output directory." }
+                    {'k', "kind",      "kv" , "makefile",   "Set the project kind." 
+                                                        ,   "    - makefile"
+                                                        ,   "    - xmakefile (makefile with xmake)"
+                                                        ,   "    - cmakelists"
+                                                        ,   "    - compile_flags"
+                                                        ,   "    - compile_commands (clang compilation database with json format)"
+                                                        ,   "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"
+                                                        ,   "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
+                                                        ,   "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2019"
+                                                        ,   values = function (complete, opt)
+                                                                if not complete then return end
+
+                                                                local values = table.keys(import("main.makers")())
+                                                                table.sort(values, function (a, b) return a > b end)
+                                                                return values
+                                                            end                                                                             }
+                ,   {'m', "modes",     "kv" , nil       ,   "Set the project modes."
+                                                        ,   "    e.g. "
+                                                        ,   "    - xmake project -k vsxmake -m \"release" .. path.envsep() ..  "debug\""    }
+                ,   {'a', "archs",     "kv" , nil       ,          "Set the project archs."
+                                                        ,   "    e.g. "
+                                                        ,   "    - xmake project -k vsxmake -a \"x86" .. path.envsep() ..  "x64\""          }
+                ,   {nil, "outputdir", "v"  , "."       ,   "Set the output directory."                                                     }
                 }
             }
 

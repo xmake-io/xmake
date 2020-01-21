@@ -673,7 +673,7 @@ function io.cat(filepath, linecount, opt)
         for line in file:lines(opt) do
 
             -- show line
-            io.print(line)
+            io.write(line, "\n")
 
             -- end?
             if linecount and count >= linecount then
