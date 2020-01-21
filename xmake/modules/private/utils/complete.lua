@@ -253,14 +253,14 @@ function main(pos, config, ...)
 
     raw_words = {...}
 
-    local is_config = false
     if config:find("nospace", 1, true) then
         use_spaces = false
-        is_config = true
     end
     if config:find("reenter", 1, true) then
         reenter = true
-        is_config = true
+    end
+    if config:find("debug", 1, true) then
+        debug = true
     end
 
     if not is_config then
@@ -269,6 +269,7 @@ function main(pos, config, ...)
 
     local word = table.concat(raw_words, " ") or ""
     position = tonumber(pos) or 0
+
     local has_space = word:endswith(" ") or position > #word
     word = word:trim()
 
