@@ -24,8 +24,10 @@ import("core.base.task")
 import("core.base.cli")
 
 local raw_words = {}
+local raw_config
 local position = 0
 local use_spaces = true
+local no_key = false
 local reenter = false
 
 function _print_candidate(is_complate, ...)
@@ -101,13 +103,17 @@ function _complete_option_kv(options, current, completing)
             values = values(value, current)
         end
         if values == nil and type(opt[4]) == "boolean" then
-            values = { "y", "n" }
+            values = { "yes", "no" }
             -- ignore existing input
             value = ""
         end
         for _, v in ipairs(values) do
             if tostring(v):startswith(value) then
-                _print_candidate(true, "--%s=%s", name, v)
+                if no_key then
+                    _print_candidate(true, "%s", v)
+                else
+                    _print_candidate(true, "--%s=%s", name, v)
+                end
             end
         end
         return true
@@ -198,7 +204,7 @@ function _complete_option(options, segs, completing)
 
     -- current context is wrong
     if not reenter and (current_options.file or current_options.project) then
-        local args = {"lua", "--root", "private.utils.complete", tostring(position), use_spaces and "reenter" or "nospace-reenter", table.unpack(raw_words) }
+        local args = {"lua", "--root", "private.utils.complete", tostring(position), raw_config .. "-reenter", table.unpack(raw_words) }
         if current_options.file then
             table.insert(args, 3, "--file=" .. current_options.file)
         end
@@ -253,18 +259,18 @@ function main(pos, config, ...)
 
     raw_words = {...}
 
-    if config:find("nospace", 1, true) then
+    raw_config = (config or ""):trim()
+    if raw_config:find("nospace", 1, true) then
         use_spaces = false
     end
-    if config:find("reenter", 1, true) then
+    if raw_config:find("reenter", 1, true) then
         reenter = true
     end
-    if config:find("debug", 1, true) then
-        debug = true
+    if raw_config:find("nokey", 1, true) then
+        no_key = true
     end
-
-    if not is_config then
-        table.insert(raw_words, 1, config)
+    if raw_config:find("debug", 1, true) then
+        debug = true
     end
 
     local word = table.concat(raw_words, " ") or ""
