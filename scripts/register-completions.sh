@@ -23,3 +23,4 @@ elif [[ "$SHELL" = */bash ]]; then
   }
   complete -o default -o nospace -F _xmake_bash_complete xmake
 fi
+
