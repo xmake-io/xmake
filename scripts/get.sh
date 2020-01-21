@@ -122,7 +122,7 @@ if [ 'x__local__' == "x$branch" ]; then
     cp -r . $projectdir
     cd $projectdir || my_exit 'Chdir Error'
 elif [ 'x__run__' == "x$branch" ]; then
-    version=$(git ls-remote --tags https://github.com/$mirror/xmake | tail -c 7)
+    version=$(git ls-remote --tags "https://github.com/$mirror/xmake" | tail -c 7)
     if xz --version >/dev/null 2>&1
     then
         pack=xz
@@ -130,7 +130,7 @@ elif [ 'x__run__' == "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    remote_get_content https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run > $projectdir/xmake.run
+    remote_get_content "https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run" > $projectdir/xmake.run
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
     if [ x != "x$2" ]; then
