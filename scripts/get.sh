@@ -115,13 +115,13 @@ if [ x != "x$1" ]; then
     echo "Branch: $branch"
 fi
 projectdir=$tmpdir
-if [ 'x__local__' == "x$branch" ]; then
+if [ 'x__local__' = "x$branch" ]; then
     if [ -d '.git' ]; then
         git submodule update --init --recursive
     fi
     cp -r . $projectdir
     cd $projectdir || my_exit 'Chdir Error'
-elif [ 'x__run__' == "x$branch" ]; then
+elif [ 'x__run__' = "x$branch" ]; then
     version=$(git ls-remote --tags "https://github.com/$mirror/xmake" | tail -c 7)
     if xz --version >/dev/null 2>&1
     then
@@ -175,7 +175,11 @@ install_profile()
 {
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
     echo "export PATH=$prefix/bin:\$PATH" > ~/.xmake/profile
-    remote_get_content "https://github.com/$mirror/xmake/raw/master/scripts/register-completions.sh" >> ~/.xmake/profile
+    if [ 'x__local__' = "x$branch" ] && [ -f './scripts/register-completions.sh']; then
+        cat './scripts/register-completions.sh' >> ~/.xmake/profile
+    else
+        remote_get_content "https://github.com/$mirror/xmake/raw/master/scripts/register-completions.sh" >> ~/.xmake/profile
+    fi
 
     if   [[ "$SHELL" = */zsh ]]; then 
         write_profile ~/.zshrc
