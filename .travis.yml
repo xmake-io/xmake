@@ -32,6 +32,6 @@ script:
   - xmake l private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
   - xmake --version
   - travis_wait 60 xmake lua -v -D tests/run.lua
-  - scripts/archive-all.sh
+  - scripts/archive-all
   - scripts/makeself/build-runfile.sh 
   - scripts/makeself/xmake.gz.run --info

@@ -23,7 +23,7 @@ cd $tmpdir/repo || exit
 xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake || exit
 cp -r ./xmake $tmpdir/xmake/xmake
 cp -r ./core $tmpdir/xmake
-cp ./scripts/get.sh $tmpdir/xmake/scripts
+cp ./scripts/*.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
 cd $tmpdir/xmake || exit

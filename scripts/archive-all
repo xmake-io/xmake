@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# ./scripts/archive-all.sh
+# ./scripts/archive-all
 tmpdir=/tmp/.xmake_archive
 xmakeroot=`pwd`
 if [ -d $tmpdir ]; then
@@ -21,7 +21,7 @@ cd $tmpdir/repo || exit
 xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake || exit
 cp -r ./core $tmpdir/xmake
 cp -r ./xmake $tmpdir/xmake/xmake
-cp ./scripts/get.sh $tmpdir/xmake/scripts
+cp ./scripts/*.sh $tmpdir/xmake/scripts
 cp ./*.md $tmpdir/xmake
 cp makefile $tmpdir/xmake
 cp install $tmpdir/xmake
