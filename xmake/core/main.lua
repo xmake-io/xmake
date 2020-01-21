@@ -217,7 +217,7 @@ function main.entry()
     end
 
     -- check run command as root
-    if not option.get("root") and (not os.getenv("XMAKE_ROOT") or os.getenv("XMAKE_ROOT") ~= 'y') then
+    if not option.get("root") and os.getenv("XMAKE_ROOT") ~= 'y' then
         if os.isroot() then
             if not privilege.store() or os.isroot() then
                 utils.error([[Running xmake as root is extremely dangerous and no longer supported.

@@ -42,25 +42,38 @@ function _print_candidate(is_complate, ...)
     end
 end
 
-function _complete_task(tasks, name)
+function _find_candidates(candidates, find)
     local has_candidate = false
+    local results = table.new(#candidates, 0)
 
-    -- match tasks starts with name first
-    for k, _ in pairs(tasks) do
-        if k:startswith(name) then
-            _print_candidate(true, "%s", k)
+    -- find candidate starts with find str
+    for _, v in ipairs(candidates) do
+        if tostring(v):startswith(find) then
+            table.insert(results, v)
             has_candidate = true
         end
     end
 
-    if has_candidate then return true end
+    -- stop searching if found any
+    if has_candidate then
+        return results
+    end
 
-    -- not found? keep searching
-    for k, _ in pairs(tasks) do
-        if k:find(name, 1, true) then
-            _print_candidate(true, "%s", k)
-            has_candidate = true
+    -- find candidate contains find str
+    for _, v in ipairs(candidates) do
+        if tostring(v):find(find, 1, true) then
+            table.insert(results, v)
         end
+    end
+
+    return results
+end
+
+function _complete_task(tasks, name)
+    local has_candidate = false
+    for _, v in ipairs(_find_candidates((table.keys(tasks)), name)) do
+        _print_candidate(true, "%s", v)
+        has_candidate = true
     end
     return has_candidate
 end
@@ -91,28 +104,12 @@ function _complete_option_kv_v(options, current, completing, name, value)
         value = ""
     end
 
-    local has_candidate = false
     -- match values starts with value first
-    for _, v in ipairs(values) do
-        if tostring(v):startswith(value) then
-            has_candidate = true
-            if no_key then
-                _print_candidate(true, "%s", v)
-            else
-                _print_candidate(true, "--%s=%s", name, v)
-            end
-        end
-    end
-    if has_candidate then return true end
-
-    -- not found? keep searching
-    for _, v in ipairs(values) do
-        if tostring(v):find(value, 1 , true) then
-            if no_key then
-                _print_candidate(true, "%s", v)
-            else
-                _print_candidate(true, "--%s=%s", name, v)
-            end
+    for _, v in ipairs(_find_candidates(values, value)) do
+        if no_key then
+            _print_candidate(true, "%s", v)
+        else
+            _print_candidate(true, "--%s=%s", name, v)
         end
     end
 
@@ -123,28 +120,16 @@ end
 -- complete keys of kv
 function _complete_option_kv_k(options, current, completing, name)
 
-    local opcandi = table.new(10, 0)
-    for _, v in ipairs(options) do
-        if current[v[2]] == nil then
-            if (v[3] == "kv" or v[3] == "k") and v[2] then table.insert(opcandi, v) end
+    local opcandi = table.new(0, 10)
+    for _, opt in ipairs(options) do
+        if opt[2] and current[opt[2]] == nil and (opt[3] == "kv" or opt[3] == "k") then
+            opcandi[opt[2]] = opt
         end
     end
 
-    local has_candidate = false
-    -- match keys starts with name first
-    for _, v in ipairs(opcandi) do
-        if v[2]:startswith(name) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        end
-    end
-
-    if has_candidate then return true end
-
-    -- not found? keep searching
-    for _, v in ipairs(opcandi) do
-        if v[2]:find(name, 1, true) then
-            _print_candidate((v[3] == "k"), (v[3] == "k") and "--%s" or "--%s=", v[2])
-        end
+    for _, k in ipairs(_find_candidates((table.keys(opcandi)), name)) do
+        local opt = opcandi[k]
+        _print_candidate((opt[3] == "k"), (opt[3] == "k") and "--%s" or "--%s=", opt[2])
     end
 
     return true
@@ -176,6 +161,7 @@ function _complete_option_kv(options, current, completing)
     end
 end
 
+-- complete options v and vs
 function _complete_option_v(options, current, completing)
     -- find completion option
     local opt
