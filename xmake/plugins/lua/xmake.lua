@@ -44,6 +44,7 @@ task("lua")
 
                     {'l', "list"        , "k"   , nil   ,   "List all scripts."                                             }
                 ,   {'c', "command"     , "k"   , nil   ,   "Run script as command"                                         }
+                ,   {'d', "deserialize" , "kv"  , nil   ,   "Deserialize arguments starts with given prefix"                }
                 ,   {nil, "script"      , "v"   , nil   ,   "Run the given lua script name, file or module and enter interactive mode if no given script.",
                                                             "e.g.",
                                                             "    - xmake lua (enter interactive mode)",
@@ -58,9 +59,9 @@ task("lua")
 
                                                                 return import("main.scripts")()
                                                             end                                                             }
-                ,   {nil, "arguments"   ,  "vs" , nil   ,   "The script arguments, use '@' to enable deserializing.",
+                ,   {nil, "arguments"   ,  "vs" , nil   ,   "The script arguments, use '--deserialize' option to enable deserializing.",
                                                             "e.g.",
-                                                            "    - xmake lua lib.detect.find_tool tar @{version=true}"      }
+                                                            "    - xmake lua -d@ lib.detect.find_tool tar @{version=true}"      }
                 }
             }
 
