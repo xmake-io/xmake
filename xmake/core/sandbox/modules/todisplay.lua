@@ -19,5 +19,5 @@
 --
 
 -- load module
-return require("base/todisplay")
+return require("base/todisplay").print
 
