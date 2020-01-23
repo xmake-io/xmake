@@ -154,6 +154,7 @@ function rule.apis()
         {
             -- rule.set_xxx
             "rule.set_extensions"
+        ,   "rule.set_sourcekinds"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"

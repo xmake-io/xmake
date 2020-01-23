@@ -20,7 +20,7 @@
 
 -- define rule: swift.build
 rule("swift.build")
-    set_extensions(".swift")    
+    set_sourcekinds("sc")    
     on_build_files("private.action.build.object")
 
 -- define rule: swift

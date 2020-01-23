@@ -20,7 +20,7 @@
 
 -- define rule: rust.build
 rule("rust.build")
-    set_extensions(".rs")    
+    set_sourcekinds("rc")    
     on_build("build.target")
 
 -- define rule: cpp

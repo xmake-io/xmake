@@ -20,7 +20,7 @@
 
 -- define rule: go.build
 rule("go.build")
-    set_extensions(".go")    
+    set_sourcekinds("gc")    
     on_build_files("build.object")
 
 -- define rule: cpp

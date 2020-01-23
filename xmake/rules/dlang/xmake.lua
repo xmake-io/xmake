@@ -20,7 +20,7 @@
 
 -- define rule: dlang.build
 rule("dlang.build")
-    set_extensions(".d")    
+    set_sourcekinds("dc")    
     on_build_files("private.action.build.object")
 
 -- define rule: dlang

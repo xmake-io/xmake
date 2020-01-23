@@ -30,6 +30,15 @@ function init(self)
     -- init cxflags
     self:set("cxflags", "-nologo")
 
+    -- set language type explicitly
+    --
+    -- because compiler maybe compile `.c` as c++. 
+    -- e.g. 
+    --   add_files("*.c", {sourcekind = "cxx"})
+    --
+    self:add("cflags", "-TC")
+    self:add("cxxflags", "-TP")
+
     -- init flags map
     self:set("mapflags",
     {

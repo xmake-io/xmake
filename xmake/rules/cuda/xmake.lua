@@ -20,7 +20,7 @@
 
 -- define rule: cuda.build
 rule("cuda.build")
-    set_extensions(".cu")    
+    set_sourcekinds("cu")    
     add_deps("cuda.build.devlink")
     on_build_files(function (target, sourcebatch, opt)
         import("private.action.build.object")(target, sourcebatch, opt)

@@ -876,24 +876,28 @@ function _instance:filerules(sourcefile)
         end
     end
 
-    -- get target rule from the given source extension
-    local extension2rules = self._EXTENSION2RULES
-    if not extension2rules then
-        extension2rules = {}
+    -- load all rules for this target with sourcekinds and extensions
+    local key2rules = self._KEY2RULES
+    if not key2rules then
+        key2rules = {}
         for _, r in pairs(table.wrap(self:rules())) do
+            for _, sourcekind in ipairs(table.wrap(r:get("sourcekinds"))) do
+                key2rules[sourcekind] = key2rules[sourcekind] or {}
+                table.insert(key2rules[sourcekind], r)
+            end
             for _, extension in ipairs(table.wrap(r:get("extensions"))) do
                 extension = extension:lower()
-                extension2rules[extension] = extension2rules[extension] or {}
-                table.insert(extension2rules[extension], r)
+                key2rules[extension] = key2rules[extension] or {}
+                table.insert(key2rules[extension], r)
             end
         end
-        self._EXTENSION2RULES = extension2rules
-    end
-    for _, r in ipairs(table.wrap(extension2rules[path.extension(sourcefile):lower()])) do
-        table.insert(rules, r)
+        self._KEY2RULES = key2rules
     end
 
-    -- done
+    -- get target rules from the given sourcekind or extension 
+    for _, r in ipairs(table.wrap(key2rules[self:sourcekind_of(sourcefile)] or key2rules[path.extension(sourcefile):lower()])) do
+        table.insert(rules, r)
+    end
     return rules 
 end
 
@@ -1284,6 +1288,19 @@ function _instance:dependfiles()
     return dependfiles
 end
 
+-- get the sourcekind for the given source file
+function _instance:sourcekind_of(sourcefile)
+
+    -- get the sourcekind of this source file
+    local sourcekind = language.sourcekind_of(sourcefile)
+    local fileconfig = self:fileconfig(sourcefile)
+    if fileconfig and fileconfig.sourcekind then
+        -- we can override the sourcekind, e.g. add_files("*.c", {sourcekind = "cxx"})
+        sourcekind = fileconfig.sourcekind
+    end
+    return sourcekind
+end
+
 -- get the kinds of sourcefiles
 --
 -- e.g. cc cxx mm mxx as ...
@@ -1300,7 +1317,7 @@ function _instance:sourcekinds()
     for _, sourcefile in pairs(self:sourcefiles()) do
 
         -- get source kind
-        local sourcekind = language.sourcekind_of(sourcefile)
+        local sourcekind = self:sourcekind_of(sourcefile)
         if sourcekind then
             table.insert(sourcekinds, sourcekind)
         end
@@ -1359,7 +1376,7 @@ function _instance:sourcebatches()
             table.insert(sourcebatch.sourcefiles, sourcefile)
 
             -- attempt to get source kind from the builtin languages
-            local sourcekind = language.sourcekind_of(sourcefile)
+            local sourcekind = self:sourcekind_of(sourcefile)
             if sourcekind then
 
                 -- save source kind

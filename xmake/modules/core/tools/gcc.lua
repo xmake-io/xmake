@@ -46,6 +46,15 @@ function init(self)
         self:add("shared.cxflags", "-fPIC")
     end
 
+    -- set language type explicitly
+    --
+    -- because compiler maybe compile `.c` as c++. 
+    -- e.g. 
+    --   add_files("*.c", {sourcekind = "cxx"})
+    --
+    self:add("cflags", "-x c")
+    self:add("cxxflags", "-x c++")
+
     -- init flags map
     self:set("mapflags",
     {

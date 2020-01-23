@@ -26,7 +26,7 @@ rule("c.build.pcheader")
 
 -- define rule: c.build
 rule("c.build")
-    set_extensions(".c")    
+    set_sourcekinds("cc")
     add_deps("c.build.pcheader")
     on_build_files("private.action.build.object")
 
@@ -38,7 +38,7 @@ rule("c++.build.pcheader")
 
 -- define rule: c++.build
 rule("c++.build")
-    set_extensions(".cpp", ".cc", ".cxx")    
+    set_sourcekinds("cxx")
     add_deps("c++.build.pcheader", "c++.build.modules")
     on_build_files("private.action.build.object")
 

@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#675](https://github.com/xmake-io/xmake/issues/675): Support to compile `*.c` as c++, `add_files("*.c", {sourcekind = "cxx"})`.
+
 ### Change
 
 * [#665](https://github.com/xmake-io/xmake/issues/665): Support to parse *nix style command options, thanks [@OpportunityLiu](https://github.com/OpportunityLiu)
@@ -665,6 +669,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#675](https://github.com/xmake-io/xmake/issues/675): 支持通过设置强制将`*.c`作为c++代码编译, `add_files("*.c", {sourcekind = "cxx"})`。
 
 ### 改进
 

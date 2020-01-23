@@ -20,13 +20,13 @@
 
 -- define rule: objc.build
 rule("objc.build")
-    set_extensions(".m")    
+    set_sourcekinds("mm")
     add_deps("c.build.pcheader")
     on_build_files("private.action.build.object")
 
 -- define rule: objc++.build
 rule("objc++.build")
-    set_extensions(".mm")    
+    set_sourcekinds("mxx")
     add_deps("c++.build.pcheader")
     on_build_files("private.action.build.object")
 
