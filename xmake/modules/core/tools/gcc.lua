@@ -46,15 +46,6 @@ function init(self)
         self:add("shared.cxflags", "-fPIC")
     end
 
-    -- set language type explicitly
-    --
-    -- because compiler maybe compile `.c` as c++. 
-    -- e.g. 
-    --   add_files("*.c", {sourcekind = "cxx"})
-    --
-    self:add("cflags", "-x c")
-    self:add("cxxflags", "-x c++")
-
     -- init flags map
     self:set("mapflags",
     {
@@ -301,6 +292,25 @@ function nf_pcxxheader(self, pcheaderfile, target)
         else
             return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
         end
+    end
+end
+
+-- add the special flags for the given source file of target
+--
+-- @note only it called when fileconfig is set
+--
+function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
+
+    -- add language type flags explicitly if the sourcekind is changed.
+    --
+    -- because compiler maybe compile `.c` as c++. 
+    -- e.g. 
+    --   add_files("*.c", {sourcekind = "cxx"})
+    --
+    local sourcekind = fileconfig.sourcekind
+    if sourcekind and sourcekind ~= language.sourcekind_of(sourcefile) then
+        local maps = {cc = "-x c", cxx = "-x c++"}
+        return maps[sourcekind]
     end
 end
 

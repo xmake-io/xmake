@@ -259,6 +259,22 @@ function compiler:compcmd(sourcefiles, objectfile, opt)
     return os.args(table.join(self:compargv(sourcefiles, objectfile, opt)))
 end
 
+-- add flags from the sourcefile config
+function builder:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfig)
+
+    -- add flags from the current compiler
+    local add_sourceflags = self:_tool().add_sourceflags
+    if add_sourceflags then
+        local flag = add_sourceflags(self:_tool(), sourcefile, fileconfig, target, self:_targetkind())
+        if flag and flag ~= "" then
+            table.join2(flags, flag)
+        end
+    end
+
+    -- add flags from the common argument option 
+    self:_add_flags_from_argument(flags, target, fileconfig)
+end
+
 -- get the compling flags
 --
 -- @param opt   the argument options (contain all the compiler attributes of target), 
@@ -292,7 +308,7 @@ function compiler:compflags(opt)
     if opt.sourcefile and target and target.fileconfig then
         local fileconfig = target:fileconfig(opt.sourcefile)
         if fileconfig then
-            self:_add_flags_from_argument(flags, target, fileconfig)
+            self:_add_flags_from_fileconfig(flags, target, opt.sourcefile, fileconfig)
         end
     end
 

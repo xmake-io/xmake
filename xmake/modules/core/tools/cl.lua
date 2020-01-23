@@ -30,15 +30,6 @@ function init(self)
     -- init cxflags
     self:set("cxflags", "-nologo")
 
-    -- set language type explicitly
-    --
-    -- because compiler maybe compile `.c` as c++. 
-    -- e.g. 
-    --   add_files("*.c", {sourcekind = "cxx"})
-    --
-    self:add("cflags", "-TC")
-    self:add("cxxflags", "-TP")
-
     -- init flags map
     self:set("mapflags",
     {
@@ -277,6 +268,25 @@ function nf_pcxxheader(self, pcheaderfile, target)
 
         -- make flag
         return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. os.args(target:pcoutputfile("cxx"))
+    end
+end
+
+-- add the special flags for the given source file of target
+--
+-- @note only it called when fileconfig is set
+--
+function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
+
+    -- add language type flags explicitly if the sourcekind is changed.
+    --
+    -- because compiler maybe compile `.c` as c++. 
+    -- e.g. 
+    --   add_files("*.c", {sourcekind = "cxx"})
+    --
+    local sourcekind = fileconfig.sourcekind
+    if sourcekind and sourcekind ~= language.sourcekind_of(sourcefile) then
+        local maps = {cc = "-TC", cxx = "-TP"}
+        return maps[sourcekind]
     end
 end
 
