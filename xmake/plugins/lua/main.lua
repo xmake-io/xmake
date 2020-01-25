@@ -41,6 +41,23 @@ function _list()
     end
 end
 
+function _print_vlog(script_type, script_name, args)
+    if not option.get("verbose") then return end
+    cprintf("running %s ${underline}%s${reset}", script_type, script_name)
+    if args.n > 0 then
+        print(" with args:")
+        if not option.get("diagnosis") then
+            for i = 1, args.n do
+                print("  - " .. todisplay(args[i]))
+            end
+        else
+            utils.dump(table.unpack(args, 1, args.n))
+        end
+    else
+        print(".")
+    end
+end
+
 function _run_commanad(command, args)
     local tmpfile = os.tmpfile() .. ".lua"
     io.writefile(tmpfile, "function main(...)\n" .. command .. "\nend")
@@ -51,19 +68,19 @@ function _run_script(script, args)
 
     local func
     local printresult = false
+    local script_type, script_name
 
     -- import and run script
     if path.extension(script) == ".lua" and os.isfile(script) then
 
         -- run the given lua script file (xmake lua /tmp/script.lua)
-        vprint("running given lua script file: %s", path.relative(script))
+        script_type, script_name = "given lua script file", path.relative(script)
         func = import(path.basename(script), {rootdir = path.directory(script), anonymous = true})
-
     elseif os.isfile(path.join(os.scriptdir(), "scripts", script .. ".lua")) then
 
         -- run builtin lua script (xmake lua echo "hello xmake")
-        vprint("running builtin lua script: %s", script)
-        func = import("scripts." .. script, {anonymous = true})(table.unpack(args, 1, args.n))
+        script_type, script_name = "builtin lua script", script
+        func = import("scripts." .. script, {anonymous = true})
     else
 
         -- attempt to find the builtin module
@@ -76,16 +93,17 @@ function _run_script(script, args)
         end
         if object then
             -- run builtin modules (xmake lua core.xxx.xxx)
-            vprint("running builtin module: %s", script)
+            script_type, script_name = "builtin module", script
             func = object
         else
             -- run imported modules (xmake lua core.xxx.xxx)
-            vprint("running imported module: %s", script)
+            script_type, script_name = "imported module", script
             func = import(script, {anonymous = true})
         end
         printresult = true
     end
 
+    _print_vlog(script_type or "script", script_name or "", args)
     local result = table.pack(func(table.unpack(args, 1, args.n)))
     if printresult and result and result.n ~= 0 then
         utils.dump(unpack(result, 1, result.n))
@@ -96,13 +114,20 @@ function _get_args()
 
     local args = option.get("arguments") or {}
     args.n = #args
+
+    local deserialize = option.get("deserialize")
+    if not deserialize then
+        return args
+    end
+
+    deserialize = tostring(deserialize)
+
     for i, value in ipairs(args) do
-        if value:startswith('@') then
-            -- deserialize @ prefixed arg
-            local v, err = string.deserialize(value:sub(2))
+        if value:startswith(deserialize) then
+            -- deserialize prefixed arg
+            local v, err = string.deserialize(value:sub(#deserialize + 1))
             if err then
-                -- for strings that failed to deserialize, regaed it as a normal string, just show a warning message
-                utils.warning(err)
+                raise(err)
             else
                 args[i] = v
             end

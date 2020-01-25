@@ -71,9 +71,12 @@ function _create_project(language, templateid, targetname)
     -- get project directory
     local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
 
-    -- ensure the project directory 
-    if not os.isdir(projectdir) then 
+    if not os.isdir(projectdir) then
+        -- make the project directory if not exists
         os.mkdir(projectdir)
+    elseif not os.emptydir(projectdir) then
+        -- otherwise, check whether it is empty
+        raise("project directory (${underline}%s${reset}) is not empty!", path.relative(projectdir, os.workingdir()))
     end
 
     -- enter the project directory

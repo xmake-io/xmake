@@ -22,86 +22,52 @@
 local dump = dump or {}
 
 -- load modules
-local colors    = require("base/colors")
 local todisplay = require("base/todisplay")
-
--- format string with theme colors
-function dump._format(fmtkey, fmtdefault, ...)
-    local theme = colors.theme()
-    if theme then
-        return colors.translate(string.format(theme:get(fmtkey), ...), { patch_reset = false, ignore_unknown = true })
-    else
-        return string.format(fmtdefault, ...)
-    end
-end
-
--- translate string with theme formats
-function dump._translate(str)
-    local theme = colors.theme()
-    if theme then
-        return colors.translate(str, { patch_reset = false, ignore_unknown = true })
-    else
-        return colors.ignore(str)
-    end
-end
 
 -- print string
 function dump._print_string(str, as_key)
-    local quote = (not as_key) or (not str:match("^[a-zA-Z_][a-zA-Z0-9_]*$"))
-    if quote then
-        io.write(dump._translate([[${reset}${color.dump.string_quote}"${reset}${color.dump.string}]]), str, dump._translate([[${reset}${color.dump.string_quote}"${reset}]]))
-    else
-        io.write(dump._translate("${reset}${color.dump.string}"), str, dump._translate("${reset}"))
-    end
+    io.write(todisplay._print_string(str, as_key))
 end
 
 -- print keyword
 function dump._print_keyword(keyword)
-    io.write(dump._translate("${reset}${color.dump.keyword}"), tostring(keyword), dump._translate("${reset}"))
-end
-
--- print number
-function dump._print_number(num)
-    io.write(dump._translate(todisplay(num)))
+    io.write(todisplay._print_keyword(keyword))
 end
 
 -- print function
 function dump._print_function(func, as_key)
     if as_key then
-        io.write(dump._translate("${reset}${color.dump.function}"), dump._format("text.dump.default_format", "%s", func), dump._translate("${reset}"))
+        io.write(todisplay._translate("${reset}${color.dump.function}"),
+            todisplay._format("text.dump.default_format", "%s", func),
+            todisplay._translate("${reset}"))
     else
-        io.write(dump._translate(todisplay(func)))
+        io.write(todisplay._print_function(func))
     end
-end
-
--- print value with default format
-function dump._print_default_scalar(value)
-    io.write(dump._translate(todisplay(value)))
 end
 
 -- print scalar value
 function dump._print_scalar(value, as_key)
-    if type(value) == "nil" or type(value) == "boolean" then
-        dump._print_keyword(value)
-    elseif type(value) == "number" then
-        dump._print_number(value)
-    elseif type(value) == "string" then
+    if type(value) == "string" then
         dump._print_string(value, as_key)
     elseif type(value) == "function" then
         dump._print_function(value, as_key)
     else
-        dump._print_default_scalar(value)
+        io.write(todisplay._print_scalar(value))
     end
 end
 
 -- print anchor
 function dump._print_anchor(printed_set_value)
-    io.write(dump._translate("${color.dump.anchor}"), dump._format("text.dump.anchor", "&%s", printed_set_value.id), dump._translate("${reset}"))
+    io.write(todisplay._translate("${color.dump.anchor}"),
+        todisplay._format("text.dump.anchor", "&%s", printed_set_value.id),
+        todisplay._translate("${reset}"))
 end
 
 -- print reference
 function dump._print_reference(printed_set_value)
-    io.write(dump._translate("${color.dump.reference}"), dump._format("text.dump.reference", "*%s", printed_set_value.id), dump._translate("${reset}"))
+    io.write(todisplay._translate("${color.dump.reference}"),
+        todisplay._format("text.dump.reference", "*%s", printed_set_value.id),
+        todisplay._translate("${reset}"))
 end
 
 -- print anchor and store to printed_set
@@ -135,12 +101,16 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             io.write("\n", inner_indent)
             local funcname = k:sub(3)
             dump._print_keyword(funcname)
-            io.write(dump._translate("${reset} ${dim}=${reset} "))
-            if funcname == "tostring" or funcname == "len" then
+            io.write(todisplay._translate("${reset} ${dim}=${reset} "))
+            if funcname == "tostring" or funcname == "len" or funcname == "todisplay" then
                 local ok, result = pcall(v, value, value)
                 if ok then
-                    dump._print_scalar(result)
-                    io.write(" (evaluated)")
+                    if funcname == "todisplay" and type(result) == "string" then
+                        io.write(todisplay._translate(result))
+                    else
+                        dump._print_scalar(result)
+                    end
+                    io.write(todisplay._translate("${dim} (evaluated)${reset}"))
                 else
                     dump._print_scalar(v)
                 end
@@ -172,7 +142,7 @@ function dump._print_metatable(value, metatable, inner_indent, printed_set, prin
             dump._print_keyword("(")
             dump._print_scalar(k, true)
             dump._print_keyword(")")
-            io.write(dump._translate("${reset} ${dim}=${reset} "))
+            io.write(todisplay._translate("${reset} ${dim}=${reset} "))
             if v and printed_set.refs[v] then
                 dump._print_reference(printed_set.refs[v])
             else
@@ -231,16 +201,16 @@ function dump._print_udata(value, first_indent, remain_indent, printed_set)
     local inner_indent = remain_indent .. "  "
 
     -- print open brackets
-    io.write(dump._translate("${reset}${color.dump.udata}[${reset}"))
+    io.write(todisplay._translate("${reset}${color.dump.udata}[${reset}"))
 
     -- print metatable
     local no_value = not dump._print_metatable(value, metatable, inner_indent, printed_set, false)
 
     -- print close brackets
     if no_value then
-        io.write(dump._translate(" ${color.dump.udata}]${reset}"))
+        io.write(todisplay._translate(" ${color.dump.udata}]${reset}"))
     else
-        io.write("\b \n", remain_indent, dump._translate("${reset}${color.dump.udata}]${reset}"))
+        io.write("\b \n", remain_indent, todisplay._translate("${reset}${color.dump.udata}]${reset}"))
     end
 end
 
@@ -253,14 +223,14 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
     local metatable = debug.getmetatable(value)
     local tostringmethod = metatable and (rawget(metatable, "__todisplay") or rawget(metatable, "__tostring"))
     if not first_level and tostringmethod then
-        return dump._print_default_scalar(value)
+        return dump._print_scalar(value)
     end
 
     local inner_indent = remain_indent .. "  "
     local first_value = true
 
     -- print open brackets
-    io.write(dump._translate("${reset}${color.dump.table}{${reset}"))
+    io.write(todisplay._translate("${reset}${color.dump.table}{${reset}"))
 
     local function print_newline()
         if first_value then
@@ -299,7 +269,7 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
         if not is_arr or type(k) ~= "number" then
             print_newline()
             dump._print_scalar(k, true)
-            io.write(dump._translate("${reset} ${dim}=${reset} "))
+            io.write(todisplay._translate("${reset} ${dim}=${reset} "))
             if type(v) == "table" then
                 if printed_set.refs[v] then
                     dump._print_reference(printed_set.refs[v])
@@ -315,9 +285,9 @@ function dump._print_table(value, first_indent, remain_indent, printed_set)
 
     -- print close brackets
     if first_value then
-        io.write(dump._translate(" ${color.dump.table}}${reset}"))
+        io.write(todisplay._translate(" ${color.dump.table}}${reset}"))
     else
-        io.write("\b \n", remain_indent, dump._translate("${reset}${color.dump.table}}${reset}"))
+        io.write("\b \n", remain_indent, todisplay._translate("${reset}${color.dump.table}}${reset}"))
     end
 end
 
