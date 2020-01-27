@@ -50,7 +50,10 @@ tb_int_t xm_io_poller_remove(lua_State* lua)
     tb_check_return_val(sock, 0);
 
     // remove events from poller
-    lua_pushboolean(lua, tb_poller_remove(xm_io_poller(), sock));
+    tb_poller_object_t object;
+    object.type = TB_POLLER_OBJECT_SOCK;
+    object.ref.sock = sock;
+    lua_pushboolean(lua, tb_poller_remove(xm_io_poller(), &object));
     return 1;
 }
 

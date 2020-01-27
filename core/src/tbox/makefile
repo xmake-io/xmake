@@ -239,7 +239,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/time \
 						tbox/src/tbox/platform/timer \
 						tbox/src/tbox/platform/impl/charset \
-						tbox/src/tbox/platform/impl/sockdata \
+						tbox/src/tbox/platform/impl/pollerdata \
 						tbox/src/tbox/platform/impl/dns \
 						tbox/src/tbox/platform/impl/platform \
 						tbox/src/tbox/libm/isfin \

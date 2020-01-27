@@ -53,7 +53,10 @@ tb_int_t xm_io_poller_insert(lua_State* lua)
     tb_size_t events = (tb_size_t)luaL_checknumber(lua, 2);
 
     // insert events to poller
-    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(), sock, events, tb_null));
+    tb_poller_object_t object;
+    object.type = TB_POLLER_OBJECT_SOCK;
+    object.ref.sock = sock;
+    lua_pushboolean(lua, tb_poller_insert(xm_io_poller(), &object, events, tb_null));
     return 1;
 }
 
