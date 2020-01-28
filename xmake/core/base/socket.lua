@@ -65,7 +65,7 @@ function _instance:family()
     return self._FAMILY
 end
 
--- get cdata socket
+-- get cdata of socket
 function _instance:csock()
     return self._SOCK
 end

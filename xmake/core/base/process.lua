@@ -53,6 +53,11 @@ function _subprocess:name()
     return self._NAME
 end
 
+-- get cdata of process
+function _subprocess:cproc()
+    return self._PROC
+end
+
 -- wait subprocess
 --
 -- @param timeout   the timeout
