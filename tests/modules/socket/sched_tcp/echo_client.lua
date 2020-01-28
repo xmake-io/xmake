@@ -1,22 +1,47 @@
 import("core.base.socket")
 import("core.base.scheduler")
 
-function _session(addr, port)
-    print("connect %s:%d ..", addr, port)
-    local sock = socket.connect(addr, port)
-    print("%s: connected!", sock)
+function _session_recv(sock)
+    print("%s: recv ..", sock)
     local count = 0
-    while count < 10000 do
-        local send = sock:send("hello world..", {block = true})
-        if send > 0 then
-            sock:recv(13, {block = true})
+    local result = nil
+    while count < 100000 do
+        local recv, data = sock:recv(13, {block = true})
+        if recv > 0 then
+            result = data
+            count = count + 1
         else
             break
         end
-        count = count + 1
+    end
+    print("%s: recv ok, count: %d!", sock, count)
+    result:dump()
+end
+
+function _session_send(sock)
+    print("%s: send ..", sock)
+    local count = 0
+    while count < 100000 do
+        local send = sock:send("hello world..", {block = true})
+        if send > 0 then
+            count = count + 1
+        else
+            break
+        end
     end
     print("%s: send ok, count: %d!", sock, count)
-    sock:close()
+end
+
+local socks = {}
+function _session(addr, port)
+
+    print("connect %s:%d ..", addr, port)
+    local sock = socket.connect(addr, port)
+    print("%s: connected!", sock)
+
+    scheduler.co_start(_session_recv, sock)
+    scheduler.co_start(_session_send, sock)
+    table.insert(socks, sock)
 end
 
 function main(count)
@@ -25,4 +50,7 @@ function main(count)
         scheduler.co_start(_session, "127.0.0.1", 9001)
     end
     scheduler.runloop()
+    for _, sock in ipairs(socks) do
+        sock:close()
+    end
 end
