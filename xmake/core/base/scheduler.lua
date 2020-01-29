@@ -141,6 +141,9 @@ function scheduler:_poller_resume_co(co, events)
         events = poller.EV_POLLER_ERROR
     end
 
+    -- this coroutine must be suspended
+    assert(co:is_suspended())
+
     -- resume this coroutine task
     self:_co_tasks_suspended():remove(co)
     self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
@@ -189,8 +192,6 @@ function scheduler:_poller_events_cb(obj, events)
 
         -- no coroutines are waiting? cache this events
         if bit.band(events, poller.EV_POLLER_RECV) ~= 0 or bit.band(events, poller.EV_POLLER_SEND) ~= 0 then
-
-            -- cache this events
             events_prev_save = bit.bor(events_prev_save, events)
             pollerdata.poller_events_save = events_prev_save
         end
@@ -322,13 +323,11 @@ function scheduler:poller_wait(obj, events, timeout)
 
             -- check error?
             if bit.band(events_prev_save, poller.EV_POLLER_ERROR) ~= 0 then
-                pollerdata.poller_events_wait = events_prev_wait
                 pollerdata.poller_events_save = 0
                 return -1, string.format("%s: events error!", obj)
             end
 
             -- clear cache events
-            pollerdata.poller_events_wait = events_prev_wait
             pollerdata.poller_events_save = bit.band(events_prev_save, bit.bnot(events))
 
             -- return the cached events
@@ -349,7 +348,7 @@ function scheduler:poller_wait(obj, events, timeout)
         if bit.band(events_prev_wait, events_wait) ~= events_wait then
 
             -- maybe wait recv/send at same time
-            local ok, errors = poller:modify(poller.OT_SOCK, obj, events_wait, self._sockevents_cb)
+            local ok, errors = poller:modify(poller.OT_SOCK, obj, events_wait, self._poller_events_cb)
             if not ok then
                 return -1, errors
             end
@@ -357,7 +356,7 @@ function scheduler:poller_wait(obj, events, timeout)
     else
 
         -- insert poller object events
-        local ok, errors = poller:insert(poller.OT_SOCK, obj, events_wait, self._sockevents_cb)
+        local ok, errors = poller:insert(poller.OT_SOCK, obj, events_wait, self._poller_events_cb)
         if not ok then
             return -1, errors
         end
@@ -375,7 +374,7 @@ function scheduler:poller_wait(obj, events, timeout)
     end
     running:_timer_task_set(timer_task)
 
-    -- save waiting events to coroutine
+    -- save waiting events 
     pollerdata.poller_events_wait = events_wait
     pollerdata.poller_events_save = 0
 
@@ -400,24 +399,13 @@ function scheduler:poller_cancel(obj)
     -- reset the pollerdata data
     local pollerdata = self:_poller_data(obj)
     if pollerdata then
-
-        -- clear the waiting coroutines
-        pollerdata.co_recv = nil
-        pollerdata.co_send = nil
-
-        -- remove the this poller object from poller
         if pollerdata.poller_events_wait ~= 0 then
-
-            -- remove the previous poller object first if exists
             local ok, errors = poller:remove(poller.OT_SOCK, obj)
             if not ok then
                 return false, errors
             end
-
-            -- remove the poller object events
-            pollerdata.poller_events_wait = 0
-            pollerdata.poller_events_save = 0
         end
+        self:_poller_data_set(obj, nil)
     end
     return true
 end
