@@ -36,7 +36,7 @@ function _listen(addr, port)
 
     local sock_clients = {}
     local sock = socket.bind(addr, port)
-    sock:listen(20)
+    sock:listen(100)
     print("%s: listening %s:%d ..", sock, addr, port) 
     while true do 
         local sock_client = sock:accept()
