@@ -54,8 +54,13 @@ function _subprocess:name()
 end
 
 -- get cdata of process
-function _subprocess:cproc()
+function _subprocess:cdata()
     return self._PROC
+end
+
+-- get poller object type, poller.OT_PROC
+function _subprocess:otype()
+    return 3
 end
 
 -- wait subprocess

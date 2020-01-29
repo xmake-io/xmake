@@ -28,6 +28,7 @@ local option    = require("base/option")
 local string    = require("base/string")
 local poller    = require("base/poller")
 local timer     = require("base/timer")
+local hashset   = require("base/hashset")
 local coroutine = require("base/coroutine")
 local bit       = require("bit")
 
@@ -85,7 +86,7 @@ function _coroutine:_timer_task_set(task)
     self._TIMER_TASK = task
 end
 
--- tostring(socket)
+-- tostring(coroutine)
 function _coroutine:__tostring()
     return string.format("<co: %s/%s>", self:thread(), self:name())
 end
@@ -105,89 +106,117 @@ function scheduler:_timer()
     return t
 end
 
--- get socket events 
-function scheduler:_sockevents(csock)
-    return self._SOCKEVENTS and self._SOCKEVENTS[csock] or 0
+-- get poller object data for socket, pipe or process object 
+function scheduler:_poller_data(obj)
+    return self._POLLERDATA and self._POLLERDATA[obj] or nil
 end
 
--- set socket events
-function scheduler:_sockevents_set(csock, data)
-    local sockevents = self._SOCKEVENTS 
-    if not sockevents then
-        sockevents = {}
-        self._SOCKEVENTS = sockevents
+-- set poller object data
+--
+-- data.co_recv:            the suspended coroutine for waiting poller/recv
+-- data.co_send:            the suspended coroutine for waiting poller/send
+-- data.poller_events_wait: the waited events for poller
+-- data.poller_events_save: the saved events for poller (triggered)
+--
+function scheduler:_poller_data_set(obj, data)
+    local pollerdata = self._POLLERDATA 
+    if not pollerdata then
+        pollerdata = {}
+        self._POLLERDATA = pollerdata
     end
-    sockevents[csock] = data
+    pollerdata[obj] = data
 end
 
--- the socket events callback
-function scheduler:_sockevents_cb(sock, sockevents)
+-- resume the suspended coroutine after poller callback
+function scheduler:_poller_resume_co(co, events)
 
-    -- get the previous socket events
-    local events_prev = self:_sockevents(sock:csock())
-    local events_prev_wait = bit.band(events_prev, 0xffff)
-    local events_prev_save = bit.rshift(events_prev, 16)
+    -- cancel timer task if exists
+    local timer_task = co:_timer_task()
+    if timer_task then
+        timer_task.cancel = true
+    end
 
-    -- is waiting?
-    local running = self:_co_sock_suspended(sock)
-    if running and running:is_suspended() then
+    -- the scheduler has been stopped? mark events as error to stop the coroutine
+    if not self._STARTED then
+        events = poller.EV_POLLER_ERROR
+    end
+
+    -- resume this coroutine task
+    self:_co_tasks_suspended():remove(co)
+    self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
+end
+
+-- the poller events callback
+function scheduler:_poller_events_cb(obj, events)
+
+    -- get poller object data
+    local pollerdata = self:_poller_data(obj)
+    assert(pollerdata, string.format("%s: cannot get poller data!", obj))
+
+    -- get poller object events
+    local events_prev_wait = pollerdata.poller_events_wait
+    local events_prev_save = pollerdata.poller_events_save
+
+    -- eof for edge trigger?
+    if bit.band(events, poller.EV_POLLER_EOF) ~= 0 then
+        -- cache this eof as next recv/send event
+        events = bit.band(events, bit.bnot(poller.EV_POLLER_EOF))
+        events_prev_save = bit.bor(events_prev_save, events_prev_wait)
+        pollerdata.poller_events_save = events_prev_save
+    end
+
+    -- get the waiting coroutines
+    local co_recv = bit.band(events, poller.EV_POLLER_RECV) ~= 0 and pollerdata.co_recv or nil
+    local co_send = bit.band(events, poller.EV_POLLER_SEND) ~= 0 and pollerdata.co_send or nil
+
+    -- return the events result for the waiting coroutines
+    if co_recv and co_recv == co_send then
+        pollerdata.co_recv = nil
+        pollerdata.co_send = nil
+        self:_poller_resume_co(co_recv, events)
+    else 
     
-        -- eof for edge trigger?
-        if bit.band(sockevents, poller.EV_SOCK_EOF) ~= 0 then
-            -- cache this eof as next recv/send event
-            sockevents  = bit.band(sockevents, bit.bnot(poller.EV_SOCK_EOF))
-            events_prev_save = bit.bor(events_prev_save, events_prev_wait)
-            self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_prev_save, 16), events_prev_wait))
+        if co_recv then
+            pollerdata.co_recv = nil
+            self:_poller_resume_co(co_recv, bit.band(events, bit.bnot(poller.EV_POLLER_SEND)))
+            events = bit.band(events, bit.bnot(poller.EV_POLLER_RECV))
+        end
+        if co_send then
+            pollerdata.co_send = nil
+            self:_poller_resume_co(co_send, bit.band(events, bit.bnot(poller.EV_POLLER_RECV)))
+            events = bit.band(events, bit.bnot(poller.EV_POLLER_SEND))
         end
 
-        -- cancel timer task if exists
-        local timer_task = running:_timer_task()
-        if timer_task then
-            timer_task.cancel = true
-        end
+        -- no coroutines are waiting? cache this events
+        if bit.band(events, poller.EV_POLLER_RECV) ~= 0 or bit.band(events, poller.EV_POLLER_SEND) ~= 0 then
 
-        -- the scheduler has been stopped? mark events as error to stop the coroutine
-        if not self._STARTED then
-            sockevents = poller.EV_SOCK_ERROR
+            -- cache this events
+            events_prev_save = bit.bor(events_prev_save, events)
+            pollerdata.poller_events_save = events_prev_save
         end
-
-        -- resume this coroutine task
-        self:_co_sock_suspended_set(sock, nil)
-        self:co_resume(running, (bit.band(sockevents, poller.EV_SOCK_ERROR) ~= 0) and -1 or sockevents)
-    else
-        -- cache socket events
-        events_prev_save = events
-        self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(events_prev_save, 16), events_prev_wait))
     end
 end
 
--- get the suspended coroutine task
-function scheduler:_co_sock_suspended(sock)
-    return self._CO_SOCK_SUSPENDED_TASKS and self._CO_SOCK_SUSPENDED_TASKS[sock] or nil
-end
-
--- set the suspended coroutine task
-function scheduler:_co_sock_suspended_set(sock, co)
-    local co_sock_suspended_tasks = self._CO_SOCK_SUSPENDED_TASKS 
-    if not co_sock_suspended_tasks then
-        co_sock_suspended_tasks = {}
-        self._CO_SOCK_SUSPENDED_TASKS = co_sock_suspended_tasks
+-- get all suspended coroutine tasks
+function scheduler:_co_tasks_suspended()
+    local co_tasks_suspended = self._CO_TASKS_SUSPENDED 
+    if not co_tasks_suspended then
+        co_tasks_suspended = hashset.new()
+        self._CO_TASKS_SUSPENDED = co_tasks_suspended
     end
-    co_sock_suspended_tasks[sock] = co
+    return co_tasks_suspended
 end
 
--- cancel and resume all suspended socket tasks after stopping scheduler
+-- cancel and resume all suspended tasks after stopping scheduler
 -- we cannot suspend them forever, all tasks will be exited directly and free all resources.
-function scheduler:_co_sock_suspended_cancel_all()
-    local co_sock_suspended_tasks = self._CO_SOCK_SUSPENDED_TASKS
-    if co_sock_suspended_tasks then
-        for _, co in pairs(co_sock_suspended_tasks) do
-            local ok, errors = self:co_resume(co, -1) 
-            if not ok then
-                return false, errors
-            end
+function scheduler:_co_tasks_suspended_cancel_all()
+    for co in self:_co_tasks_suspended():keys() do
+        local ok, errors = self:co_resume(co, -1) 
+        if not ok then
+            return false, errors
         end
     end
+    return true
 end
 
 -- start a new coroutine task
@@ -250,13 +279,13 @@ function scheduler:co_count()
     return self._CO_COUNT or 0
 end
 
--- wait socket events
-function scheduler:sock_wait(sock, events, timeout)
+-- wait poller object io events, only for socket and pipe object
+function scheduler:poller_wait(obj, events, timeout)
 
     -- get the running coroutine
     local running = self:co_running()
     if not running then
-        return -1, "we must call waitsock() in coroutine with scheduler!"
+        return -1, "we must call poller_wait() in coroutine with scheduler!"
     end
 
     -- is stopped?
@@ -264,44 +293,71 @@ function scheduler:sock_wait(sock, events, timeout)
         return -1, "the scheduler is stopped!"
     end
 
-    -- enable edge-trigger mode if be supported
-    if self._SUPPORT_EV_SOCK_CLEAR then
-        events = bit.bor(events, poller.EV_SOCK_CLEAR)
+    -- check the object type
+    local otype = obj:otype()
+    if otype ~= poller.OT_SOCK and otype ~= poller.OT_PIPE then
+        return -1, string.format("%s: invalid object type(%d)!", obj, otype)
     end
 
-    -- get the previous socket events
-    local events_prev = self:_sockevents(sock:csock())
-    if events_prev ~= 0 then
-        local events_prev_wait = bit.band(events_prev, 0xffff)
-        local events_prev_save = bit.rshift(events_prev, 16)
+    -- get and allocate poller object data
+    local pollerdata = self:_poller_data(obj)
+    if not pollerdata then
+        pollerdata = {poller_events_wait = 0, poller_events_save = 0}
+        self:_poller_data_set(obj, pollerdata)
+    end
 
+    -- enable edge-trigger mode if be supported
+    if otype == poller.OT_SOCK and self._SUPPORT_EV_POLLER_CLEAR then
+        events = bit.bor(events, poller.EV_POLLER_CLEAR)
+    end
+
+    -- get the previous poller object events
+    local events_wait = events
+    if pollerdata.poller_events_wait ~= 0 then
+        
         -- return the cached events directly if the waiting events exists cache
+        local events_prev_wait = pollerdata.poller_events_wait
+        local events_prev_save = pollerdata.poller_events_save
         if events_prev_save ~= 0 and bit.band(events_prev_wait, events) ~= 0 then
 
             -- check error?
-            if bit.band(events_prev_save, poller.EV_SOCK_ERROR) ~= 0 then
-                self:_sockevents_set(sock:csock(), events_prev_wait)
-                return -1, string.format("%s: socket events error!", sock)
+            if bit.band(events_prev_save, poller.EV_POLLER_ERROR) ~= 0 then
+                pollerdata.poller_events_wait = events_prev_wait
+                pollerdata.poller_events_save = 0
+                return -1, string.format("%s: events error!", obj)
             end
 
             -- clear cache events
-            self:_sockevents_set(sock:csock(), bit.bor(bit.lshift(bit.band(events_prev_save, bit.bnot(events)), 16), events_prev_wait))
+            pollerdata.poller_events_wait = events_prev_wait
+            pollerdata.poller_events_save = bit.band(events_prev_save, bit.bnot(events))
 
             -- return the cached events
             return bit.band(events_prev_save, events)
         end
 
-        -- modify socket from poller for waiting events if the waiting events has been changed 
-        if events_prev_wait ~= events then
-            -- modify socket events
-            local ok, errors = poller:modify(poller.OT_SOCK, sock, events, self._sockevents_cb)
+        -- modify the wait events and reserve the pending events in other coroutine
+        events_wait = events_prev_wait
+        if bit.band(events_wait, poller.EV_POLLER_RECV) ~= 0 and not pollerdata.co_recv then
+            events_wait = bit.band(events_wait, bit.bnot(poller.EV_POLLER_RECV))
+        end
+        if bit.band(events_wait, poller.EV_POLLER_SEND) ~= 0 and not pollerdata.co_send then
+            events_wait = bit.band(events_wait, bit.bnot(poller.EV_POLLER_SEND))
+        end
+        events_wait = bit.bor(events_wait, events)
+
+        -- modify poller object from poller for waiting events if the waiting events has been changed 
+        if bit.band(events_prev_wait, events_wait) ~= events_wait then
+
+            -- maybe wait recv/send at same time
+            local ok, errors = poller:modify(poller.OT_SOCK, obj, events_wait, self._sockevents_cb)
             if not ok then
                 return -1, errors
             end
         end
     else
-        -- insert socket events
-        local ok, errors = poller:insert(poller.OT_SOCK, sock, events, self._sockevents_cb)
+
+        -- insert poller object events
+        local ok, errors = poller:insert(poller.OT_SOCK, obj, events_wait, self._sockevents_cb)
         if not ok then
             return -1, errors
         end
@@ -312,37 +368,56 @@ function scheduler:sock_wait(sock, events, timeout)
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
             if not cancel and running:is_suspended() then
-                self:_co_sock_suspended_set(sock, nil)
+                self:_co_tasks_suspended():remove(running)
                 self:co_resume(running, 0)
             end
         end, timeout)
     end
     running:_timer_task_set(timer_task)
 
-    -- save the waiting events 
-    self:_sockevents_set(sock:csock(), events)
+    -- save waiting events to coroutine
+    pollerdata.poller_events_wait = events_wait
+    pollerdata.poller_events_save = 0
+
+    -- save the current coroutine 
+    if bit.band(events, poller.EV_POLLER_RECV) ~= 0 then
+        pollerdata.co_recv = running
+    end
+    if bit.band(events, poller.EV_POLLER_SEND) ~= 0 then
+        pollerdata.co_send = running
+    end
 
     -- save the suspended coroutine
-    self:_co_sock_suspended_set(sock, running)
+    self:_co_tasks_suspended():insert(running)
 
     -- wait
     return self:co_suspend()
 end
 
--- cancel socket events
-function scheduler:sock_cancel(sock)
+-- cancel poller object events
+function scheduler:poller_cancel(obj)
 
-    -- get the previous socket events
-    local events_prev = self:_sockevents(sock:csock())
-    if events_prev ~= 0 then
+    -- reset the pollerdata data
+    local pollerdata = self:_poller_data(obj)
+    if pollerdata then
 
-        -- remove the waiting socket from the poller
-        local ok, errors = poller:remove(poller.OT_SOCK, sock)
-        if not ok then
-            return false, errors
+        -- clear the waiting coroutines
+        pollerdata.co_recv = nil
+        pollerdata.co_send = nil
+
+        -- remove the this poller object from poller
+        if pollerdata.poller_events_wait ~= 0 then
+
+            -- remove the previous poller object first if exists
+            local ok, errors = poller:remove(poller.OT_SOCK, obj)
+            if not ok then
+                return false, errors
+            end
+
+            -- remove the poller object events
+            pollerdata.poller_events_wait = 0
+            pollerdata.poller_events_save = 0
         end
-        self:_sockevents_set(sock:csock(), 0)
-        self:_co_sock_suspended_set(sock, nil)
     end
     return true
 end
@@ -393,8 +468,8 @@ function scheduler:runloop()
     self._STARTED = true
 
     -- ensure poller has been initialized first (for windows/iocp) and check edge-trigger mode (for epoll/kqueue)
-    if poller:support(poller.OT_SOCK, poller.EV_SOCK_CLEAR) then
-        self._SUPPORT_EV_SOCK_CLEAR = true
+    if poller:support(poller.OT_SOCK, poller.EV_POLLER_CLEAR) then
+        self._SUPPORT_EV_POLLER_CLEAR = true
     end
 
     -- start all ready coroutine tasks
@@ -454,7 +529,11 @@ function scheduler:runloop()
     self._STARTED = false
 
     -- cancel all suspended tasks after stopping scheduler
-    self:_co_sock_suspended_cancel_all()
+    local ok2, errors2 = self:_co_tasks_suspended_cancel_all()
+    if ok and not ok2 then
+        ok = ok2
+        errors = errors2
+    end
 
     -- cancel all timeout tasks and trigger them
     self:_timer():kill()

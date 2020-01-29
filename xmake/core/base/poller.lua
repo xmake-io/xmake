@@ -27,32 +27,32 @@ local string = require("base/string")
 
 -- the poller object type
 poller.OT_SOCK = 1
-poller.OT_PROC = 2
-poller.OT_PIPE = 3
+poller.OT_PIPE = 2
+poller.OT_PROC = 3
 
 -- the poller events, @see tbox/platform/poller.h
-poller.EV_SOCK_RECV    = 1
-poller.EV_SOCK_SEND    = 2
-poller.EV_SOCK_CONN    = poller.EV_SOCK_SEND
-poller.EV_SOCK_ACPT    = poller.EV_SOCK_RECV
-poller.EV_SOCK_CLEAR   = 0x0010 -- edge trigger. after the event is retrieved by the user, its state is reset
-poller.EV_SOCK_ONESHOT = 0x0010 -- causes the event to return only the first occurrence of the filter being triggered
-poller.EV_SOCK_EOF     = 0x0100 -- the event flag will be marked if the connection be closed in the edge trigger
-poller.EV_SOCK_ERROR   = 0x0200 -- socket error after waiting
+poller.EV_POLLER_RECV    = 1
+poller.EV_POLLER_SEND    = 2
+poller.EV_POLLER_CONN    = poller.EV_POLLER_SEND
+poller.EV_POLLER_ACPT    = poller.EV_POLLER_RECV
+poller.EV_POLLER_CLEAR   = 0x0010 -- edge trigger. after the event is retrieved by the user, its state is reset
+poller.EV_POLLER_ONESHOT = 0x0010 -- causes the event to return only the first occurrence of the filter being triggered
+poller.EV_POLLER_EOF     = 0x0100 -- the event flag will be marked if the connection be closed in the edge trigger
+poller.EV_POLLER_ERROR   = 0x0200 -- socket error after waiting
 
 -- get socket data 
-function poller:_sockdata(csock)
-    return self._SOCKDATA and self._SOCKDATA[csock] or nil
+function poller:_sockdata(cdata)
+    return self._SOCKDATA and self._SOCKDATA[cdata] or nil
 end
 
 -- set socket data
-function poller:_sockdata_set(csock, data)
+function poller:_sockdata_set(cdata, data)
     local sockdata = self._SOCKDATA 
     if not sockdata then
         sockdata = {}
         self._SOCKDATA = sockdata
     end
-    sockdata[csock] = data
+    sockdata[cdata] = data
 end
 
 -- insert socket events to poller
@@ -65,12 +65,12 @@ function poller:_insert_sock(sock, events, udata)
     end
 
     -- insert it
-    if not io.poller_insert(sock:csock(), events) then
+    if not io.poller_insert(sock:cdata(), events) then
         return false, string.format("%s: insert events(%d) to poller failed!", sock, events)
     end
 
     -- save socket data and save sock/ref for gc
-    self:_sockdata_set(sock:csock(), {sock, udata})
+    self:_sockdata_set(sock:cdata(), {sock, udata})
     return true
 end
 
@@ -84,12 +84,12 @@ function poller:_modify_sock(sock, events, udata)
     end
 
     -- modify it
-    if not io.poller_modify(sock:csock(), events) then
+    if not io.poller_modify(sock:cdata(), events) then
         return false, string.format("%s: modify events(%d) to poller failed!", sock, events)
     end
 
     -- update socket data for this socket
-    self:_sockdata_set(sock:csock(), {sock, udata})
+    self:_sockdata_set(sock:cdata(), {sock, udata})
     return true
 end
 
@@ -103,7 +103,7 @@ function poller:_remove_sock(sock)
     end
 
     -- remove it
-    if not io.poller_remove(sock:csock()) then
+    if not io.poller_remove(sock:cdata()) then
         return false, string.format("%s: remove events from poller failed!", sock)
     end
 
@@ -168,11 +168,11 @@ function poller:wait(timeout)
     if events then
         for _, v in ipairs(events) do
             -- TODO only socket events now. It will be proc/pipe events in the future
-            local csock      = v[1]
+            local cdata      = v[1]
             local sockevents = v[2]
-            local sockdata   = self:_sockdata(csock)
+            local sockdata   = self:_sockdata(cdata)
             if not sockdata then
-                return -1, string.format("no socket data for csock(%d)!", csock)
+                return -1, string.format("no socket data for cdata(%d)!", cdata)
             end
             table.insert(results, {poller.OT_SOCK,  sockdata[1], sockevents, sockdata[2]})
         end
