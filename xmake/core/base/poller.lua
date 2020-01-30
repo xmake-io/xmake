@@ -40,19 +40,19 @@ poller.EV_POLLER_ONESHOT = 0x0010 -- causes the event to return only the first o
 poller.EV_POLLER_EOF     = 0x0100 -- the event flag will be marked if the connection be closed in the edge trigger
 poller.EV_POLLER_ERROR   = 0x0200 -- socket error after waiting
 
--- get socket data 
-function poller:_sockdata(cdata)
-    return self._SOCKDATA and self._SOCKDATA[cdata] or nil
+-- get poller object data 
+function poller:_pollerdata(cdata)
+    return self._POLLERDATA and self._POLLERDATA[cdata] or nil
 end
 
--- set socket data
-function poller:_sockdata_set(cdata, data)
-    local sockdata = self._SOCKDATA 
-    if not sockdata then
-        sockdata = {}
-        self._SOCKDATA = sockdata
+-- set poller object data
+function poller:_pollerdata_set(cdata, data)
+    local pollerdata = self._POLLERDATA 
+    if not pollerdata then
+        pollerdata = {}
+        self._POLLERDATA = pollerdata
     end
-    sockdata[cdata] = data
+    pollerdata[cdata] = data
 end
 
 -- insert socket events to poller
@@ -70,7 +70,7 @@ function poller:_insert_sock(sock, events, udata)
     end
 
     -- save socket data and save sock/ref for gc
-    self:_sockdata_set(sock:cdata(), {sock, udata})
+    self:_pollerdata_set(sock:cdata(), {sock, udata})
     return true
 end
 
@@ -89,7 +89,7 @@ function poller:_modify_sock(sock, events, udata)
     end
 
     -- update socket data for this socket
-    self:_sockdata_set(sock:cdata(), {sock, udata})
+    self:_pollerdata_set(sock:cdata(), {sock, udata})
     return true
 end
 
@@ -108,7 +108,7 @@ function poller:_remove_sock(sock)
     end
 
     -- remove socket data for this socket
-    self:_sockdata_set(sock, nil)
+    self:_pollerdata_set(sock, nil)
     return true
 end
 
@@ -126,24 +126,24 @@ function poller:spank()
 end
 
 -- insert object events to poller
-function poller:insert(otype, obj, events, udata)
-    if otype == poller.OT_SOCK then
+function poller:insert(obj, events, udata)
+    if obj:otype() == poller.OT_SOCK then
         return self:_insert_sock(obj, events, udata)
     end
     return false, string.format("invalid poller object type(%d)!", otype)
 end
 
 -- modify object events in poller
-function poller:modify(otype, obj, events, udata)
-    if otype == poller.OT_SOCK then
+function poller:modify(obj, events, udata)
+    if obj:otype() == poller.OT_SOCK then
         return self:_modify_sock(obj, events, udata)
     end
     return false, string.format("invalid poller object type(%d)!", otype)
 end
 
 -- remove socket from poller
-function poller:remove(otype, obj)
-    if otype == poller.OT_SOCK then
+function poller:remove(obj)
+    if obj:otype() == poller.OT_SOCK then
         return self:_remove_sock(obj)
     end
     return false, string.format("invalid poller object type(%d)!", otype)
@@ -170,11 +170,11 @@ function poller:wait(timeout)
             -- TODO only socket events now. It will be proc/pipe events in the future
             local cdata      = v[1]
             local sockevents = v[2]
-            local sockdata   = self:_sockdata(cdata)
-            if not sockdata then
+            local pollerdata   = self:_pollerdata(cdata)
+            if not pollerdata then
                 return -1, string.format("no socket data for cdata(%d)!", cdata)
             end
-            table.insert(results, {poller.OT_SOCK,  sockdata[1], sockevents, sockdata[2]})
+            table.insert(results, {poller.OT_SOCK,  pollerdata[1], sockevents, pollerdata[2]})
         end
     end
     return count, results

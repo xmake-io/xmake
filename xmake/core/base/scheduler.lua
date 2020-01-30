@@ -348,7 +348,7 @@ function scheduler:poller_wait(obj, events, timeout)
         if bit.band(events_prev_wait, events_wait) ~= events_wait then
 
             -- maybe wait recv/send at same time
-            local ok, errors = poller:modify(poller.OT_SOCK, obj, events_wait, self._poller_events_cb)
+            local ok, errors = poller:modify(obj, events_wait, self._poller_events_cb)
             if not ok then
                 return -1, errors
             end
@@ -356,7 +356,7 @@ function scheduler:poller_wait(obj, events, timeout)
     else
 
         -- insert poller object events
-        local ok, errors = poller:insert(poller.OT_SOCK, obj, events_wait, self._poller_events_cb)
+        local ok, errors = poller:insert(obj, events_wait, self._poller_events_cb)
         if not ok then
             return -1, errors
         end
@@ -400,7 +400,7 @@ function scheduler:poller_cancel(obj)
     local pollerdata = self:_poller_data(obj)
     if pollerdata then
         if pollerdata.poller_events_wait ~= 0 then
-            local ok, errors = poller:remove(poller.OT_SOCK, obj)
+            local ok, errors = poller:remove(obj)
             if not ok then
                 return false, errors
             end
