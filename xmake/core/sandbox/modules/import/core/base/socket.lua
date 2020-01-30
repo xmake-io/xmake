@@ -224,19 +224,19 @@ end
 -- open and connect tcp socket
 function sandbox_core_base_socket.connect(addr, port, opt)
     local sock, errors = socket.connect(addr, port, opt)
-    if not sock then
+    if not sock and errors then
         raise(errors)
     end
-    return _socket_wrap(sock)
+    return sock and _socket_wrap(sock) or nil
 end
 
 -- open and connect tcp socket from the unix socket
 function sandbox_core_base_socket.connect_unix(addr, opt)
     local sock, errors = socket.connect_unix(addr, opt)
-    if not sock then
+    if not sock and errors then
         raise(errors)
     end
-    return _socket_wrap(sock)
+    return sock and _socket_wrap(sock) or nil
 end
 
 -- return module

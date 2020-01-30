@@ -37,11 +37,14 @@ function _session(addr, port)
 
     print("connect %s:%d ..", addr, port)
     local sock = socket.connect(addr, port)
-    print("%s: connected!", sock)
-
-    scheduler.co_start(_session_recv, sock)
-    scheduler.co_start(_session_send, sock)
-    table.insert(socks, sock)
+    if sock then
+        print("%s: connected!", sock)
+        table.insert(socks, sock)
+        scheduler.co_start(_session_recv, sock)
+        scheduler.co_start(_session_send, sock)
+    else
+        print("connect %s:%d failed", addr, port)
+    end
 end
 
 function main(count)

@@ -146,7 +146,7 @@ function scheduler:_poller_resume_co(co, events)
 
     -- resume this coroutine task
     self:_co_tasks_suspended():remove(co)
-    self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
+    return self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
 end
 
 -- the poller events callback
@@ -176,17 +176,23 @@ function scheduler:_poller_events_cb(obj, events)
     if co_recv and co_recv == co_send then
         pollerdata.co_recv = nil
         pollerdata.co_send = nil
-        self:_poller_resume_co(co_recv, events)
+        return self:_poller_resume_co(co_recv, events)
     else 
     
         if co_recv then
             pollerdata.co_recv = nil
-            self:_poller_resume_co(co_recv, bit.band(events, bit.bnot(poller.EV_POLLER_SEND)))
+            local ok, errors = self:_poller_resume_co(co_recv, bit.band(events, bit.bnot(poller.EV_POLLER_SEND)))
+            if not ok then
+                return false, errors
+            end
             events = bit.band(events, bit.bnot(poller.EV_POLLER_RECV))
         end
         if co_send then
             pollerdata.co_send = nil
-            self:_poller_resume_co(co_send, bit.band(events, bit.bnot(poller.EV_POLLER_RECV)))
+            local ok, errors = self:_poller_resume_co(co_send, bit.band(events, bit.bnot(poller.EV_POLLER_RECV)))
+            if not ok then
+                return false, errors
+            end
             events = bit.band(events, bit.bnot(poller.EV_POLLER_SEND))
         end
 
@@ -196,6 +202,7 @@ function scheduler:_poller_events_cb(obj, events)
             pollerdata.poller_events_save = events_prev_save
         end
     end
+    return true
 end
 
 -- get all suspended coroutine tasks
@@ -498,8 +505,14 @@ function scheduler:runloop()
             local objevents = e[2]
             local eventfunc = e[3]
             if eventfunc then
-                eventfunc(self, obj, objevents)
+                ok, errors = eventfunc(self, obj, objevents)
+                if not ok then
+                    break
+                end
             end
+        end
+        if not ok then
+            break
         end
 
         -- spank the timer and trigger all timeout tasks

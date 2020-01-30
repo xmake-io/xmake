@@ -42,9 +42,9 @@ function _listen(addr, port)
         local sock_client = sock:accept()
         if sock_client then
             print("%s: accepted", sock_client) 
+            table.insert(sock_clients, sock_client)
             scheduler.co_start(_session_recv, sock_client) 
             scheduler.co_start(_session_send, sock_client) 
-            table.insert(sock_clients, sock_client)
         end
     end
     for _, sock_client in ipairs(sock_clients) do

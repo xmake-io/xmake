@@ -666,7 +666,7 @@ function socket.bind(addr, port, opt)
     local ok, errors = sock:bind(addr, port)
     if not ok then
         sock:close()
-        return nil, string.format("bind %s:%s failed, errors: %s!", addr, port, errors or "")
+        return nil, string.format("bind %s:%s failed, errors: %s!", addr, port, errors or "unknown")
     end
     return sock
 end
@@ -680,7 +680,7 @@ function socket.bind_unix(addr, opt)
     local ok, errors = sock:bind_unix(addr, opt)
     if not ok then
         sock:close()
-        return nil, string.format("bind unix://%s failed, errors: %s!", addr, errors or "")
+        return nil, string.format("bind unix://%s failed, errors: %s!", addr, errors or "unknown")
     end
     return sock
 end
@@ -694,7 +694,7 @@ function socket.connect(addr, port, opt)
     local ok, errors = sock:connect(addr, port, opt)
     if ok <= 0 then
         sock:close()
-        return nil, string.format("connect %s:%s failed, errors: %s!", addr, port, errors or "")
+        return nil, errors
     end
     return sock
 end
@@ -708,7 +708,7 @@ function socket.connect_unix(addr, opt)
     local ok, errors = sock:connect_unix(addr, opt)
     if ok <= 0 then
         sock:close()
-        return nil, string.format("connect unix://%s failed, errors: %s!", addr, errors or "")
+        return nil, errors
     end
     return sock
 end
