@@ -15,7 +15,9 @@ function _session_recv(sock)
         end
     end
     print("%s: recv ok, count: %d!", sock, count)
-    result:dump()
+    if result then
+        result:dump()
+    end
 end
 
 function _session_send(sock)
