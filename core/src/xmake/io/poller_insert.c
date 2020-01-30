@@ -50,7 +50,7 @@ tb_int_t xm_io_poller_insert(lua_State* lua)
     }
 
     // get otype
-    tb_size_t otype = (tb_size_t)luaL_checknumber(lua, 1);
+    tb_uint8_t otype = (tb_uint8_t)luaL_checknumber(lua, 1);
 
     // get cdata
     tb_pointer_t cdata = (tb_pointer_t)lua_touserdata(lua, 2);
