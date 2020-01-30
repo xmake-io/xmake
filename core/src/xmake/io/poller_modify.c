@@ -35,27 +35,34 @@
  * interfaces
  */
 
-// io.poller_modify(sock, events)
+// io.poller_modify(obj:otype(), obj:cdata(), events)
 tb_int_t xm_io_poller_modify(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1)) 
-        return 0;
+    if (!lua_isuserdata(lua, 2)) 
+    {
+        lua_pushboolean(lua, tb_false);
+        lua_pushfstring(lua, "invalid poller object!");
+        return 2;
+    }
 
-    // get socket
-    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
-    tb_check_return_val(sock, 0);
+    // get otype
+    tb_size_t otype = (tb_size_t)luaL_checknumber(lua, 1);
+
+    // get cdata
+    tb_pointer_t cdata = (tb_pointer_t)lua_touserdata(lua, 2);
+    tb_check_return_val(cdata, 0);
 
     // get events
-    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 2);
+    tb_size_t events = (tb_size_t)luaL_checknumber(lua, 3);
 
     // modify events in poller
     tb_poller_object_t object;
-    object.type = TB_POLLER_OBJECT_SOCK;
-    object.ref.sock = sock;
+    object.type    = otype;
+    object.ref.ptr = cdata;
     lua_pushboolean(lua, tb_poller_modify(xm_io_poller(), &object, events, tb_null));
     return 1;
 }

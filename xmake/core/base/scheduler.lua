@@ -494,18 +494,11 @@ function scheduler:runloop()
 
         -- resume all suspended tasks with events
         for _, e in ipairs(events) do
-            local otype = e[1]
-            if otype == poller.OT_SOCK then
-                local sock       = e[2]
-                local sockevents = e[3]
-                local sockfunc   = e[4]
-                if sockfunc then
-                    sockfunc(self, sock, sockevents)
-                end
-            else
-                ok = false
-                errors = string.format("invalid poller object type(%d)", otype)
-                break
+            local obj       = e[1]
+            local objevents = e[2]
+            local eventfunc = e[3]
+            if eventfunc then
+                eventfunc(self, obj, objevents)
             end
         end
 

@@ -25,7 +25,7 @@ local poller = poller or {}
 local io     = require("base/io")
 local string = require("base/string")
 
--- the poller object type
+-- the poller object type, @see tbox/platform/poller.h
 poller.OT_SOCK = 1
 poller.OT_PIPE = 2
 poller.OT_PROC = 3
@@ -55,63 +55,6 @@ function poller:_pollerdata_set(cdata, data)
     pollerdata[cdata] = data
 end
 
--- insert socket events to poller
-function poller:_insert_sock(sock, events, udata)
-
-    -- ensure opened
-    local ok, errors = sock:_ensure_opened()
-    if not ok then
-        return false, errors
-    end
-
-    -- insert it
-    if not io.poller_insert(sock:cdata(), events) then
-        return false, string.format("%s: insert events(%d) to poller failed!", sock, events)
-    end
-
-    -- save socket data and save sock/ref for gc
-    self:_pollerdata_set(sock:cdata(), {sock, udata})
-    return true
-end
-
--- modify socket events in poller
-function poller:_modify_sock(sock, events, udata)
-
-    -- ensure opened
-    local ok, errors = sock:_ensure_opened()
-    if not ok then
-        return false, errors
-    end
-
-    -- modify it
-    if not io.poller_modify(sock:cdata(), events) then
-        return false, string.format("%s: modify events(%d) to poller failed!", sock, events)
-    end
-
-    -- update socket data for this socket
-    self:_pollerdata_set(sock:cdata(), {sock, udata})
-    return true
-end
-
--- remove socket from poller
-function poller:_remove_sock(sock)
-
-    -- ensure opened
-    local ok, errors = sock:_ensure_opened()
-    if not ok then
-        return false, errors
-    end
-
-    -- remove it
-    if not io.poller_remove(sock:cdata()) then
-        return false, string.format("%s: remove events from poller failed!", sock)
-    end
-
-    -- remove socket data for this socket
-    self:_pollerdata_set(sock, nil)
-    return true
-end
-
 -- support events?
 function poller:support(otype, events)
     if otype == poller.OT_SOCK then
@@ -127,29 +70,47 @@ end
 
 -- insert object events to poller
 function poller:insert(obj, events, udata)
-    if obj:otype() == poller.OT_SOCK then
-        return self:_insert_sock(obj, events, udata)
+
+    -- insert it
+    local ok, errors = io.poller_insert(obj:otype(), obj:cdata(), events) 
+    if not ok then
+        return false, string.format("%s: insert events(%d) to poller failed, error: %s", obj, events, errors or "unknown")
     end
-    return false, string.format("invalid poller object type(%d)!", otype)
+
+    -- save poller object data and save obj/ref for gc
+    self:_pollerdata_set(obj:cdata(), {obj, udata})
+    return true
 end
 
 -- modify object events in poller
 function poller:modify(obj, events, udata)
-    if obj:otype() == poller.OT_SOCK then
-        return self:_modify_sock(obj, events, udata)
+
+    -- modify it
+    local ok, errors = io.poller_modify(obj:otype(), obj:cdata(), events) 
+    if not ok then
+        return false, string.format("%s: modify events(%d) to poller failed, error: %s", obj, events, errors or "unknown")
     end
-    return false, string.format("invalid poller object type(%d)!", otype)
+
+    -- update poller object data 
+    self:_pollerdata_set(obj:cdata(), {obj, udata})
+    return true
 end
 
--- remove socket from poller
+-- remove object from poller
 function poller:remove(obj)
-    if obj:otype() == poller.OT_SOCK then
-        return self:_remove_sock(obj)
+
+    -- remove it
+    local ok, errors = io.poller_remove(obj:otype(), obj:cdata()) 
+    if not ok then
+        return false, string.format("%s: remove events from poller failed, error: %s", obj, errors or "unknown")
     end
-    return false, string.format("invalid poller object type(%d)!", otype)
+
+    -- remove poller object data 
+    self:_pollerdata_set(obj, nil)
+    return true
 end
 
--- wait socket events in poller
+-- wait object events in poller
 function poller:wait(timeout)
 
     -- wait it
@@ -163,18 +124,20 @@ function poller:wait(timeout)
         return -1, string.format("events(%d) != %d in poller!", #events, count)
     end
 
-    -- wrap socket 
+    -- wrap objects with cdata 
     local results = {}
     if events then
         for _, v in ipairs(events) do
-            -- TODO only socket events now. It will be proc/pipe events in the future
-            local cdata      = v[1]
-            local sockevents = v[2]
+            local otype  = v[1]
+            local cdata  = v[2]
+            local events = v[3]
             local pollerdata   = self:_pollerdata(cdata)
             if not pollerdata then
-                return -1, string.format("no socket data for cdata(%d)!", cdata)
+                return -1, string.format("no object data for cdata(%d)!", cdata)
             end
-            table.insert(results, {poller.OT_SOCK,  pollerdata[1], sockevents, pollerdata[2]})
+            local obj = pollerdata[1]
+            assert(obj and obj:otype() == otype and obj:cdata() == cdata)
+            table.insert(results, {obj, events, pollerdata[2]})
         end
     end
     return count, results
