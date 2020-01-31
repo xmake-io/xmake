@@ -83,6 +83,9 @@ xmake_C_FILES 			+= \
 						io/pipe_open \
 						io/pipe_openpair \
 						io/pipe_close \
+						io/pipe_read \
+						io/pipe_write \
+						io/pipe_wait \
 						path/relative \
 						path/absolute \
 						path/translate \
