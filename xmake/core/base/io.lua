@@ -34,12 +34,12 @@ io._file        = _file
 io._filelock    = _filelock
 io._stdfile     = io._stdfile or io.stdfile
 
--- new an file
-function _file.new(filepath, fileref, isstdfile)
+-- new a file
+function _file.new(filepath, cdata, isstdfile)
     local file = table.inherit(_file)
     file._NAME = path.filename(filepath)
     file._PATH = isstdfile and filepath or path.absolute(filepath)
-    file._FILE = fileref
+    file._FILE = cdata
     setmetatable(file, _file)
     return file
 end

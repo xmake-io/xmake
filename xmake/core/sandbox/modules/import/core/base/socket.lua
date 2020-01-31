@@ -40,8 +40,8 @@ sandbox_core_base_socket.IPV6    = socket.IPV6
 -- export the socket events
 sandbox_core_base_socket.EV_RECV = socket.EV_RECV
 sandbox_core_base_socket.EV_SEND = socket.EV_SEND
-sandbox_core_base_socket.EV_CONN = socket.EV_SEND
-sandbox_core_base_socket.EV_ACPT = socket.EV_RECV
+sandbox_core_base_socket.EV_CONN = socket.EV_CONN
+sandbox_core_base_socket.EV_ACPT = socket.EV_ACPT
 
 -- wrap socket
 function _socket_wrap(sock)
