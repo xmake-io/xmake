@@ -422,6 +422,11 @@ function _instance:__concat(other)
     return new
 end
 
+-- tostring(bytes)
+function _instance:__tostring()
+    return "<bytes: " .. self:size() .. ">"
+end
+
 -- todisplay(bytes)
 function _instance:__todisplay()
     local parts = {}
