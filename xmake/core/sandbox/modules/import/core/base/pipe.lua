@@ -86,8 +86,8 @@ function sandbox_core_base_pipe_instance.close(pipefile)
 end
 
 -- open a named pipe file
-function sandbox_core_base_pipe.open(buffsize)
-    local pipefile, errors = pipe.open(buffsize)
+function sandbox_core_base_pipe.open(name, mode, buffsize)
+    local pipefile, errors = pipe.open(name, mode, buffsize)
     if not pipefile then
         raise(errors)
     end

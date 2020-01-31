@@ -232,6 +232,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/cpu \
 						tbox/src/tbox/platform/sched \
 						tbox/src/tbox/platform/semaphore \
+						tbox/src/tbox/platform/pipe \
 						tbox/src/tbox/platform/socket \
 						tbox/src/tbox/platform/syserror \
 						tbox/src/tbox/platform/thread \

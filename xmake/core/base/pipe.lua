@@ -271,10 +271,10 @@ end
 --
 -- 1. named pipe (server-side):
 --
--- local pipe, errors = pipe.open("xxx")
+-- local pipe, errors = pipe.open("xxx", 'w')
 -- if pipe then
 --    if pipe:connect() then
---        pipe:read(...)
+--        pipe:write(...)
 --    end
 --    pipe:close()
 -- end
@@ -283,13 +283,13 @@ end
 --
 -- local pipe, errors = pipe.open("xxx")
 -- if pipe then
---    pipe:write(...)
+--    pipe:read(...)
 --    pipe:close()
 -- end
 --
-function pipe.open(name, buffsize)
+function pipe.open(name, mode, buffsize)
 
-    local pipefile, errors = io.pipe_open(name, buffsize or 0)
+    local pipefile, errors = io.pipe_open(name, mode, buffsize or 0)
     if pipefile then
         return _pipe.new(pipefile, name)
     else

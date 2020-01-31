@@ -80,6 +80,9 @@ xmake_C_FILES 			+= \
 						io/socket_recv \
 						io/socket_recvfrom \
 						io/socket_close \
+						io/pipe_open \
+						io/pipe_openpair \
+						io/pipe_close \
 						path/relative \
 						path/absolute \
 						path/translate \
