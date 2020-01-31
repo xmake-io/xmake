@@ -4,7 +4,7 @@ import("core.base.scheduler")
 function _session_read(id, pipefile)
     print("%s/%d: read ..", pipefile, id)
     local result = nil
-    for i = 1, 100000 do
+    for i = 1, 10000 do
         local read, data = pipefile:read(12, {block = true})
         if read > 0 and data then
             result = data:str()
@@ -16,7 +16,7 @@ end
 
 function _session_write(id, pipefile)
     print("%s/%d: write ..", pipefile, id)
-    for i = 1, 100000 do
+    for i = 1, 10000 do
         pipefile:write("hello xmake!", {block = true})
     end
     print("%s/%d: write ok", pipefile, id)
