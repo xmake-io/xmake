@@ -289,9 +289,10 @@ end
 --
 function pipe.open(name, mode, buffsize)
 
+    -- open named pipe
     local pipefile, errors = io.pipe_open(name, mode, buffsize or 0)
     if pipefile then
-        return _pipe.new(pipefile, name)
+        return _instance.new(pipefile, name)
     else
         return nil, string.format("failed to open pipe: %s, error: %s", name, errors or "unknown")
     end
@@ -308,7 +309,7 @@ function pipe.openpair(buffsize)
     -- open anonymous pipe pair
     local rpipefile, wpipefile, errors = io.pipe_openpair(buffsize or 0)
     if rpipefile and wpipefile then
-        return _pipe.new(rpipefile), _pipe.new(wpipefile)
+        return _instance.new(rpipefile), _instance.new(wpipefile)
     else
         return nil, nil, string.format("failed to open anonymous pipe pair, error: %s", errors or "unknown")
     end
