@@ -315,7 +315,7 @@ function scheduler:poller_wait(obj, events, timeout)
     end
 
     -- enable edge-trigger mode if be supported
-    if otype == poller.OT_SOCK and self._SUPPORT_EV_POLLER_CLEAR then
+    if self._SUPPORT_EV_POLLER_CLEAR and (otype == poller.OT_SOCK or otype == poller.OT_PIPE) then
         events = bit.bor(events, poller.EV_POLLER_CLEAR)
     end
 
@@ -463,7 +463,7 @@ function scheduler:runloop()
     self._STARTED = true
 
     -- ensure poller has been initialized first (for windows/iocp) and check edge-trigger mode (for epoll/kqueue)
-    if poller:support(poller.OT_SOCK, poller.EV_POLLER_CLEAR) then
+    if poller:support(poller.EV_POLLER_CLEAR) then
         self._SUPPORT_EV_POLLER_CLEAR = true
     end
 

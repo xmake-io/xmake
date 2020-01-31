@@ -56,11 +56,8 @@ function poller:_pollerdata_set(cdata, data)
 end
 
 -- support events?
-function poller:support(otype, events)
-    if otype == poller.OT_SOCK then
-        return io.poller_support(events)
-    end
-    return false, string.format("invalid poller object type(%d)!", otype)
+function poller:support(events)
+    return io.poller_support(events)
 end
 
 -- spank poller to break the wait() and return all triggered events
