@@ -59,6 +59,15 @@ function sandbox_core_base_pipe_instance.wait(pipefile, events, timeout)
     return events
 end
 
+-- connect pipe, only for named pipe (server-side) 
+function sandbox_core_base_pipe_instance.connect(pipefile, opt)
+    local ok, errors = pipefile:_connect(opt)
+    if ok < 0 and errors then
+        raise(errors)
+    end
+    return ok
+end
+
 -- write data to pipe file
 function sandbox_core_base_pipe_instance.write(pipefile, data, opt)
     local real, errors = pipefile:_write(data, opt)

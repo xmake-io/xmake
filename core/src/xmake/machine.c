@@ -131,6 +131,7 @@ tb_int_t xm_io_pipe_close(lua_State* lua);
 tb_int_t xm_io_pipe_read(lua_State* lua);
 tb_int_t xm_io_pipe_write(lua_State* lua);
 tb_int_t xm_io_pipe_wait(lua_State* lua);
+tb_int_t xm_io_pipe_connect(lua_State* lua);
 
 // the io/poller functions
 tb_int_t xm_io_poller_insert(lua_State* lua);
@@ -291,6 +292,7 @@ static luaL_Reg const g_io_functions[] =
 ,   { "pipe_read",          xm_io_pipe_read        }
 ,   { "pipe_write",         xm_io_pipe_write       }
 ,   { "pipe_wait",          xm_io_pipe_wait        }
+,   { "pipe_connect",       xm_io_pipe_connect     }
 ,   { "poller_insert",      xm_io_poller_insert    }
 ,   { "poller_modify",      xm_io_poller_modify    }
 ,   { "poller_remove",      xm_io_poller_remove    }

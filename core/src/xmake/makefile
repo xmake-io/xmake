@@ -86,6 +86,7 @@ xmake_C_FILES 			+= \
 						io/pipe_read \
 						io/pipe_write \
 						io/pipe_wait \
+						io/pipe_connect \
 						path/relative \
 						path/absolute \
 						path/translate \

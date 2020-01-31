@@ -184,6 +184,37 @@ function _instance:read(size, opt)
     return read, data_or_errors
 end
 
+-- connect pipe, only for named pipe (server-side) 
+function _instance:connect(opt)
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
+    end
+
+    -- only for named pipe
+    if not self:name() then
+        return -1, string.format("%s: cannot connect to anonymous pipe!", self)
+    end
+
+    -- connect it
+    local ok, errors = io.pipe_connect(self:cdata())
+    if ok == 0 then
+        opt = opt or {}
+        local events, waiterrs = self:wait(pipe.EV_CONN, opt.timeout or -1)
+        if events == pipe.EV_CONN then
+            ok, errors = io.pipe_connect(self:cdata())
+        else
+            errors = waiterrs
+        end
+    end
+    if ok < 0 and errors then
+        errors = string.format("%s: %s", self, errors)
+    end
+    return ok, errors
+end
+
 -- wait pipe events
 function _instance:wait(events, timeout)
 
