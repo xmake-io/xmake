@@ -156,6 +156,7 @@ function scheduler:_poller_events_cb(obj, events)
     local pollerdata = self:_poller_data(obj)
     assert(pollerdata, string.format("%s: cannot get poller data!", obj))
 
+
     -- get poller object events
     local events_prev_wait = pollerdata.poller_events_wait
     local events_prev_save = pollerdata.poller_events_save

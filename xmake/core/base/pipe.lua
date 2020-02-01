@@ -32,7 +32,7 @@ local scheduler = require("base/scheduler")
 -- the pipe events, @see tbox/platform/pipe.h
 pipe.EV_READ  = 1
 pipe.EV_WRITE = 2
-pipe.EV_CONN  = 4
+pipe.EV_CONN  = 2
 
 -- new a pipe file
 function _instance.new(cdata, name)
