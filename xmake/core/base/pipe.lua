@@ -87,7 +87,6 @@ function _instance:write(data, opt)
     -- write it
     local write = 0
     local real = 0
-    local wait = false
     local errors = nil
     if opt.block then
         local size = last + 1 - start
@@ -96,12 +95,9 @@ function _instance:write(data, opt)
             if real > 0 then
                 write = write + real
                 start = start + real
-                wait = false
-            elseif real == 0 and not wait then
+            elseif real == 0 then
                 local events, waiterrs = self:wait(pipe.EV_WRITE, opt.timeout or -1)
-                if events == pipe.EV_WRITE then
-                    wait = true
-                else
+                if events ~= pipe.EV_WRITE then
                     errors = waiterrs
                     break
                 end
@@ -141,7 +137,6 @@ function _instance:read(size, opt)
     opt = opt or {}
     local read = 0
     local real = 0
-    local wait = false
     local data_or_errors = nil
     if opt.block then
         local results = {}
@@ -150,14 +145,11 @@ function _instance:read(size, opt)
             real, data_or_errors = io.pipe_read(self:cdata(), buff:caddr(), math.min(buff:size(), size - read))
             if real > 0 then
                 read = read + real
-                wait = false
                 table.insert(results, bytes(buff, 1, real))
                 self:_readbuff_clear()
-            elseif real == 0 and not wait then
+            elseif real == 0 then
                 local events, waiterrs = self:wait(pipe.EV_READ, opt.timeout or -1)
-                if events == pipe.EV_READ then
-                    wait = true
-                else
+                if events ~= pipe.EV_READ then
                     data_or_errors = waiterrs
                     break
                 end
