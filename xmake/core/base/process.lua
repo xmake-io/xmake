@@ -28,6 +28,7 @@ local path      = require("base/path")
 local utils     = require("base/utils")
 local string    = require("base/string")
 local coroutine = require("base/coroutine")
+local scheduler = require("base/scheduler")
 
 -- save original interfaces
 process._open       = process._open or process.open
@@ -70,22 +71,58 @@ end
 -- @return          ok, status
 --
 function _subprocess:wait(timeout)
-    if not self._PROC then
-        return -1, 0, string.format("subprocess(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return -1, errors
     end
-    return process._wait(self._PROC, timeout or -1)
+
+    -- wait events
+    local result = -1
+    local status_or_errors = nil
+    if scheduler:co_running() then
+        result, status_or_errors = scheduler:poller_waitproc(self, timeout or -1)
+    else
+        result, status_or_errors = process._wait(self:cdata(), timeout or -1)
+    end
+    if result < 0 and status_or_errors then
+        status_or_errors = string.format("%s: %s", self, status_or_errors)
+    end
+    return result, status_or_errors
 end
 
 -- close subprocess
 function _subprocess:close(timeout)
-    if not self._PROC then
-        return false, string.format("subprocess(%s) has been closed!", self:name())
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
     end
-    local ok = process._close(self._PROC)
+
+    -- cancel pipe events from the scheduler
+    if scheduler:co_running() then
+        ok, errors = scheduler:poller_cancel(self)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- close process
+    ok = process._close(self:cdata())
     if ok then
         self._PROC = nil
     end
     return ok
+end
+
+-- ensure the process is opened
+function _subprocess:_ensure_opened()
+    if not self:cdata() then
+        return false, string.format("%s: has been closed!", self)
+    end
+    return true
 end
 
 -- tostring(subprocess)

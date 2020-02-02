@@ -156,6 +156,22 @@ function scheduler:_poller_events_cb(obj, events)
     local pollerdata = self:_poller_data(obj)
     assert(pollerdata, string.format("%s: cannot get poller data!", obj))
 
+    -- is process object?
+    if obj:otype() == poller.OT_PROC then
+
+        -- resume coroutine and return the process exit status
+        pollerdata.proc_status = events
+
+        -- waiting process? resume this coroutine
+        if pollerdata.co_waiting then
+            local co_waiting = pollerdata.co_waiting
+            pollerdata.co_waiting = nil
+            return self:_poller_resume_co(co_waiting, 1)
+        else 
+            pollerdata.proc_pending = 1
+        end
+        return ;
+    end
 
     -- get poller object events
     local events_prev_wait = pollerdata.poller_events_wait
@@ -401,13 +417,78 @@ function scheduler:poller_wait(obj, events, timeout)
     return self:co_suspend()
 end
 
+-- wait poller object/process status
+function scheduler:poller_waitproc(obj, timeout)
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return -1, "we must call poller_wait() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return -1, "the scheduler is stopped!"
+    end
+
+    -- check the object type
+    local otype = obj:otype()
+    if otype ~= poller.OT_PROC then
+        return -1, string.format("%s: invalid object type(%d)!", obj, otype)
+    end
+
+    -- get and allocate poller object data
+    local pollerdata = self:_poller_data(obj)
+    if not pollerdata then
+        pollerdata = {proc_pending = 0, proc_status = 0}
+        self:_poller_data_set(obj, pollerdata)
+    end
+
+    -- has pending process status?
+    if pollerdata.proc_pending ~= 0 then
+        pollerdata.proc_pending = 0
+        return 1, pollerdata.proc_status
+    end
+
+    -- insert poller object to poller for waiting process
+    local ok, errors = poller:insert(obj, 0, self._poller_events_cb)
+    if not ok then
+        return -1, errors
+    end
+
+    -- register timeout task to timer
+    local timer_task = nil
+    if timeout > 0 then
+        timer_task = self:_timer():post(function (cancel) 
+            if not cancel and running:is_suspended() then
+                pollerdata.co_waiting = nil
+                self:_co_tasks_suspended():remove(running)
+                self:co_resume(running, 0)
+            end
+        end, timeout)
+    end
+    running:_timer_task_set(timer_task)
+
+    -- set process status
+    pollerdata.proc_status  = 0
+    pollerdata.proc_pending = 0
+    pollerdata.co_waiting   = running
+
+    -- save the suspended coroutine
+    self:_co_tasks_suspended():insert(running)
+
+    -- wait
+    local ok = self:co_suspend()
+    return ok, pollerdata.proc_status
+end
+
 -- cancel poller object events
 function scheduler:poller_cancel(obj)
 
     -- reset the pollerdata data
     local pollerdata = self:_poller_data(obj)
     if pollerdata then
-        if pollerdata.poller_events_wait ~= 0 then
+        if pollerdata.poller_events_wait ~= 0 or obj:otype() == poller.OT_PROC then
             local ok, errors = poller:remove(obj)
             if not ok then
                 return false, errors
