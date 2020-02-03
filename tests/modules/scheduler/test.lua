@@ -30,3 +30,16 @@ function test_sleep(t)
     scheduler.runloop()
 end
 
+function test_yield(t)
+
+    local count = 0
+    local task = function (a)
+        scheduler.co_yield()
+        count = count + 1
+    end
+    for i = 1, 10 do
+        scheduler.co_start(task)
+    end
+    scheduler.runloop()
+    t:are_equal(count, 10)
+end
