@@ -484,7 +484,7 @@ end
 -- sleep (support in coroutine)
 function sandbox_os.sleep(ms)
     if scheduler:co_running() then
-        local ok, errors = scheduler:sleep(ms)
+        local ok, errors = scheduler:co_sleep(ms)
         if not ok then
             raise(errors)
         end

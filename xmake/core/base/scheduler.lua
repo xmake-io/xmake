@@ -251,6 +251,13 @@ end
 
 -- start a new named coroutine task
 function scheduler:co_start_named(coname, cotask, ...)
+
+    -- check coroutine task
+    if not cotask then
+        return nil, string.format("cannot start coroutine, invalid cotask(%s/%s)", coname and coname or "anonymous", cotask)
+    end
+
+    -- start coroutine
     local co
     co = _coroutine.new(coname, coroutine.create(function(...) 
         cotask(...)
@@ -281,6 +288,71 @@ end
 -- suspend the current coroutine
 function scheduler:co_suspend(...)
     return coroutine.yield(...)
+end
+
+-- yield the current coroutine
+function scheduler:co_yield()
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return false, "we must call co_yield() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
+    end
+
+    -- register timeout task to timer without 0 ms (no delay)
+    self:_timer():post(function (cancel) 
+        if running:is_suspended() then
+            self:_co_tasks_suspended():remove(running)
+            self:co_resume(running)
+        end
+    end, 0)
+
+    -- save the suspended coroutine
+    self:_co_tasks_suspended():insert(running)
+
+    -- wait
+    self:co_suspend()
+    return true
+end
+
+-- sleep some times (ms)
+function scheduler:co_sleep(ms)
+
+    -- we need not do sleep 
+    if ms == 0 then
+        return true
+    end
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return false, "we must call sleep() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
+    end
+
+    -- register timeout task to timer
+    self:_timer():post(function (cancel) 
+        if running:is_suspended() then
+            self:_co_tasks_suspended():remove(running)
+            self:co_resume(running)
+        end
+    end, ms)
+
+    -- save the suspended coroutine
+    self:_co_tasks_suspended():insert(running)
+
+    -- wait
+    self:co_suspend()
+    return true
 end
 
 -- get the current running coroutine 
@@ -496,37 +568,6 @@ function scheduler:poller_cancel(obj)
         end
         self:_poller_data_set(obj, nil)
     end
-    return true
-end
-
--- sleep some times (ms)
-function scheduler:sleep(ms)
-
-    -- we need not do sleep 
-    if ms == 0 then
-        return true
-    end
-
-    -- get the running coroutine
-    local running = self:co_running()
-    if not running then
-        return false, "we must call sleep() in coroutine with scheduler!"
-    end
-
-    -- is stopped?
-    if not self._STARTED then
-        return false, "the scheduler is stopped!"
-    end
-
-    -- register timeout task to timer
-    self:_timer():post(function (cancel) 
-        if running:is_suspended() then
-            self:co_resume(running)
-        end
-    end, ms)
-
-    -- wait
-    self:co_suspend()
     return true
 end
 

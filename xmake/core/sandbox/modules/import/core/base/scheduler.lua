@@ -53,6 +53,14 @@ function sandbox_core_base_scheduler.co_suspend(...)
     return scheduler:co_suspend(...)
 end
 
+-- yield the current coroutine
+function sandbox_core_base_scheduler.co_yield()
+    local ok, errors = scheduler:co_yield()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- get the current running coroutine 
 function sandbox_core_base_scheduler.co_running()
     return scheduler:co_running()
@@ -64,13 +72,12 @@ function sandbox_core_base_scheduler.co_count()
 end
 
 -- sleep some times (ms)
-function sandbox_core_base_scheduler.sleep(ms)
-    local ok, errors = scheduler:sleep(ms)
+function sandbox_core_base_scheduler.co_sleep(ms)
+    local ok, errors = scheduler:co_sleep(ms)
     if not ok then
         raise(errors)
     end
 end
-
 
 -- stop loop
 function sandbox_core_base_scheduler.stop()
