@@ -355,6 +355,38 @@ function scheduler:co_sleep(ms)
     return true
 end
 
+-- wait for exiting the given coroutine tasks
+function scheduler:co_waitexit(cotasks)
+
+    -- get the running coroutine
+    local running = self:co_running()
+    if not running then
+        return false, "we must call waitexit() in coroutine with scheduler!"
+    end
+
+    -- is stopped?
+    if not self._STARTED then
+        return false, "the scheduler is stopped!"
+    end
+
+    -- wait it
+    cotasks = table.copy(table.wrap(cotasks))
+    while #cotasks > 0 do
+        for i = #cotasks, 1, -1 do
+            local co = cotasks[i]
+            if co:is_dead() then
+                table.remove(cotasks, i)
+            else
+                local ok, errors = self:co_yield()
+                if not ok then
+                    return false, errors
+                end
+            end
+        end
+    end
+    return true
+end
+
 -- get the current running coroutine 
 function scheduler:co_running()
     local running = coroutine.running()

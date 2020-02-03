@@ -7,10 +7,11 @@ function test_runjobs(t)
         t:are_equal(a, "xmake!")
         count = count + 1
     end
+    local cotasks = {}
     for i = 1, 100 do
-        scheduler.co_start(task, "xmake!")
+        table.insert(cotasks, scheduler.co_start(task, "xmake!"))
     end
-    scheduler.runloop()
+    scheduler.co_waitexit(cotasks)
     t:are_equal(count, 100)
 end
 
@@ -36,9 +37,10 @@ function test_yield(t)
         scheduler.co_yield()
         count = count + 1
     end
+    local cotasks = {}
     for i = 1, 10 do
-        scheduler.co_start(task)
+        table.insert(cotasks, scheduler.co_start(task))
     end
-    scheduler.runloop()
+    scheduler.co_waitexit(cotasks)
     t:are_equal(count, 10)
 end

@@ -50,11 +50,12 @@ function _session(addr, port)
 end
 
 function main(count)
+    local cotasks = {}
     count = count and tonumber(count) or 1
     for i = 1, count do
-        scheduler.co_start(_session, "127.0.0.1", 9001)
+        table.insert(cotasks, scheduler.co_start(_session, "127.0.0.1", 9001))
     end
-    scheduler.runloop()
+    scheduler.co_waitexit(cotasks)
     for _, sock in ipairs(socks) do
         sock:close()
     end

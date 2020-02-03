@@ -61,16 +61,6 @@ function sandbox_core_base_scheduler.co_yield()
     end
 end
 
--- get the current running coroutine 
-function sandbox_core_base_scheduler.co_running()
-    return scheduler:co_running()
-end
-
--- get the all coroutine task count
-function sandbox_core_base_scheduler.co_count()
-    return scheduler:co_count()
-end
-
 -- sleep some times (ms)
 function sandbox_core_base_scheduler.co_sleep(ms)
     local ok, errors = scheduler:co_sleep(ms)
@@ -79,20 +69,22 @@ function sandbox_core_base_scheduler.co_sleep(ms)
     end
 end
 
--- stop loop
-function sandbox_core_base_scheduler.stop()
-    local ok, errors = scheduler:stop()
+-- wait for exiting the given coroutine tasks
+function sandbox_core_base_scheduler.co_waitexit(cotasks)
+    local ok, errors = scheduler:co_waitexit(cotasks)
     if not ok then
         raise(errors)
     end
 end
 
--- run loop
-function sandbox_core_base_scheduler.runloop()
-    local ok, errors = scheduler:runloop()
-    if not ok then
-        raise(errors)
-    end
+-- get the current running coroutine 
+function sandbox_core_base_scheduler.co_running()
+    return scheduler:co_running()
+end
+
+-- get the all coroutine task count
+function sandbox_core_base_scheduler.co_count()
+    return scheduler:co_count()
 end
 
 -- return module
