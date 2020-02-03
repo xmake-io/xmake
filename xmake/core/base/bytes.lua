@@ -44,6 +44,7 @@ ffi.cdef[[
 -- bytes(bytes1, bytes2, bytes3, ...): allocates and concat buffer from list of byte buffers
 -- bytes(bytes): allocates a buffer from another one (strict replica, sharing memory)
 -- bytes({bytes1, bytes2, ...}): allocates and concat buffer from a list of byte buffers (table)
+-- bytes({})/bytes(): allocate an empty buffer
 --
 function _instance.new(...)
     local args = {...}
@@ -134,7 +135,7 @@ function _instance.new(...)
             end
             instance._MANAGED  = true
             instance._READONLY = false
-        elseif not arg2 and arg1:size() then
+        elseif not arg2 and arg1.size and arg1:size() > 0 then
             -- bytes(bytes): allocates a buffer from another one (strict replica, sharing memory)
             local b = arg1
             local start = 1
@@ -147,9 +148,21 @@ function _instance.new(...)
             instance._REF      = b -- keep lua ref for GC
             instance._MANAGED  = false
             instance._READONLY = b:readonly()
+        else
+            -- bytes({}): allocate an empty buffer
+            instance._SIZE     = 0
+            instance._CDATA    = nil
+            instance._MANAGED  = false
+            instance._READONLY = true
         end
+    elseif arg1 == nil then
+        -- bytes(): allocate an empty buffer
+        instance._SIZE     = 0
+        instance._CDATA    = nil
+        instance._MANAGED  = false
+        instance._READONLY = true
     end
-    if instance:cdata() == nil then
+    if instance:size() == nil then
         os.raise("invalid arguments for bytes(...)!")
     end
     setmetatable(instance, _instance)
