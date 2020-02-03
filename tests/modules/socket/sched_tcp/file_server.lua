@@ -29,5 +29,4 @@ end
 
 function main(filepath)
     scheduler.co_start(_listen, "127.0.0.1", 9090, filepath)
-    scheduler.runloop()
 end

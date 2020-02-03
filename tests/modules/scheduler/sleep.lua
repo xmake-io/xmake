@@ -21,6 +21,5 @@ function main()
         scheduler.co_start(_session1, i)
         scheduler.co_start(_session2, i)
     end
-    scheduler.runloop()
 end
 

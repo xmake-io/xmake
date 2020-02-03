@@ -39,5 +39,4 @@ function main(count)
     for i = 1, count do
         scheduler.co_start(_session, "127.0.0.1", 9090)
     end
-    scheduler.runloop()
 end

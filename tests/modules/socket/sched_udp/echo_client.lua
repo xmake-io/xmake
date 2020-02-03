@@ -15,5 +15,4 @@ end
 
 function main(data)
     scheduler.co_start(_session, "127.0.0.1", 9001, data)
-    scheduler.runloop()
 end

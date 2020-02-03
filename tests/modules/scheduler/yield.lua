@@ -10,6 +10,5 @@ function main()
     for i = 1, 10 do
         scheduler.co_start(_session, i)
     end
-    scheduler.runloop()
 end
 

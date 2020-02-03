@@ -20,5 +20,4 @@ function main(count)
     for i = 1, count do
         scheduler.co_start(_session, i)
     end
-    scheduler.runloop()
 end

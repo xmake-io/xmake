@@ -27,7 +27,6 @@ function test_sleep(t)
     for i = 1, 3 do
         scheduler.co_start(task)
     end
-    scheduler.runloop()
 end
 
 function test_yield(t)

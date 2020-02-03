@@ -33,6 +33,7 @@ local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
 local colors        = require("base/colors")
+local scheduler     = require("base/scheduler")
 local theme         = require("theme/theme")
 local project       = require("project/project")
 local history       = require("project/history")
@@ -253,7 +254,13 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- run task    
-    ok, errors = taskinst:run()
+    scheduler:co_start_named("xmake " .. taskname, function ()
+        local ok, errors = taskinst:run()
+        if not ok then
+            os.raise(errors)
+        end
+    end)
+    ok, errors = scheduler:runloop()
     if not ok then
         utils.error(errors)
         return -1
