@@ -147,6 +147,7 @@ end
 function process.open(command, opt)
     
     -- get stdout and pass to subprocess
+    opt = opt or {}
     local stdout = opt.stdout
     if type(stdout) == "string" then
         opt.outpath = stdout
@@ -190,6 +191,7 @@ end
 function process.openv(shellname, argv, opt)
 
     -- get stdout and pass to subprocess
+    opt = opt or {}
     local stdout = opt.stdout
     if type(stdout) == "string" then
         opt.outpath = stdout

@@ -96,7 +96,7 @@ function _instance:write(data, opt)
                 write = write + real
                 start = start + real
             elseif real == 0 then
-                local events, waiterrs = self:wait(pipe.EV_WRITE, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, pipe.EV_WRITE, opt.timeout or -1)
                 if events ~= pipe.EV_WRITE then
                     errors = waiterrs
                     break
@@ -148,7 +148,7 @@ function _instance:read(size, opt)
                 table.insert(results, bytes(buff, 1, real))
                 self:_readbuff_clear()
             elseif real == 0 then
-                local events, waiterrs = self:wait(pipe.EV_READ, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, pipe.EV_READ, opt.timeout or -1)
                 if events ~= pipe.EV_READ then
                     data_or_errors = waiterrs
                     break
@@ -194,7 +194,7 @@ function _instance:connect(opt)
     local ok, errors = io.pipe_connect(self:cdata())
     if ok == 0 then
         opt = opt or {}
-        local events, waiterrs = self:wait(pipe.EV_CONN, opt.timeout or -1)
+        local events, waiterrs = _instance.wait(self, pipe.EV_CONN, opt.timeout or -1)
         if events == pipe.EV_CONN then
             ok, errors = io.pipe_connect(self:cdata())
         else

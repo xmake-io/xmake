@@ -162,7 +162,7 @@ function _instance:accept(opt)
     local sock, errors = io.socket_accept(self:cdata())
     if not sock and not errors then
         opt = opt or {}
-        local events, waiterrs = self:wait(socket.EV_ACPT, opt.timeout or -1)
+        local events, waiterrs = _instance.wait(self, socket.EV_ACPT, opt.timeout or -1)
         if events == socket.EV_ACPT then
             sock, errors = io.socket_accept(self:cdata())
         else
@@ -191,7 +191,7 @@ function _instance:connect(addr, port, opt)
     local ok, errors = io.socket_connect(self:cdata(), addr, port, self:family())
     if ok == 0 then
         opt = opt or {}
-        local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
+        local events, waiterrs = _instance.wait(self, socket.EV_CONN, opt.timeout or -1)
         if events == socket.EV_CONN then
             ok, errors = io.socket_connect(self:cdata(), addr, port, self:family())
         else
@@ -222,7 +222,7 @@ function _instance:connect_unix(addr, opt)
     opt = opt or {}
     local ok, errors = io.socket_connect(self:cdata(), addr, opt.is_abstract, self:family())
     if ok == 0 then
-        local events, waiterrs = self:wait(socket.EV_CONN, opt.timeout or -1)
+        local events, waiterrs = _instance.wait(self, socket.EV_CONN, opt.timeout or -1)
         if events == socket.EV_CONN then
             ok, errors = io.socket_connect(self:cdata(), addr, opt.is_abstract, self:family())
         else
@@ -275,7 +275,7 @@ function _instance:send(data, opt)
                 start = start + real
                 wait = false
             elseif real == 0 and not wait then
-                local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
                     wait = true
                 else
@@ -337,7 +337,7 @@ function _instance:sendfile(file, opt)
                 start = start + real
                 wait = false
             elseif real == 0 and not wait then
-                local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
                     wait = true
                 else
@@ -393,7 +393,7 @@ function _instance:recv(size, opt)
                 table.insert(results, bytes(buff, 1, real))
                 self:_recvbuff_clear()
             elseif real == 0 and not wait then
-                local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
                     wait = true
                 else
@@ -456,7 +456,7 @@ function _instance:sendto(data, addr, port, opt)
         while true do
             send, errors = io.socket_sendto(self:cdata(), data, addr, port, self:family())
             if send == 0 and not wait then
-                local events, waiterrs = self:wait(socket.EV_SEND, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, socket.EV_SEND, opt.timeout or -1)
                 if events == socket.EV_SEND then
                     wait = true
                 else
@@ -511,7 +511,7 @@ function _instance:recvfrom(size, opt)
                 self:_recvbuff_clear()
                 break
             elseif recv == 0 and not wait then
-                local events, waiterrs = self:wait(socket.EV_RECV, opt.timeout or -1)
+                local events, waiterrs = _instance.wait(self, socket.EV_RECV, opt.timeout or -1)
                 if events == socket.EV_RECV then
                     wait = true
                 else
