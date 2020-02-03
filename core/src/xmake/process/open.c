@@ -35,7 +35,9 @@
  * implementation
  */
 
-// p = process.open(command, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+/* p = process.open(command, 
+ * {outpath = "", errpath = "", outfile = "", errfile = "", outpipe = "", errpipe = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+ */
 tb_int_t xm_process_open(lua_State* lua)
 {
     // check
@@ -85,6 +87,24 @@ tb_int_t xm_process_open(lua_State* lua)
             lua_pushstring(lua, "errfile");
             lua_gettable(lua, 3);
             errfile = (xm_io_file_t*)lua_touserdata(lua, -1);
+            lua_pop(lua, 1);
+        }
+
+        // get outpipe
+        if (!outpath && !outfile)
+        {
+            lua_pushstring(lua, "outpipe");
+            lua_gettable(lua, 3);
+            outpipe = (tb_pipe_file_ref_t)lua_touserdata(lua, -1);
+            lua_pop(lua, 1);
+        }
+
+        // get errpipe
+        if (!errpath && !errfile)
+        {
+            lua_pushstring(lua, "errpipe");
+            lua_gettable(lua, 3);
+            errpipe = (tb_pipe_file_ref_t)lua_touserdata(lua, -1);
             lua_pop(lua, 1);
         }
 
@@ -148,6 +168,11 @@ tb_int_t xm_process_open(lua_State* lua)
             attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILE;
         }
     }
+    else if (outpipe)
+    {
+        attr.outpipe = outpipe;
+        attr.outtype = TB_PROCESS_REDIRECT_TYPE_PIPE;
+    }
 
     // redirect stderr?
     if (errpath)
@@ -165,6 +190,11 @@ tb_int_t xm_process_open(lua_State* lua)
             attr.errfile = rawfile;
             attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILE;
         }
+    }
+    else if (errpipe)
+    {
+        attr.errpipe = errpipe;
+        attr.errtype = TB_PROCESS_REDIRECT_TYPE_PIPE;
     }
 
     // set the new environments

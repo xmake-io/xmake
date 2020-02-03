@@ -64,7 +64,7 @@ function _file:close()
     end
 
     -- close file
-    ok, errors = io.file_close(self._FILE)
+    ok, errors = io.file_close(self:cdata())
     if ok then
         self._FILE = nil
     end
@@ -106,7 +106,7 @@ end
 
 -- gc(file)
 function _file:__gc()
-    if self._FILE and io.file_close(self._FILE) then
+    if self:cdata() and io.file_close(self:cdata()) then
         self._FILE = nil
     end
 end
@@ -114,6 +114,11 @@ end
 -- get file length
 function _file:__len()
     return _file.size(self)
+end
+
+-- get cdata
+function _file:cdata()
+    return self._FILE
 end
 
 -- get file rawfd
@@ -126,7 +131,7 @@ function _file:rawfd()
     end
 
     -- get file rawfd
-    local result, errors = io.file_rawfd(self._FILE)
+    local result, errors = io.file_rawfd(self:cdata())
     if not result and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -143,7 +148,7 @@ function _file:size()
     end
 
     -- get file size
-    local result, errors = io.file_size(self._FILE)
+    local result, errors = io.file_size(self:cdata())
     if not result and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -161,7 +166,7 @@ function _file:read(fmt, opt)
 
     -- read file
     opt = opt or {}
-    local result, errors = io.file_read(self._FILE, fmt, opt.continuation)
+    local result, errors = io.file_read(self:cdata(), fmt, opt.continuation)
     if errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -178,7 +183,7 @@ function _file:write(...)
     end
 
     -- write file
-    ok, errors = io.file_write(self._FILE, ...)
+    ok, errors = io.file_write(self:cdata(), ...)
     if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -195,7 +200,7 @@ function _file:seek(whence, offset)
     end
 
     -- seek file
-    local result, errors = io.file_seek(self._FILE, whence, offset)
+    local result, errors = io.file_seek(self:cdata(), whence, offset)
     if not result and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -212,7 +217,7 @@ function _file:flush()
     end
 
     -- flush file
-    ok, errors = io.file_flush(self._FILE)
+    ok, errors = io.file_flush(self:cdata())
     if not ok and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -229,7 +234,7 @@ function _file:isatty()
     end
 
     -- is a tty?
-    ok, errors = io.file_isatty(self._FILE)
+    ok, errors = io.file_isatty(self:cdata())
     if ok == nil and errors then
         errors = string.format("%s: %s", self, errors)
     end
@@ -238,7 +243,7 @@ end
 
 -- ensure the file is opened
 function _file:_ensure_opened()
-    if not self._FILE then
+    if not self:cdata() then
         return false, string.format("%s: has been closed!", self)
     end
     return true
@@ -308,6 +313,11 @@ function _filelock:path()
     return self._PATH
 end
 
+-- get the cdata
+function _filelock:cdata()
+    return self._LOCK
+end
+
 -- is locked?
 function _filelock:islocked()
     return self._LOCKED_NUM > 0
@@ -328,7 +338,7 @@ function _filelock:lock(opt)
     end
 
     -- lock it
-    if self._LOCKED_NUM > 0 or io.filelock_lock(self._LOCK, opt) then
+    if self._LOCKED_NUM > 0 or io.filelock_lock(self:cdata(), opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
@@ -351,7 +361,7 @@ function _filelock:trylock(opt)
     end
 
     -- try lock it
-    if self._LOCKED_NUM > 0 or io.filelock_trylock(self._LOCK, opt) then
+    if self._LOCKED_NUM > 0 or io.filelock_trylock(self:cdata(), opt) then
         self._LOCKED_NUM = self._LOCKED_NUM + 1
         return true
     else
@@ -369,7 +379,7 @@ function _filelock:unlock(opt)
     end
 
     -- unlock it
-    if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self._LOCK)) then
+    if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self:cdata())) then
         if self._LOCKED_NUM > 0 then
             self._LOCKED_NUM = self._LOCKED_NUM - 1
         else 
@@ -391,7 +401,7 @@ function _filelock:close()
     end
 
     -- close it
-    ok = io.filelock_close(self._LOCK)
+    ok = io.filelock_close(self:cdata())
     if ok then
         self._LOCK = nil
         self._LOCKED_NUM = 0
@@ -401,7 +411,7 @@ end
 
 -- ensure the file is opened
 function _filelock:_ensure_opened()
-    if not self._LOCK then
+    if not self:cdata() then
         return false, string.format("%s: has been closed!", self)
     end
     return true
@@ -424,7 +434,7 @@ end
 
 -- gc(filelock)
 function _filelock:__gc()
-    if self._LOCK and io.filelock_close(self._LOCK) then
+    if self:cdata() and io.filelock_close(self:cdata()) then
         self._LOCK = nil
         self._LOCKED_NUM = 0
     end

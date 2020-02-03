@@ -48,7 +48,7 @@ function _instance:name()
     return self._NAME
 end
 
--- get poller object type, poller.OT_instance
+-- get poller object type, poller.OT_PIPE
 function _instance:otype()
     return 2
 end

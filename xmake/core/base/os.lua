@@ -608,7 +608,7 @@ end
 -- @param program     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
 --        filename    "clang", "xcrun"", "~/dir/test\ xxx/clang"
 -- @param argv        the arguments
--- @param opt         the options, e.g. {wildcards = false, stdout = outfile, stderr = errfile,
+-- @param opt         the options, e.g. {wildcards = false, stdout = filepath/file/pipe, stderr = filepath/file/pipe,
 --                                       envs = {PATH = "xxx;xx", CFLAGS = "xx"}}
 --
 function os.execv(program, argv, opt)
@@ -651,17 +651,7 @@ function os.execv(program, argv, opt)
     end
 
     -- init open options
-    local openopt = {envs = envs}
-    if type(opt.stdout) == "table" then
-        openopt.outfile = opt.stdout._FILE
-    else
-        openopt.outpath = opt.stdout
-    end
-    if type(opt.stderr) == "table" then
-        openopt.errfile = opt.stderr._FILE
-    else
-        openopt.errpath = opt.stderr
-    end
+    local openopt = {envs = envs, stdout = opt.stdout, stderr = opt.stderr}
 
     -- open command
     local ok = -1

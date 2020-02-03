@@ -140,11 +140,37 @@ end
 -- open a subprocess
 --
 -- @param command   the process command
--- @param opt       the option arguments, e.g. {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+-- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}}) 
 --
 -- @return          the subprocess
 --
 function process.open(command, opt)
+    
+    -- get stdout and pass to subprocess
+    local stdout = opt.stdout
+    if type(stdout) == "string" then
+        opt.outpath = stdout
+    elseif type(stdout) == "table" then
+        if stdout.otype and stdout:otype() == 2 then
+            opt.outpipe = stdout:cdata()
+        else
+            opt.outfile = stdout:cdata()
+        end
+    end
+
+    -- get stderr and pass to subprocess
+    local stderr = opt.stderr
+    if type(stderr) == "string" then
+        opt.errpath = stderr
+    elseif type(stderr) == "table" then
+        if stderr.otype and stderr:otype() == 2 then
+            opt.errpipe = stderr:cdata()
+        else
+            opt.errfile = stderr:cdata()
+        end
+    end
+
+    -- open subprocess
     local proc = process._open(command, opt)
     if proc then
         return _subprocess.new(path.filename(command:split(' ', {plain = true})[1]), proc)
@@ -157,11 +183,37 @@ end
 --
 -- @param shellname the shell name 
 -- @param argv      the arguments list
--- @param opt       the option arguments, e.g. {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+-- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}}) 
 --
 -- @return          the subprocess
 --
 function process.openv(shellname, argv, opt)
+
+    -- get stdout and pass to subprocess
+    local stdout = opt.stdout
+    if type(stdout) == "string" then
+        opt.outpath = stdout
+    elseif type(stdout) == "table" then
+        if stdout.otype and stdout:otype() == 2 then
+            opt.outpipe = stdout:cdata()
+        else
+            opt.outfile = stdout:cdata()
+        end
+    end
+
+    -- get stderr and pass to subprocess
+    local stderr = opt.stderr
+    if type(stderr) == "string" then
+        opt.errpath = stderr
+    elseif type(stderr) == "table" then
+        if stderr.otype and stderr:otype() == 2 then
+            opt.errpipe = stderr:cdata()
+        else
+            opt.errfile = stderr:cdata()
+        end
+    end
+
+    -- open subprocess
     local proc = process._openv(shellname, argv, opt)
     if proc then
         return _subprocess.new(path.filename(shellname), proc)

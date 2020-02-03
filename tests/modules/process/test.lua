@@ -7,7 +7,7 @@ function test_single_process(t)
     local stdout = os.tmpfile()
     local stderr = os.tmpfile()
     for i = 1, 2 do
-        local proc = process.open("echo -n awd", {outpath = stdout, errpath = stderr})
+        local proc = process.open("echo -n awd", {stdout = stdout, stderr = stderr})
         proc:wait(inftimeout)
         proc:close()
         t:are_equal(io.readfile(stdout), "awd")
