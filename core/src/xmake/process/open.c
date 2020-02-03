@@ -52,12 +52,14 @@ tb_int_t xm_process_open(lua_State* lua)
     tb_process_attr_t attr = {0};
 
     // get option arguments
-    tb_size_t        envn = 0;
-    tb_char_t const* envs[256] = {0};
-    tb_char_t const* outpath = tb_null;
-    tb_char_t const* errpath = tb_null;
-    xm_io_file_t*    outfile = tb_null;
-    xm_io_file_t*    errfile = tb_null;
+    tb_size_t          envn = 0;
+    tb_char_t const*   envs[256] = {0};
+    tb_char_t const*   outpath = tb_null;
+    tb_char_t const*   errpath = tb_null;
+    xm_io_file_t*      outfile = tb_null;
+    xm_io_file_t*      errfile = tb_null;
+    tb_pipe_file_ref_t outpipe = tb_null;
+    tb_pipe_file_ref_t errpipe = tb_null;
     if (lua_istable(lua, 2)) 
     { 
         // get outpath
