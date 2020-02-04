@@ -93,11 +93,7 @@ function sandbox_core_project.check()
     end
 
     -- check all options
-    local runjobs = import("private.async.runjobs", {anonymous = true})
-    local ok, errors = true--utils.trycall(runjobs, "check_options", instance:fork(checktask):script(), #options, 4)
-    if not ok then
-        raise(errors)
-    end
+    import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), #options, 4)
 
     -- leave toolchains environment
     environment.leave("toolchains")
@@ -106,7 +102,7 @@ function sandbox_core_project.check()
     option.save()
 
     -- leave the project directory
-    ok, errors = os.cd(oldir)
+    local ok, errors = os.cd(oldir)
     if not ok then
         raise(errors)
     end
