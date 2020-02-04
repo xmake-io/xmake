@@ -10,6 +10,9 @@ function _jobfunc(index)
 end
 
 function main()
-    runjobs("test", _jobfunc, 100, 6)
+    local t = os.mclock()
+    runjobs("test", _jobfunc, 100, 6, 1000, function (running_jobs_indices)
+        print("%s: timeout (%d ms), running: %s", scheduler.co_running(), os.mclock() - t, table.concat(running_jobs_indices, ","))
+    end)
 end
 

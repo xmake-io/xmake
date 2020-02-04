@@ -22,19 +22,40 @@
 import("core.base.scheduler")
 
 -- main entry
-function main(name, jobfunc, total, comax)
+function main(name, jobfunc, total, comax, timeout, timerfunc)
 
+    -- run timer
+    local stop = false
+    local running_jobs_indices
+    if timerfunc then
+        assert(timeout and timeout < 60000, "runjobs: invalid timer timeout!")
+        scheduler.co_start_named(name .. "/timer", function ()
+            while not stop do
+                os.sleep(timeout)
+                if not stop then
+                    timerfunc(running_jobs_indices)
+                end
+            end
+        end)
+    end
+
+    -- run jobs
     local index = 0
     local group_name = name
     comax = comax or total
     while index < total do
+        running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function ()
             local max = math.min(index + comax, total)
             while index < max do
                 index = index + 1
+                table.insert(running_jobs_indices, index)
                 scheduler.co_start_named(name .. '/' .. tostring(index), jobfunc, index)
             end
         end)
         scheduler.co_group_wait(group_name)
     end
+
+    -- stop timer
+    stop = true
 end

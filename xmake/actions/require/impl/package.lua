@@ -633,7 +633,7 @@ function _install_packages(packages_install, packages_download)
         packages_installing[index] = nil
         packages_downloading[index] = nil
 
-    end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (indices, tips) 
+    end, #packages_install, (option.get("verbose") or option.get("diagnosis")) and 1 or 4, 300, function (running_jobs_indices) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") or not show_wait then
@@ -646,7 +646,7 @@ function _install_packages(packages_install, packages_download)
         -- make installing and downloading packages list
         local installing = {}
         local downloading = {}
-        for _, index in ipairs(indices) do
+        for _, index in ipairs(running_jobs_indices) do
             local package = packages_installing[index]
             if package then
                 table.insert(installing, package:name())
@@ -666,7 +666,7 @@ function _install_packages(packages_install, packages_download)
         if #installing > 0 then
             cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
-        cprintf(" .. ${dim}%s${clear}%s", tips and (tips .. " ") or "", waitchars[waitindex + 1])
+        cprintf(" .. %s", waitchars[waitindex + 1])
         io.flush()
     end)
 end
