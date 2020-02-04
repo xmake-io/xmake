@@ -171,7 +171,6 @@ tb_int_t xm_string_startswith(lua_State* lua);
 // the process functions
 tb_int_t xm_process_open(lua_State* lua);
 tb_int_t xm_process_openv(lua_State* lua);
-tb_int_t xm_process_waitlist(lua_State* lua);
 tb_int_t xm_process_wait(lua_State* lua);
 tb_int_t xm_process_close(lua_State* lua);
 
@@ -335,7 +334,6 @@ static luaL_Reg const g_process_functions[] =
 {
     { "open",           xm_process_open     }
 ,   { "openv",          xm_process_openv    }
-,   { "waitlist",       xm_process_waitlist }
 ,   { "wait",           xm_process_wait     }
 ,   { "close",          xm_process_close    }
 ,   { tb_null,          tb_null             }
