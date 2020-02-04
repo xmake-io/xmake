@@ -270,6 +270,8 @@ function scheduler:_co_groups_resume()
                         return -1, errors
                     end
                     resumed_count = resumed_count + 1
+                    self._CO_GROUPS_WAITING[name] = nil
+                    self:_co_tasks_suspended():remove(co_waiting)
                 end
             end
         end
@@ -432,6 +434,7 @@ function scheduler:co_group_wait(name)
         if count ~= #co_group then
             self._CO_GROUPS_WAITING = self._CO_GROUPS_WAITING or {}
             self._CO_GROUPS_WAITING[name] = running
+            self:_co_tasks_suspended():insert(running)
             self:co_suspend()
         end
     until count == #co_group 
