@@ -42,20 +42,23 @@ function _session(addr, port)
     if sock then
         print("%s: connected!", sock)
         table.insert(socks, sock)
-        scheduler.co_start(_session_recv, sock)
-        scheduler.co_start(_session_send, sock)
+        scheduler.co_group_begin("test", function ()
+            scheduler.co_start(_session_recv, sock)
+            scheduler.co_start(_session_send, sock)
+        end)
     else
         print("connect %s:%d failed", addr, port)
     end
 end
 
 function main(count)
-    local cotasks = {}
     count = count and tonumber(count) or 1
-    for i = 1, count do
-        table.insert(cotasks, scheduler.co_start(_session, "127.0.0.1", 9001))
-    end
-    scheduler.co_waitexit(cotasks)
+    scheduler.co_group_begin("test", function ()
+        for i = 1, count do
+            scheduler.co_start(_session, "127.0.0.1", 9001)
+        end
+    end)
+    scheduler.co_group_wait("test")
     for _, sock in ipairs(socks) do
         sock:close()
     end

@@ -69,9 +69,22 @@ function sandbox_core_base_scheduler.co_sleep(ms)
     end
 end
 
--- wait for exiting the given coroutine tasks
-function sandbox_core_base_scheduler.co_waitexit(cotasks)
-    local ok, errors = scheduler:co_waitexit(cotasks)
+-- get coroutine group with the given name
+function sandbox_core_base_scheduler.co_group(name)
+    return scheduler:co_group(name)
+end
+
+-- begin coroutine group with the given name
+function sandbox_core_base_scheduler.co_group_begin(name, scopefunc)
+    local ok, errors = scheduler:co_group_begin(name, scopefunc)
+    if not ok then
+        raise(errors)
+    end
+end
+
+-- wait for finishing the given coroutine group
+function sandbox_core_base_scheduler.co_group_wait(name)
+    local ok, errors = scheduler:co_group_wait(name)
     if not ok then
         raise(errors)
     end

@@ -24,6 +24,7 @@ local _coroutine = _coroutine or {}
 
 -- load modules
 local table     = require("base/table")
+local utils     = require("base/utils")
 local option    = require("base/option")
 local string    = require("base/string")
 local poller    = require("base/poller")
@@ -277,6 +278,14 @@ function scheduler:co_start_named(coname, cotask, ...)
         self._CO_READY_TASKS = self._CO_READY_TASKS or {}
         table.insert(self._CO_READY_TASKS, {co, table.pack(...)})
     end
+
+    -- add this coroutine to the pending groups
+    local co_groups_pending = self._CO_GROUPS_PENDING
+    if co_groups_pending then
+        for _, co_group_pending in pairs(co_groups_pending) do
+            table.insert(co_group_pending, co)
+        end
+    end
     return co
 end
 
@@ -292,7 +301,7 @@ end
 
 -- yield the current coroutine
 function scheduler:co_yield()
-    return scheduler.co_sleep(1)
+    return scheduler.co_sleep(self, 1)
 end
 
 -- sleep some times (ms)
@@ -330,13 +339,48 @@ function scheduler:co_sleep(ms)
     return true
 end
 
--- wait for exiting the given coroutine tasks
-function scheduler:co_waitexit(cotasks)
+-- get the given coroutine group
+function scheduler:co_group(name)
+    return self._CO_GROUPS and self._CO_GROUPS[name]
+end
+
+-- begin coroutine group
+function scheduler:co_group_begin(name, scopefunc)
+    
+    -- enter groups
+    self._CO_GROUPS = self._CO_GROUPS or {}
+    self._CO_GROUPS_PENDING = self._CO_GROUPS_PENDING or {}
+    if self._CO_GROUPS_PENDING[name] then
+        return false, string.format("co_group(%s): already exists!", name)
+    end
+    self._CO_GROUPS_PENDING[name] = self._CO_GROUPS_PENDING[name] or {}
+
+    -- call the scope function
+    local ok, errors = utils.trycall(scopefunc)
+    if not ok then
+        return false, errors
+    end
+
+    -- leave groups
+    self._CO_GROUPS[name] = self._CO_GROUPS[name] or {}
+    table.join2(self._CO_GROUPS[name], self._CO_GROUPS_PENDING[name])
+    self._CO_GROUPS_PENDING[name] = nil
+    return true
+end
+
+-- wait for finishing the given coroutine group 
+function scheduler:co_group_wait(name)
+
+    -- get coroutine group
+    local co_group = self:co_group(name)
+    if not co_group then
+        return false, string.format("co_group(%s): not found!", name)
+    end
 
     -- get the running coroutine
     local running = self:co_running()
     if not running then
-        return false, "we must call waitexit() in coroutine with scheduler!"
+        return false, "we must call co_group_wait() in coroutine with scheduler!"
     end
 
     -- is stopped?
@@ -345,20 +389,22 @@ function scheduler:co_waitexit(cotasks)
     end
 
     -- wait it
-    cotasks = table.copy(table.wrap(cotasks))
-    while #cotasks > 0 do
-        for i = #cotasks, 1, -1 do
-            local co = cotasks[i]
+    local count
+    repeat 
+        count = 0
+        for _, co in ipairs(co_group) do
             if co:is_dead() then
-                table.remove(cotasks, i)
-            else
-                local ok, errors = self:co_sleep(100)
-                if not ok then
-                    return false, errors
-                end
+                count = count + 1
             end
         end
-    end
+        if count ~= #co_group then
+            local ok, errors = scheduler.co_sleep(self, 100)
+            if not ok then
+                return false, errors
+            end
+        end
+    until count == #co_group 
+    self._CO_GROUPS[name] = nil
     return true
 end
 

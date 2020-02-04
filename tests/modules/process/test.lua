@@ -25,10 +25,11 @@ function test_sched_process(t)
         stderr:close()
         count = count + 1
     end
-    local cotasks = {}
-    for i = 1, 3 do
-        table.insert(cotasks, scheduler.co_start(_session))
-    end
-    scheduler.co_waitexit(cotasks)
+    scheduler.co_group_begin("test", function ()
+        for i = 1, 3 do
+            scheduler.co_start(_session)
+        end
+    end)
+    scheduler.co_group_wait("test")
     t:are_equal(count, 3)
 end
