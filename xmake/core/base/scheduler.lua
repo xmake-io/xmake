@@ -245,6 +245,38 @@ function scheduler:_co_tasks_suspended_cancel_all()
     return true
 end
 
+-- resume it's waiting coroutine if all coroutines are dead in group
+function scheduler:_co_groups_resume()
+
+    local resumed_count = 0
+    local co_groups = self._CO_GROUPS
+    if co_groups then
+        for name, co_group in pairs(co_groups) do
+            local count = 0
+            for _, co in ipairs(co_group) do
+                if co:is_dead() then
+                    count = count + 1
+                else
+                    break
+                end
+            end
+            -- all coroutines are dead in this group?
+            if count > 0 and count == #co_group then
+                -- resume the waiting coroutine of this group
+                local co_waiting = self._CO_GROUPS_WAITING[name]
+                if co_waiting and co_waiting:is_suspended() then
+                    local ok, errors = self:co_resume(co_waiting)
+                    if not ok then
+                        return -1, errors
+                    end
+                    resumed_count = resumed_count + 1
+                end
+            end
+        end
+    end
+    return resumed_count
+end
+
 -- start a new coroutine task
 function scheduler:co_start(cotask, ...)
     return self:co_start_named(nil, cotask, ...)
@@ -398,10 +430,9 @@ function scheduler:co_group_wait(name)
             end
         end
         if count ~= #co_group then
-            local ok, errors = scheduler.co_sleep(self, 100)
-            if not ok then
-                return false, errors
-            end
+            self._CO_GROUPS_WAITING = self._CO_GROUPS_WAITING or {}
+            self._CO_GROUPS_WAITING[name] = running
+            self:co_suspend()
         end
     until count == #co_group 
     self._CO_GROUPS[name] = nil
@@ -664,31 +695,40 @@ function scheduler:runloop()
     local timeout = -1
     while self._STARTED and self:co_count() > 0 do 
 
-        -- get the next timeout
-        timeout = self:_timer():delay() or 1000
-
-        -- wait events
-        local count, events = poller:wait(timeout)
-        if count < 0 then
+        -- resume it's waiting coroutine if all coroutines are dead in group
+        local resumed_count, resumed_errors = self:_co_groups_resume()
+        if resumed_count < 0 then
             ok = false
-            errors = events
-            break
-        end
+            errors = resumed_errors
+            break;
+        elseif resumed_count == 0 then
 
-        -- resume all suspended tasks with events
-        for _, e in ipairs(events) do
-            local obj       = e[1]
-            local objevents = e[2]
-            local eventfunc = e[3]
-            if eventfunc then
-                ok, errors = eventfunc(self, obj, objevents)
-                if not ok then
-                    break
+            -- get the next timeout
+            timeout = self:_timer():delay() or 1000
+
+            -- wait events
+            local count, events = poller:wait(timeout)
+            if count < 0 then
+                ok = false
+                errors = events
+                break
+            end
+
+            -- resume all suspended tasks with events
+            for _, e in ipairs(events) do
+                local obj       = e[1]
+                local objevents = e[2]
+                local eventfunc = e[3]
+                if eventfunc then
+                    ok, errors = eventfunc(self, obj, objevents)
+                    if not ok then
+                        break
+                    end
                 end
             end
-        end
-        if not ok then
-            break
+            if not ok then
+                break
+            end
         end
 
         -- spank the timer and trigger all timeout tasks
