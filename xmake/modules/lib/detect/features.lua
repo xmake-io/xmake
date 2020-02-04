@@ -20,6 +20,7 @@
 
 -- imports
 import("lib.detect.find_tool")
+import("core.base.scheduler")
 
 -- get all features of the current tool
 --
@@ -57,11 +58,11 @@ function main(name, opt)
     local results = _g._RESULTS
     
     -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
-    local coroutine_running = coroutine.running()
+    local coroutine_running = scheduler.co_running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do
             local curdir = os.curdir()
-            coroutine.yield()
+            scheduler.co_yield()
             os.cd(curdir)
         end
     end

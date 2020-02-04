@@ -22,6 +22,8 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
+import("core.base.scheduler")
+import("private.async.runjobs")
 import("lib.detect.cache", {alias = "detectcache"})
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
@@ -539,7 +541,7 @@ function _install_packages(packages_install, packages_download)
     local packages_in_group = {}
     local installing_count = 0
     local parallelize = true
-    process.runjobs(function (index)
+    runjobs("install_packages", function (index)
 
         -- fetch a new package 
         local package = nil
@@ -575,7 +577,7 @@ function _install_packages(packages_install, packages_download)
             end
             if package == nil and #packages_pending > 0 then
                 local curdir = os.curdir()
-                coroutine.yield()
+                scheduler.co_yield()
                 os.cd(curdir)
             end
         end
@@ -592,7 +594,7 @@ function _install_packages(packages_install, packages_download)
                 if not parallelize then
                     while installing_count > 0 do
                         local curdir = os.curdir()
-                        coroutine.yield()
+                        scheduler.co_yield()
                         os.cd(curdir)
                     end
                 end
@@ -718,7 +720,7 @@ function install_packages(requires, opt)
     local packages = load_packages(requires, opt)
 
     -- fetch packages (with system) from local first
-    process.runjobs(function (index)
+    runjobs("fetch_packages", function (index)
         local package = packages[index]
         if package and (not option.get("force") or (option.get("shallow") and package:parents())) then
             package:envs_enter()

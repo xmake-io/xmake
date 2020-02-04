@@ -24,6 +24,7 @@ import("core.theme.theme")
 import("core.tool.compiler")
 import("core.project.depend")
 import("private.tools.ccache")
+import("private.async.runjobs")
 
 -- do build file
 function _do_build_file(target, sourcefile, opt)
@@ -132,7 +133,7 @@ function main(target, sourcebatch, opt)
 
     -- run build jobs for each source file 
     local curdir = os.curdir()
-    process.runjobs(function (index)
+    runjobs("build_objects", function (index)
 
         -- force to set the current directory first because the other jobs maybe changed it
         os.cd(curdir)

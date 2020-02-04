@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.scheduler")
 import("core.project.config")
 import("lib.detect.cache")
 import("lib.detect.find_tool")
@@ -74,11 +75,11 @@ function main(name, flags, opt)
     local key = plat .. "_" .. arch .. "_" .. tool.program .. "_" .. (tool.version or "") .. "_" .. (opt.toolkind or "") .. "_" .. (opt.flagkind or "") .. "_" .. table.concat(opt.sysflags, " ") .. "_" .. opt.flagskey
 
     -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
-    local coroutine_running = coroutine.running()
+    local coroutine_running = scheduler.co_running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do
             local curdir = os.curdir()
-            coroutine.yield()
+            scheduler.co_yield()
             os.cd(curdir)
         end
     end

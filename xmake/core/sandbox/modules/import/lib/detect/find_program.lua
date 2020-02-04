@@ -33,6 +33,7 @@ local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 local cache     = require("sandbox/modules/import/lib/detect/cache")
+local scheduler = require("sandbox/modules/import/core/base/scheduler")
 
 -- globals
 local checking  = nil
@@ -238,11 +239,11 @@ end
 function sandbox_lib_detect_find_program.main(name, opt)
 
     -- @note avoid detect the same program in the same time leading to deadlock if running in the coroutine (e.g. ccache)
-    local coroutine_running = coroutine.running()
+    local coroutine_running = scheduler.co_running()
     if coroutine_running then
         while checking ~= nil and checking == name do
             local curdir = os.curdir()
-            coroutine.yield()
+            scheduler.co_yield()
             os.cd(curdir)
         end
     end

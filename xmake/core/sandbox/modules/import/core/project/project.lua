@@ -33,6 +33,7 @@ local sandbox     = require("sandbox/sandbox")
 local raise       = require("sandbox/modules/raise")
 local environment = require("platform/environment")
 local package     = require("package/package")
+local import      = require("sandbox/modules/import")
 
 -- load project
 function sandbox_core_project.load()
@@ -92,7 +93,8 @@ function sandbox_core_project.check()
     end
 
     -- check all options
-    local ok, errors = process.runjobs(instance:fork(checktask):script(), #options, 4)
+    local runjobs = import("private.async.runjobs", {anonymous = true})
+    local ok, errors = true--utils.trycall(runjobs, "check_options", instance:fork(checktask):script(), #options, 4)
     if not ok then
         raise(errors)
     end
