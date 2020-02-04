@@ -292,32 +292,7 @@ end
 
 -- yield the current coroutine
 function scheduler:co_yield()
-
-    -- get the running coroutine
-    local running = self:co_running()
-    if not running then
-        return false, "we must call co_yield() in coroutine with scheduler!"
-    end
-
-    -- is stopped?
-    if not self._STARTED then
-        return false, "the scheduler is stopped!"
-    end
-
-    -- register timeout task to timer without 0 ms (no delay)
-    self:_timer():post(function (cancel) 
-        if running:is_suspended() then
-            self:_co_tasks_suspended():remove(running)
-            self:co_resume(running)
-        end
-    end, 0)
-
-    -- save the suspended coroutine
-    self:_co_tasks_suspended():insert(running)
-
-    -- wait
-    self:co_suspend()
-    return true
+    return scheduler.co_sleep(1)
 end
 
 -- sleep some times (ms)
@@ -377,7 +352,7 @@ function scheduler:co_waitexit(cotasks)
             if co:is_dead() then
                 table.remove(cotasks, i)
             else
-                local ok, errors = self:co_yield()
+                local ok, errors = self:co_sleep(100)
                 if not ok then
                     return false, errors
                 end
