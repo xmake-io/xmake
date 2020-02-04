@@ -1,6 +1,6 @@
 import("core.base.scheduler")
 
-function test_runjobs(t)
+function test_group(t)
 
     local count = 0
     local task = function (a)
@@ -45,4 +45,17 @@ function test_yield(t)
     end)
     scheduler.co_group_wait("test")
     t:are_equal(count, 10)
+end
+
+function test_runjobs(t)
+    import("private.async.runjobs")
+
+    local total = 100
+    local comax = 6
+    local count = 0
+    runjobs("test", function (index)
+        t:require(index >= 1 and index <= total)
+        count = count + 1
+    end, total, comax)
+    t:are_equal(count, total)
 end

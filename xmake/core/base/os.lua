@@ -659,29 +659,7 @@ function os.execv(program, argv, opt)
     if proc ~= nil then
 
         -- wait process
-        local waitok = -1
-        local status = -1
-        if coroutine.running() then
-
-            -- save the current directory
-            local curdir = os.curdir()
-
-            -- wait it
-            repeat
-                -- poll it
-                waitok, status = proc:wait(0)
-                if waitok == 0 then
-                    waitok, status = coroutine.yield(proc)
-                end
-            until waitok ~= 0
-
-            -- resume the current directory
-            os.cd(curdir)
-        else
-            waitok, status = proc:wait(-1)
-        end
-
-        -- get status
+        local waitok, status = proc:wait(-1)
         if waitok > 0 then
             ok = status
         end

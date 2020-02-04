@@ -89,7 +89,7 @@ end
 
 -- tostring(coroutine)
 function _coroutine:__tostring()
-    return string.format("<co: %s/%s>", self:thread(), self:name())
+    return string.format("<co: %s/%s>", self:name(), self:status())
 end
 
 -- gc(coroutine)
@@ -265,13 +265,13 @@ function scheduler:_co_groups_resume()
                 -- resume the waiting coroutine of this group
                 local co_waiting = self._CO_GROUPS_WAITING[name]
                 if co_waiting and co_waiting:is_suspended() then
+                    resumed_count = resumed_count + 1
+                    self._CO_GROUPS_WAITING[name] = nil
+                    self:_co_tasks_suspended():remove(co_waiting)
                     local ok, errors = self:co_resume(co_waiting)
                     if not ok then
                         return -1, errors
                     end
-                    resumed_count = resumed_count + 1
-                    self._CO_GROUPS_WAITING[name] = nil
-                    self:_co_tasks_suspended():remove(co_waiting)
                 end
             end
         end
@@ -703,7 +703,7 @@ function scheduler:runloop()
         if resumed_count < 0 then
             ok = false
             errors = resumed_errors
-            break;
+            break
         elseif resumed_count == 0 then
 
             -- get the next timeout
