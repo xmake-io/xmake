@@ -141,5 +141,5 @@ function main(target, sourcebatch, opt)
         -- build object
         _build_object(target, sourcebatch, index, opt)
 
-    end, #sourcebatch.sourcefiles, jobs)
+    end, {total = #sourcebatch.sourcefiles, comax = jobs})
 end

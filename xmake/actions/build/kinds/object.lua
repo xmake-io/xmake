@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
+import("private.async.runjobs")
 
 -- build source files with the custom rule
 function _build_files_with_rule(target, sourcebatch, opt, suffix)
@@ -57,7 +58,7 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
             -- run build jobs for each source file 
             local curdir = os.curdir()
             local sourcecount = #sourcebatch.sourcefiles
-            process.runjobs(function (index)
+            runjobs("build_files", function (index)
 
                 -- force to set the current directory first because the other jobs maybe changed it
                 os.cd(curdir)
@@ -76,7 +77,7 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
                 -- do build file
                 on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = progress_now})
 
-            end, sourcecount, jobs)
+            end, {total = sourcecount, comax = jobs})
         end
     end
 end

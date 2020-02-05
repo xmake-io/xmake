@@ -11,8 +11,8 @@ end
 
 function main()
     local t = os.mclock()
-    runjobs("test", _jobfunc, 100, 6, 1000, function (running_jobs_indices)
+    runjobs("test", _jobfunc, {total = 100, comax = 6, timeout = 1000, timer = function (running_jobs_indices)
         print("%s: timeout (%d ms), running: %s", scheduler.co_running(), os.mclock() - t, table.concat(running_jobs_indices, ","))
-    end)
+    end})
 end
 

@@ -107,7 +107,7 @@ function main(hosts, opt)
                 vprint("pinging for the host(%s) ... %d ms", host, timeval)
             end
         end
-    end, #hosts)
+    end, {total = #hosts})
 
     -- save cache
     if cacheinfo then

@@ -21,19 +21,24 @@
 -- imports
 import("core.base.scheduler")
 
--- main entry
-function main(name, jobfunc, total, comax, timeout, timerfunc)
+-- asynchronous run jobs 
+function main(name, jobfunc, opt)
+
+    -- init options
+    op = opt or {}
+    local total = opt.total or 1
+    local comax = opt.comax or total
 
     -- run timer
     local stop = false
     local running_jobs_indices
-    if timerfunc then
-        assert(timeout and timeout < 60000, "runjobs: invalid timer timeout!")
+    if opt.timer then
+        assert(opt.timeout and opt.timeout < 60000, "runjobs: invalid timer timeout!")
         scheduler.co_start_named(name .. "/timer", function ()
             while not stop do
-                os.sleep(timeout)
+                os.sleep(opt.timeout)
                 if not stop then
-                    timerfunc(running_jobs_indices)
+                    opt.timer(running_jobs_indices)
                 end
             end
         end)
@@ -42,7 +47,6 @@ function main(name, jobfunc, total, comax, timeout, timerfunc)
     -- run jobs
     local index = 0
     local group_name = name
-    comax = comax or total
     while index < total do
         running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function ()
