@@ -113,31 +113,5 @@ function sandbox_process.openv(filename, argv, opt)
     return proc
 end
 
--- wait processes
-function sandbox_process.waitlist(processes, timeout)
-
-    -- check
-    assert(processes)
-
-    -- wait them
-    local count, infos = process.waitlist(processes, timeout)
-    if count < 0 then
-        raise("wait processes(%d) failed(%d)", #processes, count)
-    end
-
-    -- timeout or finished
-    return infos
-end
-
--- async run task and echo waiting info
-function sandbox_process.asyncrun(task, waitchars)
-
-    -- async run it
-    local ok, errors = process.asyncrun(task, waitchars)
-    if not ok then
-        raise(errors)
-    end
-end
-
 -- return module
 return sandbox_process

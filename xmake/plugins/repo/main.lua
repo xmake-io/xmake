@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
+import("private.async.runjobs")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 
 -- add repository url
@@ -132,7 +133,7 @@ function _update()
     if option.get("verbose") then
         task()
     else
-        process.asyncrun(task)
+        runjobs("update repo", task, {showtips = true})
     end
 
     -- leave environment 

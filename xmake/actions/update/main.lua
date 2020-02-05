@@ -28,6 +28,7 @@ import("devel.git.submodule")
 import("net.fasturl")
 import("core.base.privilege")
 import("privilege.sudo")
+import("private.async.runjobs")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 import("private.action.update.fetch_version")
 
@@ -194,7 +195,7 @@ function _install(sourcedir)
     if option.get("verbose") then
         install_task()
     else
-        process.asyncrun(install_task)
+        runjobs("update/install", install_task, {showtips = true})
     end
 
     -- show version
@@ -376,7 +377,7 @@ function main()
     if option.get("verbose") then
         download_task()
     else
-        process.asyncrun(download_task)
+        runjobs("update/download", download_task, {showtips = true})
     end
 
     -- leave environment

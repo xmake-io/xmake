@@ -29,6 +29,15 @@ function main(name, jobfunc, opt)
     local total = opt.total or 1
     local comax = opt.comax or total
 
+    -- show waiting tips?
+    local waitindex = 0
+    local waitchars = opt.waitchars or {'\\', '-', '/', '|'}
+    local showtips = io.isatty() and opt.showtips -- we need hide wait characters if is not a tty
+    if showtips then
+        printf(waitchars[waitindex + 1])
+        io.flush()
+    end
+
     -- run timer
     local stop = false
     local running_jobs_indices
@@ -39,6 +48,17 @@ function main(name, jobfunc, opt)
                 os.sleep(opt.timeout)
                 if not stop then
                     opt.timer(running_jobs_indices)
+                end
+            end
+        end)
+    elseif showtips then
+        scheduler.co_start_named(name .. "/tips", function ()
+            while not stop do
+                os.sleep(opt.timeout or 300)
+                if not stop then
+                    waitindex = ((waitindex + 1) % #waitchars)
+                    printf("\b" .. waitchars[waitindex + 1])
+                    io.flush()
                 end
             end
         end)
@@ -62,4 +82,10 @@ function main(name, jobfunc, opt)
 
     -- stop timer
     stop = true
+
+    -- remove wait charactor
+    if showtips then
+        printf("\b")
+        io.flush()
+    end
 end
