@@ -96,6 +96,11 @@ function sandbox_core_base_scheduler.co_group_wait(name)
     end
 end
 
+-- get the waiting poller objects of the given coroutine group
+function sandbox_core_base_scheduler.co_group_waitobjs(name)
+    return scheduler:co_group_waitobjs(name)
+end
+
 -- get the current running coroutine 
 function sandbox_core_base_scheduler.co_running()
     return scheduler:co_running()

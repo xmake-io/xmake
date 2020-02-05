@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
+import("core.base.hashset")
 import("core.base.scheduler")
 import("private.async.runjobs")
 import("lib.detect.cache", {alias = "detectcache"})
@@ -656,7 +657,31 @@ function _install_packages(packages_install, packages_download)
                 table.insert(downloading, package:name())
             end
         end
-       
+
+        -- get waitobjs tips
+        local tips = nil
+        local waitobjs = scheduler.co_group_waitobjs("install_packages")
+        if waitobjs:size() > 0 then
+            local names = {}
+            for _, obj in waitobjs:keys() do
+                if obj:otype() == scheduler.OT_PROC then
+                    table.insert(names, obj:name())
+                elseif obj:otype() == scheduler.OT_SOCK then
+                    table.insert(names, "sock")
+                elseif obj:otype() == scheduler.OT_PIPE then
+                    table.insert(names, "pipe")
+                end
+            end
+            names = table.unique(names)
+            if #names > 0 then
+                names = table.concat(names, ",")
+                if #names > 16 then
+                    names = names:sub(1, 16) .. ".."
+                end
+                tips = string.format("(%d/%s)", waitobjs:size(), names)
+            end
+        end
+
         -- trace
         utils.clearline()
         cprintf("${yellow}  => ${clear}")
@@ -666,7 +691,7 @@ function _install_packages(packages_install, packages_download)
         if #installing > 0 then
             cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
-        cprintf(" .. %s", waitchars[waitindex + 1])
+        cprintf(" .. %s%s", tips and ("${dim}" .. tips .. "${clear} ") or "", waitchars[waitindex + 1])
         io.flush()
     end})
 end

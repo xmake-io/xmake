@@ -22,20 +22,6 @@
 import("core.base.scheduler")
 import("core.base.hashset")
 
--- get waiting objects
-function _get_waiting_objects(group_name)
-    local objs = hashset.new()
-    for _, co in ipairs(scheduler.co_group(group_name)) do
-        if not co:is_dead() then
-            local obj = co:waitobj()
-            if obj then
-                objs:insert(obj)
-            end
-        end
-    end
-    return objs
-end
-
 -- print back characters
 function _print_backchars(backnum)
     if backnum > 0 then
@@ -96,7 +82,7 @@ function main(name, jobfunc, opt)
                     -- show waitchars
                     waitindex = ((waitindex + 1) % #waitchars)
                     local tips = nil
-                    local waitobjs = _get_waiting_objects(group_name)
+                    local waitobjs = scheduler.co_group_waitobjs(group_name)
                     if waitobjs:size() > 0 then
                         local names = {}
                         for _, obj in waitobjs:keys() do
