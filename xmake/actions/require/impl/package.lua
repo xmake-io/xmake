@@ -577,9 +577,7 @@ function _install_packages(packages_install, packages_download)
                 end
             end
             if package == nil and #packages_pending > 0 then
-                local curdir = os.curdir()
                 scheduler.co_yield()
-                os.cd(curdir)
             end
         end
         if package then
@@ -594,9 +592,7 @@ function _install_packages(packages_install, packages_download)
                 end
                 if not parallelize then
                     while installing_count > 0 do
-                        local curdir = os.curdir()
                         scheduler.co_yield()
-                        os.cd(curdir)
                     end
                 end
                 installing_count = installing_count + 1

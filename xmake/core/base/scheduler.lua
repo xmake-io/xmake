@@ -234,6 +234,26 @@ function scheduler:_poller_events_cb(obj, events)
     return true
 end
 
+-- update the current directory hash of current coroutine
+function scheduler:_co_curdir_update(curdir)
+
+    -- save the current directory hash
+    curdir = curdir or os.curdir()
+    local curdir_hash = hash.uuid4(path.absolute(curdir)):sub(1, 8)
+    self._CO_CURDIR = curdir_hash
+
+    -- save the current directory for each coroutine
+    local running = self:co_running()
+    if running then
+        local co_curdirs = self._CO_CURDIRS
+        if not co_curdirs then
+            co_curdirs = {}
+            self._CO_CURDIRS = co_curdirs
+        end
+        co_curdirs[running] = {curdir_hash, curdir}
+    end
+end
+
 -- get all suspended coroutine tasks
 function scheduler:_co_tasks_suspended()
     local co_tasks_suspended = self._CO_TASKS_SUSPENDED 
@@ -306,6 +326,7 @@ function scheduler:co_start_named(coname, cotask, ...)
     -- start coroutine
     local co
     co = _coroutine.new(coname, coroutine.create(function(...) 
+        self:_co_curdir_update()
         cotask(...)
         self:co_tasks()[co:thread()] = nil
         if self:co_count() > 0 then
@@ -341,7 +362,20 @@ end
 
 -- suspend the current coroutine
 function scheduler:co_suspend(...)
-    return coroutine.yield(...)
+
+    -- suspend it
+    local results = table.pack(coroutine.yield(...))
+
+    -- if the current directory has been changed? restore it
+    local running = assert(self:co_running())
+    local curdir = self._CO_CURDIR
+    local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
+    if olddir and curdir ~= olddir[1] then -- hash changed?
+        os.cd(olddir[2])
+    end
+
+    -- return results
+    return table.unpack(results)
 end
 
 -- yield the current coroutine
@@ -709,6 +743,11 @@ function scheduler:runloop()
     if poller:support(poller.EV_POLLER_CLEAR) then
         self._SUPPORT_EV_POLLER_CLEAR = true
     end
+
+    -- set on change directory callback for scheduler
+    os._sched_chdir_set(function (oldir, curdir)
+        self:_co_curdir_update(curdir)
+    end)
 
     -- start all ready coroutine tasks
     local co_ready_tasks = self._CO_READY_TASKS

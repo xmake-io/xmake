@@ -242,9 +242,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
     local coroutine_running = scheduler.co_running()
     if coroutine_running then
         while checking ~= nil and checking == name do
-            local curdir = os.curdir()
             scheduler.co_yield()
-            os.cd(curdir)
         end
     end
 

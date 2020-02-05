@@ -155,6 +155,11 @@ function os._ramdir()
     return ramdir_root or nil
 end
 
+-- set on change directory callback for scheduler
+function os._sched_chdir_set(chdir)
+    os._SCHED_CHDIR = chdir
+end
+
 -- translate arguments for wildcard
 function os.argw(argv)
 
@@ -457,6 +462,11 @@ function os.cd(dir)
     -- not exists?
     else
         return nil, string.format("cannot change directory %s, not found this directory %s", dir, os.strerror())
+    end
+
+    -- do chdir callback for scheduler
+    if os._SCHED_CHDIR then
+        os._SCHED_CHDIR(oldir, os.curdir())
     end
 
     -- ok

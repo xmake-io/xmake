@@ -78,9 +78,7 @@ function main(name, flags, opt)
     local coroutine_running = scheduler.co_running()
     if coroutine_running then
         while _g._checking ~= nil and _g._checking == key do
-            local curdir = os.curdir()
             scheduler.co_yield()
-            os.cd(curdir)
         end
     end
 
