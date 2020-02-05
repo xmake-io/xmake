@@ -307,7 +307,7 @@ function utils.confirm(opt)
         else
             utils.cprint("${bright color.warning}note: ${clear}%s (pass -y or --confirm=y/n/d to skip confirm)?", description)
         end
-        utils.cprint("please input: %s (y/n)", default and "y" or "n")
+        utils.cprint("please input: ${bright}%s${clear} (y/n)", default and "y" or "n")
 
         -- get answer
         io.flush()

@@ -125,7 +125,37 @@ function main(name, jobfunc, opt)
             while index < max do
                 index = index + 1
                 table.insert(running_jobs_indices, index)
-                scheduler.co_start_named(name .. '/' .. tostring(index), jobfunc, index)
+                scheduler.co_start_named(name .. '/' .. tostring(index), function(i)
+                    try
+                    { 
+                        function()
+                            jobfunc(i)
+                        end,
+                        catch
+                        {
+                            function (errors)
+
+                                -- stop timer and disable show waitchars first
+                                stop = true
+
+                                -- remove wait charactor
+                                if showtips then
+                                    _print_backchars(backnum)
+                                    print("")
+                                    io.flush()
+                                end
+
+                                -- do exit callback
+                                if opt.exit then
+                                    opt.exit(errors)
+                                end
+
+                                -- re-throw this errors and abort scheduler
+                                raise(errors)
+                            end
+                        }
+                    }
+                end, index)
             end
         end)
         scheduler.co_group_wait(group_name)
@@ -138,5 +168,10 @@ function main(name, jobfunc, opt)
     if showtips then
         _print_backchars(backnum)
         io.flush()
+    end
+
+    -- do exit callback
+    if opt.exit then
+        opt.exit()
     end
 end

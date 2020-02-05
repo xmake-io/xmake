@@ -693,6 +693,11 @@ function _install_packages(packages_install, packages_download)
         end
         cprintf(" .. %s%s", tips and ("${dim}" .. tips .. "${clear} ") or "", waitchars[waitindex + 1])
         io.flush()
+    end, exit = function(errors)
+        if errors then
+            utils.clearline()
+            io.flush()
+        end
     end})
 end
 
