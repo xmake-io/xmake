@@ -52,6 +52,16 @@ function _coroutine:name_set(name)
     self._NAME = name
 end
 
+-- get the waiting poller object
+function _coroutine:waitobj()
+    return self._WAITOBJ
+end
+
+-- set the waiting poller object
+function _coroutine:waitobj_set(obj)
+    self._WAITOBJ = obj
+end
+
 -- get the raw coroutine thread 
 function _coroutine:thread()
     return self._THREAD
@@ -146,6 +156,7 @@ function scheduler:_poller_resume_co(co, events)
     assert(co:is_suspended())
 
     -- resume this coroutine task
+    co:waitobj_set(nil)
     self:_co_tasks_suspended():remove(co)
     return self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
 end
@@ -550,6 +561,7 @@ function scheduler:poller_wait(obj, events, timeout)
     if timeout > 0 then
         timer_task = self:_timer():post(function (cancel) 
             if not cancel and running:is_suspended() then
+                running:waitobj_set(nil)
                 self:_co_tasks_suspended():remove(running)
                 self:co_resume(running, 0)
             end
@@ -571,6 +583,9 @@ function scheduler:poller_wait(obj, events, timeout)
 
     -- save the suspended coroutine
     self:_co_tasks_suspended():insert(running)
+
+    -- save the waiting poller object
+    running:waitobj_set(obj)
 
     -- wait
     return self:co_suspend()
@@ -621,6 +636,7 @@ function scheduler:poller_waitproc(obj, timeout)
         timer_task = self:_timer():post(function (cancel) 
             if not cancel and running:is_suspended() then
                 pollerdata.co_waiting = nil
+                running:waitobj_set(nil)
                 self:_co_tasks_suspended():remove(running)
                 self:co_resume(running, 0)
             end
@@ -635,6 +651,9 @@ function scheduler:poller_waitproc(obj, timeout)
 
     -- save the suspended coroutine
     self:_co_tasks_suspended():insert(running)
+
+    -- save the waiting poller object
+    running:waitobj_set(obj)
 
     -- wait
     local ok = self:co_suspend()

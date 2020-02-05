@@ -20,6 +20,40 @@
 
 -- imports
 import("core.base.scheduler")
+import("core.base.hashset")
+
+-- get waiting objects
+function _get_waiting_objects(group_name)
+    local objs = hashset.new()
+    for _, co in ipairs(scheduler.co_group(group_name)) do
+        if not co:is_dead() then
+            local obj = co:waitobj()
+            if obj then
+                objs:insert(obj)
+            end
+        end
+    end
+    return objs
+end
+
+-- print back characters
+function _print_backchars(backnum)
+    if backnum > 0 then
+        local str = ""
+        for i = 1, backnum do
+            str = str .. '\b'
+        end
+        for i = 1, backnum do
+            str = str .. ' '
+        end
+        for i = 1, backnum do
+            str = str .. '\b'
+        end
+        if #str > 0 then
+            printf(str)
+        end
+    end
+end
 
 -- asynchronous run jobs 
 function main(name, jobfunc, opt)
@@ -29,16 +63,14 @@ function main(name, jobfunc, opt)
     local total = opt.total or 1
     local comax = opt.comax or total
     local timeout = opt.timeout or 500
+    local group_name = name
     assert(timeout < 60000, "runjobs: invalid timeout!")
 
     -- show waiting tips?
     local waitindex = 0
     local waitchars = opt.waitchars or {'\\', '-', '/', '|'}
+    local backnum = 0
     local showtips = io.isatty() and opt.showtips -- we need hide wait characters if is not a tty
-    if showtips then
-        printf(waitchars[waitindex + 1])
-        io.flush()
-    end
 
     -- run timer
     local stop = false
@@ -57,8 +89,41 @@ function main(name, jobfunc, opt)
             while not stop do
                 os.sleep(timeout)
                 if not stop then
+
+                    -- print back characters
+                    _print_backchars(backnum)
+
+                    -- show waitchars
                     waitindex = ((waitindex + 1) % #waitchars)
-                    printf("\b" .. waitchars[waitindex + 1])
+                    local tips = nil
+                    local waitobjs = _get_waiting_objects(group_name)
+                    if waitobjs:size() > 0 then
+                        local names = {}
+                        for _, obj in waitobjs:keys() do
+                            if obj:otype() == scheduler.OT_PROC then
+                                table.insert(names, obj:name())
+                            elseif obj:otype() == scheduler.OT_SOCK then
+                                table.insert(names, "sock")
+                            elseif obj:otype() == scheduler.OT_PIPE then
+                                table.insert(names, "pipe")
+                            end
+                        end
+                        names = table.unique(names)
+                        if #names > 0 then
+                            names = table.concat(names, ",")
+                            if #names > 16 then
+                                names = names:sub(1, 16) .. ".."
+                            end
+                            tips = string.format("(%d/%s)", waitobjs:size(), names)
+                        end
+                    end
+                    if tips then
+                        cprintf("${dim}%s${clear} %s", tips, waitchars[waitindex + 1])
+                        backnum = #tips + 2
+                    else
+                        printf(waitchars[waitindex + 1])
+                        backnum = 1
+                    end
                     io.flush()
                 end
             end
@@ -67,7 +132,6 @@ function main(name, jobfunc, opt)
 
     -- run jobs
     local index = 0
-    local group_name = name
     while index < total do
         running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function ()
@@ -86,7 +150,7 @@ function main(name, jobfunc, opt)
 
     -- remove wait charactor
     if showtips then
-        printf("\b")
+        _print_backchars(backnum)
         io.flush()
     end
 end

@@ -145,7 +145,8 @@ function _install(sourcedir)
         local installdir = is_host("windows") and os.programdir() or "~/.local/bin"
 
         -- trace
-        cprintf("\r${yellow}  => ${clear}installing to %s ..  ", installdir)
+        utils.clearline()
+        cprintf("${yellow}  => ${clear}installing to %s .. ", installdir)
         local ok = try
         {
             function ()
@@ -185,7 +186,8 @@ function _install(sourcedir)
 
         -- trace
         if ok then
-            cprint("\r${yellow}  => ${clear}install to %s .. ${green}ok    ", installdir)
+            utils.clearline()
+            cprint("${yellow}  => ${clear}install to %s .. ${color.success}${text.success}", installdir)
         else
             raise("install failed!")
         end
@@ -341,7 +343,8 @@ function main()
 
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
-            cprintf("\r${yellow}  => ${clear}downloading %s ..  ", url)
+            utils.clearline()
+            cprintf("${yellow}  => ${clear}downloading %s .. ", url)
             local ok = try
             {
                 function ()
@@ -361,11 +364,12 @@ function main()
                     end
                 }
             }
+            utils.clearline()
             if ok then
-                cprint("\r${yellow}  => ${clear}download %s .. ${color.success}${text.success}    ", url)
+                cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
                 break
             else
-                cprint("\r${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}    ", url)
+                cprint("${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
             end
             if not ok and idx == #mainurls then
                 raise("download failed!")

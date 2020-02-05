@@ -22,8 +22,14 @@
 local sandbox_core_base_scheduler = sandbox_core_base_scheduler or {}
 
 -- load modules
+local poller    = require("base/poller")
 local scheduler = require("base/scheduler")
 local raise     = require("sandbox/modules/raise")
+
+-- the poller object type
+sandbox_core_base_scheduler.OT_SOCK = poller.OT_SOCK
+sandbox_core_base_scheduler.OT_PIPE = poller.OT_PIPE
+sandbox_core_base_scheduler.OT_PROC = poller.OT_PROC
 
 -- start a new coroutine task 
 function sandbox_core_base_scheduler.co_start(cotask, ...)
