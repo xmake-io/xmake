@@ -28,6 +28,8 @@ function main(name, jobfunc, opt)
     op = opt or {}
     local total = opt.total or 1
     local comax = opt.comax or total
+    local timeout = opt.timeout or 500
+    assert(timeout < 60000, "runjobs: invalid timeout!")
 
     -- show waiting tips?
     local waitindex = 0
@@ -42,10 +44,9 @@ function main(name, jobfunc, opt)
     local stop = false
     local running_jobs_indices
     if opt.timer then
-        assert(opt.timeout and opt.timeout < 60000, "runjobs: invalid timer timeout!")
         scheduler.co_start_named(name .. "/timer", function ()
             while not stop do
-                os.sleep(opt.timeout)
+                os.sleep(timeout)
                 if not stop then
                     opt.timer(running_jobs_indices)
                 end
@@ -54,7 +55,7 @@ function main(name, jobfunc, opt)
     elseif showtips then
         scheduler.co_start_named(name .. "/tips", function ()
             while not stop do
-                os.sleep(opt.timeout or 300)
+                os.sleep(timeout)
                 if not stop then
                     waitindex = ((waitindex + 1) % #waitchars)
                     printf("\b" .. waitchars[waitindex + 1])

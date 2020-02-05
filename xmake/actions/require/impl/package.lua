@@ -633,7 +633,7 @@ function _install_packages(packages_install, packages_download)
         packages_installing[index] = nil
         packages_downloading[index] = nil
 
-    end, {total = #packages_install, comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4, timeout = 300, timer = function (running_jobs_indices) 
+    end, {total = #packages_install, comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4, timer = function (running_jobs_indices) 
 
         -- do not print progress info if be verbose 
         if option.get("verbose") or not show_wait then
