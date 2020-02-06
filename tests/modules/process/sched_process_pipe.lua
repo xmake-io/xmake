@@ -1,5 +1,6 @@
 import("core.base.pipe")
 import("core.base.bytes")
+import("core.base.process")
 import("core.base.scheduler")
 
 function _session_read_pipe(id, rpipeopt)

@@ -25,12 +25,12 @@ local raise     = require("sandbox/modules/raise")
 local vformat   = require("sandbox/modules/vformat")
 
 -- define module
-local sandbox_process            = sandbox_process or {}
-local sandbox_process_subprocess = sandbox_process_subprocess or {}
-sandbox_process._subprocess = sandbox_process._subprocess or process._subprocess
+local sandbox_core_base_process            = sandbox_core_base_process or {}
+local sandbox_core_base_instance = sandbox_core_base_instance or {}
+sandbox_core_base_process._subprocess = sandbox_core_base_process._subprocess or process._subprocess
 
 -- wait subprocess
-function sandbox_process_subprocess.wait(proc, timeout)
+function sandbox_core_base_instance.wait(proc, timeout)
     local ok, status, errors = proc:_wait(timeout)
     if errors then
         raise(errors)
@@ -39,7 +39,7 @@ function sandbox_process_subprocess.wait(proc, timeout)
 end
 
 -- close subprocess
-function sandbox_process_subprocess.close(proc)
+function sandbox_core_base_instance.close(proc)
     local ok, errors = proc:_close()
     if not ok then
         raise(errors)
@@ -51,7 +51,7 @@ end
 -- @param command   the command
 -- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
 -- 
-function sandbox_process.open(command, opt) 
+function sandbox_core_base_process.open(command, opt) 
 
     -- check
     assert(command)
@@ -67,7 +67,7 @@ function sandbox_process.open(command, opt)
 
     -- hook subprocess interfaces
     local hooked = {}
-    for name, func in pairs(sandbox_process_subprocess) do
+    for name, func in pairs(sandbox_core_base_instance) do
         if not name:startswith("_") and type(func) == "function" then
             hooked["_" .. name] = proc["_" .. name] or proc[name]
             hooked[name] = func
@@ -85,7 +85,7 @@ end
 -- @param argv      the command arguments
 -- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
 -- 
-function sandbox_process.openv(filename, argv, opt) 
+function sandbox_core_base_process.openv(filename, argv, opt) 
 
     -- check
     assert(argv)
@@ -101,7 +101,7 @@ function sandbox_process.openv(filename, argv, opt)
 
     -- hook subprocess interfaces
     local hooked = {}
-    for name, func in pairs(sandbox_process_subprocess) do
+    for name, func in pairs(sandbox_core_base_instance) do
         if not name:startswith("_") and type(func) == "function" then
             hooked["_" .. name] = proc["_" .. name] or proc[name]
             hooked[name] = func
@@ -114,4 +114,4 @@ function sandbox_process.openv(filename, argv, opt)
 end
 
 -- return module
-return sandbox_process
+return sandbox_core_base_process

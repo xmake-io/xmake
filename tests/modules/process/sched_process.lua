@@ -1,3 +1,4 @@
+import("core.base.process")
 import("core.base.scheduler")
 
 function _session(id, program, ...)

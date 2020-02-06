@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.base.process")
 import("core.project.config")
 import("core.package.package")
 import("core.platform.platform")

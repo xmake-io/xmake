@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.task")
+import("core.base.process")
 import("net.http")
 import("devel.git")
 import("devel.git.submodule")

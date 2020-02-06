@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.process")
 import("core.project.config")
 import("core.platform.platform")
 import("core.platform.environment")
