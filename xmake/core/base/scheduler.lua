@@ -406,8 +406,9 @@ function scheduler:co_sleep(ms)
     self:_timer():post(function (cancel) 
         if running:is_suspended() then
             self:_co_tasks_suspended():remove(running)
-            self:co_resume(running)
+            return self:co_resume(running)
         end
+        return true
     end, ms)
 
     -- save the suspended coroutine
@@ -611,8 +612,9 @@ function scheduler:poller_wait(obj, events, timeout)
             if not cancel and running:is_suspended() then
                 running:waitobj_set(nil)
                 self:_co_tasks_suspended():remove(running)
-                self:co_resume(running, 0)
+                return self:co_resume(running, 0)
             end
+            return true
         end, timeout)
     end
     running:_timer_task_set(timer_task)
@@ -686,8 +688,9 @@ function scheduler:poller_waitproc(obj, timeout)
                 pollerdata.co_waiting = nil
                 running:waitobj_set(nil)
                 self:_co_tasks_suspended():remove(running)
-                self:co_resume(running, 0)
+                return self:co_resume(running, 0)
             end
+            return true
         end, timeout)
     end
     running:_timer_task_set(timer_task)
@@ -807,7 +810,10 @@ function scheduler:runloop()
         end
 
         -- spank the timer and trigger all timeout tasks
-        self:_timer():next()
+        ok, errors = self:_timer():next()
+        if not ok then
+            break
+        end
     end
 
     -- mark the loop as stopped first

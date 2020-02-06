@@ -86,7 +86,10 @@ function timer:next()
                 end
                 -- run timer task
                 if task.func then
-                    task.func(task.cancel)
+                    local ok, errors = task.func(task.cancel)
+                    if not ok then
+                        return false, errors
+                    end
                     triggered = true
                 end
             end
@@ -95,6 +98,7 @@ function timer:next()
             break
         end
     end
+    return true
 end
 
 -- kill all timer tasks
