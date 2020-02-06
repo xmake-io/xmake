@@ -100,6 +100,7 @@ xmake_C_FILES 			+= \
 						process/open \
 						process/openv \
 						process/wait \
+						process/kill \
 						process/close \
 						sandbox/interactive \
 						semver/parse \

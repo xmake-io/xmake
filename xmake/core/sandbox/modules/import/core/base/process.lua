@@ -38,6 +38,14 @@ function sandbox_core_base_instance.wait(proc, timeout)
     return ok, status
 end
 
+-- kill subprocess
+function sandbox_core_base_instance.kill(proc)
+    local ok, errors = proc:_kill()
+    if not ok then
+        raise(errors)
+    end
+end
+
 -- close subprocess
 function sandbox_core_base_instance.close(proc)
     local ok, errors = proc:_close()

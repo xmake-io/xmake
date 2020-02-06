@@ -34,9 +34,10 @@ local scheduler = require("base/scheduler")
 process._open       = process._open or process.open
 process._openv      = process._openv or process.openv
 process._wait       = process._wait or process.wait
-process._waitlist   = process._waitlist or process.waitlist
+process._kill       = process._kill or process.kill
 process._close      = process._close or process.close
 process.wait        = nil
+process.kill        = nil
 process.close       = nil
 process._subprocess = _subprocess
 
@@ -92,8 +93,22 @@ function _subprocess:wait(timeout)
     return result, status_or_errors
 end
 
+-- kill subprocess
+function _subprocess:kill()
+
+    -- ensure opened
+    local ok, errors = self:_ensure_opened()
+    if not ok then
+        return false, errors
+    end
+
+    -- kill process
+    process._kill(self:cdata())
+    return true
+end
+
 -- close subprocess
-function _subprocess:close(timeout)
+function _subprocess:close()
 
     -- ensure opened
     local ok, errors = self:_ensure_opened()
