@@ -56,6 +56,6 @@ function test_runjobs(t)
     runjobs("test", function (index)
         t:require(index >= 1 and index <= total)
         count = count + 1
-    end, total, comax)
+    end, {total = total, comax = comax})
     t:are_equal(count, total)
 end
