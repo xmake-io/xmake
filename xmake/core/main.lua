@@ -33,6 +33,7 @@ local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
 local colors        = require("base/colors")
+local process       = require("base/process")
 local scheduler     = require("base/scheduler")
 local theme         = require("theme/theme")
 local project       = require("project/project")
@@ -262,9 +263,13 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end)
     ok, errors = scheduler:runloop()
     if not ok then
+        process.killall()
         utils.error(errors)
         return -1
     end
+    
+    -- kill all pending processes
+    process.killall()
 
     -- dump deprecated entries
     deprecated.dump()

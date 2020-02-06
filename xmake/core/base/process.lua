@@ -47,6 +47,7 @@ function _subprocess.new(name, proc)
     subprocess._NAME = name
     subprocess._PROC = proc
     setmetatable(subprocess, _subprocess)
+    process._openlist()[subprocess:cdata()] = subprocess
     return subprocess
 end
 
@@ -127,6 +128,7 @@ function _subprocess:close()
     -- close process
     ok = process._close(self:cdata())
     if ok then
+        process._openlist()[self:cdata()] = nil
         self._PROC = nil
     end
     return ok
@@ -150,6 +152,16 @@ function _subprocess:__gc()
     if self._PROC and process._close(self._PROC) then
         self._PROC = nil
     end
+end
+
+-- get all opened processes list
+function process._openlist()
+    local list = process._LIST
+    if not list then
+        list = {}
+        process._LIST = list
+    end
+    return list
 end
 
 -- open a subprocess
@@ -236,6 +248,15 @@ function process.openv(shellname, argv, opt)
         return _subprocess.new(path.filename(shellname), proc)
     else
         return nil, string.format("openv process(%s, %s) failed!", shellname, table.concat(argv, " "))
+    end
+end
+
+-- kill all pending process
+function process.killall()
+    for _, proc in pairs(process._openlist()) do
+        if proc and proc:cdata() then
+            proc:kill()
+        end
     end
 end
 
