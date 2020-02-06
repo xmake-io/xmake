@@ -35,17 +35,13 @@ function sandbox_core_base_semver.new(version)
     return result
 end
 
--- parse a version string into a props table containing all semver infos
+-- match a valid version from the string
 --
--- semver.parse('1.2.3') => { major = 1, minor = 2, patch = 3, ... }
--- semver.parse('a.b.c') => nil
+-- semver.match('xxx 1.2.3 xxx') => { major = 1, minor = 2, patch = 3, ... }
+-- semver.match('a.b.c') => nil
 --
-function sandbox_core_base_semver.parse(version)
-    local result, errors = semver.parse(version)
-    if errors then
-        raise(errors)
-    end
-    return result
+function sandbox_core_base_semver.match(str, pos, pattern)
+    return semver.match(str, pos)
 end
 
 -- is valid version?

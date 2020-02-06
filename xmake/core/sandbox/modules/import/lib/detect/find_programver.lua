@@ -27,6 +27,7 @@ local path      = require("base/path")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local option    = require("base/option")
+local semver    = require("base/semver")
 local project   = require("project/project")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
@@ -90,9 +91,9 @@ function sandbox_lib_detect_find_programver.main(program, opt)
                 result = nil
             end
         elseif parse == nil or type(parse) == "string" then
-            result = outdata:match(parse or "(%d+%.?%d*%.?%d*.-)%s")
-            if not result then
-                result = outdata:match(parse or "(%d+%.?%d*%.?%d*.-)")
+            result = semver.match(outdata, 1, parse)
+            if result then
+                result = result:rawstr()
             end
         end
     end

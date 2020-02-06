@@ -156,12 +156,24 @@ function semver.new(version)
 
     -- new an instance
     local instance = table.inherit(_instance)
-
-    -- init instance
     instance._INFO = info
-
-    -- ok
     return instance
+end
+
+-- try to match valid version from string
+function semver.match(str, pos, pattern)
+    local patterns = pattern or {"%d+[.]%d+[-+.%w]*", "%d+[.]%d+[.]%d+", "%d+[.]%d+"}
+    for _, pattern in ipairs(table.wrap(patterns)) do
+        local version_str = str:match(pattern, pos)
+        if version_str then
+            local info = semver.parse(version_str)
+            if info then
+                local instance = table.inherit(_instance)
+                instance._INFO = info
+                return instance
+            end
+        end
+    end
 end
 
 -- return module: semver
