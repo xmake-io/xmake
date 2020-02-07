@@ -31,10 +31,10 @@ fi
 remote_get_content() {
     if curl --version >/dev/null 2>&1
     then
-        curl -fsSL "$1"
+        curl -fSL "$1"
     elif wget --version >/dev/null 2>&1
     then
-        wget -q "$1" -O -
+        wget "$1" -O -
     fi
 }
 
@@ -53,12 +53,18 @@ fi
 
 # below is installation
 # print a LOGO!
-echo '                         _                      '
-echo '    __  ___ __  __  __ _| | ______              '
-echo '    \ \/ / |  \/  |/ _  | |/ / __ \             '
-echo '     >  <  | \__/ | /_| |   <  ___/             '
-echo '    /_/\_\_|_|  |_|\__ \|_|\_\____| getter      '
-echo '                                                '
+echo 'xmake, A cross-platform build utility based on Lua.   '
+echo 'Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io'
+echo '                         _                            '
+echo '    __  ___ __  __  __ _| | ______                    '
+echo '    \ \/ / |  \/  |/ _  | |/ / __ \                   '
+echo '     >  <  | \__/ | /_| |   <  ___/                   '
+echo '    /_/\_\_|_|  |_|\__ \|_|\_\____|                   '
+echo '                         by ruki, tboox.org           '
+echo '                                                      '
+echo '   👉  Manual: https://xmake.io/#/getting_started     '
+echo '   🙏  Donate: https://xmake.io/#/sponsor             '
+echo '                                                      '
 
 my_exit(){
     rv=$?
@@ -130,7 +136,9 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    remote_get_content "https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run" > $projectdir/xmake.run
+    runfile_url="https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run"
+    echo "downloading $runfile_url .."
+    remote_get_content "$runfile_url" > $projectdir/xmake.run
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
     if [ x != "x$2" ]; then
