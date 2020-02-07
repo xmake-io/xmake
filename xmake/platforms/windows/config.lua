@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("core.base.global")
 import("core.base.singleton")
 import("core.platform.environment")
 import("private.platform.toolchain")
@@ -130,8 +131,11 @@ function main(platform, name)
         -- check arch 
         check_arch(config)
 
-        -- check vstudio
-        check_vstudio(config)
+        cc = config.get("cc") or global.get("cc") or "cl.exe"
+        if (cc == "cl") or (cc == "cl.exe") or (cc == "cl.com") or (cc == "cl.bat") or (cc == "cl.cmd") then
+            -- check vstudio
+            check_vstudio(config)
+        end
     end
 end
 
