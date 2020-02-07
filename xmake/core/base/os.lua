@@ -33,6 +33,7 @@ local process   = require("base/process")
 -- save original interfaces
 os._uid         = os._uid or os.uid
 os._gid         = os._gid or os.gid
+os._exit        = os._exit or os.exit
 os._mkdir       = os._mkdir or os.mkdir
 os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
@@ -550,6 +551,16 @@ function os.tmpfile(key)
     return path.join(os.tmpdir(), "_" .. (hash.uuid4(key):gsub("-", "")))                                                        
 end
 
+-- exit program
+function os.exit(...)
+
+    -- kill all pending processes first
+    process.killall()
+
+    -- do exit
+    return os._exit(...)
+end
+
 -- run command
 function os.run(cmd)
 
@@ -918,8 +929,6 @@ end
 
 -- check the current command is running as root
 function os.isroot()
-
-    -- check it
     return os.uid().euid == 0
 end
 
