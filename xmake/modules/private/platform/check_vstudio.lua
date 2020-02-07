@@ -87,15 +87,13 @@ function main(config)
         config.set("vs", vs, {readonly = true, force = true})
 
         -- trace
-        print("checking for the Microsoft Visual Studio (%s) version ... %s", config.get("arch"), vs)
+        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.success}%s", config.get("arch"), vs)
     else
         -- failed
-        print("checking for the Microsoft Visual Studio (%s) version ... no", config.get("arch"))
-        print("please run:")
-        print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
-        print("or  - xmake global --vs=xxx")
+        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.failure}no", config.get("arch"))
+        cprint("please run:")
+        cprint("    - xmake config --vs=xxx [--vs_toolset=xxx]")
+        cprint("or  - xmake global --vs=xxx")
         raise()
     end
 end
-
-
