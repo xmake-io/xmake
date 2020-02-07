@@ -446,7 +446,9 @@ function option.defaults(task)
 
     -- get the default options for the given task
     local defaults = {}
-    option.populate_defaults(taskmenu.options, defaults)
+    if taskmenu then
+        option.populate_defaults(taskmenu.options, defaults)
+    end
     return defaults
 end
 
