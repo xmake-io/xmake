@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # xmake getter
-# usage: bash <(curl -s <my location>) [[mirror:]branch|__local__|__run__] [commit/__install_only__]
+# usage: bash <(curl -s <my location>) [branch|__local__|__run__] [commit/__install_only__]
 
 set -o pipefail
 
@@ -37,6 +37,62 @@ remote_get_content() {
         wget "$1" -O -
     fi
 }
+
+get_host_speed() {
+    if [ `uname` == "Darwin" ]; then
+        ping -c 1 -t 1 $1 2>/dev/null | egrep -o 'time=\d+' | egrep -o "\d+" || echo "65535"
+    else
+        ping -c 1 -W 1 $1 2>/dev/null | egrep -o 'time=\d+' | egrep -o "\d+" || echo "65535"
+    fi
+}
+
+get_fast_host() {
+    speed_gitee=$(get_host_speed "gitee.com")
+    speed_gitlab=$(get_host_speed "gitlab.com")
+    speed_github=$(get_host_speed "github.com")
+    if [ $speed_gitee -le $speed_gitlab ]; then
+        if [ $speed_gitee -le $speed_github ]; then
+            echo "gitee.com" 
+        else
+            echo "github.com"
+        fi
+    else
+        if [ $speed_gitlab -le $speed_github ]; then
+            echo "gitlab.com"
+        else
+            echo "github.com"
+        fi
+    fi
+}
+
+# get branch
+branch=__run__
+if [ x != "x$1" ]; then
+    brancharr=($1)
+    if [ ${#brancharr[@]} -eq 1 ]
+    then
+        branch=${brancharr[0]}
+    fi
+    echo "Branch: $branch"
+fi
+
+# get fasthost and git repository
+if [ 'x__local__' != "x$branch" ]; then
+    fasthost=$(get_fast_host)
+    if [ "$fasthost" == "gitee.com" ]; then
+        gitrepo="https://gitee.com/tboox/xmake.git"
+        gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
+        if [ 'x__run__' = "x$branch" ]; then
+            branch=$(git ls-remote --tags "$gitrepo" | tail -c 7)
+        fi
+    elif [ "$fasthost" == "gitlab.com" ]; then
+        gitrepo="https://gitlab.com/tboox/xmake.git"
+        gitrepo_raw="https://gitlab.com/tboox/xmake/-/raw/master"
+    else
+        gitrepo="https://github.com/xmake-io/xmake.git"
+        gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+    fi
+fi
 
 if [ "$1" = "__uninstall__" ]
 then
@@ -104,22 +160,6 @@ install_tools()
     { apk --version >/dev/null 2>&1 && $sudoprefix apk add gcc g++ make readline-dev ncurses-dev libc-dev linux-headers; }
 }
 test_tools || { install_tools && test_tools; } || my_exit "$(echo -e 'Dependencies Installation Fail\nThe getter currently only support these package managers\n\t* apt\n\t* yum\n\t* zypper\n\t* pacman\nPlease install following dependencies manually:\n\t* git\n\t* build essential like `make`, `gcc`, etc\n\t* libreadline-dev (readline-devel)\n\t* ccache (optional)')" 1
-branch=__run__
-mirror=xmake-io
-IFS=':'
-if [ x != "x$1" ]; then
-    brancharr=($1)
-    if [ ${#brancharr[@]} -eq 1 ]
-    then
-        branch=${brancharr[0]}
-    fi
-    if [ ${#brancharr[@]} -eq 2 ]
-    then
-        branch=${brancharr[1]}
-        mirror=${brancharr[0]}
-    fi
-    echo "Branch: $branch"
-fi
 projectdir=$tmpdir
 if [ 'x__local__' = "x$branch" ]; then
     if [ -d '.git' ]; then
@@ -128,7 +168,7 @@ if [ 'x__local__' = "x$branch" ]; then
     cp -r . $projectdir
     cd $projectdir || my_exit 'Chdir Error'
 elif [ 'x__run__' = "x$branch" ]; then
-    version=$(git ls-remote --tags "https://github.com/$mirror/xmake" | tail -c 7)
+    version=$(git ls-remote --tags "$gitrepo" | tail -c 7)
     if xz --version >/dev/null 2>&1
     then
         pack=xz
@@ -136,18 +176,18 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    runfile_url="https://github.com/$mirror/xmake/releases/download/$version/xmake-$version.$pack.run"
+    runfile_url="https://github.com/xmake-io/xmake/releases/download/$version/xmake-$version.$pack.run"
     echo "downloading $runfile_url .."
     remote_get_content "$runfile_url" > $projectdir/xmake.run
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
     if [ x != "x$2" ]; then
-        git clone --depth=50 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
         git checkout -qf "$2"
         cd - || my_exit 'Chdir Error'
     else 
-        git clone --depth=1 -b "$branch" "https://github.com/$mirror/xmake.git" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
+        git clone --depth=1 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
     fi
 fi
 
@@ -186,7 +226,7 @@ install_profile()
     if [ -f "$projectdir/scripts/register-completions.sh" ]; then
         cat "$projectdir/scripts/register-completions.sh" >> ~/.xmake/profile
     else
-        remote_get_content "https://github.com/$mirror/xmake/raw/master/scripts/register-completions.sh" >> ~/.xmake/profile
+        remote_get_content "$gitrepo_raw/scripts/register-completions.sh" >> ~/.xmake/profile
     fi
 
     if   [[ "$SHELL" = */zsh ]]; then 
