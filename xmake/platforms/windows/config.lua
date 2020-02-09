@@ -30,9 +30,6 @@ import("private.platform.check_toolchain")
 -- get toolchains
 function _toolchains()
 
-    -- init cross
-    local cross = "xcrun -sdk macosx "
-
     -- init toolchains
     local cc         = toolchain("the c compiler")
     local cxx        = toolchain("the c++ compiler")

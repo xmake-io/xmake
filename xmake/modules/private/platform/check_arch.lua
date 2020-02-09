@@ -32,7 +32,7 @@ function main(config, default)
         config.set("arch", default or os.arch())
 
         -- trace
-        cprint("checking for the architecture ... ${green}%s", config.get("arch"))
+        cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
     end
 end
 
