@@ -70,19 +70,19 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 #### 使用curl
 
 ```bash
-bash <(curl -fsSL https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh)
+bash <(curl -fsSL https://cdn.jsdelivr.net/gh/xmake-io/xmake/scripts/get.sh)
 ```
 
 #### 使用wget
 
 ```bash
-bash <(wget https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.sh -O -)
+bash <(wget https://cdn.jsdelivr.net/gh/xmake-io/xmake/scripts/get.sh -O -)
 ```
 
 #### 使用powershell
 
 ```bash
-Invoke-Expression (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/get.ps1' -UseBasicParsing).Content
+Invoke-Expression (Invoke-Webrequest 'https://cdn.jsdelivr.net/gh/xmake-io/xmake/scripts/get.ps1' -UseBasicParsing).Content
 ```
 
 ## 简单的工程描述
