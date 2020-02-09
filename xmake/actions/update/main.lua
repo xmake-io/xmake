@@ -32,6 +32,8 @@ import("privilege.sudo")
 import("private.async.runjobs")
 import("actions.require.impl.environment", {rootdir = os.programdir()})
 import("private.action.update.fetch_version")
+import("utils.archive")
+import("lib.detect.find_file")
 
 -- the installer filename for windows
 local win_installer_name = "xmake-installer.exe"
@@ -99,9 +101,7 @@ function _run_win_v(program, commands, admin)
     local temp_vbs = os.tmpfile() .. ".vbs"
     os.cp(sudo_vbs, temp_vbs)
     local params = table.join("/Nologo", temp_vbs, "W" .. (admin and "A" or "N") , program, commands)
-    local proc = process.openv("cscript", params)
-    if proc then proc:close() end
-    return proc ~= nil
+    process.openv("cscript", params):close()
 end
 
 -- do uninstall
@@ -162,7 +162,6 @@ function _install(sourcedir)
                         local no_admin = os.trycp(path.join(os.programdir(), "scripts", "run.vbs"), testfile)
                         os.tryrm(testfile)
                         if no_admin then table.insert(params, 1, "/NOADMIN") end
-                        if not option.get("verbose") then table.insert(params, 1, "/S") end
                         -- need UAC?
                         if winos:version():gt("winxp") then
                             _run_win_v(win_installer_name, params, not no_admin)
@@ -231,7 +230,8 @@ function _install_script(sourcedir)
                 local params = { "/c", script, os.programdir(),  source }
                 os.tryrm(script_original .. ".bak")
                 local access = os.trymv(script_original, script_original .. ".bak")
-                return _run_win_v("cmd", params, not access)
+                _run_win_v("cmd", params, not access)
+                return true
             else
                 local script = path.join(os.programdir(), "scripts", "update-script.sh")
                 return _sudo_v("sh", { script, os.programdir(), source })
@@ -316,7 +316,8 @@ function main()
         if version:find('.', 1, true) then
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
                         format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", version, version),
-                        format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe", version)}
+                        format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases/xmake-%s.exe.zip", version),
+                        format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe.zip", version)}
         else
             -- regard as a git branch, fetch from ci
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch())}
@@ -351,7 +352,17 @@ function main()
                     os.tryrm(sourcedir)
                     if not install_from_git then
                         os.mkdir(sourcedir)
-                        http.download(url, path.join(sourcedir, win_installer_name))
+                        local installerfile = path.join(sourcedir, win_installer_name) 
+                        if url:endswith(".zip") then
+                            http.download(url, installerfile .. ".zip")
+                            archive.extract(installerfile .. ".zip", installerfile .. ".dir")
+                            local file = find_file("*.exe", installerfile .. ".dir")
+                            if file then
+                                os.cp(file, installerfile)
+                            end
+                        else
+                            http.download(url, installerfile)
+                        end
                     else
                         git.clone(url, {depth = 1, recurse_submodules = not script_only, branch = version, outputdir = sourcedir})
                     end
