@@ -82,15 +82,13 @@ if [ 'x__local__' != "x$branch" ]; then
     if [ "$fasthost" == "gitee.com" ]; then
         gitrepo="https://gitee.com/tboox/xmake.git"
         gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
-        if [ 'x__run__' = "x$branch" ]; then
-            branch=$(git ls-remote --tags "$gitrepo" | tail -c 7)
-        fi
     elif [ "$fasthost" == "gitlab.com" ]; then
         gitrepo="https://gitlab.com/tboox/xmake.git"
         gitrepo_raw="https://gitlab.com/tboox/xmake/-/raw/master"
     else
         gitrepo="https://github.com/xmake-io/xmake.git"
-        gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+        #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
+        gitrepo_raw="https://cdn.jsdelivr.net/gh/xmake-io/xmake"
     fi
 fi
 
@@ -176,9 +174,14 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    runfile_url="https://github.com/xmake-io/xmake/releases/download/$version/xmake-$version.$pack.run"
+    runfile_url="https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases/xmake-$version.$pack.run"
     echo "downloading $runfile_url .."
     remote_get_content "$runfile_url" > $projectdir/xmake.run
+    if [[ $? != 0 ]]; then
+        runfile_url="https://github.com/xmake-io/xmake/releases/download/$version/xmake-$version.$pack.run"
+        echo "downloading $runfile_url .."
+        remote_get_content "$runfile_url" > $projectdir/xmake.run
+    fi
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
     if [ x != "x$2" ]; then
