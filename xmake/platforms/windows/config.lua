@@ -128,7 +128,11 @@ function main(platform, name)
         check_arch(config)
 
         -- check vstudio
-        check_vstudio(config)
+        local cc  = path.filename(config.get("cc") or os.getenv("CC") or "cl"):lower()
+        local cxx = path.filename(config.get("cxx") or os.getenv("CXX") or "cl"):lower()
+        if cc == "cl" or cc == "cl.exe" or cxx == "cl" or cxx == "cl.exe" then
+            check_vstudio(config)
+        end
     end
 end
 
