@@ -130,7 +130,8 @@ function main(platform, name)
         -- check vstudio
         local cc  = path.basename(config.get("cc") or "cl"):lower()
         local cxx = path.basename(config.get("cxx") or "cl"):lower()
-        if cc == "cl" or cxx == "cl" then
+        local mrc = path.basename(config.get("mrc") or "rc"):lower()
+        if cc == "cl" or cxx == "cl" or mrc == "rc" then
             check_vstudio(config)
         end
     end
