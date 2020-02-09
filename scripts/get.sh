@@ -88,7 +88,7 @@ if [ 'x__local__' != "x$branch" ]; then
     else
         gitrepo="https://github.com/xmake-io/xmake.git"
         #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
-        gitrepo_raw="https://cdn.jsdelivr.net/gh/xmake-io/xmake"
+        gitrepo_raw="https://cdn.jsdelivr.net/gh/xmake-io/xmake@master"
     fi
 fi
 
@@ -174,7 +174,7 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    runfile_url="https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases/xmake-$version.$pack.run"
+    runfile_url="https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@master/xmake-$version.$pack.run"
     echo "downloading $runfile_url .."
     remote_get_content "$runfile_url" > $projectdir/xmake.run
     if [[ $? != 0 ]]; then

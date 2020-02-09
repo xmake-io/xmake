@@ -316,7 +316,7 @@ function main()
         if version:find('.', 1, true) then
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
                         format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", version, version),
-                        format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases/xmake-%s.exe.zip", version),
+                        format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@master/xmake-%s.exe.zip", version),
                         format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe.zip", version)}
         else
             -- regard as a git branch, fetch from ci
