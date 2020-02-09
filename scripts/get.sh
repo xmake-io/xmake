@@ -95,7 +95,7 @@ fi
 if [ "$1" = "__uninstall__" ]
 then
     # uninstall
-    makefile=$(remote_get_content https://github.com/xmake-io/xmake/raw/master/makefile)
+    makefile=$(remote_get_content $gitrepo_raw/makefile)
     while which xmake >/dev/null 2>&1
     do
         pre=$(which xmake | sed 's/\/bin\/xmake$//')
