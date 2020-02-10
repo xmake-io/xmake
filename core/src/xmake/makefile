@@ -112,7 +112,13 @@ xmake_C_FILES 			+= \
 						readline/history_list \
 						readline/add_history \
 						readline/clear_history
-						
+
+ifeq ($(PLAT),mingw)
+xmake_C_FILES 			+= \
+						winos/ansi \
+						winos/logical_drives \
+						winos/registry_query
+endif
 
 # flags
 xmake_CXFLAGS 			+= -D__tb_prefix__=\"xmake\"

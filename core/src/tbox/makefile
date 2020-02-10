@@ -265,6 +265,19 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/charset/ucs4 \
 						tbox/src/tbox/charset/iso8859 
 
+ifeq ($(PLAT),mingw)
+tbox_C_FILES 			+= \
+						tbox/src/tbox/platform/windows/windows \
+						tbox/src/tbox/platform/windows/iocp_object \
+						tbox/src/tbox/platform/windows/socket_pool \
+						tbox/src/tbox/platform/windows/interface/ws2_32 \
+						tbox/src/tbox/platform/windows/interface/shell32 \
+						tbox/src/tbox/platform/windows/interface/mswsock \
+						tbox/src/tbox/platform/windows/interface/kernel32 \
+						tbox/src/tbox/platform/windows/interface/iphlpapi \
+						tbox/src/tbox/platform/windows/interface/interface 
+endif
+
 # includes
 tbox_INC_DIRS 			+= \
 						tbox/src \
