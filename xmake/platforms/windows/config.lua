@@ -128,9 +128,9 @@ function main(platform, name)
         check_arch(config)
 
         -- check vstudio
-        local cc  = path.filename(config.get("cc") or "cl"):lower()
-        local cxx = path.filename(config.get("cxx") or "cl"):lower()
-        if cc == "cl" or cc == "cl.exe" or cxx == "cl" or cxx == "cl.exe" then
+        local cc  = path.basename(config.get("cc") or "cl"):lower()
+        local cxx = path.basename(config.get("cxx") or "cl"):lower()
+        if cc == "cl" or cxx == "cl" then
             check_vstudio(config)
         end
     end
