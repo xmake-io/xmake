@@ -34,7 +34,7 @@ PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 ifeq ($(ARCH),)
 
 ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring mingw,$(PLAT)),x86,$(ARCH))
+ARCH 		:=$(if $(findstring mingw,$(PLAT)),i386,$(ARCH))
 ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring linux,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))

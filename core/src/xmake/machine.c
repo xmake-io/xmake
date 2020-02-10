@@ -760,7 +760,8 @@ tb_int_t xm_machine_main(xm_machine_ref_t self, tb_int_t argc, tb_char_t** argv)
     xm_machine_t* machine = (xm_machine_t*)self;
     tb_assert_and_check_return_val(machine && machine->lua, -1);
 
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_IS_MSVC)
+    // set "stdin" to have unicode mode
     if (_isatty(_fileno(stdin))) _setmode(_fileno(stdin), _O_U16TEXT);
 #endif
 

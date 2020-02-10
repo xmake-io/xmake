@@ -83,8 +83,13 @@ ifeq ($(PLAT),windows)
 luajit_OBJ_FILES 		+= \
 						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
 else
+ifeq ($(PLAT),mingw)
+luajit_OBJ_FILES 		+= \
+						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
+else
 luajit_ASM_FILES 		+= \
 						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
+endif
 endif
 
 # includes
