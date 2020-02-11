@@ -272,6 +272,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/windows/socket_pool \
 						tbox/src/tbox/platform/windows/interface/ws2_32 \
 						tbox/src/tbox/platform/windows/interface/shell32 \
+						tbox/src/tbox/platform/windows/interface/dbghelp \
 						tbox/src/tbox/platform/windows/interface/mswsock \
 						tbox/src/tbox/platform/windows/interface/kernel32 \
 						tbox/src/tbox/platform/windows/interface/iphlpapi \

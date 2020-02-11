@@ -378,7 +378,7 @@ static tb_bool_t xm_machine_save_arguments(xm_machine_t* machine, tb_int_t argc,
     // check
     tb_assert_and_check_return_val(machine && machine->lua && argc >= 1 && argv, tb_false);
 
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     tb_wchar_t **argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
 #endif
 
@@ -389,7 +389,7 @@ static tb_bool_t xm_machine_save_arguments(xm_machine_t* machine, tb_int_t argc,
     tb_int_t i = 0;
     for (i = 1; i < argc; i++)
     {
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
         tb_char_t argvbuf[4096] = {0};
         tb_wcstombs(argvbuf, argvw[i], tb_arrayn(argvbuf));
         // table_new[table.getn(table_new) + 1] = argv[i]
@@ -567,7 +567,7 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     // check
     tb_assert_and_check_return(machine && machine->lua);
 
-#if defined(TB_CONFIG_OS_WINDOWS)
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
 
     // the GetNativeSystemInfo function type
     typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
@@ -673,7 +673,13 @@ xm_machine_ref_t xm_machine_init()
 
         // init host
 #if defined(TB_CONFIG_OS_WINDOWS)
+#   if defined(TB_COMPILER_ON_MSYS)
+        lua_pushstring(machine->lua, "msys");
+#   elif defined(TB_COMPILER_ON_CYGWIN)
+        lua_pushstring(machine->lua, "cygwin");
+#   else
         lua_pushstring(machine->lua, "windows");
+#   endif
 #elif defined(TB_CONFIG_OS_MACOSX)
         lua_pushstring(machine->lua, "macosx");
 #elif defined(TB_CONFIG_OS_LINUX)
@@ -682,8 +688,6 @@ xm_machine_ref_t xm_machine_init()
         lua_pushstring(machine->lua, "ios");
 #elif defined(TB_CONFIG_OS_ANDROID)
         lua_pushstring(machine->lua, "android");
-#elif defined(TB_CONFIG_OS_LIKE_UNIX)
-        lua_pushstring(machine->lua, "unix");
 #else
         lua_pushstring(machine->lua, "unknown");
 #endif
