@@ -79,17 +79,23 @@ luajit_C_FILES 			+= \
 						luajit/src/lj_profile
 
 # asm files
+iswin =
 ifeq ($(PLAT),windows)
-luajit_OBJ_FILES 		+= \
-						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
-else
-ifeq ($(PLAT),mingw)
+	iswin = yes
+endif
+ifeq ($(PLAT),msys)
+	iswin = yes
+endif
+ifeq ($(PLAT),cygwin)
+	iswin = yes
+endif
+
+ifdef iswin
 luajit_OBJ_FILES 		+= \
 						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
 else
 luajit_ASM_FILES 		+= \
 						autogen/$(PLAT)/$(luajit_JIT)/$(ARCH)/lj_vm
-endif
 endif
 
 # includes

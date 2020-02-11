@@ -265,7 +265,18 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/charset/ucs4 \
 						tbox/src/tbox/charset/iso8859 
 
-ifeq ($(PLAT),mingw)
+iswin =
+ifeq ($(PLAT),windows)
+	iswin = yes
+endif
+ifeq ($(PLAT),msys)
+	iswin = yes
+endif
+ifeq ($(PLAT),cygwin)
+	iswin = yes
+endif
+
+ifdef iswin
 tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/windows/windows \
 						tbox/src/tbox/platform/windows/iocp_object \

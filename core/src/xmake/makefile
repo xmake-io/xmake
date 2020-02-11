@@ -113,7 +113,18 @@ xmake_C_FILES 			+= \
 						readline/add_history \
 						readline/clear_history
 
-ifeq ($(PLAT),mingw)
+iswin =
+ifeq ($(PLAT),windows)
+	iswin = yes
+endif
+ifeq ($(PLAT),msys)
+	iswin = yes
+endif
+ifeq ($(PLAT),cygwin)
+	iswin = yes
+endif
+
+ifdef iswin
 xmake_C_FILES 			+= \
 						winos/ansi \
 						winos/logical_drives \

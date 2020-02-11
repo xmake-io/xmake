@@ -23,7 +23,7 @@ target("xmake")
 
     -- add the common source files
     add_files("**.c|winos/*.c")
-    if is_plat("windows") then
+    if is_plat("windows", "msys", "cygwin") then
         add_files("winos/*.c")
     end
 

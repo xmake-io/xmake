@@ -26,7 +26,7 @@ endif
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},mingw,))
+PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},msys,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i windows},windows,))
 PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
@@ -34,7 +34,7 @@ PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 ifeq ($(ARCH),)
 
 ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring mingw,$(PLAT)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring msys,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring linux,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
