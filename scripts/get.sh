@@ -48,20 +48,11 @@ get_host_speed() {
 
 get_fast_host() {
     speed_gitee=$(get_host_speed "gitee.com")
-    speed_gitlab=$(get_host_speed "gitlab.com")
     speed_github=$(get_host_speed "github.com")
-    if [ $speed_gitee -le $speed_gitlab ]; then
-        if [ $speed_gitee -le $speed_github ]; then
-            echo "gitee.com" 
-        else
-            echo "github.com"
-        fi
+    if [ $speed_gitee -le $speed_github ]; then
+        echo "gitee.com" 
     else
-        if [ $speed_gitlab -le $speed_github ]; then
-            echo "gitlab.com"
-        else
-            echo "github.com"
-        fi
+        echo "github.com"
     fi
 }
 
@@ -82,9 +73,6 @@ if [ 'x__local__' != "x$branch" ]; then
     if [ "$fasthost" == "gitee.com" ]; then
         gitrepo="https://gitee.com/tboox/xmake.git"
         gitrepo_raw="https://gitee.com/tboox/xmake/raw/master"
-    elif [ "$fasthost" == "gitlab.com" ]; then
-        gitrepo="https://gitlab.com/tboox/xmake.git"
-        gitrepo_raw="https://gitlab.com/tboox/xmake/-/raw/master"
     else
         gitrepo="https://github.com/xmake-io/xmake.git"
         #gitrepo_raw="https://github.com/xmake-io/xmake/raw/master"
