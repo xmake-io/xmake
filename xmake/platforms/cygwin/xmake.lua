@@ -31,7 +31,7 @@ platform("cygwin")
     set_archs("i386", "x86_64")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", binary = "$(name).sym"}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dll", binary = "$(name).exe", symbol = "$(name).sym"}
 
     -- set install directory
     set_installdir("/usr/local")
