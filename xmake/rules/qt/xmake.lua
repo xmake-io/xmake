@@ -166,6 +166,6 @@ rule("qt.quickapp_static")
     -- install application for android
     on_install("android", "install.android")
 
--- define rule: qt application
+-- define rule: qt application (deprecated)
 rule("qt.application")
-    add_deps("qt.quickapp")
+    add_deps("qt.quickapp", "qt.ui")
