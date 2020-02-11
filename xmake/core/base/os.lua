@@ -515,7 +515,7 @@ function os.rmdir(...)
 end
 
 -- get the temporary directory
-function os.tmpdir()
+function os.tmpdir(opt)
 
     -- is in fakeroot? @note: uid always be 0 in root and fakeroot
     if os._FAKEROOT == nil then
@@ -528,10 +528,18 @@ function os.tmpdir()
     end
 
     -- get root tmpdir
-    if os._ROOT_TMPDIR == nil then
-        os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+    local tmpdir_root = nil
+    if opt and opt.ramdisk == false then
+        if os._ROOT_TMPDIR == nil then
+            os._ROOT_TMPDIR = (os.getenv("XMAKE_TMPDIR") or os.getenv("TMPDIR") or os._tmpdir()):trim()
+        end
+        tmpdir_root = os._ROOT_TMPDIR
+    else
+        if os._ROOT_TMPDIR_RAM == nil then
+            os._ROOT_TMPDIR_RAM = (os.getenv("XMAKE_TMPDIR") or os._ramdir() or os.getenv("TMPDIR") or os._tmpdir()):trim()
+        end
+        tmpdir_root = os._ROOT_TMPDIR_RAM
     end
-    local tmpdir_root = os._ROOT_TMPDIR
 
     -- make sub-directory name
     local subdir = (os._FAKEROOT and ".xmakefake" or ".xmake") .. (os.uid().euid or "")
@@ -547,8 +555,8 @@ function os.tmpdir()
 end
 
 -- generate the temporary file path
-function os.tmpfile(key)
-    return path.join(os.tmpdir(), "_" .. (hash.uuid4(key):gsub("-", "")))                                                        
+function os.tmpfile(key, opt)
+    return path.join(os.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))                                                        
 end
 
 -- exit program

@@ -262,13 +262,13 @@ function sandbox_os.curdir()
 end
 
 -- get the temporary directory
-function sandbox_os.tmpdir()
-    return assert(os.tmpdir())
+function sandbox_os.tmpdir(opt)
+    return assert(os.tmpdir(opt))
 end
 
 -- get the temporary file
-function sandbox_os.tmpfile(key)
-    return assert(os.tmpfile(key))
+function sandbox_os.tmpfile(key, opt)
+    return assert(os.tmpfile(key, opt))
 end
 
 -- get the script directory

@@ -335,13 +335,14 @@ function main()
         cprint("update version ${green}%s${clear} from ${underline}%s${clear} ..", version, mainurls[1])
     end
 
-    -- the download task
-    local sourcedir = path.join(os.tmpdir(), "xmakesrc", version)
+    -- get the temporary source directory without ramdisk (maybe too large)
+    local sourcedir = path.join(os.tmpdir({ramdisk = false}), "xmakesrc", version)
     vprint("prepared to download to temp dir %s ..", sourcedir)
 
     -- all user provided urls are considered as git url since check has been performed in fetch_version
     local install_from_git = not is_official or git.checkurl(mainurls[1])
 
+    -- the download task
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
             utils.clearline()
