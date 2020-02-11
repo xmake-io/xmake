@@ -6,12 +6,14 @@
 
 * [#675](https://github.com/xmake-io/xmake/issues/675): Support to compile `*.c` as c++, `add_files("*.c", {sourcekind = "cxx"})`.
 * [#681](https://github.com/xmake-io/xmake/issues/681): Support compile xmake on msys/cygwin and add msys/cygwin platform
+* Add socket/pipe io modules and support to schedule socket/process/pipe in coroutine
 
 ### Change
 
 * [#665](https://github.com/xmake-io/xmake/issues/665): Support to parse *nix style command options, thanks [@OpportunityLiu](https://github.com/OpportunityLiu)
 * [#673](https://github.com/xmake-io/xmake/pull/673): Improve tab complete to support argument values
 * [#680](https://github.com/xmake-io/xmake/issues/680): Improve get.sh scripts and add download mirrors
+* Improve process scheduler
 
 ### Bugs fixed
 
@@ -676,12 +678,14 @@
 
 * [#675](https://github.com/xmake-io/xmake/issues/675): 支持通过设置强制将`*.c`作为c++代码编译, `add_files("*.c", {sourcekind = "cxx"})`。
 * [#681](https://github.com/xmake-io/xmake/issues/681): 支持在msys/cygwin上编译xmake，以及添加msys/cygwin编译平台
+* 添加socket/pipe模块，并且支持在协程中同时调度process/socket/pipe
 
 ### 改进
 
 * [#665](https://github.com/xmake-io/xmake/issues/665): 支持 *nix style 的参数输入，感谢[@OpportunityLiu](https://github.com/OpportunityLiu)的贡献
 * [#673](https://github.com/xmake-io/xmake/pull/673): 改进tab命令补全，增加对参数values的补全支持
 * [#680](https://github.com/xmake-io/xmake/issues/680): 优化get.sh安装脚本，添加国内镜像源，加速下载
+* 改进process调度器
 
 ### Bugs修复
 
