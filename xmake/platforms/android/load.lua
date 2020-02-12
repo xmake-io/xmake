@@ -82,6 +82,7 @@ function main(platform)
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
+    local ndkver = config.get("ndkver")
     local ndk_sdkver = config.get("ndk_sdkver")
     if ndk and ndk_sdkver then
 
@@ -258,7 +259,13 @@ function main(platform)
                 platform:add("ldflags", "-lstlport_shared")
                 platform:add("shflags", "-lstlport_shared")
             end
-            
+
+            -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
+            -- @see https://github.com/xmake-io/xmake/issues/684
+            if ndkver and ndkver >= 20 and ndk_cxxstl:startswith("llvmstl") then
+                platform:add("ldflags", "-nostdlib++")
+                platform:add("shflags", "-nostdlib++")
+            end
         end
     end
 

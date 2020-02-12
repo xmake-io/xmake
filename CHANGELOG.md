@@ -19,6 +19,7 @@
 
 * Fix incremental compilation for checking the dependent file 
 * Fix log output for parsing xmake-vscode/problem info
+* [#684](https://github.com/xmake-io/xmake/issues/684): Fix linker errors for android ndk on windows
 
 ## v2.2.9
 
@@ -691,6 +692,7 @@
 
 * 修复增量编译检测依赖文件的一些问题
 * 修复log输出导致xmake-vscode插件解析编译错误信息失败问题
+* [#684](https://github.com/xmake-io/xmake/issues/684): 修复windows下android ndk的一些linker错误
 
 ## v2.2.9
 

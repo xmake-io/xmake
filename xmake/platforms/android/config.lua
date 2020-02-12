@@ -95,14 +95,14 @@ function _toolchains()
     as:add({name = "gcc", cross = cross}, "clang")
 
     -- init the linker
-    ld:add({name = "gcc", cross = cross})
     ld:add({name = "g++", cross = cross})
-    ld:add("clang", "clang++")
+    ld:add({name = "gcc", cross = cross})
+    ld:add("clang++", "clang")
 
     -- init the shared library linker
-    sh:add({name = "gcc", cross = cross})
     sh:add({name = "g++", cross = cross})
-    sh:add("clang", "clang++")
+    sh:add({name = "gcc", cross = cross})
+    sh:add("clang++", "clang")
 
     -- init the static library archiver
     ar:add({name = "ar", cross = cross, pathes = gcc_toolchain_bin}, "llvm-ar")

@@ -153,8 +153,21 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
         return {}
     end
 
+    -- get ndk version, e.g. r16b, ..
+    local ndkver = nil
+    local ndk_version_header = path.join(sdkdir, "sysroot/usr/include/android/ndk-version.h")
+    if os.isfile(ndk_version_header) then
+        local ndk_version_info = io.readfile(ndk_version_header)
+        if ndk_version_info then
+            ndk_version_info = ndk_version_info:match("#define __NDK_MAJOR__ (%d+)")
+            if ndk_version_info then
+                ndkver = tonumber(ndk_version_info)
+            end
+        end
+    end
+
     -- ok?    
-    return {sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, gcc_toolchain = gcc_toolchain, toolchains_ver = toolchains_ver}
+    return {ndkver = ndkver, sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, gcc_toolchain = gcc_toolchain, toolchains_ver = toolchains_ver}
 end
 
 -- find ndk toolchains
@@ -193,6 +206,7 @@ function main(sdkdir, opt)
 
         -- save to config
         config.set("ndk", ndk.sdkdir, {force = true, readonly = true})
+        config.set("ndkver", ndk.ndkver, {force = true, readonly = true})
         config.set("ndk_sdkver", ndk.sdkver, {force = true, readonly = true})
         config.set("ndk_toolchains_ver", ndk.toolchains_ver, {force = true, readonly = true})
 
