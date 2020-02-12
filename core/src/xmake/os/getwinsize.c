@@ -29,7 +29,7 @@
  * includes
  */
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
 #   include <windows.h>
 #else
 #   include <sys/ioctl.h>
@@ -51,7 +51,7 @@ tb_int_t xm_os_getwinsize(lua_State* lua)
     tb_int_t w = TB_MAXS16, h = TB_MAXS16;
 
     // get winsize
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
     {
