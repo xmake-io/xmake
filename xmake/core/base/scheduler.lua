@@ -157,7 +157,6 @@ function scheduler:_poller_resume_co(co, events)
 
     -- resume this coroutine task
     co:waitobj_set(nil)
-    self:_co_tasks_suspended():remove(co)
     return self:co_resume(co, (bit.band(events, poller.EV_POLLER_ERROR) ~= 0) and -1 or events)
 end
 
@@ -254,28 +253,6 @@ function scheduler:_co_curdir_update(curdir)
     end
 end
 
--- get all suspended coroutine tasks
-function scheduler:_co_tasks_suspended()
-    local co_tasks_suspended = self._CO_TASKS_SUSPENDED 
-    if not co_tasks_suspended then
-        co_tasks_suspended = hashset.new()
-        self._CO_TASKS_SUSPENDED = co_tasks_suspended
-    end
-    return co_tasks_suspended
-end
-
--- cancel and resume all suspended tasks after stopping scheduler
--- we cannot suspend them forever, all tasks will be exited directly and free all resources.
-function scheduler:_co_tasks_suspended_cancel_all()
-    for co in self:_co_tasks_suspended():keys() do
-        local ok, errors = self:co_resume(co, -1) 
-        if not ok then
-            return false, errors
-        end
-    end
-    return true
-end
-
 -- resume it's waiting coroutine if all coroutines are dead in group
 function scheduler:_co_groups_resume()
 
@@ -298,7 +275,6 @@ function scheduler:_co_groups_resume()
                 if co_waiting and co_waiting:is_suspended() then
                     resumed_count = resumed_count + 1
                     self._CO_GROUPS_WAITING[name] = nil
-                    self:_co_tasks_suspended():remove(co_waiting)
                     local ok, errors = self:co_resume(co_waiting)
                     if not ok then
                         return -1, errors
@@ -405,14 +381,10 @@ function scheduler:co_sleep(ms)
     -- register timeout task to timer
     self:_timer():post(function (cancel) 
         if running:is_suspended() then
-            self:_co_tasks_suspended():remove(running)
             return self:co_resume(running)
         end
         return true
     end, ms)
-
-    -- save the suspended coroutine
-    self:_co_tasks_suspended():insert(running)
 
     -- wait
     self:co_suspend()
@@ -480,7 +452,6 @@ function scheduler:co_group_wait(name)
         if count ~= #co_group then
             self._CO_GROUPS_WAITING = self._CO_GROUPS_WAITING or {}
             self._CO_GROUPS_WAITING[name] = running
-            self:_co_tasks_suspended():insert(running)
             self:co_suspend()
         end
     until count == #co_group 
@@ -611,7 +582,6 @@ function scheduler:poller_wait(obj, events, timeout)
         timer_task = self:_timer():post(function (cancel) 
             if not cancel and running:is_suspended() then
                 running:waitobj_set(nil)
-                self:_co_tasks_suspended():remove(running)
                 return self:co_resume(running, 0)
             end
             return true
@@ -630,9 +600,6 @@ function scheduler:poller_wait(obj, events, timeout)
     if bit.band(events, poller.EV_POLLER_SEND) ~= 0 then
         pollerdata.co_send = running
     end
-
-    -- save the suspended coroutine
-    self:_co_tasks_suspended():insert(running)
 
     -- save the waiting poller object
     running:waitobj_set(obj)
@@ -687,7 +654,6 @@ function scheduler:poller_waitproc(obj, timeout)
             if not cancel and running:is_suspended() then
                 pollerdata.co_waiting = nil
                 running:waitobj_set(nil)
-                self:_co_tasks_suspended():remove(running)
                 return self:co_resume(running, 0)
             end
             return true
@@ -699,9 +665,6 @@ function scheduler:poller_waitproc(obj, timeout)
     pollerdata.proc_status  = 0
     pollerdata.proc_pending = 0
     pollerdata.co_waiting   = running
-
-    -- save the suspended coroutine
-    self:_co_tasks_suspended():insert(running)
 
     -- save the waiting poller object
     running:waitobj_set(obj)
@@ -819,17 +782,10 @@ function scheduler:runloop()
     -- mark the loop as stopped first
     self._STARTED = false
 
-    -- cancel all suspended tasks after stopping scheduler
-    local ok2, errors2 = self:_co_tasks_suspended_cancel_all()
-    if ok and not ok2 then
-        ok = ok2
-        errors = errors2
-    end
-
     -- cancel all timeout tasks and trigger them
     self:_timer():kill()
 
-    -- finished
+    -- finished and we need not resume other pending coroutines, because xmake will be aborted directly if fails
     return ok, errors
 end
 
