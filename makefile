@@ -63,9 +63,25 @@ endif
 # to match a directory for a platform dependent implementation.
 ARCH 		:=$(if $(findstring amd64,$(ARCH)),x86_64,$(ARCH))
 
+# is windows?
+iswin =
+ifeq ($(PLAT),windows)
+	iswin = yes
+endif
+ifeq ($(PLAT),msys)
+	iswin = yes
+endif
+ifeq ($(PLAT),cygwin)
+	iswin = yes
+endif
+
 xmake_dir_install   :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
+ifdef iswin
+xmake_core_install  :=$(xmake_dir_install)/xmake.exe
+else
 xmake_core_install  :=$(xmake_dir_install)/xmake
+endif
 xmake_loader        :=$(TMP_DIR)/xmake_loader
 xmake_loader_install:=$(prefix)/bin/xmake
 
