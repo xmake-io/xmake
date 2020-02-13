@@ -34,7 +34,15 @@ function _check_arch()
     if not arch then
 
         -- init the default architecture
-        config.set("arch", config.get("cross") and "none" or os.arch())
+        local arch = config.get("cross") and "none" or os.arch()
+        if is_host("windows") then
+            if arch == "x64" then
+                arch = "x86_64"
+            elseif arch == "x86" then
+                arch = "i386"
+            end
+        end
+        config.set("arch", arch)
 
         -- trace
         print("checking for the architecture ... %s", config.get("arch"))
