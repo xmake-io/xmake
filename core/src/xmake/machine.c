@@ -562,13 +562,57 @@ static tb_bool_t xm_machine_get_project_directory(xm_machine_t* machine, tb_char
     // ok?
     return ok;
 }
+static tb_void_t xm_machine_init_host(xm_machine_t* machine)
+{
+    // check
+    tb_assert_and_check_return(machine && machine->lua);
+
+    // init system host
+    tb_char_t const* syshost = tb_null;
+#if defined(TB_CONFIG_OS_WINDOWS)
+    syshost = "windows";
+#elif defined(TB_CONFIG_OS_MACOSX)
+    syshost = "macosx";
+#elif defined(TB_CONFIG_OS_LINUX)
+    syshost = "linux";
+#elif defined(TB_CONFIG_OS_IOS)
+    syshost = "ios";
+#elif defined(TB_CONFIG_OS_ANDROID)
+    syshost = "android";
+#endif
+    lua_pushstring(machine->lua, syshost? syshost : "unknown");
+    lua_setglobal(machine->lua, "_SYSHOST");
+
+    // init host
+    tb_char_t const* host = syshost;
+#if defined(TB_CONFIG_OS_WINDOWS)
+#   if defined(TB_COMPILER_ON_MSYS)
+    host = "msys";
+#   elif defined(TB_COMPILER_ON_CYGWIN)
+    host = "cygwin";
+#   else
+    {
+        tb_char_t data[64] = {0};
+        if (tb_environment_first("MSYSTEM", data, sizeof(data)))
+        {
+            // on msys or msys/mingw64 or msys/mingw32?
+            if (!tb_strnicmp(data, "mingw", 5) || !tb_stricmp(data, "msys"))
+                host = "msys";
+        }
+    }
+#   endif
+#endif
+    lua_pushstring(machine->lua, host? host : "unknown");
+    lua_setglobal(machine->lua, "_HOST");
+}
 static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
 {
     // check
     tb_assert_and_check_return(machine && machine->lua);
 
+    // init system architecture
+    tb_char_t const* sysarch = tb_null;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-
     // the GetNativeSystemInfo function type
     typedef void (WINAPI *GetNativeSystemInfo_t)(LPSYSTEM_INFO);
 
@@ -584,30 +628,75 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     switch (systeminfo.wProcessorArchitecture)
     {
     case PROCESSOR_ARCHITECTURE_AMD64:
-        lua_pushstring(machine->lua, "x64");
+        sysarch = "x64";
         break;
     case PROCESSOR_ARCHITECTURE_ARM:
-        lua_pushstring(machine->lua, "arm");
+        sysarch = "arm";
         break;
     case PROCESSOR_ARCHITECTURE_INTEL:
-        lua_pushstring(machine->lua, "x86");
+        sysarch = "x86";
         break;
     default:
-#   ifdef TB_ARCH_x64
-        lua_pushstring(machine->lua, "x64");
-#   else
-        lua_pushstring(machine->lua, "x86");
-#   endif
         break;
     }
+
+    // get arch from compiler
+    if (!sysarch)
+    {
+#   ifdef TB_ARCH_x64
+        sysarch = "x64";
+#   else
+        sysarch = "x86";
+#   endif
+    }
 #elif defined(TB_ARCH_x64)
-    lua_pushstring(machine->lua, "x86_64");
+    sysarch = "x86_64";
 #elif defined(TB_ARCH_x86)
-    lua_pushstring(machine->lua, "i386");
+    sysarch = "i386";
 #else
-    lua_pushstring(machine->lua, TB_ARCH_STRING);
+    sysarch = TB_ARCH_STRING;
 #endif
+    lua_pushstring(machine->lua, sysarch);
+    lua_setglobal(machine->lua, "_SYSARCH");
+
+    // init architecture
+    tb_char_t const* arch = sysarch;
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+    // get architecture from msys environment
+    tb_char_t data[64] = {0};
+    if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data)))
+        arch = data;
+#endif
+    lua_pushstring(machine->lua, arch);
     lua_setglobal(machine->lua, "_ARCH");
+}
+static tb_void_t xm_machine_init_features(xm_machine_t* machine)
+{
+    // check
+    tb_assert_and_check_return(machine && machine->lua);
+
+    // init features
+    lua_newtable(machine->lua);
+
+    // get path seperator
+    lua_pushstring(machine->lua, "path_sep");
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+    lua_pushstring(machine->lua, "\\");
+#else
+    lua_pushstring(machine->lua, "/");
+#endif
+    lua_settable(machine->lua, -3);
+    
+    // get environment path seperator
+    lua_pushstring(machine->lua, "path_envsep");
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+    lua_pushstring(machine->lua, ";");
+#else
+    lua_pushstring(machine->lua, ":");
+#endif
+    lua_settable(machine->lua, -3);
+
+    lua_setglobal(machine->lua, "_FEATURES");
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -672,29 +761,13 @@ xm_machine_ref_t xm_machine_init()
 #endif
 
         // init host
-#if defined(TB_CONFIG_OS_WINDOWS)
-#   if defined(TB_COMPILER_ON_MSYS)
-        lua_pushstring(machine->lua, "msys");
-#   elif defined(TB_COMPILER_ON_CYGWIN)
-        lua_pushstring(machine->lua, "cygwin");
-#   else
-        lua_pushstring(machine->lua, "windows");
-#   endif
-#elif defined(TB_CONFIG_OS_MACOSX)
-        lua_pushstring(machine->lua, "macosx");
-#elif defined(TB_CONFIG_OS_LINUX)
-        lua_pushstring(machine->lua, "linux");
-#elif defined(TB_CONFIG_OS_IOS)
-        lua_pushstring(machine->lua, "ios");
-#elif defined(TB_CONFIG_OS_ANDROID)
-        lua_pushstring(machine->lua, "android");
-#else
-        lua_pushstring(machine->lua, "unknown");
-#endif
-        lua_setglobal(machine->lua, "_HOST");
+        xm_machine_init_host(machine);
 
         // init architecture
         xm_machine_init_arch(machine);
+
+        // init features
+        xm_machine_init_features(machine);
 
         // get version
         tb_version_t const* version = xm_version();

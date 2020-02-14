@@ -800,14 +800,29 @@ function os.isexec(filepath)
     return os.isfile(filepath)
 end
 
--- get the system host
+-- get host of subsystem, maybe msys/cygwin on windows
 function os.host()
     return xmake._HOST
 end
 
--- get the system architecture
+-- get host architecture of subsystem
 function os.arch()
     return xmake._ARCH
+end
+
+-- get system host, msys/cygwin are always windows
+function os.syshost()
+    return xmake._SYSHOST
+end
+
+-- get system host architecture
+function os.sysarch()
+    return xmake._SYSARCH
+end
+
+-- get features
+function os.features()
+    return xmake._FEATURES
 end
 
 -- the current host is belong to the given hosts?
@@ -883,7 +898,7 @@ function os.user_agent()
     if os._USER_AGENT == nil then
 
         -- init systems
-        local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows"}
+        local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows", msys = "MSYS", cygwin = "Cygwin"}
 
         -- os user agent
         local os_user_agent = ""
@@ -892,7 +907,7 @@ function os.user_agent()
             if ok then
                 os_user_agent = ("Intel Mac OS X " .. (osver or "")):trim()
             end
-        elseif os.host() == "linux" then
+        elseif os.host() == "linux" or os.host() == "msys" or os.host() == "cygwin" then
             local ok, osarch = os.iorun("uname -m")
             if ok then
                 os_user_agent = (os_user_agent .. " " .. (osarch or "")):trim()

@@ -23,6 +23,8 @@ xmake                   = xmake or {}
 xmake._ARGV             = _ARGV
 xmake._HOST             = _HOST
 xmake._ARCH             = _ARCH
+xmake._SYSHOST          = _SYSHOST
+xmake._SYSARCH          = _SYSARCH
 xmake._VERSION          = _VERSION
 xmake._VERSION_SHORT    = _VERSION_SHORT
 xmake._PROGRAM_DIR      = _PROGRAM_DIR
@@ -30,6 +32,7 @@ xmake._PROGRAM_FILE     = _PROGRAM_FILE
 xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
+xmake._FEATURES         = _FEATURES
 
 function _loadfile_impl(filepath, mode, opt)
 

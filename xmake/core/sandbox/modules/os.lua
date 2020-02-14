@@ -35,6 +35,8 @@ local sandbox_os = sandbox_os or {}
 -- inherit some builtin interfaces
 sandbox_os.host         = os.host
 sandbox_os.arch         = os.arch
+sandbox_os.syshost      = os.syshost
+sandbox_os.sysarch      = os.sysarch
 sandbox_os.exit         = os.exit
 sandbox_os.date         = os.date
 sandbox_os.time         = os.time
@@ -58,6 +60,7 @@ sandbox_os.pbcopy       = os.pbcopy
 sandbox_os.cpuinfo      = os.cpuinfo
 sandbox_os.emptydir     = os.emptydir
 sandbox_os.filesize     = os.filesize
+sandbox_os.features     = os.features
 sandbox_os.workingdir   = os.workingdir
 sandbox_os.programdir   = os.programdir
 sandbox_os.programfile  = os.programfile

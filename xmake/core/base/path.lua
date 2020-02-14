@@ -22,14 +22,11 @@
 local path = path or {}
 
 -- load modules
-local string    = require("base/string")
+local string = require("base/string")
 
 -- get the directory of the path
 function path.directory(p)
-
-    -- check
     assert(p)
-
     local i = p:find_last("[/\\]")
     if i then
         if i > 1 then i = i - 1 end
@@ -41,10 +38,7 @@ end
 
 -- get the filename of the path
 function path.filename(p)
-
-    -- check
     assert(p)
-
     local i = p:find_last("[/\\]")
     if i then
         return p:sub(i + 1)
@@ -55,10 +49,7 @@ end
 
 -- get the basename of the path
 function path.basename(p)
-
-    -- check
     assert(p)
-
     local name = path.filename(p)
     local i = name:find_last(".", true)
     if i then
@@ -70,11 +61,7 @@ end
 
 -- get the file extension of the path: .xxx
 function path.extension(p)
-
-    -- check
     assert(p)
-
-    -- get extension
     local i = p:find_last(".", true)
     if i then
         return p:sub(i)
@@ -85,36 +72,37 @@ end
 
 -- join path
 function path.join(p, ...)
-
-    -- check
     assert(p)
-
-    -- join them
     for _, name in ipairs({...}) do
         p = p .. "/" .. name
     end
-
-    -- translate path
     return path.translate(p)
 end
 
 -- split path by the separator
 function path.split(p)
-
-    -- check
     assert(p)
-
     return p:split("[/\\]")
 end
 
 -- get the path seperator
 function path.sep()
-    return xmake._HOST == "windows" and '\\' or '/'
+    local sep = path._SEP
+    if not sep then
+        sep = xmake._FEATURES.path_sep
+        path._SEP = sep
+    end
+    return sep
 end
 
 -- get the path seperator of environment variable
 function path.envsep()
-    return xmake._HOST == "windows" and ';' or ':'
+    local envsep = path._ENVSEP
+    if not envsep then
+        envsep = xmake._FEATURES.path_envsep
+        path._ENVSEP = envsep
+    end
+    return envsep
 end
 
 -- split environment variable with `path.envsep()`,
@@ -125,7 +113,7 @@ function path.splitenv(env_path)
     assert(env_path)
 
     local result = {}
-    if xmake._HOST == "windows" then
+    if xmake._SYSHOST == "windows" then
         while #env_path > 0 do
             if env_path:startswith(path.envsep()) then
                 env_path = env_path:sub(2)
@@ -168,7 +156,7 @@ function path.joinenv(env_table)
     end
 
     local envsep = path.envsep()
-    if xmake._HOST == "windows" then
+    if xmake._SYSHOST == "windows" then
         local tab = {}
         for _, v in ipairs(env_table) do
             if v ~= "" then
@@ -186,12 +174,9 @@ end
 
 -- the last character is the path seperator?
 function path.islastsep(p)
-
-    -- check
     assert(p)
-
     local sep = p:sub(#p, #p)
-    return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
+    return xmake._SYSHOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
 
 -- convert path pattern to a lua pattern
