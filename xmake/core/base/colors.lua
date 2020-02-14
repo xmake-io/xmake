@@ -164,7 +164,7 @@ function colors.color8()
     end
 
     -- has 8 colors?
-    if colorterm == "color8" or os.host() ~= "windows" then
+    if colorterm == "color8" or os.subhost() ~= "windows" then
         return true
     end
 
@@ -183,7 +183,7 @@ function colors.color256()
     end
 
     -- has 256 colors?
-    return colorterm == "color256" or os.host() ~= "windows"
+    return colorterm == "color256" or os.subhost() ~= "windows"
 end
 
 -- support 24bits true color

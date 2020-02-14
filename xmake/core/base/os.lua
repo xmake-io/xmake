@@ -161,6 +161,38 @@ function os._sched_chdir_set(chdir)
     os._SCHED_CHDIR = chdir
 end
 
+-- the current host is belong to the given hosts?
+function os._is_host(host, ...)
+
+    -- no host
+    if not host then 
+        return false 
+    end
+
+    -- exists this host? and escape '-'
+    for _, h in ipairs(table.join(...)) do
+        if h and type(h) == "string" and host:find(h:gsub("%-", "%%-")) then
+            return true
+        end
+    end
+end
+
+-- the current platform is belong to the given architectures?
+function os._is_arch(arch, ...)
+
+    -- no arch
+    if not arch then 
+        return false 
+    end
+
+    -- exists this architecture? and escape '-'
+    for _, a in ipairs(table.join(...)) do
+        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- translate arguments for wildcard
 function os.argw(argv)
 
@@ -800,24 +832,24 @@ function os.isexec(filepath)
     return os.isfile(filepath)
 end
 
--- get host of subsystem, maybe msys/cygwin on windows
+-- get system host
 function os.host()
     return xmake._HOST
 end
 
--- get host architecture of subsystem
+-- get system architecture
 function os.arch()
     return xmake._ARCH
 end
 
--- get system host, msys/cygwin are always windows
-function os.syshost()
-    return xmake._SYSHOST
+-- get subsystem host, e.g. msys, cygwin on windows
+function os.subhost()
+    return xmake._SUBHOST
 end
 
--- get system host architecture
-function os.sysarch()
-    return xmake._SYSARCH
+-- get subsystem host architecture
+function os.subarch()
+    return xmake._SUBARCH
 end
 
 -- get features
@@ -827,32 +859,22 @@ end
 
 -- the current host is belong to the given hosts?
 function os.is_host(...)
-
-    -- get the current host
-    local host = os.host()
-    if not host then return false end
-
-    -- exists this host? and escape '-'
-    for _, h in ipairs(table.join(...)) do
-        if h and type(h) == "string" and host:find(h:gsub("%-", "%%-")) then
-            return true
-        end
-    end
+    return os._is_host(os.host(), ...)
 end
 
--- the current platform is belong to the given architectures?
+-- the current architecture is belong to the given architectures?
 function os.is_arch(...)
+    return os._is_arch(os.arch(), ...)
+end
 
-    -- get the host architecture
-    local arch = os.arch()
-    if not arch then return false end
+-- the current subsystem host is belong to the given hosts?
+function os.is_subhost(...)
+    return os._is_host(os.subhost(), ...)
+end
 
-    -- exists this architecture? and escape '-'
-    for _, a in ipairs(table.join(...)) do
-        if a and type(a) == "string" and arch:find("^" .. a:gsub("%-", "%%-") .. "$") then
-            return true
-        end
-    end
+-- the current subsystem architecture is belong to the given architectures?
+function os.is_subarch(...)
+    return os._is_arch(os.subarch(), ...)
 end
 
 -- get the system null device
@@ -889,41 +911,6 @@ function os.nuldev(input)
             return xmake._NULDEV_OUTPUT
         end
     end
-end
-
--- get user agent
-function os.user_agent()
-
-    -- init user agent
-    if os._USER_AGENT == nil then
-
-        -- init systems
-        local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows", msys = "MSYS", cygwin = "Cygwin"}
-
-        -- os user agent
-        local os_user_agent = ""
-        if os.host() == "macosx" then
-            local ok, osver = os.iorun("/usr/bin/sw_vers -productVersion")
-            if ok then
-                os_user_agent = ("Intel Mac OS X " .. (osver or "")):trim()
-            end
-        elseif os.host() == "linux" or os.host() == "msys" or os.host() == "cygwin" then
-            local ok, osarch = os.iorun("uname -m")
-            if ok then
-                os_user_agent = (os_user_agent .. " " .. (osarch or "")):trim()
-            end
-            ok, osver = os.iorun("uname -r")
-            if ok then
-                os_user_agent = (os_user_agent .. " " .. (osver or "")):trim()
-            end
-        end
-
-        -- make user agent
-        os._USER_AGENT = string.format("Xmake/%s (%s;%s)", xmake._VERSION_SHORT, systems[os.host()] or os.host(), os_user_agent)
-    end
-
-    -- ok?
-    return os._USER_AGENT
 end
 
 -- get uid

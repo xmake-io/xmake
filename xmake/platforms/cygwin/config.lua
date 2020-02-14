@@ -34,7 +34,7 @@ function _check_arch()
     if not arch then
 
         -- init the default architecture
-        config.set("arch", config.get("cross") and "none" or os.arch())
+        config.set("arch", config.get("cross") and "none" or os.subarch())
 
         -- trace
         print("checking for the architecture ... %s", config.get("arch"))

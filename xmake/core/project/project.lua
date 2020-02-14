@@ -211,10 +211,10 @@ function project.interpreter()
             -- is_xxx
             {"is_os",                   project._api_is_os            }
         ,   {"is_kind",                 project._api_is_kind          }
+        ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_host",                 project._api_is_host          }
         ,   {"is_mode",                 project._api_is_mode          }
         ,   {"is_plat",                 project._api_is_plat          }
-        ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_config",               project._api_is_config        }
             -- get_xxx
         ,   {"get_config",              project._api_get_config       }
@@ -251,6 +251,7 @@ function project.interpreter()
             {
                 os          = platform.os()
             ,   host        = os.host()
+            ,   subhost     = os.subhost()
             ,   prefix      = "$(prefix)"
             ,   tmpdir      = function () return os.tmpdir() end
             ,   curdir      = function () return os.curdir() end

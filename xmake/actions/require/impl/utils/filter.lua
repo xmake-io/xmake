@@ -42,6 +42,7 @@ function _filter()
                 _g.common_maps = _g.common_maps or
                 {
                     host        = os.host()
+                ,   subhost     = os.subhost()
                 ,   tmpdir      = function () return os.tmpdir() end
                 ,   curdir      = function () return os.curdir() end
                 ,   scriptdir   = function () return os.scriptdir() end

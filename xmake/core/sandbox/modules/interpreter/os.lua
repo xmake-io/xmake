@@ -29,6 +29,8 @@ local sandbox_os = sandbox_os or {}
 -- export some readonly interfaces
 sandbox_os.host        = os.host
 sandbox_os.arch        = os.arch
+sandbox_os.subhost     = os.subhost
+sandbox_os.subarch     = os.subarch
 sandbox_os.date        = os.date
 sandbox_os.time        = os.time
 sandbox_os.mtime       = os.mtime

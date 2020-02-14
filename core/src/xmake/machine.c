@@ -581,15 +581,15 @@ static tb_void_t xm_machine_init_host(xm_machine_t* machine)
     syshost = "android";
 #endif
     lua_pushstring(machine->lua, syshost? syshost : "unknown");
-    lua_setglobal(machine->lua, "_SYSHOST");
+    lua_setglobal(machine->lua, "_HOST");
 
-    // init host
-    tb_char_t const* host = syshost;
+    // init subsystem host
+    tb_char_t const* subhost = syshost;
 #if defined(TB_CONFIG_OS_WINDOWS)
 #   if defined(TB_COMPILER_ON_MSYS)
-    host = "msys";
+    subhost = "msys";
 #   elif defined(TB_COMPILER_ON_CYGWIN)
-    host = "cygwin";
+    subhost = "cygwin";
 #   else
     {
         tb_char_t data[64] = {0};
@@ -597,13 +597,13 @@ static tb_void_t xm_machine_init_host(xm_machine_t* machine)
         {
             // on msys or msys/mingw64 or msys/mingw32?
             if (!tb_strnicmp(data, "mingw", 5) || !tb_stricmp(data, "msys"))
-                host = "msys";
+                subhost = "msys";
         }
     }
 #   endif
 #endif
-    lua_pushstring(machine->lua, host? host : "unknown");
-    lua_setglobal(machine->lua, "_HOST");
+    lua_pushstring(machine->lua, subhost? subhost : "unknown");
+    lua_setglobal(machine->lua, "_SUBHOST");
 }
 static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
 {
@@ -657,18 +657,18 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     sysarch = TB_ARCH_STRING;
 #endif
     lua_pushstring(machine->lua, sysarch);
-    lua_setglobal(machine->lua, "_SYSARCH");
+    lua_setglobal(machine->lua, "_ARCH");
 
-    // init architecture
-    tb_char_t const* arch = sysarch;
+    // init subsystem architecture
+    tb_char_t const* subarch = sysarch;
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
     // get architecture from msys environment
     tb_char_t data[64] = {0};
     if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data)))
-        arch = data;
+        subarch = data;
 #endif
-    lua_pushstring(machine->lua, arch);
-    lua_setglobal(machine->lua, "_ARCH");
+    lua_pushstring(machine->lua, subarch);
+    lua_setglobal(machine->lua, "_SUBARCH");
 }
 static tb_void_t xm_machine_init_features(xm_machine_t* machine)
 {

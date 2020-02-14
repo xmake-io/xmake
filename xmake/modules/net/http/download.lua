@@ -22,6 +22,35 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
+-- get user agent
+function _get_user_agent()
+
+    -- init user agent
+    if _g._USER_AGENT == nil then
+
+        -- init systems
+        local systems = {macosx = "Macintosh", linux = "Linux", windows = "Windows", msys = "MSYS", cygwin = "Cygwin"}
+
+        -- os user agent
+        local os_user_agent = ""
+        if is_host("macosx") then
+            local osver = try { function() return os.iorun("/usr/bin/sw_vers -productVersion") end }
+            if osver then
+                os_user_agent = ("Intel Mac OS X " .. (osver or "")):trim()
+            end
+        elseif is_host("linux", "msys", "cygwin") then
+            local osver = try { function () return os.iorun("uname -r") end }
+            if osver then
+                os_user_agent = (os_user_agent .. " " .. (osver or "")):trim()
+            end
+        end
+
+        -- make user agent
+        _g._USER_AGENT = string.format("Xmake/%s (%s;%s)", xmake.version(), systems[os.subhost()] or os.subhost(), os_user_agent)
+    end
+    return _g._USER_AGENT
+end
+
 -- download url using curl
 function _curl_download(tool, url, outputfile)
 
@@ -34,7 +63,7 @@ function _curl_download(tool, url, outputfile)
     end
 
     -- set user-agent
-    local user_agent = os.user_agent()
+    local user_agent = _get_user_agent()
     if user_agent then
         if tool.version then
             user_agent = user_agent .. " curl/" .. tool.version
@@ -71,7 +100,7 @@ function _wget_download(tool, url, outputfile)
     end
 
     -- set user-agent
-    local user_agent = os.user_agent()
+    local user_agent = _get_user_agent()
     if user_agent then
         if tool.version then
             user_agent = user_agent .. " wget/" .. tool.version

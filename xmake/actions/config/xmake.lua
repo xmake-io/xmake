@@ -53,7 +53,7 @@ task("config")
                                                             end                                                             }
 
                 ,   {category = "."}
-                ,   {'p', "plat",       "kv", "$(host)" ,   "Compile for the given platform."
+                ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
                                                         ,   values = function (complete, opt)
 
                                                                 -- import

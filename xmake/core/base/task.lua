@@ -197,6 +197,7 @@ function task._interpreter()
             local maps =
             {
                 host        = os.host()
+            ,   subhost     = os.subhost()
             ,   tmpdir      = function () return os.tmpdir() end
             ,   curdir      = function () return os.curdir() end
             ,   scriptdir   = function () return sandbox_os.scriptdir() end

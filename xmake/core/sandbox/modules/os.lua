@@ -35,8 +35,8 @@ local sandbox_os = sandbox_os or {}
 -- inherit some builtin interfaces
 sandbox_os.host         = os.host
 sandbox_os.arch         = os.arch
-sandbox_os.syshost      = os.syshost
-sandbox_os.sysarch      = os.sysarch
+sandbox_os.subhost      = os.subhost
+sandbox_os.subarch      = os.subarch
 sandbox_os.exit         = os.exit
 sandbox_os.date         = os.date
 sandbox_os.time         = os.time
@@ -67,7 +67,6 @@ sandbox_os.programfile  = os.programfile
 sandbox_os.projectdir   = os.projectdir
 sandbox_os.projectfile  = os.projectfile
 sandbox_os.getwinsize   = os.getwinsize
-sandbox_os.user_agent   = os.user_agent
 
 -- copy file or directory
 function sandbox_os.cp(...)

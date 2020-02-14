@@ -113,7 +113,7 @@ function path.splitenv(env_path)
     assert(env_path)
 
     local result = {}
-    if xmake._SYSHOST == "windows" then
+    if xmake._HOST == "windows" then
         while #env_path > 0 do
             if env_path:startswith(path.envsep()) then
                 env_path = env_path:sub(2)
@@ -156,7 +156,7 @@ function path.joinenv(env_table)
     end
 
     local envsep = path.envsep()
-    if xmake._SYSHOST == "windows" then
+    if xmake._HOST == "windows" then
         local tab = {}
         for _, v in ipairs(env_table) do
             if v ~= "" then
@@ -176,7 +176,7 @@ end
 function path.islastsep(p)
     assert(p)
     local sep = p:sub(#p, #p)
-    return xmake._SYSHOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
+    return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
 
 -- convert path pattern to a lua pattern
