@@ -47,6 +47,16 @@
 #   define __xm_debug__
 #endif
 
+/* unix/gcc on msys/cygwin? do not support it now!
+ *
+ * on msys:
+ * pacman -S mingw-w64-i686-gcc
+ * pacman -S mingw-w64-x86_64-gcc
+ */
+#if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_LIKE_UNIX)
+#   error "do not support gcc on msys/cygwin, please uses mingw-w64-[i686|x86_64]-gcc"
+#endif
+
 #endif
 
 
