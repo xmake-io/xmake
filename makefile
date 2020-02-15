@@ -78,9 +78,7 @@ endif
 xmake_dir_install   :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
-# we need load libmsys2.dll or cygwin1.dll on the bin directory
-# e.g. xmake l os.exec "xmake --version"
-xmake_core_install  :=$(prefix)/bin/xmake.exe
+xmake_core_install  :=$(xmake_dir_install)/xmake.exe
 else
 xmake_core_install  :=$(xmake_dir_install)/xmake
 endif
