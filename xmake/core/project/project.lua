@@ -95,6 +95,11 @@ function project._api_is_host(interp, ...)
     return os.is_host(...)
 end
 
+-- the current subsystem host is belong to the given hosts?
+function project._api_is_subhost(interp, ...)
+    return os.is_subhost(...)
+end
+
 -- the current config is belong to the given config values?
 function project._api_is_config(interp, name, ...)
     return config.is_value(name, ...)
@@ -213,6 +218,7 @@ function project.interpreter()
         ,   {"is_kind",                 project._api_is_kind          }
         ,   {"is_arch",                 project._api_is_arch          }
         ,   {"is_host",                 project._api_is_host          }
+        ,   {"is_subhost",              project._api_is_subhost       }
         ,   {"is_mode",                 project._api_is_mode          }
         ,   {"is_plat",                 project._api_is_plat          }
         ,   {"is_config",               project._api_is_config        }

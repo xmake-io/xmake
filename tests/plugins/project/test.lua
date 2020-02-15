@@ -5,12 +5,11 @@ import("core.platform.environment")
 
 function test_vsxmake(t)
 
-    if os.host() ~= "windows" then
+    if os.subhost() ~= "windows" then
         return t:skip("wrong host platform")
     end
 
     local projname = "testproj"
-
     local tempdir = os.tmpfile()
     os.mkdir(tempdir)
     os.cd(tempdir)
@@ -27,8 +26,8 @@ function test_vsxmake(t)
     local vs = config.get("vs")
     environment.enter("toolchains")
 
-    local vstype = "vsxmake" .. vs
     -- create sln & vcxproj
+    local vstype = "vsxmake" .. vs
     os.execv("xmake", {"project", "-k", vstype, "-a", arch})
     os.cd(vstype)
 
