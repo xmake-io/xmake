@@ -162,7 +162,7 @@ elif [ 'x__run__' = "x$branch" ]; then
         pack=gz
     fi
     mkdir -p $projectdir
-    runfile_url="https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@master/xmake-$version.$pack.run"
+    runfile_url="https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@$version/xmake-$version.$pack.run"
     echo "downloading $runfile_url .."
     remote_get_content "$runfile_url" > $projectdir/xmake.run
     if [[ $? != 0 ]]; then

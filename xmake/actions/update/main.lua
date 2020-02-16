@@ -301,7 +301,7 @@ function main()
     local is_official = fetchinfo.is_official
     local mainurls    = fetchinfo.urls
     local version     = fetchinfo.version
-    if is_official and xmake.version():eq(version) then
+    if is_official and xmake.version():eq(version) and not option.get("force") then
         cprint("${bright}xmake %s has been installed!", version)
         return
     end
@@ -314,10 +314,11 @@ function main()
         end
 
         if version:find('.', 1, true) then
+            local winarch = os.arch() == "x64" and "win64" or "win32"
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
-                        format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.exe", version, version),
-                        format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@master/xmake-%s.exe.zip", version),
-                        format("https://gitlab.com/xmake-mirror/xmake-releases/raw/master/xmake-%s.exe.zip", version)}
+                        format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", version, version, winarch),
+                        format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@%s/xmake-%s.%s.exe.zip", version, version, winarch),
+                        format("https://gitlab.com/xmake-mirror/xmake-releases/raw/%s/xmake-%s.%s.exe.zip", version, version, winarch)}
         else
             -- regard as a git branch, fetch from ci
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch())}
