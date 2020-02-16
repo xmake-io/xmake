@@ -78,7 +78,8 @@ endif
 xmake_dir_install   :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
-xmake_core_install  :=$(xmake_dir_install)/xmake.exe
+# we need load msys-2.0.dll or cygwin1.dll on bin directory
+xmake_core_install  :=$(prefix)/bin/xmake.exe
 else
 xmake_core_install  :=$(xmake_dir_install)/xmake
 endif

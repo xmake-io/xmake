@@ -49,9 +49,19 @@
 
 /* unix/gcc on msys/cygwin? do not support it now!
  *
+ * @see https://github.com/xmake-io/xmake/issues/681
+ *
  * on msys:
  * pacman -S mingw-w64-i686-gcc
  * pacman -S mingw-w64-x86_64-gcc
+ * 
+ * e.g. 
+ * $ pacman -S mingw-w64-x86_64-gcc
+ * $ which gcc
+ * /mingw64/bin/gcc
+ * $ cd xmake
+ * $ make build
+ * $ make install prefix=/mingw64
  */
 #if defined(TB_CONFIG_OS_WINDOWS) && defined(TB_COMPILER_LIKE_UNIX)
 #   error "do not support gcc on msys/cygwin, please uses mingw-w64-[i686|x86_64]-gcc"
