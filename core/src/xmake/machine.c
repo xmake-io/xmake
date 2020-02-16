@@ -665,7 +665,12 @@ static tb_void_t xm_machine_init_arch(xm_machine_t* machine)
     // get architecture from msys environment
     tb_char_t data[64] = {0};
     if (tb_environment_first("MSYSTEM_CARCH", data, sizeof(data)))
-        subarch = data;
+    {
+        if (!tb_strcmp(data, "i686"))
+            subarch = "i386";
+        else
+            subarch = data;
+    }
 #endif
     lua_pushstring(machine->lua, subarch);
     lua_setglobal(machine->lua, "_SUBARCH");
