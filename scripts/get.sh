@@ -172,6 +172,7 @@ elif [ 'x__run__' = "x$branch" ]; then
     fi
     sh $projectdir/xmake.run --noexec --target $projectdir
 else
+    echo "cloning $gitrepo $branch .."
     if [ x != "x$2" ]; then
         git clone --depth=50 -b "$branch" "$gitrepo" --recurse-submodules $projectdir || my_exit "$(echo -e 'Clone Fail\nCheck your network or branch name')"
         cd $projectdir || my_exit 'Chdir Error'
