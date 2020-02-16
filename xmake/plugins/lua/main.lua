@@ -41,6 +41,7 @@ function _list()
     end
 end
 
+-- print verbose log
 function _print_vlog(script_type, script_name, args)
     if not option.get("verbose") then return end
     cprintf("running %s ${underline}%s${reset}", script_type, script_name)
@@ -103,7 +104,10 @@ function _run_script(script, args)
         printresult = true
     end
 
+    -- print verbose log
     _print_vlog(script_type or "script", script_name or "", args)
+
+    -- dump result
     local result = table.pack(func(table.unpack(args, 1, args.n)))
     if printresult and result and result.n ~= 0 then
         utils.dump(unpack(result, 1, result.n))
@@ -112,19 +116,20 @@ end
 
 function _get_args()
 
+    -- get arguments
     local args = option.get("arguments") or {}
     args.n = #args
 
+    -- get deserialize tag
     local deserialize = option.get("deserialize")
     if not deserialize then
         return args
     end
-
     deserialize = tostring(deserialize)
 
+    -- deserialize prefixed arguments
     for i, value in ipairs(args) do
         if value:startswith(deserialize) then
-            -- deserialize prefixed arg
             local v, err = string.deserialize(value:sub(#deserialize + 1))
             if err then
                 raise(err)
@@ -133,12 +138,12 @@ function _get_args()
             end
         end
     end
-
     return args
 end
 
 function main()
 
+    -- list builtin scripts
     if option.get("list") then
         return _list()
     end

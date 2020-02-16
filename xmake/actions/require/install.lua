@@ -152,10 +152,12 @@ function main(requires)
     local extra =  option.get("extra")
     local extrainfo = nil
     if extra then
-        local tmpfile = os.tmpfile() .. ".lua"
-        io.writefile(tmpfile, "{" .. extra .. "}")
-        extrainfo = io.load(tmpfile)
-        os.tryrm(tmpfile)
+        local v, err = string.deserialize(extra)
+        if err then
+            raise(err)
+        else
+            extrainfo = v
+        end
     end
 
     -- force to use the given requires extra info

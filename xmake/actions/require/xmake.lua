@@ -70,6 +70,6 @@ task("require")
                                                          "e.g.",
                                                          "    $ xmake require zlib tbox",
                                                          "    $ xmake require \"zlib >=1.2.11\" \"tbox master\"",
-                                                         "    $ xmake require --extra=\"debug=true,system=false\" tbox"        }
+                                                         "    $ xmake require --extra=\"{debug=true,configs={xxx=true}}\" tbox"}
                 }
             } 
