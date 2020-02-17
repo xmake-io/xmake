@@ -26,13 +26,42 @@ import("impl.package")
 import("impl.repository")
 import("impl.environment")
 
--- uninstall the given packages
-function main(package_names)
+-- get requires and extra config
+function _get_requires(requires)
 
-    -- no package name?
-    if not package_names then
+    -- init requires
+    local requires_extra = nil
+    if not requires then
+        requires, requires_extra = project.requires_str()
+    end
+    if not requires or #requires == 0 then
         return 
     end
+
+    -- get extra info
+    local extra =  option.get("extra")
+    local extrainfo = nil
+    if extra then
+        local v, err = string.deserialize(extra)
+        if err then
+            raise(err)
+        else
+            extrainfo = v
+        end
+    end
+
+    -- force to use the given requires extra info
+    if extrainfo then
+        requires_extra = requires_extra or {}
+        for _, require_str in ipairs(requires) do
+            requires_extra[require_str] = extrainfo
+        end
+    end
+    return requires, requires_extra
+end
+
+-- uninstall the given packages
+function main(requires)
 
     -- enter environment 
     environment.enter()
@@ -42,29 +71,21 @@ function main(package_names)
         task.run("repo", {update = true})
     end
 
-    -- get project requires 
-    local project_requires, requires_extra = project.requires_str()
-    if not project_requires then
-        raise("requires(%s) not found in project!", table.concat(requires, " "))
-    end
-
-    -- find required package in project
-    local requires = {}
-    for _, name in ipairs(package_names) do
-        for _, require_str in ipairs(project_requires) do
-            if require_str:split(' ')[1]:lower() == name:lower() then
-                table.insert(requires, require_str)
-            end
-        end
-    end
-    if #requires == 0 then
-        raise("%s not found in project!", table.concat(package_names, " "))
+    -- get requires and extra config
+    local requires_extra = nil
+    requires, requires_extra = _get_requires(requires)
+    if not requires or #requires == 0 then
+        raise("requires(%s) not found!", table.concat(requires, " "))
+        return 
     end
 
     -- uninstall packages
     local packages = package.uninstall_packages(requires, {requires_extra = requires_extra})
     for _, instance in ipairs(packages) do
         print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
+    end
+    if #packages == 0 then
+        print("local packages not found!")
     end
 
     -- leave environment

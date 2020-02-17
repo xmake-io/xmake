@@ -132,12 +132,8 @@ function _check_missing_packages(packages)
     _g.optional_missing = optional_missing
 end
 
--- install packages
-function main(requires)
-
-    -- avoid to run this task repeatly
-    if _g.installed then return end
-    _g.installed = true
+-- get requires and extra config
+function _get_requires(requires)
 
     -- init requires
     local requires_extra = nil
@@ -166,6 +162,23 @@ function main(requires)
         for _, require_str in ipairs(requires) do
             requires_extra[require_str] = extrainfo
         end
+    end
+    return requires, requires_extra
+end
+
+-- install packages
+function main(requires)
+
+    -- avoid to run this task repeatly
+    if _g.installed then return end
+    _g.installed = true
+
+    -- get requires and extra config
+    local requires_extra = nil
+    requires, requires_extra = _get_requires(requires)
+    if not requires or #requires == 0 then
+        raise("requires(%s) not found!", table.concat(requires, " "))
+        return 
     end
 
     -- enter environment 
