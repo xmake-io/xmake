@@ -839,6 +839,29 @@ function export_packages(requires, opt)
 
     -- init options
     opt = opt or {}
+
+    -- do not export dependent packages
+    opt.nodeps = true
+
+    -- get the export directory
+    local exportdir = assert(opt.exportdir)
+
+    -- export all packages
+    local packages = {}
+    for _, instance in ipairs(load_packages(requires, opt)) do
+
+        -- get the exported name
+        local name = instance:name():lower():gsub("::", "_")
+        if instance:version_str() then
+            name = name .. "_" .. instance:version_str()
+        end
+        name = name .. "_" .. instance:buildhash()
+
+        -- export this package
+        os.cp(instance:installdir(), path.join(exportdir, name))
+        table.insert(packages, instance)
+    end
+    return packages
 end
 
 -- search packages

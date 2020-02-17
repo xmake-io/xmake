@@ -46,7 +46,7 @@ function main(requires)
     end
 
     -- export packages
-    local packages = package.export_packages(requires, {requires_extra = requires_extra})
+    local packages = package.export_packages(requires, {requires_extra = requires_extra, exportdir = option.get("exportdir")})
     for _, instance in ipairs(packages) do
         print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
