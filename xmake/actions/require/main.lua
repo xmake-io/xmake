@@ -29,6 +29,7 @@ import("scan")
 import("info")
 import("clean")
 import("search")
+import("export")
 import("install")
 import("uninstall")
 
@@ -84,6 +85,11 @@ function main()
     elseif option.get("uninstall") then
 
         uninstall(option.get("requires"))
+        
+    -- export the installed packages 
+    elseif option.get("export") then
+
+        export(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then

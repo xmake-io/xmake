@@ -63,7 +63,16 @@ task("require")
                                                          "    $ xmake require --search tbox"                                   }
                 ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages.",
                                                          "e.g.",
-                                                         "    $ xmake require --uninstall tbox"                                }
+                                                         "    $ xmake require --uninstall",
+                                                         "    $ xmake require --uninstall tbox",
+                                                         "    $ xmake require --uninstall --extra=\"{debug=true}\" tbox"       }
+                ,   {nil, "export",     "k", nil,        "Export the installed packages.",
+                                                         "e.g.",
+                                                         "    $ xmake require --export",
+                                                         "    $ xmake require --export tbox zlib",
+                                                         "    $ xmake require --export --exportdir=packagesdir zlib",
+                                                         "    $ xmake require --export --extra=\"{debug=true}\" tbox"          }
+                ,   {nil, "exportdir",  "kv", "packages","Set the exported packages directory."                                }
                 ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                     }
                 ,   {                                                                                                          }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",

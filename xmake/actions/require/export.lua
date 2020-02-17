@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        uninstall.lua
+-- @file        export.lua
 --
 
 -- imports
@@ -26,7 +26,7 @@ import("impl.repository")
 import("impl.environment")
 import("impl.utils.get_requires")
 
--- uninstall the given packages
+-- export the given packages
 function main(requires)
 
     -- enter environment 
@@ -45,10 +45,10 @@ function main(requires)
         return 
     end
 
-    -- uninstall packages
-    local packages = package.uninstall_packages(requires, {requires_extra = requires_extra})
+    -- export packages
+    local packages = package.export_packages(requires, {requires_extra = requires_extra})
     for _, instance in ipairs(packages) do
-        print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
+        print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
         print("local packages not found!")

@@ -834,6 +834,13 @@ function uninstall_packages(requires, opt)
     return packages
 end
 
+-- export packages
+function export_packages(requires, opt)
+
+    -- init options
+    opt = opt or {}
+end
+
 -- search packages
 function search_packages(names)
 
