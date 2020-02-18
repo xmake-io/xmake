@@ -20,7 +20,18 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_file")
+
+-- get build directory
+function _get_buildir()
+    return config.buildir()
+end
+
+-- get artifacts directory
+function _get_artifacts_dir()
+    return path.absolute(path.join(_get_buildir(), "artifacts"))
+end
 
 -- detect build-system and configuration file
 function detect()
@@ -29,10 +40,24 @@ end
 
 -- do clean
 function clean()
+    if find_file("[mM]akefile", os.curdir()) then
+        os.exec("make clean")
+        if option.get("all") then
+            os.tryrm(_get_artifacts_dir())
+        end
+    end
 end
 
 -- do build
 function build()
+
+    -- get artifacts directory
+    local artifacts_dir = _get_artifacts_dir()
+    if not os.isdir(artifacts_dir) then
+        os.mkdir(artifacts_dir)
+    end
+
+    -- generate configure 
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
             os.execv("sh", {"./autogen.sh"})
@@ -40,11 +65,16 @@ function build()
             os.exec("autoreconf --install --symlink")
         end
     end
-    os.mkdir("build/install")
-    os.exec("./configure --prefix=%s", path.absolute("build/install"))
+
+    -- do configure
+    if not find_file("[mM]akefile", os.curdir()) then
+        os.execv("./configure", "--prefix=" .. artifacts_dir)
+    end
+
+    -- do build
     os.exec("make -j4")
     os.exec("make install")
-    cprint("installed to ${bright}%s", path.absolute("build/install"))
+    cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")
 end
 

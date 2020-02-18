@@ -20,7 +20,18 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_file")
+
+-- get build directory
+function _get_buildir()
+    return config.buildir()
+end
+
+-- get artifacts directory
+function _get_artifacts_dir()
+    return path.absolute(path.join(_get_buildir(), "artifacts"))
+end
 
 -- detect build-system and configuration file
 function detect()
@@ -33,13 +44,22 @@ end
 
 -- do build
 function build()
-    os.mkdir("build")
-    os.cd("build")
-    if is_host("windows") and os.arch() == "x64" then
-        os.exec("cmake -A x64 -DCMAKE_INSTALL_PREFIX=\"%s\" ..", path.absolute("build/install"))
-    else
-        os.exec("cmake -DCMAKE_INSTALL_PREFIX=\"%s\" ..", path.absolute("build/install"))
+
+    -- get artifacts directory
+    local artifacts_dir = _get_artifacts_dir()
+    if not os.isdir(artifacts_dir) then
+        os.mkdir(artifacts_dir)
     end
+
+    -- generate makefile
+    os.cd(_get_buildir())
+    if is_host("windows") and os.arch() == "x64" then
+        os.exec("cmake -A x64 -DCMAKE_INSTALL_PREFIX=\"%s\" ..", artifacts_dir)
+    else
+        os.exec("cmake -DCMAKE_INSTALL_PREFIX=\"%s\" ..", artifacts_dir)
+    end
+
+    -- do build
     if is_host("windows") then
         
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
@@ -51,7 +71,7 @@ function build()
         os.exec("make -j4")
         os.exec("make install")
     end
-    cprint("installed to ${bright}%s", path.absolute("build/install"))
+    cprint("installed to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")
 end
 
