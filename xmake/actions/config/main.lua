@@ -147,7 +147,8 @@ function main()
 
     -- scan project and generate it if xmake.lua not exists
     local autogen = false
-    if not os.isfile(project.file()) then
+    local trybuild = option.get("trybuild")
+    if not os.isfile(project.file()) and not trybuild then
         autogen = utils.confirm({default = false, description = "xmake.lua not found, try generating it"})
         if autogen then
             scangen()
@@ -264,20 +265,24 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         config.set("buildir", path.relative(buildir, project.directory()), {readonly = true, force = true})
     end
 
-    -- install and update requires and config header
-    local require_enable = option.boolean(option.get("require"))
-    if (recheck or require_enable) and require_enable ~= false then
-        install_requires()
-    end
+    -- only config for building project using third-party buildsystem
+    if not trybuild then
 
-    -- check target and ensure to load all targets, @note we must load targets after installing required packages, 
-    -- otherwise has_package() will be invalid.
-    _check_target(targetname)
+        -- install and update requires and config header
+        local require_enable = option.boolean(option.get("require"))
+        if (recheck or require_enable) and require_enable ~= false then
+            install_requires()
+        end
 
-    -- update the config header
-    if recheck then
-        generate_configfiles()
-        generate_configheader()
+        -- check target and ensure to load all targets, @note we must load targets after installing required packages, 
+        -- otherwise has_package() will be invalid.
+        _check_target(targetname)
+
+        -- update the config header
+        if recheck then
+            generate_configfiles()
+            generate_configheader()
+        end
     end
 
     -- dump config
@@ -290,7 +295,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     configcache:set("options_" .. targetname, options)
 
     -- save options and configure for each targets if be all
-    if targetname == "all" then
+    if not trybuild and targetname == "all" then
         for _, target in pairs(project.targets()) do
             config.save(target:name())
             configcache:set("options_" .. target:name(), options)

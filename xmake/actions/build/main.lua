@@ -32,30 +32,33 @@ import("statistics")
 -- try to build
 function _trybuild()
 
+    -- load config
+    config.load()
+
     -- get the buildsystem tool
     local configfile = nil
     local tool = nil
-    local try_tool = option.get("try-tool")
-    if try_tool then
-        tool = import("trybuild." .. try_tool, {try = true, anonymous = true})
+    local trybuild = config.get("trybuild")
+    if trybuild then
+        tool = import("private.action.trybuild." .. trybuild, {try = true, anonymous = true})
         if tool then
             configfile = tool.detect()
         else
-            raise("unknown build tool: %s", try_tool)
+            raise("unknown build tool: %s", trybuild)
         end
     else
         for _, name in ipairs({"msbuild", "xcodebuild", "cmake", "autotools", "make"}) do
-            tool = import("trybuild." .. name, {anonymous = true})
+            tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
-                try_tool = name
+                config.set("trybuild", name, {readonly = true, force = true})
                 break
             end
         end
     end
 
     -- try building it
-    if configfile and tool and utils.confirm({default = true, description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it"}) then
+    if configfile and tool and (trybuild or utils.confirm({default = true, description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it"})) then
         tool.build()
     end
 end

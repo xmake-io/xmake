@@ -46,9 +46,6 @@ task("build")
                 ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
                                                       "Specifies the number of jobs to build simultaneously."         }
                 ,   {'w', "warning",    "k",  false , "Enable the warnings output."                                   }
-                ,   {nil, "try",        "k",  false , "Try building project using third-party buildsystem."           }
-                ,   {nil, "try-tool",   "kv", nil   , "Set the third-party buildsystem tool when `--try` is enabled."
-                                                    , values = {"make", "cmake", "autotools", "msbuild", "xcodebuild"}}
                 ,   {nil, "files",      "kv", nil   , "Build the given source files.",
                                                       "e.g. ",
                                                       "    - xmake --files=src/main.c",

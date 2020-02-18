@@ -51,6 +51,11 @@ task("config")
                                                                     return {"y: force to enable", "n: disable" }
                                                                 end
                                                             end                                                             }
+                ,   {nil, "trybuild",   "kv",   nil     ,   "Try building and set the third-party buildsystem tool.",
+                                                            "e.g.",
+                                                            "    - xmake f --trybuild=auto; xmake",
+                                                            "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake"
+                                                        ,   values = {"auto", "make", "cmake", "autotools", "msbuild", "xcodebuild"}}
 
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
