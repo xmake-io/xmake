@@ -29,7 +29,9 @@ end
 
 -- do build
 function build()
-    os.exec("make -j4")
+    os.exec("make clean")
+    os.exec("make -j" .. option.get("jobs"))
+    cprint("${bright}build ok!")
 end
 
 

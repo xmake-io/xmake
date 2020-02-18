@@ -40,6 +40,8 @@ function build()
     os.exec("./configure --prefix=%s", path.absolute("build/install"))
     os.exec("make -j4")
     os.exec("make install")
+    cprint("installed to ${bright}%s", path.absolute("build/install"))
+    cprint("${bright}build ok!")
 end
 
 

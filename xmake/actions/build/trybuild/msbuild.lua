@@ -32,6 +32,7 @@ end
 -- do build
 function build()
     os.exec("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", buildfile, os.arch() == "x64" and "x64" or "Win32")
+    cprint("${bright}build ok!")
 end
 
 

@@ -32,6 +32,7 @@ end
 -- do build
 function build()
     os.exec("xcodebuild clean build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
+    cprint("${bright}build ok!")
 end
 
 
