@@ -206,8 +206,36 @@ function _clean(targetname)
     end
 end
 
+-- do clean for the third-party buildsystem
+function _try_clean()
+
+    -- load config
+    config.load()
+
+    -- get the buildsystem tool
+    local configfile = nil
+    local tool = nil
+    local trybuild = config.get("trybuild")
+    if trybuild then
+        tool = import("private.action.trybuild." .. trybuild, {try = true, anonymous = true})
+        if tool then
+            configfile = tool.detect()
+        end
+    end
+
+    -- try cleaning it
+    if configfile and tool and trybuild then
+        tool.clean()
+    end
+end
+
 -- main
 function main()
+
+    -- try cleaning it using third-party buildsystem if xmake.lua not exists
+    if not os.isfile(project.file()) then
+        return _try_clean()
+    end
 
     -- lock the whole project
     project.lock()

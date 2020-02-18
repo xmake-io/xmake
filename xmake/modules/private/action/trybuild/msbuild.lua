@@ -29,6 +29,10 @@ function detect()
     end
 end
 
+-- do clean
+function clean()
+end
+
 -- do build
 function build()
     os.exec("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", buildfile, os.arch() == "x64" and "x64" or "Win32")

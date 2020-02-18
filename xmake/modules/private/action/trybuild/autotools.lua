@@ -27,6 +27,10 @@ function detect()
     return find_file("configure", os.curdir()) or find_file("configure.ac", os.curdir())
 end
 
+-- do clean
+function clean()
+end
+
 -- do build
 function build()
     if not os.isfile("configure") then

@@ -29,11 +29,16 @@ import("build_files")
 import("cleaner")
 import("statistics")
 
--- try to build
-function _trybuild()
+-- do build for the third-party buildsystem
+function _try_build()
 
     -- load config
     config.load()
+
+    -- rebuild it? do clean first
+    if option.get("rebuild") then
+        task.run("clean", {target = option.get("target")})
+    end
 
     -- get the buildsystem tool
     local configfile = nil
@@ -68,7 +73,7 @@ function main()
 
     -- try building it using third-party buildsystem if xmake.lua not exists
     if not os.isfile(project.file()) then
-        return _trybuild()
+        return _try_build()
     end
 
     -- post statistics before locking project

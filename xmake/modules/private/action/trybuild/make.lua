@@ -27,9 +27,13 @@ function detect()
     return find_file("[mM]akefile", os.curdir())
 end
 
+-- do clean
+function clean()
+    os.exec("make clean")
+end
+
 -- do build
 function build()
-    os.exec("make clean")
     os.exec("make -j" .. option.get("jobs"))
     cprint("${bright}build ok!")
 end

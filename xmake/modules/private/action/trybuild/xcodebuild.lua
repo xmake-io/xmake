@@ -29,6 +29,10 @@ function detect()
     end
 end
 
+-- do clean
+function clean()
+end
+
 -- do build
 function build()
     os.exec("xcodebuild clean build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")

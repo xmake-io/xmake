@@ -27,6 +27,10 @@ function detect()
     return find_file("CMakeLists.txt", os.curdir())
 end
 
+-- do clean
+function clean()
+end
+
 -- do build
 function build()
     os.mkdir("build")
