@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("core.platform.platform")
@@ -103,6 +104,14 @@ function _get_configs(artifacts_dir)
     local configs = {}
     table.insert(configs, "--prefix=" .. artifacts_dir)
 
+    -- add extra user configs 
+    local tryconfigs = config.get("tryconfigs")
+    if tryconfigs then
+        for _, opt in ipairs(cli.parse(tryconfigs)) do
+            table.insert(configs, tostring(opt))
+        end
+    end
+
     -- add host for cross-complation
     if not is_plat(os.subhost()) then
         if is_plat("iphoneos") then
@@ -181,18 +190,7 @@ function build()
     -- do configure
     local configfile = find_file("[mM]akefile", os.curdir())
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        local argv = {}
-        for name, value in pairs(_get_configs(artifacts_dir)) do
-            value = tostring(value):trim()
-            if value ~= "" then
-                if type(name) == "number" then
-                    table.insert(argv, value)
-                else
-                    table.insert(argv, "--" .. name .. "=" .. value)
-                end
-            end
-        end
-        os.vexecv("./configure", argv, {envs = _get_buildenvs()})
+        os.vexecv("./configure", _get_configs(artifacts_dir), {envs = _get_buildenvs()})
     end
 
     -- do build

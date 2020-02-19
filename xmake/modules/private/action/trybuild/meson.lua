@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
@@ -32,6 +33,28 @@ end
 -- get artifacts directory
 function _get_artifacts_dir()
     return path.absolute(path.join(_get_buildir(), "artifacts"))
+end
+
+-- get configs
+function _get_configs(artifacts_dir, buildir)
+
+    -- add prefix
+    local configs = {"--prefix=" .. artifacts_dir}
+    if configfile then
+        table.insert(configs, "--reconfigure")
+    end
+
+    -- add extra user configs 
+    local tryconfigs = config.get("tryconfigs")
+    if tryconfigs then
+        for _, opt in ipairs(cli.parse(tryconfigs)) do
+            table.insert(configs, tostring(opt))
+        end
+    end
+
+    -- add build directory
+    table.insert(configs, buildir)
+    return configs
 end
 
 -- detect build-system and configuration file
@@ -74,12 +97,7 @@ function build()
     local meson = assert(find_tool("meson"), "meson not found!")
     local configfile = find_file("build.ninja", buildir)
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        local argv = {"--prefix=" .. artifacts_dir}
-        if configfile then
-            table.insert(argv, "--reconfigure")
-        end
-        table.insert(argv, buildir)
-        os.vexecv(meson.program, argv)
+        os.vexecv(meson.program, _get_configs(artifacts_dir, buildir))
     end
 
     -- do build

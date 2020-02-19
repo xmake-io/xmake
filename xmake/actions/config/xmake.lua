@@ -51,12 +51,14 @@ task("config")
                                                                     return {"y: force to enable", "n: disable" }
                                                                 end
                                                             end                                                             }
-                ,   {nil, "trybuild",   "kv",   nil     ,   "Try building and set the third-party buildsystem tool.",
+                ,   {nil, "trybuild",   "kv",   nil     ,   "Enable try-build mode and set the third-party buildsystem tool.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=auto; xmake",
                                                             "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake"
-                                                        ,   values = {"auto", "make", "cmake", "autotools", "msbuild", "xcodebuild"}}
-
+                                                        ,   values = {"auto", "make", "cmake", "meson", "autotools", "msbuild", "xcodebuild"}}
+                ,   {nil, "tryconfigs", "kv",   nil     ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
+                                                            "e.g.",
+                                                            "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"}
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
                                                         ,   values = function (complete, opt)

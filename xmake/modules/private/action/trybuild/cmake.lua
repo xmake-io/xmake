@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
@@ -32,6 +33,29 @@ end
 -- get artifacts directory
 function _get_artifacts_dir()
     return path.absolute(path.join(_get_buildir(), "artifacts"))
+end
+
+-- get configs
+function _get_configs(artifacts_dir)
+
+    -- add prefix
+    local configs = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DDCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
+    if is_plat("windows") and is_arch("x64") then
+        table.insert(configs, "-A")
+        table.insert(configs, "x64")
+    end
+
+    -- add extra user configs 
+    local tryconfigs = config.get("tryconfigs")
+    if tryconfigs then
+        for _, opt in ipairs(cli.parse(tryconfigs)) do
+            table.insert(configs, tostring(opt))
+        end
+    end
+
+    -- add build directory
+    table.insert(configs, '..')
+    return configs
 end
 
 -- detect build-system and configuration file
@@ -70,13 +94,7 @@ function build()
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     local configfile = find_file("[mM]akefile", os.curdir()) or (is_plat("windows") and find_file("*.sln", os.curdir()))
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        local argv = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DDCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
-        if is_plat("windows") and is_arch("x64") then
-            table.insert(argv, "-A")
-            table.insert(argv, "x64")
-        end
-        table.insert(argv, '..')
-        os.vexecv(cmake.program, argv)
+        os.vexecv(cmake.program, _get_configs(artifacts_dir))
     end
 
     -- do build
