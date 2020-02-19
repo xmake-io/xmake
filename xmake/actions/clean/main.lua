@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
+import("core.platform.environment")
 import("private.action.clean.remove_files")
 
 -- do clean target 
@@ -225,7 +226,9 @@ function _try_clean()
 
     -- try cleaning it
     if configfile and tool and trybuild then
+        environment.enter("toolchains")
         tool.clean()
+        environment.leave("toolchains")
     end
 end
 

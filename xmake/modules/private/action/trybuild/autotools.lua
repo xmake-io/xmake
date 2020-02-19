@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.platform.platform")
 import("lib.detect.find_file")
 
 -- get build directory
@@ -31,6 +32,115 @@ end
 -- get artifacts directory
 function _get_artifacts_dir()
     return path.absolute(path.join(_get_buildir(), "artifacts"))
+end
+
+-- get the build environment
+function _get_buildenv(key)
+    local value = config.get(key)
+    if value == nil then
+        value = platform.get(key, config.plat())
+    end
+    if value == nil then
+        value = platform.tool(key, config.plat())
+    end
+    return value
+end
+
+-- get the build environments
+function _get_buildenvs()
+    local envs = {}
+    if is_plat(os.subhost()) then
+        local cflags   = table.join(table.wrap(config.get("cxflags")), config.get("cflags"))
+        local cxxflags = table.join(table.wrap(config.get("cxflags")), config.get("cxxflags"))
+        envs.CFLAGS    = table.concat(cflags, ' ')
+        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.ASFLAGS   = table.concat(table.wrap(config.get("asflags")), ' ')
+    else
+        local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+        local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+        envs.CC        = _get_buildenv("cc")
+        envs.AS        = _get_buildenv("as")
+        envs.AR        = _get_buildenv("ar")
+        envs.LD        = _get_buildenv("ld")
+        envs.LDSHARED  = _get_buildenv("sh")
+        envs.CPP       = _get_buildenv("cpp")
+        envs.RANLIB    = _get_buildenv("ranlib")
+        envs.CFLAGS    = table.concat(cflags, ' ')
+        envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.ASFLAGS   = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
+        envs.ARFLAGS   = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
+        envs.LDFLAGS   = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
+        envs.SHFLAGS   = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+        if #envs.ARFLAGS == 0 then
+            if envs.AR and envs.AR:endswith("ar") then
+                envs.ARFLAGS = "-cr"
+            end
+        end
+        if is_plat("mingw") then
+            -- fix linker error, @see https://github.com/xmake-io/xmake/issues/574
+            -- libtool: line 1855: lib: command not found
+            envs.ARFLAGS = nil
+            local ld = envs.LD
+            if ld then
+                if ld:endswith("x86_64-w64-mingw32-g++") then
+                    envs.LD = path.join(path.directory(ld), "x86_64-w64-mingw32-ld")
+                elseif ld:endswith("i686-w64-mingw32-g++") then
+                    envs.LD = path.join(path.directory(ld), "i686-w64-mingw32-ld")
+                end
+            end
+        end
+    end
+    if option.get("verbose") then
+        print(envs)
+    end
+    return envs
+end
+
+-- get configs
+function _get_configs(artifacts_dir)
+
+    -- add prefix
+    local configs = {}
+    table.insert(configs, "--prefix=" .. artifacts_dir)
+
+    -- add host for cross-complation
+    if not is_plat(os.subhost()) then
+        if is_plat("iphoneos") then
+            local triples = 
+            { 
+                arm64  = "aarch64-apple-darwin",
+                arm64e = "aarch64-apple-darwin",
+                armv7  = "armv7-apple-darwin",
+                armv7s = "armv7s-apple-darwin",
+                i386   = "i386-apple-darwin",
+                x86_64 = "x86_64-apple-darwin"
+            }
+            table.insert(configs, "--host=" .. (triples[config.arch()] or triples.arm64))
+        elseif is_plat("android") then
+            -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
+            local triples = 
+            {
+                ["armv5te"]     = "arm-linux-androideabi",
+                ["armv7-a"]     = "arm-linux-androideabi",
+                ["arm64-v8a"]   = "aarch64-linux-android",
+                i386            = "i686-linux-android",
+                x86_64          = "x86_64-linux-android",
+                mips            = "mips-linux-android",
+                mips64          = "mips64-linux-android"
+            }
+            table.insert(configs, "--host=" .. (triples[config.arch()] or triples["armv7-a"]))
+        elseif is_plat("mingw") then
+            local triples = 
+            { 
+                i386   = "i686-w64-mingw32",
+                x86_64 = "x86_64-w64-mingw32"
+            }
+            table.insert(configs, "--host=" .. (triples[config.arch()] or triples.i386))
+        else
+            raise("autotools: unknown platform(%s)!", config.plat())
+        end
+    end
+    return configs
 end
 
 -- detect build-system and configuration file
@@ -70,7 +180,18 @@ function build()
 
     -- do configure
     if not find_file("[mM]akefile", os.curdir()) then
-        os.execv("./configure", "--prefix=" .. artifacts_dir)
+        local argv = {}
+        for name, value in pairs(_get_configs(artifacts_dir)) do
+            value = tostring(value):trim()
+            if value ~= "" then
+                if type(name) == "number" then
+                    table.insert(argv, value)
+                else
+                    table.insert(argv, "--" .. name .. "=" .. value)
+                end
+            end
+        end
+        os.execv("./configure", argv, {envs = _get_buildenvs()})
     end
 
     -- do build

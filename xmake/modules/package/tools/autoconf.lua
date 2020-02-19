@@ -29,7 +29,7 @@ function _get_configs(package, configs)
     table.insert(configs, "--prefix=" .. package:installdir())
 
     -- add host for cross-complation
-    if not configs.host and not package:is_plat(os.host()) then
+    if not configs.host and not package:is_plat(os.subhost()) then
         if package:is_plat("iphoneos") then
             local triples = 
             { 
@@ -71,7 +71,7 @@ end
 -- get the build environments
 function buildenvs(package)
     local envs = {}
-    if package:is_plat(os.host()) then
+    if package:is_plat(os.subhost()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
         envs.CFLAGS    = table.concat(cflags, ' ')

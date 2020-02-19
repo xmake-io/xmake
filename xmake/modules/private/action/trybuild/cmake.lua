@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- get build directory
 function _get_buildir()
@@ -66,6 +67,7 @@ function build()
     os.cd(_get_buildir())
 
     -- generate makefile
+    local cmake = assert(find_tool("cmake"), "cmake not found!")
     local configfile = find_file("[mM]akefile", os.curdir()) or (is_plat("windows") and find_file("*.sln", os.curdir()))
     if not configfile then
         local argv = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DDCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
@@ -74,7 +76,7 @@ function build()
             table.insert(argv, "x64")
         end
         table.insert(argv, '..')
-        os.execv("cmake", argv)
+        os.execv(cmake.program, argv)
     end
 
     -- do build

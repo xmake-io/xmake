@@ -24,6 +24,7 @@ import("core.base.task")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
+import("core.platform.environment")
 import("build")
 import("build_files")
 import("cleaner")
@@ -54,7 +55,7 @@ function _try_build()
             raise("unknown build tool: %s", trybuild)
         end
     else
-        for _, name in ipairs({"msbuild", "xcodebuild", "cmake", "autotools", "make"}) do
+        for _, name in ipairs({"msbuild", "xcodebuild", "cmake", "autotools", "meson", "make"}) do
             tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
@@ -69,7 +70,9 @@ function _try_build()
         if not trybuild then
             task.run("config", {target = targetname, trybuild = trybuild_detected})
         end
+        environment.enter("toolchains")
         tool.build()
+        environment.leave("toolchains")
     end
 end
 
