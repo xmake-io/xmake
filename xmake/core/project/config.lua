@@ -29,11 +29,6 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
--- get the configure file
-function config._file()
-    return path.join(config.directory(), "xmake.conf")
-end
-
 -- load the project configure
 function config._load(targetname)
 
@@ -41,7 +36,7 @@ function config._load(targetname)
     targetname = targetname or "all"
 
     -- load configure from the file first
-    local filepath = config._file()
+    local filepath = config.filepath()
     if os.isfile(filepath) then
 
         -- load it 
@@ -145,6 +140,11 @@ function config.buildir()
     return buildir
 end
 
+-- get the configure file
+function config.filepath()
+    return path.join(config.directory(), "xmake.conf")
+end
+
 -- get the configure directory on the current host/arch platform
 function config.directory()
     if config._DIRECTORY == nil then
@@ -185,7 +185,7 @@ function config.save(targetname)
 
     -- load the previous results from configure
     local results = {}
-    local filepath = config._file()
+    local filepath = config.filepath()
     if os.isfile(filepath) then
         results = io.load(filepath) or {}
     end
@@ -207,7 +207,7 @@ function config.save(targetname)
     results.__version = xmake._VERSION_SHORT
 
     -- save it
-    return io.save(config._file(), results) 
+    return io.save(config.filepath(), results) 
 end
 
 -- read value from the configure file directly

@@ -179,7 +179,8 @@ function build()
     end
 
     -- do configure
-    if not find_file("[mM]akefile", os.curdir()) then
+    local configfile = find_file("[mM]akefile", os.curdir())
+    if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
         local argv = {}
         for name, value in pairs(_get_configs(artifacts_dir)) do
             value = tostring(value):trim()

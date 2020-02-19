@@ -98,17 +98,19 @@ function sandbox_core_base_global.options()
     return global.options()
 end
 
--- get the configure directory
-function sandbox_core_base_global.directory()
-
-    -- get it
-    local dir = global.directory()
-    assert(dir)
-
-    -- ok?
-    return dir
+-- get the configure file path
+function sandbox_core_base_global.filepath()
+    local filepath = global.filepath()
+    assert(filepath)
+    return filepath
 end
 
+-- get the configure directory
+function sandbox_core_base_global.directory()
+    local dir = global.directory()
+    assert(dir)
+    return dir
+end
 
 -- return module
 return sandbox_core_base_global

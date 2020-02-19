@@ -73,8 +73,11 @@ function build()
     local buildir = _get_buildir()
     local meson = assert(find_tool("meson"), "meson not found!")
     local configfile = find_file("build.ninja", buildir)
-    if not configfile then
+    if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
         local argv = {"--prefix=" .. artifacts_dir}
+        if configfile then
+            table.insert(argv, "--reconfigure")
+        end
         table.insert(argv, buildir)
         os.vexecv(meson.program, argv)
     end

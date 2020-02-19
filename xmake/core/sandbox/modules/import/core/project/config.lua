@@ -51,14 +51,17 @@ function sandbox_core_project_config.host()
     return config.get("host")
 end
 
+-- get the configuration file path
+function sandbox_core_project_config.filepath()
+    local filepath = config.filepath()
+    assert(filepath)
+    return filepath
+end
+
 -- get the configuration directory
 function sandbox_core_project_config.directory()
-
-    -- get it
     local dir = config.directory()
     assert(dir)
-
-    -- ok?
     return dir
 end
 
