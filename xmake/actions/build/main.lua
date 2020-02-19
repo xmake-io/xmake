@@ -36,14 +36,16 @@ function _try_build()
     config.load()
 
     -- rebuild it? do clean first
+    local targetname = option.get("target")
     if option.get("rebuild") then
-        task.run("clean", {target = option.get("target")})
+        task.run("clean", {target = targetname})
     end
 
     -- get the buildsystem tool
     local configfile = nil
     local tool = nil
     local trybuild = config.get("trybuild")
+    local trybuild_detected = nil
     if trybuild then
         tool = import("private.action.trybuild." .. trybuild, {try = true, anonymous = true})
         if tool then
@@ -56,7 +58,7 @@ function _try_build()
             tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
-                config.set("trybuild", name, {readonly = true, force = true})
+                trybuild_detected = name
                 break
             end
         end
@@ -64,6 +66,9 @@ function _try_build()
 
     -- try building it
     if configfile and tool and (trybuild or utils.confirm({default = true, description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it"})) then
+        if not trybuild then
+            task.run("config", {target = targetname, trybuild = trybuild_detected})
+        end
         tool.build()
     end
 end

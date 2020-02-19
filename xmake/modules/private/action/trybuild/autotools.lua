@@ -25,7 +25,7 @@ import("lib.detect.find_file")
 
 -- get build directory
 function _get_buildir()
-    return config.buildir()
+    return config.buildir() or "build"
 end
 
 -- get artifacts directory
@@ -41,9 +41,11 @@ end
 -- do clean
 function clean()
     if find_file("[mM]akefile", os.curdir()) then
-        os.exec("make clean")
         if option.get("all") then
+            os.exec("make distclean")
             os.tryrm(_get_artifacts_dir())
+        else
+            os.exec("make clean")
         end
     end
 end
