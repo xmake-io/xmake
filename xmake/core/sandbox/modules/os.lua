@@ -429,7 +429,7 @@ function sandbox_os.vexec(cmd, ...)
 
     -- echo command
     if option.get("verbose") then
-        print(vformat(cmd, ...))
+        utils.cprint("${color.dump.string}" .. vformat(cmd, ...))
     end
 
     -- run it
@@ -441,7 +441,7 @@ function sandbox_os.vexecv(program, argv, opt)
 
     -- echo command
     if option.get("verbose") then
-        print(vformat(program) .. " " .. sandbox_os.args(argv))
+        utils.cprint("${color.dump.string}" .. vformat(program) .. " " .. sandbox_os.args(argv))
     end
 
     -- run it
