@@ -27,7 +27,7 @@ import("impl.environment")
 import("impl.utils.get_requires")
 
 -- export the given packages
-function main(requires)
+function main(requires_raw)
 
     -- enter environment 
     environment.enter()
@@ -39,9 +39,8 @@ function main(requires)
 
     -- get requires and extra config
     local requires_extra = nil
-    requires, requires_extra = get_requires(requires)
+    local requires, requires_extra = get_requires(requires_raw)
     if not requires or #requires == 0 then
-        raise("requires(%s) not found!", table.concat(requires, " "))
         return 
     end
 

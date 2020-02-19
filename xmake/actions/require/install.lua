@@ -134,7 +134,7 @@ function _check_missing_packages(packages)
 end
 
 -- install packages
-function main(requires)
+function main(requires_raw)
 
     -- avoid to run this task repeatly
     if _g.installed then return end
@@ -142,9 +142,8 @@ function main(requires)
 
     -- get requires and extra config
     local requires_extra = nil
-    requires, requires_extra = get_requires(requires)
+    local requires, requires_extra = get_requires(requires_raw)
     if not requires or #requires == 0 then
-        raise("requires(%s) not found!", table.concat(requires, " "))
         return 
     end
 
