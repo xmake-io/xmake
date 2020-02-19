@@ -72,7 +72,7 @@ function build()
     end
 
     -- do build
-    os.exec("make -j4")
+    os.exec("make -j" .. option.get("jobs"))
     os.exec("make install")
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")

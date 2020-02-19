@@ -40,6 +40,19 @@ end
 
 -- do clean
 function clean()
+    local buildir = _get_buildir()
+    if os.isdir(buildir) then
+        local configfile = find_file("[mM]akefile", buildir) or (is_plat("windows") and find_file("*.sln", buildir))
+        if configfile then
+            local oldir = os.cd(buildir)
+            if is_plat("windows") then
+                os.exec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=%s -p:Platform=%s", configfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+            else
+                os.exec("make clean")
+            end
+            os.cd(oldir)
+        end
+    end
 end
 
 -- do build
@@ -50,28 +63,33 @@ function build()
     if not os.isdir(artifacts_dir) then
         os.mkdir(artifacts_dir)
     end
+    os.cd(_get_buildir())
 
     -- generate makefile
-    os.cd(_get_buildir())
-    if is_host("windows") and os.arch() == "x64" then
-        os.exec("cmake -A x64 -DCMAKE_INSTALL_PREFIX=\"%s\" ..", artifacts_dir)
-    else
-        os.exec("cmake -DCMAKE_INSTALL_PREFIX=\"%s\" ..", artifacts_dir)
+    local configfile = find_file("[mM]akefile", os.curdir()) or (is_plat("windows") and find_file("*.sln", os.curdir()))
+    if not configfile then
+        local argv = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DDCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
+        if is_plat("windows") and is_arch("x64") then
+            table.insert(argv, "-A")
+            table.insert(argv, "x64")
+        end
+        table.insert(argv, '..')
+        os.execv("cmake", argv)
     end
 
     -- do build
-    if is_host("windows") then
-        
+    if is_plat("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.exec("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", slnfile, os.arch() == "x64" and "x64" or "Win32")
-
+        os.exec("msbuild \"%s\" -nologo -t:Build -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
-        os.exec("msbuild \"%s\" /property:configuration=Release", projfile)
+        if os.isfile(projfile) then
+            os.exec("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
+        end
     else
-        os.exec("make -j4")
+        os.exec("make -j" .. option.get("jobs"))
         os.exec("make install")
     end
-    cprint("installed to ${bright}%s", artifacts_dir)
+    cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")
 end
 

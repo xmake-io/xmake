@@ -116,7 +116,7 @@ function install(package, configs, opt)
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build and install
-    if is_host("windows") then
+    if is_plat("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
         os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, package:debug() and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
