@@ -152,10 +152,10 @@ end
 function clean()
     if find_file("[mM]akefile", os.curdir()) then
         if option.get("all") then
-            os.exec("make distclean")
+            os.vexec("make distclean")
             os.tryrm(_get_artifacts_dir())
         else
-            os.exec("make clean")
+            os.vexec("make clean")
         end
     end
 end
@@ -172,9 +172,9 @@ function build()
     -- generate configure 
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.execv("sh", {"./autogen.sh"})
+            os.vexecv("sh", {"./autogen.sh"})
         elseif os.isfile("configure.ac") then
-            os.exec("autoreconf --install --symlink")
+            os.vexec("autoreconf --install --symlink")
         end
     end
 
@@ -191,12 +191,12 @@ function build()
                 end
             end
         end
-        os.execv("./configure", argv, {envs = _get_buildenvs()})
+        os.vexecv("./configure", argv, {envs = _get_buildenvs()})
     end
 
     -- do build
-    os.exec("make -j" .. option.get("jobs"))
-    os.exec("make install")
+    os.vexec("make -j" .. option.get("jobs"))
+    os.vexec("make install")
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")
 end

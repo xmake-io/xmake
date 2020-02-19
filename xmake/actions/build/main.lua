@@ -66,7 +66,8 @@ function _try_build()
     end
 
     -- try building it
-    if configfile and tool and (trybuild or utils.confirm({default = true, description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it"})) then
+    if configfile and tool and (trybuild or utils.confirm({default = true, 
+            description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
         if not trybuild then
             task.run("config", {target = targetname, trybuild = trybuild_detected})
         end

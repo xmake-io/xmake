@@ -29,12 +29,12 @@ end
 
 -- do clean
 function clean()
-    os.exec("make clean")
+    os.vexec("make clean")
 end
 
 -- do build
 function build()
-    os.exec("make -j" .. option.get("jobs"))
+    os.vexec("make -j" .. option.get("jobs"))
     cprint("${bright}build ok!")
 end
 

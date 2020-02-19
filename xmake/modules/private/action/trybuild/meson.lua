@@ -43,6 +43,20 @@ end
 function clean()
     local buildir = _get_buildir()
     if os.isdir(buildir) then
+        local configfile = find_file("build.ninja", buildir)
+        if configfile then
+            local ninja = assert(find_tool("ninja"), "ninja not found!")
+            local ninja_argv = {"-C", buildir}
+            if option.get("verbose") or option.get("diagnosis") then
+                table.insert(ninja_argv, "-v")
+            end
+            table.insert(ninja_argv, "-t")
+            table.insert(ninja_argv, "clean")
+            os.vexecv(ninja.program, ninja_argv)
+            if option.get("all") then
+                os.tryrm(buildir)
+            end
+        end
     end
 end
 
@@ -54,17 +68,27 @@ function build()
     if not os.isdir(artifacts_dir) then
         os.mkdir(artifacts_dir)
     end
-    os.cd(_get_buildir())
 
     -- generate makefile
+    local buildir = _get_buildir()
     local meson = assert(find_tool("meson"), "meson not found!")
-    local configfile = nil
+    local configfile = find_file("build.ninja", buildir)
     if not configfile then
         local argv = {"--prefix=" .. artifacts_dir}
-        table.insert(argv, _get_buildir())
-        os.execv("meson", argv)
+        table.insert(argv, buildir)
+        os.vexecv(meson.program, argv)
     end
 
+    -- do build
+    local ninja = assert(find_tool("ninja"), "ninja not found!")
+    local ninja_argv = {"-C", buildir}
+    if option.get("verbose") or option.get("diagnosis") then
+        table.insert(ninja_argv, "-v")
+    end
+    table.insert(ninja_argv, "-j")
+    table.insert(ninja_argv, option.get("jobs"))
+    os.vexecv(ninja.program, ninja_argv)
+    os.vexecv(ninja.program, table.join("install", ninja_argv))
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")
 end

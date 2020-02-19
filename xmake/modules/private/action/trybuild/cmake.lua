@@ -47,9 +47,9 @@ function clean()
         if configfile then
             local oldir = os.cd(buildir)
             if is_plat("windows") then
-                os.exec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=%s -p:Platform=%s", configfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+                os.vexec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=%s -p:Platform=%s", configfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
             else
-                os.exec("make clean")
+                os.vexec("make clean")
             end
             os.cd(oldir)
         end
@@ -76,20 +76,20 @@ function build()
             table.insert(argv, "x64")
         end
         table.insert(argv, '..')
-        os.execv(cmake.program, argv)
+        os.vexecv(cmake.program, argv)
     end
 
     -- do build
     if is_plat("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.exec("msbuild \"%s\" -nologo -t:Build -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+        os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
         if os.isfile(projfile) then
-            os.exec("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
+            os.vexec("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
         end
     else
-        os.exec("make -j" .. option.get("jobs"))
-        os.exec("make install")
+        os.vexec("make -j" .. option.get("jobs"))
+        os.vexec("make install")
     end
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")

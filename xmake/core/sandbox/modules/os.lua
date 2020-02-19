@@ -424,6 +424,30 @@ function sandbox_os.execv(program, argv, opt)
     return ok
 end
 
+-- execute command and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vexec(cmd, ...)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(cmd, ...))
+    end
+
+    -- run it
+    sandbox_os.exec(cmd, ...)  
+end
+
+-- execute command with arguments list and echo verbose info if [-v|--verbose] option is enabled
+function sandbox_os.vexecv(program, argv, opt)
+
+    -- echo command
+    if option.get("verbose") then
+        print(vformat(program) .. " " .. sandbox_os.args(argv))
+    end
+
+    -- run it
+    sandbox_os.execv(program, argv, opt)
+end
+
 -- match files or directories
 function sandbox_os.match(pattern, mode, callback)
     return os.match(vformat(pattern), mode, callback)
