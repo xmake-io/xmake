@@ -432,14 +432,12 @@ end
 
 -- ignore all colors
 function colors.ignore(str)
-
-    -- check string
-    if not str then
-        return nil
+    if str then
+        -- strip "${red}" and "${theme color}"
+        str = colors.translate(str, {plain = true})
+        -- strip color code, e.g. for clang/gcc color diagnostics output
+        return (str:gsub("\x1b%[.-m", ""))
     end
-
-    -- ignore it
-    return colors.translate(str, {plain = true})
 end
 
 -- get theme
