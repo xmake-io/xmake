@@ -36,6 +36,11 @@ end
 
 -- do build
 function build()
+
+    -- only support the current subsystem host platform now!
+    assert(is_subhost(config.plat()), "scons: %s not supported!", config.plat())
+
+    -- do build
     local scons = assert(find_tool("scons"), "scons not found!")
     os.vexec(scons.program)
     cprint("${bright}build ok!")

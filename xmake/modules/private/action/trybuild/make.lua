@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_file")
 
 -- detect build-system and configuration file
@@ -38,6 +39,7 @@ end
 
 -- do build
 function build()
+    assert(is_subhost(config.plat()), "make: %s not supported!", config.plat())
     if is_subhost("windows") then
         os.vexec("nmake")
     else

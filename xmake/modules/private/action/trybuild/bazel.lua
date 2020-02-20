@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -36,6 +37,11 @@ end
 
 -- do build
 function build()
+
+    -- only support the current subsystem host platform now!
+    assert(is_subhost(config.plat()), "bazel: %s not supported!", config.plat())
+
+    -- do build
     local bazel = assert(find_tool("bazel"), "bazel not found!")
     os.vexecv(bazel.program, {"build"})
     cprint("${bright}build ok!")

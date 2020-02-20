@@ -86,6 +86,9 @@ end
 -- do build
 function build()
 
+    -- only support the current subsystem host platform now!
+    assert(is_subhost(config.plat()), "meson: %s not supported!", config.plat())
+
     -- get artifacts directory
     local artifacts_dir = _get_artifacts_dir()
     if not os.isdir(artifacts_dir) then

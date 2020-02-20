@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 import("lib.detect.find_directory")
 
 -- detect build-system and configuration file
@@ -31,11 +32,17 @@ end
 
 -- do clean
 function clean()
+    os.exec("xcodebuild clean CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
 end
 
 -- do build
 function build()
-    os.exec("xcodebuild clean build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
+    
+    -- only support the current subsystem host platform now!
+    assert(is_subhost(config.plat()), "xcodebuild: %s not supported!", config.plat())
+
+    -- do build
+    os.exec("xcodebuild build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
     cprint("${bright}build ok!")
 end
 
