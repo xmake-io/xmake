@@ -31,11 +31,18 @@ end
 
 -- do clean
 function clean()
+    local configfile = find_file("*.sln", os.curdir())
+    if configfile then
+        os.exec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    end
 end
 
 -- do build
 function build()
-    os.exec("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=Release -p:Platform=%s", buildfile, os.arch() == "x64" and "x64" or "Win32")
+    local configfile = find_file("*.sln", os.curdir())
+    if configfile then
+        os.exec("msbuild \"%s\" -nologo -t:Build -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    end
     cprint("${bright}build ok!")
 end
 
