@@ -29,12 +29,20 @@ end
 
 -- do clean
 function clean()
-    os.vexec("make clean")
+    if is_subhost("windows") then
+        os.vexec("nmake clean")
+    else
+        os.vexec("make clean")
+    end
 end
 
 -- do build
 function build()
-    os.vexec("make -j" .. option.get("jobs"))
+    if is_subhost("windows") then
+        os.vexec("nmake")
+    else
+        os.vexec("make -j" .. option.get("jobs"))
+    end
     cprint("${bright}build ok!")
 end
 
