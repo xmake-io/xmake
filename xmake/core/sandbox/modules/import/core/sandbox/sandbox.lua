@@ -31,6 +31,7 @@ local table     = require("base/table")
 local history   = require("project/history")
 local dump      = require("base/dump")
 local option    = require("base/option")
+local scheduler = require("base/scheduler")
 
 -- print variables for interactive mode
 function sandbox_core_sandbox._interactive_dump(...)
@@ -89,8 +90,14 @@ function sandbox_core_sandbox.interactive()
     -- register dump function for interactive mode
     instance._PUBLIC["$interactive_dump"] = sandbox_core_sandbox._interactive_dump
 
+    -- disable scheduler
+    scheduler:enable(false)
+
     -- enter interactive mode with this new sandbox
     sandbox.interactive(instance._PUBLIC)
+
+    -- enable scheduler
+    scheduler:enable(true)
 
     -- save repl history if readline is enabled
     if readline then

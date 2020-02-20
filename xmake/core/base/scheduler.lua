@@ -475,8 +475,10 @@ end
 
 -- get the current running coroutine 
 function scheduler:co_running()
-    local running = coroutine.running()
-    return running and self:co_tasks()[running] or nil 
+    if self._ENABLED then
+        local running = coroutine.running()
+        return running and self:co_tasks()[running] or nil 
+    end
 end
 
 -- get all coroutine tasks
@@ -691,6 +693,11 @@ function scheduler:poller_cancel(obj)
     return true
 end
 
+-- enable or disable to scheduler 
+function scheduler:enable(enabled)
+    self._ENABLED = enabled
+end
+
 -- stop the scheduler loop
 function scheduler:stop()
     -- mark scheduler status as stopped and spank the poller:wait()
@@ -704,6 +711,7 @@ function scheduler:runloop()
 
     -- start loop
     self._STARTED = true
+    self._ENABLED = true
 
     -- ensure poller has been initialized first (for windows/iocp) and check edge-trigger mode (for epoll/kqueue)
     if poller:support(poller.EV_POLLER_CLEAR) then
