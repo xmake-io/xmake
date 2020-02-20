@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        msbuild.lua
+-- @file        scons.lua
 --
 
 -- imports
@@ -24,19 +24,17 @@ import("lib.detect.find_file")
 
 -- detect build-system and configuration file
 function detect()
-    if is_host("windows") then
-        return find_file("*.sln", os.curdir())
-    end
+    return find_file("SConstruct", os.curdir())
 end
 
 -- do clean
 function clean()
-    os.vexec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    os.vexec("scons -c")
 end
 
 -- do build
 function build()
-    os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    os.vexec("scons")
     cprint("${bright}build ok!")
 end
 

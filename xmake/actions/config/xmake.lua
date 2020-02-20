@@ -55,7 +55,7 @@ task("config")
                                                             "e.g.",
                                                             "    - xmake f --trybuild=auto; xmake",
                                                             "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake"
-                                                        ,   values = {"auto", "make", "cmake", "meson", "autotools", "msbuild", "xcodebuild"}}
+                                                        ,   values = {"auto", "make", "cmake", "scons", "meson", "autotools", "msbuild", "xcodebuild"}}
                 ,   {nil, "tryconfigs", "kv",   nil     ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"}

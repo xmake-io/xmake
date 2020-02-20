@@ -55,7 +55,7 @@ function _try_build()
             raise("unknown build tool: %s", trybuild)
         end
     else
-        for _, name in ipairs({"msbuild", "xcodebuild", "cmake", "autotools", "meson", "make"}) do
+        for _, name in ipairs({"msbuild", "xcodebuild", "cmake", "autotools", "scons", "meson", "make"}) do
             tool = import("private.action.trybuild." .. name, {anonymous = true})
             configfile = tool.detect()
             if configfile then
