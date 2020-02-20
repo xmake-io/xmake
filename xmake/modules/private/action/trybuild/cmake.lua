@@ -45,6 +45,11 @@ function _get_configs(artifacts_dir)
         table.insert(configs, "x64")
     end
 
+    -- enable verbose?
+    if option.get("verbose") or option.get("diagnosis") then
+        table.insert(configs, "-DCMAKE_VERBOSE_MAKEFILE=ON")
+    end
+
     -- add extra user configs 
     local tryconfigs = config.get("tryconfigs")
     if tryconfigs then
@@ -109,8 +114,12 @@ function build()
             os.vexec("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
         end
     else
-        os.vexec("make -j" .. option.get("jobs"))
-        os.vexec("make install")
+        local argv = {"-j" .. option.get("jobs")}
+        if option.get("verbose") or option.get("diagnosis") then
+            table.insert(argv, "VERBOSE=1")
+        end
+        os.vexecv("make", argv)
+        os.vexecv("make", {"install"})
     end
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${bright}build ok!")

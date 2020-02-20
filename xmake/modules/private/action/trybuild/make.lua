@@ -40,10 +40,15 @@ end
 -- do build
 function build()
     assert(is_subhost(config.plat()), "make: %s not supported!", config.plat())
+    local argv = {}
+    if option.get("verbose") or option.get("diagnosis") then
+        table.insert(argv, "VERBOSE=1")
+    end
     if is_subhost("windows") then
-        os.vexec("nmake")
+        os.vexecv("nmake", argv)
     else
-        os.vexec("make -j" .. option.get("jobs"))
+        table.insert(argv, "-j" .. option.get("jobs"))
+        os.vexecv("make", argv)
     end
     cprint("${bright}build ok!")
 end
