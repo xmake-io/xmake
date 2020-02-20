@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.colors")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -355,6 +356,21 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
+-- has color diagnostics?
+function _has_color_diagnostics(self)
+    local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
+    if colors_diagnostics == nil then
+        if io.isatty() and colors.color256() then
+            local theme = colors.theme()
+            if theme and theme:name() ~= "plain" then
+                colors_diagnostics = self:has_flags("-fcolor-diagnostics", "cxflags") or false
+            end
+        end
+        colors_diagnostics = colors_diagnostics or false
+        _g._HAS_COLOR_DIAGNOSTICS = colors_diagnostics
+    end
+    return colors_diagnostics
+end
 
 -- make the compile arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
@@ -414,7 +430,12 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             -- generate includes file
             local compflags = flags
             if depfile and _g._HAS_MMD_MF then
-                compflags = table.join(flags, "-MMD", "-MF", depfile)
+                compflags = table.join(compflags, "-MMD", "-MF", depfile)
+            end
+
+            -- has color diagnostics?
+            if _has_color_diagnostics(self) then
+                compflags = table.join(compflags, "-fcolor-diagnostics")
             end
 
             -- do compile
