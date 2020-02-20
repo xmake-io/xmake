@@ -363,7 +363,13 @@ function _has_color_diagnostics(self)
         if io.isatty() and (colors.color8() or colors.color256()) then
             local theme = colors.theme()
             if theme and theme:name() ~= "plain" then
-                colors_diagnostics = self:has_flags("-fcolor-diagnostics", "cxflags") or false
+                -- for clang
+                if self:has_flags("-fcolor-diagnostics", "cxflags") then
+                    colors_diagnostics = "-fcolor-diagnostics"
+                -- for gcc
+                elseif self:has_flags("-fdiagnostics-color=always", "cxflags") then
+                    colors_diagnostics = "-fdiagnostics-color=always"
+                end
             end
         end
         colors_diagnostics = colors_diagnostics or false
@@ -433,9 +439,10 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 compflags = table.join(compflags, "-MMD", "-MF", depfile)
             end
 
-            -- has color diagnostics?
-            if _has_color_diagnostics(self) then
-                compflags = table.join(compflags, "-fcolor-diagnostics")
+            -- has color diagnostics? enable it
+            local colors_diagnostics = _has_color_diagnostics(self) 
+            if colors_diagnostics then
+                compflags = table.join(compflags, colors_diagnostics)
             end
 
             -- do compile
