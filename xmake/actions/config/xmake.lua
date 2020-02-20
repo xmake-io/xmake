@@ -54,7 +54,9 @@ task("config")
                 ,   {nil, "trybuild",   "kv",   nil     ,   "Enable try-build mode and set the third-party buildsystem tool.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=auto; xmake",
-                                                            "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake"
+                                                            "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake",
+                                                            "",
+                                                            "the third-party buildsystems:"
                                                         ,   values = {"auto", "make", "autotools", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild"}}
                 ,   {nil, "tryconfigs", "kv",   nil     ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
