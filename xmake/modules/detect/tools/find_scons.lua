@@ -15,28 +15,40 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xcodebuild.lua
+-- @file        find_scons.lua
 --
 
 -- imports
-import("core.base.option")
-import("lib.detect.find_directory")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- detect build-system and configuration file
-function detect()
-    if is_subhost("macosx") then
-        return find_directory("*.xcworkspace", os.curdir()) or find_directory("*.xcodeproj", os.curdir())
+-- find scons 
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local scons = find_scons()
+-- local scons, version = find_scons({version = true})
+-- 
+-- @endcode
+--
+function main(opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- find program
+    local program = find_program(opt.program or "scons", opt)
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
     end
+
+    -- ok?
+    return program, version
 end
-
--- do clean
-function clean()
-end
-
--- do build
-function build()
-    os.exec("xcodebuild clean build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
-    cprint("${bright}build ok!")
-end
-
-

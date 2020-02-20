@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- detect build-system and configuration file
 function detect()
@@ -29,12 +30,14 @@ end
 
 -- do clean
 function clean()
-    os.vexec("scons -c")
+    local scons = assert(find_tool("scons"), "scons not found!")
+    os.vexecv(scons.program, {"-c"})
 end
 
 -- do build
 function build()
-    os.vexec("scons")
+    local scons = assert(find_tool("scons"), "scons not found!")
+    os.vexec(scons.program)
     cprint("${bright}build ok!")
 end
 

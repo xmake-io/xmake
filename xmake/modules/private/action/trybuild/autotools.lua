@@ -154,7 +154,9 @@ end
 
 -- detect build-system and configuration file
 function detect()
-    return find_file("configure", os.curdir()) or find_file("configure.ac", os.curdir())
+    if not is_subhost("windows") then
+        return find_file("configure", os.curdir()) or find_file("configure.ac", os.curdir())
+    end
 end
 
 -- do clean

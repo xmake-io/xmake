@@ -15,27 +15,29 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xcodebuild.lua
+-- @file        bazel.lua
 --
 
 -- imports
 import("core.base.option")
-import("lib.detect.find_directory")
+import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- detect build-system and configuration file
 function detect()
-    if is_subhost("macosx") then
-        return find_directory("*.xcworkspace", os.curdir()) or find_directory("*.xcodeproj", os.curdir())
-    end
+    return find_file("BUILD", os.curdir())
 end
 
 -- do clean
 function clean()
+    local bazel = assert(find_tool("bazel"), "bazel not found!")
+    os.vexecv(bazel.program, {"clean"})
 end
 
 -- do build
 function build()
-    os.exec("xcodebuild clean build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
+    local bazel = assert(find_tool("bazel"), "bazel not found!")
+    os.vexecv(bazel.program, {"build"})
     cprint("${bright}build ok!")
 end
 

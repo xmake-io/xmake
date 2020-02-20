@@ -24,7 +24,7 @@ import("lib.detect.find_file")
 
 -- detect build-system and configuration file
 function detect()
-    if is_host("windows") then
+    if is_subhost("windows") then
         return find_file("*.sln", os.curdir())
     end
 end
