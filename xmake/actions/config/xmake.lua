@@ -57,7 +57,7 @@ task("config")
                                                             "    - xmake f --trybuild=autotools -p android --ndk=xxx; xmake",
                                                             "",
                                                             "the third-party buildsystems:"
-                                                        ,   values = {"auto", "make", "autotools", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild"}}
+                                                        ,   values = {"auto", "make", "autotools", "cmake", "scons", "meson", "bazel", "ninja", "msbuild", "xcodebuild", "ndkbuild"}}
                 ,   {nil, "tryconfigs", "kv",   nil     ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"}
