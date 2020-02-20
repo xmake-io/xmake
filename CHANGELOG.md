@@ -7,6 +7,8 @@
 * [#675](https://github.com/xmake-io/xmake/issues/675): Support to compile `*.c` as c++, `add_files("*.c", {sourcekind = "cxx"})`.
 * [#681](https://github.com/xmake-io/xmake/issues/681): Support compile xmake on msys/cygwin and add msys/cygwin platform
 * Add socket/pipe io modules and support to schedule socket/process/pipe in coroutine
+* [#192](https://github.com/xmake-io/xmake/issues/192): Try building project with the third-party buildsystem
+* Enable color diagnostics output for gcc/clang
 
 ### Change
 
@@ -680,6 +682,8 @@
 * [#675](https://github.com/xmake-io/xmake/issues/675): 支持通过设置强制将`*.c`作为c++代码编译, `add_files("*.c", {sourcekind = "cxx"})`。
 * [#681](https://github.com/xmake-io/xmake/issues/681): 支持在msys/cygwin上编译xmake，以及添加msys/cygwin编译平台
 * 添加socket/pipe模块，并且支持在协程中同时调度process/socket/pipe
+* [#192](https://github.com/xmake-io/xmake/issues/192): 尝试构建带有第三方构建系统的项目，还支持autotools项目的交叉编译
+* 启用gcc/clang的编译错误色彩高亮输出
 
 ### 改进
 
