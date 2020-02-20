@@ -60,7 +60,11 @@ function build()
     if option.get("verbose") then
         table.insert(argv, "V=1")
     end
-    os.vexecv(path.join(ndk, "ndk-build"), argv, {envs = {NDK_ROOT = ndk}})
+    local ndkbuild = path.join(ndk, "ndk-build")
+    if is_host("windows") then
+        ndkbuild = ndkbuild .. ".cmd"
+    end
+    os.vexecv(ndkbuild, argv, {envs = {NDK_ROOT = ndk}})
     cprint("${bright}build ok!")
 end
 
