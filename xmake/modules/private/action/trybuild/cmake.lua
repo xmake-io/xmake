@@ -46,7 +46,7 @@ function _get_configs(artifacts_dir)
     end
 
     -- enable verbose?
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         table.insert(configs, "-DCMAKE_VERBOSE_MAKEFILE=ON")
     end
 
@@ -115,7 +115,7 @@ function build()
         end
     else
         local argv = {"-j" .. option.get("jobs")}
-        if option.get("verbose") or option.get("diagnosis") then
+        if option.get("verbose") then
             table.insert(argv, "VERBOSE=1")
         end
         os.vexecv("make", argv)

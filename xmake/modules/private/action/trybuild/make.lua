@@ -41,7 +41,7 @@ end
 function build()
     assert(is_subhost(config.plat()), "make: %s not supported!", config.plat())
     local argv = {}
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
     if is_subhost("windows") then

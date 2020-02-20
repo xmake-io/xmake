@@ -45,7 +45,7 @@ end
 function build()
     local ninja = assert(find_tool("ninja"), "ninja not found!")
     local ninja_argv = {"-C", os.curdir()}
-    if option.get("verbose") or option.get("diagnosis") then
+    if option.get("verbose") then
         table.insert(ninja_argv, "-v")
     end
     table.insert(ninja_argv, "-j")
