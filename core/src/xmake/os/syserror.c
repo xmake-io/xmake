@@ -39,7 +39,14 @@ tb_int_t xm_os_syserror(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get syserror state
+    tb_int_t  err = 0;
     tb_size_t syserror = tb_syserror_state();
-    lua_pushinteger(lua, (tb_int_t)syserror);
+    switch (syserror)
+    {
+    case TB_STATE_SYSERROR_NOT_PERM:            err = 1; break;
+    case TB_STATE_SYSERROR_NOT_FILEDIR:         err = 2; break;
+    case TB_STATE_SYSERROR_UNKNOWN_ERROR:       err = -1; break;
+    }
+    lua_pushinteger(lua, err);
     return 1;
 }

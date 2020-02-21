@@ -108,9 +108,14 @@ function _run_script(script, args)
     _print_vlog(script_type or "script", script_name or "", args)
 
     -- dump result
-    local result = table.pack(func(table.unpack(args, 1, args.n)))
-    if printresult and result and result.n ~= 0 then
-        utils.dump(unpack(result, 1, result.n))
+    if type(func) == "function" then
+        local result = table.pack(func(table.unpack(args, 1, args.n)))
+        if printresult and result and result.n ~= 0 then
+            utils.dump(unpack(result, 1, result.n))
+        end
+    else
+        -- dump variables directly
+        utils.dump(func)
     end
 end
 

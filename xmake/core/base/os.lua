@@ -41,6 +41,12 @@ os._setenv      = os._setenv or os.setenv
 os._getenvs     = os._getenvs or os.getenvs
 os._readlink    = os._readlink or os.readlink
 
+-- syserror code
+os.SYSERR_UNKNOWN     = -1
+os.SYSERR_NONE        = 0
+os.SYSERR_NOT_PERM    = 1
+os.SYSERR_NOT_FILEDIR = 2
+
 -- copy single file or directory
 function os._cp(src, dst)
 
