@@ -464,10 +464,9 @@ function io.readfile(filepath, opt)
     opt = opt or {}
 
     -- open file
-    local file = io.open(filepath, "r", opt)
+    local file, errors = io.open(filepath, "r", opt)
     if not file then
-        -- error
-        return nil, string.format("open %s failed!", filepath)
+        return nil, errors
     end
 
     -- read all
@@ -507,9 +506,9 @@ function io.writefile(filepath, data, opt)
     opt = opt or {}
 
     -- open file
-    local file = io.open(filepath, "w", opt)
+    local file, errors = io.open(filepath, "w", opt)
     if not file then
-        return false, string.format("open %s failed!", filepath)
+        return false, errors
     end
 
     -- write all
@@ -560,7 +559,7 @@ function io.open(filepath, mode, opt)
     if file then
         return _file.new(filepath, file)
     else
-        return nil, string.format("failed to open file: %s", filepath)
+        return nil, string.format("cannot open file: %s, error: %s", filepath, os.strerror())
     end
 end
 
@@ -575,7 +574,7 @@ function io.openlock(filepath)
     if lock then
         return _filelock.new(filepath, lock)
     else
-        return nil, string.format("failed to open lock: %s", filepath)
+        return nil, string.format("cannot open lock: %s, error: %s", filepath, os.strerror())
     end
 end
 
