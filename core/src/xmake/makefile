@@ -39,6 +39,7 @@ xmake_C_FILES 			+= \
 						os/cpuinfo \
 						os/readlink \
 						os/emptydir \
+						os/syserror \
 						os/strerror \
 						os/filesize \
 						os/getwinsize \
