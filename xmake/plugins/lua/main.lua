@@ -107,8 +107,8 @@ function _run_script(script, args)
     -- print verbose log
     _print_vlog(script_type or "script", script_name or "", args)
 
-    -- dump result
-    if type(func) == "function" then
+    -- dump func() result
+    if type(func) == "function" or (type(func) == "table" and func.main and type(func.main) == "function") then
         local result = table.pack(func(table.unpack(args, 1, args.n)))
         if printresult and result and result.n ~= 0 then
             utils.dump(unpack(result, 1, result.n))
