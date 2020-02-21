@@ -45,11 +45,25 @@ tb_int_t xm_os_strerror(lua_State* lua)
     // get syserror state
     tb_size_t syserror = tb_syserror_state();
     if (syserror != TB_STATE_SYSERROR_UNKNOWN_ERROR)
-        lua_pushstring(lua, tb_state_cstr(syserror));
+    {
+        tb_char_t const* strerr = "Unknown";
+        switch (syserror)
+        {
+        case TB_STATE_SYSERROR_NOT_PERM:
+            strerr = "Permission denied"; 
+            break;
+        case TB_STATE_SYSERROR_NOT_FILEDIR:
+            strerr = "No such file or directory"; 
+            break;
+        default:
+            break;
+        }
+        lua_pushstring(lua, strerr);
+    }
     else
     {
 #if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
-        lua_pushstring(lua, tb_state_cstr(syserror));
+        lua_pushstring(lua, "Unknown");
 #else
         lua_pushstring(lua, strerror(errno));
 #endif
