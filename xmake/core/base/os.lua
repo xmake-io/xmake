@@ -631,17 +631,23 @@ function os.runv(program, argv, opt)
     local logfile = os.tmpfile()
 
     -- execute it
-    local ok = os.execv(program, argv, table.join(opt, {stdout = logfile, stderr = logfile}))
+    local ok, errors = os.execv(program, argv, table.join(opt, {stdout = logfile, stderr = logfile}))
     if ok ~= 0 then
 
-        -- make errors
-        local errors = io.readfile(logfile)
-        if not errors or #errors == 0 then
-            if argv ~= nil then
-                errors = string.format("runv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
-            else
-                errors = string.format("runv(%s) failed(%d)!", program, ok)
+        -- get command
+        local cmd = program
+        if argv then
+            cmd = cmd .. " " .. os.args(argv)
+        end
+
+        -- get subprocess errors
+        if ok ~= nil then
+            errors = io.readfile(logfile)
+            if not errors or #errors == 0 then
+                errors = string.format("runv(%s) failed(%d)", cmd, ok)
             end
+        else
+            errors = string.format("cannot runv(%s), error: %s", cmd, errors and errors or "unknown")
         end
 
         -- remove the temporary log file
@@ -659,7 +665,7 @@ function os.runv(program, argv, opt)
 end
 
 -- execute command
-function os.exec(cmd, outfile, errfile)
+function os.exec(cmd)
 
     -- parse arguments
     local argv = os.argv(cmd)
@@ -668,7 +674,7 @@ function os.exec(cmd, outfile, errfile)
     end
 
     -- run it
-    return os.execv(argv[1], table.slice(argv, 2), {stdout = outfile, stderr = errfile})
+    return os.execv(argv[1], table.slice(argv, 2))
 end
 
 -- execute command with arguments list
@@ -734,6 +740,9 @@ function os.execv(program, argv, opt)
 
         -- close process
         proc:close()
+    else
+        -- cannot execute process
+        return nil, os.strerror()
     end
 
     -- ok?
@@ -764,7 +773,7 @@ function os.iorunv(program, argv, opt)
     local errfile = os.tmpfile()
 
     -- run command
-    local ok = os.execv(program, argv, table.join(opt, {stdout = outfile, stderr = errfile}))
+    local ok, errors = os.execv(program, argv, table.join(opt, {stdout = outfile, stderr = errfile}))
 
     -- get output and error data
     local outdata = io.readfile(outfile)
@@ -775,7 +784,7 @@ function os.iorunv(program, argv, opt)
     os.rm(errfile)
 
     -- ok?
-    return ok == 0, outdata, errdata
+    return ok == 0, outdata, errdata, errors
 end
 
 -- raise an exception and abort the current script

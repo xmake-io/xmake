@@ -353,11 +353,13 @@ function sandbox_os.iorun(cmd, ...)
     cmd = vformat(cmd, ...)
 
     -- run it
-    local ok, outdata, errdata = os.iorun(cmd)
+    local ok, outdata, errdata, errors = os.iorun(cmd)
     if not ok then
-        local errors = errdata or ""
-        if #errors:trim() == 0 then
-            errors = outdata or ""
+        if not errors then
+            errors = errdata or ""
+            if #errors:trim() == 0 then
+                errors = outdata or ""
+            end
         end
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
@@ -373,11 +375,13 @@ function sandbox_os.iorunv(program, argv, opt)
     program = vformat(program)
 
     -- run it
-    local ok, outdata, errdata = os.iorunv(program, argv, opt)
+    local ok, outdata, errdata, errors = os.iorunv(program, argv, opt)
     if not ok then
-        local errors = errdata or ""
-        if #errors:trim() == 0 then
-            errors = outdata or ""
+        if not errors then
+            errors = errdata or ""
+            if #errors:trim() == 0 then
+                errors = outdata or ""
+            end
         end
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end
@@ -393,9 +397,14 @@ function sandbox_os.exec(cmd, ...)
     cmd = vformat(cmd, ...)
 
     -- run it
-    local ok = os.exec(cmd)
-    if ok ~= 0 then
-        os.raise("exec(%s) failed(%d)!", cmd, ok)
+    local ok, errors = os.exec(cmd)
+    if ok ~= 0 and errors then
+        if ok ~= nil then
+            errors = string.format("exec(%s) failed(%d)", cmd, ok)
+        else
+            errors = string.format("cannot exec(%s), error: %s", cmd, errors and errors or "unknown")
+        end
+        os.raise(errors)
     end
 end
 
@@ -421,13 +430,22 @@ function sandbox_os.execv(program, argv, opt)
 
     -- run it
     opt = opt or {}
-    local ok = os.execv(program, argv, opt)
+    local ok, errors = os.execv(program, argv, opt)
     if ok ~= 0 and not opt.try then
-        if argv ~= nil then
-            os.raise("execv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
-        else
-            os.raise("execv(%s) failed(%d)!", program, ok)
+
+        -- get command
+        local cmd = program
+        if argv then
+            cmd = cmd .. " " .. os.args(argv)
         end
+
+        -- get errors
+        if ok ~= nil then
+            errors = string.format("execv(%s) failed(%d)", cmd, ok)
+        else
+            errors = string.format("cannot execv(%s), error: %s", cmd, errors and errors or "unknown")
+        end
+        os.raise(errors)
     end
     return ok
 end
