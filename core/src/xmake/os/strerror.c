@@ -29,9 +29,7 @@
  * includes
  */
 #include "prefix.h"
-#ifdef TB_CONFIG_OS_WINDOWS
-#   include <windows.h>
-#else
+#if !defined(TB_CONFIG_OS_WINDOWS) || defined(TB_COMPILER_LIKE_UNIX)
 #   include <errno.h>
 #   include <string.h>
 #endif
@@ -44,13 +42,17 @@ tb_int_t xm_os_strerror(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // done os.strerror() 
-#ifdef TB_CONFIG_OS_WINDOWS
-    lua_pushstring(lua, tb_state_cstr(tb_syserror_state()));
+    // get syserror state
+    tb_size_t syserror = tb_syserror_state();
+    if (syserror != TB_STATE_SYSERROR_UNKNOWN_ERROR)
+        lua_pushstring(lua, tb_state_cstr(syserror));
+    else
+    {
+#if defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_COMPILER_LIKE_UNIX)
+        lua_pushstring(lua, tb_state_cstr(syserror));
 #else
-    lua_pushstring(lua, strerror(errno));
+        lua_pushstring(lua, strerror(errno));
 #endif
-
-    // ok
+    }
     return 1;
 }

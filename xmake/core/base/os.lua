@@ -440,8 +440,9 @@ function os.rm(...)
 
     -- remove directories
     for _, filedir in ipairs(os.argw(args)) do
-        if not os._rm(filedir) then
-            return false, string.format("remove: %s failed!", filedir)
+        local ok, errors = os._rm(filedir)
+        if not ok then
+            return false, errors
         end
     end
 
@@ -455,7 +456,7 @@ function os.ln(filedir, symfile)
         return false, string.format("symlink is not supported!")
     end
     if not os.link(filedir, symfile) then
-        return false, string.format("link %s to %s failed!", filedir, symfile)
+        return false, string.format("cannot link %s to %s, error: %s", filedir, symfile, os.strerror())
     end
     return true
 end

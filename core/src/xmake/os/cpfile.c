@@ -43,9 +43,7 @@ tb_int_t xm_os_cpfile(lua_State* lua)
     tb_char_t const* dst = luaL_checkstring(lua, 2);
     tb_check_return_val(src && dst, 0);
 
-    // done os.cpfile(src, dst) 
+    // do copy
     lua_pushboolean(lua, tb_file_copy(src, dst));
-
-    // ok
     return 1;
 }
