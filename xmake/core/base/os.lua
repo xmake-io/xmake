@@ -525,7 +525,7 @@ function os.mkdir(...)
     -- create directories
     for _, dir in ipairs(os.argw(args)) do
         if not os._mkdir(dir) then
-            return false, string.format("create directory: %s failed!", dir)
+            return false, string.format("cannot create directory: %s, error: %s", dir, os.strerror())
         end
     end
 
