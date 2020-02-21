@@ -774,6 +774,13 @@ function os.iorunv(program, argv, opt)
 
     -- run command
     local ok, errors = os.execv(program, argv, table.join(opt, {stdout = outfile, stderr = errfile}))
+    if ok == nil then
+        local cmd = program
+        if argv then
+            cmd = cmd .. " " .. os.args(argv)
+        end
+        errors = string.format("cannot runv(%s), error: %s", cmd, errors and errors or "unknown")
+    end
 
     -- get output and error data
     local outdata = io.readfile(outfile)
