@@ -16,6 +16,7 @@
 * [#673](https://github.com/xmake-io/xmake/pull/673): Improve tab complete to support argument values
 * [#680](https://github.com/xmake-io/xmake/issues/680): Improve get.sh scripts and add download mirrors
 * Improve process scheduler
+* [#651](https://github.com/xmake-io/xmake/issues/651): Improve os/io module syserrors tips
 
 ### Bugs fixed
 
@@ -691,6 +692,7 @@
 * [#673](https://github.com/xmake-io/xmake/pull/673): 改进tab命令补全，增加对参数values的补全支持
 * [#680](https://github.com/xmake-io/xmake/issues/680): 优化get.sh安装脚本，添加国内镜像源，加速下载
 * 改进process调度器
+* [#651](https://github.com/xmake-io/xmake/issues/651): 改进os/io模块系统操作错误提示
 
 ### Bugs修复
 
