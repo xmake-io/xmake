@@ -26,6 +26,7 @@ import("core.platform.environment")
 import("make.makefile")
 import("make.xmakefile")
 import("cmake.cmakelists")
+import("ninja.build_ninja")
 import("vstudio.vs")
 import("vsxmake.vsxmake")
 import("clang.compile_flags")
@@ -35,9 +36,13 @@ function makers()
 
     -- the maps
     return
-    {   makefile         = makefile.make
+    {   
+        make             = makefile.make
+    ,   makefile         = makefile.make
     ,   xmakefile        = xmakefile.make
+    ,   cmake            = cmakelists.make
     ,   cmakelists       = cmakelists.make
+    ,   ninja            = build_ninja.make
     ,   vs2002           = vs.make(2002)
     ,   vs2003           = vs.make(2003)
     ,   vs2005           = vs.make(2005)
