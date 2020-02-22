@@ -41,7 +41,7 @@ end
 function _add_rules_for_compiler_gcc(ninjafile, sourcekind, program)
     local ccache = find_tool("ccache")
     ninjafile:print("rule %s", sourcekind)
-    ninjafile:print(" command = %s%s $ARGS -MDD -MF '$DEPFILE' -o $out -c $in", ccache and (ccache.program .. " ") or "", program)
+    ninjafile:print(" command = %s%s $ARGS -MMD -MF '$DEPFILE' -o $out -c $in", ccache and (ccache.program .. " ") or "", program)
     ninjafile:print(" depfile = $DEPFILE")
     ninjafile:print(" description = %scompiling.%s $in", ccache and "ccache " or "", config.mode())
     ninjafile:print("")
@@ -72,11 +72,19 @@ function _add_rules_for_compiler(ninjafile)
     ninjafile:print("")
 end
 
+-- add rules for linker (ar)
+function _add_rules_for_linker_ar(ninjafile, linkerkind, program)
+    ninjafile:print("rule %s", linkerkind)
+    ninjafile:print(" command = %s -cr $ARGS $out $in", program)
+    ninjafile:print(" description = archiving.%s $out", config.mode())
+    ninjafile:print("")
+end
+
 -- add rules for linker (gcc)
 function _add_rules_for_linker_gcc(ninjafile, linkerkind, program)
     ninjafile:print("rule %s", linkerkind)
     ninjafile:print(" command = %s -o $out $in $ARGS", program)
-    ninjafile:print(" description = linking.%s $in", config.mode())
+    ninjafile:print(" description = linking.%s $out", config.mode())
     ninjafile:print("")
 end
 
@@ -94,6 +102,7 @@ function _add_rules_for_linker(ninjafile)
     end
     local add_linker_rules = 
     {
+        ar      = _add_rules_for_linker_ar,
         gcc     = _add_rules_for_linker_gcc,
         gxx     = _add_rules_for_linker_gcc,
         clang   = _add_rules_for_linker_clang,
