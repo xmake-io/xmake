@@ -9,6 +9,7 @@
 * Add socket/pipe io modules and support to schedule socket/process/pipe in coroutine
 * [#192](https://github.com/xmake-io/xmake/issues/192): Try building project with the third-party buildsystem
 * Enable color diagnostics output for gcc/clang
+* [#588](https://github.com/xmake-io/xmake/issues/588): Improve project generator, `xmake project -k ninja`, support for build.ninja
 
 ### Change
 
@@ -685,6 +686,7 @@
 * 添加socket/pipe模块，并且支持在协程中同时调度process/socket/pipe
 * [#192](https://github.com/xmake-io/xmake/issues/192): 尝试构建带有第三方构建系统的项目，还支持autotools项目的交叉编译
 * 启用gcc/clang的编译错误色彩高亮输出
+* [#588](https://github.com/xmake-io/xmake/issues/588): 改进工程生成插件`xmake project -k ninja`，增加对build.ninja生成支持
 
 ### 改进
 
