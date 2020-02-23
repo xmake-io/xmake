@@ -74,6 +74,7 @@ function _try_build()
         environment.enter("toolchains")
         tool.build()
         environment.leave("toolchains")
+        return true
     end
 end
 
@@ -81,8 +82,8 @@ end
 function main()
 
     -- try building it using third-party buildsystem if xmake.lua not exists
-    if not os.isfile(project.rootfile()) then
-        return _try_build()
+    if not os.isfile(project.rootfile()) and _try_build() then
+        return 
     end
 
     -- post statistics before locking project
