@@ -232,7 +232,7 @@ function os.args(argv)
         arg = arg:trim()
         if #arg > 0 then
             arg = arg:gsub("([\"\\])", "\\%1")
-            if arg:find("%s") then
+            if arg:find("[%s%(%)]") then
                 if args then
                     args = args .. " \"" .. arg .. "\""
                 else
