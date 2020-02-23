@@ -102,7 +102,7 @@ end
 -- add rules for linker (ar)
 function _add_rules_for_linker_ar(ninjafile, linkerkind, program)
     ninjafile:print("rule %s", linkerkind)
-    ninjafile:print(" command = %s -cr $ARGS $out $in", program)
+    ninjafile:print(" command = %s $ARGS $out $in", program)
     ninjafile:print(" description = archiving.%s $out", config.mode())
     ninjafile:print("")
 end
