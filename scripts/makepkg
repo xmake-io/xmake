@@ -20,7 +20,7 @@
 
 # check
 if [ $# -lt 2 ]; then
-    echo "Usage: ./scripts/makepkg [rpm|deb|oscpkg|pacman] [version]"
+    echo "Usage: ./scripts/makepkg [rpm|deb|osxpkg|pacman] [version]"
     exit
 fi
 
