@@ -114,7 +114,5 @@ function build()
     os.vexecv(ninja.program, ninja_argv)
     os.vexecv(ninja.program, table.join("install", ninja_argv))
     cprint("output to ${bright}%s", artifacts_dir)
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!${clear}")
 end
-
-

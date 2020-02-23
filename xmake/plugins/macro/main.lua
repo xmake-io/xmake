@@ -142,7 +142,7 @@ function _delete(macroname)
     end
 
     -- trace
-    cprint("${bright}delete macro(%s) ok!", macroname)
+    cprint("${color.success}delete macro(%s) ok!${clear}", macroname)
 end
 
 -- import macro
@@ -163,7 +163,7 @@ function _import(macrofile, macroname)
             os.cp(macrofile, _wfile(macroname))
 
             -- trace
-            cprint("${bright}import macro(%s) ok!", macroname)
+            cprint("${color.success}import macro(%s) ok!${clear}", macroname)
         end
     else
 
@@ -171,7 +171,7 @@ function _import(macrofile, macroname)
         os.cp(macrofile, _wfile(macroname))
 
         -- trace
-        cprint("${bright}import macro(%s) ok!", macroname)
+        cprint("${color.success}import macro(%s) ok!${clear}", macroname)
     end
 end
 
@@ -193,7 +193,7 @@ function _export(macrofile, macroname)
                 os.cp(macrofile, outputdir)
 
                 -- trace
-                cprint("${bright}export macro(%s) ok!", path.basename(macrofile))
+                cprint("${color.success}export macro(%s) ok!${clear}", path.basename(macrofile))
             end
         end
     else        
@@ -201,7 +201,7 @@ function _export(macrofile, macroname)
         os.cp(_rfile(macroname), macrofile)
 
         -- trace
-        cprint("${bright}export macro(%s) ok!", macroname)
+        cprint("${color.success}export macro(%s) ok!${clear}", macroname)
     end
 end
 
@@ -283,7 +283,7 @@ function _end(macroname)
     _show(macroname)
 
     -- trace
-    cprint("${bright}define macro(%s) ok!", macroname)
+    cprint("${color.success}define macro(%s) ok!${clear}", macroname)
 end
 
 -- run macro

@@ -65,7 +65,5 @@ function build()
         ndkbuild = ndkbuild .. ".cmd"
     end
     os.vexecv(ndkbuild, argv, {envs = {NDK_ROOT = ndk}})
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!${clear}")
 end
-
-

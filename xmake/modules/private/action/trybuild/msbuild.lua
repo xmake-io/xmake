@@ -37,13 +37,11 @@ end
 
 -- do build
 function build()
- 
+
     -- only support the current subsystem host platform now!
     assert(is_subhost(config.plat()), "msbuild: %s not supported!", config.plat())
 
     -- do build
     os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!${clear}")
 end
-
-
