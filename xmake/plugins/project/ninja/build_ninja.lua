@@ -47,7 +47,7 @@ end
 
 -- add rules for complier (gcc)
 function _add_rules_for_compiler_gcc(ninjafile, sourcekind, program)
-    local ccache = find_tool("ccache")
+    local ccache = config.get("ccache") ~= false and find_tool("ccache")
     ninjafile:print("rule %s", sourcekind)
     ninjafile:print(" command = %s%s $ARGS -MMD -MF $out.d -o $out -c $in", ccache and (ccache.program .. " ") or "", program)
     ninjafile:print(" deps = gcc")
