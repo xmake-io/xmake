@@ -199,7 +199,5 @@ function build()
     os.vexec("make -j" .. option.get("jobs"))
     os.vexec("make install")
     cprint("output to ${bright}%s", artifacts_dir)
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!")
 end
-
-

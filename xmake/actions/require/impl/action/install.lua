@@ -244,7 +244,7 @@ function main(package)
                 if not package:requireinfo().optional then
                     if os.isfile(errorfile) then
                         print("if you want to get verbose errors, please see:")
-                        cprint("  -> ${bright}%s${clear}", errorfile)
+                        cprint("  -> ${bright}%s", errorfile)
                     end
                     raise("install failed!")
                 end

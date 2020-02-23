@@ -680,12 +680,12 @@ function _install_packages(packages_install, packages_download)
 
         -- trace
         utils.clearline()
-        cprintf("${yellow}  => ${clear}")
+        cprintf("${yellow}  => ")
         if #downloading > 0 then
-            cprintf("downloading ${magenta}%s${clear}", table.concat(downloading, ", "))
+            cprintf("downloading ${magenta}%s", table.concat(downloading, ", "))
         end
         if #installing > 0 then
-            cprintf("%sinstalling ${magenta}%s${clear}", #downloading > 0 and ", " or "", table.concat(installing, ", "))
+            cprintf("%sinstalling ${magenta}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s%s", tips and ("${dim}" .. tips .. "${clear} ") or "", waitchars[waitindex + 1])
         io.flush()

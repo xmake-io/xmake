@@ -78,7 +78,7 @@ function _clear()
     end
 
     -- trace
-    cprint("${bright}clear all installed plugins ok!")
+    cprint("${color.success}clear all installed plugins ok!")
 end
 
 -- main

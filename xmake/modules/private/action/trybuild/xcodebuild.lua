@@ -37,13 +37,11 @@ end
 
 -- do build
 function build()
-    
+
     -- only support the current subsystem host platform now!
     assert(is_subhost(config.plat()), "xcodebuild: %s not supported!", config.plat())
 
     -- do build
     os.exec("xcodebuild build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!")
 end
-
-

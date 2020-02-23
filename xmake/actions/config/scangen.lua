@@ -156,5 +156,5 @@ function main()
     end
 
     -- trace
-    cprint("${bright}xmake.lua generated, scan ok!${clear}")
+    cprint("${color.success}xmake.lua generated, scan ok!")
 end

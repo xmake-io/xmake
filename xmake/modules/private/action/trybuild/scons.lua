@@ -43,7 +43,5 @@ function build()
     -- do build
     local scons = assert(find_tool("scons"), "scons not found!")
     os.vexec(scons.program)
-    cprint("${bright}build ok!")
+    cprint("${color.success}build ok!")
 end
-
-

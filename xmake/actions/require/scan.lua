@@ -51,13 +51,13 @@ function _scan_package(packagedir)
             end
             local manifest_file = path.join(hashdir, "manifest.txt")
             local manifest = os.isfile(manifest_file) and io.load(manifest_file) or nil
-            cprintf("  -> ${yellow}%s${clear}: ${green}%s, %s${clear}", hash, manifest and manifest.plat or "", manifest and manifest.arch or "")
+            cprintf("  -> ${yellow}%s${clear}: ${green}%s, %s", hash, manifest and manifest.plat or "", manifest and manifest.arch or "")
             if os.emptydir(hashdir) then
-                cprintf(", ${red}empty${clear}")
+                cprintf(", ${red}empty")
             elseif not referenced then
-                cprintf(", ${red}unused${clear}")
+                cprintf(", ${red}unused")
             elseif not manifest then
-                cprintf(", ${red}invalid${clear}")
+                cprintf(", ${red}invalid")
             end
             print("")
             if manifest and manifest.configs then
