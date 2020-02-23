@@ -1,2 +1,2 @@
 #!/usr/bin/env bash
-brew bump-formula-pr --url=https://github.com/xmake-io/xmake/releases/download/v2.2.9/xmake-v2.2.9.tar.gz --sha256=7d7b4b368808c78cda4bcdd00a140cd8b4cab8f32c7b3c31aa22fdd08dde4940 xmake
+brew bump-formula-pr --url=https://github.com/xmake-io/xmake/releases/download/v2.3.1/xmake-v2.3.1.tar.gz --sha256=69309bb06cd8eb6f4bf30c68bdbccb9bc7df4c8240c72778e98ebe752d864382 xmake
