@@ -41,8 +41,7 @@ end
 function _add_rules_for_compiler_gcc(ninjafile, sourcekind, program)
     local ccache = find_tool("ccache")
     ninjafile:print("rule %s", sourcekind)
-    ninjafile:print(" command = %s%s $ARGS -MMD -MF '$DEPFILE' -o $out -c $in", ccache and (ccache.program .. " ") or "", program)
-    ninjafile:print(" depfile = $DEPFILE")
+    ninjafile:print(" command = %s%s $ARGS -MMD -MF $out.d -o $out -c $in", ccache and (ccache.program .. " ") or "", program)
     ninjafile:print(" description = %scompiling.%s $in", ccache and "ccache " or "", config.mode())
     ninjafile:print("")
 end
@@ -138,7 +137,6 @@ end
 -- add build rule for object
 function _add_build_for_object(ninjafile, target, sourcekind, sourcefile, objectfile)
     ninjafile:print("build %s: %s %s", objectfile, sourcekind, sourcefile)
-    ninjafile:print(" DEPFILE = %s", target:dependfile(objectfile))
     ninjafile:print(" ARGS = %s", os.args(compiler.compflags(sourcefile, {target = target})))
     ninjafile:print("")
 end
