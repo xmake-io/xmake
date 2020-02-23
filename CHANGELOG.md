@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.1
+
 ### New features
 
 * [#675](https://github.com/xmake-io/xmake/issues/675): Support to compile `*.c` as c++, `add_files("*.c", {sourcekind = "cxx"})`.
@@ -678,6 +680,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.1
 
 ### 新特性
 
