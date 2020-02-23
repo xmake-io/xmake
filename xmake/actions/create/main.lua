@@ -143,5 +143,5 @@ function main()
     _create_project(option.get("language"), option.get("template"), targetname)
 
     -- trace
-    cprint("${color.success}create ok!${clear}")
+    cprint("${color.success}create ok!")
 end

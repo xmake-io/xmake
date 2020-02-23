@@ -44,5 +44,5 @@ function build()
     -- do build
     local bazel = assert(find_tool("bazel"), "bazel not found!")
     os.vexecv(bazel.program, {"build"})
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end

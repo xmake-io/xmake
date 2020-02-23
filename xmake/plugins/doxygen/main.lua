@@ -108,5 +108,5 @@ function main()
 
     -- trace
     cprint("${bright green}result: ${default green}%s/html/index.html", outputdir)
-    cprint("${color.success}doxygen ok!${clear}")
+    cprint("${color.success}doxygen ok!")
 end

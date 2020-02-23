@@ -137,6 +137,6 @@ function main()
 
     -- trace
     if option.get("rebuild") then
-        cprint("${color.success}build ok!${clear}")
+        cprint("${color.success}build ok!")
     end
 end

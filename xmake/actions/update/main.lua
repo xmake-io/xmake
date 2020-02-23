@@ -289,7 +289,7 @@ function main()
         _uninstall()
 
         -- trace
-        cprint("${color.success}uninstall ok!${clear}")
+        cprint("${color.success}uninstall ok!")
         return
     end
 

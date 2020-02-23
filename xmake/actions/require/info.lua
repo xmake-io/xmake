@@ -120,7 +120,7 @@ function main(package_names)
                 print("         -> %s", filter.handle(url, instance))
                 local sourcehash = instance:sourcehash(instance:url_alias(url))
                 if sourcehash then
-                    cprint("            -> ${yellow}%s${clear}", sourcehash)
+                    cprint("            -> ${yellow}%s", sourcehash)
                 end
             end
         end

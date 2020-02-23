@@ -87,5 +87,5 @@ function main()
     environment.leave("toolchains")
 
     -- trace
-    cprint("${color.success}create ok!${clear}")
+    cprint("${color.success}create ok!")
 end

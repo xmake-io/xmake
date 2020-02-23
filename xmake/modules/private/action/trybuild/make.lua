@@ -50,5 +50,5 @@ function build()
         table.insert(argv, "-j" .. option.get("jobs"))
         os.vexecv("make", argv)
     end
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end

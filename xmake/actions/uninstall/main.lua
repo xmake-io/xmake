@@ -44,7 +44,7 @@ function main()
             uninstall(targetname)
 
             -- trace
-            cprint("${color.success}uninstall ok!${clear}")
+            cprint("${color.success}uninstall ok!")
         end,
 
         catch
@@ -62,7 +62,7 @@ function main()
                             uninstall(targetname)
 
                             -- trace
-                            cprint("${color.success}uninstall ok!${clear}")
+                            cprint("${color.success}uninstall ok!")
 
                             -- ok
                             return true
@@ -88,7 +88,7 @@ function main()
                         sudo.runl(path.join(os.scriptdir(), "uninstall_admin.lua"), {targetname or "__all", option.get("installdir"), option.get("prefix")})
 
                         -- trace
-                        cprint("${color.success}uninstall ok!${clear}")
+                        cprint("${color.success}uninstall ok!")
                         ok = true
                     end
                 end

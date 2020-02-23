@@ -43,5 +43,5 @@ function build()
 
     -- do build
     os.exec("xcodebuild build CODE_SIGN_IDENTITY=\"\" CODE_SIGNING_REQUIRED=NO")
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end

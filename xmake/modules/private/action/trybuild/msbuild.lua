@@ -43,5 +43,5 @@ function build()
 
     -- do build
     os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end

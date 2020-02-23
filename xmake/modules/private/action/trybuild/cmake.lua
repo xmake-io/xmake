@@ -122,5 +122,5 @@ function build()
         os.vexecv("make", {"install"})
     end
     cprint("output to ${bright}%s", artifacts_dir)
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end

@@ -51,5 +51,5 @@ function build()
     table.insert(ninja_argv, "-j")
     table.insert(ninja_argv, option.get("jobs"))
     os.vexecv(ninja.program, ninja_argv)
-    cprint("${color.success}build ok!${clear}")
+    cprint("${color.success}build ok!")
 end
