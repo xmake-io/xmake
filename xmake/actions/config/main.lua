@@ -148,7 +148,7 @@ function main()
     -- scan project and generate it if xmake.lua not exists
     local autogen = false
     local trybuild = option.get("trybuild")
-    if not os.isfile(project.file()) and not trybuild then
+    if not os.isfile(project.rootfile()) and not trybuild then
         autogen = utils.confirm({default = false, description = "xmake.lua not found, try generating it"})
         if autogen then
             scangen()

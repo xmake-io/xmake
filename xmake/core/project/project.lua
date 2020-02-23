@@ -293,9 +293,19 @@ function project.interpreter()
     return interp
 end
 
--- get the project file
-function project.file()
+-- get the root project file
+function project.rootfile()
     return os.projectfile()
+end
+
+-- get all loaded project files with subfiles (xmake.lua)
+function project.allfiles()
+    local rcfile = project.rcfile()
+    if rcfile and os.isfile(rcfile) then
+        return table.join(project.interpreter():scriptfiles(), rcfile)
+    else
+        return project.interpreter():scriptfiles()
+    end
 end
 
 -- get the global rcfile: ~/.xmakerc.lua
@@ -352,7 +362,7 @@ function project._load(force, disable_filter)
     local interp = project.interpreter()
 
     -- load script
-    local ok, errors = interp:load(project.file(), {on_load_data = function (data) 
+    local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data) 
             local xmakerc_file = project.rcfile()
             if xmakerc_file and os.isfile(xmakerc_file) then
                 local rcdata = io.readfile(xmakerc_file)
@@ -446,7 +456,7 @@ end
 function project._load_tasks()
  
     -- the project file is not found?
-    if not os.isfile(project.file()) then
+    if not os.isfile(project.rootfile()) then
         return {}, nil
     end
 
@@ -620,7 +630,7 @@ end
 function project._load_options(disable_filter)
 
     -- the project file is not found?
-    if not os.isfile(project.file()) then
+    if not os.isfile(project.rootfile()) then
         return {}, nil
     end
 
@@ -932,7 +942,7 @@ function project.menu()
     -- attempt to load options from the project file
     local options = nil
     local errors = nil
-    if os.isfile(project.file()) then
+    if os.isfile(project.rootfile()) then
         options, errors = project._load_options(true)
     end
 

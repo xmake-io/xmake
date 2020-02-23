@@ -138,9 +138,14 @@ function sandbox_core_project.options()
     return project.options()
 end
 
--- get the project file
-function sandbox_core_project.file()
-    return project.file()
+-- get the root project file
+function sandbox_core_project.rootfile()
+    return project.rootfile()
+end
+
+-- get the all loaded project files
+function sandbox_core_project.allfiles()
+    return project.allfiles()
 end
 
 -- get the project rcfile

@@ -639,6 +639,7 @@ function interpreter.new()
     local instance = {  _PUBLIC = {}
                     ,   _PRIVATE = {    _SCOPES = {}
                                     ,   _MTIMES = {}
+                                    ,   _SCRIPT_FILES = {}
                                     ,   _FILTER = require("base/filter").new()}}
 
     -- inherit the interfaces of interpreter
@@ -711,6 +712,7 @@ function interpreter:load(file, opt)
 
     -- init the current file
     self._PRIVATE._CURFILE = file
+    self._PRIVATE._SCRIPT_FILES = {file}
 
     -- init the root directory
     self._PRIVATE._ROOTDIR = path.directory(file)
@@ -737,43 +739,33 @@ function interpreter:make(scope_kind, remove_repeat, enable_filter)
     return results
 end
 
+-- get all loaded script files (xmake.lua)
+function interpreter:scriptfiles()
+    assert(self and self._PRIVATE)
+    return self._PRIVATE._SCRIPT_FILES
+end
+
 -- get mtimes
 function interpreter:mtimes()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get mtimes
     return self._PRIVATE._MTIMES
 end
 
 -- get filter
 function interpreter:filter()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get it
     return self._PRIVATE._FILTER
 end
 
 -- get root directory
 function interpreter:rootdir()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get it
     return self._PRIVATE._ROOTDIR
 end
 
 -- set root directory
 function interpreter:rootdir_set(rootdir)
-
-    -- check
     assert(self and self._PRIVATE and rootdir)
-
-    -- set it
     self._PRIVATE._ROOTDIR = rootdir
 end
 
@@ -1545,6 +1537,7 @@ function interpreter:api_builtin_includes(...)
 
             -- update the current file
             self._PRIVATE._CURFILE = file
+            table.insert(self._PRIVATE._SCRIPT_FILES, file)
 
             -- load the file script
             local script, errors = loadfile(file)

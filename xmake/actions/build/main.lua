@@ -81,7 +81,7 @@ end
 function main()
 
     -- try building it using third-party buildsystem if xmake.lua not exists
-    if not os.isfile(project.file()) then
+    if not os.isfile(project.rootfile()) then
         return _try_build()
     end
 

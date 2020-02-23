@@ -37,6 +37,14 @@ function _add_header(ninjafile)
     ninjafile:print("")
 end
 
+-- add rules for generator
+function _add_rules_for_generator(ninjafile)
+    ninjafile:print("rule gen")
+    ninjafile:print(" command = xmake project -k ninja")
+    ninjafile:print(" description = regenerating ninja files")
+    ninjafile:print("")
+end
+
 -- add rules for complier (gcc)
 function _add_rules_for_compiler_gcc(ninjafile, sourcekind, program)
     local ccache = find_tool("ccache")
@@ -159,6 +167,9 @@ end
 -- add rules
 function _add_rules(ninjafile)
 
+    -- add rules for generator
+    _add_rules_for_generator(ninjafile)
+
     -- add rules for complier
     _add_rules_for_compiler(ninjafile)
 
@@ -219,11 +230,25 @@ function _add_build_for_target(ninjafile, target)
     end
 end
 
+-- add build rule for generator
+function _add_build_for_generator(ninjafile)
+    ninjafile:print("# build build.ninja")
+    ninjafile:print("build build.ninja: gen $")
+    local allfiles = project.allfiles()
+    for idx, projectfile in ipairs(allfiles) do
+        ninjafile:print("  %s %s", os.args(path.relative(path.absolute(projectfile))), idx < #allfiles and "$" or "")
+    end
+    ninjafile:print("")
+end
+
 -- add build rule for targets
 function _add_build_for_targets(ninjafile)
 
     -- begin
     ninjafile:print("# build targets\n")
+
+    -- add build rule for generator
+    _add_build_for_generator(ninjafile)
 
     -- TODO
     -- disable precompiled header first

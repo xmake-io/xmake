@@ -36,7 +36,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_lib_detect_cache._instance()
     
     -- get it
-    local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(utils.ifelse(os.isfile(project.file()), "local.detect", "memory.detect"))
+    local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(utils.ifelse(os.isfile(project.rootfile()), "local.detect", "memory.detect"))
     sandbox_lib_detect_cache._INSTANCE = detectcache
     return detectcache
 end

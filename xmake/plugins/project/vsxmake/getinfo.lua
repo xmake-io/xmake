@@ -270,8 +270,8 @@ function main(outputdir, vsinfo)
     vsinfo.solution_dir = path.absolute(path.join(outputdir, "vsxmake" .. vsinfo.vstudio_version))
     vsinfo.programdir = _make_dirs(xmake.programdir())
     vsinfo.projectdir = project.directory()
-    vsinfo.sln_projectfile = path.relative(project.file(), vsinfo.solution_dir)
-    local projectfile = path.filename(project.file())
+    vsinfo.sln_projectfile = path.relative(project.rootfile(), vsinfo.solution_dir)
+    local projectfile = path.filename(project.rootfile())
     vsinfo.slnfile = path.filename(project.directory())
     -- write only if not default
     if projectfile ~= "xmake.lua" then
