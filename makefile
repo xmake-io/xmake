@@ -6,7 +6,7 @@ verbose 	:=
 #verbose 	:=-v
 
 # prefix
-ifeq ($(prefix),) # compatible with brew script (make install prefix=xxx)
+ifeq ($(prefix),) # compatible with brew script (make install prefix=xxx DESTDIR=/xxx)
 ifeq ($(PREFIX),)
 prefix 		:=$(if $(findstring /usr/local/bin,$(PATH)),/usr/local,/usr)
 else
@@ -75,23 +75,25 @@ ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
 
-prefix_bindir 		:=$(prefix)/bin
-prefix_sharedir 	:=$(prefix)/share
-xmake_dir_install   :=$(prefix_sharedir)/xmake
+DESTDIR 		    :=$(if $(DESTDIR),$(DESTDIR),$(prefix))
+xmake_dir_install   :=$(DESTDIR)/share/xmake
+xmake_dir_install2  :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
 # we need load msys-2.0.dll or cygwin1.dll on bin directory
-xmake_core_install  :=$(prefix_bindir)/xmake.exe
+xmake_core_install  :=$(DESTDIR)/bin/xmake.exe
+xmake_core_install2 :=$(prefix)/bin/xmake.exe
 else
 xmake_core_install  :=$(xmake_dir_install)/xmake
+xmake_core_install2 :=$(xmake_dir_install2)/xmake
 endif
 xmake_loader        :=$(TMP_DIR)/xmake_loader
-xmake_loader_install:=$(prefix_bindir)/xmake
+xmake_loader_install:=$(DESTDIR)/bin/xmake
 
 tip:
 	@echo 'Usage: '
 	@echo '    $ make build'
-	@echo '    $ sudo make install [prefix=/usr/local]'
+	@echo '    $ sudo make install [prefix=/usr/local] [DESTDIR=/xxx]'
 
 build:
 	@echo compiling xmake-core ...
@@ -101,15 +103,14 @@ build:
 	@$(MAKE) -C core --no-print-directory
 
 install:
-	@echo installing to $(prefix) ...
+	@echo installing to $(DESTDIR) ...
 	@echo plat: $(PLAT)
 	@echo arch: $(ARCH)
 	@# create the xmake install directory
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@if [ ! -d $(xmake_dir_install) ]; then mkdir -p $(xmake_dir_install); fi
-	@# ensure prefix directory exists for PKGBUILD/pkg
-	@if [ ! -d $(prefix_bindir) ]; then mkdir -p $(prefix_bindir); fi
-	@if [ ! -d $(prefix_sharedir) ]; then mkdir -p $(prefix_sharedir); fi
+	@# ensure bin directory exists for PKGBUILD/pkg
+	@if [ ! -d $(DESTDIR)/bin ]; then mkdir -p $(DESTDIR)/bin; fi
 	@# install the xmake core file
 	@cp $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
@@ -117,10 +118,9 @@ install:
 	@cp -r xmake/* $(xmake_dir_install)
 	@# make the xmake loader
 	@echo '#!/bin/bash' > $(xmake_loader)
-	@echo 'export XMAKE_PROGRAM_DIR=$(xmake_dir_install)' >> $(xmake_loader)
-	@echo '$(xmake_core_install) $(verbose) "$$@"' >> $(xmake_loader)
+	@echo 'export XMAKE_PROGRAM_DIR=$(xmake_dir_install2)' >> $(xmake_loader)
+	@echo '$(xmake_core_install2) $(verbose) "$$@"' >> $(xmake_loader)
 	@# install the xmake loader
-	@if [ ! -d $(prefix)/bin ]; then mkdir -p $(prefix)/bin; fi
 	@mv $(xmake_loader) $(xmake_loader_install)
 	@chmod 777 $(xmake_loader_install)
 	@# remove xmake.out
@@ -129,7 +129,7 @@ install:
 	@echo ok!
 
 uninstall:
-	@echo uninstalling from $(prefix) ...
+	@echo uninstalling from $(DESTDIR) ...
 	@if [ -f $(xmake_loader_install) ]; then rm $(xmake_loader_install); fi
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@echo ok!
