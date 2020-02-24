@@ -75,16 +75,18 @@ ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
 
-xmake_dir_install   :=$(prefix)/share/xmake
+prefix_bindir 		:=$(prefix)/bin
+prefix_sharedir 	:=$(prefix)/share
+xmake_dir_install   :=$(prefix_sharedir)/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
 # we need load msys-2.0.dll or cygwin1.dll on bin directory
-xmake_core_install  :=$(prefix)/bin/xmake.exe
+xmake_core_install  :=$(prefix_bindir)/xmake.exe
 else
 xmake_core_install  :=$(xmake_dir_install)/xmake
 endif
 xmake_loader        :=$(TMP_DIR)/xmake_loader
-xmake_loader_install:=$(prefix)/bin/xmake
+xmake_loader_install:=$(prefix_bindir)/xmake
 
 tip:
 	@echo 'Usage: '
@@ -105,6 +107,9 @@ install:
 	@# create the xmake install directory
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@if [ ! -d $(xmake_dir_install) ]; then mkdir -p $(xmake_dir_install); fi
+	@# ensure prefix directory exists for PKGBUILD/pkg
+	@if [ ! -d $(prefix_bindir) ]; then mkdir -p $(prefix_bindir); fi
+	@if [ ! -d $(prefix_sharedir) ]; then mkdir -p $(prefix_sharedir); fi
 	@# install the xmake core file
 	@cp $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
