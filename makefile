@@ -111,9 +111,6 @@ install:
 	@if [ ! -d $(xmake_dir_install) ]; then mkdir -p $(xmake_dir_install); fi
 	@# ensure bin directory exists for PKGBUILD/pkg
 	@if [ ! -d $(destdir)/bin ]; then mkdir -p $(destdir)/bin; fi
-	@# install the xmake core file
-	@cp $(xmake_core) $(xmake_core_install)
-	@chmod 777 $(xmake_core_install)
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
 	@# make the xmake loader
@@ -123,6 +120,9 @@ install:
 	@# install the xmake loader
 	@mv $(xmake_loader) $(xmake_loader_install)
 	@chmod 777 $(xmake_loader_install)
+	@# install the xmake core file
+	@cp $(xmake_core) $(xmake_core_install)
+	@chmod 777 $(xmake_core_install)
 	@# remove xmake.out
 	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi
 	@# ok
