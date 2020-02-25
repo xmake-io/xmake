@@ -81,8 +81,9 @@ xmake_dir_install2  :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
 # we need load msys-2.0.dll or cygwin1.dll on bin directory
-xmake_core_install  :=$(destdir)/bin/xmake.exe
-xmake_core_install2 :=$(prefix)/bin/xmake.exe
+# and we use the xmake_core.exe, because xmake script and exe are in same directory
+xmake_core_install  :=$(destdir)/bin/xmake_core.exe
+xmake_core_install2 :=$(prefix)/bin/xmake_core.exe
 else
 xmake_core_install  :=$(xmake_dir_install)/xmake
 xmake_core_install2 :=$(xmake_dir_install2)/xmake
