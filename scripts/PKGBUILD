@@ -3,7 +3,7 @@
 
 pkgname=xmake
 pkgver=2.3.1
-pkgrel=5
+pkgrel=6
 pkgdesc="A make-like build utility based on Lua"
 arch=('i686' 'x86_64')
 url="https://github.com/xmake-io/xmake"
@@ -12,7 +12,7 @@ makedepends=()
 source=("$pkgname.tar.gz::https://github.com/xmake-io/xmake/releases/download/v${pkgver}/xmake-v${pkgver}.tar.gz")
 # enable mirror in next release
 # source=("$pkgname.tar.gz::https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@${pkgver}/xmake-v${pkgver}.tar.gz") 
-sha256sums=('b2e46d9b4dd48fb70d32a314ca4ba12d42b0b294f5e2179c5c09c56f9c52933b')
+sha256sums=('e6e2d3b6679ae6fa2663125d3b0d927ffe811e9d8da88b97209bc508f35df6d7')
 
 build() {
     cd "$srcdir"
