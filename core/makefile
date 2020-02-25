@@ -158,7 +158,6 @@ PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
 ifeq ($(ARCH),)
-
 ifneq ($(MSYSTEM_CARCH),)
 MSYSARCH 	:= $(MSYSTEM_CARCH)
 else
@@ -169,9 +168,6 @@ ARCH 		:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(ARCH))
 ARCH 		:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring linux,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH))
-ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
-ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
 ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
 
@@ -183,8 +179,10 @@ ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
 endif
-
 endif
+ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
 # debug
 DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)
