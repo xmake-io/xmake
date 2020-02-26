@@ -55,7 +55,8 @@ ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
 endif
 endif
-ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring any,$(ARCH)),i386,$(ARCH))  # from msys/PKGBUILD
+ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
 ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
 ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
