@@ -487,7 +487,6 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_t* machine, tb_char
         tb_char_t data[TB_PATH_MAXN] = {0};
         if (tb_environment_first("XMAKE_PROGRAM_DIR", data, sizeof(data)) && tb_path_absolute(data, path, maxn))
         {
-            // ok
             ok = tb_true;
             break;
         }
@@ -495,19 +494,25 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_t* machine, tb_char
         // get it from program file path
         if (programfile)
         {
-            tb_size_t size = tb_strlcpy(data, programfile, sizeof(data));
-            if (size < sizeof(data))
+            // get the root directory
+            tb_char_t data[TB_PATH_MAXN];
+            tb_char_t const* rootdir = tb_path_directory(programfile, data, sizeof(data));
+            tb_assert_and_check_break(rootdir);
+
+            // find the program (lua) directory
+            tb_size_t i;
+            tb_file_info_t info;
+            tb_char_t scriptpath[TB_PATH_MAXN];
+            tb_char_t const* subdirs[] = {"", "../share/xmake"};
+            for (i = 0; i < tb_arrayn(subdirs); i++)
             {
-                // get the directory
-                while (size-- > 0)
+                // get program directory
+                if (tb_path_absolute_to(rootdir, subdirs[i], path, maxn) &&
+                    tb_path_absolute_to(path, "core/_xmake_main.lua", scriptpath, sizeof(scriptpath)) &&
+                    tb_file_info(scriptpath, &info) && info.type == TB_FILE_TYPE_FILE)
                 {
-                    if (data[size] == '\\' || data[size] == '/')
-                    {
-                        data[size] = '\0';
-                        tb_strlcpy(path, data, maxn);
-                        ok = tb_true;
-                        break;
-                    }
+                    ok = tb_true;
+                    break;
                 }
             }
         }

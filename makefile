@@ -81,19 +81,12 @@ endif
 
 destdir 		    :=$(if $(DESTDIR),$(DESTDIR)/$(prefix),$(prefix))
 xmake_dir_install   :=$(destdir)/share/xmake
-xmake_dir_install2  :=$(prefix)/share/xmake
 xmake_core          :=./core/src/demo/demo.b
 ifdef iswin
-# we need load msys-2.0.dll or cygwin1.dll on bin directory
-# and we use the xmake_core.exe, because xmake script and exe are in same directory
-xmake_core_install  :=$(destdir)/bin/xmake_core.exe
-xmake_core_install2 :=$(prefix)/bin/xmake_core.exe
+xmake_core_install  :=$(destdir)/bin/xmake.exe
 else
-xmake_core_install  :=$(xmake_dir_install)/xmake
-xmake_core_install2 :=$(xmake_dir_install2)/xmake
+xmake_core_install  :=$(destdir)/bin/xmake
 endif
-xmake_loader        :=$(TMP_DIR)/xmake_loader
-xmake_loader_install:=$(destdir)/bin/xmake
 
 tip:
 	@echo 'Usage: '
@@ -118,13 +111,6 @@ install:
 	@if [ ! -d $(destdir)/bin ]; then mkdir -p $(destdir)/bin; fi
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
-	@# make the xmake loader
-	@echo '#!/bin/bash' > $(xmake_loader)
-	@echo 'export XMAKE_PROGRAM_DIR=$(xmake_dir_install2)' >> $(xmake_loader)
-	@echo '$(xmake_core_install2) $(verbose) "$$@"' >> $(xmake_loader)
-	@# install the xmake loader
-	@mv $(xmake_loader) $(xmake_loader_install)
-	@chmod 777 $(xmake_loader_install)
 	@# install the xmake core file
 	@cp $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
@@ -135,7 +121,6 @@ install:
 
 uninstall:
 	@echo uninstalling from $(destdir) ...
-	@if [ -f $(xmake_loader_install) ]; then rm $(xmake_loader_install); fi
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@echo ok!
 
