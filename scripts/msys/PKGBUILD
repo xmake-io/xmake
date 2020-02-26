@@ -13,14 +13,14 @@ depends=("${MINGW_PACKAGE_PREFIX}-ncurses"
          "${MINGW_PACKAGE_PREFIX}-readline")
 makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/xmake-io/${_realname}/releases/download/v${pkgver}/${_realname}-v${pkgver}.tar.gz")
-sha256sums=('edbd552715ed8d7326b97edfc01f266782aed1ef95a48c34f99b332987b12103')
+sha256sums=('4b1b46233d84259a66bc112d05513feae2507f1b30b4c2a494c4bdf84e5845dd')
 
 build() {
     cd "$srcdir"
-    make build MSYSTEM_CARCH=${arch}
+    make build
 }
 
 package() {
     cd "$srcdir"
-    make install MSYSTEM_CARCH=${arch} DESTDIR="${pkgdir}" prefix="${MINGW_PREFIX}"
+    make install DESTDIR="${pkgdir}" prefix="${MINGW_PREFIX}"
 }
