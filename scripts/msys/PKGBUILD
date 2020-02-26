@@ -1,0 +1,26 @@
+# Maintainer: <waruqi@gmail.com>
+
+_realname=xmake
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=2.3.1
+pkgrel=1
+pkgdesc="A make-like build utility based on Lua (mingw-w64)"
+arch=('any')
+url="https://github.com/xmake-io/xmake"
+license=('Apache')
+depends=("${MINGW_PACKAGE_PREFIX}-ncurses"
+         "${MINGW_PACKAGE_PREFIX}-readline")
+makedepends=("${MINGW_PACKAGE_PREFIX}-gcc")
+source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/xmake-io/${_realname}/releases/download/v${pkgver}/${_realname}-v${pkgver}.tar.gz")
+sha256sums=('edbd552715ed8d7326b97edfc01f266782aed1ef95a48c34f99b332987b12103')
+
+build() {
+    cd "$srcdir"
+    make build MSYSTEM_CARCH=${arch}
+}
+
+package() {
+    cd "$srcdir"
+    make install MSYSTEM_CARCH=${arch} prefix="${pkgdir}" 
+}
