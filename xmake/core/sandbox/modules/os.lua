@@ -36,6 +36,7 @@ local sandbox_os = sandbox_os or {}
 sandbox_os.host         = os.host
 sandbox_os.arch         = os.arch
 sandbox_os.subhost      = os.subhost
+sandbox_os.subarch      = os.subarch
 sandbox_os.syserror     = os.syserror
 sandbox_os.strerror     = os.strerror
 sandbox_os.exit         = os.exit
