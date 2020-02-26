@@ -45,6 +45,10 @@ ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring linux,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
 ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
 ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
+ARCH 		:=$(if $(findstring any,$(ARCH)),i386,$(ARCH))  # from msys/PKGBUILD
+ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
+ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
+ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
 # for arm linux? 
 ifeq ($(PLAT),linux)
@@ -55,10 +59,6 @@ ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
 endif
 endif
-ARCH 		:=$(if $(findstring any,$(ARCH)),i386,$(ARCH))  # from msys/PKGBUILD
-ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
-ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
-ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
 # conditionally map ARCH from amd64 to x86_64 if set from the outside
 #

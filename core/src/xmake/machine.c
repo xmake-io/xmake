@@ -34,6 +34,7 @@
 #   include <io.h>
 #   include <fcntl.h>
 #elif defined(TB_CONFIG_OS_MACOSX)
+#   include <unistd.h>
 #   include <mach-o/dyld.h>
 #elif defined(TB_CONFIG_OS_LINUX)
 #   include <unistd.h>
@@ -494,9 +495,20 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_t* machine, tb_char
         // get it from program file path
         if (programfile)
         {
+            // get real program file path from the symbol link
+#ifndef TB_CONFIG_OS_WINDOWS
+            tb_char_t programpath[TB_PATH_MAXN];
+            tb_long_t size = readlink(programfile, programpath, sizeof(programpath));
+            if (size >= 0 && size < sizeof(programpath))
+                programpath[size] = '\0';
+            else tb_strlcpy(programpath, programfile, sizeof(programpath));
+#else
+            tb_char_t const* programpath = programfile;
+#endif
+
             // get the root directory
             tb_char_t data[TB_PATH_MAXN];
-            tb_char_t const* rootdir = tb_path_directory(programfile, data, sizeof(data));
+            tb_char_t const* rootdir = tb_path_directory(programpath, data, sizeof(data));
             tb_assert_and_check_break(rootdir);
 
             // find the program (lua) directory
