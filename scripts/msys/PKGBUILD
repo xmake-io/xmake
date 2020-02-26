@@ -22,5 +22,5 @@ build() {
 
 package() {
     cd "$srcdir"
-    make install MSYSTEM_CARCH=${arch} prefix="${pkgdir}" 
+    make install MSYSTEM_CARCH=${arch} DESTDIR="${pkgdir}" prefix="${MINGW_PREFIX}"
 }
