@@ -500,7 +500,18 @@ static tb_bool_t xm_machine_get_program_directory(xm_machine_t* machine, tb_char
             tb_char_t programpath[TB_PATH_MAXN];
             tb_long_t size = readlink(programfile, programpath, sizeof(programpath));
             if (size >= 0 && size < sizeof(programpath))
+            {
                 programpath[size] = '\0';
+
+                // soft link to relative path? fix it
+                if (!tb_path_is_absolute(programpath))
+                {
+                    tb_char_t buff[TB_PATH_MAXN];
+                    tb_char_t const* rootdir = tb_path_directory(programfile, buff, sizeof(buff));
+                    if (rootdir && tb_path_absolute_to(rootdir, programpath, path, maxn)) // @note path and programfile are same buffer
+                        tb_strlcpy(programpath, path, maxn);
+                }
+            }
             else tb_strlcpy(programpath, programfile, sizeof(programpath));
 #else
             tb_char_t const* programpath = programfile;
