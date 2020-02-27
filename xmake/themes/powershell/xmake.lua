@@ -19,7 +19,7 @@
 --
 
 -- define theme
-theme("default")
+theme("powershell")
 
     -- the success status 
     set_text("success", "$ok")
