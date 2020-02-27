@@ -2,6 +2,11 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add powershell theme for powershell terminal
+* Add `xmake --dry-run -v` to dry run building target and only show verbose build command.
+
 ## v2.3.1
 
 ### New features
@@ -680,6 +685,11 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加powershell色彩主题用于powershell终端下背景色显示
+* 添加`xmake --dry-run -v`命令去空运行构建，仅仅为了查看详细的构建命令
 
 ## v2.3.1
 

@@ -76,7 +76,9 @@ function _do_build_file(target, sourcefile, opt)
 
     -- compile it 
     dependinfo.files = {}
-    assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+    if not option.get("dry-run") then
+        assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+    end
 
     -- update files and values to the dependent file
     dependinfo.values = depvalues

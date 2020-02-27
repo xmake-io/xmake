@@ -88,7 +88,9 @@ function _do_link_target(target, opt)
     io.flush()
 
     -- link it
-    assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
+    if not option.get("dry-run") then
+        assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
+    end
 
     -- update files and values to the dependent file
     dependinfo.files  = depfiles

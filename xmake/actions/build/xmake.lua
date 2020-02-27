@@ -41,6 +41,7 @@ task("build")
                     {'b', "build",      "k",  nil   , "Build target. This is default building mode and optional."     }
                 ,   {'r', "rebuild",    "k",  nil   , "Rebuild the target."                                           }
                 ,   {'a', "all",        "k",  nil   , "Build all targets."                                            }
+                ,   {nil, "dry-run",    "k",  nil   , "Dry run to build target."                                      }
 
                 ,   {}
                 ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
