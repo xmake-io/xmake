@@ -569,7 +569,7 @@ function option.show_menu(task)
     -- print description
     if taskmenu.description then
         io.print("")
-        io.print(taskmenu.description)
+        io.print(colors.translate(taskmenu.description))
     end
 
     -- print options
@@ -611,7 +611,7 @@ function option.show_main()
     -- print description
     if main.description then
         io.print("")
-        io.print(main.description)
+        io.print(colors.translate(main.description))
     end
 
     -- print tasks
@@ -664,7 +664,7 @@ function option.show_main()
                 local taskline = string.format(narrow and "  %s%s" or "    %s%s",
                     taskinfo.shortname and (taskinfo.shortname .. ", ") or "   ",
                     taskname)
-                table.insert(tablecontent, {taskline, taskinfo.description or ""})
+                table.insert(tablecontent, {taskline, colors.translate(taskinfo.description or "")})
             end
         end
 
@@ -784,7 +784,7 @@ function option.show_options(options, taskname)
                     v = v()
                 end
                 if type(v) == "string" then
-                    table.insert(desp_strs, v)
+                    table.insert(desp_strs, colors.translate(v))
                 elseif type(v) == "table" then
                     table.move(v, 1, #v, #desp_strs + 1, desp_strs)
                 end
