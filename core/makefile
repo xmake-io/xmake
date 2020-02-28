@@ -176,11 +176,16 @@ ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
 # for arm linux? 
 ifeq ($(PLAT),linux)
-ARCHSTR 	:= $(shell uname -m)
+ifneq ($(TERMUX_ARCH),)
+ARCHSTR 	:= $(TERMUX_ARCH) # on termux/ci
+else
+ARCHSTR 	:= $(shell uname -m) # on arm device, e.g. termux app
+endif
 ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
+ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH)) 
 endif
 endif
 
@@ -279,7 +284,11 @@ base_LIBPATH 	:=
 base_LIBNAMES 	:= 
 base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi ) 
 base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) 
+ifneq ($(TERMUX_ARCH),) # on termux/ci?
+base_LIBNAMES 	+= m dl
+else
 base_LIBNAMES 	+= m dl pthread
+endif
 endif
 
 # check jit compiler

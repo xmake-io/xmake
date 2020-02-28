@@ -51,11 +51,16 @@ ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
 # for arm linux? 
 ifeq ($(PLAT),linux)
-ARCHSTR 	:= $(shell uname -m)
+ifneq ($(TERMUX_ARCH),)
+ARCHSTR 	:= $(TERMUX_ARCH) # on termux/ci
+else
+ARCHSTR 	:= $(shell uname -m) # on arm device, e.g. termux app
+endif
 ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
+ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH)) 
 endif
 endif
 

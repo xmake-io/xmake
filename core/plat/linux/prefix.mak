@@ -19,12 +19,12 @@ ASM_SUFFIX			= .S
 PRE_				:= $(if $(BIN),$(BIN)/$(PRE),)
 
 # tool
-CC					= $(PRE_)gcc
-LD					= $(PRE_)gcc
-AR					= $(PRE_)ar
-STRIP				= $(PRE_)strip
-RANLIB				= $(PRE_)ranlib
-AS					= $(CC) 
+CC					:= $(if $(CC),$(CC),$(PRE_)gcc)
+LD					:= $(if $(CC),$(CC),$(PRE_)gcc) # we do not use ld directly
+AR					:= $(if $(AR),$(AR),$(PRE_)ar)
+STRIP				:= $(if $(STRIP),$(STRIP),$(PRE_)strip)
+RANLIB				:= $(if $(RANLIB),$(RANLIB),$(PRE_)ranlib)
+AS					:= $(CC) 
 RM					= rm -f
 RMDIR				= rm -rf
 CP					= cp
@@ -79,7 +79,7 @@ endif
 # cflags: .c files
 CFLAGS_RELEASE		= 
 CFLAGS_DEBUG		= 
-CFLAGS				= \
+CFLAGS				:= $(CFLAGS) \
 					-std=gnu99 \
 					-D_GNU_SOURCE=1 -D_REENTRANT \
 					-fno-math-errno 
@@ -87,12 +87,12 @@ CFLAGS				= \
 # ccflags: .cc/.cpp files
 CCFLAGS_RELEASE		= -fno-rtti
 CCFLAGS_DEBUG		= 
-CCFLAGS				= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
+CCFLAGS				:= $(CXXFLAGS) -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
 
 # ldflags
 LDFLAGS_RELEASE		= 
 LDFLAGS_DEBUG		= -rdynamic 
-LDFLAGS				= $(AHFLAGS) $(LDFLAGS_CHECK)
+LDFLAGS				:= $(LDFLAGS) $(AHFLAGS) $(LDFLAGS_CHECK)
 LDFLAGS-L			= -L
 LDFLAGS-l			= -l
 LDFLAGS-f			=
