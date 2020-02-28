@@ -172,7 +172,8 @@ function _install(sourcedir)
                         raise("the installer(%s) not found!", win_installer_name)
                     end
                 else
-                    os.vrun("./scripts/get.sh __local__")
+                    os.vrun("make build")
+                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile()}):close()
                 end
                 return true
             end,
@@ -198,11 +199,6 @@ function _install(sourcedir)
         install_task()
     else
         runjobs("update/install", install_task, {showtips = true})
-    end
-
-    -- show version
-    if not is_host("windows") then
-        os.exec("xmake --version")
     end
 end
 
