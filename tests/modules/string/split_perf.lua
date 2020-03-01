@@ -23,7 +23,7 @@ function main()
 
     str = "longstr: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
     for i = 0, 100 do
-        str = str .. "123yy[123]+"
+        str = str .. "[123]+"
     end
     _split_perf(str, "1")
     _split_perf(str, "123")

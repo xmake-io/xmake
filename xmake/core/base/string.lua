@@ -72,23 +72,29 @@ end
 -- ("1.2.3.4.5"):split('%.', {limit = 3}) => 1, 2, 3.4.5
 --
 function string:split(delimiter, opt)
-    local result = {}
+    local limit, plain, strict
+    if opt then
+        limit = opt.limit
+        plain = opt.plain
+        strict = opt.strict
+    end
     local start = 1
-    local pos, epos = self:find(delimiter, start, opt and opt.plain)
+    local result = {}
+    local pos, epos = self:find(delimiter, start, plain)
     while pos do
         local substr = self:sub(start, pos - 1)
-        if (#substr > 0) or (opt and opt.strict) then
-            if opt and opt.limit and opt.limit > 0 and #result + 1 >= opt.limit then
+        if (#substr > 0) or strict then
+            if limit and limit > 0 and #result + 1 >= imit then
                 break
             end
             table.insert(result, substr)
         end
         start = epos + 1
-        pos, epos = self:find(delimiter, start, opt and opt.plain) 
+        pos, epos = self:find(delimiter, start, plain) 
     end
     if start <= #self then
         table.insert(result, self:sub(start))
-    elseif opt and opt.strict and (not opt.limit or #result < opt.limit) then
+    elseif strict and (not limit or #result < limit) then
         if start == #self + 1 then
             table.insert(result, "")
         end
