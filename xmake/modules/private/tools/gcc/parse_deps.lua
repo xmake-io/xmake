@@ -45,7 +45,17 @@ function _normailize_dep(dep)
 end
 
 -- parse depsfiles from string
-function from_str(depsdata)
+--
+-- eg.
+-- strcpy.o: src/tbox/libc/string/strcpy.c src/tbox/libc/string/string.h \
+--  src/tbox/libc/string/prefix.h src/tbox/libc/string/../prefix.h \
+--  src/tbox/libc/string/../../prefix.h \
+--  src/tbox/libc/string/../../prefix/prefix.h \
+--  src/tbox/libc/string/../../prefix/config.h \
+--  src/tbox/libc/string/../../prefix/../config.h \
+--  build/iphoneos/x86_64/release/tbox.config.h \
+--
+function main(depsdata)
 
     -- parse results
     local results = hashset.new()
@@ -64,25 +74,4 @@ function from_str(depsdata)
         end
     end
     return results:to_array()
-end
-
--- parse deps file (*.d) 
---
--- eg.
--- strcpy.o: src/tbox/libc/string/strcpy.c src/tbox/libc/string/string.h \
---  src/tbox/libc/string/prefix.h src/tbox/libc/string/../prefix.h \
---  src/tbox/libc/string/../../prefix.h \
---  src/tbox/libc/string/../../prefix/prefix.h \
---  src/tbox/libc/string/../../prefix/config.h \
---  src/tbox/libc/string/../../prefix/../config.h \
---  build/iphoneos/x86_64/release/tbox.config.h \
---
-function main(depsfile)
-
-    -- get deps string
-    local str = io.readfile(depsfile, {continuation = "\\"})
-    if not str or #str == 0 then
-        return {}
-    end
-    return from_str(str)
 end

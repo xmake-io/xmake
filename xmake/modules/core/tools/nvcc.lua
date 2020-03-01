@@ -25,7 +25,6 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
 import("private.tools.ccache")
-import("private.tools.nvcc.parse_deps")
 
 -- init it
 function init(self)

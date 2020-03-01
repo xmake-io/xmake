@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
+import("private.tools.cl.parse_include")
 
 -- init it
 function init(self)
@@ -290,72 +291,6 @@ function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
     end
 end
 
--- contain: "Note: including file: "?
---
--- @note we cannot get better solution to distinguish between `includes` and `error infos`
---
-function _include_note(self, line)
-
-    -- init notes
-    --
-    -- TODO zh-tw, zh-hk, jp, ...
-    --
-    _g.notes = _g.notes or
-    {
-        "Note: including file: "
-    ,   "注意: 包含文件: "
-    }
-
-    -- contain notes?
-    for idx, note in ipairs(_g.notes) do
-
-        -- dump line bytes
-        --[[
-        print(line)
-        line:gsub(".", function (ch) print(string.byte(ch)) end)
-        --]]
-
-        if line:startswith(note) then
-            -- optimization: move this note to head
-            if idx ~= 1 then
-                table.insert(_g.notes, 1, note)
-            end
-            return line:sub(#note):trim()
-        end
-    end
-end
-
--- get include deps
-function _include_deps(self, outdata)
-
-    -- translate it
-    local results = {}
-    local uniques = {}
-    for _, line in ipairs(outdata:split("\n", {plain = true})) do
-
-        -- get includefile
-        local includefile = _include_note(self, line:trim())
-        if includefile then
-
-            -- get the relative
-            includefile = path.relative(includefile, project.directory())
-            includefile = path.absolute(includefile)
-
-            -- save it if belong to the project
-            if includefile:startswith(os.projectdir()) then
-
-                -- insert it and filter repeat
-                includefile = path.relative(includefile, project.directory())
-                if not uniques[includefile] then
-                    table.insert(results, includefile)
-                    uniques[includefile] = true
-                end
-            end
-        end
-    end
-    return results
-end
-
 -- make the compile arguments list for the precompiled header
 function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 
@@ -434,7 +369,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 local results = ""
                 for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
                     line = line:rtrim()
-                    if not _include_note(self, line) then
+                    if not parse_include(line) then
                         results = results .. line .. "\r\n"
                     end
                 end
@@ -471,8 +406,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- generate the dependent includes
     if dependinfo and outdata then
-        dependinfo.files = dependinfo.files or {}
-        table.join2(dependinfo.files, _include_deps(self, outdata))
+        dependinfo.depfiles_cl = outdata
     end
 end
 

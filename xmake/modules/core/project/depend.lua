@@ -18,8 +18,23 @@
 -- @file        depend.lua
 --
 
--- imports
-import("private.tools.gcc.parse_deps")
+-- load depfiles for the given tool style, e.g. gcc, cl, ..
+function _load_depfiles(dependinfo, style)
+
+    -- parse depfiles for gcc
+    local depfiles = dependinfo["depfiles_" .. style]
+    if depfiles then
+        local depfiles = import("private.tools." .. style .. ".parse_deps", {anonymous = true})(depfiles)
+        if depfiles then
+            if dependinfo.files then
+                table.join2(dependinfo.files, depfiles)
+            else
+                dependinfo.files = depfiles
+            end
+        end
+        dependinfo["depfiles_" .. style] = nil
+    end
+end
 
 -- load dependent info from the given file (.d) 
 function load(dependfile)
@@ -28,19 +43,11 @@ function load(dependfile)
         -- may be the depend file has been incomplete when if the compilation process is abnormally interrupted
         local dependinfo = try { function() return io.load(dependfile) end }
         if dependinfo then
-
-            -- parse depfiles for gcc
-            local depfiles_gcc = dependinfo.depfiles_gcc
-            if depfiles_gcc then
-                local depfiles = parse_deps.from_str(depfiles_gcc)
-                if depfiles then
-                    if dependinfo.files then
-                        table.join2(dependinfo.files, depfiles)
-                    else
-                        dependinfo.files = depfiles
-                    end
-                end
-                dependinfo.depfiles_gcc = nil
+            -- attempt to load depfiles from the compilers
+            if is_plat("windows") then
+                _load_depfiles(dependinfo, "cl")
+            else
+                _load_depfiles(dependinfo, "gcc")
             end
             return dependinfo
         end
