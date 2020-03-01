@@ -205,10 +205,8 @@ function os.argw(argv)
     -- match all arguments
     local results = {}
     for _, arg in ipairs(table.wrap(argv)) do
-
-        -- exists wildcards?
-        if arg:find("([%+%-%^%$%*%[%]%%])") then
-            local pathes = os.match(arg, 'a')
+        if arg:find("*", 1, true) then
+            local pathes = os.filedirs(arg)
             if #pathes > 0 then
                 table.join2(results, pathes)
             else
@@ -682,22 +680,13 @@ end
 -- @param program     "clang", "xcrun -sdk macosx clang", "~/dir/test\ xxx/clang"
 --        filename    "clang", "xcrun"", "~/dir/test\ xxx/clang"
 -- @param argv        the arguments
--- @param opt         the options, e.g. {wildcards = false, stdout = filepath/file/pipe, stderr = filepath/file/pipe,
+-- @param opt         the options, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe,
 --                                       envs = {PATH = "xxx;xx", CFLAGS = "xx"}}
 --
 function os.execv(program, argv, opt)
 
     -- init options
     opt = opt or {}
-
-    -- enable wildcards? default enabled
-    local wildcards = opt.wildcards
-    if wildcards == nil then
-        wildcards = true
-    end
-
-    -- translate arguments for wildcards
-    argv = wildcards and os.argw(argv) or argv
 
     -- is not executable program file?
     local filename = program

@@ -109,7 +109,7 @@ rule("wdk.tracewpp")
         os.tryrm(targetfile)
 
         -- generate the *.tmh file
-        os.vrunv(tracewpp, args, {wildcards = false})
+        os.vrunv(tracewpp, args)
 
         -- update files and values to the dependent file
         dependinfo.files  = {sourcefile}

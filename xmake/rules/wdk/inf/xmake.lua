@@ -100,7 +100,7 @@ rule("wdk.inf")
 
         -- update the timestamp
         os.cp(sourcefile, targetfile)
-        os.vrunv(stampinf, args, {wildcards = false})
+        os.vrunv(stampinf, args)
 
         -- update files and values to the dependent file
         dependinfo.files = {sourcefile}
