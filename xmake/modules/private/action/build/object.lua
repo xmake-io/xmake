@@ -71,9 +71,6 @@ function _do_build_file(target, sourcefile, opt)
         print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags}))
     end
 
-    -- flush io buffer to update progress info
-    io.flush()
-
     -- compile it 
     dependinfo.files = {}
     if not option.get("dry-run") then
