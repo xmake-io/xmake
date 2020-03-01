@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.project")
+import("core.base.hashset")
 
 -- a placeholder for spaces in path
 local space_placeholder = "\001"
@@ -57,13 +58,13 @@ end
 function main(depsfile)
 
     -- get deps data
-    local depsdata = io.readfile(depsfile, { continuation = "\\"})
+    local depsdata = io.readfile(depsfile, {continuation = "\\"})
     if not depsdata or #depsdata == 0 then
         return {}
     end
 
     -- parse results
-    local results = {}
+    local results = hashset.new()
     for _, line in ipairs(depsdata:split("\n", {plain = true})) do
         local p = line:find(':', 1, true)
         if p then
@@ -73,10 +74,10 @@ function main(depsfile)
                 includefile = includefile:gsub(space_placeholder, ' ')
                 includefile = _normailize_dep(includefile)
                 if includefile then
-                    table.insert(results, includefile)
+                    results:insert(includefile)
                 end
             end
         end
     end
-    return table.unique(results)
+    return results:to_array()
 end
