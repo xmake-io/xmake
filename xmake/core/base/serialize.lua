@@ -52,12 +52,12 @@ function serialize._makedefault(val, opt)
     return tostring(val)
 end
 
-function serialize._maketable(object, opt, level, pathsegs, reftab)
+function serialize._maketable(obj, opt, level, pathsegs, reftab)
 
     level = level or 0
     reftab = reftab or {}
     pathsegs = pathsegs or {}
-    reftab[object] = table.copy(pathsegs)
+    reftab[obj] = table.copy(pathsegs)
 
     -- serialize child items
     local childlevel = level + 1
@@ -65,7 +65,7 @@ function serialize._maketable(object, opt, level, pathsegs, reftab)
     local numidxcount = 0
     local isarr = true
     local maxn = 0
-    for k, v in pairs(object) do
+    for k, v in pairs(obj) do
         -- check key
         if type(k) == "number" then
             -- only checks when it may be an array
@@ -230,19 +230,19 @@ function serialize._resolveref(root, fenv, ...)
 end
 
 -- make string with the level
-function serialize._make(object, opt)
+function serialize._make(obj, opt)
 
     -- call make* by type
-    if type(object) == "string" then
-        return serialize._makestring(object, opt)
-    elseif type(object) == "boolean" or type(object) == "nil" or type(object) == "number" then
-        return serialize._makedefault(object, opt)
-    elseif type(object) == "table" then
-        return serialize._maketable(object, opt)
-    elseif type(object) == "function" then
-        return serialize._makefunction(object, opt)
+    if type(obj) == "string" then
+        return serialize._makestring(obj, opt)
+    elseif type(obj) == "boolean" or type(obj) == "nil" or type(obj) == "number" then
+        return serialize._makedefault(obj, opt)
+    elseif type(obj) == "table" then
+        return serialize._maketable(obj, opt)
+    elseif type(obj) == "function" then
+        return serialize._makefunction(obj, opt)
     else
-        return nil, string.format("cannot serialize %s: <%s>", type(object), object)
+        return nil, string.format("cannot serialize %s: <%s>", type(obj), obj)
     end
 end
 
@@ -275,13 +275,13 @@ function serialize._generateindentstr(indent)
     end
 end
 
--- serialize to string from the given object
+-- serialize to string from the given obj
 --
 -- @param opt           serialize options
 --
 -- @return              string, errors
 --
-function serialize.save(object, opt)
+function serialize.save(obj, opt)
 
     -- init options
     if opt == true then
@@ -301,7 +301,7 @@ function serialize.save(object, opt)
     opt.indentstr = indent
 
     -- make string
-    local ok, result, errors = pcall(serialize._make, object, opt)
+    local ok, result, errors = pcall(serialize._make, obj, opt)
     if not ok then
         errors = "cannot serialize: " .. result
     end
@@ -356,17 +356,17 @@ end
 -- after deserialization by load()
 -- use this routine to call all stubs in deserialzed data
 --
--- @param       object   object to search stubs
---              root     root object
+-- @param       obj   obj to search stubs
+--              root     root obj
 --              fenv     fenv of deserialzer caller
 --              pathseg  path key for current item
-function serialize._resolvestub(object, root, fenv, pathseg)
-    if type(object) ~= "table" then
-        return object
+function serialize._resolvestub(obj, root, fenv, pathseg)
+    if type(obj) ~= "table" then
+        return obj
     end
 
-    if object.isstub == stub.isstub then
-        local ok, result_or_errors, errors = pcall(object, root, fenv)
+    if obj.isstub == stub.isstub then
+        local ok, result_or_errors, errors = pcall(obj, root, fenv)
         if ok and errors == nil then
             return result_or_errors
         end
@@ -384,17 +384,17 @@ function serialize._resolvestub(object, root, fenv, pathseg)
         end
         -- make error message
         local errmsg = (ok and errors) or result_or_errors or "unspecified error"
-        return nil, string.format("failed to resolve stub '%s' at %s: %s", object.name, table.concat(pathsegs, "/"), errmsg)
+        return nil, string.format("failed to resolve stub '%s' at %s: %s", obj.name, table.concat(pathsegs, "/"), errmsg)
     end
 
-    for k, v in pairs(object) do
+    for k, v in pairs(obj) do
         local result, errors = serialize._resolvestub(v, root, fenv, k)
         if errors ~= nil then
             return nil, errors
         end
-        object[k] = result
+        obj[k] = result
     end
-    return object
+    return obj
 end
 
 -- create a env for deserialze load() call
@@ -433,17 +433,17 @@ function serialize._load(str)
     local env = serialize._createenv()
     local script, errors = load(str, binary and "=(b)" or "=(t)", binary and "b" or "t", env)
     if script then
-        -- load object
-        local ok, object = pcall(script)
+        -- load obj
+        local ok, obj = pcall(script)
         if ok then
-            result = object
+            result = obj
             if env.has_stub then
                 local fenv = debug.getfenv(debug.getinfo(3, "f").func)
                 result, errors = serialize._resolvestub(result, result, fenv, "<root>")
             end
         else
             -- error
-            errors = tostring(object)
+            errors = tostring(obj)
         end
     end
 
@@ -463,11 +463,11 @@ function serialize._load(str)
     return result
 end
 
--- deserialize string to object
+-- deserialize string to obj
 --
 -- @param str           the serialized string
 --
--- @return              object, errors
+-- @return              obj, errors
 --
 function serialize.load(str)
 
