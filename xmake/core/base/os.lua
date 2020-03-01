@@ -199,26 +199,12 @@ function os._is_arch(arch, ...)
     end
 end
 
--- translate arguments for wildcard
-function os.argw(argv)
-
-    -- match all arguments
-    local results = {}
-    for _, arg in ipairs(table.wrap(argv)) do
-        if arg:find("*", 1, true) then
-            local pathes = os.filedirs(arg)
-            if #pathes > 0 then
-                table.join2(results, pathes)
-            else
-                table.insert(results, arg)
-            end
-        else
-            table.insert(results, arg)
-        end
+-- match wildcard files
+function os._match_wildcard_pathes(v)
+    if v:find("*", 1, true) then
+        return (os.filedirs(v))
     end
-
-    -- ok?
-    return results
+    return v
 end
 
 -- make string from arguments list
@@ -380,87 +366,81 @@ function os.filedirs(pattern, callback)
 end
 
 -- copy files or directories
-function os.cp(...)
+function os.cp(srcpath, dstpath)
 
     -- check arguments
-    local args = {...}
-    if #args < 2 then
-        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    if not srcpath or not dstpath then
+        return false, string.format("invalid arguments!")
     end
-
-    -- get source pathes
-    local srcpathes = table.slice(args, 1, #args - 1)
-
-    -- get destinate path
-    local dstpath = args[#args]
 
     -- copy files or directories
-    for _, srcpath in ipairs(os.argw(srcpathes)) do
-        local ok, errors = os._cp(srcpath, dstpath)
-        if not ok then
-            return false, errors
+    local srcpathes = os._match_wildcard_pathes(srcpath)
+    if type(srcpathes) == "string" then
+        return os._cp(srcpathes, dstpath)
+    else
+        for _, _srcpath in ipairs(srcpathes) do
+            local ok, errors = os._cp(_srcpath, dstpath)
+            if not ok then
+                return false, errors
+            end
         end
     end
-
-    -- ok
     return true
 end
 
 -- move files or directories
-function os.mv(...)
+function os.mv(srcpath, dstpath)
 
     -- check arguments
-    local args = {...}
-    if #args < 2 then
-        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    if not srcpath or not dstpath then
+        return false, string.format("invalid arguments!")
     end
 
-    -- get source pathes
-    local srcpathes = table.slice(args, 1, #args - 1)
-
-    -- get destinate path
-    local dstpath = args[#args]
-
-    -- move files or directories
-    for _, srcpath in ipairs(os.argw(srcpathes)) do
-        local ok, errors = os._mv(srcpath, dstpath)
-        if not ok then
-            return false, errors
+    -- copy files or directories
+    local srcpathes = os._match_wildcard_pathes(srcpath)
+    if type(srcpathes) == "string" then
+        return os._mv(srcpathes, dstpath)
+    else
+        for _, _srcpath in ipairs(srcpathes) do
+            local ok, errors = os._mv(_srcpath, dstpath)
+            if not ok then
+                return false, errors
+            end
         end
     end
-
-    -- ok
     return true
 end
 
 -- remove files or directories
-function os.rm(...)
+function os.rm(filepath)
 
     -- check arguments
-    local args = {...}
-    if #args < 1 then
-        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    if not filepath then
+        return false, string.format("invalid arguments!")
     end
 
-    -- remove directories
-    for _, filedir in ipairs(os.argw(args)) do
-        local ok, errors = os._rm(filedir)
-        if not ok then
-            return false, errors
+    -- remove file or directories
+    local filepathes = os._match_wildcard_pathes(filepath)
+    if type(filepathes) == "string" then
+        return os._rm(filepathes)
+    else
+        for _, _filepath in ipairs(filepathes) do
+            local ok, errors = os._rm(_filepath)
+            if not ok then
+                return false, errors
+            end
         end
     end
-
-    -- ok
     return true
 end
 
 -- link file or directory to the new symfile
-function os.ln(filedir, symfile)
+function os.ln(srcpath, dstpath)
     if os.host() == "windows" then
         return false, string.format("symlink is not supported!")
     end
-    if not os.link(filedir, symfile) then
-        return false, string.format("cannot link %s to %s, error: %s", filedir, symfile, os.strerror())
+    if not os.link(srcpath, dstpath) then
+        return false, string.format("cannot link %s to %s, error: %s", srcpath, dstpath, os.strerror())
     end
     return true
 end
@@ -512,42 +492,38 @@ function os.cd(dir)
 end
 
 -- create directories
-function os.mkdir(...)
+function os.mkdir(dir)
 
     -- check arguments
-    local args = {...}
-    if #args < 1 then
-        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    if not dir then
+        return false, string.format("invalid arguments!")
     end
 
     -- create directories
-    for _, dir in ipairs(os.argw(args)) do
-        if not os._mkdir(dir) then
-            return false, string.format("cannot create directory: %s, error: %s", dir, os.strerror())
+    local dirs = table.wrap(os._match_wildcard_pathes(dir))
+    for _, _dir in ipairs(dirs) do
+        if not os._mkdir(_dir) then
+            return false, string.format("cannot create directory: %s, error: %s", _dir, os.strerror())
         end
     end
-
-    -- ok
     return true
 end
 
 -- remove directories
-function os.rmdir(...)
+function os.rmdir(dir)
 
     -- check arguments
-    local args = {...}
-    if #args < 1 then
-        return false, string.format("invalid arguments: %s", table.concat(args, ' '))
+    if not dir then
+        return false, string.format("invalid arguments!")
     end
 
-    -- create directories
-    for _, dir in ipairs(os.argw(args)) do
-        if not os._rmdir(dir) then
-            return false, string.format("remove directory: %s failed!", dir)
+    -- remove directories
+    local dirs = table.wrap(os._match_wildcard_pathes(dir))
+    for _, _dir in ipairs(dirs) do
+        if not os._rmdir(_dir) then
+            return false, string.format("cannot remove directory: %s, error: %s", _dir, os.strerror())
         end
     end
-
-    -- ok
     return true
 end
 

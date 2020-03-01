@@ -45,7 +45,6 @@ sandbox_os.date         = os.date
 sandbox_os.time         = os.time
 sandbox_os.args         = os.args
 sandbox_os.argv         = os.argv
-sandbox_os.argw         = os.argw
 sandbox_os.mtime        = os.mtime
 sandbox_os.raise        = os.raise
 sandbox_os.fscase       = os.fscase
@@ -78,142 +77,93 @@ sandbox_os.SYSERR_NOT_PERM    = os.SYSERR_NOT_PERM
 sandbox_os.SYSERR_NOT_FILEDIR = os.SYSERR_NOT_FILEDIR
 
 -- copy file or directory
-function sandbox_os.cp(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    local ok, errors = os.cp(unpack(args))
+function sandbox_os.cp(srcpath, dstpath)
+    assert(srcpath and dstpath)
+    local ok, errors = os.cp(vformat(srcpath), vformat(dstpath))
     if not ok then
         os.raise(errors)
     end
 end
 
 -- move file or directory
-function sandbox_os.mv(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    local ok, errors = os.mv(unpack(args))
+function sandbox_os.mv(srcpath, dstpath)
+    assert(srcpath and dstpath)
+    local ok, errors = os.mv(vformat(srcpath), vformat(dstpath))
     if not ok then
         os.raise(errors)
     end
 end
 
 -- remove files or directories
-function sandbox_os.rm(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- remove it
-    local ok, errors = os.rm(unpack(args))
+function sandbox_os.rm(filepath)
+    assert(filepath)
+    local ok, errors = os.rm(vformat(filepath))
     if not ok then
         os.raise(errors)
     end
 end
 
 -- link file or directory to the new symfile
-function sandbox_os.ln(filedir, symfile)
-    local ok, errors = os.ln(filedir, symfile)
+function sandbox_os.ln(srcpath, dstpath)
+    assert(srcpath and dstpath)
+    local ok, errors = os.ln(vformat(srcpath), vformat(dstpath))
     if not ok then
         os.raise(errors)
     end
 end
 
 -- copy file or directory with the verbose info
-function sandbox_os.vcp(...)
+function sandbox_os.vcp(srcpath, dstpath)
+    assert(srcpath and dstpath)
     if option.get("verbose") then
-        local srcfile, dstfile = ...
-        if srcfile and dstfile then
-            utils.cprint("${dim}> copy %s to %s ..", srcfile, dstfile)
-        end
+        utils.cprint("${dim}> copy %s to %s ..", srcpath, dstpath)
     end
-    return sandbox_os.cp(...)
+    return sandbox_os.cp(srcpath, dstpath)
 end 
 
 -- move file or directory with the verbose info
-function sandbox_os.vmv(...)
+function sandbox_os.vmv(srcpath, dstpath)
+    assert(srcpath and dstpath)
     if option.get("verbose") then
-        local srcfile, dstfile = ...
-        if srcfile and dstfile then
-            utils.cprint("${dim}> move %s to %s ..", srcfile, dstfile)
-        end
+        utils.cprint("${dim}> move %s to %s ..", srcpath, dstpath)
     end
-    return sandbox_os.mv(...)
+    return sandbox_os.mv(srcpath, dstpath)
 end 
 
 -- remove file or directory with the verbose info
-function sandbox_os.vrm(...)
+function sandbox_os.vrm(filepath)
+    assert(filepath)
     if option.get("verbose") then
-        local file = ...
-        if file then
-            utils.cprint("${dim}> remove %s ..", file)
-        end
+        utils.cprint("${dim}> remove %s", filepath)
     end
-    return sandbox_os.rm(...)
+    return sandbox_os.rm(filepath)
 end 
 
 -- link file or directory with the verbose info
-function sandbox_os.vln(...)
+function sandbox_os.vln(srcpath, dstpath)
+    assert(srcpath and dstpath)
     if option.get("verbose") then
-        local srcfile, dstfile = ...
-        if srcfile and dstfile then
-            utils.cprint("${dim}> link %s to %s ..", srcfile, dstfile)
-        end
+        utils.cprint("${dim}> link %s to %s", srcpath, dstpath)
     end
-    return sandbox_os.ln(...)
+    return sandbox_os.ln(srcpath, dstpath)
 end 
 
 -- try to copy file or directory
-function sandbox_os.trycp(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    return os.cp(unpack(args))
+function sandbox_os.trycp(srcpath, dstpath)
+    assert(srcpath and dstpath)
+    return os.cp(vformat(srcpath), vformat(dstpath))
 end
 
 -- try to move file or directory
-function sandbox_os.trymv(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    return os.mv(unpack(args))
+function sandbox_os.trymv(srcpath, dstpath)
+    assert(srcpath and dstpath)
+    return os.mv(vformat(srcpath), vformat(dstpath))
 end
 
 -- try to remove files or directories
-function sandbox_os.tryrm(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- remove it
-    return os.rm(unpack(args))
+function sandbox_os.tryrm(filepath)
+    assert(filepath)
+    return os.rm(vformat(filepath))
 end
 
 -- change to directory
@@ -236,32 +186,18 @@ function sandbox_os.cd(dir)
 end
 
 -- create directories
-function sandbox_os.mkdir(...)
-   
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    local ok, errors = os.mkdir(unpack(args))
+function sandbox_os.mkdir(dir)
+    assert(dir) 
+    local ok, errors = os.mkdir(vformat(dir))
     if not ok then
         os.raise(errors)
     end
 end
 
 -- remove directories
-function sandbox_os.rmdir(...)
-    
-    -- format arguments
-    local args = {}
-    for _, arg in ipairs({...}) do
-        table.insert(args, vformat(arg))
-    end
-
-    -- done
-    local ok, errors = os.rmdir(unpack(args))
+function sandbox_os.rmdir(dir)
+    assert(dir)
+    local ok, errors = os.rmdir(vformat(dir))
     if not ok then
         os.raise(errors)
     end

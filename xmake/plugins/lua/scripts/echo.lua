@@ -20,9 +20,7 @@
 
 -- main
 function main(...)
-
-    -- echo all
-    for _, v in ipairs(os.argw{...}) do
+    for _, v in ipairs(table.pack(...)) do
         printf("%s ", v)
     end
     print("")
