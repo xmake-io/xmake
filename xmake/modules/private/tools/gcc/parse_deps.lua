@@ -46,6 +46,8 @@ end
 
 -- parse depsfiles from string
 --
+-- parse_deps(io.readfile(depfile, {continuation = "\\"}))
+--
 -- eg.
 -- strcpy.o: src/tbox/libc/string/strcpy.c src/tbox/libc/string/string.h \
 --  src/tbox/libc/string/prefix.h src/tbox/libc/string/../prefix.h \
