@@ -69,8 +69,8 @@ function main(depsfile)
         if p then
             line = line:sub(p + 1)
             line = line:gsub("\\ ", space_placeholder)
-            for _, includefile in ipairs(line:split("%s")) do
-                includefile = includefile:gsub(space_placeholder, " ")
+            for _, includefile in ipairs(line:split(' ', {plain = true})) do
+                includefile = includefile:gsub(space_placeholder, ' ')
                 includefile = _normailize_dep(includefile)
                 if includefile then
                     table.insert(results, includefile)
