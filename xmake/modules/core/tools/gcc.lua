@@ -25,7 +25,6 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
-import("private.tools.gcc.parse_deps")
 
 -- init it
 function init(self)
@@ -493,9 +492,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
                     if dependinfo then
-                        local files = dependinfo.files or {}
-                        table.join2(files, parse_deps(depfile))
-                        dependinfo.files = table.unique(files)
+                        dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
                     end
 
                     -- remove the temporary dependent file

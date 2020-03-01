@@ -18,11 +18,32 @@
 -- @file        depend.lua
 --
 
+-- imports
+import("private.tools.gcc.parse_deps")
+
 -- load dependent info from the given file (.d) 
 function load(dependfile)
     if os.isfile(dependfile) then
+
         -- may be the depend file has been incomplete when if the compilation process is abnormally interrupted
-        return try { function() return io.load(dependfile) end }
+        local dependinfo = try { function() return io.load(dependfile) end }
+        if dependinfo then
+
+            -- parse depfiles for gcc
+            local depfiles_gcc = dependinfo.depfiles_gcc
+            if depfiles_gcc then
+                local depfiles = parse_deps.from_str(depfiles_gcc)
+                if depfiles then
+                    if dependinfo.files then
+                        table.join2(dependinfo.files, depfiles)
+                    else
+                        dependinfo.files = depfiles
+                    end
+                end
+                dependinfo.depfiles_gcc = nil
+            end
+            return dependinfo
+        end
     end
 end
 
