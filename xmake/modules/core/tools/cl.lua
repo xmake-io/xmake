@@ -344,8 +344,8 @@ function _include_deps(self, outdata)
             -- save it if belong to the project
             if includefile:startswith(os.projectdir()) then
 
-                includefile = path.relative(includefile, project.directory())
                 -- insert it and filter repeat
+                includefile = path.relative(includefile, project.directory())
                 if not uniques[includefile] then
                     table.insert(results, includefile)
                     uniques[includefile] = true
