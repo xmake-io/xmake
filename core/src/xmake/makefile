@@ -95,6 +95,7 @@ xmake_C_FILES 			+= \
 						hash/uuid4 \
 						hash/sha256 \
 						string/trim \
+						string/split \
 						string/convert \
 						string/endswith \
 						string/startswith \

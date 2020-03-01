@@ -1,11 +1,11 @@
 
-function _split_perf(str, pattern, opt)
+function _split_perf(str, delimiter, opt)
     local dt = os.mclock()
     for i = 0, 1000000 do
-        str:split(pattern, opt)
+        str:split(delimiter, opt)
     end
     dt = os.mclock() - dt
-    print("split(%s .., %s, %s): %d ms", str:sub(1, 16), pattern, string.serialize(opt or {}, {strip = true, indent = false}), dt)
+    print("split(%s .., %s, %s): %d ms", str:sub(1, 16), delimiter, string.serialize(opt or {}, {strip = true, indent = false}), dt)
 end
 
 function main()

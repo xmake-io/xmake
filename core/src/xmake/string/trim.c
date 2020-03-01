@@ -22,7 +22,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "trim"
+#define TB_TRACE_MODULE_NAME                "string_trim"
 #define TB_TRACE_MODULE_DEBUG               (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -31,9 +31,8 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * privates
+ * private implementation
  */
-
 static tb_void_t xm_string_trim_space(tb_char_t const** psstr, tb_char_t const** pestr, tb_int_t mode)
 {
     // check
@@ -115,7 +114,6 @@ tb_int_t xm_string_trim(lua_State* lua)
     do
     {
         tb_assert_and_check_break(sstr && trimchars);
-        // empty string
         tb_check_break(lstr != 0);
 
         tb_char_t const* const rsstr = sstr;

@@ -28,6 +28,7 @@ local serialize  = require("base/serialize")
 -- save original interfaces
 string._dump = string._dump or string.dump
 string._trim = string._trim or string.trim
+string._split = string._split or string.split
 
 -- find the last substring with the given pattern
 function string:find_last(pattern, plain)
@@ -78,13 +79,16 @@ function string:split(delimiter, opt)
         plain = opt.plain
         strict = opt.strict
     end
+    if plain then
+        return string._split(self, delimiter, strict, limit)
+    end
     local start = 1
     local result = {}
     local pos, epos = self:find(delimiter, start, plain)
     while pos do
         local substr = self:sub(start, pos - 1)
         if (#substr > 0) or strict then
-            if limit and limit > 0 and #result + 1 >= imit then
+            if limit and limit > 0 and #result + 1 >= limit then
                 break
             end
             table.insert(result, substr)

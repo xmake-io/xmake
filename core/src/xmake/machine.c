@@ -166,6 +166,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua);
 
 // the string functions
 tb_int_t xm_string_trim(lua_State* lua);
+tb_int_t xm_string_split(lua_State* lua);
 tb_int_t xm_string_convert(lua_State* lua);
 tb_int_t xm_string_endswith(lua_State* lua);
 tb_int_t xm_string_startswith(lua_State* lua);
@@ -327,6 +328,7 @@ static luaL_Reg const g_hash_functions[] =
 static luaL_Reg const g_string_functions[] = 
 {
     { "trim",           xm_string_trim          }
+,   { "split",          xm_string_split         }
 ,   { "convert",        xm_string_convert       }
 ,   { "endswith",       xm_string_endswith      }
 ,   { "startswith",     xm_string_startswith    }
