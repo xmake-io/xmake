@@ -58,11 +58,11 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace progress info
     if not opt.quiet then
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
+        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
         if verbose then
-            cprint("${dim color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+            cprint(progress_prefix .. "${dim color.build.object}%scompiling.$(mode) %s", progress, exists_ccache and "ccache " or "", sourcefile)
         else
-            cprint("${color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
+            cprint(progress_prefix .. "${color.build.object}%scompiling.$(mode) %s", progress, exists_ccache and "ccache " or "", sourcefile)
         end
     end
 

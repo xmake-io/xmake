@@ -349,7 +349,7 @@ function colors.translate(str, opt)
         end
 
         -- split words
-        local blocks_raw = word:split("%s")
+        local blocks_raw = word:split(' ', {plain = true})
 
         -- translate theme color first, e.g ${color.error}
         local blocks = {}
@@ -357,7 +357,7 @@ function colors.translate(str, opt)
             if theme then
                 local theme_block = theme:get(block)
                 if theme_block then
-                    for _, theme_block_sub in ipairs(theme_block:split("%s")) do
+                    for _, theme_block_sub in ipairs(theme_block:split(' ', {plain = true})) do
                         table.insert(blocks, theme_block_sub)
                     end
                 else

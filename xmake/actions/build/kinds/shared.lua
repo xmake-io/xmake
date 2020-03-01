@@ -84,11 +84,11 @@ function _do_link_target(target, opt)
     local verbose = option.get("verbose")
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress.stop)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if verbose then
-        cprint("${dim color.build.target}linking.$(mode) %s", path.filename(targetfile))
+        cprint(progress_prefix .. "${dim color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
     else
-        cprint("${color.build.target}linking.$(mode) %s", path.filename(targetfile))
+        cprint(progress_prefix .. "${color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
     end
 
     -- trace verbose info
