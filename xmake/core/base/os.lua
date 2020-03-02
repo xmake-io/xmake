@@ -696,7 +696,7 @@ function os.execv(program, argv, opt)
 
     -- open command
     local ok = -1
-    local proc = process.openv(filename, argv, openopt)
+    local proc = process.openv(filename, argv or {}, openopt)
     if proc ~= nil then
 
         -- wait process
