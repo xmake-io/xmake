@@ -20,6 +20,7 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("core.platform.platform")
@@ -156,8 +157,10 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     local compflags = sourceflags[sourcefile]
 
     -- make command
-    local macro = "$(" .. target:name() .. '_' .. sourcekind:upper() .. "FLAGS)"
+    local macro = "$\01" .. target:name() .. '_' .. sourcekind:upper() .. "FLAGS\02"
     local command = compiler.compcmd(sourcefile, objectfile, {target = target, compflags = table.join(macro, compflags)})
+    command = command:gsub('\01', '(')
+    command = command:gsub('\02', ')')
 
     -- replace program to $(XX)
     local p, e = command:find("\"" .. program .. "\"", 1, true)
@@ -173,7 +176,7 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     end
 
     -- replace ccache to $(CCACHE)
-    local ccache = find_tool("ccache")
+    local ccache = config.get("ccache") ~= false and find_tool("ccache")
     if ccache then
         p, e = command:find(ccache.program, 1, true)
         if p then
