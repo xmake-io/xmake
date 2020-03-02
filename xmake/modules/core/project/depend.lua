@@ -18,13 +18,16 @@
 -- @file        depend.lua
 --
 
--- load depfiles for the given tool style, e.g. gcc, cl, ..
-function _load_depfiles(dependinfo, style)
+-- imports
+import("private.tools.cl.parse_deps", {alias = "parse_deps_cl"})
+import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 
-    -- parse depfiles for gcc
-    local depfiles = dependinfo["depfiles_" .. style]
+-- load depfiles for gcc
+function _load_depfiles_gcc(dependinfo)
+
+    local depfiles = dependinfo.depfiles_gcc
     if depfiles then
-        local depfiles = import("private.tools." .. style .. ".parse_deps", {anonymous = true})(depfiles)
+        depfiles = parse_deps_gcc(depfiles)
         if depfiles then
             if dependinfo.files then
                 table.join2(dependinfo.files, depfiles)
@@ -32,22 +35,39 @@ function _load_depfiles(dependinfo, style)
                 dependinfo.files = depfiles
             end
         end
-        dependinfo["depfiles_" .. style] = nil
+        dependinfo.depfiles_gcc = nil
+    end
+end
+
+-- load depfiles for cl
+function _load_depfiles_cl(dependinfo)
+
+    local depfiles = dependinfo.depfiles_cl
+    if depfiles then
+        depfiles = parse_deps_cl(depfiles)
+        if depfiles then
+            if dependinfo.files then
+                table.join2(dependinfo.files, depfiles)
+            else
+                dependinfo.files = depfiles
+            end
+        end
+        dependinfo.depfiles_cl = nil
     end
 end
 
 -- load dependent info from the given file (.d) 
 function load(dependfile)
-    if os.isfile(dependfile) then
 
+    if os.isfile(dependfile) then
         -- may be the depend file has been incomplete when if the compilation process is abnormally interrupted
         local dependinfo = try { function() return io.load(dependfile) end }
         if dependinfo then
             -- attempt to load depfiles from the compilers
             if is_plat("windows") then
-                _load_depfiles(dependinfo, "cl")
+                _load_depfiles_cl(dependinfo)
             else
-                _load_depfiles(dependinfo, "gcc")
+                _load_depfiles_gcc(dependinfo)
             end
             return dependinfo
         end
