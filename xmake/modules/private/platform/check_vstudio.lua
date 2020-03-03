@@ -76,8 +76,8 @@ function _check_vsenv(config)
     end
 end
 
--- check the visual stdio
-function main(config)
+-- check the visual studio
+function main(config, opt)
 
     -- attempt to check the given vs version first
     local vs = _check_vsenv(config)
@@ -91,10 +91,12 @@ function main(config)
     else
         -- failed
         cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", config.get("arch"))
-        print("please run:")
-        print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
-        print("or  - xmake global --vs=xxx")
-        raise()
+        if not (opt and opt.try) then
+            print("please run:")
+            print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
+            print("or  - xmake global --vs=xxx")
+            raise()
+        end
     end
 end
 

@@ -41,7 +41,7 @@ function main(platform, name)
     check_arch(global)
 
     -- check vstudio
-    check_vstudio(global)
+    check_vstudio(global, {try = true})
 
     -- clean temporary global configs
     _clean_global()
