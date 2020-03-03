@@ -264,15 +264,17 @@ function scheduler:_co_groups_resume()
             for _, co in ipairs(co_group) do
                 if co:is_dead() then
                     count = count + 1
-                else
-                    break
                 end
             end
-            -- all coroutines are dead in this group?
-            if count > 0 and count == #co_group then
+
+            -- some coroutines are dead in this group?
+            if count > 0 then
+
                 -- resume the waiting coroutine of this group
-                local co_waiting = self._CO_GROUPS_WAITING[name]
-                if co_waiting and co_waiting:is_suspended() then
+                local co_group_waiting = self._CO_GROUPS_WAITING[name]
+                local co_waiting = co_group_waiting[1]
+                local limit = co_group_waiting[2]
+                if count >= limit and co_waiting and co_waiting:is_suspended() then
                     resumed_count = resumed_count + 1
                     self._CO_GROUPS_WAITING[name] = nil
                     local ok, errors = self:co_resume(co_waiting)
@@ -421,12 +423,13 @@ function scheduler:co_group_begin(name, scopefunc)
 end
 
 -- wait for finishing the given coroutine group 
-function scheduler:co_group_wait(name)
+function scheduler:co_group_wait(name, opt)
 
     -- get coroutine group
     local co_group = self:co_group(name)
-    if not co_group then
-        return false, string.format("co_group(%s): not found!", name)
+    if not co_group or #co_group == 0 then
+        -- no coroutines in this group
+        return true
     end
 
     -- get the running coroutine
@@ -440,6 +443,9 @@ function scheduler:co_group_wait(name)
         return false, "the scheduler is stopped!"
     end
 
+    -- get limit count
+    local limit = opt and opt.limit or #co_group
+
     -- wait it
     local count
     repeat 
@@ -449,13 +455,23 @@ function scheduler:co_group_wait(name)
                 count = count + 1
             end
         end
-        if count ~= #co_group then
+        if count < limit then
             self._CO_GROUPS_WAITING = self._CO_GROUPS_WAITING or {}
-            self._CO_GROUPS_WAITING[name] = running
+            self._CO_GROUPS_WAITING[name] = {running, limit}
             self:co_suspend()
         end
-    until count == #co_group 
-    self._CO_GROUPS[name] = nil
+    until count >= limit 
+
+    -- remove all dead coroutines in group
+    for i = #co_group, 1, -1 do
+        local co = co_group[i]
+        if co:is_dead() then
+            table.remove(co_group, i)
+        end
+    end
+    if #co_group == 0 then
+        self._CO_GROUPS[name] = nil
+    end
     return true
 end
 
@@ -744,7 +760,7 @@ function scheduler:runloop()
     local timeout = -1
     while self._STARTED and self:co_count() > 0 do 
 
-        -- resume it's waiting coroutine if all coroutines are dead in group
+        -- resume it's waiting coroutine if some coroutines are dead in group
         local resumed_count, resumed_errors = self:_co_groups_resume()
         if resumed_count < 0 then
             ok = false

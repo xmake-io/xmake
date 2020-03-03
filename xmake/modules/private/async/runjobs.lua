@@ -158,8 +158,13 @@ function main(name, jobfunc, opt)
                 end, index)
             end
         end)
-        scheduler.co_group_wait(group_name)
+    
+        -- wait some jobs exited
+        scheduler.co_group_wait(group_name, {limit = 1})
     end
+
+    -- wait all jobs exited
+    scheduler.co_group_wait(group_name)
 
     -- stop timer
     stop = true

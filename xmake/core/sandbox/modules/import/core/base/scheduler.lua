@@ -89,8 +89,8 @@ function sandbox_core_base_scheduler.co_group_begin(name, scopefunc)
 end
 
 -- wait for finishing the given coroutine group
-function sandbox_core_base_scheduler.co_group_wait(name)
-    local ok, errors = scheduler:co_group_wait(name)
+function sandbox_core_base_scheduler.co_group_wait(name, opt)
+    local ok, errors = scheduler:co_group_wait(name, opt)
     if not ok then
         raise(errors)
     end
