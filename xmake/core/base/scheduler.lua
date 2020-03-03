@@ -260,27 +260,31 @@ function scheduler:_co_groups_resume()
     local co_groups = self._CO_GROUPS
     if co_groups then
         for name, co_group in pairs(co_groups) do
+
+            -- get coroutine and limit in waiting group
+            local co_group_waiting = self._CO_GROUPS_WAITING[name]
+            local co_waiting = co_group_waiting[1]
+            local limit = co_group_waiting[2]
+
+            -- get dead coroutines count in this group
             local count = 0
             for _, co in ipairs(co_group) do
-                if co:is_dead() then
-                    count = count + 1
+                if count < limit then
+                    if co:is_dead() then
+                        count = count + 1
+                    end
+                else
+                    break
                 end
             end
 
-            -- some coroutines are dead in this group?
-            if count > 0 then
-
-                -- resume the waiting coroutine of this group
-                local co_group_waiting = self._CO_GROUPS_WAITING[name]
-                local co_waiting = co_group_waiting[1]
-                local limit = co_group_waiting[2]
-                if count >= limit and co_waiting and co_waiting:is_suspended() then
-                    resumed_count = resumed_count + 1
-                    self._CO_GROUPS_WAITING[name] = nil
-                    local ok, errors = self:co_resume(co_waiting)
-                    if not ok then
-                        return -1, errors
-                    end
+            -- resume the waiting coroutine of this group if some coroutines are dead in this group
+            if count >= limit and co_waiting and co_waiting:is_suspended() then
+                resumed_count = resumed_count + 1
+                self._CO_GROUPS_WAITING[name] = nil
+                local ok, errors = self:co_resume(co_waiting)
+                if not ok then
+                    return -1, errors
                 end
             end
         end
@@ -451,8 +455,12 @@ function scheduler:co_group_wait(name, opt)
     repeat 
         count = 0
         for _, co in ipairs(co_group) do
-            if co:is_dead() then
-                count = count + 1
+            if count < limit then
+                if co:is_dead() then
+                    count = count + 1
+                end
+            else
+                break
             end
         end
         if count < limit then
