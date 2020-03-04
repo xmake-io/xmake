@@ -259,10 +259,11 @@ function scheduler:_co_groups_resume()
     local resumed_count = 0
     local co_groups = self._CO_GROUPS
     if co_groups then
+        local co_groups_waiting = self._CO_GROUPS_WAITING
         for name, co_group in pairs(co_groups) do
 
             -- get coroutine and limit in waiting group
-            local co_group_waiting = self._CO_GROUPS_WAITING[name]
+            local co_group_waiting = co_group_waiting and co_groups_waiting[name] or nil
             if co_group_waiting then
                 local co_waiting = co_group_waiting[1]
                 local limit = co_group_waiting[2]
