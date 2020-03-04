@@ -23,19 +23,19 @@ theme("default")
 
     -- the success status 
     set_text("success", "$ok")
-    set_color("success", "green")
+    set_color("success", "green bright")
 
     -- the failure status 
     set_text("failure", "$failed")
-    set_color("failure", "red")
+    set_color("failure", "red bright")
 
     -- the nothing status 
     set_text("nothing", "$no")
-    set_color("nothing", "red")
+    set_color("nothing", "red bright")
 
     -- the error info
     set_text("error", "$error")
-    set_color("error", "red")
+    set_color("error", "red bright")
 
     -- the warning info
     set_text("warning", "$warning")
@@ -43,13 +43,13 @@ theme("default")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
-    set_color("build.progress", "green")
+    set_color("build.progress", "green bright")
 
     -- the building object file
     set_color("build.object", "")
 
     -- the building target file
-    set_color("build.target", "magenta")
+    set_color("build.target", "magenta bright")
 
     -- color dump
     set_text("dump.default_format", "%s")
