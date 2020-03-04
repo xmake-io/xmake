@@ -263,10 +263,10 @@ function scheduler:_co_groups_resume()
         for name, co_group in pairs(co_groups) do
 
             -- get coroutine and limit in waiting group
-            local co_group_waiting = co_group_waiting and co_groups_waiting[name] or nil
-            if co_group_waiting then
-                local co_waiting = co_group_waiting[1]
-                local limit = co_group_waiting[2]
+            local item = co_groups_waiting and co_groups_waiting[name] or nil
+            if item then
+                local co_waiting = item[1]
+                local limit = item[2]
 
                 -- get dead coroutines count in this group
                 local count = 0
