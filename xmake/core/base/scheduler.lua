@@ -471,14 +471,15 @@ function scheduler:co_group_wait(name, opt)
     until count >= limit 
 
     -- remove all dead coroutines in group
-    for i = #co_group, 1, -1 do
-        local co = co_group[i]
-        if co:is_dead() then
-            table.remove(co_group, i)
-        end
-    end
-    if #co_group == 0 then
+    if limit == #co_group and count == limit then
         self._CO_GROUPS[name] = nil
+    else
+        for i = #co_group, 1, -1 do
+            local co = co_group[i]
+            if co:is_dead() then
+                table.remove(co_group, i)
+            end
+        end
     end
     return true
 end
