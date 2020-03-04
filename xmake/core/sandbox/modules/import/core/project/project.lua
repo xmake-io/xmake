@@ -93,7 +93,8 @@ function sandbox_core_project.check()
     end
 
     -- check all options
-    import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = 4})
+    local jobs = baseoption.get("jobs") or math.ceil(os.cpuinfo().ncpu * 3 / 2)
+    import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = jobs})
 
     -- leave toolchains environment
     environment.leave("toolchains")

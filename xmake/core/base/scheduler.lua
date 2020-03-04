@@ -414,13 +414,14 @@ function scheduler:co_group_begin(name, scopefunc)
     self._CO_GROUPS_PENDING[name] = self._CO_GROUPS_PENDING[name] or {}
 
     -- call the scope function
-    local ok, errors = utils.trycall(scopefunc)
+    local co_group = self._CO_GROUPS[name] or {}
+    local ok, errors = utils.trycall(scopefunc, nil, co_group)
     if not ok then
         return false, errors
     end
 
     -- leave groups
-    self._CO_GROUPS[name] = self._CO_GROUPS[name] or {}
+    self._CO_GROUPS[name] = co_group
     table.join2(self._CO_GROUPS[name], self._CO_GROUPS_PENDING[name])
     self._CO_GROUPS_PENDING[name] = nil
     return true

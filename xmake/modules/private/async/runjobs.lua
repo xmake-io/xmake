@@ -120,12 +120,8 @@ function main(name, jobfunc, opt)
     local index = 0
     while index < total do
         running_jobs_indices = {}
-        scheduler.co_group_begin(group_name, function ()
-            local freemax = comax
-            local co_group = scheduler.co_group(group_name)
-            if co_group then
-                freemax = freemax - #co_group
-            end
+        scheduler.co_group_begin(group_name, function (co_group)
+            local freemax = comax - #co_group
             local max = math.min(index + freemax, total)
             while index < max do
                 index = index + 1
