@@ -27,6 +27,7 @@ local winos     = require("base/winos")
 local table     = require("base/table")
 local utils     = require("base/utils")
 local string    = require("base/string")
+local scheduler = require("base/scheduler")
 
 -- globals
 local escape_table1 = {["$"] = "\001", ["("] = "\002", [")"] = "\003", ["%"] = "\004"}
@@ -60,7 +61,9 @@ function filter.shell(cmd)
     end
 
     -- run shell
+    scheduler:enable(false) -- disable coroutine scheduler to fix `attempt to yield across C-call boundary` when call gsub -> yield
     local ok, outdata, errdata = os.iorun(cmd)
+    scheduler:enable(true)
     if not ok then
         os.raise("run $(shell %s) failed, errors: %s", cmd, errdata or "")
     end
