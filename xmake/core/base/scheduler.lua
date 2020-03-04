@@ -263,28 +263,30 @@ function scheduler:_co_groups_resume()
 
             -- get coroutine and limit in waiting group
             local co_group_waiting = self._CO_GROUPS_WAITING[name]
-            local co_waiting = co_group_waiting[1]
-            local limit = co_group_waiting[2]
+            if co_group_waiting then
+                local co_waiting = co_group_waiting[1]
+                local limit = co_group_waiting[2]
 
-            -- get dead coroutines count in this group
-            local count = 0
-            for _, co in ipairs(co_group) do
-                if count < limit then
-                    if co:is_dead() then
-                        count = count + 1
+                -- get dead coroutines count in this group
+                local count = 0
+                for _, co in ipairs(co_group) do
+                    if count < limit then
+                        if co:is_dead() then
+                            count = count + 1
+                        end
+                    else
+                        break
                     end
-                else
-                    break
                 end
-            end
 
-            -- resume the waiting coroutine of this group if some coroutines are dead in this group
-            if count >= limit and co_waiting and co_waiting:is_suspended() then
-                resumed_count = resumed_count + 1
-                self._CO_GROUPS_WAITING[name] = nil
-                local ok, errors = self:co_resume(co_waiting)
-                if not ok then
-                    return -1, errors
+                -- resume the waiting coroutine of this group if some coroutines are dead in this group
+                if count >= limit and co_waiting and co_waiting:is_suspended() then
+                    resumed_count = resumed_count + 1
+                    self._CO_GROUPS_WAITING[name] = nil
+                    local ok, errors = self:co_resume(co_waiting)
+                    if not ok then
+                        return -1, errors
+                    end
                 end
             end
         end
