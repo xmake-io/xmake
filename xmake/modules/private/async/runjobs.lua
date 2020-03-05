@@ -42,15 +42,32 @@ function _print_backchars(backnum)
 end
 
 -- asynchronous run jobs 
-function main(name, jobfunc, opt)
+--
+-- e.g. 
+-- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
+-- runjobs("test", function () os.sleep(10000) end, {showtips = true})
+--
+-- local jobs = {}
+-- for i = 1, 3 do
+--     for j = 1, 50 do
+--         table.insert(jobs, {priority = i, run = function (idx, job)
+--         end})
+--     end
+-- end
+-- runjobs("test", jobs, {comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
+-- 
+--
+function main(name, jobs, opt)
 
     -- init options
     op = opt or {}
-    local total = opt.total or 1
+    local total = opt.total or (type(jobs) == "table" and #jobs) or 1
     local comax = opt.comax or total
     local timeout = opt.timeout or 500
     local group_name = name
+    local jobs_cb = type(jobs) == "function" and jobs or nil
     assert(timeout < 60000, "runjobs: invalid timeout!")
+    assert(jobs, "runjobs: no jobs!")
 
     -- show waiting tips?
     local waitindex = 0
@@ -118,19 +135,39 @@ function main(name, jobfunc, opt)
 
     -- run jobs
     local index = 0
+    local priority_prev = -1
+    local priority_curr = -1
     while index < total do
         running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
             local max = math.min(index + freemax, total)
+            local jobfunc = jobs_cb
             while index < max do
                 index = index + 1
+                
+                -- uses jobs queue?
+                if not jobs_cb then
+                    
+                    -- get job priority and run function
+                    local job = jobs[index]
+                    priority_curr = job.priority or priority_prev
+                    assert(priority_curr >= priority_prev, "runjobs: invalid priority(%d < %d)!", priority_curr, priority_prev)
+                    jobfunc = job.run
+
+                    -- priority changed? we need wait all running jobs exited
+                    if priority_curr > priority_prev then
+                        break
+                    end
+                end
+
+                -- start this job
                 table.insert(running_jobs_indices, index)
                 scheduler.co_start_named(name .. '/' .. tostring(index), function(i)
                     try
                     { 
                         function()
-                            jobfunc(i)
+                            jobfunc(i, job)
                         end,
                         catch
                         {
@@ -160,8 +197,14 @@ function main(name, jobfunc, opt)
             end
         end)
     
-        -- wait some jobs exited
-        scheduler.co_group_wait(group_name, {limit = 1})
+        -- need only one jobs exited if be same priority
+        if priority_curr == priority_prev then
+            scheduler.co_group_wait(group_name, {limit = 1})
+        else
+            -- need to wait all running jobs exited first if be different priority
+            scheduler.co_group_wait(group_name)
+            priority_prev = priority_curr
+        end
     end
 
     -- wait all jobs exited
