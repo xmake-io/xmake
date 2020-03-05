@@ -144,24 +144,26 @@ function main(name, jobs, opt)
             local max = math.min(index + freemax, total)
             local jobfunc = jobs_cb
             while index < max do
-                index = index + 1
                 
                 -- uses jobs queue?
                 if not jobs_cb then
                     
-                    -- get job priority and run function
-                    local job = jobs[index]
+                    -- get job priority 
+                    local job = jobs[index + 1]
                     priority_curr = job.priority or priority_prev
                     assert(priority_curr >= priority_prev, "runjobs: invalid priority(%d < %d)!", priority_curr, priority_prev)
-                    jobfunc = job.run
 
                     -- priority changed? we need wait all running jobs exited
                     if priority_curr > priority_prev then
                         break
                     end
+
+                    -- get run function
+                    jobfunc = job.run
                 end
 
                 -- start this job
+                index = index + 1
                 table.insert(running_jobs_indices, index)
                 scheduler.co_start_named(name .. '/' .. tostring(index), function(i)
                     try
