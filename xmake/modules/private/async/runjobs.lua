@@ -169,7 +169,7 @@ function main(name, jobs, opt)
                     try
                     { 
                         function()
-                            jobfunc(i, job)
+                            jobfunc(i, total, job)
                         end,
                         catch
                         {

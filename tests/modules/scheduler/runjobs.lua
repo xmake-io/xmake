@@ -1,12 +1,12 @@
 import("core.base.scheduler")
 import("private.async.runjobs")
 
-function _jobfunc(index)
-    print("%s: run job (%d)", scheduler.co_running(), index)
+function _jobfunc(index, total)
+    print("%s: run job (%d/%d)", scheduler.co_running(), index, total)
     local dt = os.mclock()
     os.sleep(1000)
     dt = os.mclock() - dt
-    print("%s: run job (%d) end, dt: %d ms", scheduler.co_running(), index, dt)
+    print("%s: run job (%d/%d) end, dt: %d ms", scheduler.co_running(), index, total, dt)
 end
 
 function main()
@@ -23,8 +23,8 @@ function main()
     local jobs = {}
     for i = 1, 3 do
         for j = 1, 50 do
-            table.insert(jobs, {priority = i, run = function (idx, job)
-                _jobfunc(idx)
+            table.insert(jobs, {priority = i, run = function (idx, total, job)
+                _jobfunc(idx, total)
             end})
         end
     end
