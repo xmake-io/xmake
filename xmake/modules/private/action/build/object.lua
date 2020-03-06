@@ -131,14 +131,7 @@ function main(target, sourcebatch, opt)
     local jobs = tonumber(option.get("jobs") or "4")
 
     -- run build jobs for each source file 
-    local curdir = os.curdir()
     runjobs("build_objects", function (index)
-
-        -- force to set the current directory first because the other jobs maybe changed it
-        os.cd(curdir)
-
-        -- build object
         _build_object(target, sourcebatch, index, opt)
-
     end, {total = #sourcebatch.sourcefiles, comax = jobs})
 end
