@@ -70,13 +70,21 @@ function _create_project(language, templateid, targetname)
 
     -- get project directory
     local projectdir = path.absolute(option.get("project") or path.join(os.curdir(), targetname))
-
     if not os.isdir(projectdir) then
         -- make the project directory if not exists
         os.mkdir(projectdir)
-    elseif not os.emptydir(projectdir) then
+    end
+
+    -- xmake.lua exists?
+    if os.isfile(path.join(projectdir, "xmake.lua")) then
+        raise("project (${underline}%s/xmake.lua${reset}) exists!", projectdir)
+    end
+
+    -- empty project?
+    os.tryrm(path.join(projectdir, ".xmake"))
+    if not os.emptydir(projectdir) then
         -- otherwise, check whether it is empty
-        raise("project directory (${underline}%s${reset}) is not empty!", path.relative(projectdir, os.workingdir()))
+        raise("project directory (${underline}%s${reset}) is not empty!", projectdir)
     end
 
     -- enter the project directory
