@@ -22,15 +22,15 @@ function main()
     -- test jobs
     print("==================================== test jobs ====================================")
     local jobs = jobpool.new()
-    local root = jobs:addjob("job/root", function (idx, total, job)
+    local root = jobs:addjob("job/root", function (idx, total)
         _jobfunc(idx, total)
     end)
     for i = 1, 3 do
-        local job = jobs:addjob("job/" .. i, function (idx, total, job)
+        local job = jobs:addjob("job/" .. i, function (idx, total)
             _jobfunc(idx, total)
         end, root)
         for j = 1, 50 do
-            jobs:addjob("job/" .. i .. "/" .. j, function (idx, total, job)
+            jobs:addjob("job/" .. i .. "/" .. j, function (idx, total)
                 _jobfunc(idx, total)
             end, job)
         end

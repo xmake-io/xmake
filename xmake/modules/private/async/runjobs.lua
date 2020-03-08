@@ -46,12 +46,14 @@ end
 -- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
 -- runjobs("test", function () os.sleep(10000) end, {showtips = true})
 --
--- local jobs = {}
+-- local jobs = jobpool.new()
+-- local root = jobs:addjob("job/root", function (idx, total)
+--   print(idx, total)
+-- end)
 -- for i = 1, 3 do
---     for j = 1, 50 do
---         table.insert(jobs, {priority = i, run = function (idx, job)
---         end})
---     end
+--     local job = jobs:addjob("job/" .. i, function (idx, total)
+--         print(idx, total)
+--     end, root)
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
 -- 
@@ -178,7 +180,7 @@ function main(name, jobs, opt)
                     try
                     { 
                         function()
-                            jobfunc(i, total, job)
+                            jobfunc(i, total)
                         end,
                         catch
                         {

@@ -276,7 +276,7 @@ function _instance:get(name, opt)
     end
 
     -- get the extra configuration
-    local extraconf = self._INFO:extraconf(name)
+    local extraconf = self:extraconf(name)
     if extraconf then
         -- filter values for public, private or interface if be not dictionary
         if not table.is_dictionary(values) then
@@ -1456,8 +1456,6 @@ function _instance:script(name, generic)
             end
         end
     end
-
-    -- ok
     return result
 end
 
