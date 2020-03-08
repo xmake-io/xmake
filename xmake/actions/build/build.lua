@@ -47,19 +47,26 @@ end
 -- add builtin build jobs 
 function _add_buildjobs_builtin(buildjobs, rootjob, target)
 
-    -- build target with rules
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_build = r:script("build")
-        if on_build then
-            on_build(target, opt)
-            done = true
+    -- uses the rules script?
+    local job
+    for _, r in irpairs(target:orderules()) do -- reverse rules order for buildjobs:addjob()
+        local script = r:script("build")
+        if script then
+            if r:extraconf("build", "batch") then -- TODO extraconf/rule
+                job = assert(script(target, buildjobs, {rootjob = job or rootjob}), "rule(%s):on_build(): no returned job!", r:name())
+            else
+                job = buildjobs:addjob(r:name() .. "/build", function (index, total)
+                    script(target, {progress = (index * 100) / total})
+                end, job or rootjob)
+            end
         end
     end
-    if done then return end
 
-    -- do build
-    _do_build_target(target, opt)
+    -- uses the builtin target script
+    if not job then
+        -- _do_build_target(target, opt)
+    end
+    return job
 end
 
 -- add build jobs
