@@ -137,7 +137,5 @@ function main()
     os.cd(oldir)
 
     -- trace
-    if option.get("rebuild") then
-        cprint("${color.success}build ok!")
-    end
+    cprint("${color.success}build ok!")
 end

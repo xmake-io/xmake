@@ -34,18 +34,9 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
     -- get rule instance
     local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
-    -- get progress
-    local progress = opt.progress
-
     -- on_build_files?
     local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
     if on_build_files then
-        opt = table.copy(opt)
-        if suffix == "before" then
-            opt.progress = {start = progress.start, stop = progress.start}
-        elseif suffix == "after" then
-            opt.progress = {start = progress.stop, stop = progress.stop}
-        end
         on_build_files(target, sourcebatch, opt)
     else
         -- get the build file script
@@ -60,22 +51,11 @@ function _build_files_with_rule(target, sourcebatch, opt, suffix)
             local sourcecount = #sourcebatch.sourcefiles
             runjobs("build_files", function (index)
 
-                -- force to set the current directory first because the other jobs maybe changed it
-                os.cd(curdir)
-
-                -- get current progress
-                local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / sourcecount
-                if suffix == "before" then
-                    progress_now = progress.start
-                elseif suffix == "after" then
-                    progress_now = progress.stop
-                end
-
                 -- get source file
                 local sourcefile = sourcebatch.sourcefiles[index]
 
                 -- do build file
-                on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = progress_now})
+                on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = opt.progress})
 
             end, {total = sourcecount, comax = jobs})
         end
@@ -93,8 +73,6 @@ function _build_files(target, sourcebatch, opt)
     -- do before build
     local before_build_files = target:script("build_files_before")
     if before_build_files then
-        opt = table.copy(opt)
-        opt.progress = {start = progress.start, stop = progress.start}
         before_build_files(target, sourcebatch, opt)
     end
 
@@ -111,8 +89,6 @@ function _build_files(target, sourcebatch, opt)
     -- do after build
     local after_build_files = target:script("build_files_after")
     if after_build_files then
-        opt = table.copy(opt)
-        opt.progress = {start = progress.stop, stop = progress.stop}
         after_build_files(target, sourcebatch, opt)
     end
 end
@@ -123,29 +99,14 @@ function build_sourcefiles(target, sourcebatches, opt)
     -- init options
     opt = opt or {}
 
-    -- get progress range
-    local progress = assert(opt.progress, "no build progress!")
-
     -- build source batches with custom rules before building other sources
     for _, sourcebatch in pairs(sourcebatches) do
         _build_files_with_rule(target, sourcebatch, opt, "before")
     end
 
     -- build source batches
-    local sourcestart = 0
-    local sourcestop  = 0
     local sourcetotal = target:sourcecount()
     for _, sourcebatch in pairs(sourcebatches) do
-
-        -- compute the sub-progress range
-        sourcestop = sourcestart + #sourcebatch.sourcefiles
-        local progress_range = progress.stop - progress.start
-        local progress_start = progress.start + (sourcestart * progress_range) / sourcetotal
-        local progress_stop  = progress.start + (sourcestop * progress_range) / sourcetotal
-        opt.progress = {start = progress_start, stop = progress_stop}
-        sourcestart = sourcestop
-
-        -- build files
         _build_files(target, sourcebatch, opt)
     end
 

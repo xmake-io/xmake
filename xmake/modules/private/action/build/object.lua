@@ -92,14 +92,8 @@ function _build_object(target, sourcebatch, index, opt)
     local dependfile = sourcebatch.dependfiles[index]
     local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
 
-    -- get progress range
-    local progress = assert(opt.progress, "no progress!")
-
-    -- calculate progress
-    local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / #sourcebatch.sourcefiles
-
     -- init build option
-    local opt = table.join(opt, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now})
+    local opt = table.join(opt, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = opt.progress})
 
     -- do before build
     local before_build_file = target:script("build_file_before")

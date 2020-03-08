@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.scheduler")
-import("core.base.hashset")
 
 -- print back characters
 function _print_backchars(backnum)
@@ -61,7 +60,7 @@ function main(name, jobs, opt)
 
     -- init options
     op = opt or {}
-    local total = opt.total or (type(jobs) == "table" and #jobs) or 1
+    local total = opt.total or (type(jobs) == "table" and jobs:count()) or 1
     local comax = opt.comax or total
     local timeout = opt.timeout or 500
     local group_name = name
@@ -135,8 +134,9 @@ function main(name, jobs, opt)
 
     -- run jobs
     local index = 0
-    local priority_prev = -1
-    local priority_curr = -1
+    local priority_prev = 0
+    local priority_curr = 0
+    local job_pending = nil
     while index < total do
         running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function (co_group)
@@ -145,27 +145,36 @@ function main(name, jobs, opt)
             local jobfunc = jobs_cb
             while index < max do
                 
-                -- uses jobs queue?
+                -- uses job pool?
+                local jobname
                 if not jobs_cb then
                     
                     -- get job priority 
-                    local job = jobs[index + 1]
-                    priority_curr = job.priority or priority_prev
-                    assert(priority_curr >= priority_prev, "runjobs: invalid priority(%d < %d)!", priority_curr, priority_prev)
-
-                    -- priority changed? we need wait all running jobs exited
-                    if priority_curr > priority_prev then
+                    local job, priority = job_pending or jobs:popjob()
+                    if not job then
                         break
                     end
 
+                    -- priority changed? we need wait all running jobs exited
+                    priority_curr = priority or priority_prev
+                    assert(priority_curr >= priority_prev, "runjobs: invalid priority(%d < %d)!", priority_curr, priority_prev)
+                    if priority_curr > priority_prev then
+                        job_pending = job
+                        break
+                    end
+                    job_pending = nil
+
                     -- get run function
                     jobfunc = job.run
+                    jobname = job.name
+                else
+                    jobname = tostring(index)
                 end
 
                 -- start this job
                 index = index + 1
                 table.insert(running_jobs_indices, index)
-                scheduler.co_start_named(name .. '/' .. tostring(index), function(i)
+                scheduler.co_start_named(name .. '/' .. jobname, function(i)
                     try
                     { 
                         function()

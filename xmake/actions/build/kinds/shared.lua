@@ -86,9 +86,9 @@ function _do_link_target(target, opt)
     -- trace progress info
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if verbose then
-        cprint(progress_prefix .. "${dim color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
+        cprint(progress_prefix .. "${dim color.build.target}linking.$(mode) %s", opt.progress, path.filename(targetfile))
     else
-        cprint(progress_prefix .. "${color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
+        cprint(progress_prefix .. "${color.build.target}linking.$(mode) %s", opt.progress, path.filename(targetfile))
     end
 
     -- trace verbose info
@@ -132,13 +132,7 @@ end
 -- link target
 function _link_target(target, opt)
 
-    -- get progress
-    local progress = opt.progress
-    local progress_before = {start = progress.start, stop = progress.start}
-    local progress_after  = {start = progress.stop, stop = progress.stop}
-
     -- do before link for target
-    opt.progress = progress_before
     local before_link = target:script("link_before")
     if before_link then
         before_link(target, opt)
@@ -153,11 +147,9 @@ function _link_target(target, opt)
     end
 
     -- on link
-    opt.progress = progress
     target:script("link", _on_link_target)(target, table.join(opt, {origin = _do_link_target}))
 
     -- do after link for target
-    opt.progress = progress_after
     local after_link = target:script("link_after")
     if after_link then
         after_link(target, opt)
@@ -174,17 +166,6 @@ end
 
 -- build shared target
 function build(target, opt)
-
-    -- separate progress
-    local progress = opt.progress
-    local progress_mid = math.max(progress.start, progress.stop - 1)
-
-    -- build objects
-    opt = table.copy(opt)
-    opt.progress = {start = progress.start, stop = progress_mid}
     object.build(target, opt)
-
-    -- link target
-    opt.progress = {start = progress_mid, stop = progress.stop}
     _link_target(target, opt)
 end

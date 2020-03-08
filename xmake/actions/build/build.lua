@@ -23,6 +23,9 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.environment")
+import("private.async.jobpool")
+import("private.async.runjobs")
+import("core.base.hashset")
 
 -- clean target for rebuilding
 function _clean_target(target)
@@ -60,186 +63,132 @@ function _on_build_target(target, opt)
 end
 
 -- build the given target 
-function _build_target(target)
+function _add_buildjob_for_target(buildjobs, rootjob, target)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        _g.targetindex = _g.targetindex + 1
         return 
     end
 
-    -- enter the environments of the target packages
+    -- add after_build job for target
     local oldenvs = {}
-    for name, values in pairs(target:pkgenvs()) do
-        oldenvs[name] = os.getenv(name)
-        os.addenv(name, unpack(values))
-    end
+    local job_after_build = buildjobs:addjob(target:name() .. "/after_build", function (index, total, job)
 
-    -- compute the progress range
-    local progress = {}
-    progress.start = (_g.targetindex * 100) / _g.targetcount
-    progress.stop  = ((_g.targetindex + 1) * 100) / _g.targetcount
-
-    -- the target scripts
-    local scripts =
-    {
-        function (target)
-
-            -- do before build for target
-            local before_build = target:script("build_before")
-            if before_build then
-                before_build(target, {progress = progress})
-            end
-
-            -- do before build for rules
-            for _, r in ipairs(target:orderules()) do
-                local before_build = r:script("build_before")
-                if before_build then
-                    before_build(target, {progress = progress})
-                end
-            end
+        -- do after_build
+        local progress = (index * 100) / total
+        local after_build = target:script("build_after")
+        if after_build then
+            after_build(target, {progress = progress})
         end
-    ,   function (target)
-
-            -- do build
-            local on_build = target:script("build", _on_build_target)
-            if on_build then
-                on_build(target, {origin = _do_build_target, progress = progress})
-            end
-        end
-    ,   function (target)
-
-            -- do after build for target
-            local after_build = target:script("build_after")
+        for _, r in ipairs(target:orderules()) do
+            local after_build = r:script("build_after")
             if after_build then
                 after_build(target, {progress = progress})
             end
+        end
+     
+        -- leave the environments of the target packages
+        for name, values in pairs(oldenvs) do
+            os.setenv(name, values)
+        end
+    end, rootjob)
 
-            -- do after build for rules
-            for _, r in ipairs(target:orderules()) do
-                local after_build = r:script("build_after")
-                if after_build then
-                    after_build(target, {progress = progress})
-                end
+    -- add build job for target
+    local job_build = buildjobs:addjob(target:name() .. "/build", function (index, total, job)
+        local progress = (index * 100) / total
+        local on_build = target:script("build", _on_build_target)
+        if on_build then
+            on_build(target, {origin = _do_build_target, progress = progress})
+        end
+    end, job_after_build)
+
+    -- add before_build job for target
+    local job_before_build = buildjobs:addjob(target:name() .. "/before_build", function (index, total, job)
+
+        -- enter the environments of the target packages
+        for name, values in pairs(target:pkgenvs()) do
+            oldenvs[name] = os.getenv(name)
+            os.addenv(name, unpack(values))
+        end
+
+        -- clean target if rebuild
+        if option.get("rebuild") then
+            _clean_target(target)
+        end
+
+        -- do before_build
+        local progress = (index * 100) / total
+        local before_build = target:script("build_before")
+        if before_build then
+            before_build(target, {progress = progress})
+        end
+        for _, r in ipairs(target:orderules()) do
+            local before_build = r:script("build_before")
+            if before_build then
+                before_build(target, {progress = progress})
             end
         end
-    }
-
-    -- clean target if rebuild
-    if option.get("rebuild") then
-        _clean_target(target)
-    end
-   
-    -- run the target scripts
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(target)
-        end
-    end
-
-    -- leave the environments of the target packages
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
-
-    -- update target index
-    _g.targetindex = _g.targetindex + 1
+    end, job_build)
+    return job_before_build
 end
 
 -- build the given target and deps
-function _build_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return 
+function _add_buildjob_for_target_and_deps(buildjobs, rootjob, inserted, target)
+    if not inserted[target:name()] then
+        rootjob = _add_buildjob_for_target(buildjobs, rootjob, target)
+        for _, depname in ipairs(target:get("deps")) do
+            _add_buildjob_for_target_and_deps(buildjobs, rootjob, inserted, project.target(depname)) 
+        end
+        inserted[target:name()] = true
     end
-
-    -- make for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _build_target_and_deps(project.target(depname)) 
-    end
-
-    -- make target
-    _build_target(target)
-
-    -- finished
-    _g.finished[target:name()] = true
 end
 
--- stats the given target and deps
-function _stat_target_count_and_deps(target)
+-- get build jobs 
+function _get_buildjobs(targetname)
 
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return 
-    end
-
-    -- make for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _stat_target_count_and_deps(project.target(depname))
-    end
-
-    -- update count
-    _g.targetcount = _g.targetcount + 1
-
-    -- finished
-    _g.finished[target:name()] = true
-end
-
--- stats targets count
-function _stat_target_count(targetname)
-
-    -- init finished states
-    _g.finished = {}
-
-    -- init targets count
-    _g.targetcount = 0
-
-    -- for the given target?
+    -- get root targets
+    local targets_root = {}
     if targetname then
-        _stat_target_count_and_deps(project.target(targetname))
+        table.insert(targets_root, project.target(targetname))
     else
-        -- for default or all targets
+        local depset = hashset.new()
+        local targets = {}
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
             if default == nil or default == true or option.get("all") then
-                _stat_target_count_and_deps(target)
+                for _, depname in ipairs(target:get("deps")) do
+                    depset:insert(depname)
+                    table.insert(targets, target)
+                end
+            end
+        end
+        for _, target in pairs(targets) do
+            if not depset:has(target:name()) then
+                table.insert(targets_root, target)
             end
         end
     end
+
+    -- generate build jobs for default or all targets
+    local inserted = {}
+    local buildjobs = jobpool.new()
+    for _, target in pairs(targets_root) do
+        _add_buildjob_for_target_and_deps(buildjobs, buildjobs:rootjob(), inserted, target)
+    end
+    return buildjobs
 end
 
 -- the main entry
 function main(targetname)
 
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
-    -- stat targets count
-    _stat_target_count(targetname)
-
-    -- clear finished states
-    _g.finished = {}
-
-    -- init target index
-    _g.targetindex = 0
-
-    -- build the given target?
-    if targetname then
-        _build_target_and_deps(project.target(targetname))
-    else
-        -- build default or all targets
-        for _, target in pairs(project.targets()) do
-            local default = target:get("default")
-            if default == nil or default == true or option.get("all") then
-                _build_target_and_deps(target)
-            end
-        end
+    -- build all jobs
+    local buildjobs = _get_buildjobs(targetname)
+    print(buildjobs)
+    if buildjobs and buildjobs:count() > 0 then
+        environment.enter("toolchains")
+        runjobs("build", buildjobs, {comax = option.get("jobs") or 1})
+        environment.leave("toolchains")
     end
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
 end
 
 
