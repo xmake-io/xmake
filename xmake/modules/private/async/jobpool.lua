@@ -103,9 +103,8 @@ function jobpool:_gentree(job)
     local tree = {job.name}
     local deps = job._deps
     if deps and not deps:empty() then
-        tree[2] = {}
         for dep in deps:items() do
-            table.insert(tree[2], self:_gentree(dep))
+            table.insert(tree, self:_gentree(dep))
         end
     end
     return tree
