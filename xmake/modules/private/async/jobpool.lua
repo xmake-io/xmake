@@ -46,30 +46,15 @@ end
 
 -- add job to the given job node
 --
--- @param job       the job
--- @param rootjob   the root job node (optional)
---
--- or
---
 -- @param name      the job name
 -- @param run       the run command/script
 -- @param rootjob   the root job node (optional)
 --
-function jobpool:addjob(job_or_name, ...)
-    local args = table.pack(...)
-    local job
-    local rootjob
-    if type(job_or_name) == "table" then
-        job = job_or_name
-        rootjob = args[1]
-    else
-        rootjob = args[2]
-        job = {name = job_or_name, run = args[1]}
-    end
+function jobpool:addjob(name, run, rootjob)
     rootjob = rootjob or self:rootjob()
+    local job = {name = name, run = run, _parent = rootjob}
     rootjob._deps = rootjob._deps or dlist:new()
     rootjob._deps:push(job)
-    job._parent = rootjob
     self._count = self._count + 1
     return job
 end

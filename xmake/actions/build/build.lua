@@ -44,8 +44,8 @@ function _do_build_target(target, opt)
     end
 end
 
--- on build the given target
-function _on_build_target(target, opt)
+-- add builtin build jobs 
+function _add_buildjobs_builtin(buildjobs, rootjob, target)
 
     -- build target with rules
     local done = false
@@ -62,16 +62,15 @@ function _on_build_target(target, opt)
     _do_build_target(target, opt)
 end
 
--- add build jobs for script
-function _add_buildjob_for_script(buildjobs, rootjob, target, script_name, originjob)
+-- add build jobs
+function _add_buildjobs(buildjobs, rootjob, target)
 
     local job
-    local script = target:script(script_name)
+    local script = target:script("build")
     if not script then
-        -- do builtin original batch job
-        assert(originjob, "target(%s):%s(): not found!", target:name(), script_name)
-        job = buildjobs:addjob(originjob, rootjob)
-    elseif target:extraconf(script_name, "batch") then 
+        -- do builtin build jobs
+        job = _add_buildjobs_builtin(buildjobs, rootjob, target)
+    elseif target:extraconf("build", "batch") then 
         -- do custom batch script
         -- e.g. 
         -- target("test")
@@ -81,7 +80,7 @@ function _add_buildjob_for_script(buildjobs, rootjob, target, script_name, origi
         --         end, opt.rootjob)
         --     end, {batch = true})
         --
-        job = assert(script(target, buildjobs, {rootjob = rootjob}), "target(%s):%s(): no returned job!", target:name(), script_name)
+        job = assert(script(target, buildjobs, {rootjob = rootjob}), "target(%s):on_build(): no returned job!", target:name())
     else
         -- do custom script directly
         -- e.g.
@@ -91,7 +90,7 @@ function _add_buildjob_for_script(buildjobs, rootjob, target, script_name, origi
         --         print("build it")
         --     end)
         --
-        job = buildjobs:addjob(target:name() .. "/" .. script_name, function (index, total)
+        job = buildjobs:addjob(target:name() .. "/build", function (index, total)
             script(target, {progress = (index * 100) / total})
         end, rootjob)
     end
@@ -99,7 +98,7 @@ function _add_buildjob_for_script(buildjobs, rootjob, target, script_name, origi
 end
 
 -- add build jobs for the given target 
-function _add_buildjob_for_target(buildjobs, rootjob, target)
+function _add_buildjobs_for_target(buildjobs, rootjob, target)
 
     -- has been disabled?
     if target:get("enabled") == false then
@@ -129,8 +128,8 @@ function _add_buildjob_for_target(buildjobs, rootjob, target)
         end
     end, rootjob)
 
-    -- add build job for target
-    local job_build = _add_buildjob_for_script(buildjobs, job_after_build, target, "build")
+    -- add build jobs for target, @note only on_build script support batch jobs
+    local job_build = _add_buildjobs(buildjobs, job_after_build, target)
 
     -- add before_build job for target
     local job_before_build = buildjobs:addjob(target:name() .. "/before_build", function (index, total)
@@ -163,11 +162,11 @@ function _add_buildjob_for_target(buildjobs, rootjob, target)
 end
 
 -- add build jobs for the given target and deps
-function _add_buildjob_for_target_and_deps(buildjobs, rootjob, inserted, target)
+function _add_buildjobs_for_target_and_deps(buildjobs, rootjob, inserted, target)
     if not inserted[target:name()] then
-        rootjob = _add_buildjob_for_target(buildjobs, rootjob, target)
+        rootjob = _add_buildjobs_for_target(buildjobs, rootjob, target)
         for _, depname in ipairs(target:get("deps")) do
-            _add_buildjob_for_target_and_deps(buildjobs, rootjob, inserted, project.target(depname)) 
+            _add_buildjobs_for_target_and_deps(buildjobs, rootjob, inserted, project.target(depname)) 
         end
         inserted[target:name()] = true
     end
@@ -203,7 +202,7 @@ function _get_buildjobs(targetname)
     local inserted = {}
     local buildjobs = jobpool.new()
     for _, target in pairs(targets_root) do
-        _add_buildjob_for_target_and_deps(buildjobs, buildjobs:rootjob(), inserted, target)
+        _add_buildjobs_for_target_and_deps(buildjobs, buildjobs:rootjob(), inserted, target)
     end
     return buildjobs
 end
