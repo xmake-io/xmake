@@ -140,7 +140,7 @@ function _on_install_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_install = r:script("install")
         if on_install then
-            on_install(target, {origin = _do_install_target})
+            on_install(target)
             done = true
         end
     end
@@ -205,7 +205,7 @@ function _install_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, {origin = (i == 3 and _do_install_target or nil)})
+            script(target)
         end
     end
 

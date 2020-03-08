@@ -79,7 +79,7 @@ function _on_run_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_run = r:script("run")
         if on_run then
-            on_run(target, {origin = _do_run_target})
+            on_run(target)
             done = true
         end
     end
@@ -141,7 +141,7 @@ function _run(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, {origin = (i == 3 and _do_run_target or nil)})
+            script(target)
         end
     end
 
