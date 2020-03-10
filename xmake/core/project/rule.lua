@@ -211,6 +211,11 @@ function rule:get(name)
     return self._INFO:get(name)
 end
 
+-- get the extra configuration
+function rule:extraconf(name, item, key)
+    return self._INFO:extraconf(name, item, key)
+end
+
 -- get the rule name
 function rule:name()
     return self._NAME

@@ -44,6 +44,11 @@ function jobpool:newjob(name, run)
     return {name = name, run = run}
 end
 
+-- get the last dependent job of the given job
+function jobpool:lastdep(job)
+    return job._deps and job._deps:size() > 0 and job._deps:last()
+end
+
 -- add job to the given job node
 --
 -- @param name      the job name

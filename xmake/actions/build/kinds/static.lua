@@ -24,7 +24,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.depend")
-import("object")
+import("object", {alias = "add_batchjobs_for_object"})
 
 -- do link target 
 function _do_link_target(target, opt)
@@ -143,7 +143,7 @@ function _link_target(target, opt)
     end
 
     -- on link
-    target:script("link", _on_link_target)(target, table.join(opt, {origin = _do_link_target}))
+    target:script("link", _on_link_target)(target, opt)
 
     -- do after link for target
     local after_link = target:script("link_after")
@@ -160,12 +160,10 @@ function _link_target(target, opt)
     end
 end
 
--- build static target
-function build(target, opt)
-
-    -- build objects
-    object.build(target, opt)
-
-    -- link target
-    _link_target(target, opt)
+-- add batch jobs for building static target
+function main(batchjobs, rootjob, target)
+    local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
+        _link_target(target, {progress = (index * 100) / total})
+    end)
+    return add_batchjobs_for_object(batchjobs, job_link, target)
 end
