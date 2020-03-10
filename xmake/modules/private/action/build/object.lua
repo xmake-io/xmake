@@ -93,7 +93,9 @@ function _build_object(target, sourcebatch, index, opt)
     local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
 
     -- init build option
-    local opt = table.join(opt, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = opt.progress})
+    opt.objectfile = objectfile
+    opt.dependfile = dependfile
+    opt.sourcekind = sourcekind
 
     -- do before build
     local before_build_file = target:script("build_file_before")
@@ -104,9 +106,7 @@ function _build_object(target, sourcebatch, index, opt)
     -- do build 
     local on_build_file = target:script("build_file")
     if on_build_file then
-        opt.origin = _do_build_file
         on_build_file(target, sourcefile, opt)
-        opt.origin = nil
     else
         _do_build_file(target, sourcefile, opt)
     end
@@ -118,14 +118,12 @@ function _build_object(target, sourcebatch, index, opt)
     end
 end
 
--- build the source files
-function main(target, sourcebatch, opt)
-
-    -- get the max job count
-    local jobs = tonumber(option.get("jobs") or "4")
-
-    -- run build jobs for each source file 
-    runjobs("build_objects", function (index)
-        _build_object(target, sourcebatch, index, opt)
-    end, {total = #sourcebatch.sourcefiles, comax = jobs})
+-- add batch jobs to build the source files
+function main(target, batchjobs, sourcebatch, opt)
+    local rootjob = opt.rootjob
+    for i = 1, #sourcebatch.sourcefiles do
+        batchjobs:addjob(tostring(i), function (index, total)
+            _build_object(target, sourcebatch, i, {progress = (index * 100) / total})
+        end, rootjob)
+    end
 end

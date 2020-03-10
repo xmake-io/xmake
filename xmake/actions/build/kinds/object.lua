@@ -37,7 +37,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
     local script = ruleinst:script(scriptname)
     if script then
         if ruleinst:extraconf(scriptname, "batch") then
-            assert(script(target, batchjobs, sourcebatch, {rootjob = rootjob}), "rule(%s):%s(): no returned job!", rulename, scriptname)
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
         else
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
@@ -66,7 +66,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
     local script = target:script(scriptname)
     if script then
         if target:extraconf(scriptname, "batch") then
-            assert(script(target, batchjobs, sourcebatch, {rootjob = rootjob}), "target(%s):%s(): no returned job!", target:name(), scriptname)
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
         else
             batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})

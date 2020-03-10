@@ -28,7 +28,7 @@ rule("c.build.pcheader")
 rule("c.build")
     set_sourcekinds("cc")
     add_deps("c.build.pcheader")
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: c++.build.pcheader
 rule("c++.build.pcheader")
@@ -40,7 +40,7 @@ rule("c++.build.pcheader")
 rule("c++.build")
     set_sourcekinds("cxx")
     add_deps("c++.build.pcheader", "c++.build.modules")
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: cpp
 rule("c++")
