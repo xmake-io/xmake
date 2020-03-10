@@ -56,7 +56,7 @@ function _register_required_package(instance, requireinfo)
         local hasenvs = false
         local installdir = instance:installdir()
         for name, values in pairs(instance:envs()) do
-            if name == "PATH" then
+            if name == "PATH" or name == "LD_LIBRARY_PATH" then
                 for _, value in ipairs(values) do
                     envs[name] = envs[name] or {}
                     if path.is_absolute(value) then

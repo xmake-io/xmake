@@ -395,6 +395,10 @@ function _instance:envs()
         if self:kind() == "binary" then
             envs.PATH = {"bin"}
         end
+        -- add LD_LIBRARY_PATH to load *.so directory
+        if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) then
+            envs.LD_LIBRARY_PATH = {"lib"}
+        end
         self._ENVS = envs
     end
     return envs
@@ -425,12 +429,13 @@ function _instance:envs_enter()
     local installdir = self:installdir()
     for name, values in pairs(self:envs()) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
-        if name == "PATH" then
+        if name == "PATH" or name == "LD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
                     os.addenv(name, value)
                 else
                     os.addenv(name, path.join(installdir, value))
+                    print(name, path.join(installdir, value))
                 end
             end
         else
