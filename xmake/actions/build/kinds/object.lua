@@ -39,7 +39,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         if ruleinst:extraconf(scriptname, "batch") then
             assert(script(target, batchjobs, sourcebatch, {rootjob = rootjob}), "rule(%s):%s(): no returned job!", rulename, scriptname)
         else
-            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname .. "/sourcefiles", function (index, total)
+            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
             end, rootjob)
         end
@@ -48,7 +48,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         script = ruleinst:script(scriptname)
         if script then
             local sourcekind = sourcebatch.sourcekind
-            local jobname = "rule/" .. rulename .. "/" .. scriptname .. "/sourcefile/"
+            local jobname = "rule/" .. rulename .. "/" .. scriptname .. "/"
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(jobname .. idx, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
@@ -68,21 +68,23 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
         if target:extraconf(scriptname, "batch") then
             assert(script(target, batchjobs, sourcebatch, {rootjob = rootjob}), "target(%s):%s(): no returned job!", target:name(), scriptname)
         else
-            batchjobs:addjob(target:name() .. "/" .. scriptname .. "/sourcefiles", function (index, total)
+            batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
             end, rootjob)
         end
+        return true
     else
         scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
         script = target:script(scriptname)
         if script then
             local sourcekind = sourcebatch.sourcekind
-            local jobname = target:name() .. "/" .. scriptname .. "/sourcefile/"
+            local jobname = target:name() .. "/" .. scriptname .. "/"
             for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(jobname .. idx, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
                 end, rootjob)
             end
+            return true
         end
     end
 end
@@ -91,24 +93,42 @@ end
 function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches)
 
     -- add batch jobs for build_after
+    local job_build_after = batchjobs:newgroup(target:name() .. "/after_build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, "after")
-        _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, "after")
+        _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch, "after")
+        _add_batchjobs_for_target(batchjobs, job_build_after, target, sourcebatch, "after")
+    end
+    if batchjobs:depsize(job_build_after) > 0 then
+        batchjobs:add(job_build_after, rootjob)
+    else
+        job_build_after = rootjob
     end
 
     -- add source batches
-    local job_build_after = batchjobs:lastdep(rootjob) or rootjob
+    local job_build = batchjobs:newgroup(target:name() .. "/build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_target(target, job_build_after, target, sourcebatch)
+        if not _add_batchjobs_for_target(target, job_build, target, sourcebatch) then
+            _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch)
+        end
+    end
+    if batchjobs:depsize(job_build) > 0 then
+        batchjobs:add(job_build, job_build_after)
+    else
+        job_build = job_build_after
     end
 
     -- add source batches with custom rules before building other sources
-    local job_build = batchjobs:lastdep(job_build_after) or job_build_after
+    local job_build_before = batchjobs:newgroup(target:name() .. "/before_build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch, "before")
-        _add_batchjobs_for_target(batchjobs, job_build, target, sourcebatch, "before")
+        _add_batchjobs_for_rule(batchjobs, job_build_before, target, sourcebatch, "before")
+        _add_batchjobs_for_target(batchjobs, job_build_before, target, sourcebatch, "before")
     end
-    return batchjobs:lastdep(job_build) or job_build
+    if batchjobs:depsize(job_build_before) > 0 then
+        batchjobs:add(job_build_before, job_build)
+    else
+        job_build_before = job_build
+    end
+    return job_build_before
 end
 
 -- add batch jobs for building object files

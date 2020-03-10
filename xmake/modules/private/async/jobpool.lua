@@ -23,11 +23,16 @@ import("core.base.dlist")
 import("core.base.object")
 
 -- define module
-local jobpool = jobpool or object {_init = {"_count", "_rootjob", "_leafjobs"}}
+local jobpool = jobpool or object {_init = {"_size", "_rootjob", "_leafjobs"}}
 
--- get jobs count
-function jobpool:count()
-    return self._count
+-- get jobs size
+function jobpool:size()
+    return self._size
+end
+
+-- get dependent jobs size of the given job
+function jobpool:depsize(job)
+    return job._deps and job._deps:size() or 0
 end
 
 -- get root job
@@ -44,12 +49,24 @@ function jobpool:newjob(name, run)
     return {name = name, run = run}
 end
 
--- get the last dependent job of the given job
-function jobpool:lastdep(job)
-    return job._deps and job._deps:size() > 0 and job._deps:last()
+-- new group
+--
+-- @param name      the group name
+--
+function jobpool:newgroup(name)
+    return self:newjob(name)
 end
 
--- add job to the given job node
+-- add group to the given job node
+--
+-- @param name      the group name
+-- @param rootjob   the root job node (optional)
+--
+function jobpool:addgroup(name, rootjob)
+    return self:addjob(name, nil, rootjob)
+end
+
+-- add run job to the given job node
 --
 -- @param name      the job name
 -- @param run       the run command/script
@@ -60,15 +77,29 @@ function jobpool:addjob(name, run, rootjob)
     local job = {name = name, run = run, _parent = rootjob}
     rootjob._deps = rootjob._deps or dlist:new()
     rootjob._deps:push(job)
-    self._count = self._count + 1
+    self._size = self._size + 1
+    return job
+end
+
+-- add job to the given job node
+--
+-- @param job       the job or group
+-- @param rootjob   the root job node (optional)
+--
+function jobpool:add(job, rootjob)
+    rootjob = rootjob or self:rootjob()
+    rootjob._deps = rootjob._deps or dlist:new()
+    rootjob._deps:push(job)
+    job._parent = rootjob
+    self._size = self._size + 1
     return job
 end
 
 -- pop job without deps at leaf node 
-function jobpool:popjob()
+function jobpool:pop()
 
     -- no jobs?
-    if self:count() == 0 then
+    if self:size() == 0 then
         return 
     end
 
@@ -81,8 +112,8 @@ function jobpool:popjob()
     -- pop a job from the leaf jobs
     if #leafjobs > 0 then
 
-        -- update jobs count
-        self._count = self._count - 1
+        -- update jobs size
+        self._size = self._size - 1
 
         -- get job
         local job = leafjobs[#leafjobs]
@@ -93,7 +124,7 @@ function jobpool:popjob()
         local parent = assert(job._parent, "invalid job without parent node!")
         parent._priority = math.max(parent._priority or 0, priority + 1)
         parent._deps:remove(job)
-        if parent._deps:empty() and self._count > 0 then
+        if parent._deps:empty() and self._size > 0 then
             table.insert(leafjobs, 1, parent)
         end
         return job, priority

@@ -211,7 +211,7 @@ function main(targetname)
     -- build all jobs
     local batchjobs = _get_batchjobs(targetname)
     print(batchjobs)
-    if batchjobs and batchjobs:count() > 0 then
+    if batchjobs and batchjobs:size() > 0 then
         environment.enter("toolchains")
         runjobs("build", batchjobs, {comax = option.get("jobs") or 1})
         environment.leave("toolchains")

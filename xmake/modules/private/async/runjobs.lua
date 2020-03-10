@@ -62,7 +62,7 @@ function main(name, jobs, opt)
 
     -- init options
     op = opt or {}
-    local total = opt.total or (type(jobs) == "table" and jobs:count()) or 1
+    local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
     local comax = opt.comax or total
     local timeout = opt.timeout or 500
     local group_name = name
@@ -152,7 +152,7 @@ function main(name, jobs, opt)
                 if not jobs_cb then
                     
                     -- get job priority 
-                    local job, priority = job_pending or jobs:popjob()
+                    local job, priority = job_pending or jobs:pop()
                     if not job then
                         break
                     end
@@ -180,7 +180,9 @@ function main(name, jobs, opt)
                     try
                     { 
                         function()
-                            jobfunc(i, total)
+                            if jobfunc then
+                                jobfunc(i, total)
+                            end
                         end,
                         catch
                         {

@@ -168,6 +168,6 @@ end
 function main(batchjobs, rootjob, target)
     local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
         _link_target(target, {progress = (index * 100) / total})
-    end)
+    end, rootjob)
     return add_batchjobs_for_object(batchjobs, job_link, target)
 end
