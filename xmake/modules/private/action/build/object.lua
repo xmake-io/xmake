@@ -84,7 +84,7 @@ function _do_build_file(target, sourcefile, opt)
 end
 
 -- build object
-function _build_object(target, sourcebatch, opt)
+function _build_object(target, sourcefile, opt)
 
     -- do before build
     local before_build_file = target:script("build_file_before")
@@ -116,7 +116,7 @@ function main(target, batchjobs, sourcebatch, opt)
         local dependfile = sourcebatch.dependfiles[i]
         local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         batchjobs:addjob(sourcefile, function (index, total)
-            _build_object(target, sourcebatch, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total})
+            _build_object(target, sourcefile, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total})
         end, rootjob)
     end
 end

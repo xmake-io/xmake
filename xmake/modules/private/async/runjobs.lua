@@ -152,7 +152,13 @@ function main(name, jobs, opt)
                 if not jobs_cb then
                     
                     -- get job priority 
-                    local job, priority = job_pending or jobs:pop()
+                    local job, priority
+                    if job_pending then
+                        job = job_pending
+                        priority = priority_prev
+                    else
+                        job, priority = jobs:pop()
+                    end
                     if not job then
                         break
                     end
