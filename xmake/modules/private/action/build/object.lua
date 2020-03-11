@@ -84,18 +84,7 @@ function _do_build_file(target, sourcefile, opt)
 end
 
 -- build object
-function _build_object(target, sourcebatch, index, opt)
-
-    -- get the object and source with the given index
-    local sourcefile = sourcebatch.sourcefiles[index]
-    local objectfile = sourcebatch.objectfiles[index]
-    local dependfile = sourcebatch.dependfiles[index]
-    local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-
-    -- init build option
-    opt.objectfile = objectfile
-    opt.dependfile = dependfile
-    opt.sourcekind = sourcekind
+function _build_object(target, sourcebatch, opt)
 
     -- do before build
     local before_build_file = target:script("build_file_before")
@@ -122,8 +111,12 @@ end
 function main(target, batchjobs, sourcebatch, opt)
     local rootjob = opt.rootjob
     for i = 1, #sourcebatch.sourcefiles do
-        batchjobs:addjob(tostring(i), function (index, total)
-            _build_object(target, sourcebatch, i, {progress = (index * 100) / total})
+        local sourcefile = sourcebatch.sourcefiles[i]
+        local objectfile = sourcebatch.objectfiles[i]
+        local dependfile = sourcebatch.dependfiles[i]
+        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        batchjobs:addjob(sourcefile, function (index, total)
+            _build_object(target, sourcebatch, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total})
         end, rootjob)
     end
 end
