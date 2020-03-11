@@ -28,6 +28,8 @@ function _link(framework, major)
         local debug_suffix = "_debug"
         if is_plat("windows") then
             debug_suffix = "d"
+        elseif is_plat("mingw") then
+            debug_suffix = "d"
         elseif is_plat("android") then
             debug_suffix = ""
         end
@@ -41,6 +43,8 @@ function _find_static_links(linkdirs, libpattern)
     local links = {}
     local debug_suffix = "_debug"
     if is_plat("windows") then
+        debug_suffix = "d"
+    elseif is_plat("mingw") then
         debug_suffix = "d"
     elseif is_plat("android") then
         debug_suffix = ""
