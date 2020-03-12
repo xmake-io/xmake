@@ -70,11 +70,15 @@ function main(platform)
             platform:add("shflags", "-gcc-toolchain " .. gcc_toolchain)
         end
     else
+        local march = arch
+        if arch == "arm64-v8a" then
+            march = "armv8-a"
+        end
         -- old version ndk
-        platform:add("cxflags", "-march=" .. arch)
-        platform:add("asflags", "-march=" .. arch)
-        platform:add("ldflags", "-march=" .. arch)
-        platform:add("shflags", "-march=" .. arch)
+        platform:add("cxflags", "-march=" .. march)
+        platform:add("asflags", "-march=" .. march)
+        platform:add("ldflags", "-march=" .. march)
+        platform:add("shflags", "-march=" .. march)
     end
 
     -- init cxflags for the target kind: binary 
