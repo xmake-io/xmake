@@ -48,9 +48,8 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         script = ruleinst:script(scriptname)
         if script then
             local sourcekind = sourcebatch.sourcekind
-            local jobname = "rule/" .. rulename .. "/" .. scriptname .. "/"
-            for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                batchjobs:addjob(jobname .. idx, function (index, total)
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
                 end, rootjob)
             end
@@ -78,9 +77,8 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
         script = target:script(scriptname)
         if script then
             local sourcekind = sourcebatch.sourcekind
-            local jobname = target:name() .. "/" .. scriptname .. "/"
-            for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                batchjobs:addjob(jobname .. idx, function (index, total)
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
                 end, rootjob)
             end
