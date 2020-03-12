@@ -130,7 +130,7 @@ function install(package, configs, opt)
             os.cp("**.exp", package:installdir("lib"))
         end
     else
-        argv = {"-j" .. option.get("jobs")}
+        argv = {"-j4"}
         if option.get("verbose") then
             table.insert(argv, "VERBOSE=1")
         end

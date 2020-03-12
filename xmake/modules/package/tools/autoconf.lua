@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.project.config")
 
 -- get configs
@@ -164,7 +163,7 @@ function install(package, configs, opt)
     configure(package, configs, opt)
 
     -- do make and install
-    os.vrun("make -j" .. option.get("jobs"))
+    os.vrun("make -j4")
     os.vrun("make install")
 end
 
