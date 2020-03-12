@@ -157,7 +157,7 @@ function main(name, jobs, opt)
                         job = job_pending
                         priority = priority_prev
                     else
-                        job, priority = jobs:pop()
+                        job, priority = jobs:popjob()
                     end
                     if not job then
                         break

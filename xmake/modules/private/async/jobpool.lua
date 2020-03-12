@@ -30,40 +30,9 @@ function jobpool:size()
     return self._size
 end
 
--- get dependent jobs size of the given job
-function jobpool:depsize(job)
-    return job._deps and job._deps:size() or 0
-end
-
 -- get root job
 function jobpool:rootjob()
     return self._rootjob
-end
-
--- new job 
---
--- @param name      the job name
--- @param run       the run command/script
---
-function jobpool:newjob(name, run)
-    return {name = name, run = run}
-end
-
--- new group
---
--- @param name      the group name
---
-function jobpool:newgroup(name)
-    return self:newjob(name)
-end
-
--- add group to the given job node
---
--- @param name      the group name
--- @param rootjob   the root job node (optional)
---
-function jobpool:addgroup(name, rootjob)
-    return self:addjob(name, nil, rootjob)
 end
 
 -- add run job to the given job node
@@ -73,30 +42,28 @@ end
 -- @param rootjob   the root job node (optional)
 --
 function jobpool:addjob(name, run, rootjob)
+    
+    -- add job to the root job
     rootjob = rootjob or self:rootjob()
     local job = {name = name, run = run, _parent = rootjob}
     rootjob._deps = rootjob._deps or dlist:new()
     rootjob._deps:push(job)
     self._size = self._size + 1
-    return job
-end
 
--- add job to the given job node
---
--- @param job       the job or group
--- @param rootjob   the root job node (optional)
---
-function jobpool:add(job, rootjob)
-    rootjob = rootjob or self:rootjob()
-    rootjob._deps = rootjob._deps or dlist:new()
-    rootjob._deps:push(job)
-    job._parent = rootjob
-    self._size = self._size + 1
+    -- in group? attach the group node
+    local group = self._group
+    if group then
+        job._deps = job._deps or dlist:new()
+        job._deps:push(group)
+        group._parent = group._parent or {}
+        table.insert(group._parent, job)
+        self._size = self._size + 1
+    end
     return job
 end
 
 -- pop job without deps at leaf node 
-function jobpool:pop()
+function jobpool:popjob()
 
     -- no jobs?
     if self:size() == 0 then
@@ -131,6 +98,27 @@ function jobpool:pop()
     end
 end
 
+-- enter group
+--
+-- @param name      the group name
+--
+function jobpool:group_enter(name)
+    assert(not self._group, "jobpool: cannot enter group(%s)!", name)
+    self._group = {name = name, group = true}
+end
+
+-- leave group
+--
+-- @return          the group node
+--
+function jobpool:group_leave()
+    local group = self._group
+    self._group = nil
+    if group and group._parent then
+        return group
+    end
+end
+
 -- generate all leaf jobs from the given job
 function jobpool:_genleafjobs(job, leafjobs)
     local deps = job._deps
@@ -144,20 +132,39 @@ function jobpool:_genleafjobs(job, leafjobs)
 end
 
 -- generate jobs tree for the given job
-function jobpool:_gentree(job)
-    local tree = {job.name}
+function jobpool:_gentree(job, groups)
+    local tree = {job.group and ("group(" .. job.name .. ")") or job.name}
     local deps = job._deps
     if deps and not deps:empty() then
         for dep in deps:items() do
-            table.insert(tree, self:_gentree(dep))
+            if dep.group then
+                if not groups[dep.name] then
+                    groups[dep.name] = true
+                    table.insert(tree, self:_gentree(dep, groups))
+                end
+            else
+                table.insert(tree, self:_gentree(dep, groups))
+            end
         end
     end
-    return tree
+    -- strip tree
+    local smalltree = {}
+    for _, item in ipairs(tree) do
+        item = table.unwrap(item)
+        if #smalltree < 16 or type(item) == "table" then
+            table.insert(smalltree, item)
+        else
+            table.insert(smalltree, "...")
+            break
+        end
+    end
+    return smalltree
 end
 
 -- tostring
 function jobpool:__tostring()
-    return string.serialize(self:_gentree(self:rootjob()), {indent = 2})
+    local groups = {}
+    return string.serialize(self:_gentree(self:rootjob(), groups), {indent = 2})
 end
 
 -- new a jobpool

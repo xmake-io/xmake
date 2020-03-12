@@ -91,42 +91,29 @@ end
 function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches)
 
     -- add batch jobs for build_after
-    local job_build_after = batchjobs:newgroup(target:name() .. "/after_build_files")
+    batchjobs:group_enter(target:name() .. "/after_build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch, "after")
-        _add_batchjobs_for_target(batchjobs, job_build_after, target, sourcebatch, "after")
+        _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, "after")
+        _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, "after")
     end
-    if batchjobs:depsize(job_build_after) > 0 then
-        batchjobs:add(job_build_after, rootjob)
-    else
-        job_build_after = rootjob
-    end
+    local job_build_after = batchjobs:group_leave() or rootjob
 
     -- add source batches
-    local job_build = batchjobs:newgroup(target:name() .. "/build_files")
+    batchjobs:group_enter(target:name() .. "/build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        if not _add_batchjobs_for_target(target, job_build, target, sourcebatch) then
-            _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch)
+        if not _add_batchjobs_for_target(target, job_build_after, target, sourcebatch) then
+            _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch)
         end
     end
-    if batchjobs:depsize(job_build) > 0 then
-        batchjobs:add(job_build, job_build_after)
-    else
-        job_build = job_build_after
-    end
+    local job_build = batchjobs:group_leave() or job_build_after
 
     -- add source batches with custom rules before building other sources
-    local job_build_before = batchjobs:newgroup(target:name() .. "/before_build_files")
+    batchjobs:group_enter(target:name() .. "/before_build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        _add_batchjobs_for_rule(batchjobs, job_build_before, target, sourcebatch, "before")
-        _add_batchjobs_for_target(batchjobs, job_build_before, target, sourcebatch, "before")
+        _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch, "before")
+        _add_batchjobs_for_target(batchjobs, job_build, target, sourcebatch, "before")
     end
-    if batchjobs:depsize(job_build_before) > 0 then
-        batchjobs:add(job_build_before, job_build)
-    else
-        job_build_before = job_build
-    end
-    return job_build_before
+    return batchjobs:group_leave() or job_build
 end
 
 -- add batch jobs for building object files
