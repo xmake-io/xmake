@@ -130,8 +130,12 @@ function install(package, configs, opt)
             os.cp("**.exp", package:installdir("lib"))
         end
     else
-        os.vrun("make -j4")
-        os.vrun("make install")
+        argv = {"-j" .. option.get("jobs")}
+        if option.get("verbose") then
+            table.insert(argv, "VERBOSE=1")
+        end
+        os.vrunv("make", argv)
+        os.vrunv("make", {"install"})
         os.cp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end
