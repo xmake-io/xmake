@@ -85,25 +85,9 @@ end
 
 -- build object
 function _build_object(target, sourcefile, opt)
-
-    -- do before build
-    local before_build_file = target:script("build_file_before")
-    if before_build_file then
-        before_build_file(target, sourcefile, opt)
-    end
-
-    -- do build 
-    local on_build_file = target:script("build_file")
-    if on_build_file then
-        on_build_file(target, sourcefile, opt)
-    else
-        _do_build_file(target, sourcefile, opt)
-    end
-
-    -- do after build
-    local after_build_file = target:script("build_file_after")
-    if after_build_file then
-        after_build_file(target, sourcefile, opt)
+    local script = target:script("build_file", _do_build_file)
+    if script then
+        script(target, sourcefile, opt)
     end
 end
 
