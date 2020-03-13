@@ -91,6 +91,17 @@ function _build_object(target, sourcefile, opt)
     end
 end
 
+-- build the source files
+function build(target, sourcebatch, opt)
+    for i = 1, #sourcebatch.sourcefiles do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        local objectfile = sourcebatch.objectfiles[i]
+        local dependfile = sourcebatch.dependfiles[i]
+        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        _build_object(target, sourcefile, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = opt.progress})
+    end
+end
+
 -- add batch jobs to build the source files
 function main(target, batchjobs, sourcebatch, opt)
     local rootjob = opt.rootjob
