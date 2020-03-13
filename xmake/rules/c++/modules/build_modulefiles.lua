@@ -35,7 +35,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 
     -- compile module files to *.pcm
-    opt = table.join(opt, {configs = {cxxflags = {"-fmodules-ts", "--precompile", "-x c++-module"}}})
+    opt = table.join(opt, {configs = {force = {cxxflags = {"-fmodules-ts", "--precompile", "-x c++-module"}}}})
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- compile *.pcm to object files
