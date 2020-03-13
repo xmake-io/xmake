@@ -95,10 +95,10 @@ end
 function build(target, sourcebatch, opt)
     for i = 1, #sourcebatch.sourcefiles do
         local sourcefile = sourcebatch.sourcefiles[i]
-        local objectfile = sourcebatch.objectfiles[i]
-        local dependfile = sourcebatch.dependfiles[i]
-        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-        _build_object(target, sourcefile, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = opt.progress})
+        opt.objectfile   = sourcebatch.objectfiles[i]
+        opt.dependfile   = sourcebatch.dependfiles[i]
+        opt.sourcekind   = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        _build_object(target, sourcefile, opt)
     end
 end
 
@@ -107,11 +107,12 @@ function main(target, batchjobs, sourcebatch, opt)
     local rootjob = opt.rootjob
     for i = 1, #sourcebatch.sourcefiles do
         local sourcefile = sourcebatch.sourcefiles[i]
-        local objectfile = sourcebatch.objectfiles[i]
-        local dependfile = sourcebatch.dependfiles[i]
-        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        opt.objectfile   = sourcebatch.objectfiles[i]
+        opt.dependfile   = sourcebatch.dependfiles[i]
+        opt.sourcekind   = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         batchjobs:addjob(sourcefile, function (index, total)
-            _build_object(target, sourcefile, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total})
+            opt.progress = (index * 100) / total
+            _build_object(target, sourcefile, opt)
         end, rootjob)
     end
 end
