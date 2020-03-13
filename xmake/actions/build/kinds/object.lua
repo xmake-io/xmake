@@ -40,7 +40,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             script(target, batchjobs, sourcebatch, {rootjob = rootjob})
         else
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
-                script(target, sourcebatch, {progress = (index * 100) / total})
+                script(target, batchjobs, sourcebatch, {progress = (index * 100) / total})
             end, rootjob)
         end
     else
