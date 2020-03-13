@@ -36,7 +36,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
 
     -- compile module files to *.pcm
     opt = table.join(opt, {configs = {cxxflags = {"-fmodules-ts", "--precompile", "-x c++-module"}}})
-    import("private.action.build.object")(target, sourcebatch, opt)
+    import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- compile *.pcm to object files
     local modulefiles = {}
@@ -50,7 +50,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
     opt.configs = {cxxflags = {"-fmodules-ts"}}
     opt.quiet   = true
-    import("private.action.build.object")(target, sourcebatch, opt)
+    import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
     target:add("cxxflags", "-fmodules-ts")
@@ -78,7 +78,7 @@ function _build_modulefiles_gcc(target, sourcebatch, opt)
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
         opt.configs.cxxflags = {"-fmodules-ts", "-fmodule-output=" .. modulefile, "-x c++"}
-        import("private.action.build.object")(target, singlebatch, opt)
+        import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
@@ -108,7 +108,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
         opt.configs.cxxflags = {"/experimental:module /module:interface /module:output " .. os.args(modulefile), "/TP"}
-        import("private.action.build.object")(target, singlebatch, opt)
+        import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
