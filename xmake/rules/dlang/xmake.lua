@@ -21,7 +21,7 @@
 -- define rule: dlang.build
 rule("dlang.build")
     set_sourcekinds("dc")    
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: dlang
 rule("dlang")

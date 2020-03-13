@@ -21,7 +21,7 @@
 -- define rule: asm.build
 rule("asm.build")
     set_sourcekinds("as")    
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: asm
 rule("asm")

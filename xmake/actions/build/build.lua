@@ -185,8 +185,8 @@ function _get_batchjobs(targetname)
             if default == nil or default == true or option.get("all") then
                 for _, depname in ipairs(target:get("deps")) do
                     depset:insert(depname)
-                    table.insert(targets, target)
                 end
+                table.insert(targets, target)
             end
         end
         for _, target in pairs(targets) do

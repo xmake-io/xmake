@@ -26,7 +26,7 @@ import("core.tool.compiler")
 import("core.project.depend")
 
 -- build the source files
-function main(target, sourcebatch, opt)
+function _build_sourcefiles(target, sourcebatch, opt)
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -72,16 +72,11 @@ function main(target, sourcebatch, opt)
 
     -- trace progress info
     for index, sourcefile in ipairs(sourcefiles) do
-
-        -- calculate progress
-        local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / #sourcefiles
-
-        -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress_now)
+        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
         if verbose then
-            cprint("${dim color.build.object}compiling.$(mode) %s", sourcefile)
+            cprint(progress_prefix .. "${dim color.build.object}compiling.$(mode) %s", progress, sourcefile)
         else
-            cprint("${color.build.object}compiling.$(mode) %s", sourcefile)
+            cprint(progress_prefix .. "${color.build.object}compiling.$(mode) %s", progress, sourcefile)
         end
     end
 
@@ -89,9 +84,6 @@ function main(target, sourcebatch, opt)
     if verbose then
         print(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
     end
-
-    -- flush io buffer to update progress info
-    io.flush()
 
     -- compile it 
     dependinfo.files = {}
@@ -101,4 +93,11 @@ function main(target, sourcebatch, opt)
     dependinfo.values = depvalues
     table.join2(dependinfo.files, sourcefiles)
     depend.save(dependinfo, dependfile)
+end
+
+-- add batch jobs to build the source files
+function main(target, batchjobs, sourcebatch, opt)
+    return batchjobs:addjob(target:name() .. "/build_files", function (index, total)
+        _build_sourcefiles(target, sourcebatch, {progress = (index * 100) / total})
+    end, opt.rootjob)
 end

@@ -21,7 +21,7 @@
 -- define rule: swift.build
 rule("swift.build")
     set_sourcekinds("sc")    
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: swift
 rule("swift")

@@ -21,7 +21,7 @@
 -- define rule: win.sdk.resource
 rule("win.sdk.resource")
     set_extensions(".rc")    
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: application
 rule("win.sdk.application")
