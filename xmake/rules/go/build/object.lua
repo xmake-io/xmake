@@ -26,7 +26,7 @@ import("core.tool.compiler")
 import("core.project.depend")
 
 -- build the source files
-function _build_sourcefiles(target, sourcebatch, opt)
+function main(target, sourcebatch, opt)
 
     -- is verbose?
     local verbose = option.get("verbose")
@@ -95,9 +95,3 @@ function _build_sourcefiles(target, sourcebatch, opt)
     depend.save(dependinfo, dependfile)
 end
 
--- add batch jobs to build the source files
-function main(target, batchjobs, sourcebatch, opt)
-    return batchjobs:addjob(target:name() .. "/build_files", function (index, total)
-        _build_sourcefiles(target, sourcebatch, {progress = (index * 100) / total})
-    end, opt.rootjob)
-end

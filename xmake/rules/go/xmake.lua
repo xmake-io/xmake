@@ -21,7 +21,7 @@
 -- define rule: go.build
 rule("go.build")
     set_sourcekinds("gc")    
-    on_build_files("build.object", {batch = true})
+    on_build_files("build.object")
 
 -- define rule: cpp
 rule("go")
