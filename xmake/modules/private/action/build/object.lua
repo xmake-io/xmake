@@ -107,12 +107,12 @@ function main(target, batchjobs, sourcebatch, opt)
     local rootjob = opt.rootjob
     for i = 1, #sourcebatch.sourcefiles do
         local sourcefile = sourcebatch.sourcefiles[i]
-        opt.objectfile   = sourcebatch.objectfiles[i]
-        opt.dependfile   = sourcebatch.dependfiles[i]
-        opt.sourcekind   = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        local objectfile = sourcebatch.objectfiles[i]
+        local dependfile = sourcebatch.dependfiles[i]
+        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         batchjobs:addjob(sourcefile, function (index, total)
-            opt.progress = (index * 100) / total
-            _build_object(target, sourcefile, opt)
+            local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total}, opt)
+            _build_object(target, sourcefile, build_opt)
         end, rootjob)
     end
 end
