@@ -147,7 +147,3 @@ target("test")
     add_files("src/index.md")
     add_files("src/test.c.in",  {rule = "c code"})
 
-    on_load(function (target)
-        print(target:sourcefiles())
-        print(target:objectfiles())
-    end)
