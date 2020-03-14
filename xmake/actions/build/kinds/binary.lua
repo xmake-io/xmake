@@ -153,11 +153,17 @@ end
 
 -- add batch jobs for building binary target
 function main(batchjobs, rootjob, target)
-    -- we need only return and depend the link job for each target,
-    -- so we can compile the source files for each target in parallel
+
+    -- add link job
     local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
         _link_target(target, {progress = (index * 100) / total})
     end, rootjob)
-    add_batchjobs_for_object(batchjobs, job_link, target)
-    return job_link
+
+    -- we need only return and depend the link job for each target,
+    -- so we can compile the source files for each target in parallel
+    --
+    -- unless call set_values("build.across_targets_in_parallel") to disable to build across targets in parallel.
+    --
+    local job_objects = add_batchjobs_for_object(batchjobs, job_link, target)
+    return target:values("build.across_targets_in_parallel") == false and job_objects or job_link
 end
