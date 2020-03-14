@@ -84,54 +84,35 @@ function _do_build_file(target, sourcefile, opt)
 end
 
 -- build object
-function _build_object(target, sourcebatch, index, opt)
-
-    -- get the object and source with the given index
-    local sourcefile = sourcebatch.sourcefiles[index]
-    local objectfile = sourcebatch.objectfiles[index]
-    local dependfile = sourcebatch.dependfiles[index]
-    local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-
-    -- get progress range
-    local progress = assert(opt.progress, "no progress!")
-
-    -- calculate progress
-    local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / #sourcebatch.sourcefiles
-
-    -- init build option
-    local opt = table.join(opt, {objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = progress_now})
-
-    -- do before build
-    local before_build_file = target:script("build_file_before")
-    if before_build_file then
-        before_build_file(target, sourcefile, opt)
-    end
-
-    -- do build 
-    local on_build_file = target:script("build_file")
-    if on_build_file then
-        opt.origin = _do_build_file
-        on_build_file(target, sourcefile, opt)
-        opt.origin = nil
-    else
-        _do_build_file(target, sourcefile, opt)
-    end
-
-    -- do after build
-    local after_build_file = target:script("build_file_after")
-    if after_build_file then
-        after_build_file(target, sourcefile, opt)
+function _build_object(target, sourcefile, opt)
+    local script = target:script("build_file", _do_build_file)
+    if script then
+        script(target, sourcefile, opt)
     end
 end
 
 -- build the source files
-function main(target, sourcebatch, opt)
+function build(target, sourcebatch, opt)
+    for i = 1, #sourcebatch.sourcefiles do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        opt.objectfile   = sourcebatch.objectfiles[i]
+        opt.dependfile   = sourcebatch.dependfiles[i]
+        opt.sourcekind   = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        _build_object(target, sourcefile, opt)
+    end
+end
 
-    -- get the max job count
-    local jobs = tonumber(option.get("jobs") or "4")
-
-    -- run build jobs for each source file 
-    runjobs("build_objects", function (index)
-        _build_object(target, sourcebatch, index, opt)
-    end, {total = #sourcebatch.sourcefiles, comax = jobs})
+-- add batch jobs to build the source files
+function main(target, batchjobs, sourcebatch, opt)
+    local rootjob = opt.rootjob
+    for i = 1, #sourcebatch.sourcefiles do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        local objectfile = sourcebatch.objectfiles[i]
+        local dependfile = sourcebatch.dependfiles[i]
+        local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+        batchjobs:addjob(sourcefile, function (index, total)
+            local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total}, opt)
+            _build_object(target, sourcefile, build_opt)
+        end, rootjob)
+    end
 end

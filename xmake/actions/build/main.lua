@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
+import("core.theme.theme")
 import("build")
 import("build_files")
 import("cleaner")
@@ -137,7 +138,6 @@ function main()
     os.cd(oldir)
 
     -- trace
-    if option.get("rebuild") then
-        cprint("${color.success}build ok!")
-    end
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    cprint(progress_prefix .. "${color.success}build ok!", 100)
 end

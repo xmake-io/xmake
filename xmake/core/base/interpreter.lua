@@ -286,6 +286,13 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
         -- get arguments, pattern1, pattern2, ..., script function or name
         local args = {...}
 
+        -- get and save extra config
+        local extra_config = args[#args]
+        if table.is_dictionary(extra_config) then 
+            table.remove(args)
+            scope["__extra_" .. name] = extra_config
+        end
+
         -- get patterns
         local patterns = {}
         if #args > 1 then

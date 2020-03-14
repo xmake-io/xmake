@@ -120,7 +120,7 @@ function _on_package_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_package = r:script("package")
         if on_package then
-            on_package(target, {origin = _do_package_target})
+            on_package(target)
             done = true
         end
     end
@@ -171,7 +171,7 @@ function _package(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, {origin = (i == 3 and _do_package_target or nil)})
+            script(target)
         end
     end
 

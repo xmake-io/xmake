@@ -25,140 +25,99 @@ import("core.project.config")
 import("core.project.project")
 import("private.async.runjobs")
 
--- build source files with the custom rule
-function _build_files_with_rule(target, sourcebatch, opt, suffix)
+-- add batch jobs for the custom rule
+function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix)
 
-    -- the rule name
+    -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-
-    -- get rule instance
     local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
-    -- get progress
-    local progress = opt.progress
-
-    -- on_build_files?
-    local on_build_files = ruleinst:script("build_files" .. (suffix and ("_" .. suffix) or ""))
-    if on_build_files then
-        opt = table.copy(opt)
-        if suffix == "before" then
-            opt.progress = {start = progress.start, stop = progress.start}
-        elseif suffix == "after" then
-            opt.progress = {start = progress.stop, stop = progress.stop}
+    -- add batch jobs
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        if ruleinst:extraconf(scriptname, "batch") then
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
+        else
+            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
+                script(target, sourcebatch, {progress = (index * 100) / total})
+            end, rootjob)
         end
-        on_build_files(target, sourcebatch, opt)
     else
-        -- get the build file script
-        local on_build_file = ruleinst:script("build_file" .. (suffix and ("_" .. suffix) or ""))
-        if on_build_file then
-
-            -- get the max job count
-            local jobs = tonumber(option.get("jobs") or "4")
-
-            -- run build jobs for each source file 
-            local curdir = os.curdir()
-            local sourcecount = #sourcebatch.sourcefiles
-            runjobs("build_files", function (index)
-
-                -- force to set the current directory first because the other jobs maybe changed it
-                os.cd(curdir)
-
-                -- get current progress
-                local progress_now = progress.start + ((index - 1) * (progress.stop - progress.start)) / sourcecount
-                if suffix == "before" then
-                    progress_now = progress.start
-                elseif suffix == "after" then
-                    progress_now = progress.stop
-                end
-
-                -- get source file
-                local sourcefile = sourcebatch.sourcefiles[index]
-
-                -- do build file
-                on_build_file(target, sourcefile, {sourcekind = sourcebatch.sourcekind, progress = progress_now})
-
-            end, {total = sourcecount, comax = jobs})
+        scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                batchjobs:addjob(sourcefile, function (index, total)
+                    script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                end, rootjob)
+            end
         end
     end
 end
 
--- do build files
-function _do_build_files(target, sourcebatch, opt)
-    _build_files_with_rule(target, sourcebatch, opt)
-end
+-- add batch jobs for target
+function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suffix)
 
--- build files
-function _build_files(target, sourcebatch, opt)
-
-    -- do before build
-    local before_build_files = target:script("build_files_before")
-    if before_build_files then
-        opt = table.copy(opt)
-        opt.progress = {start = progress.start, stop = progress.start}
-        before_build_files(target, sourcebatch, opt)
-    end
-
-    -- do build
-    local on_build_files = target:script("build_files")
-    if on_build_files then
-        opt.origin = _do_build_files
-        on_build_files(target, sourcebatch, opt)
-        opt.origin = nil
+    -- add batch jobs
+    local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
+    local script = target:script(scriptname)
+    if script then
+        if target:extraconf(scriptname, "batch") then
+            script(target, batchjobs, sourcebatch, {rootjob = rootjob})
+        else
+            batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
+                script(target, sourcebatch, {progress = (index * 100) / total})
+            end, rootjob)
+        end
+        return true
     else
-        _do_build_files(target, sourcebatch, opt)
-    end
-
-    -- do after build
-    local after_build_files = target:script("build_files_after")
-    if after_build_files then
-        opt = table.copy(opt)
-        opt.progress = {start = progress.stop, stop = progress.stop}
-        after_build_files(target, sourcebatch, opt)
-    end
-end
-
--- build source files
-function build_sourcefiles(target, sourcebatches, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- get progress range
-    local progress = assert(opt.progress, "no build progress!")
-
-    -- build source batches with custom rules before building other sources
-    for _, sourcebatch in pairs(sourcebatches) do
-        _build_files_with_rule(target, sourcebatch, opt, "before")
-    end
-
-    -- build source batches
-    local sourcestart = 0
-    local sourcestop  = 0
-    local sourcetotal = target:sourcecount()
-    for _, sourcebatch in pairs(sourcebatches) do
-
-        -- compute the sub-progress range
-        sourcestop = sourcestart + #sourcebatch.sourcefiles
-        local progress_range = progress.stop - progress.start
-        local progress_start = progress.start + (sourcestart * progress_range) / sourcetotal
-        local progress_stop  = progress.start + (sourcestop * progress_range) / sourcetotal
-        opt.progress = {start = progress_start, stop = progress_stop}
-        sourcestart = sourcestop
-
-        -- build files
-        _build_files(target, sourcebatch, opt)
-    end
-
-    -- build source batches with custom rules after building other sources
-    for _, sourcebatch in pairs(sourcebatches) do
-        _build_files_with_rule(target, sourcebatch, opt, "after")
+        scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
+        script = target:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                batchjobs:addjob(sourcefile, function (index, total)
+                    script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                end, rootjob)
+            end
+            return true
+        end
     end
 end
 
--- build objects for the given target
-function build(target, opt)
+-- add batch jobs for building source files
+function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches)
 
-    -- build source files
-    build_sourcefiles(target, target:sourcebatches(), opt)
+    -- add batch jobs for build_after
+    batchjobs:group_enter(target:name() .. "/after_build_files")
+    for _, sourcebatch in pairs(sourcebatches) do
+        _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, "after")
+        _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, "after")
+    end
+    local job_build_after = batchjobs:group_leave() or rootjob
+
+    -- add source batches
+    batchjobs:group_enter(target:name() .. "/build_files")
+    for _, sourcebatch in pairs(sourcebatches) do
+        if not _add_batchjobs_for_target(target, job_build_after, target, sourcebatch) then
+            _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch)
+        end
+    end
+    local job_build = batchjobs:group_leave() or job_build_after
+
+    -- add source batches with custom rules before building other sources
+    batchjobs:group_enter(target:name() .. "/before_build_files")
+    for _, sourcebatch in pairs(sourcebatches) do
+        _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch, "before")
+        _add_batchjobs_for_target(batchjobs, job_build, target, sourcebatch, "before")
+    end
+    return batchjobs:group_leave() or job_build
+end
+
+-- add batch jobs for building object files
+function main(batchjobs, rootjob, target)
+    return add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, target:sourcebatches())
 end
 

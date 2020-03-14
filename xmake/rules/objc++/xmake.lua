@@ -22,13 +22,13 @@
 rule("objc.build")
     set_sourcekinds("mm")
     add_deps("c.build.pcheader")
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: objc++.build
 rule("objc++.build")
     set_sourcekinds("mxx")
     add_deps("c++.build.pcheader")
-    on_build_files("private.action.build.object")
+    on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: objc
 rule("objc++")

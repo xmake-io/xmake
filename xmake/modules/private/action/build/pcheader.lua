@@ -22,27 +22,15 @@
 import("core.language.language")
 import("object")
 
--- build the precompiled header file
+-- add batch jobs to build the precompiled header file
 function main(target, langkind, opt)
-
-    -- get the precompiled header
     local pcheaderfile = target:pcheaderfile(langkind)
     if pcheaderfile then
-
-        -- init sourcefile, objectfile and dependfile
         local sourcefile = pcheaderfile
         local objectfile = target:pcoutputfile(langkind)
         local dependfile = target:dependfile(objectfile)
         local sourcekind = language.langkinds()[langkind]
-
-        -- init source batch
         local sourcebatch = {sourcekind = sourcekind, sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-
-        -- build this precompiled header
-        local progress = opt.progress
-        if type(progress) == "number" then
-            progress = {start = progress, stop = progress}
-        end
-        object(target, sourcebatch, {progress = progress})
+        object.build(target, sourcebatch, opt)
     end
 end

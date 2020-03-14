@@ -94,7 +94,7 @@ function _on_clean_target(target)
     for _, r in ipairs(target:orderules()) do
         local on_clean = r:script("clean")
         if on_clean then
-            on_clean(target, {origin = _do_clean_target})
+            on_clean(target)
             done = true
         end
     end
@@ -156,7 +156,7 @@ function _clean_target(target)
     for i = 1, 5 do
         local script = scripts[i]
         if script ~= nil then
-            script(target, {origin = (i == 3 and _do_clean_target or nil)})
+            script(target)
         end
     end
 

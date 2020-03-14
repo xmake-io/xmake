@@ -24,7 +24,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.depend")
-import("object")
+import("object", {alias = "add_batchjobs_for_object"})
 
 -- do link target 
 function _do_link_target(target, opt)
@@ -73,9 +73,9 @@ function _do_link_target(target, opt)
     -- trace progress info
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if verbose then
-        cprint(progress_prefix .. "${dim color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
+        cprint(progress_prefix .. "${dim color.build.target}linking.$(mode) %s", opt.progress, path.filename(targetfile))
     else
-        cprint(progress_prefix .. "${color.build.target}linking.$(mode) %s", opt.progress.stop, path.filename(targetfile))
+        cprint(progress_prefix .. "${color.build.target}linking.$(mode) %s", opt.progress, path.filename(targetfile))
     end
 
     -- trace verbose info
@@ -119,13 +119,7 @@ end
 -- link target
 function _link_target(target, opt)
 
-    -- get progress
-    local progress = opt.progress
-    local progress_before = {start = progress.start, stop = progress.start}
-    local progress_after  = {start = progress.stop, stop = progress.stop}
-
     -- do before link for target
-    opt.progress = progress_before
     local before_link = target:script("link_before")
     if before_link then
         before_link(target, opt)
@@ -140,11 +134,9 @@ function _link_target(target, opt)
     end
 
     -- on link
-    opt.progress = progress
-    target:script("link", _on_link_target)(target, table.join(opt, {origin = _do_link_target}))
+    target:script("link", _on_link_target)(target, opt)
 
     -- do after link for target
-    opt.progress = progress_after
     local after_link = target:script("link_after")
     if after_link then
         after_link(target, opt)
@@ -159,19 +151,19 @@ function _link_target(target, opt)
     end
 end
 
--- build binary target
-function build(target, opt)
+-- add batch jobs for building binary target
+function main(batchjobs, rootjob, target)
 
-    -- separate progress
-    local progress = opt.progress
-    local progress_mid = math.max(progress.start, progress.stop - 1)
+    -- add link job
+    local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
+        _link_target(target, {progress = (index * 100) / total})
+    end, rootjob)
 
-    -- build objects
-    opt = table.copy(opt)
-    opt.progress = {start = progress.start, stop = progress_mid}
-    object.build(target, opt)
-
-    -- link target
-    opt.progress = {start = progress_mid, stop = progress.stop}
-    _link_target(target, opt)
+    -- we need only return and depend the link job for each target,
+    -- so we can compile the source files for each target in parallel
+    --
+    -- unless call set_values("build.across_targets_in_parallel") to disable to build across targets in parallel.
+    --
+    local job_objects = add_batchjobs_for_object(batchjobs, job_link, target)
+    return target:values("build.across_targets_in_parallel") == false and job_objects or job_link
 end

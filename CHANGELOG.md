@@ -7,6 +7,10 @@
 * Add powershell theme for powershell terminal
 * Add `xmake --dry-run -v` to dry run building target and only show verbose build command.
 
+### Change
+
+* [#589](https://github.com/xmake-io/xmake/issues/589): Improve and optimize build speed, supports parallel compilation and linking across targets
+
 ## v2.3.1
 
 ### New features
@@ -690,6 +694,10 @@
 
 * 添加powershell色彩主题用于powershell终端下背景色显示
 * 添加`xmake --dry-run -v`命令去空运行构建，仅仅为了查看详细的构建命令
+
+### 改进
+
+* [#589](https://github.com/xmake-io/xmake/issues/589): 改进优化构建速度，支持跨目标间并行编译和link，编译速度和ninja基本持平
 
 ## v2.3.1
 

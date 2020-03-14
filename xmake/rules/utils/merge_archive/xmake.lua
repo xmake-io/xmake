@@ -25,7 +25,7 @@ rule("utils.merge.archive")
     set_extensions(".a", ".lib")
 
     -- on build file
-    on_build_file(function (target, sourcefile_lib, opt)
+    on_build_files(function (target, sourcebatch, opt)
 
         -- imports
         import("core.base.option")
@@ -34,43 +34,47 @@ rule("utils.merge.archive")
         import("core.tool.extractor")
         import("core.project.target", {alias = "project_target"})
 
-        -- get object directory of the archive file
-        local objectdir = target:objectfile(sourcefile_lib) .. ".dir"
+        -- @note we cannot process archives in parallel because the current directory may be changed
+        for i = 1, #sourcebatch.sourcefiles do
 
-        -- load dependent info 
-        local dependfile = target:dependfile(objectdir)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+            -- get library source file
+            local sourcefile_lib = sourcebatch.sourcefiles[i]
 
-        -- need build this object?
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectdir)}) then
+            -- get object directory of the archive file
+            local objectdir = target:objectfile(sourcefile_lib) .. ".dir"
+
+            -- load dependent info 
+            local dependfile = target:dependfile(objectdir)
+            local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+
+            -- need build this object?
+            if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectdir)}) then
+                local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
+                table.join2(target:objectfiles(), objectfiles)
+                return 
+            end
+
+            -- trace progress info
+            local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+            if option.get("verbose") then
+                cprint(progress_prefix .. "${dim color.build.object}inserting.$(mode) %s", opt.progress, sourcefile_lib)
+                print("extracting %s to %s", sourcefile_lib, objectdir)
+            else
+                cprint(progress_prefix .. "${color.build.object}inserting.$(mode) %s", opt.progress, sourcefile_lib)
+            end
+
+            -- extract the archive library 
+            os.tryrm(objectdir)
+            extractor.extract(sourcefile_lib, objectdir)
+
+            -- add objectfiles
             local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
             table.join2(target:objectfiles(), objectfiles)
-            return 
+
+            -- update files to the dependent file
+            dependinfo.files = {}
+            table.insert(dependinfo.files, sourcefile_lib)
+            depend.save(dependinfo, dependfile)
         end
-
-        -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}inserting.$(mode) %s", sourcefile_lib)
-            print("extracting %s to %s", sourcefile_lib, objectdir)
-        else
-            cprint("${color.build.object}inserting.$(mode) %s", sourcefile_lib)
-        end
-
-        -- flush io buffer to update progress info
-        io.flush()
-
-        -- extract the archive library 
-        os.tryrm(objectdir)
-        extractor.extract(sourcefile_lib, objectdir)
-
-        -- add objectfiles
-        local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
-        table.join2(target:objectfiles(), objectfiles)
-
-        -- update files to the dependent file
-        dependinfo.files = {}
-        table.insert(dependinfo.files, sourcefile_lib)
-        depend.save(dependinfo, dependfile)
     end)
 

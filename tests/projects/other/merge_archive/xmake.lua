@@ -14,6 +14,7 @@ target("mul")
     set_kind("static")
     add_deps("add", "sub")
     add_files("src/mul.c")
+    set_values("build.across_targets_in_parallel", false)
     if is_plat("windows") then
         add_files("$(buildir)/merge_archive/*.lib")
     else
