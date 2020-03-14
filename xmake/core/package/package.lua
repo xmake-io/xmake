@@ -435,7 +435,6 @@ function _instance:envs_enter()
                     os.addenv(name, value)
                 else
                     os.addenv(name, path.join(installdir, value))
-                    print(name, path.join(installdir, value))
                 end
             end
         else
