@@ -25,7 +25,10 @@ rule("c code")
     before_build_file(function (target, sourcefile)
         print("before_build_file: ", sourcefile)
     end)
-    on_build_file(function (target, sourcefile)
+    on_build_file(function (target, sourcefile, opt)
+        import("core.theme.theme")
+        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+        cprint(progress_prefix .. "compiling.$(mode) %s", opt.progress, sourcefile)
         local objectfile_o = os.tmpfile() .. ".o"
         local sourcefile_c = os.tmpfile() .. ".c"
         os.cp(sourcefile, sourcefile_c)
@@ -143,3 +146,8 @@ target("test")
     add_files("src/man/*.in",   {rule = "man"})
     add_files("src/index.md")
     add_files("src/test.c.in",  {rule = "c code"})
+
+    on_load(function (target)
+        print(target:sourcefiles())
+        print(target:objectfiles())
+    end)

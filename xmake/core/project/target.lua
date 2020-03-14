@@ -1069,22 +1069,29 @@ function _instance:objectfiles()
 
     -- get object files from source batches
     local objectfiles = {}
+    local batchcount = 0
     for _, sourcebatch in pairs(self:sourcebatches()) do
         table.join2(objectfiles, sourcebatch.objectfiles)
+        batchcount = batchcount + 1
     end
+
+    -- some object files may be repeat and appear link errors if multi-batches exists, so we need remove all repeat object files
+    -- e.g. add_files("src/*.c", {rules = {"rule1", "rule2"}})
+    local remove_repeat = batchcount > 1
 
     -- get object files from all dependent targets (object kind)
     if self:orderdeps() then
-        local remove_repeat = false
         for _, dep in ipairs(self:orderdeps()) do
             if dep:targetkind() == "object" then
                 table.join2(objectfiles, dep:objectfiles())
                 remove_repeat = true
             end
         end
-        if remove_repeat then
-            objectfiles = table.unique(objectfiles)
-        end
+    end
+
+    -- remove repeat object files
+    if remove_repeat then
+        objectfiles = table.unique(objectfiles)
     end
 
     -- cache it
