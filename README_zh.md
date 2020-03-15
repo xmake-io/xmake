@@ -250,7 +250,8 @@ target("app")
 ```bash
 $ xmake project -k vsxmake -m "debug;release" # 新版vs工程生成插件（推荐）
 $ xmake project -k vs -m "debug;release"
-$ xmake project -k cmakelists
+$ xmake project -k cmake
+$ xmake project -k ninja
 $ xmake project -k compile_commands
 ```
 

@@ -245,7 +245,8 @@ More wdk driver program examples (umdf/kmdf/wdm), please see [WDK Program Exampl
 ```bash
 $ xmake project -k vsxmake -m "debug;release" # New vsproj generator (Recommended)
 $ xmake project -k vs -m "debug;release"
-$ xmake project -k cmakelists
+$ xmake project -k cmake
+$ xmake project -k ninja
 $ xmake project -k compile_commands
 ```
 
