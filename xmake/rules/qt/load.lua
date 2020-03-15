@@ -39,7 +39,7 @@ function _link(framework, major)
 end
 
 -- find the static links from the given qt link directories, e.g. libqt*.a
-function _find_static_links(linkdirs, libpattern)
+function _find_static_links_3rd(linkdirs, major, libpattern)
     local links = {}
     local debug_suffix = "_debug"
     if is_plat("windows") then
@@ -52,8 +52,11 @@ function _find_static_links(linkdirs, libpattern)
     for _, linkdir in ipairs(linkdirs) do
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
-            if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
-                table.insert(links, target.linkname(path.filename(libpath)))
+            -- we need ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
+            if not basename:startswith("libQt" .. major) and not basename:startswith("Qt" .. major) then
+                if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
+                    table.insert(links, target.linkname(path.filename(libpath)))
+                end
             end
         end
     end
@@ -184,8 +187,9 @@ function main(target, opt)
         end
     end
 
-    -- add some static third-party links if exists
-    target:add("syslinks", _find_static_links(qt.linkdirs, is_plat("windows") and "qt*.lib" or "libqt*.a"))
+    -- add some static third-party links if exists, e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a
+    -- and exclude qt framework libraries, e.g. libQt5xxx.a, Qt5xxx.lib
+    target:add("syslinks", _find_static_links_3rd(qt.linkdirs, major, is_plat("windows") and "qt*.lib" or "libqt*.a"))
 
     -- add user syslinks
     if syslinks_user then
