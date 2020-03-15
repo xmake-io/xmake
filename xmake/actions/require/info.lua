@@ -26,6 +26,7 @@ import("impl.utils.filter")
 import("impl.package")
 import("impl.repository")
 import("impl.environment")
+import("impl.utils.get_requires")
 
 -- from xmake/system/remote?
 function _from(instance)
@@ -56,10 +57,12 @@ function _info(instance)
 end
 
 -- show the given package info
-function main(package_names)
+function main(requires_raw)
 
-    -- no package names?
-    if not package_names then
+    -- get requires and extra config
+    local requires_extra = nil
+    local requires, requires_extra = get_requires(requires_raw)
+    if not requires or #requires == 0 then
         return 
     end
 
@@ -73,25 +76,6 @@ function main(package_names)
 
     -- show title
     print("The package info of project:")
-
-    -- get project requires 
-    local project_requires, requires_extra = project.requires_str()
-    if not project_requires then
-        raise("requires(%s) not found in project!", table.concat(requires, " "))
-    end
-
-    -- find required package in project
-    local requires = {}
-    for _, name in ipairs(package_names) do
-        for _, require_str in ipairs(project_requires) do
-            if require_str:split(' ')[1]:lower():find(name:lower()) then
-                table.insert(requires, require_str)
-            end
-        end
-    end
-    if #requires == 0 then
-        raise("%s not found in project!", table.concat(package_names, " "))
-    end
 
     -- list all packages
     for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
