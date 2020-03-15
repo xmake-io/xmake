@@ -38,7 +38,7 @@ function _find_mingwdir(sdkdir)
 
     -- attempt to find mingw directory from the qt sdk
     local qt = config.get("qt")
-    if not sdkdir or qt then
+    if not sdkdir and qt then
         sdkdir = find_path("bin", path.join(qt, "Tools", "mingw*_" .. (is_arch("x86_64") and "64" or "32")))
     end
 
