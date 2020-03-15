@@ -162,9 +162,9 @@ end
 -- add batch jobs for the given target and deps
 function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target)
     if not inserted[target:name()] then
-        rootjob = _add_batchjobs_for_target(batchjobs, rootjob, target)
+        local targetjob = _add_batchjobs_for_target(batchjobs, rootjob, target) or rootjob
         for _, depname in ipairs(target:get("deps")) do
-            _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, project.target(depname)) 
+            _add_batchjobs_for_target_and_deps(batchjobs, targetjob, inserted, project.target(depname)) 
         end
         inserted[target:name()] = true
     end

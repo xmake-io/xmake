@@ -20,9 +20,12 @@
 
 -- imports
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.environment")
+import("private.async.jobpool")
+import("private.async.runjobs")
 import("kinds.object")
 
 -- match source files
@@ -44,8 +47,8 @@ function _match_sourcefiles(sourcefile, filepatterns)
     end
 end
 
--- prepare jobs for target
-function _prepare_jobs_for_target(jobs, target, filepatterns)
+-- add batch jobs
+function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
 
     local newbatches = {}
     local sourcecount = 0
@@ -77,56 +80,66 @@ function _prepare_jobs_for_target(jobs, target, filepatterns)
         end
     end
     if sourcecount > 0 then
-        table.insert(jobs, {target = target, sourcecount = sourcecount, sourcebatches = newbatches})
+        return object.add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, newbatches)
     end
 end
 
--- prepare jobs for the given target and deps
-function _prepare_jobs_for_targetdeps(jobs, target, filepatterns)
+-- add batch jobs for the given target 
+function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
 
-    -- this target have been finished?
-    if _g.finished[target:name()] then
+    -- has been disabled?
+    if target:get("enabled") == false then
         return 
     end
 
-    -- make for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _prepare_jobs_for_targetdeps(jobs, project.target(depname), filepatterns) 
-    end
-
-    -- prepare jobs for target
-    _prepare_jobs_for_target(jobs, target, filepatterns)
-
-    -- finished
-    _g.finished[target:name()] = true
+    -- add batch jobs for target
+    return _add_batchjobs(batchjobs, job_after_build, target, filepatterns)
 end
 
--- prepare jobs
-function _prepare_jobs(targetname, filepatterns)
+-- add batch jobs for the given target and deps
+function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target, filepatterns)
+    if not inserted[target:name()] then
+        local targetjob = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) or rootjob
+        for _, depname in ipairs(target:get("deps")) do
+            _add_batchjobs_for_target_and_deps(batchjobs, targetjob, inserted, project.target(depname), filepatterns)
+        end
+        inserted[target:name()] = true
+    end
+end
 
-    -- clear finished states
-    _g.finished = {}
+-- get batch jobs 
+function _get_batchjobs(targetname, filepatterns)
 
-    -- prepare jobs for the given target?
-    local jobs = {}
+    -- get root targets
+    local targets_root = {}
     if targetname then
-        _prepare_jobs_for_targetdeps(jobs, project.target(targetname), filepatterns)
+        table.insert(targets_root, project.target(targetname))
     else
-        -- prepare jobs for default or all targets
+        local depset = hashset.new()
+        local targets = {}
         for _, target in pairs(project.targets()) do
             local default = target:get("default")
             if default == nil or default == true or option.get("all") then
-                _prepare_jobs_for_targetdeps(jobs, target, filepatterns)
+                for _, depname in ipairs(target:get("deps")) do
+                    depset:insert(depname)
+                end
+                table.insert(targets, target)
+            end
+        end
+        for _, target in pairs(targets) do
+            if not depset:has(target:name()) then
+                table.insert(targets_root, target)
             end
         end
     end
 
-    -- get source total count
-    local sourcetotal = 0
-    for _, job in ipairs(jobs) do
-        sourcetotal = sourcetotal + job.sourcecount
+    -- generate batch jobs for default or all targets
+    local inserted = {}
+    local batchjobs = jobpool.new()
+    for _, target in pairs(targets_root) do
+        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), inserted, target, filepatterns)
     end
-    return jobs, sourcetotal
+    return batchjobs
 end
 
 -- convert all sourcefiles to lua pattern
@@ -183,33 +196,13 @@ function main(targetname, sourcefiles)
     -- convert all sourcefiles to lua pattern
     local filepatterns = _get_file_patterns(sourcefiles)
 
-    -- prepare jobs
-    local jobs, sourcetotal = _prepare_jobs(targetname, filepatterns)
-    if #jobs == 0 or sourcetotal == 0 then
-        return
+    -- build all jobs
+    local batchjobs = _get_batchjobs(targetname, filepatterns)
+    if batchjobs and batchjobs:size() > 0 then
+        environment.enter("toolchains")
+        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1})
+        environment.leave("toolchains")
     end
-
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
-    -- build source files
-    local sourcestart = 1
-    local sourcestop  = 0
-    for _, job in ipairs(jobs) do
-
-        -- compute the sub-progress range
-        sourcestop = sourcestart + job.sourcecount
-        local progress_start = (sourcestart * 100) / sourcetotal
-        local progress_stop  = (sourcestop * 100) / sourcetotal
-        local progress = {start = progress_start, stop = progress_stop}
-        sourcestart = sourcestop
-
-        -- build files
-        object.build_sourcefiles(job.target, job.sourcebatches, {progress = progress})
-    end
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
 end
 
 
