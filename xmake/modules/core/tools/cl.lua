@@ -353,7 +353,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         {
             function (errors)
 
-                -- use cl/stdout as errors first from os.iorunv()
+                -- use cl/stdout as errors first from vstool.iorunv()
                 if type(errors) == "table" then
                     local errs = errors.stdout or ""
                     if #errs:trim() == 0 then

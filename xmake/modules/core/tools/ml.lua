@@ -101,8 +101,28 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
-    -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-    vstool.runv(_compargv1(self, sourcefile, objectfile, flags))
+    try
+    {
+        function ()
+            -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
+            vstool.runv(_compargv1(self, sourcefile, objectfile, flags))
+        end,
+        catch
+        {
+            function (errors)
+
+                -- use link/stdout as errors first from vstool.iorunv()
+                if type(errors) == "table" then
+                    local errs = errors.stdout or ""
+                    if #errs:trim() == 0 then
+                        errs = errors.stderr or ""
+                    end
+                    errors = errs
+                end
+                os.raise(tostring(errors))
+            end
+        }
+    }
 end
 
 -- make the compile arguments list
