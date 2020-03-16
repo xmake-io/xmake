@@ -25,7 +25,7 @@ platform("sdcc")
     set_hosts("macosx", "linux", "windows")
 
     -- set archs
-    set_archs("stm8", "mcs51")
+    set_archs("stm8", "mcs51", "z80", "z180", "r2k", "r3ka", "s08", "hc08")
 
     -- set formats
     set_formats {static = "$(name).lib", object = "$(name).rel", binary = "$(name).bin", symbol = "$(name).sym"}
