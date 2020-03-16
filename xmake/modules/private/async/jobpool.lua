@@ -21,6 +21,7 @@
 -- imports
 import("core.base.dlist")
 import("core.base.object")
+import("core.base.hashset")
 
 -- define module
 local jobpool = jobpool or object {_init = {"_size", "_rootjob", "_leafjobs"}}
@@ -170,17 +171,16 @@ function jobpool:_gentree(job, groups)
         end
     end
     -- strip tree
-    local smalltree = {}
+    local smalltree = hashset.new()
     for _, item in ipairs(tree) do
         item = table.unwrap(item)
-        if #smalltree < 16 or type(item) == "table" then
-            table.insert(smalltree, item)
+        if smalltree:size() < 16 or type(item) == "table" then
+            smalltree:insert(item)
         else
-            table.insert(smalltree, "...")
-            break
+            smalltree:insert("...")
         end
     end
-    return smalltree
+    return smalltree:to_array()
 end
 
 -- tostring

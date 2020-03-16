@@ -170,8 +170,8 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target
     end
 end
 
--- get batch jobs 
-function _get_batchjobs(targetname)
+-- get batch jobs, @note we need export it for private.diagnosis.dump_buildjobs
+function get_batchjobs(targetname)
 
     -- get root targets
     local targets_root = {}
@@ -209,7 +209,7 @@ end
 function main(targetname)
 
     -- build all jobs
-    local batchjobs = _get_batchjobs(targetname)
+    local batchjobs = get_batchjobs(targetname)
     if batchjobs and batchjobs:size() > 0 then
         environment.enter("toolchains")
         runjobs("build", batchjobs, {comax = option.get("jobs") or 1})
