@@ -42,7 +42,6 @@ function main(platform)
     if arch then
         platform:add("cxflags", "-m" .. arch)
         platform:add("ldflags", "-m" .. arch)
-        platform:add("shflags", "-m" .. arch)
     end
 end
 

@@ -24,12 +24,6 @@ import("core.base.option")
 -- init it
 function init(self)
 
-    -- init shflags
-    self:set("shflags", "-shared")
-
-    -- init cxflags for the kind: shared
-    self:set("shared.cxflags", "-fPIC")
-
     -- init flags map
     self:set("mapflags",
     {

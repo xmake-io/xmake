@@ -6,6 +6,7 @@
 
 * Add powershell theme for powershell terminal
 * Add `xmake --dry-run -v` to dry run building target and only show verbose build command.
+* [#712](https://github.com/xmake-io/xmake/issues/712): Add sdcc platform and support sdcc compiler
 
 ### Change
 
@@ -694,6 +695,7 @@
 
 * 添加powershell色彩主题用于powershell终端下背景色显示
 * 添加`xmake --dry-run -v`命令去空运行构建，仅仅为了查看详细的构建命令
+* [#712](https://github.com/xmake-io/xmake/issues/712): 添加sdcc平台，并且支持sdcc编译器
 
 ### 改进
 
