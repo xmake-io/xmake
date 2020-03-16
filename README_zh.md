@@ -141,12 +141,16 @@ $ xmake f --menu
 ## 支持平台
 
 * Windows (x86, x64)
-* Macosx (i386, x86_64)
-* Linux (i386, x86_64, cross-toolchains ...)
-* Android (armv5te, armv6, armv7-a, armv8-a, arm64-v8a)
-* iPhoneOS (armv7, armv7s, arm64, i386, x86_64)
+* macOS (i386, x86_64)
+* Linux (i386, x86_64, cross-toolchains ..)
+* Android (i386, x86_64, armv5te, armv7-a, armv8-a, arm64-v8a, mips)
+* iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)
-* Mingw (i386, x86_64)
+* MSYS (i386, x86_64)
+* MinGW (i386, x86_64)
+* Cygwin (i386, x86_64)
+* SDCC (stm8, mcs51, ..)
+* Cross (cross-toolchains ..)
 
 ## 支持语言
 
