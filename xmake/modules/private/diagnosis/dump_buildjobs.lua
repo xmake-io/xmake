@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        object.lua
+-- @file        dump_buildjobs.lua
 --
 
 -- imports
