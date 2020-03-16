@@ -20,7 +20,6 @@
 
 -- imports
 import("core.base.option")
-import("private.tools.ccache")
 
 -- init it
 function init(self)
@@ -173,7 +172,7 @@ end
 
 -- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
-    return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
+    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
