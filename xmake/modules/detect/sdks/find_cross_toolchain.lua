@@ -45,6 +45,12 @@ function _find_bindir(sdkdir, opt)
     if ldpath then
         return path.directory(ldpath), ""
     end
+
+    -- attempt to use the bin directory
+    local bindir = opt.bindir or path.join(sdkdir, "bin")
+    if os.isdir(bindir) then
+        return bindir
+    end
 end
 
 -- find cross toolchain
