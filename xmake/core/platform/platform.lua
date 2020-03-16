@@ -23,14 +23,15 @@ local platform      = platform or {}
 local _instance     = _instance or {}
 
 -- load modules
-local os            = require("base/os")
-local path          = require("base/path")
-local utils         = require("base/utils")
-local table         = require("base/table")
-local interpreter   = require("base/interpreter")
-local sandbox       = require("sandbox/sandbox")
-local config        = require("project/config")
-local global        = require("base/global")
+local os             = require("base/os")
+local path           = require("base/path")
+local utils          = require("base/utils")
+local table          = require("base/table")
+local interpreter    = require("base/interpreter")
+local sandbox        = require("sandbox/sandbox")
+local config         = require("project/config")
+local global         = require("base/global")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -311,6 +312,7 @@ end
 function platform.tool(toolkind, plat)
 
     -- attempt to get program from config first
+    local checked = false
     local program = config.get(toolkind)
     local toolname = config.get("__toolname_" .. toolkind)
     if program == nil then 
@@ -330,6 +332,7 @@ function platform.tool(toolkind, plat)
         -- get it again
         program = config.get(toolkind)
         toolname = config.get("__toolname_" .. toolkind)
+        checked = true
     end
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -338,6 +341,15 @@ function platform.tool(toolkind, plat)
         if pos then
             toolname = program:sub(1, pos - 1)
             program = program:sub(pos + 1)
+        end
+    end
+
+    -- not checked? we check it now
+    if program and not checked then
+        local tool = sandbox_module.import("lib.detect.find_tool", {anonymous = true})(toolname or program, {program = program})
+        if tool and tool.program and tool.program ~= program then
+            program = tool.program
+            config.set(toolkind, program, {force = true, readonly = true})
         end
     end
 

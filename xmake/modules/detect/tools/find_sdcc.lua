@@ -39,6 +39,12 @@ function main(opt)
     -- init options
     opt         = opt or {}
     opt.command = opt.command or "--version"
+        
+    -- add search pathes (sdk/bin)
+    local bindir = get_config("bin")
+    if bindir and os.isdir(bindir) then
+        opt.pathes  = bindir
+    end
     
     -- find program
     local program = find_program(opt.program or "sdcc", opt)

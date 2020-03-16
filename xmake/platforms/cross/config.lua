@@ -36,16 +36,13 @@ function _check_arch()
     end
 end
 
--- get toolchains
-function _toolchains()
-
+-- check the cross toolchain
+function _check_cross_toolchain()
     -- find cross toolchain
-    local cross = ""
     local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        cross = cross_toolchain.cross
 
         -- TODO add to environment module
         -- add bin search library for loading some dependent .dll files windows 
@@ -53,6 +50,13 @@ function _toolchains()
             os.addenv("PATH", cross_toolchain.bindir)
         end
     end
+end
+
+-- get toolchains
+function _toolchains()
+
+    -- get cross prefix
+    local cross = config.get("cross") or ""
 
     -- init toolchains
     local cc         = toolchain("the c compiler")
@@ -120,6 +124,9 @@ function main(platform, name)
 
         -- check arch
         _check_arch()
+
+        -- check cross toolchain
+        _check_cross_toolchain()
     end
 end
 
