@@ -1019,7 +1019,7 @@ function _instance:sourcefiles()
 end
 
 -- get object file from source file
-function _instance:objectfile(sourcefile)
+function _instance:objectfile(sourcefile, sourcekind)
 
     -- get relative directory in the autogen directory
     local relativedir = nil
@@ -1051,9 +1051,24 @@ function _instance:objectfile(sourcefile)
     end
     relativedir = relativedir:gsub("%.%.", "__")
 
+    -- get object format from the compiler
+    local objectformat
+    if sourcekind then
+        self._OBJECTFORMATS = self._OBJECTFORMATS or {}
+        objectformat = self._OBJECTFORMATS[sourcekind]
+        if objectformat == nil then
+            local compinst = compiler.load(sourcekind, self)
+            if compinst then
+                objectformat = compinst:format("object")
+                self._OBJECTFORMATS[sourcekind] = objectformat or false
+            end
+        end
+        objectformat = objectformat or nil
+    end
+
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
-    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object"))
+    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object", objectformat))
 end
 
 -- get the object files
@@ -1392,7 +1407,7 @@ function _instance:sourcebatches()
                 -- insert object files to source batches
                 sourcebatch.objectfiles = sourcebatch.objectfiles or {}
                 sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-                local objectfile = self:objectfile(sourcefile)
+                local objectfile = self:objectfile(sourcefile, sourcekind)
                 table.insert(sourcebatch.objectfiles, objectfile)
                 table.insert(sourcebatch.dependfiles, self:dependfile(objectfile))
             end
