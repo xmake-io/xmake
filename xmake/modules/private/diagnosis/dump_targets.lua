@@ -42,7 +42,7 @@ end
 function main(targetname)
     config.load()
     for _, target in ipairs(_get_targets(targetname)) do
-        print("target(%s): %s", target:name(), target:targetkind())
+        cprint("${bright}target(%s):${clear} %s", target:name(), target:targetkind())
         local deps = target:get("deps")
         if deps then
             cprint("  ${color.dump.string}deps:")
@@ -68,6 +68,7 @@ function main(targetname)
             cprint("  ${color.dump.string}rules:")
             cprint("    ${yellow}->${clear} %s", table.concat(table.wrap(rules), ", "))
         end
+        print("")
     end
 end
 
