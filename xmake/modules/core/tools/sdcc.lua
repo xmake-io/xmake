@@ -31,9 +31,6 @@ function init(self)
     -- init cxflags for the kind: shared
     self:set("shared.cxflags", "-fPIC")
 
-    -- init the file formats
-    self:set("formats", {object = "$(name).rel"})
-
     -- init flags map
     self:set("mapflags",
     {

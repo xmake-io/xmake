@@ -26,9 +26,6 @@ function init(self)
 
     -- init flags
     self:set("arflags", "-cr")
-
-    -- init the file formats
-    self:set("formats", {static = "$(name).lib"})
 end
 
 -- make the strip flag

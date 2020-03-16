@@ -1051,24 +1051,9 @@ function _instance:objectfile(sourcefile, sourcekind)
     end
     relativedir = relativedir:gsub("%.%.", "__")
 
-    -- get object format from the compiler
-    local objectformat
-    if sourcekind then
-        self._OBJECTFORMATS = self._OBJECTFORMATS or {}
-        objectformat = self._OBJECTFORMATS[sourcekind]
-        if objectformat == nil then
-            local compinst = compiler.load(sourcekind, self)
-            if compinst then
-                objectformat = compinst:format("object")
-                self._OBJECTFORMATS[sourcekind] = objectformat or false
-            end
-        end
-        objectformat = objectformat or nil
-    end
-
     -- make object file
     -- full file name(not base) to avoid name-clash of object file
-    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object", objectformat))
+    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object"))
 end
 
 -- get the object files

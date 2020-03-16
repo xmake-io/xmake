@@ -312,7 +312,6 @@ end
 function platform.tool(toolkind, plat)
 
     -- attempt to get program from config first
-    local checked = false
     local program = config.get(toolkind)
     local toolname = config.get("__toolname_" .. toolkind)
     if program == nil then 
@@ -332,7 +331,6 @@ function platform.tool(toolkind, plat)
         -- get it again
         program = config.get(toolkind)
         toolname = config.get("__toolname_" .. toolkind)
-        checked = true
     end
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -343,17 +341,6 @@ function platform.tool(toolkind, plat)
             program = program:sub(pos + 1)
         end
     end
-
-    -- not checked? we check it now
-    if program and not checked then
-        local tool = sandbox_module.import("lib.detect.find_tool", {anonymous = true})(toolname or program, {program = program})
-        if tool and tool.program and tool.program ~= program then
-            program = tool.program
-            config.set(toolkind, program, {force = true, readonly = true})
-        end
-    end
-
-    -- ok
     return program, toolname
 end
 
