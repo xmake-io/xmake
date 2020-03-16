@@ -40,10 +40,17 @@ function main(opt)
     opt         = opt or {}
     opt.command = opt.command or "--version"
         
-    -- add search pathes (sdk/bin)
+    -- add search pathes
+    local pathes = {}
     local bindir = get_config("bin")
     if bindir and os.isdir(bindir) then
-        opt.pathes  = bindir
+        table.insert(pathes, bindir)
+    end
+    if is_host("windows") then
+        table.insert(pathes, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\SDCC)\\bin")
+    end
+    if #pathes > 0 then
+        opt.pathes = pathes
     end
     
     -- find program
