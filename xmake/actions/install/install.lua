@@ -80,6 +80,16 @@ function _install_library(target)
     -- copy the target file
     os.vcp(target:targetfile(), librarydir)
 
+    -- copy *.lib for shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/714
+    if target:targetkind() == "shared" and is_plat("windows", "mingw") then
+        local targetfile = target:targetfile()
+        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
+        if os.isfile(targetfile_lib) then
+            os.vcp(targetfile_lib, librarydir)
+        end
+    end
+
     -- copy headers to the include directory
     local srcheaders, dstheaders = target:headerfiles(includedir)
     if srcheaders and dstheaders then
