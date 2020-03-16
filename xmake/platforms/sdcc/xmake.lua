@@ -25,10 +25,10 @@ platform("sdcc")
     set_hosts("macosx", "linux", "windows")
 
     -- set archs
-    set_archs("stm8")
+    set_archs("stm8", "mcs51")
 
     -- set formats
-    set_formats {static = "$(name).lib", object = "$(name).rel", binary = "$(name)", symbol = "$(name).sym"}
+    set_formats {static = "$(name).lib", object = "$(name).rel", binary = "$(name).bin", symbol = "$(name).sym"}
 
     -- on check project configuration
     on_config_check("config")
