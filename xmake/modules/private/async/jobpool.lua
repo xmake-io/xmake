@@ -43,27 +43,43 @@ end
 -- @param rootjob   the root job node (optional)
 --
 function jobpool:addjob(name, run, rootjob)
+    return self:add({name = name, run = run}, rootjob)
+end
+
+-- add job to the given job node
+--
+-- @param job       the job 
+-- @param rootjob   the root job node (optional)
+--
+function jobpool:add(job, rootjob)
     
     -- add job to the root job
     rootjob = rootjob or self:rootjob()
-    local job = {name = name, run = run, _parent = rootjob}
     rootjob._deps = rootjob._deps or dlist:new()
     rootjob._deps:push(job)
-    self._size = self._size + 1
+
+    -- attach parents node
+    local parents = job._parents
+    if not parents then
+        parents = {}
+        job._parents = parents
+        self._size = self._size + 1 -- @note only update number for new job without parents
+    end
+    table.insert(parents, rootjob)
 
     -- in group? attach the group node
     local group = self._group
     if group then
         job._deps = job._deps or dlist:new()
         job._deps:push(group)
-        group._parent = group._parent or {}
-        table.insert(group._parent, job)
+        group._parents = group._parents or {}
+        table.insert(group._parents, job)
     end
     return job
 end
 
 -- pop job without deps at leaf node 
-function jobpool:popjob()
+function jobpool:pop()
 
     -- no jobs?
     if self:size() == 0 then
@@ -73,8 +89,8 @@ function jobpool:popjob()
     -- init leaf jobs first
     local leafjobs = self._leafjobs
     if #leafjobs == 0 then
-        local groups = {}
-        self:_genleafjobs(self:rootjob(), leafjobs, groups)
+        local refs = {}
+        self:_genleafjobs(self:rootjob(), leafjobs, refs)
     end
 
     -- pop a job from the leaf jobs
@@ -84,31 +100,26 @@ function jobpool:popjob()
         local job = leafjobs[#leafjobs]
         table.remove(leafjobs, #leafjobs)
 
-        -- get priority and parent node
+        -- get priority and parents node
         local priority = job._priority or 0
-        local parent = assert(job._parent, "invalid job without parent node!")
+        local parents = assert(job._parents, "invalid job without parents node!")
 
-        -- is group node? remove it from all parent jobs
+        -- update all parents nodes
+        for _, p in ipairs(parents) do
+            p._priority = math.max(p._priority or 0, priority + 1)
+            p._deps:remove(job)
+            if p._deps:empty() and self._size > 0 then
+                table.insert(leafjobs, 1, p)
+            end
+        end
+
+        -- is group node?
         if job.group then
-            for _, p in ipairs(parent) do
-                p._priority = math.max(p._priority or 0, priority + 1)
-                p._deps:remove(job)
-                if p._deps:empty() and self._size > 0 then
-                    table.insert(leafjobs, 1, p)
-                end
-            end
-            return self:popjob()
+            -- pop the next real job
+            return self:pop()
         else
-
-            -- update jobs size
+            -- pop this job
             self._size = self._size - 1
-
-            -- remove this job from the parent job
-            parent._priority = math.max(parent._priority or 0, priority + 1)
-            parent._deps:remove(job)
-            if parent._deps:empty() and self._size > 0 then
-                table.insert(leafjobs, 1, parent)
-            end
             return job, priority
         end
     end
@@ -130,23 +141,20 @@ end
 function jobpool:group_leave()
     local group = self._group
     self._group = nil
-    if group and group._parent then
+    if group and group._parents then
         return group
     end
 end
 
 -- generate all leaf jobs from the given job
-function jobpool:_genleafjobs(job, leafjobs, groups)
+function jobpool:_genleafjobs(job, leafjobs, refs)
     local deps = job._deps
     if deps and not deps:empty() then
         for dep in deps:items() do
-            if dep.group then
-                if not groups[dep.name] then
-                    groups[dep.name] = true
-                    self:_genleafjobs(dep, leafjobs, groups)
-                end
-            else
-                self:_genleafjobs(dep, leafjobs, groups)
+            local depkey = tostring(dep)
+            if not refs[depkey] then
+                refs[depkey] = true
+                self:_genleafjobs(dep, leafjobs, refs)
             end
         end
     else
@@ -155,18 +163,18 @@ function jobpool:_genleafjobs(job, leafjobs, groups)
 end
 
 -- generate jobs tree for the given job
-function jobpool:_gentree(job, groups)
+function jobpool:_gentree(job, refs)
     local tree = {job.group and ("group(" .. job.name .. ")") or job.name}
     local deps = job._deps
     if deps and not deps:empty() then
         for dep in deps:items() do
-            if dep.group then
-                if not groups[dep.name] then
-                    groups[dep.name] = true
-                    table.insert(tree, self:_gentree(dep, groups))
-                end
+            local depkey = tostring(dep)
+            if refs[depkey] then
+                local depname = dep.group and ("group(" .. dep.name .. ")") or dep.name
+                table.insert(tree, "ref(" .. depname .. ")")
             else
-                table.insert(tree, self:_gentree(dep, groups))
+                refs[depkey] = true
+                table.insert(tree, self:_gentree(dep, refs))
             end
         end
     end
@@ -185,8 +193,8 @@ end
 
 -- tostring
 function jobpool:__tostring()
-    local groups = {}
-    return string.serialize(self:_gentree(self:rootjob(), groups), {indent = 2})
+    local refs = {}
+    return string.serialize(self:_gentree(self:rootjob(), refs), {indent = 2})
 end
 
 -- new a jobpool
