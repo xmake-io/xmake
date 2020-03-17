@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.dlist")
 import("core.base.object")
 import("core.base.hashset")
 
@@ -55,8 +54,8 @@ function jobpool:add(job, rootjob)
     
     -- add job to the root job
     rootjob = rootjob or self:rootjob()
-    rootjob._deps = rootjob._deps or dlist:new()
-    rootjob._deps:push(job)
+    rootjob._deps = rootjob._deps or hashset.new()
+    rootjob._deps:insert(job)
 
     -- attach parents node
     local parents = job._parents
@@ -70,8 +69,8 @@ function jobpool:add(job, rootjob)
     -- in group? attach the group node
     local group = self._group
     if group then
-        job._deps = job._deps or dlist:new()
-        job._deps:push(group)
+        job._deps = job._deps or hashset.new()
+        job._deps:insert(group)
         group._parents = group._parents or {}
         table.insert(group._parents, job)
     end
@@ -150,7 +149,7 @@ end
 function jobpool:_genleafjobs(job, leafjobs, refs)
     local deps = job._deps
     if deps and not deps:empty() then
-        for dep in deps:items() do
+        for _, dep in deps:keys() do
             local depkey = tostring(dep)
             if not refs[depkey] then
                 refs[depkey] = true
@@ -167,7 +166,7 @@ function jobpool:_gentree(job, refs)
     local tree = {job.group and ("group(" .. job.name .. ")") or job.name}
     local deps = job._deps
     if deps and not deps:empty() then
-        for dep in deps:items() do
+        for _, dep in deps:keys() do
             local depkey = tostring(dep)
             if refs[depkey] then
                 local depname = dep.group and ("group(" .. dep.name .. ")") or dep.name

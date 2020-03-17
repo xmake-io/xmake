@@ -100,7 +100,7 @@ end
 -- convert hashset to an array, nil in the set will be ignored
 function hashset_impl:to_array()
     local result = {}
-    for k,_ in pairs(self._DATA) do
+    for k, _ in pairs(self._DATA) do
         if k ~= hashset._NIL then
             table.insert(result, k)
         end
@@ -124,6 +124,11 @@ end
 -- get size of hashset
 function hashset_impl:size()
     return self._SIZE
+end
+
+-- is empty?
+function hashset_impl:empty()
+    return self:size() == 0
 end
 
 -- get data of hashset
