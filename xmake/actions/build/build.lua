@@ -156,7 +156,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
             end
         end
     end, job_build)
-    return job_after_build, job_before_build
+    return job_before_build, job_after_build
 end
 
 -- add batch jobs for the given target and deps
@@ -165,8 +165,8 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target
     if targetjob then
         batchjobs:add(targetjob, rootjob)
     else
-        local targetjob_root, targetjob_leaf = _add_batchjobs_for_target(batchjobs, rootjob, target) 
-        if targetjob_root and targetjob_leaf then
+        local targetjob_leaf, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target) 
+        if targetjob_leaf and targetjob_root then
             inserted[target:name()] = targetjob_root
             for _, depname in ipairs(target:get("deps")) do
                 _add_batchjobs_for_target_and_deps(batchjobs, targetjob_leaf, inserted, project.target(depname)) 

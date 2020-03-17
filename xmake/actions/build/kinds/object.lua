@@ -113,7 +113,7 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
         _add_batchjobs_for_rule(batchjobs, job_build, target, sourcebatch, "before")
         _add_batchjobs_for_target(batchjobs, job_build, target, sourcebatch, "before")
     end
-    return batchjobs:group_leave() or job_build
+    return batchjobs:group_leave() or job_build, job_build_after
 end
 
 -- add batch jobs for building object files

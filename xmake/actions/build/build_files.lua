@@ -81,6 +81,8 @@ function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
     end
     if sourcecount > 0 then
         return object.add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, newbatches)
+    else
+        return rootjob, rootjob
     end
 end
 
@@ -93,17 +95,22 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
     end
 
     -- add batch jobs for target
-    return _add_batchjobs(batchjobs, job_after_build, target, filepatterns)
+    return _add_batchjobs(batchjobs, rootjob, target, filepatterns)
 end
 
 -- add batch jobs for the given target and deps
 function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target, filepatterns)
-    if not inserted[target:name()] then
-        local targetjob = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) or rootjob
-        for _, depname in ipairs(target:get("deps")) do
-            _add_batchjobs_for_target_and_deps(batchjobs, targetjob, inserted, project.target(depname), filepatterns)
+    local targetjob = inserted[target:name()]
+    if targetjob then
+        batchjobs:add(targetjob, rootjob)
+    else
+        local targetjob_leaf, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) 
+        if targetjob_leaf and targetjob_root then
+            inserted[target:name()] = targetjob_root
+            for _, depname in ipairs(target:get("deps")) do
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob_leaf, inserted, project.target(depname), filepatterns)
+            end
         end
-        inserted[target:name()] = true
     end
 end
 
