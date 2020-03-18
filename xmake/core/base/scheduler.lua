@@ -166,8 +166,7 @@ function scheduler:_poller_events_cb(obj, events)
     -- get poller object data
     local pollerdata = self:_poller_data(obj)
     if not pollerdata then
-        -- we cannot use assert(, ""), because this will cause the object to be serialized in advance
-        raise("%s: cannot get poller data!", obj)
+        return false, string.format("%s: cannot get poller data!", obj)
     end
 
     -- is process object?
@@ -184,7 +183,7 @@ function scheduler:_poller_events_cb(obj, events)
         else 
             pollerdata.proc_pending = 1
         end
-        return ;
+        return true
     end
 
     -- get poller object events
