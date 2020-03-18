@@ -29,9 +29,15 @@ local serialize  = require("base/serialize")
 string._dump = string._dump or string.dump
 string._trim = string._trim or string.trim
 string._split = string._split or string.split
+string._lastof = string._lastof or string.lastof
 
 -- find the last substring with the given pattern
 function string:lastof(pattern, plain)
+
+    -- is plain text? use the native implementation
+    if plain then
+        return string._lastof(self, pattern)
+    end
 
     -- find the last substring
     local curr = 0

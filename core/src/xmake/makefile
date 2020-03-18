@@ -96,6 +96,7 @@ xmake_C_FILES 			+= \
 						hash/sha256 \
 						string/trim \
 						string/split \
+						string/lastof \
 						string/convert \
 						string/endswith \
 						string/startswith \
