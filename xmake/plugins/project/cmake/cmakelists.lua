@@ -34,6 +34,19 @@ function _add_values_from_targetopts(values, target, name)
 	end
 end
 
+-- add values from target dependencies
+function _add_values_from_targetdeps(values, target, name)
+    local orderdeps = target:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = target:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            table.join2(values, dep:get(name, {interface = true}))
+        end
+    end
+end
+
 -- add values from target packages
 function _add_values_from_targetpkgs(values, target, name)
     for _, pkg in ipairs(target:orderpkgs()) do
@@ -130,6 +143,7 @@ function _add_target_include_directories(cmakelists, target)
     local includedirs = table.wrap(target:get("includedirs"))
     _add_values_from_targetopts(includedirs, target, "includedirs")
     _add_values_from_targetpkgs(includedirs, target, "includedirs")
+    _add_values_from_targetdeps(includedirs, target, "includedirs")
     if #includedirs > 0 then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
@@ -167,6 +181,7 @@ function _add_target_compile_definitions(cmakelists, target)
     local defines = table.wrap(target:get("defines"))
     _add_values_from_targetopts(defines, target, "defines")
     _add_values_from_targetpkgs(defines, target, "defines")
+    _add_values_from_targetdeps(defines, target, "defines")
     if #defines > 0 then
         cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
         for _, define in ipairs(defines) do
@@ -325,6 +340,9 @@ function _add_target_link_libraries(cmakelists, target)
     -- add links from target packages
     _add_values_from_targetpkgs(links, target, "links")
 
+    -- add links from targe dependencies
+    _add_values_from_targetdeps(links, target, "links")
+
     -- add links from target deps
     local targetkind = target:targetkind()
     if targetkind == "binary" or targetkind == "shared" then
@@ -350,6 +368,7 @@ function _add_target_link_directories(cmakelists, target)
     local linkdirs = table.wrap(target:get("linkdirs"))
     _add_values_from_targetopts(linkdirs, target, "linkdirs")
     _add_values_from_targetpkgs(linkdirs, target, "linkdirs")
+    _add_values_from_targetdeps(linkdirs, target, "linkdirs")
     if #linkdirs > 0 then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())
         for _, linkdir in ipairs(linkdirs) do
