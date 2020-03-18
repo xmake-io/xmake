@@ -211,12 +211,17 @@ function _add_build_for_target(ninjafile, target)
 
     -- build target file
     ninjafile:printf("build %s: %s", targetfile, target:linker():kind())
-    for _, dep in ipairs(target:get("deps")) do
-        ninjafile:write(" " .. project.target(dep):targetfile())
-    end
     local objectfiles = target:objectfiles()
     for _, objectfile in ipairs(objectfiles) do
         ninjafile:write(" " .. objectfile)
+    end
+    local deps = target:get("deps")
+    if deps then
+        ninjafile:print(" || $")
+        ninjafile:write("  ")
+        for _, dep in ipairs(deps) do
+            ninjafile:write(" " .. project.target(dep):targetfile())
+        end
     end
     ninjafile:print("")
     ninjafile:print(" ARGS = %s", os.args(target:linkflags()))

@@ -206,7 +206,13 @@ end
 
 -- get the project name
 function sandbox_core_project.name()
-    return project.get("project")
+    local name = project.get("project")
+    -- TODO multi project names? we only get the first name now.
+    -- and we need improve it in the future.
+    if type(name) == "table" then
+        name = name[1]
+    end
+    return name
 end
 
 -- get the project version, the root version of the target scope
