@@ -165,7 +165,10 @@ function scheduler:_poller_events_cb(obj, events)
 
     -- get poller object data
     local pollerdata = self:_poller_data(obj)
-    assert(pollerdata, string.format("%s: cannot get poller data!", obj))
+    if not pollerdata then
+        -- we cannot use assert(, ""), because this will cause the object to be serialized in advance
+        raise("%s: cannot get poller data!", obj)
+    end
 
     -- is process object?
     if obj:otype() == poller.OT_PROC then

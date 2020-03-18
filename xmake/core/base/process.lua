@@ -42,10 +42,10 @@ process.close       = nil
 process._subprocess = _subprocess
 
 -- new an subprocess
-function _subprocess.new(name, proc)
+function _subprocess.new(program, proc)
     local subprocess = table.inherit(_subprocess)
-    subprocess._NAME = name
-    subprocess._PROC = proc
+    subprocess._PROGRAM = program
+    subprocess._PROC    = proc
     setmetatable(subprocess, _subprocess)
     process._openlist()[subprocess:cdata()] = subprocess
     return subprocess
@@ -53,7 +53,15 @@ end
 
 -- get the process name 
 function _subprocess:name()
+    if not self._NAME then
+        self._NAME = path.filename(self:program())
+    end
     return self._NAME
+end
+
+-- get the process program 
+function _subprocess:program()
+    return self._PROGRAM
 end
 
 -- get cdata of process
@@ -201,7 +209,7 @@ function process.open(command, opt)
     -- open subprocess
     local proc = process._open(command, opt)
     if proc then
-        return _subprocess.new(path.filename(command:split(' ', {plain = true})[1]), proc)
+        return _subprocess.new(command:split(' ', {plain = true})[1], proc)
     else
         return nil, string.format("open process(%s) failed!", command)
     end
@@ -209,13 +217,13 @@ end
 
 -- open a subprocess with the arguments list
 --
--- @param shellname the shell name 
+-- @param program   the program
 -- @param argv      the arguments list
 -- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}}) 
 --
 -- @return          the subprocess
 --
-function process.openv(shellname, argv, opt)
+function process.openv(program, argv, opt)
 
     -- get stdout and pass to subprocess
     opt = opt or {}
@@ -243,11 +251,11 @@ function process.openv(shellname, argv, opt)
     end
 
     -- open subprocess
-    local proc = process._openv(shellname, argv, opt)
+    local proc = process._openv(program, argv, opt)
     if proc then
-        return _subprocess.new(path.filename(shellname), proc)
+        return _subprocess.new(program, proc)
     else
-        return nil, string.format("openv process(%s, %s) failed!", shellname, table.concat(argv, " "))
+        return nil, string.format("openv process(%s, %s) failed!", program, table.concat(argv, " "))
     end
 end
 

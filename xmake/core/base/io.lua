@@ -37,7 +37,6 @@ io._stdfile     = io._stdfile or io.stdfile
 -- new a file
 function _file.new(filepath, cdata, isstdfile)
     local file = table.inherit(_file)
-    file._NAME = path.filename(filepath)
     file._PATH = isstdfile and filepath or path.absolute(filepath)
     file._FILE = cdata
     setmetatable(file, _file)
@@ -46,6 +45,9 @@ end
 
 -- get the file name 
 function _file:name()
+    if not self._NAME then
+        self._NAME = path.filename(self:path())
+    end
     return self._NAME
 end
 
@@ -295,7 +297,6 @@ end
 -- new an filelock
 function _filelock.new(lockpath, lock)
     local filelock = table.inherit(_filelock)
-    filelock._NAME = path.filename(lockpath)
     filelock._PATH = path.absolute(lockpath)
     filelock._LOCK = lock
     filelock._LOCKED_NUM = 0
@@ -305,6 +306,9 @@ end
 
 -- get the filelock name
 function _filelock:name()
+    if not self._NAME then
+        self._NAME = path.filename(self:path())
+    end
     return self._NAME
 end
 
