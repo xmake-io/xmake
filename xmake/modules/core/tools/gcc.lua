@@ -419,7 +419,8 @@ end
 function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
-    os.mkdir(path.directory(objectfile))
+    -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
+    os.mkdir(path.directory(objectfile, path.sep()))
 
     -- compile it
     local depfile = dependinfo and os.tmpfile() or nil

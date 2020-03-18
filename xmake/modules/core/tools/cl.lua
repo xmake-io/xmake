@@ -330,7 +330,8 @@ end
 function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
-    local objectdir = path.directory(objectfile)
+    -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
+    local objectdir = path.directory(objectfile, path.sep())
     if not os.isdir(objectdir) then
         os.mkdir(objectdir)
     end

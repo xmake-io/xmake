@@ -25,9 +25,15 @@ local path = path or {}
 local string = require("base/string")
 
 -- get the directory of the path
-function path.directory(p)
-    local i = p:lastof("[/\\]")
-    if i then
+function path.directory(p, sep)
+    local i =  0
+    if sep then
+        -- if the path has been normalized, we can quickly find it with a unique path separator prompt
+        i = p:lastof(sep, true) or 0
+    else
+        i = math.max(p:lastof('/', true) or 0, p:lastof('\\', true) or 0)
+    end
+    if i > 0 then
         if i > 1 then i = i - 1 end
         return p:sub(1, i)
     else
@@ -36,9 +42,15 @@ function path.directory(p)
 end
 
 -- get the filename of the path
-function path.filename(p)
-    local i = p:lastof("[/\\]")
-    if i then
+function path.filename(p, sep)
+    local i =  0
+    if sep then
+        -- if the path has been normalized, we can quickly find it with a unique path separator prompt
+        i = p:lastof(sep, true) or 0
+    else
+        i = math.max(p:lastof('/', true) or 0, p:lastof('\\', true) or 0)
+    end
+    if i > 0 then
         return p:sub(i + 1)
     else
         return p
