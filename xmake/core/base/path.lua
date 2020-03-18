@@ -26,7 +26,6 @@ local string = require("base/string")
 
 -- get the directory of the path
 function path.directory(p)
-    assert(p)
     local i = p:lastof("[/\\]")
     if i then
         if i > 1 then i = i - 1 end
@@ -38,7 +37,6 @@ end
 
 -- get the filename of the path
 function path.filename(p)
-    assert(p)
     local i = p:lastof("[/\\]")
     if i then
         return p:sub(i + 1)
@@ -49,7 +47,6 @@ end
 
 -- get the basename of the path
 function path.basename(p)
-    assert(p)
     local name = path.filename(p)
     local i = name:lastof(".", true)
     if i then
@@ -61,7 +58,6 @@ end
 
 -- get the file extension of the path: .xxx
 function path.extension(p)
-    assert(p)
     local i = p:lastof(".", true)
     if i then
         return p:sub(i)
@@ -72,7 +68,6 @@ end
 
 -- join path
 function path.join(p, ...)
-    assert(p)
     for _, name in ipairs({...}) do
         p = p .. "/" .. name
     end
@@ -81,7 +76,6 @@ end
 
 -- split path by the separator
 function path.split(p)
-    assert(p)
     return p:split("[/\\]")
 end
 
@@ -108,10 +102,6 @@ end
 -- split environment variable with `path.envsep()`,
 -- also handles more speical cases such as posix flags and windows quoted pathes
 function path.splitenv(env_path)
-
-    -- check
-    assert(env_path)
-
     local result = {}
     if xmake._HOST == "windows" then
         while #env_path > 0 do
@@ -174,7 +164,6 @@ end
 
 -- the last character is the path seperator?
 function path.islastsep(p)
-    assert(p)
     local sep = p:sub(#p, #p)
     return xmake._HOST == "windows" and (sep == '\\' or sep == '/') or (sep == '/')
 end
