@@ -27,7 +27,7 @@ local string = require("base/string")
 -- get the directory of the path
 function path.directory(p)
     assert(p)
-    local i = p:find_last("[/\\]")
+    local i = p:lastof("[/\\]")
     if i then
         if i > 1 then i = i - 1 end
         return p:sub(1, i)
@@ -39,7 +39,7 @@ end
 -- get the filename of the path
 function path.filename(p)
     assert(p)
-    local i = p:find_last("[/\\]")
+    local i = p:lastof("[/\\]")
     if i then
         return p:sub(i + 1)
     else
@@ -51,7 +51,7 @@ end
 function path.basename(p)
     assert(p)
     local name = path.filename(p)
-    local i = name:find_last(".", true)
+    local i = name:lastof(".", true)
     if i then
         return name:sub(1, i - 1)
     else
@@ -62,7 +62,7 @@ end
 -- get the file extension of the path: .xxx
 function path.extension(p)
     assert(p)
-    local i = p:find_last(".", true)
+    local i = p:lastof(".", true)
     if i then
         return p:sub(i)
     else

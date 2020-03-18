@@ -91,7 +91,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
     else
 
         -- get repository name, package name and package url
-        local pos = packageinfo:find_last('@', true)
+        local pos = packageinfo:lastof('@', true)
         if pos then
 
             -- get package name

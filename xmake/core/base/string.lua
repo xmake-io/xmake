@@ -31,7 +31,7 @@ string._trim = string._trim or string.trim
 string._split = string._split or string.split
 
 -- find the last substring with the given pattern
-function string:find_last(pattern, plain)
+function string:lastof(pattern, plain)
 
     -- find the last substring
     local curr = 0

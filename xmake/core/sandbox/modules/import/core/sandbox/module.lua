@@ -276,7 +276,7 @@ function core_sandbox_module.name(name)
     assert(name)
 
     -- find modulename
-    local i = name:find_last(".", true)
+    local i = name:lastof(".", true)
     if i then
         name = name:sub(i + 1)
     end
@@ -402,7 +402,7 @@ function core_sandbox_module.import(name, opt)
         local errors2 = nil
         local module2_name = nil
         local interface_name = nil
-        local pos = name:find_last('.', true)
+        local pos = name:lastof('.', true)
         if pos then
             module2_name = name:sub(1, pos - 1)
             interface_name = name:sub(pos + 1)

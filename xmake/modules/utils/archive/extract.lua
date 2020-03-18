@@ -334,11 +334,11 @@ function _extension(archivefile, extractors)
 
     -- get extension
     local extension = ""
-    local i = filename:find_last(".", true)
+    local i = filename:lastof(".", true)
     if i then
 
         -- get next extension if exists
-        local p = filename:sub(1, i - 1):find_last(".", true)
+        local p = filename:sub(1, i - 1):lastof(".", true)
         if p and extractors[filename:sub(p)] then i = p end
 
         -- ok

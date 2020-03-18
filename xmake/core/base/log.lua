@@ -35,7 +35,7 @@ function log:file()
         if outputfile then
 
             -- get directory
-            local i = outputfile:find_last("[/\\]")
+            local i = outputfile:lastof("[/\\]")
             if i then
                 if i > 1 then i = i - 1 end
                 dir = outputfile:sub(1, i)
