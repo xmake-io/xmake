@@ -86,3 +86,12 @@ function test_split(t)
     t:are_equal((""):split('123', {plain = true, limit = 2, strict = true}), {""})
     t:are_equal(("123123"):split('123', {plain = true, limit = 2, strict = true}), {"", "123"})
 end
+
+function test_lastof(t)
+    t:are_equal(("1.2.3.4.5"):lastof('%.'), 8)
+    t:are_equal(("1.2.3.4.5"):lastof('.', true), 8)
+    t:are_equal(("/home/file.txt"):lastof('[/\\]'), 6)
+    t:are_equal(("/home/file.txt"):lastof('/', true), 6)
+    t:are_equal(("/home/file.txt"):lastof('/home', true), 1)
+    t:are_equal(("/home/file.txt"):lastof('[/\\]home'), 1)
+end
