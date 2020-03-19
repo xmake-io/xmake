@@ -24,6 +24,9 @@ import("core.tool.compiler")
 
 -- get unix path 
 function _get_unix_path(filepath)
+    if path.is_absolute(filepath) and filepath:startswith(os.projectdir()) then
+        filepath = path.relative(filepath, os.projectdir())
+    end
     return (path.translate(filepath):gsub('\\', '/'))
 end
 
@@ -144,6 +147,7 @@ function _add_target_include_directories(cmakelists, target)
     _add_values_from_targetopts(includedirs, target, "includedirs")
     _add_values_from_targetpkgs(includedirs, target, "includedirs")
     _add_values_from_targetdeps(includedirs, target, "includedirs")
+    includedirs = table.unique(includedirs)
     if #includedirs > 0 then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
@@ -182,6 +186,7 @@ function _add_target_compile_definitions(cmakelists, target)
     _add_values_from_targetopts(defines, target, "defines")
     _add_values_from_targetpkgs(defines, target, "defines")
     _add_values_from_targetdeps(defines, target, "defines")
+    defines = table.unique(defines)
     if #defines > 0 then
         cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
         for _, define in ipairs(defines) do
@@ -333,27 +338,22 @@ function _add_target_link_libraries(cmakelists, target)
 
     -- add links
     local links = table.wrap(target:get("links"))
-
-    -- add links from target options
     _add_values_from_targetopts(links, target, "links")
-
-    -- add links from target packages
     _add_values_from_targetpkgs(links, target, "links")
-
-    -- add links from targe dependencies
-    _add_values_from_targetdeps(links, target, "links")
 
     -- add links from target deps
     local targetkind = target:targetkind()
     if targetkind == "binary" or targetkind == "shared" then
-        for _, dep in ipairs(target:orderdeps()) do
+        for _, dep in irpairs(target:orderdeps()) do
             local depkind = dep:targetkind()
             if depkind == "static" or depkind == "shared" then
                 table.insert(links, dep:name())
             end
         end
     end
+    _add_values_from_targetdeps(links, target, "links")
     table.join2(links, target:get("syslinks"))
+    links = table.unique(links)
     if #links > 0 then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, link in ipairs(links) do
@@ -369,6 +369,7 @@ function _add_target_link_directories(cmakelists, target)
     _add_values_from_targetopts(linkdirs, target, "linkdirs")
     _add_values_from_targetpkgs(linkdirs, target, "linkdirs")
     _add_values_from_targetdeps(linkdirs, target, "linkdirs")
+    linkdirs = table.unique(linkdirs)
     if #linkdirs > 0 then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())
         for _, linkdir in ipairs(linkdirs) do
