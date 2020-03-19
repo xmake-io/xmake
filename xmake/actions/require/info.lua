@@ -40,7 +40,9 @@ function _from(instance)
             return ""
         end
     elseif #instance:urls() > 0 then
-        return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
+        local repo = instance:repo()
+        local reponame = repo and repo:name() or "unknown"
+        return instance:supported() and format(", ${yellow}remote${clear}(in %s)", reponame) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", reponame)
     elseif instance:isSys() then
         return ", ${red}missing${clear}"
     else
