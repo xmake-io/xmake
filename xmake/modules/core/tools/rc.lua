@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.project")
+import("private.tools.vstool")
 
 -- init it
 function init(self)
