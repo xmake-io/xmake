@@ -214,6 +214,9 @@ function apis()
     ,   "package.add_undefines"
     ,   "package.add_frameworks"
     ,   "package.add_rpathdirs"
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs" --@note we need not uses pathes for package, see https://github.com/xmake-io/xmake/issues/717
+    ,   "package.add_frameworkdirs"
     }
     _g.pathes = 
     {
@@ -234,10 +237,6 @@ function apis()
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
     ,   "option.add_frameworkdirs"
-        -- package.add_xxx
-    ,   "package.add_linkdirs"
-    ,   "package.add_includedirs"
-    ,   "package.add_frameworkdirs"
     }
     _g.dictionary =
     {

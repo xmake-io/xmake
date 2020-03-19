@@ -54,6 +54,8 @@ function apis()
     ,   "package.add_defines"
     ,   "package.add_undefines"
     ,   "package.add_rpathdirs"
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs"
     }
     _g.pathes = 
     {
@@ -66,9 +68,6 @@ function apis()
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
-        -- package.add_xxx
-    ,   "package.add_linkdirs"
-    ,   "package.add_includedirs"
     }
 
     -- ok
