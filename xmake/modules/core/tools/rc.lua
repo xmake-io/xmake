@@ -56,15 +56,21 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+            local outdata, errdata = vstool.iorunv(_compargv1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
         {
             function (errors)
-
-                -- compiling errors
-                os.raise(errors)
+                -- use stdout as errors first from vstool.iorunv()
+                if type(errors) == "table" then
+                    local errs = errors.stdout or ""
+                    if #errs:trim() == 0 then
+                        errs = errors.stderr or ""
+                    end
+                    errors = errs
+                end
+                os.raise(tostring(errors))
             end
         },
         finally
