@@ -79,6 +79,15 @@ function _add_rules_for_compiler_msvc_ml(ninjafile, sourcekind, program)
     ninjafile:print("")
 end
 
+-- add rules for resource complier (msvc/rc)
+function _add_rules_for_compiler_msvc_rc(ninjafile, sourcekind, program)
+    ninjafile:print("rule %s", sourcekind)
+    ninjafile:print(" command = %s $ARGS -Fo$out $in", program)
+    ninjafile:print(" deps = msvc")
+    ninjafile:print(" description = compiling.%s $in", config.mode())
+    ninjafile:print("")
+end
+
 -- add rules for complier
 function _add_rules_for_compiler(ninjafile)
     ninjafile:print("# rules for compiler")
@@ -93,7 +102,8 @@ function _add_rules_for_compiler(ninjafile)
         clangxx = _add_rules_for_compiler_clang,
         cl      = _add_rules_for_compiler_msvc_cl,
         ml      = _add_rules_for_compiler_msvc_ml,
-        ml64    = _add_rules_for_compiler_msvc_ml
+        ml64    = _add_rules_for_compiler_msvc_ml,
+        rc      = _add_rules_for_compiler_msvc_rc
     }
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local program, toolname = platform.tool(sourcekind)
