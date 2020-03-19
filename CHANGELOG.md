@@ -11,6 +11,11 @@
 ### Change
 
 * [#589](https://github.com/xmake-io/xmake/issues/589): Improve and optimize build speed, supports parallel compilation and linking across targets
+* Improve the ninja/cmake generator
+
+### Bugs fixed
+
+* Fix the link errors output issues for msvc
 
 ## v2.3.1
 
@@ -700,6 +705,11 @@
 ### 改进
 
 * [#589](https://github.com/xmake-io/xmake/issues/589): 改进优化构建速度，支持跨目标间并行编译和link，编译速度和ninja基本持平
+* 改进ninja/cmake工程文件生成器插件
+
+### Bugs修复
+
+* 修复windows下link error显示问题
 
 ## v2.3.1
 

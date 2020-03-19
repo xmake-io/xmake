@@ -225,6 +225,12 @@ function _add_build_for_target(ninjafile, target)
     for _, objectfile in ipairs(objectfiles) do
         ninjafile:write(" " .. objectfile)
     end
+    -- merge objects with rule("utils.merge.object")
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename == "utils.merge.object" then
+            ninjafile:write(" " .. table.concat(sourcebatch.sourcefiles, " "))
+        end
+    end
     local deps = target:get("deps")
     if deps then
         ninjafile:print(" || $")

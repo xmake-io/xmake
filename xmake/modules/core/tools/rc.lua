@@ -25,6 +25,7 @@ import("private.tools.vstool")
 
 -- init it
 function init(self)
+    self:set("mrcflags", "-nologo")
 end
 
 -- make the define flag
