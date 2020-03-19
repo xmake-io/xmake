@@ -383,7 +383,9 @@ function sandbox_os.execv(program, argv, opt)
         end
         os.raise(errors)
     end
-    return ok
+
+    -- we need return results if opt.try is enabled
+    return ok, errors
 end
 
 -- execute command and echo verbose info if [-v|--verbose] option is enabled
@@ -407,7 +409,7 @@ function sandbox_os.vexecv(program, argv, opt)
     end
 
     -- run it
-    sandbox_os.execv(program, argv, opt)
+    return sandbox_os.execv(program, argv, opt)
 end
 
 -- match files or directories

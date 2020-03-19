@@ -34,7 +34,7 @@ function runv(program, argv, opt)
     local envs = {VS_UNICODE_OUTPUT = outfile:rawfd()}
 
     -- execute it
-    local ok = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath, envs = envs}))
+    local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath, envs = envs}))
 
     -- close outfile first
     outfile:close()
@@ -52,10 +52,18 @@ function runv(program, argv, opt)
 
         -- make the default errors
         if not errors or #errors == 0 then
-            if argv ~= nil then
-                errors = string.format("vstool.runv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
+
+            -- get command
+            local cmd = program
+            if argv then
+                cmd = cmd .. " " .. os.args(argv)
+            end
+
+            -- get errors
+            if ok ~= nil then
+                errors = string.format("vstool.runv(%s) failed(%d)", cmd, ok)
             else
-                errors = string.format("vstool.runv(%s) failed(%d)!", program, ok)
+                errors = string.format("vstool.runv(%s), error: %s", cmd, syserrors and syserrors or "unknown")
             end
         end
 
@@ -88,7 +96,7 @@ function iorunv(program, argv, opt)
     local envs = {VS_UNICODE_OUTPUT = outfile:rawfd()}
 
     -- run command
-    local ok = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath, envs = envs}))
+    local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath, envs = envs}))
 
     -- get output and error data
     outfile:close()
@@ -110,10 +118,18 @@ function iorunv(program, argv, opt)
 
         -- make the default errors
         if not errors or #errors == 0 then
-            if argv ~= nil then
-                errors = string.format("vstool.iorunv(%s %s) failed(%d)!", program, table.concat(argv, ' '), ok)
+
+            -- get command
+            local cmd = program
+            if argv then
+                cmd = cmd .. " " .. os.args(argv)
+            end
+
+            -- get errors
+            if ok ~= nil then
+                errors = string.format("vstool.iorunv(%s) failed(%d)", cmd, ok)
             else
-                errors = string.format("vstool.iorunv(%s) failed(%d)!", program, ok)
+                errors = string.format("vstool.iorunv(%s), error: %s", cmd, syserrors and syserrors or "unknown")
             end
         end
 
