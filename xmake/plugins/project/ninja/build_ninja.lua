@@ -241,7 +241,9 @@ function _add_build_for_generator(ninjafile)
     ninjafile:print("build build.ninja: gen $")
     local allfiles = project.allfiles()
     for idx, projectfile in ipairs(allfiles) do
-        ninjafile:print("  %s %s", os.args(path.relative(path.absolute(projectfile))), idx < #allfiles and "$" or "")
+        if not path.is_absolute(projectfile) or projectfile:startswith(os.projectdir()) then
+            ninjafile:print("  %s %s", os.args(path.relative(path.absolute(projectfile))), idx < #allfiles and "$" or "")
+        end
     end
     ninjafile:print("")
 end
