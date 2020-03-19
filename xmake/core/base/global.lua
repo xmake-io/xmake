@@ -94,7 +94,16 @@ end
 -- get the global configure directory
 function global.directory()
     if global._DIRECTORY == nil then
-        local rootdir = os.getenv("XMAKE_GLOBALDIR") or path.translate("~")
+        local rootdir = os.getenv("XMAKE_GLOBALDIR")
+        if not rootdir then
+            -- compatible with the old `%appdata%/.xmake` directory if it exists
+            local appdata = (os.host() == "windows") and os.getenv("APPDATA")
+            if appdata and os.isdir(path.join(appdata, ".xmake")) then
+                rootdir = appdata
+            else
+                rootdir = path.translate("~")
+            end
+        end
         global._DIRECTORY = path.join(rootdir, ".xmake")
     end
     return global._DIRECTORY
