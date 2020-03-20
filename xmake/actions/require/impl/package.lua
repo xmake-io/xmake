@@ -290,9 +290,10 @@ function _check_package_configurations(package)
 end
 
 -- load required packages
-function _load_package(packagename, requireinfo)
+function _load_package(packagename, requireinfo, opt)
 
     -- attempt to get it from cache first
+    opt = opt or {}
     local packages = _g._PACKAGES or {}
     local package = packages[packagename]
     if package then
@@ -316,7 +317,7 @@ function _load_package(packagename, requireinfo)
     end
 
     -- load package from system
-    if not package then
+    if not package and opt.system ~= false then
         package = _load_package_from_system(packagename)
     end
 
@@ -368,7 +369,7 @@ function _load_packages(requires, opt)
     for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- load package 
-        local package = _load_package(requireinfo.name, requireinfo.info)
+        local package = _load_package(requireinfo.name, requireinfo.info, opt)
 
         -- maybe package not found and optional
         if package then
@@ -394,9 +395,9 @@ function _load_packages(requires, opt)
                         end
                     end
 
-                    -- load dependent packages
+                    -- load dependent packages and do not load system packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps})) do
+                    for _, dep in ipairs(_load_packages(deps, {requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps, system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
