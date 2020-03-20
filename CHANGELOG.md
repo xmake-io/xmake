@@ -16,6 +16,7 @@
 ### Bugs fixed
 
 * Fix the link errors output issues for msvc
+* [#718](https://github.com/xmake-io/xmake/issues/718): Fix download cache bug for package
 
 ## v2.3.1
 
@@ -710,6 +711,7 @@
 ### Bugs修复
 
 * 修复windows下link error显示问题
+* [#718](https://github.com/xmake-io/xmake/issues/718): 修复依赖包下载在多镜像时一定概率缓存失效问题
 
 ## v2.3.1
 
