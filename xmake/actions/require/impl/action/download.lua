@@ -72,7 +72,7 @@ end
 function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- get package file
-    local packagefile = path.filename(url)
+    local packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(url)
 
     -- get sourcehash
     local sourcehash = package:sourcehash(url_alias)
