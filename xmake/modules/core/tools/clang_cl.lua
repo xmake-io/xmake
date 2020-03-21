@@ -101,24 +101,6 @@ function nf_optimize(self, level)
     return maps[level] 
 end
 
--- make the warning flag
-function nf_warning(self, level)
-
-    -- the maps
-    local maps = 
-    {   
-        none       = "-w"
-    ,   less       = "-Wall"
-    ,   more       = "-Wall"
-    ,   all        = "-Wall"
-    ,   everything = "-Wall -Wextra -Weffc++"
-    ,   error      = "-Werror"
-    }
-
-    -- make it
-    return maps[level]
-end
-
 -- make the language flag
 function nf_language(self, stdname)
 
