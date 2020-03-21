@@ -378,7 +378,7 @@ function _has_color_diagnostics(self)
 end
 
 -- make the compile arguments list for the precompiled header
-function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
+function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
 
     -- remove "-include xxx.h" and "-include-pch xxx.pch"
     local pchflags = {}
@@ -405,18 +405,18 @@ function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 end
 
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv1_pch(self, sourcefile, objectfile, flags)
+        return _compargv_pch(self, sourcefile, objectfile, flags)
     end
     return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
@@ -446,7 +446,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- do compile
-            return os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+            return os.iorunv(compargv(self, sourcefile, objectfile, compflags))
         end,
         catch
         {
@@ -502,25 +502,5 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
         }
     }
-end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 

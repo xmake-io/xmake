@@ -292,7 +292,7 @@ function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
 end
 
 -- make the compile arguments list for the precompiled header
-function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
+function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
 
     -- remove "-Yuxxx.h" and "-Fpxxx.pch"
     local pchflags = {}
@@ -314,12 +314,12 @@ function _compargv1_pch(self, pcheaderfile, pcoutputfile, flags)
 end
 
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then
-        return _compargv1_pch(self, sourcefile, objectfile, flags)
+        return _compargv_pch(self, sourcefile, objectfile, flags)
     end
 
     -- make the compile arguments list
@@ -327,7 +327,7 @@ function _compargv1(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
@@ -348,7 +348,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            return vstool.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+            return vstool.iorunv(compargv(self, sourcefile, objectfile, compflags))
         end,
         catch
         {
@@ -409,25 +409,5 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     if dependinfo and outdata then
         dependinfo.depfiles_cl = outdata
     end
-end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 
