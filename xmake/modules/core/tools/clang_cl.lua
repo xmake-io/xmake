@@ -25,7 +25,40 @@ import("core.base.colors")
 
 -- init it
 function init(self)
-    _super.init(self)
+
+    -- init flags map
+    self:set("mapflags",
+    {
+        -- warnings
+        ["-W1"] = "-Wall"
+    ,   ["-W2"] = "-Wall"
+    ,   ["-W3"] = "-Wall"
+    ,   ["-W4"] = "-Wextra"
+    ,   ["-Weverything"] = "-Wall -Wextra -Weffc++"
+
+        -- language
+    ,   ["-ansi"]                   = "-Xclang -ansi"
+    ,   ["-std=c89"]                = "-Xclang -std=c89"
+    ,   ["-std=c99"]                = "-Xclang -std=c99"
+    ,   ["-std=c11"]                = "-Xclang -std=c11"
+    ,   ["-std=gnu89"]              = "-Xclang -std=gnu89"
+    ,   ["-std=gnu99"]              = "-Xclang -std=gnu99"
+    ,   ["-std=gnu11"]              = "-Xclang -std=gnu11"
+    ,   ["-std=c++98"]              = "-Xclang -std=c++98"
+    ,   ["-std=c++11"]              = "-Xclang -std=c++11"
+    ,   ["-std=c++14"]              = "-Xclang -std=c++14"
+    ,   ["-std=c++17"]              = "-Xclang -std=c++17"
+    ,   ["-std=c++1z"]              = "-Xclang -std=c++1z"
+    ,   ["-std=c++1a"]              = "-Xclang -std=c++1a"
+    ,   ["-std=c++2a"]              = "-Xclang -std=c++2a"
+    ,   ["-std=gnu++98"]            = "-Xclang -std=gnu++98"
+    ,   ["-std=gnu++11"]            = "-Xclang -std=gnu++11"
+    ,   ["-std=gnu++14"]            = "-Xclang -std=gnu++14"
+    ,   ["-std=gnu++17"]            = "-Xclang -std=gnu++17"
+    ,   ["-std=gnu++1z"]            = "-Xclang -std=gnu++1z"
+    ,   ["-std=gnu++1a"]            = "-Xclang -std=gnu++1a"
+    ,   ["-std=gnu++2a"]            = "-Xclang -std=gnu++2a"
+    })
 end
 
 -- has color diagnostics?
@@ -48,6 +81,96 @@ function _has_color_diagnostics(self)
         _g._HAS_COLOR_DIAGNOSTICS = colors_diagnostics
     end
     return colors_diagnostics
+end
+
+-- make the optimize flag
+function nf_optimize(self, level)
+
+    -- the maps
+    local maps = 
+    {   
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Os"
+    ,   aggressive = "-Ofast"
+    }
+
+    -- make it
+    return maps[level] 
+end
+
+-- make the warning flag
+function nf_warning(self, level)
+
+    -- the maps
+    local maps = 
+    {   
+        none       = "-w"
+    ,   less       = "-Wall"
+    ,   more       = "-Wall"
+    ,   all        = "-Wall"
+    ,   everything = "-Wall -Wextra -Weffc++"
+    ,   error      = "-Werror"
+    }
+
+    -- make it
+    return maps[level]
+end
+
+-- make the language flag
+function nf_language(self, stdname)
+
+    -- the stdc maps
+    if _g.cmaps == nil then
+        _g.cmaps = 
+        {
+            -- stdc
+            ansi        = "-Xclang -ansi"
+        ,   c89         = "-Xclang -std=c89"
+        ,   gnu89       = "-Xclang -std=gnu89"
+        ,   c99         = "-Xclang -std=c99"
+        ,   gnu99       = "-Xclang -std=gnu99"
+        ,   c11         = "-Xclang -std=c11"
+        ,   gnu11       = "-Xclang -std=gnu11"
+        }
+    end
+
+    -- the stdc++ maps
+    if _g.cxxmaps == nil then
+        _g.cxxmaps = 
+        {
+            cxx98        = "-Xclang -std=c++98"
+        ,   gnuxx98      = "-Xclang -std=gnu++98"
+        ,   cxx11        = "-Xclang -std=c++11"
+        ,   gnuxx11      = "-Xclang -std=gnu++11"
+        ,   cxx14        = "-Xclang -std=c++14"
+        ,   gnuxx14      = "-Xclang -std=gnu++14"
+        ,   cxx17        = "-Xclang -std=c++17"
+        ,   gnuxx17      = "-Xclang -std=gnu++17"
+        ,   cxx1z        = "-Xclang -std=c++1z"
+        ,   gnuxx1z      = "-Xclang -std=gnu++1z"
+        ,   cxx20        = "-Xclang -std=c++2a"
+        ,   gnuxx20      = "-Xclang -std=gnu++2a"
+        ,   cxx2a        = "-Xclang -std=c++2a"
+        ,   gnuxx2a      = "-Xclang -std=gnu++2a"
+        }
+        local cxxmaps2 = {}
+        for k, v in pairs(_g.cxxmaps) do
+            cxxmaps2[k:gsub("xx", "++")] = v
+        end
+        table.join2(_g.cxxmaps, cxxmaps2)
+    end
+
+    -- select maps
+    local maps = _g.cmaps
+    if self:kind() == "cxx" or self:kind() == "mxx" then
+        maps = _g.cxxmaps
+    end
+
+    -- make it
+    return maps[stdname]
 end
 
 -- compile the source file
