@@ -354,6 +354,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         {
             function (errors)
 
+                -- try removing the old object file for forcing to rebuild this source file
+                os.tryrm(objectfile)
+
                 -- use cl/stdout as errors first from vstool.iorunv()
                 if type(errors) == "table" then
                     local errs = errors.stdout or ""
@@ -362,9 +365,6 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     end
                     errors = errs
                 end
-
-                -- try removing the old object file for forcing to rebuild this source file
-                os.tryrm(objectfile)
 
                 -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                 local results = ""

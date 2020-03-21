@@ -39,7 +39,7 @@ theme("default")
 
     -- the warning info
     set_text("warning", "$warning")
-    set_color("warning", "yellow")
+    set_color("warning", "yellow bright")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")

@@ -58,20 +58,14 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile, path.sep()))
 
     -- compile it
-    local depfile = dependinfo and os.tmpfile() or nil
-    try
+    local outdata = try
     {
         function ()
 
-            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
-            if depfile and _g._HAS_MMD_MF == nil then
-                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cxflags", { flagskey = "-MMD -MF" }) or false
-            end
-
             -- generate includes file
             local compflags = flags
-            if depfile and _g._HAS_MMD_MF then
-                compflags = table.join(compflags, "-MMD", "-MF", depfile)
+            if dependinfo then
+                compflags = table.join(flags, "-showIncludes")
             end
 
             -- has color diagnostics? enable it
@@ -124,18 +118,13 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                         cprint("${color.warning}%s", warnings)
                     end
                 end
-
-                -- generate the dependent includes
-                if depfile and os.isfile(depfile) then
-                    if dependinfo then
-                        dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
-                    end
-
-                    -- remove the temporary dependent file
-                    os.tryrm(depfile)
-                end
             end
         }
     }
+
+    -- generate the dependent includes
+    if dependinfo and outdata then
+        dependinfo.depfiles_cl = outdata
+    end
 end
 
