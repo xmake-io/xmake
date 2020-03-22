@@ -96,7 +96,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     local outputdir_old = nil
     if extension:startswith(".tar.") then
         outputdir_old = outputdir
-        outputdir = os.tmpfile() .. ".tar"
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
     -- init argv
@@ -157,7 +157,7 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
     local outputdir_old = nil
     if extension:startswith(".tar.") then
         outputdir_old = outputdir
-        outputdir = os.tmpfile() .. ".tar"
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
     -- init temporary archivefile
@@ -214,7 +214,7 @@ function _extract_using_xz(archivefile, outputdir, extension, opt)
     local outputdir_old = nil
     if extension:startswith(".tar.") then
         outputdir_old = outputdir
-        outputdir = os.tmpfile() .. ".tar"
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
     -- init temporary archivefile
@@ -271,7 +271,7 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
     local outputdir_old = nil
     if extension:startswith(".tar.") then
         outputdir_old = outputdir
-        outputdir = os.tmpfile() .. ".tar"
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
 
     -- init argv
