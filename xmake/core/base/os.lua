@@ -48,17 +48,13 @@ os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 
 -- copy single file or directory
-function os._cp(src, dst, opt)
+function os._cp(src, dst, rootdir)
 
     -- check
     assert(src and dst)
 
-    -- preserve the source directory structure if opt.rootdir is given
-    local rootdir = opt and opt.rootdir
+    -- reserve the source directory structure if opt.rootdir is given
     if rootdir then
-        if not path.is_absolute(rootdir) then
-            rootdir = path.absolute(rootdir)
-        end
         if not path.is_absolute(src) then
             src = path.absolute(src)
         end
@@ -387,7 +383,8 @@ function os.filedirs(pattern, callback)
     return (os.match(pattern, 'a', callback))
 end
 
--- copy files or directories
+-- copy files or directories and we can reserve the source directory structure
+-- e.g. os.cp("src/**.h", "/tmp/", {rootdir = "src"})
 function os.cp(srcpath, dstpath, opt)
 
     -- check arguments
@@ -395,13 +392,21 @@ function os.cp(srcpath, dstpath, opt)
         return false, string.format("invalid arguments!")
     end
 
+    -- reserve the source directory structure if opt.rootdir is given
+    local rootdir = opt and opt.rootdir
+    if rootdir then
+        if not path.is_absolute(rootdir) then
+            rootdir = path.absolute(rootdir)
+        end
+    end
+
     -- copy files or directories
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
-        return os._cp(srcpathes, dstpath, opt)
+        return os._cp(srcpathes, dstpath, rootdir)
     else
         for _, _srcpath in ipairs(srcpathes) do
-            local ok, errors = os._cp(_srcpath, dstpath, opt)
+            local ok, errors = os._cp(_srcpath, dstpath, rootdir)
             if not ok then
                 return false, errors
             end
