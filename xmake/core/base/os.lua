@@ -48,17 +48,35 @@ os.SYSERR_NOT_PERM    = 1
 os.SYSERR_NOT_FILEDIR = 2
 
 -- copy single file or directory
-function os._cp(src, dst)
+function os._cp(src, dst, opt)
 
     -- check
     assert(src and dst)
+
+    -- preserve the source directory structure if opt.rootdir is given
+    local rootdir = opt and opt.rootdir
+    if rootdir then
+        if not path.is_absolute(rootdir) then
+            rootdir = path.absolute(rootdir)
+        end
+        if not path.is_absolute(src) then
+            src = path.absolute(src)
+        end
+        if not src:startswith(rootdir) then
+            return false, string.format("cannot copy file %s to %s, error: invalid rootdir(%s)", src, dst, rootdir)
+        end
+    end
 
     -- is file?
     if os.isfile(src) then
 
         -- the destination is directory? append the filename
         if os.isdir(dst) or path.islastsep(dst) then
-            dst = path.join(dst, path.filename(src))
+            if rootdir then
+                dst = path.join(dst, path.relative(src, rootdir))
+            else
+                dst = path.join(dst, path.filename(src))
+            end
         end
 
         -- copy file
@@ -70,7 +88,11 @@ function os._cp(src, dst)
 
         -- the destination directory exists? append the filename
         if os.isdir(dst) or path.islastsep(dst) then
-            dst = path.join(dst, path.filename(path.translate(src)))
+            if rootdir then
+                dst = path.join(dst, path.relative(src, rootdir))
+            else
+                dst = path.join(dst, path.filename(path.translate(src)))
+            end
         end
 
         -- copy directory
@@ -366,7 +388,7 @@ function os.filedirs(pattern, callback)
 end
 
 -- copy files or directories
-function os.cp(srcpath, dstpath)
+function os.cp(srcpath, dstpath, opt)
 
     -- check arguments
     if not srcpath or not dstpath then
@@ -376,10 +398,10 @@ function os.cp(srcpath, dstpath)
     -- copy files or directories
     local srcpathes = os._match_wildcard_pathes(srcpath)
     if type(srcpathes) == "string" then
-        return os._cp(srcpathes, dstpath)
+        return os._cp(srcpathes, dstpath, opt)
     else
         for _, _srcpath in ipairs(srcpathes) do
-            local ok, errors = os._cp(_srcpath, dstpath)
+            local ok, errors = os._cp(_srcpath, dstpath, opt)
             if not ok then
                 return false, errors
             end

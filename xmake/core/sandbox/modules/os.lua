@@ -76,9 +76,9 @@ sandbox_os.SYSERR_NOT_PERM    = os.SYSERR_NOT_PERM
 sandbox_os.SYSERR_NOT_FILEDIR = os.SYSERR_NOT_FILEDIR
 
 -- copy file or directory
-function sandbox_os.cp(srcpath, dstpath)
+function sandbox_os.cp(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
-    local ok, errors = os.cp(vformat(srcpath), vformat(dstpath))
+    local ok, errors = os.cp(vformat(srcpath), vformat(dstpath), opt)
     if not ok then
         os.raise(errors)
     end
@@ -112,12 +112,12 @@ function sandbox_os.ln(srcpath, dstpath)
 end
 
 -- copy file or directory with the verbose info
-function sandbox_os.vcp(srcpath, dstpath)
+function sandbox_os.vcp(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     if option.get("verbose") then
         utils.cprint("${dim}> copy %s to %s ..", srcpath, dstpath)
     end
-    return sandbox_os.cp(srcpath, dstpath)
+    return sandbox_os.cp(srcpath, dstpath, opt)
 end 
 
 -- move file or directory with the verbose info
