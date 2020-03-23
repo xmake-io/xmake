@@ -121,10 +121,5 @@ function sandbox_core_base_process.openv(filename, argv, opt)
     return proc
 end
 
--- kill all pending processes list
-function sandbox_core_base_process.killall()
-    return process.killall()
-end
-
 -- return module
 return sandbox_core_base_process

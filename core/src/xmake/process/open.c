@@ -62,6 +62,13 @@ tb_int_t xm_process_open(lua_State* lua)
     tb_pipe_file_ref_t errpipe = tb_null;
     if (lua_istable(lua, 2)) 
     { 
+        // is detached?
+        lua_pushstring(lua, "detach");
+        lua_gettable(lua, 2);
+        if (lua_toboolean(lua, -1))
+            attr.flags |= TB_PROCESS_FLAG_DETACH;
+        lua_pop(lua, 1);
+
         // get outpath
         lua_pushstring(lua, "outpath");
         lua_gettable(lua, 2);

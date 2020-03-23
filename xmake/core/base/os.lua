@@ -588,9 +588,6 @@ end
 -- exit program
 function os.exit(...)
 
-    -- kill all pending processes first
-    process.killall()
-
     -- do exit
     return os._exit(...)
 end

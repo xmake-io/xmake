@@ -263,14 +263,10 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end)
     ok, errors = scheduler:runloop()
     if not ok then
-        process.killall()
         utils.error(errors)
         return -1
     end
     
-    -- kill all pending processes
-    process.killall()
-
     -- dump deprecated entries
     deprecated.dump()
 
