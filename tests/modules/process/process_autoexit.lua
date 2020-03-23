@@ -5,6 +5,7 @@ function main(cmd)
     for i = 1, 10 do
         scheduler.co_start(function ()
             process.open(cmd or "xmake l os.sleep 60000")
+            --process.openv("xmake", {"l", "os.sleep", "60000"}, {detach = true}):close()
         end)
     end
     -- check processes status after exiting

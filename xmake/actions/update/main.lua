@@ -101,7 +101,7 @@ function _run_win_v(program, commands, admin)
     local temp_vbs = os.tmpfile() .. ".vbs"
     os.cp(sudo_vbs, temp_vbs)
     local params = table.join("/Nologo", temp_vbs, "W" .. (admin and "A" or "N") , program, commands)
-    process.openv("cscript", params):close()
+    process.openv("cscript", params, {detach = true}):close()
 end
 
 -- do uninstall
@@ -173,7 +173,7 @@ function _install(sourcedir)
                     end
                 else
                     os.vrun("make build")
-                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile()}):close()
+                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile()}, {detach = true}):close()
                 end
                 return true
             end,
