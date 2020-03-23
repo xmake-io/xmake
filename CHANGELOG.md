@@ -12,6 +12,7 @@
 
 * [#589](https://github.com/xmake-io/xmake/issues/589): Improve and optimize build speed, supports parallel compilation and linking across targets
 * Improve the ninja/cmake generator
+* [#728](https://github.com/xmake-io/xmake/issues/728): Improve os.cp to support reserve source directory structure
 
 ### Bugs fixed
 
@@ -709,6 +710,7 @@
 
 * [#589](https://github.com/xmake-io/xmake/issues/589): 改进优化构建速度，支持跨目标间并行编译和link，编译速度和ninja基本持平
 * 改进ninja/cmake工程文件生成器插件
+* [#728](https://github.com/xmake-io/xmake/issues/728): 改进os.cp支持保留源目录结构层级的递归复制
 
 ### Bugs修复
 
