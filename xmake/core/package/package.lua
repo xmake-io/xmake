@@ -806,6 +806,11 @@ function _instance:fetch(opt)
     -- true: only find system package
     -- false: only find xmake packages
     local system = opt.system or self:requireinfo().system
+    if self:is3rd() then
+        -- we need ignore `{system = true/false}` argument if be 3rd package
+        -- @see https://github.com/xmake-io/xmake/issues/726
+        system = nil
+    end
 
     -- fetch binary tool?
     fetchinfo = nil
