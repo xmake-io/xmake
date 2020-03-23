@@ -122,6 +122,28 @@ $ xmake f --menu
 
 <img src="https://xmake.io/assets/img/index/menuconf.png" width="650px" />
 
+## Build as fast as ninja
+
+The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/core)
+
+### Termux/Android cpu/8core (-j12)
+
+| buildsystem     | spend time     |
+|-----            | ----           |
+|xmake            | 24.890s        |
+|ninja            | 25.682s        |
+|cmake(gen+make)  | 5.416s+28.473s |
+|cmake(gen+ninja) | 4.458s+24.842s |
+
+### MacOS cpu/8core (-j12)
+
+| buildsystem     | spend time     |
+|-----            | ----           |
+|xmake            | 12.264s        |
+|ninja            | 11.327s        |
+|cmake(gen+make)  | 1.203s+14.030s |
+|cmake(gen+ninja) | 0.988s+11.644s |
+
 ## Package management
 
 ### Download and build
