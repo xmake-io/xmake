@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -167,22 +167,34 @@ function main(target, opt)
         -- translate qt frameworks
         if framework:startswith("Qt") then
 
-            -- add defines
-            target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
-            
-            -- add includedirs 
-            if is_plat("macosx") then
-                local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
-                if os.isdir(frameworkdir) then
-                    target:add("includedirs", path.join(frameworkdir, "Headers"))
-                    useframeworks = true
+            if (framework:lower():endswith("private")) then
+                -- add private includedirs
+                print("private")
+                if is_plat("macosx") then
+                    print("macosx")
+                else
+                    local private_dir = framework:sub(1, -string.len("private") - 1);
+                    target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver, private_dir))
+                    target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver))
+                end
+            else
+                -- add defines
+                target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
+
+                -- add includedirs
+                if is_plat("macosx") then
+                    local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
+                    if os.isdir(frameworkdir) then
+                        target:add("includedirs", path.join(frameworkdir, "Headers"))
+                        useframeworks = true
+                    else
+                        target:add("syslinks", _link(framework, major))
+                        target:add("includedirs", path.join(qt.sdkdir, "include", framework))
+                    end
                 else
                     target:add("syslinks", _link(framework, major))
                     target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                 end
-            else 
-                target:add("syslinks", _link(framework, major))
-                target:add("includedirs", path.join(qt.sdkdir, "include", framework))
             end
         end
     end
@@ -196,7 +208,7 @@ function main(target, opt)
         target:add("syslinks", syslinks_user)
     end
 
-    -- add includedirs, linkdirs 
+    -- add includedirs, linkdirs
     if is_plat("macosx") then
         target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics", "OpenGL")
         target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
