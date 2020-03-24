@@ -48,12 +48,6 @@
  * macros
  */
 
-// interactive prompt
-#define LUA_PROMPT  "> "
-
-// continuation prompt
-#define LUA_PROMPT2 ">> "
-
 // buffer size for prompt
 #define LUA_PROMPT_BUFSIZE 4096
 
@@ -185,11 +179,11 @@ static tb_size_t xm_sandbox_readline(tb_char_t* data, tb_size_t maxn, tb_char_t 
 }
 
 // read and push input line
-static tb_int_t xm_sandbox_pushline(lua_State* lua)
+static tb_int_t xm_sandbox_pushline(lua_State* lua, tb_char_t const* prompt2)
 {
     // read line
     tb_char_t data[LUA_PROMPT_BUFSIZE];
-    tb_size_t size = xm_sandbox_readline(data, sizeof(data), LUA_PROMPT2);
+    tb_size_t size = xm_sandbox_readline(data, sizeof(data), prompt2);
     if (size)
     {
         // split line '\0'
@@ -213,10 +207,21 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
     // clear stack
     lua_settop(lua, top);
 
+    // get prompt strings from arg1(sandbox_scope)
+    lua_pushstring(lua, "$interactive_prompt");
+    lua_gettable(lua, 1);
+    tb_char_t const* prompt = lua_tostring(lua, -1);
+    lua_pop(lua, 1);
+
+    lua_pushstring(lua, "$interactive_prompt2");
+    lua_gettable(lua, 1);
+    tb_char_t const* prompt2 = lua_tostring(lua, -1);
+    lua_pop(lua, 1);
+
     // read first line
     tb_int_t  status;
     tb_char_t data[LUA_PROMPT_BUFSIZE];
-    tb_size_t size = xm_sandbox_readline(data + 7, sizeof(data) - 7, LUA_PROMPT);
+    tb_size_t size = xm_sandbox_readline(data + 7, sizeof(data) - 7, prompt);
     if (size)
     {
         // split line '\0'
@@ -254,7 +259,7 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
         if (!xm_sandbox_incomplete(lua, status)) break;
 
         // get more input
-        if (!xm_sandbox_pushline(lua)) return -1;
+        if (!xm_sandbox_pushline(lua, prompt2)) return -1;
 
         // cancel multi-line input?
         if (!tb_strcmp(lua_tostring(lua, -1), "q"))

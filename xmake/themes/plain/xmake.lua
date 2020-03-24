@@ -72,3 +72,9 @@ theme("plain")
     set_color("menu.main.task.name", "")
     set_color("menu.option.name", "")
     set_color("menu.usage", "")
+
+    -- interactive mode
+    set_text("interactive.prompt", "xmake>")
+    set_text("interactive.prompt2", "xmake>>")
+    set_color("interactive.prompt", "")
+    set_color("interactive.prompt2", "")

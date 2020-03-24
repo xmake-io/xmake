@@ -28,10 +28,11 @@ local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 local utils     = require("base/utils")
 local table     = require("base/table")
-local history   = require("project/history")
+local colors    = require("base/colors")
 local dump      = require("base/dump")
 local option    = require("base/option")
 local scheduler = require("base/scheduler")
+local history   = require("project/history")
 
 -- print variables for interactive mode
 function sandbox_core_sandbox._interactive_dump(...)
@@ -88,13 +89,16 @@ function sandbox_core_sandbox.interactive()
     end
 
     -- register dump function for interactive mode
-    instance._PUBLIC["$interactive_dump"] = sandbox_core_sandbox._interactive_dump
+    local public_scope = instance._PUBLIC
+    public_scope["$interactive_dump"] = sandbox_core_sandbox._interactive_dump
+    public_scope["$interactive_prompt"] = colors.translate("${color.interactive.prompt}${text.interactive.prompt} ")
+    public_scope["$interactive_prompt2"] = colors.translate("${color.interactive.prompt2}${text.interactive.prompt2} ")
 
     -- disable scheduler
     scheduler:enable(false)
 
     -- enter interactive mode with this new sandbox
-    sandbox.interactive(instance._PUBLIC)
+    sandbox.interactive(public_scope)
 
     -- enable scheduler
     scheduler:enable(true)
