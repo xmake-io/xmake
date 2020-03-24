@@ -65,7 +65,7 @@ theme("default")
     set_color("dump.string", "magenta bright")
     set_color("dump.string_quote", "magenta")
     set_color("dump.keyword", "blue")
-    set_color("dump.number", "green")
+    set_color("dump.number", "green bright")
     set_color("dump.function", "cyan")
 
     -- menu
@@ -76,5 +76,5 @@ theme("default")
     -- interactive mode
     set_text("interactive.prompt", "xmake>")
     set_text("interactive.prompt2", "xmake>>")
-    set_color("interactive.prompt", "green bright")
+    set_color("interactive.prompt", "green")
     set_color("interactive.prompt2", "green")

@@ -76,5 +76,5 @@ theme("dark")
     -- interactive mode
     set_text("interactive.prompt", "xmake>")
     set_text("interactive.prompt2", "xmake>>")
-    set_color("interactive.prompt", "green bright")
+    set_color("interactive.prompt", "green")
     set_color("interactive.prompt2", "green")
