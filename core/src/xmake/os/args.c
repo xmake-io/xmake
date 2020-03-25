@@ -120,7 +120,7 @@ tb_int_t xm_os_args(lua_State* lua)
     // return result
     tb_size_t size = tb_string_size(&result);
     if (size) lua_pushlstring(lua, tb_string_cstr(&result), size);
-    else lua_pushnil(lua);
+    else lua_pushliteral(lua, "");
     tb_string_exit(&result);
     return 1;
 }

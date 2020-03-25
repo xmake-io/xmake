@@ -62,6 +62,7 @@ function test_setenv(t)
 end
 
 function test_argv(t)
+    t:are_equal(os.argv(""), {})
     t:are_equal(os.argv("aa bb cc"), {"aa", "bb", "cc"})
     t:are_equal(os.argv("aa --bb=bbb -c"), {"aa", "--bb=bbb", "-c"})
     t:are_equal(os.argv("\"aa bb cc\" dd"), {"aa bb cc", "dd"})
@@ -73,6 +74,7 @@ function test_argv(t)
 end
 
 function test_args(t)
+    t:are_equal(os.args({}), "")
     t:are_equal(os.args({"aa", "bb", "cc"}), "aa bb cc")
     t:are_equal(os.args({"aa", "--bb=bbb", "-c"}), "aa --bb=bbb -c")
     t:are_equal(os.args({"aa bb cc", "dd"}), "\"aa bb cc\" dd")
