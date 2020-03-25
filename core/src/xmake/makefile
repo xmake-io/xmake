@@ -15,6 +15,7 @@ xmake_C_FILES 			+= \
 						xmake \
 						machine \
 						os/argv \
+						os/args \
 						os/find \
 						os/link \
 						os/isdir \

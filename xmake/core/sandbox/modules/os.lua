@@ -43,6 +43,7 @@ sandbox_os.exit         = os.exit
 sandbox_os.date         = os.date
 sandbox_os.time         = os.time
 sandbox_os.args         = os.args
+sandbox_os.args         = os.args
 sandbox_os.argv         = os.argv
 sandbox_os.mtime        = os.mtime
 sandbox_os.raise        = os.raise
