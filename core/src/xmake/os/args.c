@@ -33,7 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr, tb_size_t size)
+static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr, tb_size_t size, tb_bool_t escape)
 {
     // check
     tb_assert_and_check_return(size < TB_PATH_MAXN);
@@ -47,8 +47,8 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     tb_size_t m = tb_arrayn(buff);
     while ((ch = *p) && n < m)
     {
-        // escape '"'
-        if (ch == '\"') 
+        // escape '"' or '\\'
+        if (ch == '\"' || (escape && ch == '\\'))
         {
             if (n < m) buff[n++] = '\\';
         }
@@ -80,10 +80,22 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
+// os.args({"xx", "yy"}, {escape = true})
 tb_int_t xm_os_args(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
+
+    // escape '\\' characters in global?
+    tb_bool_t escape = tb_false;
+    if (lua_istable(lua, 2)) 
+    { 
+        // is detached?
+        lua_pushstring(lua, "escape");
+        lua_gettable(lua, 2);
+        escape = lua_toboolean(lua, -1);
+        lua_pop(lua, 1);
+    }
 
     // init result
     tb_string_t result;
@@ -105,7 +117,7 @@ tb_int_t xm_os_args(lua_State* lua)
             size_t size = 0;
             tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
             if (cstr && size)
-                tb_os_args_append(&result, cstr, size);
+                tb_os_args_append(&result, cstr, size, escape);
             lua_pop(lua, 1);
         }
     }
@@ -114,7 +126,7 @@ tb_int_t xm_os_args(lua_State* lua)
         size_t size = 0;
         tb_char_t const* cstr = luaL_checklstring(lua, 1, &size);
         if (cstr && size)
-            tb_os_args_append(&result, cstr, size);
+            tb_os_args_append(&result, cstr, size, escape);
     }
 
     // return result

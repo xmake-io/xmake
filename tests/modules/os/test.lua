@@ -83,4 +83,5 @@ function test_args(t)
     t:are_equal(os.args({"aa\\bb/cc dd", "ee"}), "\"aa\\\\bb/cc dd\" ee")
     t:are_equal(os.args({"aa\\bb/cc (dd)", "ee"}), "\"aa\\\\bb/cc (dd)\" ee")
     t:are_equal(os.args("-D__prefix__=\"tbox\""), "-D__prefix__=\\\"tbox\\\"")
+    t:are_equal(os.args({"aa\\bb/cc", "dd"}, {escape = true}), "aa\\\\bb/cc dd")
 end

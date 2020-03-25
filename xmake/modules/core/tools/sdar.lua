@@ -54,7 +54,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     -- too long arguments for windows? 
     if is_host("windows") then
         opt = opt or {}
-        local args = os.args(argv)
+        local args = os.args(argv, {escape = true})
         if #args > 1024 and not opt.rawargs then
             local argsfile = os.tmpfile(args) .. ".args.txt" 
             io.writefile(argsfile, args)

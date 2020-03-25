@@ -92,7 +92,7 @@ end
 
 -- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    return self:program(), table.join("-c", flags, "-Fo" .. os.args(objectfile), sourcefile)
 end
 
 -- compile the source file

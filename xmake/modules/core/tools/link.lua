@@ -94,11 +94,11 @@ end
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- init arguments
-    local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
+    local argv = table.join(flags, "-out:" .. os.args(targetfile), objectfiles)
 
     -- too long arguments for windows? 
     opt = opt or {}
-    local args = os.args(argv)
+    local args = os.args(argv, {escape = true})
     if #args > 1024 and not opt.rawargs then
         local argsfile = os.tmpfile(args) .. ".args.txt" 
         io.writefile(argsfile, args)

@@ -310,7 +310,7 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     end
 
     -- make the compile arguments list
-    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
+    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. os.args(pcoutputfile), "-Fo" .. os.args(pcoutputfile .. ".obj"), pcheaderfile)
 end
 
 -- make the compile arguments list
@@ -323,7 +323,7 @@ function compargv(self, sourcefile, objectfile, flags)
     end
 
     -- make the compile arguments list
-    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    return self:program(), table.join("-c", flags, "-Fo" .. os.args(objectfile), sourcefile)
 end
 
 -- compile the source file
