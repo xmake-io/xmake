@@ -69,6 +69,7 @@ function test_argv(t)
     t:are_equal(os.argv("aa\\bb/cc dd"), {"aa\\bb/cc", "dd"})
     t:are_equal(os.argv("\"aa\\\\bb/cc dd\" ee"), {"aa\\bb/cc dd", "ee"})
     t:are_equal(os.argv("\"aa\\\\bb/cc (dd)\" ee"), {"aa\\bb/cc (dd)", "ee"})
+    t:are_equal(os.argv("-D__prefix__=\\\"tbox\\\""), {"-D__prefix__=\"tbox\""})
 end
 
 function test_args(t)
@@ -79,4 +80,5 @@ function test_args(t)
     t:are_equal(os.args({"aa\\bb/cc", "dd"}), "aa\\bb/cc dd")
     t:are_equal(os.args({"aa\\bb/cc dd", "ee"}), "\"aa\\\\bb/cc dd\" ee")
     t:are_equal(os.args({"aa\\bb/cc (dd)", "ee"}), "\"aa\\\\bb/cc (dd)\" ee")
+    t:are_equal(os.args("-D__prefix__=\"tbox\""), "-D__prefix__=\\\"tbox\\\"")
 end

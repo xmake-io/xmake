@@ -47,10 +47,10 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     tb_size_t m = tb_arrayn(buff);
     while ((ch = *p) && n < m)
     {
+        // escape '"'
         if (ch == '\"') 
         {
             if (n < m) buff[n++] = '\\';
-            wrap_quote = tb_true;
         }
         else if (ch == ' ' || ch == '(' || ch == ')') wrap_quote = tb_true;
         if (n < m) buff[n++] = ch;
@@ -59,7 +59,7 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     tb_assert_and_check_return(n < m);
     buff[n] = '\0';
 
-    // wrap "" and escape '\\' if exists escape characters and spaces?
+    // wrap "" if exists escape characters and spaces?
     if (wrap_quote) 
     {
         tb_string_chrcat(result, '\"');
