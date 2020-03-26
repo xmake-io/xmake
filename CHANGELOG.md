@@ -20,6 +20,7 @@
 * [#718](https://github.com/xmake-io/xmake/issues/718): Fix download cache bug for package
 * [#722](https://github.com/xmake-io/xmake/issues/722): Fix invalid package deps
 * [#719](https://github.com/xmake-io/xmake/issues/719): Fix process exit bug
+* [#720](https://github.com/xmake-io/xmake/issues/720): Fix compile_commands generator
 
 ## v2.3.1
 
@@ -718,6 +719,7 @@
 * [#718](https://github.com/xmake-io/xmake/issues/718): 修复依赖包下载在多镜像时一定概率缓存失效问题
 * [#722](https://github.com/xmake-io/xmake/issues/722): 修复无效的包依赖导致安装死循环问题
 * [#719](https://github.com/xmake-io/xmake/issues/719): 修复windows下主进程收到ctrlc后，.bat子进程没能立即退出的问题
+* [#720](https://github.com/xmake-io/xmake/issues/720): 修复compile_commands生成器的路径转义问题
 
 ## v2.3.1
 
