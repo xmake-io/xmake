@@ -94,7 +94,7 @@ function install(package, configs, opt)
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
     -- 
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DDCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-    if is_plat("windows") and is_arch("x64") then
+    if package:is_plat("windows") and package:is_arch("x64") then
         table.insert(argv, "-A")
         table.insert(argv, "x64")
     end
@@ -116,9 +116,9 @@ function install(package, configs, opt)
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build and install
-    if is_plat("windows") then
+    if package:is_plat("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, package:debug() and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, package:debug() and "Debug" or "Release", package:is_arch("x64") and "x64" or "Win32")
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
         if os.isfile(projfile) then
             os.vrun("msbuild \"%s\" /property:configuration=%s", projfile, package:debug() and "Debug" or "Release")
