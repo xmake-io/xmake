@@ -108,7 +108,8 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     ,   ["armeabi"]     = "arm-linux-androideabi-" -- removed in ndk r17
     ,   ["armeabi-v7a"] = "arm-linux-androideabi-"
     ,   ["arm64-v8a"]   = "aarch64-linux-android-"
-    ,   i386            = "i686-linux-android-"
+    ,   i386            = "i686-linux-android-"    -- deprecated
+    ,   x86             = "i686-linux-android-"
     ,   x86_64          = "x86_64-linux-android-"
     ,   mips            = "mips-linux-android-"    -- removed in ndk r17
     ,   mips64          = "mips64-linux-android-"  -- removed in ndk r17
@@ -124,6 +125,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     ,   ["armeabi-v7a"] = "arm-linux-androideabi-*"
     ,   ["arm64-v8a"]   = "aarch64-linux-android-*"
     ,   i386            = "x86-*"
+    ,   x86             = "x86-*"
     ,   x86_64          = "x86_64-*"
     ,   mips            = "mipsel-linux-android-*"
     ,   mips64          = "mips64el-linux-android-*"
