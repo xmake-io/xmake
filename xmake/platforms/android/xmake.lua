@@ -27,8 +27,14 @@ platform("android")
     -- set hosts
     set_hosts("macosx", "linux", "windows")
 
-    -- set archs
-    set_archs("armv7-a", "arm64-v8a", "armv5te", "mips", "mips64", "i386", "x86_64")
+    -- set archs, we use the latest android abi provided in android ndk now.
+    -- we will continue to support the old abi architectures for old version ndk. 
+    -- e.g. armv5te(armeabi), armv7-a(armeabi-v7a), mips, mips64
+    --
+    -- @see https://developer.android.google.cn/ndk/guides/abis
+    -- @note The NDK previously supported ARMv5 (armeabi) and 32-bit and 64-bit MIPS, but this support has been removed in NDK r17.
+    --
+    set_archs("armeabi", "armeabi-v7a", "arm64-v8a", "i386", "x86_64", "mips", "mip64")
 
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}

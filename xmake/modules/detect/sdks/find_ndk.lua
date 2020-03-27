@@ -103,13 +103,15 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     -- get cross
     local crosses = 
     {
-        ["armv5te"]     = "arm-linux-androideabi-"
-    ,   ["armv7-a"]     = "arm-linux-androideabi-"
+        ["armv5te"]     = "arm-linux-androideabi-" -- deprecated
+    ,   ["armv7-a"]     = "arm-linux-androideabi-" -- deprecated
+    ,   ["armeabi"]     = "arm-linux-androideabi-" -- removed in ndk r17
+    ,   ["armeabi-v7a"] = "arm-linux-androideabi-"
     ,   ["arm64-v8a"]   = "aarch64-linux-android-"
     ,   i386            = "i686-linux-android-"
     ,   x86_64          = "x86_64-linux-android-"
-    ,   mips            = "mips-linux-android-"
-    ,   mips64          = "mips64-linux-android-"
+    ,   mips            = "mips-linux-android-"    -- removed in ndk r17
+    ,   mips64          = "mips64-linux-android-"  -- removed in ndk r17
     }
     local cross = crosses[arch]
 
@@ -118,6 +120,8 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     {
         ["armv5te"]     = "arm-linux-androideabi-*"
     ,   ["armv7-a"]     = "arm-linux-androideabi-*"
+    ,   ["armeabi"]     = "arm-linux-androideabi-*"
+    ,   ["armeabi-v7a"] = "arm-linux-androideabi-*"
     ,   ["arm64-v8a"]   = "aarch64-linux-android-*"
     ,   i386            = "x86-*"
     ,   x86_64          = "x86_64-*"
@@ -174,7 +178,7 @@ end
 --
 -- @param sdkdir    the ndk directory
 -- @param opt       the argument options 
---                  e.g. {arch = "[armv5te|armv6|armv7-a|armv8-a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
+--                  e.g. {arch = "[armeabi|armeabi-v7a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
 --
 -- @return          the ndk toolchains. e.g. {bindir = .., cross = ..}
 --

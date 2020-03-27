@@ -177,17 +177,19 @@ function main(name, opt)
     end
 
     -- set architecture
-    local archs = {x86_64        = "x86_64",
-                   x64           = "x86_64",
-                   i386          = "x86",
-                   x86           = "x86",
-                   armv7         = "armv7",
-                   ["armv7-a"]   = "armv7",  -- for android
-                   armv7s        = "armv7s", -- for iphoneos
-                   arm64         = "armv8",  -- for iphoneos
-                   ["arm64-v8a"] = "armv8",  -- for android
-                   mips          = "mips",
-                   mips64        = "mips64"}
+    local archs = {x86_64          = "x86_64",
+                   x64             = "x86_64",
+                   i386            = "x86",
+                   x86             = "x86",
+                   armv7           = "armv7",
+                   ["armv7-a"]     = "armv7",  -- for android, deprecated
+                   ["armeabi"]     = "armv7",  -- for android, removed in ndk r17
+                   ["armeabi-v7a"] = "armv7",  -- for android
+                   armv7s          = "armv7s", -- for iphoneos
+                   arm64           = "armv8",  -- for iphoneos
+                   ["arm64-v8a"]   = "armv8",  -- for android
+                   mips            = "mips",
+                   mips64          = "mips64"}
     table.insert(argv, "-s")
     local arch = archs[opt.arch]
     if arch then

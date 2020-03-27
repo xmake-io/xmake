@@ -45,15 +45,17 @@ function _get_configs(package, configs)
             -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
             local triples = 
             {
-                ["armv5te"]     = "arm-linux-androideabi",
-                ["armv7-a"]     = "arm-linux-androideabi",
+                ["armv5te"]     = "arm-linux-androideabi",  -- deprecated
+                ["armv7-a"]     = "arm-linux-androideabi",  -- deprecated
+                ["armeabi"]     = "arm-linux-androideabi",  -- removed in ndk r17
+                ["armeabi-v7a"] = "arm-linux-androideabi",
                 ["arm64-v8a"]   = "aarch64-linux-android",
                 i386            = "i686-linux-android",
                 x86_64          = "x86_64-linux-android",
-                mips            = "mips-linux-android",
-                mips64          = "mips64-linux-android"
+                mips            = "mips-linux-android",     -- removed in ndk r17
+                mips64          = "mips64-linux-android"    -- removed in ndk r17
             }
-            table.insert(configs, "--host=" .. (triples[package:arch()] or triples["armv7-a"]))
+            table.insert(configs, "--host=" .. (triples[package:arch()] or triples["armeabi-v7a"]))
         elseif package:is_plat("mingw") then
             local triples = 
             { 

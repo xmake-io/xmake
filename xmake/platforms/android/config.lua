@@ -134,7 +134,7 @@ function main(platform, name)
     else
 
         -- check arch
-        check_arch(config, "armv7-a")
+        check_arch(config, "armeabi-v7a")
 
         -- check ndk
         _check_ndk()

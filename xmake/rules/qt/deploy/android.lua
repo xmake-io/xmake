@@ -79,13 +79,15 @@ function main(target, opt)
     -- get the target architecture
     local target_archs = 
     {
-        ["armv5te"]     = "armeabi"
-    ,   ["armv7-a"]     = "armeabi-v7a"
+        ["armv5te"]     = "armeabi"       -- deprecated
+    ,   ["armv7-a"]     = "armeabi-v7a"   -- deprecated
+    ,   ["armeabi"]     = "armeabi"
+    ,   ["armeabi-v7a"] = "armeabi-v7a"
     ,   ["arm64-v8a"]   = "arm64-v8a"
     ,   i386            = "x86"
     ,   x86_64          = "x86_64"
-    ,   mips            = "mips"
-    ,   mips64          = "mips64"
+    ,   mips            = "mips"          -- removed in ndk r71
+    ,   mips64          = "mips64"        -- removed in ndk r71
     }
     local target_arch = assert(target_archs[config.arch()], "unsupport target arch(%s)!", config.arch())
 

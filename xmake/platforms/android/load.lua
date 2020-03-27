@@ -25,10 +25,12 @@ import("core.project.config")
 function main(platform)
 
     -- init flags
+    local arm32 = false
     local arch = config.get("arch")
     platform:add("ldflags", "-llog")
     platform:add("shflags", "-llog")
-    if arch and (arch == "armv5te" or arch == "armv7-a") then
+    if arch and (arch == "armeabi" or arch == "armeabi-v7a" or arch == "armv5te" or arch == "armv7-a") then -- armv5te/armv7-a are deprecated
+        arm32 = true
         platform:add("cxflags", "-mthumb")
         platform:add("asflags", "-mthumb")
         platform:add("ldflags", "-mthumb")
@@ -48,12 +50,15 @@ function main(platform)
         -- add target
         local targets = 
         {
-            ["armv5te"]     = "armv5te-none-linux-androideabi"
-        ,   ["armv7-a"]     = "armv7-none-linux-androideabi"
+            ["armv5te"]     = "armv5te-none-linux-androideabi"  -- deprecated
+        ,   ["armeabi"]     = "armv5te-none-linux-androideabi"  -- removed in ndk r17
+        ,   ["armv7-a"]     = "armv7-none-linux-androideabi"    -- deprecated
+        ,   ["armeabi-v7a"] = "armv7-none-linux-androideabi"
         ,   ["arm64-v8a"]   = "aarch64-none-linux-android"
         ,   ["i386"]        = "i686-none-linux-android"
         ,   ["x86_64"]      = "x86_64-none-linux-android"
-        ,   ["mips"]        = "mipsel-none-linux-android"
+        ,   ["mips"]        = "mipsel-none-linux-android"       -- removed in ndk r17
+        ,   ["mips64"]      = "mips64el-none-linux-android"     -- removed in ndk r17
         }
         assert(targets[arch], "unknown arch(%s) for android!", arch)
         platform:add("cxflags", "-target " .. targets[arch])
@@ -73,6 +78,8 @@ function main(platform)
         local march = arch
         if arch == "arm64-v8a" then
             march = "armv8-a"
+        else
+            march = "armv5te"
         end
         -- old version ndk
         platform:add("cxflags", "-march=" .. march)
@@ -93,13 +100,15 @@ function main(platform)
         -- the sysroot archs
         local sysroot_archs = 
         {
-            ["armv5te"]     = "arch-arm"
-        ,   ["armv7-a"]     = "arch-arm"
+            ["armv5te"]     = "arch-arm"    -- deprecated
+        ,   ["armv7-a"]     = "arch-arm"    -- deprecated
+        ,   ["armeabi"]     = "arch-arm"    -- removed in ndk r17
+        ,   ["armeabi-v7a"] = "arch-arm"
         ,   ["arm64-v8a"]   = "arch-arm64"
         ,   i386            = "arch-x86"
         ,   x86_64          = "arch-x86_64"
-        ,   mips            = "arch-mips"
-        ,   mips64          = "arch-mips64"
+        ,   mips            = "arch-mips"   -- removed in ndk r17
+        ,   mips64          = "arch-mips64" -- removed in ndk r17
         }
         local sysroot_arch = sysroot_archs[arch]
 
@@ -126,13 +135,15 @@ function main(platform)
             -- the triples
             local triples = 
             {
-                ["armv5te"]     = "arm-linux-androideabi"
-            ,   ["armv7-a"]     = "arm-linux-androideabi"
+                ["armv5te"]     = "arm-linux-androideabi"   -- deprecated
+            ,   ["armv7-a"]     = "arm-linux-androideabi"   -- deprecated
+            ,   ["armeabi"]     = "arm-linux-androideabi"   -- removed in ndk r17
+            ,   ["armeabi-v7a"] = "arm-linux-androideabi"
             ,   ["arm64-v8a"]   = "aarch64-linux-android"
             ,   i386            = "i686-linux-android"
             ,   x86_64          = "x86_64-linux-android"
-            ,   mips            = "mips-linux-android"
-            ,   mips64          = "mips64-linux-android"
+            ,   mips            = "mips-linux-android"      -- removed in ndk r17
+            ,   mips64          = "mips64-linux-android"    -- removed in ndk r17
             }
             platform:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
             platform:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
@@ -198,13 +209,15 @@ function main(platform)
             -- the toolchains archs
             local toolchains_archs = 
             {
-                ["armv5te"]     = "armeabi"
-            ,   ["armv7-a"]     = "armeabi-v7a"
+                ["armv5te"]     = "armeabi"         -- deprecated
+            ,   ["armv7-a"]     = "armeabi-v7a"     -- deprecated
+            ,   ["armeabi"]     = "armeabi"         -- removed in ndk r17
+            ,   ["armeabi-v7a"] = "armeabi-v7a"
             ,   ["arm64-v8a"]   = "arm64-v8a"
             ,   i386            = "x86"
             ,   x86_64          = "x86_64"
-            ,   mips            = "mips"
-            ,   mips64          = "mips64"
+            ,   mips            = "mips"            -- removed in ndk r17
+            ,   mips64          = "mips64"          -- removed in ndk r17
             }
             local toolchains_arch = toolchains_archs[arch]
 
@@ -239,14 +252,14 @@ function main(platform)
             if ndk_cxxstl == "llvmstl_static" then
                 platform:add("ldflags", "-lc++_static", "-lc++abi")
                 platform:add("shflags", "-lc++_static", "-lc++abi")
-                if arch == "armv7-a" or arch == "armv5te" then
+                if arm32 then
                     platform:add("ldflags", "-lunwind", "-latomic")
                     platform:add("shflags", "-lunwind", "-latomic")
                 end
             elseif ndk_cxxstl == "llvmstl_shared" then
                 platform:add("ldflags", "-lc++_shared", "-lc++abi")
                 platform:add("shflags", "-lc++_shared", "-lc++abi")
-                if arch == "armv7-a" or arch == "armv5te" then
+                if arm32 then
                     platform:add("ldflags", "-lunwind", "-latomic")
                     platform:add("shflags", "-lunwind", "-latomic")
                 end
@@ -276,8 +289,10 @@ function main(platform)
     -- init targets for rust
     local targets_rust = 
     {
-        ["armv5te"]     = "arm-linux-androideabi"
-    ,   ["armv7-a"]     = "arm-linux-androideabi"
+        ["armv5te"]     = "arm-linux-androideabi" -- deprecated
+    ,   ["armv7-a"]     = "arm-linux-androideabi" -- deprecated
+    ,   ["armeabi"]     = "arm-linux-androideabi" -- removed in ndk r17
+    ,   ["armeabi-v7a"] = "arm-linux-androideabi"
     ,   ["arm64-v8a"]   = "aarch64-linux-android"
     }
 

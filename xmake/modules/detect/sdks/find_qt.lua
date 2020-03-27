@@ -49,7 +49,7 @@ function _find_sdkdir(sdkdir, sdkver)
         local subdir = "android_*"
         if is_arch("arm64-v8a") then
             subdir = "android_arm64_v8a"
-        elseif is_arch("armv7-a") then
+        elseif is_arch("armeabi-v7a", "armeabi", "armv7-a", "armv5te") then -- armv7-a/armv5te are deprecated
             subdir = "android_armv7"
         elseif is_arch("i386") then
             subdir = "android_x86"

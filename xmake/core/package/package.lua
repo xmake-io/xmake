@@ -737,9 +737,9 @@ function _instance:script(name, generic)
         -- `@linux|x86_64`
         -- `@macosx,linux`
         -- `android@macosx,linux`
-        -- `android|armv7-a@macosx,linux`
-        -- `android|armv7-a@macosx,linux|x86_64`
-        -- `android|armv7-a@linux|x86_64`
+        -- `android|armeabi-v7a@macosx,linux`
+        -- `android|armeabi-v7a@macosx,linux|x86_64`
+        -- `android|armeabi-v7a@linux|x86_64`
         --
         for _pattern, _script in pairs(script) do
             local hosts = {}
