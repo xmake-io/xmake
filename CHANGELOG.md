@@ -14,6 +14,7 @@
 * Improve the ninja/cmake generator
 * [#728](https://github.com/xmake-io/xmake/issues/728): Improve os.cp to support reserve source directory structure
 * [#732](https://github.com/xmake-io/xmake/issues/732): Improve find_package to support `homebrew/cmake` pacakges
+* [#695](https://github.com/xmake-io/xmake/issues/695): Improve android abi
 
 ### Bugs fixed
 
@@ -714,6 +715,7 @@
 * 改进ninja/cmake工程文件生成器插件
 * [#728](https://github.com/xmake-io/xmake/issues/728): 改进os.cp支持保留源目录结构层级的递归复制
 * [#732](https://github.com/xmake-io/xmake/issues/732): 改进find_package支持查找homebrew/cmake安装的包
+* [#695](https://github.com/xmake-io/xmake/issues/695): 改进采用android ndk最新的abi命名
 
 ### Bugs修复
 
