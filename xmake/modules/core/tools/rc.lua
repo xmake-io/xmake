@@ -58,7 +58,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            local outdata, errdata = vstool.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+            -- @note we need not uses vstool.iorunv to enable unicode output for rc.exe
+            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
