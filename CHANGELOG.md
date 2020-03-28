@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.2
+
 ### New features
 
 * Add powershell theme for powershell terminal
@@ -702,6 +704,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.2
 
 ### 新特性
 
