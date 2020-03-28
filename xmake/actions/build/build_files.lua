@@ -99,16 +99,16 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
 end
 
 -- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target, filepatterns)
-    local targetjob = inserted[target:name()]
-    if targetjob then
-        batchjobs:add(targetjob, rootjob)
+function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target, filepatterns)
+    local targetjob_ref = jobrefs[target:name()]
+    if targetjob_ref then
+        batchjobs:add(targetjob_ref, rootjob)
     else
-        local targetjob_leaf, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) 
-        if targetjob_leaf and targetjob_root then
-            inserted[target:name()] = targetjob_root
+        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) 
+        if targetjob and targetjob_root then
+            jobrefs[target:name()] = targetjob_root
             for _, depname in ipairs(target:get("deps")) do
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob_leaf, inserted, project.target(depname), filepatterns)
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname), filepatterns)
             end
         end
     end
@@ -141,10 +141,10 @@ function _get_batchjobs(targetname, filepatterns)
     end
 
     -- generate batch jobs for default or all targets
-    local inserted = {}
+    local jobrefs = {}
     local batchjobs = jobpool.new()
     for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), inserted, target, filepatterns)
+        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target, filepatterns)
     end
     return batchjobs
 end

@@ -165,5 +165,5 @@ function main(batchjobs, rootjob, target)
     -- unless call set_values("build.across_targets_in_parallel") to disable to build across targets in parallel.
     --
     local job_objects = add_batchjobs_for_object(batchjobs, job_link, target)
-    return target:values("build.across_targets_in_parallel") == false and job_objects or job_link
+    return target:values("build.across_targets_in_parallel") == false and job_objects or job_link, job_objects
 end

@@ -39,12 +39,12 @@ end
 function _add_batchjobs_builtin(batchjobs, rootjob, target)
 
     -- uses the rules script?
-    local job
+    local job, job_leaf
     for _, r in irpairs(target:orderules()) do -- reverse rules order for batchjobs:addjob()
         local script = r:script("build")
         if script then
             if r:extraconf("build", "batch") then
-                job = assert(script(target, batchjobs, {rootjob = job or rootjob}), "rule(%s):on_build(): no returned job!", r:name())
+                job, job_leaf = assert(script(target, batchjobs, {rootjob = job or rootjob}), "rule(%s):on_build(): no returned job!", r:name())
             else
                 job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
                     script(target, {progress = (index * 100) / total})
@@ -55,19 +55,20 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
 
     -- uses the builtin target script
     if not job and not target:isphony() then
-        job = import("kinds." .. target:targetkind(), {anonymous = true})(batchjobs, rootjob, target)
+        job, job_leaf = import("kinds." .. target:targetkind(), {anonymous = true})(batchjobs, rootjob, target)
     end
-    return job or rootjob
+    job = job or rootjob
+    return job, job_leaf or job
 end
 
 -- add batch jobs
 function _add_batchjobs(batchjobs, rootjob, target)
 
-    local job
+    local job, job_leaf
     local script = target:script("build")
     if not script then
         -- do builtin batch jobs
-        job = _add_batchjobs_builtin(batchjobs, rootjob, target)
+        job, job_leaf = _add_batchjobs_builtin(batchjobs, rootjob, target)
     elseif target:extraconf("build", "batch") then 
         -- do custom batch script
         -- e.g. 
@@ -78,7 +79,7 @@ function _add_batchjobs(batchjobs, rootjob, target)
         --         end, opt.rootjob)
         --     end, {batch = true})
         --
-        job = assert(script(target, batchjobs, {rootjob = rootjob}), "target(%s):on_build(): no returned job!", target:name())
+        job, job_leaf = assert(script(target, batchjobs, {rootjob = rootjob}), "target(%s):on_build(): no returned job!", target:name())
     else
         -- do custom script directly
         -- e.g.
@@ -92,7 +93,7 @@ function _add_batchjobs(batchjobs, rootjob, target)
             script(target, {progress = (index * 100) / total})
         end, rootjob)
     end
-    return job
+    return job, job_leaf or job
 end
 
 -- add batch jobs for the given target 
@@ -127,10 +128,10 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     end, rootjob)
 
     -- add batch jobs for target, @note only on_build script support batch jobs
-    local job_build = _add_batchjobs(batchjobs, job_after_build, target)
+    local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_after_build, target)
 
     -- add before_build job for target
-    local job_before_build = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
+    batchjobs:addjob(target:name() .. "/before_build", function (index, total)
 
         -- enter the environments of the target packages
         for name, values in pairs(target:pkgenvs()) do
@@ -155,21 +156,21 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
                 before_build(target, {progress = progress})
             end
         end
-    end, job_build)
-    return job_before_build, job_after_build
+    end, job_build_leaf)
+    return job_build, job_after_build
 end
 
 -- add batch jobs for the given target and deps
-function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, inserted, target)
-    local targetjob = inserted[target:name()]
-    if targetjob then
-        batchjobs:add(targetjob, rootjob)
+function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
+    local targetjob_ref = jobrefs[target:name()]
+    if targetjob_ref then
+        batchjobs:add(targetjob_ref, rootjob)
     else
-        local targetjob_leaf, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target) 
-        if targetjob_leaf and targetjob_root then
-            inserted[target:name()] = targetjob_root
+        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target) 
+        if targetjob and targetjob_root then
+            jobrefs[target:name()] = targetjob_root
             for _, depname in ipairs(target:get("deps")) do
-                _add_batchjobs_for_target_and_deps(batchjobs, targetjob_leaf, inserted, project.target(depname)) 
+                _add_batchjobs_for_target_and_deps(batchjobs, targetjob, jobrefs, project.target(depname)) 
             end
         end
     end
@@ -202,10 +203,10 @@ function get_batchjobs(targetname)
     end
 
     -- generate batch jobs for default or all targets
-    local inserted = {}
+    local jobrefs = {}
     local batchjobs = jobpool.new()
     for _, target in pairs(targets_root) do
-        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), inserted, target)
+        _add_batchjobs_for_target_and_deps(batchjobs, batchjobs:rootjob(), jobrefs, target)
     end
     return batchjobs
 end
