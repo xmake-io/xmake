@@ -203,7 +203,7 @@ function main(opt)
             VCInstallDir
         }
         local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
-        if os.isfile(vcvarsall) then
+        if vcvarsall and os.isfile(vcvarsall) then
 
             -- load vcvarsall
             local vcvarsall_x86 = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x86", opt)
