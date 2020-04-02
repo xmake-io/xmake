@@ -173,6 +173,34 @@ rule("mode.tsan")
         end
     end)
 
+-- define rule: ubsan mode
+rule("mode.ubsan")
+    after_load(function (target)
+
+        -- is ubsan mode now? xmake f -m ubsan
+        if is_mode("ubsan") then
+
+            -- enable the debug symbols
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
+
+            -- enable optimization
+            if not target:get("optimize") then
+                if is_plat("android", "iphoneos") then
+                    target:set("optimize", "smallest")
+                else
+                    target:set("optimize", "fastest")
+                end
+            end
+
+            -- enable tsan checker
+            target:add("cxflags", "-fsanitize=undefined")
+            target:add("mxflags", "-fsanitize=undefined")
+            target:add("ldflags", "-fsanitize=undefined")
+        end
+    end)
+
 -- define rule: valgrind mode
 rule("mode.valgrind")
     after_load(function (target)
