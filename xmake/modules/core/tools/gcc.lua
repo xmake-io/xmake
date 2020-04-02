@@ -99,7 +99,7 @@ function nf_symbol(self, level)
     local maps = 
     {   
         debug  = "-g"
-    ,   hidden = "-fvisibility=hidden"
+    ,   hidden = "-fvisibility=hidden -fvisibility-inlines-hidden"
     }
 
     -- make it
