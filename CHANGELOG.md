@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#727](https://github.com/xmake-io/xmake/issues/727): Strip and generate debug symbols file (.so/.dSYM) for android/ios program
+
 ## v2.3.2
 
 ### New features
@@ -704,6 +708,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#727](https://github.com/xmake-io/xmake/issues/727): 支持为android, ios程序生成.so/.dSYM符号文件
 
 ## v2.3.2
 
