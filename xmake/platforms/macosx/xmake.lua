@@ -31,7 +31,7 @@ platform("macosx")
     set_archs("i386", "x86_64")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).dSYM"}
 
     -- set install directory
     set_installdir("/usr/local")

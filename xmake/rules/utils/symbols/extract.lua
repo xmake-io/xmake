@@ -22,7 +22,6 @@
 import("core.base.option")
 import("core.theme.theme")
 import("core.platform.platform")
-import("lib.detect.find_tool")
 
 -- need generate symbols?
 function _need_symbols(target)
@@ -39,19 +38,45 @@ function main(target, opt)
         return
     end
 
-    -- find strip
+    -- get strip
     local strip = platform.tool("strip")
     if not strip then
         return
     end
+        
+    -- get dsymutil
+    local dsymutil
+    if is_plat("macosx", "iphoneos", "watchos") then
+        dsymutil = platform.tool("dsymutil")
+        if not dsymutil then
+            return
+        end
+    end
 
     -- trace progress info
-    local targetfile = target:targetfile()
+    local symbolfile = target:symbolfile()
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
-        cprint(progress_prefix .. "${dim color.build.target}stripping.$(mode) %s", opt.progress, path.filename(targetfile))
+        cprint(progress_prefix .. "${dim color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
     else
-        cprint(progress_prefix .. "${color.build.target}stripping.$(mode) %s", opt.progress, path.filename(targetfile))
+        cprint(progress_prefix .. "${color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
+    end
+
+    -- generate symbols file
+    local targetfile = target:targetfile()
+    if dsymutil then
+        local dsymutil_argv = {}
+        local arch = get_config("arch")
+        if arch then
+            table.insert(dsymutil_argv, "-arch")
+            table.insert(dsymutil_argv, arch)
+        end
+        table.insert(dsymutil_argv, targetfile)
+        table.insert(dsymutil_argv, "-o")
+        table.insert(dsymutil_argv, symbolfile)
+        os.vrunv(dsymutil, dsymutil_argv, {dryrun = option.get("dry-run")})
+    else
+        os.vcp(targetfile, target:symbolfile())
     end
 
     -- strip it

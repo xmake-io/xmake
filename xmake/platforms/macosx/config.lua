@@ -40,6 +40,7 @@ function _toolchains()
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
     local strip      = toolchain("the symbols stripper")
+    local dsymutil   = toolchain("the symbols generator")
     local mm         = toolchain("the objc compiler")
     local mxx        = toolchain("the objc++ compiler")
     local as         = toolchain("the assember")
@@ -60,7 +61,7 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip,
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
                         mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh,
                         gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
                         dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
@@ -99,6 +100,9 @@ function _toolchains()
 
     -- init the symbols stripper
     strip:add({name = "strip", cross = cross}, "strip")
+
+    -- init the symbols generator
+    dsymutil:add({name = "dsymutil", cross = cross}, "dsymutil")
 
     -- init the objc compiler
     mm:add("$(env MM)", {name = "clang", cross = cross}, "clang", "gcc")

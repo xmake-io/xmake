@@ -73,43 +73,32 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug = "-S"
     ,   all   = "-s"
     }
 
-    -- for macho target
     local plat = config.plat()
     if plat == "macosx" or plat == "iphoneos" then
         maps.all   = "-Wl,-x"
         maps.debug = "-Wl,-S"
     end
-
-    -- make it
     return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug  = "-g"
     ,   hidden = "-fvisibility=hidden -fvisibility-inlines-hidden"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps = 
     {   
         none       = "-w"
@@ -119,15 +108,11 @@ function nf_warning(self, level)
     ,   everything = "-Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps = 
     {   
         none       = "-O0"
@@ -137,15 +122,11 @@ function nf_optimize(self, level)
     ,   smallest   = "-Os"
     ,   aggressive = "-Ofast"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-
-    -- the maps
     local maps = 
     {   
         mmx   = "-mmmx"
@@ -157,8 +138,6 @@ function nf_vectorext(self, extension)
     ,   avx2  = "-mavx2"
     ,   neon  = "-mfpu=neon"
     }
-
-    -- make it
     return maps[extension] 
 end
 

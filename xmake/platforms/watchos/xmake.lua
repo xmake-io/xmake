@@ -31,7 +31,7 @@ platform("watchos")
     set_archs("armv7k", "i386")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).sym"}
+    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dylib", symbol = "$(name).dSYM"}
 
     -- on check project configuration
     on_config_check("config")

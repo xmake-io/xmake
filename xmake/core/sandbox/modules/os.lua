@@ -116,7 +116,7 @@ end
 function sandbox_os.vcp(srcpath, dstpath, opt)
     assert(srcpath and dstpath)
     if option.get("verbose") then
-        utils.cprint("${dim}> copy %s to %s ..", srcpath, dstpath)
+        utils.cprint("${dim}> copy %s to %s", srcpath, dstpath)
     end
     return sandbox_os.cp(srcpath, dstpath, opt)
 end 
@@ -125,7 +125,7 @@ end
 function sandbox_os.vmv(srcpath, dstpath)
     assert(srcpath and dstpath)
     if option.get("verbose") then
-        utils.cprint("${dim}> move %s to %s ..", srcpath, dstpath)
+        utils.cprint("${dim}> move %s to %s", srcpath, dstpath)
     end
     return sandbox_os.mv(srcpath, dstpath)
 end 
