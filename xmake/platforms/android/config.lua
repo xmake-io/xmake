@@ -74,12 +74,13 @@ function _toolchains()
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
     local ranlib     = toolchain("the static library index generator")
+    local strip      = toolchain("the symbols stripper")
     local as         = toolchain("the assember")
     local rc         = toolchain("the rust compiler")
     local rc_ld      = toolchain("the rust linker")
     local rc_sh      = toolchain("the rust shared library linker")
     local rc_ar      = toolchain("the rust static library archiver")
-    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, 
+    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip, 
                         rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar}
 
     -- init the c compiler
@@ -112,6 +113,9 @@ function _toolchains()
 
     -- init the static library index generator
     ranlib:add({name = "ranlib", cross = cross, pathes = gcc_toolchain_bin}, "ranlib")
+
+    -- init the symbols stripper
+    strip:add({name = "strip", cross = cross, pathes = gcc_toolchain_bin}, "strip")
 
     -- init the rust compiler and linker
     rc:add("$(env RC)", "rustc")

@@ -280,7 +280,9 @@ function sandbox_os.vrunv(program, argv, opt)
     end
 
     -- run it
-    (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
+    if not (opt and opt.dryrun) then
+        (option.get("verbose") and sandbox_os.execv or sandbox_os.runv)(program, argv, opt)
+    end
 end
 
 -- run command and return output and error data
@@ -410,7 +412,11 @@ function sandbox_os.vexecv(program, argv, opt)
     end
 
     -- run it
-    return sandbox_os.execv(program, argv, opt)
+    if not (opt and opt.dryrun) then
+        return sandbox_os.execv(program, argv, opt)
+    else
+        return 0
+    end
 end
 
 -- match files or directories

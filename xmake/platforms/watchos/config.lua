@@ -43,13 +43,14 @@ function _toolchains()
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
+    local strip      = toolchain("the symbols stripper")
     local mm         = toolchain("the objc compiler")
     local mxx        = toolchain("the objc++ compiler")
     local as         = toolchain("the assember")
     local sc         = toolchain("the swift compiler")
     local sc_ld      = toolchain("the swift linker")
     local sc_sh      = toolchain("the swift shared library linker")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip,
                         mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh}
 
     -- init the c compiler
@@ -79,6 +80,9 @@ function _toolchains()
 
     -- init the static library extractor
     ex:add({name = "ar", cross = cross})
+
+    -- init the symbols stripper
+    strip:add({name = "strip", cross = cross})
 
     -- init the objc compiler
     mm:add({name = "clang", cross = cross})

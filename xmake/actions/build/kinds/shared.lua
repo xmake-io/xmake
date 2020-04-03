@@ -97,9 +97,6 @@ function _do_link_target(target, opt)
         print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
     end
 
-    -- flush io buffer to update progress info
-    io.flush()
-
     -- link it
     if not option.get("dry-run") then
         assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))

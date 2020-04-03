@@ -66,9 +66,10 @@ function _toolchains()
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
+    local strip      = toolchain("the symbols stripper")
     local ranlib     = toolchain("the static library index generator")
     local as         = toolchain("the assember")
-    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib}
+    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip}
 
     -- init the c compiler
     cc:add("$(env CC)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
@@ -107,7 +108,10 @@ function _toolchains()
     ex:add("$(env AR)", {name = "ar", cross = cross})
 
     -- init the static library index generator
-    ar:add("$(env RANLIB)", {name = "ranlib", cross = cross})
+    ranlib:add("$(env RANLIB)", {name = "ranlib", cross = cross})
+
+    -- init the symbols stripper
+    strip:add("$(env STRIP)", {name = "strip", cross = cross})
     return toolchains
 end
 
