@@ -39,8 +39,6 @@ rule("mode.debug")
 
 -- define rule: release mode
 rule("mode.release")
-    -- we attempt to extract symbols to the independent file and strip self-target binary if `symbols/debug` is enabled
-    add_deps("utils.symbols.extract")
     after_load(function (target)
 
         -- is release mode now? xmake f -m release

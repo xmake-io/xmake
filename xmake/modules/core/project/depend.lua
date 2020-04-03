@@ -101,7 +101,7 @@ function is_changed(dependinfo, opt)
     for _, file in ipairs(files) do
 
         -- get and cache the file mtime
-        local mtime = files_mtime[file] or (os.isfile(file) and os.mtime(file) or nil)
+        local mtime = files_mtime[file] or os.mtime(file)
         files_mtime[file] = mtime
 
         -- source and header files have been changed?

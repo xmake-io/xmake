@@ -39,6 +39,7 @@ rule("utils.symbols.extract")
         -- imports
         import("core.base.option")
         import("core.theme.theme")
+        import("core.project.depend")
         import("core.platform.platform")
 
         -- get strip
@@ -56,8 +57,16 @@ rule("utils.symbols.extract")
             end
         end
 
-        -- trace progress info
+        -- need re-generate this symbol file?
         local symbolfile = target:symbolfile()
+        local targetfile = target:targetfile()
+        local dependfile = target:dependfile(symbolfile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(symbolfile)}) then
+            return 
+        end
+
+        -- trace progress info
         local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
         if option.get("verbose") then
             cprint(progress_prefix .. "${dim color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
@@ -65,8 +74,13 @@ rule("utils.symbols.extract")
             cprint(progress_prefix .. "${color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
         end
 
+        -- we remove the previous symbol file to ensure that it will be re-generated and it's mtime will be changed.
+        local dryrun = option.get("dry-run")
+        if not dryrun then
+            os.tryrm(symbolfile)
+        end
+
         -- generate symbols file
-        local targetfile = target:targetfile()
         if dsymutil then
             local dsymutil_argv = {}
             local arch = get_config("arch")
@@ -77,9 +91,9 @@ rule("utils.symbols.extract")
             table.insert(dsymutil_argv, targetfile)
             table.insert(dsymutil_argv, "-o")
             table.insert(dsymutil_argv, symbolfile)
-            os.vrunv(dsymutil, dsymutil_argv, {dryrun = option.get("dry-run")})
-        else
-            os.vcp(targetfile, target:symbolfile())
+            os.vrunv(dsymutil, dsymutil_argv, {dryrun = dryrun})
+        elseif not dryrun then
+            os.vcp(targetfile, symbolfile)
         end
 
         -- strip it
@@ -97,6 +111,10 @@ rule("utils.symbols.extract")
             table.insert(strip_argv, "-s")
         end
         table.insert(strip_argv, targetfile)
-        os.vrunv(strip, strip_argv, {dryrun = option.get("dry-run")})
+        os.vrunv(strip, strip_argv, {dryrun = dryrun})
+
+        -- update files and values to the dependent file
+        dependinfo.files  = {targetfile}
+        depend.save(dependinfo, dependfile)
     end)
 

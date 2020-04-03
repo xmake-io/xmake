@@ -1268,7 +1268,7 @@ function _instance:dependfile(objectfile)
 
     -- make dependent file
     -- full file name(not base) to avoid name-clash of original file
-    return path.join(self:dependir(), relativedir, path.basename(originfile) .. ".d")
+    return path.join(self:dependir(), relativedir, path.filename(originfile) .. ".d")
 end
 
 -- get the dependent include files

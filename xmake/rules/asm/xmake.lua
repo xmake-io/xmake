@@ -25,4 +25,13 @@ rule("asm.build")
 
 -- define rule: asm
 rule("asm")
-    add_deps("asm.build", "utils.merge.object", "utils.merge.archive")
+
+    -- add build rules
+    add_deps("asm.build")
+
+    -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
+    add_deps("utils.merge.object", "utils.merge.archive")
+
+    -- we attempt to extract symbols to the independent file and 
+    -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
+    add_deps("utils.symbols.extract")
