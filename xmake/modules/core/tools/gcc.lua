@@ -90,7 +90,8 @@ end
 -- make the symbol flag
 function nf_symbol(self, level)
     -- only for source kind
-    if language.sourcekinds()[self:kind()] then
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
         local maps = _g.symbol_maps
         if not maps then
             maps =
@@ -98,12 +99,12 @@ function nf_symbol(self, level)
                 debug  = "-g"
             ,   hidden = "-fvisibility=hidden"
             }
-            if self:has_flags("-fvisibility-inlines-hidden", "cxflags") then
-                maps.hidden = {maps.hidden, "-fvisibility-inlines-hidden"}
+            if kind == "cxx" and self:has_flags("-fvisibility-inlines-hidden", "cxflags") then
+                maps.hidden_cxx = {"-fvisibility=hidden", "-fvisibility-inlines-hidden"}
             end
             _g.symbol_maps = maps
         end
-        return maps[level]
+        return maps[level .. '_' .. kind] or maps[level]
     end
 end
 
