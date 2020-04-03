@@ -114,7 +114,8 @@ rule("utils.symbols.extract")
         os.vrunv(strip, strip_argv, {dryrun = dryrun})
 
         -- update files and values to the dependent file
-        dependinfo.files  = {targetfile}
+        -- @note we use dependfile(targetfile) instead of targetfile to ensure it's mtime less than mtime(symbolfile), because targetfile will be changed after stripping
+        dependinfo.files  = {target:dependfile(targetfile)}
         depend.save(dependinfo, dependfile)
     end)
 
