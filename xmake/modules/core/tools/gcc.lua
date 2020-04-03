@@ -99,7 +99,7 @@ function nf_symbol(self, level)
             ,   hidden = "-fvisibility=hidden"
             }
             if self:has_flags("-fvisibility-inlines-hidden", "cxflags") then
-                maps.hidden = maps.hidden .. " -fvisibility-inlines-hidden"
+                maps.hidden = {maps.hidden, "-fvisibility-inlines-hidden"}
             end
             _g.symbol_maps = maps
         end
