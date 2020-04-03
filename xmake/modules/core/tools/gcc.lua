@@ -89,12 +89,15 @@ end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps = 
-    {   
-        debug  = "-g"
-    ,   hidden = "-fvisibility=hidden -fvisibility-inlines-hidden"
-    }
-    return maps[level] 
+    -- only for source kind
+    if language.sourcekinds()[self:kind()] then
+        local maps = 
+        {   
+            debug  = "-g"
+        ,   hidden = "-fvisibility=hidden -fvisibility-inlines-hidden"
+        }
+        return maps[level]
+    end
 end
 
 -- make the warning flag
