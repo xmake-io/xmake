@@ -23,6 +23,61 @@ rule("xcode.bundle")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
+        
+        -- get bundle directory
+        local targetdir = target:targetdir()
+        local bundledir = path.join(targetdir, target:basename() .. ".bundle")
+        target:data_set("xcode.bundledir", bundledir)
+
+        -- set target info for bundle 
         target:set("kind", "shared")
+        target:set("filename", target:basename())
+        target:set("targetdir", path.join(bundledir, "Contents", "MacOS"))
+
+        -- register clean files for `xmake clean`
+        target:add("cleanfiles", bundledir)
     end)
+
+    after_build(function (target)
+
+        -- imports
+        import("private.tools.codesign")
+
+        -- get bundle directory
+        local bundledir = path.absolute(target:data("xcode.bundledir"))
+
+        -- copy resource files to the content directory
+        local srcfiles, dstfiles = target:installfiles(path.join(bundledir, "Contents"))
+        if srcfiles and dstfiles then
+            local i = 1
+            for _, srcfile in ipairs(srcfiles) do
+                local dstfile = dstfiles[i]
+                if dstfile then
+                    os.vcp(srcfile, dstfile)
+                end
+                i = i + 1
+            end
+        end
+
+        -- do codesign
+        codesign(bundledir)
+    end)
+
+    on_install(function (target)
+        local bundledir = path.absolute(target:data("xcode.bundledir"))
+        local installdir = target:installdir()
+        if not os.isdir(installdir) then
+            os.mkdir(installdir)
+        end
+        os.vcp(bundledir, installdir)
+    end)
+
+    on_uninstall(function (target)
+        local bundledir = path.absolute(target:data("xcode.bundledir"))
+        local installdir = target:installdir()
+        os.tryrm(path.join(installdir, path.filename(bundledir)))
+    end)
+
+    -- disable package
+    on_package(function (target) end)
 
