@@ -69,6 +69,9 @@ rule("xcode.framework")
 
     after_build(function (target)
 
+        -- imports
+        import("private.tools.codesign")
+
         -- get framework directory
         local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
         local headersdir = path.join(frameworkdir, "Versions", "A", "Headers")
@@ -110,6 +113,9 @@ rule("xcode.framework")
         os.ln("Versions/Current/Resources", "Resources")
         os.ln(path.join("Versions/Current", target_filename), target_filename)
         os.cd(oldir)
+
+        -- do codesign
+        codesign(path.join(frameworkdir, "Versions", "A"))
     end)
 
     on_install(function (target)
