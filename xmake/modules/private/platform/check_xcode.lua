@@ -45,7 +45,14 @@ function main(config, optional)
     local xcode_sdkver = config.get("xcode_sdkver")
     local target_minver = config.get("target_minver")
     if xcode_sdkver and not target_minver then
-        config.set("target_minver", xcode_sdkver)
+        target_minver = xcode_sdkver
+        if is_plat("macosx") then
+            local macos_ver = macos.version()
+            if macos_ver then
+                target_minver = macos_ver:major() .. "." .. macos_ver:minor()
+            end
+        end
+        config.set("target_minver", target_minver)
     end
 end
 
