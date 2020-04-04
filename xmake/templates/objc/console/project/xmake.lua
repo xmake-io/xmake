@@ -10,12 +10,4 @@ target("${TARGETNAME}")
     -- add files
     add_files("src/*.m")
 
-    -- add frameworks
-    add_frameworks("Foundation", "CoreFoundation")
-
-    -- for macosx or ios
-    if is_os("macosx", "ios") then
-        add_mxflags("-fobjc-arc")
-    end
-
 ${FAQ}
