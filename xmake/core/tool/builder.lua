@@ -111,80 +111,6 @@ function builder:_flagkinds()
     return self._FLAGKINDS
 end
 
--- inherit links from target deps
-function builder:_inherit_links_from_targetdeps(results, target, flagname)
-
-    -- for all target deps
-    local orderdeps = target:orderdeps()
-    local total = #orderdeps
-    local deplinks = {}
-    for idx, _ in ipairs(orderdeps) do
-
-        -- reverse deps order for links
-        local dep = orderdeps[total + 1 - idx]
-
-        -- the dependent target is static or shared library? inherit it's links
-        local depkind      = dep:targetkind()
-        local targetkind   = target:targetkind()
-        local depinherit   = target:extraconf("deps", dep:name(), "inherit")
-        if (depkind == "static" or depkind == "shared" or depkind == "object") and (depinherit == nil or depinherit) then
-            if targetkind == "binary" or targetkind == "shared" then
-                if flagname == "links" or flagname == "syslinks" then
-
-                    -- add dependent link
-                    if depkind ~= "object" and flagname == "links" then
-                        table.insert(results, dep:basename())
-                    end
-
-                    -- inherit links from the depdent target
-                    self:_add_values_from_target(deplinks, dep, flagname)
-
-                elseif flagname == "linkdirs" then
-
-                    -- add dependent linkdirs
-                    if depkind ~= "object" then
-                        table.insert(results, path.directory(dep:targetfile()))
-                    end
-
-                    -- inherit linkdirs from the depdent target
-                    self:_add_values_from_target(results, dep, flagname)
-
-                elseif flagname == "rpathdirs" then
-
-                    -- add dependent rpathdirs 
-                    if depkind ~= "object" then
-                        local rpathdir = "@loader_path"
-                        local subdir = path.relative(path.directory(dep:targetfile()), path.directory(target:targetfile()))
-                        if subdir and subdir ~= '.' then
-                            rpathdir = path.join(rpathdir, subdir)
-                        end
-                        table.insert(results, rpathdir)
-                    end
-                end
-
-            -- TODO deprecated
-            elseif flagname == "includedirs" then
-
-                -- add dependent headerdir
-                if dep:get("headers") and os.isdir(dep:headerdir()) then
-                    table.insert(results, dep:headerdir())
-                end
-
-                -- add dependent configheader directory
-                local configheader = dep:configheader()
-                if configheader and os.isfile(configheader) then
-                    table.insert(results, path.directory(configheader))
-                end
-            end
-        end
-    end
-
-    -- @note we need ensure add option and package links after all dependent targets
-    if #deplinks > 0 then
-        table.join2(results, deplinks)
-    end
-end
-
 -- inherit flags (only for public/interface) from target deps
 --
 -- e.g. 
@@ -220,15 +146,6 @@ function builder:_inherit_values_from_targetdeps(values, target, name)
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, {interface = true}))
         end
-    end
-end
-
--- add values from target
-function builder:_add_values_from_target(values, target, name)
-    table.join2(values, target:get(name))
-    if target:type() == "target" then
-        self:_add_values_from_targetopts(values, target, name)
-        self:_add_values_from_targetpkgs(values, target, name)
     end
 end
 
@@ -394,11 +311,6 @@ function builder:_add_flags_from_language(flags, target, getters)
                             -- only for target
                             local results = {}
                             if target:type() == "target" then
-
-                                -- link? add includes and links of all dependent targets first
-                                if name == "links" or name == "syslinks" or name == "linkdirs" or name == "rpathdirs" or name == "includedirs" then
-                                    self:_inherit_links_from_targetdeps(results, target, name)
-                                end
 
                                 -- inherit flagvalues (public or interface) of all dependent targets
                                 self:_inherit_values_from_targetdeps(results, target, name)

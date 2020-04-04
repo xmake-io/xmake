@@ -29,6 +29,9 @@ rule("dlang")
     -- add build rules
     add_deps("dlang.build")
 
+    -- inherit links and linkdirs of all dependent targets by default
+    add_deps("utils.inherit.links")
+
     -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
     add_deps("utils.merge.object", "utils.merge.archive")
 

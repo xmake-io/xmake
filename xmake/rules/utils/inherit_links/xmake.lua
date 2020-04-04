@@ -18,23 +18,7 @@
 -- @file        xmake.lua
 --
 
--- define rule: asm.build
-rule("asm.build")
-    set_sourcekinds("as")    
-    on_build_files("private.action.build.object", {batch = true})
-
--- define rule: asm
-rule("asm")
-
-    -- add build rules
-    add_deps("asm.build")
-
-    -- inherit links and linkdirs of all dependent targets by default
-    add_deps("utils.inherit.links")
-
-    -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
-    add_deps("utils.merge.object", "utils.merge.archive")
-
-    -- we attempt to extract symbols to the independent file and 
-    -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
-    add_deps("utils.symbols.extract")
+-- define rule: utils.inherit.links
+rule("utils.inherit.links")
+    after_load("inherit_links")
+            
