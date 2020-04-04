@@ -23,7 +23,6 @@ rule("xcode.framework")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
-
         
         -- get framework directory
         local targetdir = target:targetdir()
@@ -39,17 +38,17 @@ rule("xcode.framework")
         target:data_set("inherit.links", false) -- disable to inherit links, @see rule("utils.inherit.links")
         target:add("frameworks", target:basename(), {interface = true})
         target:add("frameworkdirs", targetdir, {interface = true})
+        target:add("includedirs", path.join(frameworkdir, "Versions", "A", "Headers.tmp"), {interface = true})
 
         -- register clean files for `xmake clean`
         target:add("cleanfiles", frameworkdir)
     end)
 
-    after_build(function (target)
+    before_build(function (target)
 
         -- get framework directory
         local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
-        local headersdir = path.join(frameworkdir, "Versions", "A", "Headers")
-        local resourcesdir = path.join(frameworkdir, "Versions", "A", "Resources")
+        local headersdir = path.join(frameworkdir, "Versions", "A", "Headers.tmp", target:basename())
 
         -- copy header files to the framework directory
         local srcheaders, dstheaders = target:headerfiles(headersdir)
@@ -66,6 +65,19 @@ rule("xcode.framework")
         if not os.isdir(headersdir) then
             os.mkdir(headersdir)
         end
+    end)
+
+    after_build(function (target)
+
+        -- get framework directory
+        local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
+        local headersdir = path.join(frameworkdir, "Versions", "A", "Headers")
+        local resourcesdir = path.join(frameworkdir, "Versions", "A", "Resources")
+
+        -- move header files
+        os.tryrm(headersdir)
+        os.mv(path.join(frameworkdir, "Versions", "A", "Headers.tmp", target:basename()), headersdir)
+        os.rm(path.join(frameworkdir, "Versions", "A", "Headers.tmp"))
 
         -- copy resource files to the framework directory
         local srcfiles, dstfiles = target:installfiles(resourcesdir)
