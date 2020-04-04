@@ -6,8 +6,8 @@ target("test")
     add_headerfiles("src/*.h")
     add_installfiles("src/Info.plist")
 
-    --[[
 target("demo")
     set_kind("binary")
     add_deps("test")
-    add_files("src/main.m")]]
+    add_files("src/main.m")
+    set_values("build.across_targets_in_parallel", false)

@@ -23,11 +23,22 @@ rule("xcode.framework")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
-        local frameworkdir = path.join(target:targetdir(), target:basename() .. ".framework")
+        
+        -- get framework directory
+        local targetdir = target:targetdir()
+        local frameworkdir = path.join(targetdir, target:basename() .. ".framework")
+        target:data_set("xcode.frameworkdir", frameworkdir)
+
+        -- set target info for framework 
         target:set("kind", "shared")
         target:set("filename", target:basename())
         target:set("targetdir", path.join(frameworkdir, "Versions", "A"))
-        target:data_set("xcode.frameworkdir", frameworkdir)
+
+        -- export frameworks for `add_deps()`
+        target:add("frameworks", target:basename(), {interface = true})
+        target:add("frameworkdirs", targetdir, {interface = true})
+
+        -- register clean files for `xmake clean`
         target:add("cleanfiles", frameworkdir)
     end)
 
