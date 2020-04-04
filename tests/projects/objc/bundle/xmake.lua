@@ -1,22 +1,10 @@
--- add rules
 add_rules("mode.debug", "mode.release")
 
--- add frameworks
-add_frameworks("Foundation", "CoreFoundation")
+target("test")
+    add_rules("xcode.bundle")
+    add_files("src/test.m")
 
--- for macosx or ios
-if is_os("macosx", "ios") then
-
-    -- enable arc?
-    add_mxflags("-fobjc-arc")
-end
-
--- add target
-target("console_objc")
-
-    -- set kind
+target("demo")
     set_kind("binary")
-
-    -- add files
-    add_files("src/*.m")
-
+    add_deps("test")
+    add_files("src/main.m")
