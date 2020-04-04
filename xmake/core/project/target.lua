@@ -326,7 +326,7 @@ end
 
 -- get user private data
 function _instance:data(name)
-    return self._DATA and self._DATA[name] or nil
+    return self._DATA and self._DATA[name]
 end
 
 -- set user private data

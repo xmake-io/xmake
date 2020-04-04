@@ -23,6 +23,7 @@ rule("xcode.framework")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
+
         
         -- get framework directory
         local targetdir = target:targetdir()
@@ -35,6 +36,7 @@ rule("xcode.framework")
         target:set("targetdir", path.join(frameworkdir, "Versions", "A"))
 
         -- export frameworks for `add_deps()`
+        target:data_set("inherit.links", false) -- disable to inherit links, @see rule("utils.inherit.links")
         target:add("frameworks", target:basename(), {interface = true})
         target:add("frameworkdirs", targetdir, {interface = true})
 
