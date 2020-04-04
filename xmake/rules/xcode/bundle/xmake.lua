@@ -30,9 +30,12 @@ rule("xcode.bundle")
         target:data_set("xcode.bundledir", bundledir)
 
         -- set target info for bundle 
-        target:set("kind", "shared")
         target:set("filename", target:basename())
         target:set("targetdir", path.join(bundledir, "Contents", "MacOS"))
+
+        -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
+        target:set("kind", "binary")
+        target:add("ldflags", "-bundle", {force = true})
 
         -- register clean files for `xmake clean`
         target:add("cleanfiles", bundledir)
