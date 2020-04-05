@@ -21,8 +21,36 @@
 -- imports
 import("lib.detect.find_tool")
 
+-- get codesign identities
+function _get_codesign_identities()
+    local identities = _g.identities
+    if identities == nil then
+        identities = {}
+        local results = try { function() return os.iorun("/usr/bin/security find-identity -v -p codesigning") end }
+        if not results then
+            results = try { function() return os.iorun("/usr/bin/security find-identity") end }
+            if results then
+                local splitinfo = results:split("Valid identities only", {plain = true})
+                if splitinfo and #splitinfo > 1 then
+                    results = splitinfo[2]
+                end
+            end
+        end
+        if results then
+            for _, line in ipairs(results:split('\n', {plain = true})) do
+                local sign, identity = line:match("%) (%w+) \"(.+)\"")
+                if sign and identity then
+                    identities[identity] = sign
+                end
+            end
+        end
+        _g.identities = identities or false
+    end
+    return identities or nil
+end
+
 -- main entry
-function main (programdir)
+function main (programdir, codesign_identity)
 
     -- get codesign
     local codesign = find_tool("codesign")
@@ -37,10 +65,20 @@ function main (programdir)
         codesign_allocate = path.join(xcode_sdkdir, "Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/codesign_allocate")
     end
 
+    -- get codesign 
+    local sign = "-"
+    if codesign_identity then
+        local identities = _get_codesign_identities()
+        if identities then
+            sign = identities[codesign_identity]
+            assert(sign, "codesign: invalid sign identity(%s)!", codesign_identity)
+        end
+    end
+
     -- do sign
     local argv = {"--force", "--timestamp=none"}
     table.insert(argv, "--sign")
-    table.insert(argv, "-")
+    table.insert(argv, sign)
     table.insert(argv, programdir)
     os.vrunv(codesign.program, argv, {envs = {CODESIGN_ALLOCATE = codesign_allocate}})
 end

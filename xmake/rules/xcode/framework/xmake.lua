@@ -134,7 +134,7 @@ rule("xcode.framework")
         os.cd(oldir)
 
         -- do codesign
-        codesign(path.join(frameworkdir, "Versions", "A"))
+        codesign(path.join(frameworkdir, "Versions", "A"), target:values("xcode.codesign_identity"))
     end)
 
     on_install(function (target)
