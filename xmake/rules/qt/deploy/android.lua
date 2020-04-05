@@ -27,10 +27,10 @@ import("core.project.config")
 function main(target, opt)
 
     -- get target apk path
-    local target_apk = path.join(path.directory(target:targetfile()), target:basename() .. ".apk")
+    local target_apk = path.join(target:targetdir(), target:basename() .. ".apk")
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress.stop)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
     if option.get("verbose") then
         cprint("${dim color.build.target}generating.qt.app %s.apk", target:basename())
     else

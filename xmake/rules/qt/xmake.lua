@@ -82,8 +82,9 @@ rule("qt.widgetapp")
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
-    -- deploy application for android after build
+    -- deploy application 
     after_build("android", "deploy.android")
+    after_build("macosx", "deploy.macosx")
 
     -- install application for android
     on_install("android", "install.android")
@@ -110,8 +111,9 @@ rule("qt.widgetapp_static")
         import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
-    -- deploy application for android after build
+    -- deploy application 
     after_build("android", "deploy.android")
+    after_build("macosx", "deploy.macosx")
 
     -- install application for android
     on_install("android", "install.android")
@@ -132,8 +134,9 @@ rule("qt.quickapp")
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
     end)
 
-    -- deploy application for android after build
+    -- deploy application 
     after_build("android", "deploy.android")
+    after_build("macosx", "deploy.macosx")
 
     -- install application for android
     on_install("android", "install.android")
@@ -160,8 +163,9 @@ rule("qt.quickapp_static")
         import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
     end)
 
-    -- deploy application for android after build
+    -- deploy application 
     after_build("android", "deploy.android")
+    after_build("macosx", "deploy.macosx")
 
     -- install application for android
     on_install("android", "install.android")
