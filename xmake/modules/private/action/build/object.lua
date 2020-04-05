@@ -45,8 +45,10 @@ function _do_build_file(target, sourcefile, opt)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
     
     -- need build this object?
+    -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
+    -- @see https://github.com/xmake-io/xmake/issues/748
     local depvalues = {compinst:program(), compflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
         return 
     end
 
