@@ -22,7 +22,7 @@
 import("lib.detect.find_tool")
 
 -- get codesign identities
-function _get_codesign_identities()
+function codesign_identities()
     local identities = _g.identities
     if identities == nil then
         identities = {}
@@ -68,7 +68,7 @@ function main (programdir, codesign_identity)
     -- get codesign 
     local sign = "-"
     if codesign_identity then
-        local identities = _get_codesign_identities()
+        local identities = codesign_identities()
         if identities then
             sign = identities[codesign_identity]
             assert(sign, "codesign: invalid sign identity(%s)!", codesign_identity)

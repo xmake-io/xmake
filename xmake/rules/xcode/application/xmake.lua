@@ -93,7 +93,7 @@ rule("xcode.application")
         end
 
         -- do codesign
-        codesign(appdir, target:values("xcode.codesign_identity"))
+        codesign(appdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
     end)
 
     on_install(function (target)

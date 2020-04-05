@@ -46,16 +46,18 @@ platform("iphoneos")
     set_menu {
                 config = 
                 {   
-                    {category = "XCode SDK Configuration"                                           }
-                ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"   }
-                ,   {nil, "xcode_sdkver",   "kv", "auto",       "The SDK Version for Xcode"         }
-                ,   {nil, "target_minver",  "kv", "auto",       "The Target Minimal Version"        }
+                    {category = "XCode SDK Configuration"                                                    }
+                ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {nil, "xcode_sdkver",            "kv", "auto",       "The SDK Version for Xcode"         }
+                ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
+                ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
                 }
 
             ,   global = 
                 {   
-                    {category = "XCode SDK Configuration"                                           }
-                ,   {nil, "xcode",          "kv", "auto",       "The Xcode Application Directory"   }
+                    {category = "XCode SDK Configuration"                                                    }
+                ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
+                ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
                 }
             }
 

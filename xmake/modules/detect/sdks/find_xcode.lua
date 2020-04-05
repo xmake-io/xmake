@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.project.config")
 import("lib.detect.find_directory")
+import("private.tools.codesign")
 
 -- find xcode directory
 function _find_sdkdir(sdkdir)
@@ -78,8 +79,18 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
         return {}
     end
 
+    -- find codesign identity
+    local codesign_identity = nil
+    local codesign_identities = codesign.codesign_identities()
+    if codesign_identities then
+        for identity, _ in pairs(codesign_identities) do
+            codesign_identity = identity
+            break
+        end
+    end
+
     -- ok?    
-    return {sdkdir = sdkdir, sdkver = sdkver}
+    return {sdkdir = sdkdir, sdkver = sdkver, codesign_identity = codesign_identity}
 end
 
 -- find xcode toolchain
@@ -119,11 +130,13 @@ function main(sdkdir, opt)
         -- save to config
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         config.set("xcode_sdkver", xcode.sdkver, {force = true, readonly = true})
+        config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for the Xcode directory ... ${color.success}%s", xcode.sdkdir)
             cprint("checking for the SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
+            cprint("checking for the Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
         end
     else
 

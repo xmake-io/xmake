@@ -82,7 +82,7 @@ rule("xcode.bundle")
         end
 
         -- do codesign
-        codesign(bundledir, target:values("xcode.codesign_identity"))
+        codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
     end)
 
     on_install(function (target)

@@ -122,7 +122,7 @@ function main(target, opt)
     if qmldir then
         table.insert(argv, "-qmldir=" .. qmldir)
     end
-    local codesign_identity = target:values("xcode.codesign_identity")
+    local codesign_identity = target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity")
     if codesign_identity then
         -- e.g. "Apple Development: waruqi@gmail.com (T3NA4MRVPU)"
         table.insert(argv, "-codesign=" .. codesign_identity)
