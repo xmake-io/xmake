@@ -25,6 +25,42 @@ import("core.project.config")
 import("core.project.depend")
 import("lib.detect.find_path")
 
+-- save Info.plist
+function _save_info_plist(target, info_plist_file)
+
+    local name = target:basename()
+    io.writefile(info_plist_file, string.format([[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>BuildMachineOSBuild</key>
+	<string>18G95</string>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleDisplayName</key>
+	<string>%s</string>
+	<key>CFBundleExecutable</key>
+	<string>%s</string>
+	<key>CFBundleIdentifier</key>
+	<string>org.example.%s</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>%s</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>1.0</string>
+	<key>CFBundleVersion</key>
+	<string>1.0.0</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>%s</string>
+	<key>NSPrincipalClass</key>
+	<string>NSApplication</string>
+</dict>
+</plist>]], name, name, name, name, macos.version():major() .. "." .. macos.version():minor()))
+end
+
 -- deploy application package for macosx
 function main(target, opt)
 
@@ -58,7 +94,8 @@ function main(target, opt)
     os.cp(target:targetfile(), path.join(target_contents, "MacOS", target:basename()))
     os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), target_contents)
 
-    -- TODO generate Info.plist
+    -- generate Info.plist
+    _save_info_plist(target, path.join(target_contents, "Info.plist"))
 
     -- find qml directory
     local qmldir = nil
