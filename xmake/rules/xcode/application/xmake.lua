@@ -47,6 +47,23 @@ rule("xcode.application")
         -- imports
         import("private.tools.codesign")
 
+        -- generate Info.plist
+        local function _gen_info_plist(info_plist_file)
+            io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
+                local maps = 
+                {
+                    DEVELOPMENT_LANGUAGE = "en",
+                    EXECUTABLE_NAME = target:basename(),
+                    PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
+                    PRODUCT_NAME = target:name(),
+                    PRODUCT_BUNDLE_PACKAGE_TYPE = "APPL", -- application
+                    CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
+                    MACOSX_DEPLOYMENT_TARGET = get_config("target_minver")
+                }
+                return maps[variable]
+            end)
+        end
+
         -- get app directory
         local appdir = path.absolute(target:data("xcode.appdir"))
 
@@ -67,6 +84,9 @@ rule("xcode.application")
                 local dstfile = dstfiles[i]
                 if dstfile then
                     os.vcp(srcfile, dstfile)
+                    if path.filename(srcfile) == "Info.plist" then
+                        _gen_info_plist(dstfile)
+                    end
                 end
                 i = i + 1
             end

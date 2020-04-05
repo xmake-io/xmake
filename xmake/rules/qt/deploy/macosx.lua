@@ -58,7 +58,7 @@ function _save_info_plist(target, info_plist_file)
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
-</plist>]], name, name, name, name, macos.version():major() .. "." .. macos.version():minor()))
+</plist>]], name, name, name, name, get_config("target_minver") or (macos.version():major() .. "." .. macos.version():minor())))
 end
 
 -- deploy application package for macosx

@@ -46,6 +46,22 @@ rule("xcode.bundle")
         -- imports
         import("private.tools.codesign")
 
+        -- generate Info.plist
+        local function _gen_info_plist(info_plist_file)
+            io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
+                local maps = 
+                {
+                    DEVELOPMENT_LANGUAGE = "en",
+                    EXECUTABLE_NAME = target:basename(),
+                    PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
+                    PRODUCT_NAME = target:name(),
+                    PRODUCT_BUNDLE_PACKAGE_TYPE = "BNDL", -- bundle
+                    CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0"
+                }
+                return maps[variable]
+            end)
+        end
+
         -- get bundle directory
         local bundledir = path.absolute(target:data("xcode.bundledir"))
 
@@ -57,6 +73,9 @@ rule("xcode.bundle")
                 local dstfile = dstfiles[i]
                 if dstfile then
                     os.vcp(srcfile, dstfile)
+                    if path.filename(srcfile) == "Info.plist" then
+                        _gen_info_plist(dstfile)
+                    end
                 end
                 i = i + 1
             end
