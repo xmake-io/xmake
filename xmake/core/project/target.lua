@@ -979,8 +979,14 @@ function _instance:sourcefiles()
             deleted = true
         end
 
-        -- match source files
-        local results = os.match(file)
+        -- find source files 
+        local results = os.files(file)
+        if #results == 0 then
+            -- attempt to find source directories if maybe compile it as directory with the custom rules
+            if #self:filerules(file) > 0 then
+                results = os.dirs(file)
+            end
+        end
         if #results == 0 then
             local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}
             utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), utils.ifelse(deleted, "del", "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
