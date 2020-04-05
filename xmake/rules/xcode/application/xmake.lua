@@ -38,6 +38,13 @@ rule("xcode.application")
             target:set("targetdir", appdir)
         end
 
+        -- add frameworks
+        if is_plat("macosx") then
+            target:add("frameworks", "AppKit")
+        else
+            target:add("frameworks", "UIKit")
+        end
+
         -- register clean files for `xmake clean`
         target:add("cleanfiles", appdir)
     end)

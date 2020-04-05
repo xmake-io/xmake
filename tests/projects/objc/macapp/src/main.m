@@ -1,10 +1,16 @@
-#import <Foundation/Foundation.h>
+//
+//  main.m
+//  test3
+//
+//  Created by ruki on 2020/4/4.
+//  Copyright © 2020 tboox. All rights reserved.
+//
 
-int main(int argc, char** argv)
-{
-    @autoreleasepool
-    {
-        NSLog(@"hello xmake!");
+#import <Cocoa/Cocoa.h>
+
+int main(int argc, const char * argv[]) {
+    @autoreleasepool {
+        // Setup code that might create autoreleased objects goes here.
     }
-    return 0;
+    return NSApplicationMain(argc, argv);
 }
