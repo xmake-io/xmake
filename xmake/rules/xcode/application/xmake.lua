@@ -18,7 +18,7 @@
 -- @file        xmake.lua
 --
 
--- define rule: xcode application
+-- define rule: xcode application (TODO developing)
 rule("xcode.application")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()

@@ -45,7 +45,7 @@ function main(opt)
     -- init options
     opt = opt or {}
     opt.check = function (program)
-        os.execv(program, {"-d", "/bin/echo"})
+        os.runv(program, {"-d", "/bin/echo"})
     end
     
     -- find program
