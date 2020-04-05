@@ -22,10 +22,20 @@
 import("core.theme.theme")
 import("core.base.option")
 import("core.project.config")
+import("core.project.depend")
 import("lib.detect.find_path")
 
 -- deploy application package for macosx
 function main(target, opt)
+
+    -- need re-generate this app?
+    local target_app = path.join(target:targetdir(), target:basename() .. ".app")
+    local targetfile = target:targetfile()
+    local dependfile = target:dependfile(target_app)
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target_app)}) then
+        return 
+    end
 
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
@@ -43,13 +53,12 @@ function main(target, opt)
     assert(os.isexec(macdeployqt), "macdeployqt not found!")
 
     -- generate target app 
-    local target_app = path.join(target:targetdir(), target:basename() .. ".app")
     local target_contents = path.join(target_app, "Contents")
     os.tryrm(target_app)
     os.cp(target:targetfile(), path.join(target_contents, "MacOS", target:basename()))
     os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), target_contents)
 
-    -- TODO generate Info.plist and codesign
+    -- TODO generate Info.plist
 
     -- find qml directory
     local qmldir = nil
@@ -76,6 +85,15 @@ function main(target, opt)
     if qmldir then
         table.insert(argv, "-qmldir=" .. qmldir)
     end
+    local codesign_identity = target:values("xcode.codesign_identity")
+    if codesign_identity then
+        -- e.g. "Apple Development: waruqi@gmail.com (T3NA4MRVPU)"
+        table.insert(argv, "-codesign=" .. codesign_identity)
+    end
     os.vrunv(macdeployqt, argv)
+
+    -- update files and values to the dependent file
+    dependinfo.files = {targetfile}
+    depend.save(dependinfo, dependfile)
 end
 
