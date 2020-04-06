@@ -31,7 +31,6 @@ function init(self)
     -- init mxflags
     self:set("mxflags", "-fmessage-length=0"
                       , "-pipe"
-                      , "-fpascal-strings"
                       , "-DIBOutlet=__attribute__((iboutlet))"
                       , "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
                       , "-DIBAction=void)__attribute__((ibaction)")

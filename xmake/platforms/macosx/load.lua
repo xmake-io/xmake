@@ -37,7 +37,7 @@ function main(platform)
     end
 
     -- init flags for c/c++
-    platform:add("cxflags", "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0")
+    platform:add("cxflags", "-arch " .. arch)
     platform:add("ldflags", "-arch " .. arch)
     if target_minver then
         platform:add("cxflags", "-mmacosx-version-min=" .. target_minver)
@@ -58,7 +58,7 @@ function main(platform)
     platform:add("shflags", platform:get("ldflags"))
 
     -- init flags for objc/c++ (with ldflags and shflags)
-    platform:add("mxflags", "-arch " .. arch, "-fpascal-strings", "-fmessage-length=0")
+    platform:add("mxflags", "-arch " .. arch)
     if xcode_sdkdir then
         platform:add("mxflags", "-isysroot " .. xcode_sdkdir)
     end
