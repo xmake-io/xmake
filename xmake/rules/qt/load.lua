@@ -183,17 +183,17 @@ function main(target, opt)
                     target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver))
                 end
             else
-            -- add defines
-            target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
+                -- add defines
+                target:add("defines", "QT_" .. framework:sub(3):upper() .. "_LIB")
 
-            -- add includedirs
-            if is_plat("macosx") then
-                local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
-                if os.isdir(frameworkdir) then
-                    target:add("includedirs", path.join(frameworkdir, "Headers"))
-                    useframeworks = true
-                else
-                    target:add("syslinks", _link(framework, major))
+                -- add includedirs
+                if is_plat("macosx") then
+                    local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
+                    if os.isdir(frameworkdir) then
+                        target:add("includedirs", path.join(frameworkdir, "Headers"))
+                        useframeworks = true
+                    else
+                        target:add("syslinks", _link(framework, major))
                         target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                     end
                 else
