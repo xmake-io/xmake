@@ -167,8 +167,8 @@ function main(target, opt)
         -- translate qt frameworks
         if framework:startswith("Qt") then
             -- add private includedirs
-            if (framework:lower():endswith("private")) then
-                local private_dir = framework:sub(1, -string.len("private") - 1);
+            if framework:lower():endswith("private") then
+                local private_dir = framework:sub(1, -#("private") - 1);
                 if is_plat("macosx") then
                     local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
                     if os.isdir(frameworkdir) then
@@ -206,11 +206,9 @@ function main(target, opt)
 
     -- remove private frameworks
     local local_frameworks = {}
-    local index = 1
     for _, framework in ipairs(target:get("frameworks")) do
         if not framework:lower():endswith("private") then
-            local_frameworks[index] = framework
-            index = index + 1
+            table.insert(local_frameworks, framework)
         end
     end
 
