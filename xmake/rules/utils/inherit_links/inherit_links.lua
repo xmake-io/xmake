@@ -62,10 +62,6 @@ function main(target)
     if targetkind == "shared" or targetkind == "static" then
         target:add("links", target:basename(), {interface = true})
         target:add("linkdirs", path.directory(targetfile), {interface = true})
-    end
-
-    -- export all dependent links and linkdirs for static library
-    if targetkind == "static" then
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
             local values = _get_values_from_target(target, name)
             if values and #values > 0 then
