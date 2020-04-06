@@ -67,7 +67,7 @@ function main (programdir, codesign_identity)
 
     -- get codesign 
     local sign = "-"
-    if codesign_identity then
+    if codesign_identity then -- we will uses sign/'-' if be false for `xmake f --xcode_codesign_identity=n`
         local identities = codesign_identities()
         if identities then
             sign = identities[codesign_identity]

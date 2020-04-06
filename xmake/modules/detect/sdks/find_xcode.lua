@@ -80,12 +80,17 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
     end
 
     -- find codesign identity
-    local codesign_identity = nil
-    local codesign_identities = codesign.codesign_identities()
-    if codesign_identities then
-        for identity, _ in pairs(codesign_identities) do
-            codesign_identity = identity
-            break
+    local codesign_identity = config.get("xcode_codesign_identity")
+    if codesign_identity == nil then -- we will disable codesign_identity if be false
+        codesign_identity = global.get("xcode_codesign_identity")
+    end
+    if codesign_identity == nil then
+        local codesign_identities = codesign.codesign_identities()
+        if codesign_identities then
+            for identity, _ in pairs(codesign_identities) do
+                codesign_identity = identity
+                break
+            end
         end
     end
 
@@ -136,7 +141,11 @@ function main(sdkdir, opt)
         if opt.verbose or option.get("verbose") then
             cprint("checking for the Xcode directory ... ${color.success}%s", xcode.sdkdir)
             cprint("checking for the SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
-            cprint("checking for the Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
+            if xcode.codesign_identity then
+                cprint("checking for the Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
+            else
+                cprint("checking for the Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+            end
         end
     else
 
