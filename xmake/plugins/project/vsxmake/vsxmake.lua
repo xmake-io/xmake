@@ -56,7 +56,7 @@ function _buildparams(info, target, default)
         if target then
             opt = table.join(target, opt)
         end
-        for _,k in ipairs(opt) do
+        for _, k in ipairs(opt) do
             local v = (i._sub or {})[k] or (i._sub2 or {})[k] or (i._sub3 or {})[k] or (i._sub4 or {})[k]or i[k]
             if v == nil then
                 raise("key '" .. k .. "' not found")
