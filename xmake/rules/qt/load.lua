@@ -30,7 +30,7 @@ function _link(framework, major)
             debug_suffix = "d"
         elseif is_plat("mingw") then
             debug_suffix = "d"
-        elseif is_plat("android") then
+        elseif is_plat("android") or is_plat("linux") then
             debug_suffix = ""
         end
         framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
@@ -46,7 +46,7 @@ function _find_static_links_3rd(linkdirs, major, libpattern)
         debug_suffix = "d"
     elseif is_plat("mingw") then
         debug_suffix = "d"
-    elseif is_plat("android") then
+    elseif is_plat("android") or is_plat("linux") then
         debug_suffix = ""
     end
     for _, linkdir in ipairs(linkdirs) do
