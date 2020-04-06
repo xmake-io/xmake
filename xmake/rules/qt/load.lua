@@ -211,7 +211,6 @@ function main(target, opt)
             table.insert(local_frameworks, framework)
         end
     end
-
     target:set("frameworks", local_frameworks)
 
     -- add some static third-party links if exists, e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a
