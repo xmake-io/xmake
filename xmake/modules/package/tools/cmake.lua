@@ -130,7 +130,8 @@ function install(package, configs, opt)
             os.cp("**.exp", package:installdir("lib"))
         end
     else
-        argv = {"-j4"}
+        local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+        argv = {"-j" .. njob}
         if option.get("verbose") then
             table.insert(argv, "VERBOSE=1")
         end

@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 
 -- get configs
@@ -77,9 +78,18 @@ function buildenvs(package)
     if package:is_plat(os.subhost()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
+        local asflags  = table.copy(table.wrap(package:config("asflags")))
+        local ldflags  = table.copy(table.wrap(package:config("ldflags")))
+        if package:is_plat("linux") and package:is_arch("i386") then
+            table.insert(cflags,   "-m32")
+            table.insert(cxxflags, "-m32")
+            table.insert(asflags,  "-m32")
+            table.insert(ldflags,  "-m32")
+        end
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
+        envs.ASFLAGS   = table.concat(asflags, ' ')
+        envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -166,7 +176,12 @@ function install(package, configs, opt)
     configure(package, configs, opt)
 
     -- do make and install
-    os.vrun("make -j4")
+    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local argv = {"-j" .. njob}
+    if option.get("verbose") then
+        table.insert(argv, "V=1")
+    end
+    os.vrunv("make", argv)
     os.vrun("make install")
 end
 
