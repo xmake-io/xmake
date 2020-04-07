@@ -38,8 +38,8 @@ rule("qt.moc")
         target:data_set("qt.moc", moc)
     end)
 
-    -- on build file
-    on_build_file(function (target, headerfile_moc, opt)
+    -- before build file (we need compile it first if exists Q_PRIVATE_SLOT)
+    before_build_file(function (target, headerfile_moc, opt)
 
         -- imports
         import("moc")
@@ -85,14 +85,30 @@ rule("qt.moc")
         -- generate c++ source file for moc
         moc.generate(target, headerfile_moc, sourcefile_moc)
 
-        -- trace
-        if option.get("verbose") then
-            print(compinst:compcmd(sourcefile_moc, objectfile, {compflags = compflags}))
-        end
-
-        -- compile c++ source file for moc
+        -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750 
         dependinfo.files = {}
-        assert(compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+        local mocdata = io.readfile(headerfile_moc)
+        if mocdata and mocdata:find("Q_PRIVATE_SLOT") then
+            -- add includedirs of sourcefile_moc
+            target:add("includedirs", path.directory(sourcefile_moc))
+
+            -- remove the object file of sourcefile_moc
+            local objectfiles = target:objectfiles()
+            for idx, objectfile in ipairs(objectfiles) do
+                if objectfile == target:objectfile(sourcefile_moc) then
+                    table.remove(objectfiles, idx)
+                    break
+                end
+            end
+        else
+            -- trace
+            if option.get("verbose") then
+                print(compinst:compcmd(sourcefile_moc, objectfile, {compflags = compflags}))
+            end
+
+            -- compile c++ source file for moc
+            assert(compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+        end
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
