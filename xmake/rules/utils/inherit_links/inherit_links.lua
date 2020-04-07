@@ -58,8 +58,8 @@ function main(target)
 
     -- export links and linkdirs
     local targetkind = target:targetkind()
-    local targetfile = target:targetfile()
     if targetkind == "shared" or targetkind == "static" then
+        local targetfile = target:targetfile()
         target:add("links", target:basename(), {interface = true})
         target:add("linkdirs", path.directory(targetfile), {interface = true})
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
@@ -72,9 +72,10 @@ function main(target)
 
     -- export rpathdirs for all shared library
     if targetkind == "binary" then
+        local targetdir = target:targetdir()
         for _, dep in ipairs(target:orderdeps()) do
             local rpathdir = "@loader_path"
-            local subdir = path.relative(path.directory(dep:targetfile()), path.directory(targetfile))
+            local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
             if subdir and subdir ~= '.' then
                 rpathdir = path.join(rpathdir, subdir)
             end
