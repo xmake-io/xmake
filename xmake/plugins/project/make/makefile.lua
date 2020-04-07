@@ -191,7 +191,7 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     makefile:print(" %s", sourcefile)
 
     -- make body
-    makefile:print("\t@echo %scompiling.$(mode) %s", ifelse(ccache, "ccache ", ""), sourcefile)
+    makefile:print("\t@echo %scompiling.$(mode) %s", ccache and "ccache " or "", sourcefile)
     _mkdir(makefile, path.directory(objectfile))
     makefile:writef("\t@%s > %s 2>&1\n", command, _logfile())
 

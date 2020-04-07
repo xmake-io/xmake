@@ -182,7 +182,7 @@ function _make_VCCLCompilerTool(vcprojfile, vsinfo, target, compflags)
                 break
             end
         end
-        vcprojfile:print("RuntimeLibrary=\"%d\"", ifelse(val("mode") == "debug", runtime + 1, runtime))
+        vcprojfile:print("RuntimeLibrary=\"%d\"", is_mode("debug") and runtime + 1 or runtime)
     vcprojfile:leave("/>")
 end
 
@@ -234,7 +234,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
         vcprojfile:print("LinkIncremental=\"2\"") -- enable: 2, disable: 1
         vcprojfile:print("GenerateDebugInformation=\"%s\"", tostring(debug))
         vcprojfile:print("SubSystem=\"%d\"", subsystem) -- console: 1, windows: 2
-        vcprojfile:print("TargetMachine=\"%d\"", ifelse(config.arch() == "x64", 17, 1))
+        vcprojfile:print("TargetMachine=\"%d\"", is_arch("x64") and 17 or 1)
     vcprojfile:leave("/>")
 end
 

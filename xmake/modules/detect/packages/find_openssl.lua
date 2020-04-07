@@ -37,7 +37,7 @@ function main(opt)
     if opt.plat == "windows" then
 
         -- init bits
-        local bits = ifelse(opt.arch == "x64", "64", "32")
+        local bits = (opt.arch == "x64" and "64" or "32")
 
         -- init search pathes
         local pathes = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL %(" .. bits .. "-bit%)_is1;Inno Setup: App Path)",

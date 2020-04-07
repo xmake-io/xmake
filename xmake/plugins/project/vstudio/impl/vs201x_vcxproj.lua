@@ -415,7 +415,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         end
     
         -- make TargetMachine
-        vcxprojfile:print("<TargetMachine>%s</TargetMachine>", ifelse(targetinfo.arch == "x64", "MachineX64", "MachineX86"))
+        vcxprojfile:print("<TargetMachine>%s</TargetMachine>", (targetinfo.arch == "x64" and "MachineX64" or "MachineX86"))
 
 
     vcxprojfile:leave("</%s>", linkerkinds[targetinfo.targetkind])
@@ -528,7 +528,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
     end
 
     -- enter it
-    local nodename = ifelse(sourcekind == "as", "CustomBuild", ifelse(sourcekind == "mrc", "ResourceCompile", "ClCompile"))
+    local nodename = (sourcekind == "as" and "CustomBuild" or (sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
     sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
     vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
@@ -597,7 +597,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     -- disable the precompiled header if sourcekind ~= headerkind
                     local pcheader = target.pcxxheader or target.pcheader
                     local pcheader_disable = false
-                    if pcheader and language.sourcekind_of(sourcefile) ~= ifelse(target.pcxxheader, "cxx", "cc") then
+                    if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
                         pcheader_disable = true
                     end
 
@@ -646,7 +646,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
     for _, info in ipairs(sourceinfo) do
 
         -- enter it
-        local nodename = ifelse(info.sourcekind == "as", "CustomBuild", ifelse(info.sourcekind == "mrc", "ResourceCompile", "ClCompile"))
+        local nodename = (info.sourcekind == "as" and "CustomBuild" or (info.sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
         vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", nodename, info.mode, info.arch, sourcefile)
 
         -- for *.asm files
@@ -667,7 +667,7 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 
             -- disable the precompiled header if sourcekind ~= headerkind
             local pcheader = target.pcxxheader or target.pcheader
-            if pcheader and language.sourcekind_of(sourcefile) ~= ifelse(target.pcxxheader, "cxx", "cc") then
+            if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
                 vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
             end
             vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfile)
@@ -693,7 +693,7 @@ function _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
             for _, info in ipairs(target.info) do
 
                 -- compile as c/c++
-                local compileas = ifelse(target.pcxxheader, "CompileAsCpp", "CompileAsC")
+                local compileas = (target.pcxxheader and "CompileAsCpp" or "CompileAsC")
                 vcxprojfile:print("<CompileAs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</CompileAs>", info.mode, info.arch, compileas)
 
                 -- add object file

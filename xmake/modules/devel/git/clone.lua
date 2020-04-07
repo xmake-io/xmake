@@ -54,7 +54,7 @@ function main(url, opt)
     -- set depth
     if opt.depth then
         table.insert(argv, "--depth")
-        table.insert(argv, ifelse(type(opt.depth) == "number", tostring(opt.depth), opt.depth))
+        table.insert(argv, type(opt.depth) == "number" and tostring(opt.depth) or opt.depth)
     end
 
     -- recursive?

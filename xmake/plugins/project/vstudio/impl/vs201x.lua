@@ -35,7 +35,7 @@ import("actions.config.configheader", {alias = "generate_configheader", rootdir 
 function _make_targetinfo(mode, arch, target)
 
     -- init target info
-    local targetinfo = { mode = mode, arch = ifelse(arch == "x86", "Win32", "x64") }
+    local targetinfo = { mode = mode, arch = (arch == "x86" and "Win32" or "x64") }
 
     -- get sdk version
     local vcvarsall = config.get("__vcvarsall")

@@ -72,7 +72,7 @@ function main(reftype, url)
         local ref = refinfo[2]
 
         -- save this ref
-        local prefix = ifelse(reftype == "refs", "refs/", "refs/" .. reftype .. "/")
+        local prefix = reftype == "refs" and "refs/" or ("refs/" .. reftype .. "/")
         if ref and ref:startswith(prefix) and commit and #commit == 40 then
             table.insert(refs, ref:sub(#prefix + 1))
         end

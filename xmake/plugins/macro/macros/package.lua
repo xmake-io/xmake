@@ -59,13 +59,13 @@ function main(argv)
     for _, arch in ipairs(archs) do
 
         -- config it
-        os.exec("xmake f -p %s -a %s %s -c %s", plat, arch, args.config or "", ifelse(option.get("verbose"), "-v", ""))
+        os.exec("xmake f -p %s -a %s %s -c %s", plat, arch, args.config or "", option.get("verbose") and "-v" or "")
 
         -- package it
         if args.outputdir then
-            os.exec("xmake p -o %s %s", args.outputdir, ifelse(option.get("verbose"), "-v", ""))
+            os.exec("xmake p -o %s %s", args.outputdir, option.get("verbose") and "-v" or "")
         else
-            os.exec("xmake p %s", ifelse(option.get("verbose"), "-v", ""))
+            os.exec("xmake p %s", option.get("verbose") and "-v" or "")
         end
     end
 
