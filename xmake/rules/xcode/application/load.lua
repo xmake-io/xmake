@@ -21,17 +21,17 @@
 -- main entry
 function main (target)
 
-    -- get app directory
+    -- get bundle directory
     local targetdir = target:targetdir()
-    local appdir = path.join(targetdir, target:basename() .. ".app")
-    target:data_set("xcode.bundle.rootdir", appdir)
+    local bundledir = path.join(targetdir, target:basename() .. ".app")
+    target:data_set("xcode.bundle.rootdir", bundledir)
 
     -- get contents and resources directory
-    local contentsdir = appdir
-    local resourcesdir = appdir
+    local contentsdir = bundledir
+    local resourcesdir = bundledir
     if is_plat("macosx") then
-        contentsdir = path.join(appdir, "Contents")
-        resourcesdir = path.join(appdir, "Contents", "Resources")
+        contentsdir = path.join(bundledir, "Contents")
+        resourcesdir = path.join(bundledir, "Contents", "Resources")
     end
     target:data_set("xcode.bundle.contentsdir", contentsdir)
     target:data_set("xcode.bundle.resourcesdir", resourcesdir)
@@ -42,7 +42,7 @@ function main (target)
     if is_plat("macosx") then
         target:set("targetdir", path.join(contentsdir, "MacOS"))
     else
-        target:set("targetdir", appdir)
+        target:set("targetdir", bundledir)
     end
 
     -- add frameworks
@@ -53,5 +53,5 @@ function main (target)
     end
 
     -- register clean files for `xmake clean`
-    target:add("cleanfiles", appdir)
+    target:add("cleanfiles", bundledir)
 end

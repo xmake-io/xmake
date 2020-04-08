@@ -21,34 +21,44 @@
 -- define rule: xcode framework
 rule("xcode.framework")
 
+    -- support add_files("Info.plist")
+    add_deps("xcode.info_plist")
+
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
         
         -- get framework directory
         local targetdir = target:targetdir()
-        local frameworkdir = path.join(targetdir, target:basename() .. ".framework")
-        target:data_set("xcode.frameworkdir", frameworkdir)
+        local bundledir = path.join(targetdir, target:basename() .. ".framework")
+        target:data_set("xcode.bundle.rootdir", bundledir)
+
+        -- get contents and resources directory
+        local contentsdir = path.join(bundledir, "Versions", "A")
+        local resourcesdir = path.join(bundledir, "Versions", "A", "Resources")
+        target:data_set("xcode.bundle.contentsdir", contentsdir)
+        target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
         -- set target info for framework 
         target:set("kind", "shared")
         target:set("filename", target:basename())
-        target:set("targetdir", path.join(frameworkdir, "Versions", "A"))
+        target:set("targetdir", contentsdir)
 
         -- export frameworks for `add_deps()`
         target:data_set("inherit.links", false) -- disable to inherit links, @see rule("utils.inherit.links")
         target:add("frameworks", target:basename(), {interface = true})
         target:add("frameworkdirs", targetdir, {interface = true})
-        target:add("includedirs", path.join(frameworkdir, "Versions", "A", "Headers.tmp"), {interface = true})
+        target:add("includedirs", path.join(contentsdir, "Headers.tmp"), {interface = true})
 
         -- register clean files for `xmake clean`
-        target:add("cleanfiles", frameworkdir)
+        target:add("cleanfiles", bundledir)
     end)
 
     before_build(function (target)
 
         -- get framework directory
-        local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
-        local headersdir = path.join(frameworkdir, "Versions", "A", "Headers.tmp", target:basename())
+        local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
+        local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
+        local headersdir = path.join(contentsdir, "Headers.tmp", target:basename())
 
         -- copy header files to the framework directory
         local srcheaders, dstheaders = target:headerfiles(headersdir)
@@ -67,36 +77,39 @@ rule("xcode.framework")
         end
     end)
 
-    after_build(function (target)
+    after_build(function (target, opt)
 
         -- imports
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.depend")
         import("private.tools.codesign")
 
-        -- generate Info.plist
-        local function _gen_info_plist(info_plist_file)
-            io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
-                local maps = 
-                {
-                    DEVELOPMENT_LANGUAGE = "en",
-                    EXECUTABLE_NAME = target:basename(),
-                    PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
-                    PRODUCT_NAME = target:name(),
-                    PRODUCT_BUNDLE_PACKAGE_TYPE = "FMWK", -- framework
-                    CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0"
-                }
-                return maps[variable]
-            end)
-        end
-
         -- get framework directory
-        local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
-        local headersdir = path.join(frameworkdir, "Versions", "A", "Headers")
-        local resourcesdir = path.join(frameworkdir, "Versions", "A", "Resources")
+        local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
+        local contentsdir = target:data("xcode.bundle.contentsdir")
+        local resourcesdir = target:data("xcode.bundle.resourcesdir")
+        local headersdir = path.join(contentsdir, "Headers")
+
+        -- need re-generate it?
+        local dependfile = target:dependfile(bundledir)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+            return 
+        end
+     
+        -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+        if option.get("verbose") then
+            cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+        else
+            cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+        end
 
         -- move header files
         os.tryrm(headersdir)
-        os.mv(path.join(frameworkdir, "Versions", "A", "Headers.tmp", target:basename()), headersdir)
-        os.rm(path.join(frameworkdir, "Versions", "A", "Headers.tmp"))
+        os.mv(path.join(contentsdir, "Headers.tmp", target:basename()), headersdir)
+        os.rm(path.join(contentsdir, "Headers.tmp"))
 
         -- copy resource files to the framework directory
         local srcfiles, dstfiles = target:installfiles(resourcesdir)
@@ -106,9 +119,6 @@ rule("xcode.framework")
                 local dstfile = dstfiles[i]
                 if dstfile then
                     os.vcp(srcfile, dstfile)
-                    if path.filename(srcfile) == "Info.plist" then
-                        _gen_info_plist(dstfile)
-                    end
                 end
                 i = i + 1
             end
@@ -118,13 +128,13 @@ rule("xcode.framework")
         end
 
         -- link Versions/Current -> Versions/A
-        local oldir = os.cd(path.join(frameworkdir, "Versions"))
+        local oldir = os.cd(path.join(bundledir, "Versions"))
         os.tryrm("Current")
         os.ln("A", "Current")
 
-        -- link frameworkdir/* -> Versions/Current/*
+        -- link bundledir/* -> Versions/Current/*
         local target_filename = path.filename(target:targetfile())
-        os.cd(frameworkdir)
+        os.cd(bundledir)
         os.tryrm("Headers")
         os.tryrm("Resources")
         os.tryrm(target_filename)
@@ -134,22 +144,26 @@ rule("xcode.framework")
         os.cd(oldir)
 
         -- do codesign
-        codesign(path.join(frameworkdir, "Versions", "A"), target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+        codesign(contentsdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+
+        -- update files and values to the dependent file
+        dependinfo.files = {bundledir}
+        depend.save(dependinfo, dependfile)
     end)
 
     on_install(function (target)
-        local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
+        local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
         local installdir = target:installdir()
         if not os.isdir(installdir) then
             os.mkdir(installdir)
         end
-        os.vcp(frameworkdir, installdir)
+        os.vcp(bundledir, installdir)
     end)
 
     on_uninstall(function (target)
-        local frameworkdir = path.absolute(target:data("xcode.frameworkdir"))
+        local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
         local installdir = target:installdir()
-        os.tryrm(path.join(installdir, path.filename(frameworkdir)))
+        os.tryrm(path.join(installdir, path.filename(bundledir)))
     end)
 
     -- disable package

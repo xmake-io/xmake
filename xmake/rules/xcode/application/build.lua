@@ -28,11 +28,11 @@ import("private.tools.codesign")
 function main (target, opt)
 
     -- get app and resources directory
-    local appdir = path.absolute(target:data("xcode.bundle.rootdir"))
+    local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
     local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
     -- need re-compile it?
-    local dependfile = target:dependfile(appdir)
+    local dependfile = target:dependfile(bundledir)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
         return 
@@ -41,9 +41,9 @@ function main (target, opt)
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
     if option.get("verbose") then
-        cprint("${dim color.build.target}generating.xcode.app %s", path.filename(appdir))
+        cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
     else
-        cprint("${color.build.target}generating.xcode.app %s", path.filename(appdir))
+        cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
     end
 
     -- copy PkgInfo to the contents directory
@@ -63,10 +63,10 @@ function main (target, opt)
     end
 
     -- do codesign
-    codesign(appdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
 
     -- update files and values to the dependent file
-    dependinfo.files = {appdir}
+    dependinfo.files = {bundledir}
     depend.save(dependinfo, dependfile)
 end
 

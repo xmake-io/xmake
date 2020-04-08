@@ -35,8 +35,9 @@ rule("xcode.info_plist")
         -- check
         assert(path.filename(sourcefile) == "Info.plist", "we only support Info.plist file!")
 
-        -- get contents directory
+        -- get contents and resources directory
         local contentsdir = assert(target:data("xcode.bundle.contentsdir"), "contents directory not found!")
+        local resourcesdir = assert(target:data("xcode.bundle.resourcesdir"), "resources directory not found!")
 
         -- need re-compile it?
         local dependfile = target:dependfile(sourcefile)
@@ -54,17 +55,23 @@ rule("xcode.info_plist")
         end
 
         -- process and generate Info.plist
-        local info_plist_file = path.join(contentsdir, path.filename(sourcefile))
+        local info_plist_file = path.join(target:rule("xcode.framework") and resourcesdir or contentsdir, path.filename(sourcefile))
         local maps = 
         {
             DEVELOPMENT_LANGUAGE = "en",
             EXECUTABLE_NAME = target:basename(),
             PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
             PRODUCT_NAME = target:name(),
-            PRODUCT_BUNDLE_PACKAGE_TYPE = "APPL", -- application
             CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
             MACOSX_DEPLOYMENT_TARGET = get_config("target_minver")
         }
+        if target:rule("xcode.bundle") then
+            maps.PRODUCT_BUNDLE_PACKAGE_TYPE = "BNDL"
+        elseif target:rule("xcode.framework") then
+            maps.PRODUCT_BUNDLE_PACKAGE_TYPE = "FMWK"
+        elseif target:rule("xcode.application") then
+            maps.PRODUCT_BUNDLE_PACKAGE_TYPE = "APPL"
+        end
 
         os.vcp(sourcefile, info_plist_file)
         io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
