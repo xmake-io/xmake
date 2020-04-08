@@ -36,7 +36,7 @@ rule("xcode.xcassets")
         local xcode_sdkdir = assert(get_config("xcode"), "xcode not found!")
         local xcode_usrdir = path.join(xcode_sdkdir, "Contents", "Developer", "usr")
 
-        -- get app resources directory
+        -- get resources directory
         local resourcesdir = assert(target:data("xcode.bundle.resourcesdir"), "resources directory not found!")
 
         -- need re-compile it?
@@ -49,9 +49,9 @@ rule("xcode.xcassets")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.xcode.xcassets %s", sourcefile)
+            cprint("${dim color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         else
-            cprint("${color.build.object}compiling.xcode.xcassets %s", sourcefile)
+            cprint("${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         end
 
         -- do compile

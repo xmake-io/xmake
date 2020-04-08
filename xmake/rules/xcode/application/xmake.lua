@@ -21,8 +21,8 @@
 -- define rule: xcode application
 rule("xcode.application")
 
-    -- support add_files("*.storyboard", "*.xcassets")
-    add_deps("xcode.storyboard", "xcode.xcassets")
+    -- support add_files("Info.plist", "*.storyboard", "*.xcassets")
+    add_deps("xcode.info_plist", "xcode.storyboard", "xcode.xcassets")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load("load")

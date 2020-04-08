@@ -39,7 +39,7 @@ rule("xcode.storyboard")
         -- get base.lproj
         local base_lproj = path.join(target:autogendir(), "rules", "xcode", "storyboard", "Base.lproj")
 
-        -- get app resources directory
+        -- get resources directory
         local resourcesdir = assert(target:data("xcode.bundle.resourcesdir"), "resources directory not found!")
 
         -- need re-compile it?
@@ -52,9 +52,9 @@ rule("xcode.storyboard")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.xcode.storyboard %s", sourcefile)
+            cprint("${dim color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         else
-            cprint("${color.build.object}compiling.xcode.storyboard %s", sourcefile)
+            cprint("${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         end
 
         -- do compile

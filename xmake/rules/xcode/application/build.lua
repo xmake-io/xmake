@@ -24,29 +24,12 @@ import("core.theme.theme")
 import("core.project.depend")
 import("private.tools.codesign")
 
--- generate Info.plist
-function _gen_info_plist(target, info_plist_file)
-    io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
-        local maps = 
-        {
-            DEVELOPMENT_LANGUAGE = "en",
-            EXECUTABLE_NAME = target:basename(),
-            PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
-            PRODUCT_NAME = target:name(),
-            PRODUCT_BUNDLE_PACKAGE_TYPE = "APPL", -- application
-            CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
-            MACOSX_DEPLOYMENT_TARGET = get_config("target_minver")
-        }
-        return maps[variable]
-    end)
-end
-
 -- main entry
 function main (target, opt)
 
-    -- get app and contents directory
+    -- get app and resources directory
     local appdir = path.absolute(target:data("xcode.bundle.rootdir"))
-    local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
+    local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
     -- need re-compile it?
     local dependfile = target:dependfile(appdir)
@@ -64,19 +47,16 @@ function main (target, opt)
     end
 
     -- copy PkgInfo to the contents directory
-    os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), contentsdir)
+    os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
 
-    -- copy resource files to the contents directory
-    local srcfiles, dstfiles = target:installfiles(contentsdir)
+    -- copy resource files to the resources directory
+    local srcfiles, dstfiles = target:installfiles(resourcesdir)
     if srcfiles and dstfiles then
         local i = 1
         for _, srcfile in ipairs(srcfiles) do
             local dstfile = dstfiles[i]
             if dstfile then
                 os.vcp(srcfile, dstfile)
-                if path.filename(srcfile) == "Info.plist" then
-                    _gen_info_plist(target, dstfile)
-                end
             end
             i = i + 1
         end

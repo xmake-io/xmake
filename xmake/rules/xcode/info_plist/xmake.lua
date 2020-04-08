@@ -1,0 +1,77 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        xmake.lua
+--
+
+-- define rule
+rule("xcode.info_plist")
+
+    -- support add_files("Info.plist")
+    set_extensions(".plist")
+
+    -- build Info.plist
+    on_build_file(function (target, sourcefile, opt)
+
+        -- imports
+        import("core.base.option")
+        import("core.theme.theme")
+        import("core.project.depend")
+
+        -- check
+        assert(path.filename(sourcefile) == "Info.plist", "we only support Info.plist file!")
+
+        -- get contents directory
+        local contentsdir = assert(target:data("xcode.bundle.contentsdir"), "contents directory not found!")
+
+        -- need re-compile it?
+        local dependfile = target:dependfile(sourcefile)
+        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+            return 
+        end
+        
+        -- trace progress info
+        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+        if option.get("verbose") then
+            cprint("${dim color.build.object}processing.xcode.$(mode) %s", sourcefile)
+        else
+            cprint("${color.build.object}processing.xcode.$(mode) %s", sourcefile)
+        end
+
+        -- process and generate Info.plist
+        local info_plist_file = path.join(contentsdir, path.filename(sourcefile))
+        local maps = 
+        {
+            DEVELOPMENT_LANGUAGE = "en",
+            EXECUTABLE_NAME = target:basename(),
+            PRODUCT_BUNDLE_IDENTIFIER = "org.tboox." .. target:name(),
+            PRODUCT_NAME = target:name(),
+            PRODUCT_BUNDLE_PACKAGE_TYPE = "APPL", -- application
+            CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
+            MACOSX_DEPLOYMENT_TARGET = get_config("target_minver")
+        }
+
+        os.vcp(sourcefile, info_plist_file)
+        io.gsub(info_plist_file, "(%$%((.-)%))", function (_, variable)
+            return maps[variable]
+        end)
+
+        -- update files and values to the dependent file
+        dependinfo.files = {sourcefile}
+        depend.save(dependinfo, dependfile)
+    end)
