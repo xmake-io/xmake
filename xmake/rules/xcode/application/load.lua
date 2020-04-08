@@ -24,7 +24,7 @@ function main (target)
     -- get app directory
     local targetdir = target:targetdir()
     local appdir = path.join(targetdir, target:basename() .. ".app")
-    target:data_set("xcode.app.rootdir", appdir)
+    target:data_set("xcode.bundle.rootdir", appdir)
 
     -- get contents and resources directory
     local contentsdir = appdir
@@ -33,8 +33,8 @@ function main (target)
         contentsdir = path.join(appdir, "Contents")
         resourcesdir = path.join(appdir, "Contents", "Resources")
     end
-    target:data_set("xcode.app.contentsdir", contentsdir)
-    target:data_set("xcode.app.resourcesdir", resourcesdir)
+    target:data_set("xcode.bundle.contentsdir", contentsdir)
+    target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
     -- set target directory for app 
     target:set("kind", "binary")

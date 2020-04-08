@@ -18,17 +18,14 @@
 -- @file        xmake.lua
 --
 
--- define rule: xcode application (TODO developing)
+-- define rule: xcode application
 rule("xcode.application")
 
-    -- support add_files("*.storyboard")
-    set_extensions(".storyboard", ".xcassets")
+    -- support add_files("*.storyboard", "*.xcassets")
+    add_deps("xcode.storyboard", "xcode.xcassets")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load("load")
-
-    -- build *.storyboard and *.xcassets
-    on_build_file("build_file")
 
     -- build *.app
     after_build("build")

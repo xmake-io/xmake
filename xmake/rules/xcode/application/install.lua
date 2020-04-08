@@ -20,7 +20,7 @@
 
 -- main entry
 function main (target)
-    local appdir = path.absolute(target:data("xcode.app.rootdir"))
+    local appdir = path.absolute(target:data("xcode.bundle.rootdir"))
     local installdir = target:installdir()
     if not os.isdir(installdir) then
         os.mkdir(installdir)

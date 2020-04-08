@@ -45,8 +45,8 @@ end
 function main (target, opt)
 
     -- get app and contents directory
-    local appdir = path.absolute(target:data("xcode.app.rootdir"))
-    local contentsdir = path.absolute(target:data("xcode.app.contentsdir"))
+    local appdir = path.absolute(target:data("xcode.bundle.rootdir"))
+    local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
 
     -- need re-compile it?
     local dependfile = target:dependfile(appdir)
