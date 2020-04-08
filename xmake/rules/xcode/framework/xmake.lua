@@ -111,7 +111,7 @@ rule("xcode.framework")
         os.mv(path.join(contentsdir, "Headers.tmp", target:basename()), headersdir)
         os.rm(path.join(contentsdir, "Headers.tmp"))
 
-        -- copy resource files to the framework directory
+        -- copy resource files
         local srcfiles, dstfiles = target:installfiles(resourcesdir)
         if srcfiles and dstfiles then
             local i = 1
