@@ -28,10 +28,11 @@ function main (target)
 
     -- get contents and resources directory
     local contentsdir = appdir
+    local resourcesdir = appdir
     if is_plat("macosx") then
         contentsdir = path.join(appdir, "Contents")
+        resourcesdir = path.join(appdir, "Contents", "Resources")
     end
-    local resourcesdir = path.join(contentsdir, "Resources")
     target:data_set("xcode.app.contentsdir", contentsdir)
     target:data_set("xcode.app.resourcesdir", resourcesdir)
 

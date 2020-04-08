@@ -55,13 +55,28 @@ function _build_xcassets_file(target, sourcefile, opt)
         table.insert(argv, "mac")
         table.insert(argv, "--platform")
         table.insert(argv, "macosx")
+    elseif is_plat("iphoneos") then
+        table.insert(argv, "--target-device")
+        table.insert(argv, "iphone")
+        table.insert(argv, "--target-device")
+        table.insert(argv, "ipad")
+        table.insert(argv, "--platform")
+        table.insert(argv, "iphoneos")
+    else
+        assert("unknown device!")
     end
     table.insert(argv, "--minimum-deployment-target")
     table.insert(argv, get_config("target_minver"))
     table.insert(argv, "--app-icon")
     table.insert(argv, "AppIcon")
-    table.insert(argv, "--enable-on-demand-resources")
-    table.insert(argv, "NO")
+    if is_plat("iphoneos") then
+        table.insert(argv, "--enable-on-demand-resources")
+        table.insert(argv, "YES")
+        table.insert(argv, "--compress-pngs")
+    else
+        table.insert(argv, "--enable-on-demand-resources")
+        table.insert(argv, "NO")
+    end
     table.insert(argv, "--development-region")
     table.insert(argv, "en")
     table.insert(argv, "--product-type")
@@ -109,6 +124,13 @@ function _build_storyboard_file(target, sourcefile, opt)
     if is_plat("macosx") then
         table.insert(argv, "--target-device")
         table.insert(argv, "mac")
+    elseif is_plat("iphoneos") then
+        table.insert(argv, "--target-device")
+        table.insert(argv, "iphone")
+        table.insert(argv, "--target-device")
+        table.insert(argv, "ipad")
+    else
+        assert("unknown device!")
     end
     table.insert(argv, "--minimum-deployment-target")
     table.insert(argv, get_config("target_minver"))
