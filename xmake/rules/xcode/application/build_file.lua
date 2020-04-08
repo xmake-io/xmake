@@ -25,7 +25,55 @@ import("core.project.depend")
 
 -- build *.xcassets file
 function _build_xcassets_file(target, sourcefile, opt)
-    -- TODO
+
+    -- get xcode sdk directory
+    local xcode_sdkdir = assert(get_config("xcode"), "xcode not found!")
+    local xcode_usrdir = path.join(xcode_sdkdir, "Contents", "Developer", "usr")
+
+    -- get app resources directory
+    local resourcesdir = target:data("xcode.app.resourcesdir")
+
+    -- need re-compile it?
+    local dependfile = target:dependfile(sourcefile)
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+        return 
+    end
+ 
+    -- trace progress info
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+    if option.get("verbose") then
+        cprint("${dim color.build.object}compiling.xcode.xcassets %s", sourcefile)
+    else
+        cprint("${color.build.object}compiling.xcode.xcassets %s", sourcefile)
+    end
+
+    -- do compile
+    local argv = {"--warnings", "--notices", "--output-format", "human-readable-text"}
+    if is_plat("macosx") then
+        table.insert(argv, "--target-device")
+        table.insert(argv, "mac")
+        table.insert(argv, "--platform")
+        table.insert(argv, "macosx")
+    end
+    table.insert(argv, "--minimum-deployment-target")
+    table.insert(argv, get_config("target_minver"))
+    table.insert(argv, "--app-icon")
+    table.insert(argv, "AppIcon")
+    table.insert(argv, "--enable-on-demand-resources")
+    table.insert(argv, "NO")
+    table.insert(argv, "--development-region")
+    table.insert(argv, "en")
+    table.insert(argv, "--product-type")
+    table.insert(argv, "com.apple.product-type.application")
+    table.insert(argv, "--compile")
+    table.insert(argv, resourcesdir)
+    table.insert(argv, sourcefile)
+    os.vrunv(path.join(xcode_usrdir, "bin", "actool"), argv)
+   
+    -- update files and values to the dependent file
+    dependinfo.files = {sourcefile}
+    depend.save(dependinfo, dependfile)
 end
 
 -- build *.storyboard file
