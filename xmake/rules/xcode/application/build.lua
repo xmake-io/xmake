@@ -19,6 +19,9 @@
 --
 
 -- imports
+import("core.base.option")
+import("core.theme.theme")
+import("core.project.depend")
 import("private.tools.codesign")
 
 -- generate Info.plist
@@ -39,11 +42,26 @@ function _gen_info_plist(target, info_plist_file)
 end
 
 -- main entry
-function main (target)
+function main (target, opt)
 
     -- get app and contents directory
     local appdir = path.absolute(target:data("xcode.app.rootdir"))
     local contentsdir = path.absolute(target:data("xcode.app.contentsdir"))
+
+    -- need re-compile it?
+    local dependfile = target:dependfile(appdir)
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+        return 
+    end
+ 
+    -- trace progress info
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
+    if option.get("verbose") then
+        cprint("${dim color.build.target}generating.xcode.app %s", path.filename(appdir))
+    else
+        cprint("${color.build.target}generating.xcode.app %s", path.filename(appdir))
+    end
 
     -- copy PkgInfo to the contents directory
     os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), contentsdir)
@@ -66,5 +84,9 @@ function main (target)
 
     -- do codesign
     codesign(appdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+
+    -- update files and values to the dependent file
+    dependinfo.files = {appdir}
+    depend.save(dependinfo, dependfile)
 end
 
