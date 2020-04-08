@@ -41,14 +41,9 @@ end
 -- main entry
 function main (target)
 
-    -- get app directory
-    local appdir = path.absolute(target:data("xcode.appdir"))
-
-    -- get contents directory
-    local contentsdir = appdir
-    if is_plat("macosx") then
-        contentsdir = path.join(appdir, "Contents")
-    end
+    -- get app and contents directory
+    local appdir = path.absolute(target:data("xcode.app.rootdir"))
+    local contentsdir = path.absolute(target:data("xcode.app.contentsdir"))
 
     -- copy PkgInfo to the contents directory
     os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), contentsdir)

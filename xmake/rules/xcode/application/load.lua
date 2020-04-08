@@ -24,13 +24,22 @@ function main (target)
     -- get app directory
     local targetdir = target:targetdir()
     local appdir = path.join(targetdir, target:basename() .. ".app")
-    target:data_set("xcode.appdir", appdir)
+    target:data_set("xcode.app.rootdir", appdir)
 
-    -- set target info for app 
+    -- get contents and resources directory
+    local contentsdir = appdir
+    if is_plat("macosx") then
+        contentsdir = path.join(appdir, "Contents")
+    end
+    local resourcesdir = path.join(contentsdir, "Resources")
+    target:data_set("xcode.app.contentsdir", contentsdir)
+    target:data_set("xcode.app.resourcesdir", resourcesdir)
+
+    -- set target directory for app 
     target:set("kind", "binary")
     target:set("filename", target:basename())
     if is_plat("macosx") then
-        target:set("targetdir", path.join(appdir, "Contents", "MacOS"))
+        target:set("targetdir", path.join(contentsdir, "MacOS"))
     else
         target:set("targetdir", appdir)
     end

@@ -20,7 +20,7 @@
 
 -- main entry
 function main (target)
-    local appdir = path.absolute(target:data("xcode.appdir"))
+    local appdir = path.absolute(target:data("xcode.app.rootdir"))
     local installdir = target:installdir()
     os.tryrm(path.join(installdir, path.filename(appdir)))
 end

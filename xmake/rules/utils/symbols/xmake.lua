@@ -62,7 +62,7 @@ rule("utils.symbols.extract")
         local targetfile = target:targetfile()
         local dependfile = target:dependfile(symbolfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(symbolfile)}) then
+        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
             return 
         end
 
@@ -114,7 +114,7 @@ rule("utils.symbols.extract")
         os.vrunv(strip, strip_argv, {dryrun = dryrun})
 
         -- update files and values to the dependent file
-        -- @note we use dependfile(targetfile) instead of targetfile to ensure it's mtime less than mtime(symbolfile), because targetfile will be changed after stripping
+        -- @note we use dependfile(targetfile) as sourcefile/mtime instead of targetfile to ensure it's mtime less than mtime(symbolfile), because targetfile will be changed after stripping
         dependinfo.files  = {target:dependfile(targetfile)}
         depend.save(dependinfo, dependfile)
     end)
