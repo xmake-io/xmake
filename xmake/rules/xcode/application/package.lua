@@ -18,6 +18,20 @@
 -- @file        package.lua
 --
 
+-- imports
+import("private.tools.ipagen")
+
 -- main entry
-function main (target)
+function main (target, opt)
+
+    -- get app directory
+    local appdir = target:data("xcode.bundle.rootdir")
+
+    -- generate *.ipa file
+    local ipafile = path.join(path.directory(appdir), path.basename(appdir) .. ".ipa")
+    ipagen(appdir, ipafile)
+
+    -- trace
+    cprint("output: ${bright}%s", ipafile)
+    cprint("${color.success}package ok!")
 end
