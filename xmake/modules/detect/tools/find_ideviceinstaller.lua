@@ -15,32 +15,37 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        package.lua
+-- @file        find_ideviceinstaller.lua
 --
 
 -- imports
-import("private.tools.ipagen")
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
--- package for ios
-function _package_for_ios(target)
+-- find ideviceinstaller 
+--
+-- @param opt  the arguments, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local ideviceinstaller = find_ideviceinstaller()
+-- local ideviceinstaller, version = find_ideviceinstaller({version = true})
+-- 
+-- @endcode
+--
+function main(opt)
 
-    -- get app directory
-    local appdir = target:data("xcode.bundle.rootdir")
-
-    -- get *.ipa file
-    local ipafile = path.join(path.directory(appdir), path.basename(appdir) .. ".ipa")
-
-    -- generate *.ipa file
-    ipagen(appdir, ipafile)
-
-    -- trace
-    cprint("output: ${bright}%s", ipafile)
-    cprint("${color.success}package ok!")
-end
-
--- main entry
-function main (target, opt)
-    if is_plat("iphoneos") then
-        _package_for_ios(target)
+    -- only for macosx
+    if not is_host("macosx") then
+        return
     end
+
+    -- init options
+    opt = opt or {}
+    opt.check = "-h"
+    
+    -- find program
+    return find_program(opt.program or "ideviceinstaller", opt)
 end

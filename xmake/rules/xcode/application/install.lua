@@ -18,12 +18,32 @@
 -- @file        install.lua
 --
 
+-- imports
+import("lib.detect.find_tool")
+
+-- install for ios
+function _install_for_ios(target)
+
+    -- get app directory
+    local appdir = target:data("xcode.bundle.rootdir")
+
+    -- get *.ipa file
+    local ipafile = path.join(path.directory(appdir), path.basename(appdir) .. ".ipa")
+    assert(ipafile, "please run `xmake package` first!")
+
+    -- find ideviceinstaller
+    local ideviceinstaller = assert(find_tool("ideviceinstaller"), "ideviceinstaller not found!")
+
+    -- do install
+    os.vrunv(ideviceinstaller.program, {"-i", ipafile})
+
+    -- trace
+    cprint("${color.success}install ok!")
+end
+
 -- main entry
 function main (target)
-    local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
-    local installdir = target:installdir()
-    if not os.isdir(installdir) then
-        os.mkdir(installdir)
+    if is_plat("iphoneos") then
+        _install_for_ios(target)
     end
-    os.vcp(bundledir, installdir)
 end

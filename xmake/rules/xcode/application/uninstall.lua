@@ -20,7 +20,4 @@
 
 -- main entry
 function main (target)
-    local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
-    local installdir = target:installdir()
-    os.tryrm(path.join(installdir, path.filename(bundledir)))
 end
