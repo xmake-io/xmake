@@ -351,10 +351,13 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
 end
 
 -- translate api pathes 
-function interpreter:_api_translate_pathes(values)
+function interpreter:_api_translate_pathes(values, apiname, infolevel)
     local results = {}
     for _, p in ipairs(values) do
-        assert(type(p) == "string", "invalid path value: " .. tostring(p))
+        if type(p) ~= "string" or #p == 0 then
+            local sourceinfo = debug.getinfo(infolevel or 3, "Sl")
+            os.raise("%s(%s): invalid path value at %s:%d", apiname, tostring(p), sourceinfo.short_src or sourceinfo.source, sourceinfo.currentline)
+        end
         if not p:find("^%s-%$%(.-%)") and not path.is_absolute(p) then
             table.insert(results, path.relative(path.absolute(p, self:scriptdir()), self:rootdir()))
         else
@@ -1264,7 +1267,7 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
         end
 
         -- translate pathes
-        local pathes = self:_api_translate_pathes(values)
+        local pathes = self:_api_translate_pathes(values, "set_" .. name)
 
         -- save values
         scope[name] = pathes
@@ -1297,7 +1300,7 @@ function interpreter:api_register_del_pathes(scope_kind, ...)
 
         -- translate pathes
         local values = {...}
-        local pathes = self:_api_translate_pathes(values)
+        local pathes = self:_api_translate_pathes(values, "del_" .. name)
 
         -- mark these pathes as deleted
         local pathes_deleted = {}
@@ -1335,7 +1338,7 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
         end
 
         -- translate pathes
-        local pathes = self:_api_translate_pathes(values)
+        local pathes = self:_api_translate_pathes(values, "add_" .. name)
 
         -- save values
         scope[name] = table.join2(scope[name] or {}, pathes)

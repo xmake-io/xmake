@@ -299,7 +299,7 @@ function _instance:_api_set_pathes(name, ...)
     values = table.join(unpack(values))
 
     -- translate pathes
-    local pathes = interp:_api_translate_pathes(values)
+    local pathes = interp:_api_translate_pathes(values, "set_" .. name, 5)
 
     -- save values
     scope[name] = self:_api_handle(pathes)
@@ -339,7 +339,7 @@ function _instance:_api_add_pathes(name, ...)
     values = table.join(unpack(values))
 
     -- translate pathes
-    local pathes = interp:_api_translate_pathes(values)
+    local pathes = interp:_api_translate_pathes(values, "add_" .. name, 5)
 
     -- save values
     scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes))
@@ -370,12 +370,12 @@ function _instance:_api_del_pathes(name, ...)
     values = table.join(...)
 
     -- translate pathes
-    local pathes = interp:_api_translate_pathes(values)
+    local pathes = interp:_api_translate_pathes(values, "del_" .. name)
 
     -- mark these pathes as deleted
     local pathes_deleted = {}
     for _, pathname in ipairs(pathes) do
-        table.insert(pathes_deleted, "__del_" .. pathname)
+        table.insert(pathes_deleted, "__del_" .. pathname, 5)
     end
 
     -- save values
