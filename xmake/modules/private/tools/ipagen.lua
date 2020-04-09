@@ -23,7 +23,7 @@ import("core.base.option")
 import("lib.detect.find_tool")
 
 -- main entry
-function main (appdir, ipafile)
+function main (appdir, ipafile, iconfile)
 
     -- check
     assert(appdir)
@@ -52,13 +52,16 @@ function main (appdir, ipafile)
     -- copy the .app directory into payload
     os.cp(appdir, path.join(tmpdir, "Payload"))
 
-    -- TODO
-    -- copy icon to iTunesArtwork
---    os.cp(icon, path.join(tmpdir, "iTunesArtwork"))
+    -- copy icon file to iTunesArtwork
+    if iconfile then
+        os.cp(iconfile, path.join(tmpdir, "iTunesArtwork"))
+    end
 
     -- generate .ipa file
     local argv = {"-r", ipafile, "Payload"}
---    table.insert(argv, "iTunesArtwork")
+    if iconfile then
+        table.insert(argv, "iTunesArtwork")
+    end
     local oldir = os.cd(tmpdir)
     os.vrunv(zip.program, argv)
     os.cd(oldir)
