@@ -65,7 +65,7 @@ function main(target)
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
             local values = _get_values_from_target(target, name)
             if values and #values > 0 then
-                target:add(name, unpack(values), {interface = true})
+                target:add(name, values, {interface = true})
             end
         end
     end
