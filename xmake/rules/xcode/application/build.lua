@@ -61,9 +61,23 @@ function main (target, opt)
             i = i + 1
         end
     end
+    
+    -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
+    local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
+    local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")
+    if mobile_provision and is_plat("iphoneos") then
+        os.tryrm(mobile_provision_embedded)
+        local provisions = codesign.mobile_provisions()
+        if provisions then
+            mobile_provision = provisions[mobile_provision]
+            if mobile_provision then
+                io.writefile(mobile_provision_embedded, mobile_provision)
+            end
+        end
+    end
 
     -- do codesign
-    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision"))
+    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision)
 
     -- update files and values to the dependent file
     dependinfo.files = {bundledir}
