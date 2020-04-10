@@ -57,9 +57,25 @@ function _resign_app(appdir, codesign_identity, mobile_provision, bundle_identif
         end
     end
 
-    -- TODO replace bundle identifier of Info.plist
+    -- replace bundle identifier of Info.plist
     if bundle_identifier then
-        -- TODO
+        local info_plist_file = path.join(appdir, "Info.plist")
+        if os.isfile(info_plist_file) then
+            local info_plist_data = io.readfile(info_plist_file)
+            if info_plist_data then
+                local p = info_plist_data:find("<key>CFBundleIdentifier</key>", 1, true)
+                if p then
+                    local e = info_plist_data:find("</string>", p, true)
+                    if e then
+                        local block = info_plist_data:sub(p, e + 9):match("<string>(.+)</string>")
+                        if block then
+                            info_plist_data = info_plist_data:gsub(block, bundle_identifier)
+                            io.writefile(info_plist_file, info_plist_data)
+                        end
+                    end
+                end
+            end
+        end
     end
 
     -- do codesign
