@@ -95,16 +95,22 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
     end
 
     -- find mobile provision only for iphoneos
-    local mobile_provision = config.get("xcode_mobile_provision")
-    if mobile_provision == nil then -- we will disable mobile_provision if be false
-        mobile_provision = global.get("xcode_mobile_provision")
-    end
-    if mobile_provision == nil and is_plat("iphoneos") then
+    local mobile_provision 
+    if is_plat("iphoneos") then
         local mobile_provisions = codesign.mobile_provisions()
         if mobile_provisions then
-            for provision, _ in pairs(mobile_provisions) do
-                mobile_provision = provision
-                break
+            mobile_provision = config.get("xcode_mobile_provision")
+            if mobile_provision == nil then -- we will disable mobile_provision if be false
+                mobile_provision = global.get("xcode_mobile_provision")
+            end
+            if mobile_provision == nil then
+                for provision, _ in pairs(mobile_provisions) do
+                    mobile_provision = provision
+                    break
+                end
+            -- valid mobile provision not found? reset it
+            elseif not mobile_provisions[mobile_provision] then
+                mobile_provision = nil
             end
         end
     end

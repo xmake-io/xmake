@@ -69,9 +69,9 @@ function main (target, opt)
         os.tryrm(mobile_provision_embedded)
         local provisions = codesign.mobile_provisions()
         if provisions then
-            mobile_provision = provisions[mobile_provision]
-            if mobile_provision then
-                io.writefile(mobile_provision_embedded, mobile_provision)
+            local mobile_provision_data = provisions[mobile_provision]
+            if mobile_provision_data then
+                io.writefile(mobile_provision_embedded, mobile_provision_data)
             end
         end
     end
