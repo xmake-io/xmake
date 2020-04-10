@@ -49,6 +49,20 @@ function codesign_identities()
     return identities or nil
 end
 
+-- get provision profiles only for mobile
+function mobile_provisions()
+    local mobile_provisions = _g.mobile_provisions
+    if mobile_provisions == nil then
+        mobile_provisions = {}
+        local files = os.files("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")
+        for _, file in ipairs(files) do
+            mobile_provisions[path.basename(file)] = file
+        end
+        _g.mobile_provisions = mobile_provisions or false
+    end
+    return mobile_provisions or nil
+end
+
 -- main entry
 function main (programdir, codesign_identity)
 
@@ -79,6 +93,11 @@ function main (programdir, codesign_identity)
     local argv = {"--force", "--timestamp=none"}
     table.insert(argv, "--sign")
     table.insert(argv, sign)
+    local entitlements -- TODO
+    if entitlements then
+        table.insert(argv, "--entitlements")
+        table.insert(argv, entitlements)
+    end
     table.insert(argv, programdir)
     os.vrunv(codesign.program, argv, {envs = {CODESIGN_ALLOCATE = codesign_allocate}})
 end
