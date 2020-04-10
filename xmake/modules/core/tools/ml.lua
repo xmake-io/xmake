@@ -104,8 +104,8 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            vstool.runv(_compargv1(self, sourcefile, objectfile, flags))
+            -- @note we need not uses vstool.runv to enable unicode output for ml.exe
+            os.runv(_compargv1(self, sourcefile, objectfile, flags))
         end,
         catch
         {
