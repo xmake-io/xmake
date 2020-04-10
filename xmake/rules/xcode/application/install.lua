@@ -21,6 +21,7 @@
 -- imports
 import("core.base.task")
 import("lib.detect.find_tool")
+import("utils.ipa.install", {alias = "install_ipa"})
 
 -- install for ios
 function _install_for_ios(target)
@@ -35,11 +36,8 @@ function _install_for_ios(target)
     end
     assert(os.isfile(ipafile), "please run `xmake package` first!")
 
-    -- find ideviceinstaller
-    local ideviceinstaller = assert(find_tool("ideviceinstaller"), "ideviceinstaller not found!")
-
     -- do install
-    os.vrunv(ideviceinstaller.program, {"-i", ipafile})
+    install_ipa(ipafile)
 end
 
 -- install for macosx

@@ -357,7 +357,7 @@ function main(archivefile, outputdir, opt)
     }
     
     -- get extension
-    local extension = get_archive_extension(archivefile)
+    local extension = opt.extension or get_archive_extension(archivefile)
 
     -- extract it
     return _extract(archivefile, outputdir, extension, extractors[extension], opt)

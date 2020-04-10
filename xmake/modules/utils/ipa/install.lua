@@ -15,32 +15,35 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        package.lua
+-- @file        install.lua
 --
 
 -- imports
 import("utils.ipa.package", {alias = "ipagen"})
-
--- package for ios
-function _package_for_ios(target)
-
-    -- get app directory
-    local appdir = target:data("xcode.bundle.rootdir")
-
-    -- get *.ipa file
-    local ipafile = path.join(path.directory(appdir), path.basename(appdir) .. ".ipa")
-
-    -- generate *.ipa file
-    ipagen(appdir, ipafile)
-
-    -- trace
-    cprint("output: ${bright}%s", ipafile)
-    cprint("${color.success}package ok!")
-end
+import("lib.detect.find_tool")
 
 -- main entry
-function main (target, opt)
-    if is_plat("iphoneos") then
-        _package_for_ios(target)
+function main (ipafile)
+
+    -- check
+    assert(os.exists(ipafile), "%s not found!", ipafile)
+
+    -- find ideviceinstaller
+    local ideviceinstaller = assert(find_tool("ideviceinstaller"), "ideviceinstaller not found!")
+
+    -- is *.app directory? package it first
+    local istmp = false
+    if os.isdir(ipafile) then
+        local appdir = ipafile
+        ipafile = os.tmpfile() .. ".ipa"
+        ipagen(appdir, ipafile)
+        istmp = true
+    end
+
+    -- do install
+    os.vrunv(ideviceinstaller.program, {"-i", ipafile})
+    if istmp then
+        os.tryrm(ipafile)
     end
 end
+
