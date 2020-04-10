@@ -12,7 +12,7 @@ function test_build:build(argv)
     os.exec("xmake f -c")
     os.exec("xmake")
     os.exec("xmake p -D")
-    if os.host() ~= "windows" then
+    if not is_host("windows") then
         os.exec("xmake install -o /tmp -a -D")
         os.exec("xmake uninstall --installdir=/tmp -D")
     end
@@ -31,7 +31,7 @@ function test_build:build(argv)
 
     -- test iphoneos?
     if argv and argv.iphoneos then
-        if os.host() == "macosx" then
+        if is_host("macosx") then
             os.exec("xmake m package -p iphoneos")
         end
     end
