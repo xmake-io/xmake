@@ -94,8 +94,21 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
         end
     end
 
-    -- ok?    
-    return {sdkdir = sdkdir, sdkver = sdkver, codesign_identity = codesign_identity}
+    -- find mobile provision only for iphoneos
+    local mobile_provision = config.get("xcode_mobile_provision")
+    if mobile_provision == nil then -- we will disable mobile_provision if be false
+        mobile_provision = global.get("xcode_mobile_provision")
+    end
+    if mobile_provision == nil and is_plat("iphoneos") then
+        local mobile_provisions = codesign.mobile_provisions()
+        if mobile_provisions then
+            for provision, _ in pairs(mobile_provisions) do
+                mobile_provision = provision
+                break
+            end
+        end
+    end
+    return {sdkdir = sdkdir, sdkver = sdkver, codesign_identity = codesign_identity, mobile_provision = mobile_provision}
 end
 
 -- find xcode toolchain
@@ -136,6 +149,7 @@ function main(sdkdir, opt)
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         config.set("xcode_sdkver", xcode.sdkver, {force = true, readonly = true})
         config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
+        config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
 
         -- trace
         if opt.verbose or option.get("verbose") then
@@ -145,6 +159,13 @@ function main(sdkdir, opt)
                 cprint("checking for the Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
             else
                 cprint("checking for the Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+            end
+            if is_plat("iphoneos") then
+                if xcode.mobile_provision then
+                    cprint("checking for the Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+                else
+                    cprint("checking for the Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+                end
             end
         end
     else

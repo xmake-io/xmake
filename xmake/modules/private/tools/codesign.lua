@@ -21,6 +21,28 @@
 -- imports
 import("lib.detect.find_tool")
 
+-- get mobile provision name
+function _get_mobile_provision_name(provision)
+    local p = provision:find("<key>Name</key>", 1, true)
+    if p then
+        local e = provision:find("</string>", p, true)
+        if e then
+            return provision:sub(p, e + 9):match("<string>(.*)</string>")
+        end
+    end
+end
+
+-- get mobile provision entitlements
+function _get_mobile_provision_entitlements(provision)
+    local p = provision:find("<key>Entitlements</key>", 1, true)
+    if p then
+        local e = provision:find("</dict>", p, true)
+        if e then
+            return provision:sub(p, e + 7):match("(<dict>.*</dict>)")
+        end
+    end
+end
+
 -- get codesign identities
 function codesign_identities()
     local identities = _g.identities
@@ -56,15 +78,37 @@ function mobile_provisions()
         mobile_provisions = {}
         local files = os.files("~/Library/MobileDevice/Provisioning Profiles/*.mobileprovision")
         for _, file in ipairs(files) do
-            mobile_provisions[path.basename(file)] = file
+            local results = try { function() return os.iorunv("/usr/bin/security", {"cms", "-D", "-i", file}) end }
+            if results then
+                local name = _get_mobile_provision_name(results)
+                if name then
+                    mobile_provisions[name] = results
+                end
+            end
         end
         _g.mobile_provisions = mobile_provisions or false
     end
     return mobile_provisions or nil
 end
 
+-- dump all information of codesign
+function dump()
+
+    -- only for macosx
+    assert(is_host("macosx"), "codesign: only support for macOS!")
+
+    -- do dump
+    print("==================================== codesign identities ====================================")
+    print(codesign_identities())
+    print("===================================== mobile provisions =====================================")
+    print(mobile_provisions())
+end
+
 -- main entry
-function main (programdir, codesign_identity)
+function main (programdir, codesign_identity, mobile_provision)
+
+    -- only for macosx
+    assert(is_host("macosx"), "codesign: only support for macOS!")
 
     -- get codesign
     local codesign = find_tool("codesign")
@@ -89,16 +133,39 @@ function main (programdir, codesign_identity)
         end
     end
 
+    -- get entitlements for mobile
+    local entitlements
+    if mobile_provision then
+        local provisions = mobile_provisions()
+        if provisions then
+            mobile_provision = provisions[mobile_provision]
+            if mobile_provision then
+                local entitlements_data = _get_mobile_provision_entitlements(mobile_provision)
+                if entitlements_data then
+                    entitlements = os.tmpfile() .. ".plist"
+                    io.writefile(entitlements, string.format([[<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+%s
+</plist>
+]], entitlements_data))
+                end
+            end
+        end
+    end
+
     -- do sign
     local argv = {"--force", "--timestamp=none"}
     table.insert(argv, "--sign")
     table.insert(argv, sign)
-    local entitlements -- TODO
     if entitlements then
         table.insert(argv, "--entitlements")
         table.insert(argv, entitlements)
     end
     table.insert(argv, programdir)
     os.vrunv(codesign.program, argv, {envs = {CODESIGN_ALLOCATE = codesign_allocate}})
+    if entitlements then
+        os.tryrm(entitlements)
+    end
 end
 

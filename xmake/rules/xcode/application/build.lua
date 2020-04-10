@@ -63,7 +63,7 @@ function main (target, opt)
     end
 
     -- do codesign
-    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision"))
 
     -- update files and values to the dependent file
     dependinfo.files = {bundledir}

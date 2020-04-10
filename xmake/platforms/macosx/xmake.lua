@@ -53,6 +53,7 @@ platform("macosx")
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "xcode_sdkver",            "kv", "auto",       "The SDK Version for Xcode"         }
                 ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
+                ,   {nil, "xcode_mobile_provision",  "kv", "auto",       "The Mobile Provision for Xcode"    }
                 ,   {nil, "target_minver",           "kv", "auto",       "The Target Minimal Version"        }
                 ,   {category = "Cuda SDK Configuration"                                                     }
                 ,   {nil, "cuda",                    "kv", "auto",       "The Cuda SDK Directory"            }
@@ -66,6 +67,7 @@ platform("macosx")
                     {category = "XCode SDK Configuration"                                                    }
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "xcode_codesign_identity", "kv", "auto",       "The Codesign Identity for Xcode"   }
+                ,   {nil, "xcode_mobile_provision",  "kv", "auto",       "The Mobile Provision for Xcode"    }
                 ,   {category = "Cuda SDK Configuration"                                                     }
                 ,   {nil, "cuda",                    "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                                       }
