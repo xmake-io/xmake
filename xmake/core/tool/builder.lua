@@ -193,7 +193,10 @@ end
 -- add flags from the configure 
 function builder:_add_flags_from_config(flags)
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, config.get(flagkind))
+        local values = config.get(flagkind)
+        if values then
+            table.join2(flags, os.argv(values))
+        end
     end
 end
 
