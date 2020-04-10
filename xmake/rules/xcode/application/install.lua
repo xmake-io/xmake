@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.task")
 import("lib.detect.find_tool")
 
 -- install for ios
@@ -29,7 +30,10 @@ function _install_for_ios(target)
 
     -- get *.ipa file
     local ipafile = path.join(path.directory(appdir), path.basename(appdir) .. ".ipa")
-    assert(ipafile, "please run `xmake package` first!")
+    if not os.isfile(ipafile) or os.mtime(target:targetfile()) > os.mtime(ipafile) then
+        task.run("package", {target = target:name()})
+    end
+    assert(os.isfile(ipafile), "please run `xmake package` first!")
 
     -- find ideviceinstaller
     local ideviceinstaller = assert(find_tool("ideviceinstaller"), "ideviceinstaller not found!")
