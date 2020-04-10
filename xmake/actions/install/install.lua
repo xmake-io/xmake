@@ -114,7 +114,7 @@ function _do_install_target(target)
     end
 
     -- trace
-    print("installing to %s ...", installdir)
+    print("installing to %s ..", installdir)
 
     -- the scripts
     local scripts =
@@ -143,7 +143,7 @@ function _on_install_target(target)
     end
 
     -- trace
-    print("installing %s ...", target:name())
+    print("installing %s ..", target:name())
 
     -- build target with rules
     local done = false

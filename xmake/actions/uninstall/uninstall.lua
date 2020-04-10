@@ -74,6 +74,15 @@ end
 -- do uninstall target
 function _do_uninstall_target(target)
 
+    -- get install directory
+    local installdir = target:installdir()
+    if not installdir then
+        return 
+    end
+
+    -- trace
+    print("uninstalling from %s ..", installdir)
+
     -- the scripts
     local scripts =
     {
@@ -100,14 +109,8 @@ function _on_uninstall_target(target)
         return 
     end
 
-    -- get install directory
-    local installdir = target:installdir()
-    if not installdir then
-        return 
-    end
-
     -- trace
-    print("uninstalling %s from %s ...", target:name(), installdir)
+    print("uninstalling %s ..", target:name())
 
     -- build target with rules
     local done = false

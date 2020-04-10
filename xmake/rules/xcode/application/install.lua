@@ -36,14 +36,23 @@ function _install_for_ios(target)
 
     -- do install
     os.vrunv(ideviceinstaller.program, {"-i", ipafile})
+end
 
-    -- trace
-    cprint("${color.success}install ok!")
+-- install for macosx
+function _install_for_macosx(target)
+
+    -- get app directory
+    local appdir = target:data("xcode.bundle.rootdir")
+
+    -- do install
+    os.vcp(appdir, target:installdir() or "/Applications/")
 end
 
 -- main entry
 function main (target)
     if is_plat("iphoneos") then
         _install_for_ios(target)
+    elseif is_plat("macosx") then
+        _install_for_macosx(target)
     end
 end

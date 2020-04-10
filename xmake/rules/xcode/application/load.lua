@@ -45,6 +45,11 @@ function main (target)
         target:set("targetdir", bundledir)
     end
 
+    -- set install directory
+    if is_plat("macosx") and not target:get("installdir") then
+        target:set("installdir", "/Applications")
+    end
+
     -- add frameworks
     if is_plat("macosx") then
         target:add("frameworks", "AppKit")

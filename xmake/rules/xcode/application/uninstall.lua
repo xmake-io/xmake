@@ -18,6 +18,29 @@
 -- @file        uninstall.lua
 --
 
+-- imports
+import("lib.detect.find_tool")
+
+-- uninstall for ios
+function _uninstall_for_ios(target)
+    -- TODO
+end
+
+-- uninstall for macosx
+function _uninstall_for_macosx(target)
+
+    -- get app directory
+    local appdir = target:data("xcode.bundle.rootdir")
+
+    -- do uninstall
+    os.rm(path.join(target:installdir() or "/Applications", path.filename(appdir)))
+end
+
 -- main entry
 function main (target)
+    if is_plat("iphoneos") then
+        _uninstall_for_ios(target)
+    elseif is_plat("macosx") then
+        _uninstall_for_macosx(target)
+    end
 end
