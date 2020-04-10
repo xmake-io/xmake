@@ -190,6 +190,8 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * WDK Driver (umdf/kmdf/wdm)
 * WinSDK Application
 * MFC Application
+* iOS/MacOS Application
+* Framework and Bundle Program (iOS/MacOS)
 
 ## More Examples
 
@@ -263,6 +265,24 @@ target("app")
 ```
 
 More wdk driver program examples (umdf/kmdf/wdm), please see [WDK Program Examples](https://xmake.io/#/guide/project_examples?id=wdk-driver-program)
+
+iOS/MacOS Application:
+
+```lua
+target("test")
+    add_rules("xcode.application")
+    add_files("src/*.m", "src/**.storyboard", "src/*.xcassets")
+    add_files("src/Info.plist")
+```
+
+Framework and Bundle Program (iOS/MacOS):
+
+```lua
+target("test")
+    add_rules("xcode.framework") -- or xcode.bundle
+    add_files("src/*.m")
+    add_files("src/Info.plist")
+```
 
 ## Plugins
 

@@ -196,6 +196,8 @@ $ xmake f --menu
 * WDK驱动程序
 * WinSDK应用程序
 * MFC应用程序
+* iOS/MacOS应用程序
+* Framework和Bundle程序（iOS/MacOS）
 
 ## 更多例子
 
@@ -269,6 +271,24 @@ target("app")
 ```
 
 更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/#/zh-cn/guide/project_examples?id=wdk%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f)
+
+iOS/MacOS应用程序:
+
+```lua
+target("test")
+    add_rules("xcode.application")
+    add_files("src/*.m", "src/**.storyboard", "src/*.xcassets")
+    add_files("src/Info.plist")
+```
+
+Framework和Bundle程序（iOS/MacOS）:
+
+```lua
+target("test")
+    add_rules("xcode.framework") -- 或者 xcode.bundle
+    add_files("src/*.m")
+    add_files("src/Info.plist")
+```
 
 ## 插件
 
