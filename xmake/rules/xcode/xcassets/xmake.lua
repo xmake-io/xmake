@@ -45,6 +45,11 @@ rule("xcode.xcassets")
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
             return 
         end
+
+        -- ensure resources directory exists
+        if not os.isdir(resourcesdir) then
+            os.mkdir(resourcesdir)
+        end
      
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
