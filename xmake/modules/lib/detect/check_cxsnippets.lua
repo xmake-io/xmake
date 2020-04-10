@@ -191,8 +191,14 @@ function main(snippets, opt)
     local ok = try
     {
         function () 
+            if option.get("diagnosis") then
+                cprint("${dim}> %s", compiler.compcmd(sourcefile, objectfile, opt))
+            end
             compiler.compile(sourcefile, objectfile, opt)
             if #links > 0 then
+                if option.get("diagnosis") then
+                    cprint("${dim}> %s", linker.linkcmd("binary", {"cc", "cxx"}, objectfile, binaryfile, opt))
+                end
                 linker.link("binary", {"cc", "cxx"}, objectfile, binaryfile, opt)
             end
             return true

@@ -24,10 +24,11 @@ import("core.base.option")
 -- get configs
 function _get_configs(package, configs)
     local configs  = configs or {}
-    local cflags   = package:config("cflags")
-    local cxflags  = package:config("cxflags")
-    local cxxflags = package:config("cxxflags")
-    local asflags  = package:config("asflags")
+    local cflags   = table.join(table.wrap(package:config("cflags")),   get_config("cflags"))
+    local cxflags  = table.join(table.wrap(package:config("cxflags")),  get_config("cxflags"))
+    local cxxflags = table.join(table.wrap(package:config("cxxflags")), get_config("cxxflags"))
+    local asflags  = table.join(table.wrap(package:config("asflags")),  get_config("asflags"))
+    local ldflags  = table.join(table.wrap(package:config("ldflags")),  get_config("ldflags"))
     if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
@@ -41,16 +42,19 @@ function _get_configs(package, configs)
     end
     table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
     if cflags then
-        table.insert(configs, "--cflags=" .. cflags)
+        table.insert(configs, "--cflags=" .. os.args(table.concat(cflags, ' ')))
     end
     if cxflags then
-        table.insert(configs, "--cxflags=" .. cxflags)
+        table.insert(configs, "--cxflags=" .. os.args(table.concat(cxflags, ' ')))
     end
     if cxxflags then
-        table.insert(configs, "--cxxflags=" .. cxxflags)
+        table.insert(configs, "--cxxflags=" .. os.args(table.concat(cxxflags, ' ')))
     end
     if asflags then
-        table.insert(configs, "--asflags=" .. asflags)
+        table.insert(configs, "--asflags=" .. os.args(table.concat(asflags, ' ')))
+    end
+    if ldflags then
+        table.insert(configs, "--ldflags=" .. os.args(table.concat(ldflags, ' ')))
     end
     return configs
 end
