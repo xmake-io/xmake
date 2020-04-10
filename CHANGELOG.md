@@ -7,6 +7,8 @@
 * [#727](https://github.com/xmake-io/xmake/issues/727): Strip and generate debug symbols file (.so/.dSYM) for android/ios program
 * [#687](https://github.com/xmake-io/xmake/issues/687): Support to generate objc/bundle program.
 * [#743](https://github.com/xmake-io/xmake/issues/743): Support to generate objc/framework program.
+* Support to compile bundle, framework, mac application and ios application, and all some project templates
+* Support generate ios *.ipa file and codesign
 
 ## v2.3.2
 
@@ -716,6 +718,9 @@
 * [#727](https://github.com/xmake-io/xmake/issues/727): 支持为android, ios程序生成.so/.dSYM符号文件
 * [#687](https://github.com/xmake-io/xmake/issues/687): 支持编译生成objc/bundle程序
 * [#743](https://github.com/xmake-io/xmake/issues/743): 支持编译生成objc/framework程序
+* 支持编译bundle, framework程序，以及mac, ios应用程序，并新增一些工程模板
+* 支持对ios应用程序打包生成ipa文件，以及代码签名支持
+* 增加一些ipa打包、安装、重签名等辅助工具
 
 ## v2.3.2
 
