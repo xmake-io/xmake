@@ -54,6 +54,10 @@ rule("xcode.xcassets")
             cprint("${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         end
 
+        -- get assetcatalog_generated_info.plist
+        local assetcatalog_generated_info_plist = path.join(target:autogendir(), "rules", "xcode", "xcassets", "assetcatalog_generated_info.plist")
+        io.writefile(assetcatalog_generated_info_plist, "")
+
         -- do compile
         local argv = {"--warnings", "--notices", "--output-format", "human-readable-text"}
         if is_plat("macosx") then
@@ -83,6 +87,8 @@ rule("xcode.xcassets")
             table.insert(argv, "--enable-on-demand-resources")
             table.insert(argv, "NO")
         end
+        table.insert(argv, "--output-partial-info-plist")
+        table.insert(argv, assetcatalog_generated_info_plist)
         table.insert(argv, "--development-region")
         table.insert(argv, "en")
         table.insert(argv, "--product-type")
