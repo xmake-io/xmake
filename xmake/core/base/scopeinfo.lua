@@ -370,12 +370,12 @@ function _instance:_api_del_pathes(name, ...)
     values = table.join(...)
 
     -- translate pathes
-    local pathes = interp:_api_translate_pathes(values, "del_" .. name)
+    local pathes = interp:_api_translate_pathes(values, "del_" .. name, 5)
 
     -- mark these pathes as deleted
     local pathes_deleted = {}
     for _, pathname in ipairs(pathes) do
-        table.insert(pathes_deleted, "__del_" .. pathname, 5)
+        table.insert(pathes_deleted, "__del_" .. pathname)
     end
 
     -- save values
