@@ -57,6 +57,9 @@ rule("xcode.storyboard")
             cprint("${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
         end
 
+        -- clear Base.lproj first
+        os.tryrm(base_lproj)
+
         -- do compile
         local argv = {"--errors", "--warnings", "--notices", "--auto-activate-custom-fonts", "--output-format", "human-readable-text"}
         if is_plat("macosx") then

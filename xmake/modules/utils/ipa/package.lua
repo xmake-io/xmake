@@ -40,6 +40,9 @@ function main (appdir, ipafile, iconfile)
     end
     ipafile = path.absolute(ipafile)
 
+    -- remove the old ipafile first
+    os.tryrm(ipafile)
+
     -- the temporary directory
     local tmpdir = path.join(os.tmpdir(), "ipagen", appname)
 
