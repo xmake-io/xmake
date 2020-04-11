@@ -95,6 +95,51 @@ function utils._iowrite(...)
     end
 end
 
+-- decode errors if errors is encoded table string
+function utils._decode_errors(errors)
+    if not errors then
+        return
+    end
+    local _, pos = errors:find("[@encode(error)]: ", 1, true)
+    if pos then
+        -- strip traceback (maybe from coroutine.resume)
+        local errs = errors:sub(pos + 1)
+        local stack = nil
+        local stackpos = errs:find("}\nstack traceback:", 1, true)
+        if stackpos and stackpos > 1 then
+            stack = errs:sub(stackpos + 2)
+            errs  = errs:sub(1, stackpos)
+        end
+        errors, errs = errs:deserialize()
+        if not errors then
+            errors = errs
+        end
+        if type(errors) == "table" then
+            if stack then
+                errors._stack = stack
+            end
+            setmetatable(errors, 
+            { 
+                __tostring = function (self)
+                    local result = self.errors
+                    if not result then
+                        result = string.serialize(self, {strip = true, indent = false})
+                    end
+                    result = result or ""
+                    if self._stack then
+                        result = result .. "\n" .. self._stack
+                    end
+                    return result
+                end,
+                __concat = function (self, other)
+                    return tostring(self) .. tostring(other)
+                end
+            })
+        end
+        return errors
+    end
+end
+
 -- print format string with newline
 function utils.print(format, ...)
 
@@ -180,7 +225,12 @@ end
 -- print the error information
 function utils.error(format, ...)
     if format ~= nil then
-        utils.cprint("${bright color.error}${text.error}: ${clear}" .. string.tryformat(format, ...))
+        local errors = string.tryformat(format, ...)
+        local decoded_errors = utils._decode_errors(errors)
+        if decoded_errors then
+            errors = tostring(decoded_errors)
+        end
+        utils.cprint("${bright color.error}${text.error}: ${clear}" .. errors)
         log:flush()
     end
 end
@@ -221,45 +271,9 @@ function utils.trycall(script, traceback, ...)
             traceback = traceback or debug.traceback
 
             -- decode it if errors is encoded table string
-            if errors then
-                local _, pos = errors:find("[@encode(error)]: ", 1, true)
-                if pos then
-                    -- strip traceback (maybe from coroutine.resume)
-                    local errs = errors:sub(pos + 1)
-                    local stack = nil
-                    local stackpos = errs:find("}\nstack traceback:", 1, true)
-                    if stackpos and stackpos > 1 then
-                        stack = errs:sub(stackpos + 2)
-                        errs  = errs:sub(1, stackpos)
-                    end
-                    errors, errs = errs:deserialize()
-                    if not errors then
-                        errors = errs
-                    end
-                    if type(errors) == "table" then
-                        if stack then
-                            errors._stack = stack
-                        end
-                        setmetatable(errors, 
-                        { 
-                            __tostring = function (self)
-                                local result = self.errors
-                                if not result then
-                                    result = string.serialize(self, {strip = true, indent = false})
-                                end
-                                result = result or ""
-                                if self._stack then
-                                    result = result .. "\n" .. self._stack
-                                end
-                                return result
-                            end,
-                            __concat = function (self, other)
-                                return tostring(self) .. tostring(other)
-                            end
-                        })
-                    end
-                    return errors
-                end
+            local decoded_errors = utils._decode_errors(errors)
+            if decoded_errors then
+                return decoded_errors
             end
             return traceback(errors)
         end, ...)
