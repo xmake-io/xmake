@@ -241,8 +241,12 @@ function _instance:_visibility(opt)
 end
 
 -- invalidate the previous cache key
-function _instance:_invalidate()
+function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
+    -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
+    if name == "files" then
+        self._SOURCEFILES = nil
+    end
 end
 
 -- get the target info
@@ -304,19 +308,19 @@ end
 -- set the value to the target info
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
-    self:_invalidate()
+    self:_invalidate(name)
 end
 
 -- add the value to the target info
 function _instance:add(name, ...)
     self._INFO:apival_add(name, ...)
-    self:_invalidate()
+    self:_invalidate(name)
 end
 
 -- remove the value to the target info
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
-    self:_invalidate()
+    self:_invalidate(name)
 end
 
 -- get the extra configuration
@@ -959,8 +963,6 @@ function _instance:sourcefiles()
 
     -- get files
     local files = self:get("files")
-
-    -- no files?
     if not files then
         return {}, false
     end
@@ -968,7 +970,6 @@ function _instance:sourcefiles()
     -- match files
     local i = 1
     local count = 0
-    local cache = true
     local sourcefiles = {}
     for _, file in ipairs(table.wrap(files)) do
 
@@ -1014,14 +1015,10 @@ function _instance:sourcefiles()
     for sourcefile, _ in pairs(sourcefiles) do
         table.insert(sourcefiles_last, sourcefile)
     end
+    self._SOURCEFILES = sourcefiles_last
 
-    -- cache it
-    if cache then
-        self._SOURCEFILES = sourcefiles_last
-    end
-
-    -- ok? modified?
-    return sourcefiles_last, not cache
+    -- ok and sourcefiles are modified
+    return sourcefiles_last, true
 end
 
 -- get object file from source file
