@@ -98,7 +98,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                 os.tryrm(objectfile)
 
                 -- raise compiling errors
-                raise(errors)
+                raise(tostring(errors))
             end
         },
         finally

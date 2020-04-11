@@ -119,7 +119,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
                     end
                     errors = errs
                 end
-                os.raise(tostring(errors))
+                raise(tostring(errors))
             end
         }
     }
