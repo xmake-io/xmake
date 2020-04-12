@@ -39,7 +39,7 @@ rule("qt.moc")
     end)
 
     -- before build file (we need compile it first if exists Q_PRIVATE_SLOT)
-    before_build_file(function (target, headerfile_moc, opt)
+    before_build_file(function (target, sourcefile, opt)
 
         -- imports
         import("moc")
@@ -50,7 +50,16 @@ rule("qt.moc")
         import("core.project.depend")
 
         -- get c++ source file for moc
-        local sourcefile_moc = path.join(target:autogendir(), "rules", "qt", "moc", "moc_" .. path.basename(headerfile_moc) .. ".cpp")
+        --
+        -- add_files("mainwindow.h") -> moc_MainWindow.cpp
+        -- add_files("mainwindow.cpp", {rules = "qt.moc"}) -> mainwindow.moc, @see https://github.com/xmake-io/xmake/issues/750
+        --
+        local basename = path.basename(sourcefile)
+        local filename_moc = "moc_" .. basename .. ".cpp"
+        if sourcefile:endswith(".cpp") then
+            filename_moc = basename .. ".moc"
+        end
+        local sourcefile_moc = path.join(target:autogendir(), "rules", "qt", "moc", filename_moc)
 
         -- get object file
         local objectfile = target:objectfile(sourcefile_moc)
@@ -77,17 +86,17 @@ rule("qt.moc")
         -- trace progress info
         cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
         if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.qt.moc %s", headerfile_moc)
+            cprint("${dim color.build.object}compiling.qt.moc %s", sourcefile)
         else
-            cprint("${color.build.object}compiling.qt.moc %s", headerfile_moc)
+            cprint("${color.build.object}compiling.qt.moc %s", sourcefile)
         end
 
         -- generate c++ source file for moc
-        moc.generate(target, headerfile_moc, sourcefile_moc)
+        moc.generate(target, sourcefile, sourcefile_moc)
 
         -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750 
         dependinfo.files = {}
-        local mocdata = io.readfile(headerfile_moc)
+        local mocdata = io.readfile(sourcefile)
         if mocdata and mocdata:find("Q_PRIVATE_SLOT") then
             -- add includedirs of sourcefile_moc
             target:add("includedirs", path.directory(sourcefile_moc))
@@ -112,6 +121,6 @@ rule("qt.moc")
 
         -- update files and values to the dependent file
         dependinfo.values = depvalues
-        table.insert(dependinfo.files, headerfile_moc)
+        table.insert(dependinfo.files, sourcefile)
         depend.save(dependinfo, dependfile)
     end)

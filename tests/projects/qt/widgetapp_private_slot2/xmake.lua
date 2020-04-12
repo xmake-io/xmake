@@ -1,0 +1,6 @@
+target("test")
+    add_rules("qt.widgetapp")
+    add_files("main.cpp")
+    add_files("mainwindow.cpp", {rules = "qt.moc"})
+    add_files("*.h")
+    add_files("*.ui")
