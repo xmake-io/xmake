@@ -10,6 +10,10 @@
 * Support to compile bundle, framework, mac application and ios application, and all some project templates
 * Support generate ios *.ipa file and codesign
 
+### Change
+
+* [#750](https://github.com/xmake-io/xmake/issues/750): Improve qt.widgetapp rule to support private slot
+
 ## v2.3.2
 
 ### New features
@@ -721,6 +725,10 @@
 * 支持编译bundle, framework程序，以及mac, ios应用程序，并新增一些工程模板
 * 支持对ios应用程序打包生成ipa文件，以及代码签名支持
 * 增加一些ipa打包、安装、重签名等辅助工具
+
+### 改进
+
+* [#750](https://github.com/xmake-io/xmake/issues/750): 改进qt.widgetapp规则，支持qt私有槽
 
 ## v2.3.2
 
