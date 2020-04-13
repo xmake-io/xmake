@@ -23,6 +23,11 @@ import("core.theme.theme")
 import("core.base.option")
 import("core.project.config")
 
+-- escape path
+function _escape_path(p)
+    return os.args(p, {escape = true})
+end
+
 -- deploy application package for android
 function main(target, opt)
 
@@ -118,7 +123,9 @@ function main(target, opt)
        "stdcpp-path": "%s",
        "useLLVM": true,
        "application-binary": "%s"
-    }]], qt.sdkdir, android_sdkdir, ndk, android_build_toolver, ndk_toolchains_ver, ndk_host, target_arch, os.projectdir(), stdcpp_path, target:targetfile()))
+    }]], _escape_path(qt.sdkdir), _escape_path(android_sdkdir), _escape_path(ndk), 
+         android_build_toolver, ndk_toolchains_ver, ndk_host, target_arch, 
+         _escape_path(os.projectdir()), _escape_path(stdcpp_path), _escape_path(target:targetfile())))
 
     -- do deploy
     local argv = {"--input", android_deployment_settings,
