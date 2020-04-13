@@ -33,11 +33,7 @@ function _get_configs(package, configs)
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
             local vs_runtime_cxflags = "/" .. vs_runtime .. (package:debug() and "d" or "")
-            if cxflags then
-                cxflags = cxflags .. " " .. vs_runtime_cxflags
-            else
-                cxflags = vs_runtime_cxflags
-            end
+            table.insert(cxflags, vs_runtime_cxflags)
         end
     end
     table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
