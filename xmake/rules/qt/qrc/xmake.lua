@@ -91,7 +91,7 @@ rule("qt.qrc")
         end
 
         -- compile qrc 
-        os.vrunv(rcc, {"-name", "qml", sourcefile_qrc, "-o", sourcefile_cpp})
+        os.vrunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-o", sourcefile_cpp})
 
         -- trace
         if option.get("verbose") then
