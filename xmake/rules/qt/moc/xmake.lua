@@ -97,7 +97,7 @@ rule("qt.moc")
         -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750 
         dependinfo.files = {}
         local mocdata = io.readfile(sourcefile)
-        if mocdata and mocdata:find("Q_PRIVATE_SLOT") then
+        if mocdata and mocdata:find("Q_PRIVATE_SLOT") or sourcefile_moc:endswith(".moc") then
             -- add includedirs of sourcefile_moc
             target:add("includedirs", path.directory(sourcefile_moc))
 
