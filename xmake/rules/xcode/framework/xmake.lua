@@ -39,7 +39,9 @@ rule("xcode.framework")
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
         -- set target info for framework 
-        target:set("kind", "shared")
+        if not target:get("kind") then
+            target:set("kind", "shared")
+        end
         target:set("filename", target:basename())
         target:set("targetdir", contentsdir)
 
