@@ -65,11 +65,7 @@ function main(target)
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
             local values = _get_values_from_target(target, name)
             if values and #values > 0 then
-                if targetkind == "shared" then
-                    target:add(name, values, {public = true})
-                else
-                    target:add(name, values, {interface = true})
-                end
+                target:add(name, values, {public = true})
             end
         end
     end
