@@ -332,6 +332,47 @@ Please download and install more other plugins from the plugins repository [xmak
 
 * [xmake.vim](https://github.com/luzhlon/xmake.vim) (third-party, thanks [@luzhlon](https://github.com/luzhlon))
 
+### XMake Gradle Plugin (JNI)
+
+We can uses [xmake-gradle](https://github.com/xmake-io/xmake-gradle) plugin to compile JNI library in gradle.
+
+```
+plugins {
+  id 'org.tboox.gradle-xmake-plugin' version '1.0.6'
+}
+
+android {
+    externalNativeBuild {
+        xmake {
+            path "jni/xmake.lua"
+        }
+    }
+}
+```
+
+The `xmakeBuild` will be injected to `assemble` task automatically if the gradle-xmake-plugin has been applied.
+
+```console
+$ ./gradlew app:assembleDebug
+> Task :nativelib:xmakeConfigureForArm64
+> Task :nativelib:xmakeBuildForArm64
+>> xmake build
+[ 50%]: ccache compiling.debug nativelib.cc
+[ 75%]: linking.debug libnativelib.so
+[100%]: build ok!
+>> install artifacts to /Users/ruki/projects/personal/xmake-gradle/nativelib/libs/arm64-v8a
+> Task :nativelib:xmakeConfigureForArmv7
+> Task :nativelib:xmakeBuildForArmv7
+>> xmake build
+[ 50%]: ccache compiling.debug nativelib.cc
+[ 75%]: linking.debug libnativelib.so
+[100%]: build ok!
+>> install artifacts to /Users/ruki/projects/personal/xmake-gradle/nativelib/libs/armeabi-v7a
+> Task :nativelib:preBuild
+> Task :nativelib:assemble
+> Task :app:assembleDebug
+```
+
 ## Project Examples
 
 Some projects using xmake:
