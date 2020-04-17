@@ -7,8 +7,7 @@ package("git")
     if os.host() == "windows" then
         if os.arch() == "x64" then
             add_urls("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/MinGit-$(version)-64-bit.zip",
-                     "https://gitlab.com/xmake-mirror/git-for-windows-releases/raw/master/MinGit-$(version)-64-bit.zip",
-                     "https://qcloud.coding.net/u/waruqi/p/git-for-windows-releases/git/raw/master/MinGit-$(version)-64-bit.zip")
+                     "https://gitlab.com/xmake-mirror/git-for-windows-releases/raw/master/MinGit-$(version)-64-bit.zip")
             if winos.version():gt("winxp") then
                 add_versions("2.20.0", "f577f81c401535858761fc4857a105337cc12880b79e72f89d0740167083d287")
             else
@@ -16,8 +15,7 @@ package("git")
             end
         else
             add_urls("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/MinGit-$(version)-32-bit.zip",
-                     "https://gitlab.com/xmake-mirror/git-for-windows-releases/raw/master/MinGit-$(version)-32-bit.zip",
-                     "https://qcloud.coding.net/u/waruqi/p/git-for-windows-releases/git/raw/master/MinGit-$(version)-32-bit.zip")
+                     "https://gitlab.com/xmake-mirror/git-for-windows-releases/raw/master/MinGit-$(version)-32-bit.zip")
             if winos.version():gt("winxp") then
                 add_versions("2.20.0", "39d3dce9f67d7ae884edf0416d28f6dd8e24b6326de8e509613a2b12fb4f0820")
             else
