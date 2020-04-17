@@ -74,12 +74,14 @@ function main(target)
     if targetkind == "binary" then
         local targetdir = target:targetdir()
         for _, dep in ipairs(target:orderdeps()) do
-            local rpathdir = "@loader_path"
-            local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
-            if subdir and subdir ~= '.' then
-                rpathdir = path.join(rpathdir, subdir)
+            if dep:targetkind() == "shared" then
+                local rpathdir = "@loader_path"
+                local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
+                if subdir and subdir ~= '.' then
+                    rpathdir = path.join(rpathdir, subdir)
+                end
+                target:add("rpathdirs", rpathdir)
             end
-            target:add("rpathdirs", rpathdir)
         end
     end
 end
