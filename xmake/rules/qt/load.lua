@@ -21,9 +21,10 @@
 -- imports
 import("core.project.config")
 import("core.project.target")
+import("lib.detect.find_library")
 
 -- make link for framework
-function _link(framework, major)
+function _link(linkdirs, framework, major)
     if major and framework:startswith("Qt") then
         local debug_suffix = "_debug"
         if is_plat("windows") then
@@ -34,6 +35,12 @@ function _link(framework, major)
             debug_suffix = ""
         end
         framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+        if is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
+            local libinfo = find_library(framework .. "_" .. config.arch(), linkdirs)
+            if libinfo and libinfo.link then
+                framework = libinfo.link
+            end
+        end
     end
     return framework
 end
@@ -193,11 +200,11 @@ function main(target, opt)
                         target:add("includedirs", path.join(frameworkdir, "Headers"))
                         useframeworks = true
                     else
-                        target:add("syslinks", _link(framework, major))
+                        target:add("syslinks", _link(qt.linkdirs, framework, major))
                         target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                     end
                 else
-                    target:add("syslinks", _link(framework, major))
+                    target:add("syslinks", _link(qt.linkdirs, framework, major))
                     target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                 end
             end

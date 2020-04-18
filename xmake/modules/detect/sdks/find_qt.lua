@@ -46,17 +46,23 @@ function _find_sdkdir(sdkdir, sdkver)
     elseif is_plat("mingw") then
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x86_64") and "mingw*_64" or "mingw*_32", "bin"))
     elseif is_plat("android") then
-        local subdir = "android_*"
+        local subdir
         if is_arch("arm64-v8a") then
             subdir = "android_arm64_v8a"
         elseif is_arch("armeabi-v7a", "armeabi", "armv7-a", "armv5te") then -- armv7-a/armv5te are deprecated
             subdir = "android_armv7"
-        elseif is_arch("i386") then
+        elseif is_arch("x86", "i386") then -- i386 is deprecated
             subdir = "android_x86"
+        elseif is_arch("x86_64") then
+            subdir = "android_x86_64"
         end
-        table.insert(subdirs, path.join(sdkver or "*", subdir, "bin"))
+        if subdir then
+            table.insert(subdirs, path.join(sdkver or "*", subdir, "bin"))
+        end
+        table.insert(subdirs, path.join(sdkver or "*", "android", "bin"))
+    else
+        table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
     end
-    table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
     table.insert(subdirs, path.join("*", "bin"))
     table.insert(subdirs, "bin")
 
@@ -96,8 +102,8 @@ function _find_sdkdir(sdkdir, sdkver)
             end
         end
     else
-        table.insert(pathes, "~/Qt")
         table.insert(pathes, "~/Qt*")
+        table.insert(pathes, "~/Qt")
     end
 
     -- attempt to find qmake
