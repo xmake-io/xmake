@@ -49,7 +49,8 @@ function _find_ndk_sdkver(sdkdir, bindir, arch)
     local use_llvm = false
     local ndk_cxxstl = config.get("ndk_cxxstl")
     if ndk_cxxstl then
-        if ndk_cxxstl:startswith("llvmstl") then
+        -- we uses c++_static/c++_shared instead of llvmstl_static/llvmstl_shared
+        if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
             use_llvm = true
         end
     elseif bindir and bindir:find("llvm", 1, true) then

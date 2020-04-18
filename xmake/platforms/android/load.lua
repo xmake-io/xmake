@@ -188,7 +188,8 @@ function main(platform)
         local cxxstl_sdkdir = nil
         local ndk_cxxstl = config.get("ndk_cxxstl")
         if ndk_cxxstl then
-            if ndk_cxxstl:startswith("llvmstl") then
+            -- we uses c++_static/c++_shared instead of llvmstl_static/llvmstl_shared
+            if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
                 cxxstl_sdkdir = cxxstl_sdkdir_llvmstl
             elseif ndk_cxxstl:startswith("gnustl") then
                 cxxstl_sdkdir = cxxstl_sdkdir_gnustl
@@ -197,7 +198,7 @@ function main(platform)
             end
         else
             if isllvm then
-                ndk_cxxstl = "llvmstl_static"
+                ndk_cxxstl = "c++_static"
                 cxxstl_sdkdir = cxxstl_sdkdir_llvmstl
             end
             if (cxxstl_sdkdir == nil or not os.isdir(cxxstl_sdkdir)) and cxxstl_sdkdir_gnustl then -- <= ndk r16
@@ -230,7 +231,7 @@ function main(platform)
                 platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
                 platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
-            if ndk_cxxstl:startswith("llvmstl") then
+            if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
                 platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
                     platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
@@ -253,14 +254,14 @@ function main(platform)
             end
 
             -- add c++ stl links
-            if ndk_cxxstl == "llvmstl_static" then
+            if ndk_cxxstl == "c++_static" or ndk_cxxstl == "llvmstl_static" then
                 platform:add("ldflags", "-lc++_static", "-lc++abi")
                 platform:add("shflags", "-lc++_static", "-lc++abi")
                 if arm32 then
                     platform:add("ldflags", "-lunwind", "-latomic")
                     platform:add("shflags", "-lunwind", "-latomic")
                 end
-            elseif ndk_cxxstl == "llvmstl_shared" then
+            elseif ndk_cxxstl == "c++_shared" or ndk_cxxstl == "llvmstl_shared" then
                 platform:add("ldflags", "-lc++_shared", "-lc++abi")
                 platform:add("shflags", "-lc++_shared", "-lc++abi")
                 if arm32 then
@@ -283,7 +284,7 @@ function main(platform)
 
             -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
             -- @see https://github.com/xmake-io/xmake/issues/684
-            if ndkver and ndkver >= 20 and ndk_cxxstl:startswith("llvmstl") then
+            if ndkver and ndkver >= 20 and (ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl")) then
                 platform:add("ldflags", "-nostdlib++")
                 platform:add("shflags", "-nostdlib++")
             end
