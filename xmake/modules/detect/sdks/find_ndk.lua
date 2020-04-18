@@ -31,6 +31,9 @@ function _find_ndkdir(sdkdir)
     -- get ndk directory
     if not sdkdir then
         sdkdir = os.getenv("ANDROID_NDK_HOME") or os.getenv("ANDROID_NDK_ROOT")
+        if not sdkdir and config.get("android_sdk") then
+            sdkdir = path.join(config.get("android_sdk"), "ndk-bundle")
+        end
         if not sdkdir and is_host("macosx") then
             sdkdir = "~/Library/Android/sdk/ndk-bundle"
         end

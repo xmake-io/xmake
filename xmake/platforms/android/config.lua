@@ -140,11 +140,11 @@ function main(platform, name)
         -- check arch
         check_arch(config, "armeabi-v7a")
 
-        -- check ndk
-        _check_ndk()
-
         -- check android sdk
         _check_android_sdk()
+
+        -- check ndk
+        _check_ndk()
 
         -- check ld and sh, @note toolchains must be initialized after calling check_ndk()
         local toolchains = singleton.get("android.toolchains", _toolchains)
