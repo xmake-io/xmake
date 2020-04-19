@@ -23,6 +23,7 @@ import("core.theme.theme")
 import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
+import("core.project.depend")
 
 -- escape path
 function _escape_path(p)
@@ -34,6 +35,14 @@ function main(target, opt)
 
     -- get target apk path
     local target_apk = path.join(target:targetdir(), target:basename() .. ".apk")
+
+    -- need re-generate this apk?
+    local targetfile = target:targetfile()
+    local dependfile = target:dependfile(target_apk)
+    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
+        return 
+    end
 
     -- trace progress info
     cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
@@ -198,5 +207,9 @@ function main(target, opt)
 
     -- show apk output path
     vprint("the apk output path: %s", target_apk)
+
+    -- update files and values to the dependent file
+    dependinfo.files = {targetfile}
+    depend.save(dependinfo, dependfile)
 end
 

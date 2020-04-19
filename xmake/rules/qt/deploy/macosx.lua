@@ -69,7 +69,7 @@ function main(target, opt)
     local targetfile = target:targetfile()
     local dependfile = target:dependfile(target_app)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target_app)}) then
+    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
         return 
     end
 
