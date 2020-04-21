@@ -15,11 +15,11 @@
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        machine.h
+ * @file        engine.h
  *
  */
-#ifndef XM_MACHINE_H
-#define XM_MACHINE_H
+#ifndef XM_ENGINE_H
+#define XM_ENGINE_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -35,34 +35,34 @@ __tb_extern_c_enter__
  * types
  */
 
-/// the xmake machine type
-typedef struct{tb_int_t dummy;} const*   xm_machine_ref_t;
+/// the xmake engine type
+typedef struct {tb_int_t dummy;} const*   xm_engine_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
 
-/*! init the machine
+/*! init the engine
  *
- * @return          the machine
+ * @return          the engine
  */
-xm_machine_ref_t    xm_machine_init(tb_noarg_t);
+xm_engine_ref_t     xm_engine_init(tb_noarg_t);
 
-/*! exit the machine 
+/*! exit the engine 
  *
- * @param machine   the machine
+ * @param engine    the engine
  */
-tb_void_t           xm_machine_exit(xm_machine_ref_t machine);
+tb_void_t           xm_engine_exit(xm_engine_ref_t engine);
 
-/*! done the machine 
+/*! done the engine 
  *
- * @param machine   the machine
+ * @param engine    the engine
  * @param argc      the argument count of the console
  * @param argv      the argument list of the console
  *
  * @return          the error code of main()
  */
-tb_int_t            xm_machine_main(xm_machine_ref_t machine, tb_int_t argc, tb_char_t** argv);
+tb_int_t            xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

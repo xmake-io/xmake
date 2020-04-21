@@ -14,15 +14,15 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
     // init xmake
     if (xm_init())
     {
-        // init machine
-        xm_machine_ref_t machine = xm_machine_init();
-        if (machine)
+        // init engine
+        xm_engine_ref_t engine = xm_engine_init();
+        if (engine)
         {
-            // done machine
-            ok = xm_machine_main(machine, argc, argv);
+            // do engine main entry
+            ok = xm_engine_main(engine, argc, argv);
 
-            // exit machine
-            xm_machine_exit(machine);
+            // exit engine
+            xm_engine_exit(engine);
         }
 
         // exit xmake

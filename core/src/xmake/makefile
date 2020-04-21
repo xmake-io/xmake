@@ -13,7 +13,7 @@ xmake_CONFIG 			= y
 # core files
 xmake_C_FILES 			+= \
 						xmake \
-						machine \
+						engine \
 						os/argv \
 						os/args \
 						os/find \
