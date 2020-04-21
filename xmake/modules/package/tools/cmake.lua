@@ -122,7 +122,7 @@ function install(package, configs, opt)
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
         if os.isfile(projfile) then
             os.vrun("msbuild \"%s\" /property:configuration=%s", projfile, package:debug() and "Debug" or "Release")
-            os.cp("install/lib", package:installdir())
+            os.trycp("install/lib", package:installdir()) -- perhaps only headers library
             os.cp("install/include", package:installdir())
         else
             os.cp("**.lib", package:installdir("lib"))
@@ -137,7 +137,7 @@ function install(package, configs, opt)
         end
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
-        os.cp("install/lib", package:installdir())
+        os.trycp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end
     os.cd(oldir)
