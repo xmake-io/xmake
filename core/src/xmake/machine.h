@@ -36,7 +36,7 @@ __tb_extern_c_enter__
  */
 
 /// the xmake machine type
-typedef struct{}*   xm_machine_ref_t;
+typedef struct{tb_int_t dummy;} const*   xm_machine_ref_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
