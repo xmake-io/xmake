@@ -21,7 +21,7 @@ target("luajit")
     end
 
     -- add header files
-    add_headerfiles("luajit/src/(*.h)")
+    add_headerfiles("luajit/src/(*.h)", {prefixdir = "luajit"})
 
     -- add include directories
     add_includedirs(autogendir)

@@ -49,6 +49,13 @@ option("curses")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
 
+-- only build xmake libraries for development?
+option("onlylib")
+    set_default(false)
+    set_showmenu(true)
+    set_description("Only build xmake libraries for development")
+option_end()
+
 -- suppress warnings
 if is_plat("windows") then
     add_defines("_CRT_SECURE_NO_WARNINGS")

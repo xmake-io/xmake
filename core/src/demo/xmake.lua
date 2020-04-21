@@ -1,6 +1,11 @@
 -- add target
 target("demo")
 
+    -- disable this target if only build libaries
+    if has_config("onlylib") then
+        set_default(false)
+    end
+
     -- add deps
     add_deps("xmake")
 

@@ -21,6 +21,11 @@ target("xmake")
     add_includedirs("..", {interface = true})
     add_includedirs("$(buildir)/$(plat)/$(arch)/$(mode)", {public = true})
 
+    -- add header files
+    add_headerfiles("../(xmake/*.h)")
+    add_headerfiles("../(xmake/prefix/*.h)")
+    add_headerfiles("$(buildir)/$(plat)/$(arch)/$(mode)/xmake.config.h", {prefixdir = "xmake"})
+
     -- add the common source files
     add_files("**.c|winos/*.c")
     if is_plat("windows", "msys", "cygwin") then
