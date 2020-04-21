@@ -29,8 +29,10 @@ target("luajit")
 
     -- add the common source files
     add_files("luajit/src/*.c|ljamalg.c|luajit.c")
-    if is_plat("windows", "msys", "cygwin") then
+    if is_plat("windows") then
         add_files(autogendir .. "/lj_vm.obj")
+    elseif is_plat("msys", "cygwin") then
+        add_files(autogendir .. "/lj_vm.o")
     else
         add_files(autogendir .. "/*.S")
     end
