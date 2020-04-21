@@ -36,7 +36,7 @@
 #elif defined(TB_CONFIG_OS_MACOSX)
 #   include <unistd.h>
 #   include <mach-o/dyld.h>
-#elif defined(TB_CONFIG_OS_LINUX)
+#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_ANDROID)
 #   include <unistd.h>
 #endif
 
