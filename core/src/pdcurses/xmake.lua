@@ -1,6 +1,11 @@
 -- add target
 target("pdcurses")
 
+    -- enable this target
+    if not has_config("pdcurses") then
+        set_default(false)
+    end
+
     -- make as a static library
     set_kind("static")
 

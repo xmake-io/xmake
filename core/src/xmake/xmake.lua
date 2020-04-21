@@ -5,7 +5,10 @@ target("xmake")
     set_kind("static")
 
     -- add deps
-    add_deps("lcurses", "sv", "luajit", "tbox")
+    if has_config("curses") or has_config("pdcurses") then
+        add_deps("lcurses")
+    end
+    add_deps("sv", "luajit", "tbox")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")
@@ -32,12 +35,8 @@ target("xmake")
         add_files("winos/*.c")
     end
 
-    -- add readline
+    -- add options
     add_options("readline")
-
-    if is_plat("windows") or has_config("curses") then
-        add_defines("XM_CONFIG_API_HAVE_CURSES")
-    end
     if is_plat("windows") then
         add_defines("UNICODE", "_UNICODE")
     end

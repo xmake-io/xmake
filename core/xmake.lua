@@ -53,6 +53,15 @@ option("curses")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
 option_end()
 
+-- the pdcurses option
+option("pdcurses")
+    set_default(true)
+    set_showmenu(true)
+    set_description("Enable or disable pdcurses library")
+    add_defines("PDCURSES")
+    add_defines("XM_CONFIG_API_HAVE_CURSES")
+option_end()
+
 -- only build xmake libraries for development?
 option("onlylib")
     set_default(false)
