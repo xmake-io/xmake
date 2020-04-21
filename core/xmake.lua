@@ -36,6 +36,8 @@ end
 
 -- the readline option
 option("readline")
+    set_showmenu(true)
+    set_description("Enable or disable readline library")
     add_links("readline")
     add_cincludes("readline/readline.h")
     add_cfuncs("readline")
@@ -44,6 +46,8 @@ option_end()
 
 -- the curses option
 option("curses")
+    set_showmenu(true)
+    set_description("Enable or disable curses library")
     add_links("curses")
     add_cincludes("curses.h")
     add_defines("XM_CONFIG_API_HAVE_CURSES")
