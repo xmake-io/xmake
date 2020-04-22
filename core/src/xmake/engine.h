@@ -39,7 +39,7 @@ __tb_extern_c_enter__
 typedef struct {tb_int_t dummy;} const*   xm_engine_ref_t;
 
 /// the lua initializer callback type
-typedef tb_bool_t (*xm_engine_lua_initializer_cb_t)(lua_State* lua);
+typedef tb_bool_t (*xm_engine_lua_initializer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -57,7 +57,7 @@ xm_engine_ref_t     xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer
  */
 tb_void_t           xm_engine_exit(xm_engine_ref_t engine);
 
-/*! done the engine 
+/*! do the main entry of the engine 
  *
  * @param engine    the engine
  * @param argc      the argument count of the console
@@ -66,6 +66,14 @@ tb_void_t           xm_engine_exit(xm_engine_ref_t engine);
  * @return          the error code of main()
  */
 tb_int_t            xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv);
+
+/*! register lni modules in the engine, @note we need call it in lua_initalizer()
+ *
+ * @param engine    the engine
+ * @param module    the lni module name
+ * @param funcs     the lni module functions
+ */
+tb_void_t           xm_engine_register(xm_engine_ref_t engine, tb_char_t const* module, luaL_Reg const funcs[]);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

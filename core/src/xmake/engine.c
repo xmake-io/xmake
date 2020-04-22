@@ -829,8 +829,13 @@ xm_engine_ref_t xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer)
         lua_newtable(engine->lua);
         lua_setglobal(engine->lua, "xmake");
 
-        // do lua initializer
-        if (lua_initalizer) lua_initalizer(engine->lua);
+        /* do lua initializer and init namespace: _lni
+         *
+         * we can get the lni modules for _lni or `import("lib.lni.xxx")` in sandbox
+         */
+        lua_newtable(engine->lua);
+        if (lua_initalizer) lua_initalizer((xm_engine_ref_t)engine, engine->lua);
+        lua_setglobal(engine->lua, "_lni");
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // enable terminal colors output for windows cmd
@@ -942,4 +947,16 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv)
 
     // get the error code
     return (tb_int_t)lua_tonumber(engine->lua, -1);
+}
+tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL_Reg const funcs[])
+{
+    // check
+    xm_engine_t* engine = (xm_engine_t*)self;
+    tb_assert_and_check_return(engine && engine->lua && module && funcs);
+
+    // do register
+    lua_pushstring(engine->lua, module);
+    lua_newtable(engine->lua);
+    luaL_register(engine->lua, tb_null, funcs);
+    lua_rawset(engine->lua, -3);
 }
