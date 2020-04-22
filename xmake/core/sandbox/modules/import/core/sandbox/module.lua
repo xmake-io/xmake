@@ -287,15 +287,17 @@ end
 
 -- get module directories
 function core_sandbox_module.directories()
-
-    -- init directories
-    local directories = core_sandbox_module._DIRS or {      path.join(global.directory(), "modules")
-                                                      ,     path.join(os.programdir(), "modules")
-                                                      ,     path.join(os.programdir(), "core/sandbox/modules/import")
-                                                      }
-                        
-    -- save directories to cache
-    core_sandbox_module._DIRS = directories
+    local directories = core_sandbox_module._DIRS 
+    if not directories then
+        directories = { path.join(global.directory(), "modules"),
+                        path.join(os.programdir(), "modules"),
+                        path.join(os.programdir(), "core/sandbox/modules/import")}
+        local modulesdir = os.getenv("XMAKE_MODULES_DIR")
+        if modulesdir and os.isdir(modulesdir) then
+            table.insert(directories, 1, modulesdir)
+        end
+        core_sandbox_module._DIRS = directories
+    end
     return directories
 end
 
