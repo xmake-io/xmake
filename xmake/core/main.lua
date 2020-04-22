@@ -143,38 +143,42 @@ function main._init()
     if not options then
         return false, err
     end
-    local opt_projectdir, opt_projectfile = options.project, options.file
 
-    -- init the project directory
-    local projectdir = opt_projectdir or xmake._PROJECT_DIR
-    if projectdir and not path.is_absolute(projectdir) then
-        projectdir = path.absolute(projectdir)
-    elseif projectdir then
-        projectdir = path.translate(projectdir)
-    end
-    xmake._PROJECT_DIR = projectdir
-    assert(projectdir)
+    -- init project pathes only for xmake engine
+    if xmake._NAME == "xmake" then
+        local opt_projectdir, opt_projectfile = options.project, options.file
 
-    -- init the xmake.lua file path
-    local projectfile = opt_projectfile or xmake._PROJECT_FILE
-    if projectfile and not path.is_absolute(projectfile) then
-        projectfile = path.absolute(projectfile, projectdir)
-    end
-    xmake._PROJECT_FILE = projectfile
-    assert(projectfile)
+        -- init the project directory
+        local projectdir = opt_projectdir or xmake._PROJECT_DIR
+        if projectdir and not path.is_absolute(projectdir) then
+            projectdir = path.absolute(projectdir)
+        elseif projectdir then
+            projectdir = path.translate(projectdir)
+        end
+        xmake._PROJECT_DIR = projectdir
+        assert(projectdir)
 
-    -- find the root project file
-    if not os.isfile(projectfile) or (not opt_projectdir and not opt_projectfile) then
-        projectfile = main._find_root(projectfile)
-    end
+        -- init the xmake.lua file path
+        local projectfile = opt_projectfile or xmake._PROJECT_FILE
+        if projectfile and not path.is_absolute(projectfile) then
+            projectfile = path.absolute(projectfile, projectdir)
+        end
+        xmake._PROJECT_FILE = projectfile
+        assert(projectfile)
 
-    -- update and enter project
-    xmake._PROJECT_DIR  = path.directory(projectfile)
-    xmake._PROJECT_FILE = projectfile
+        -- find the root project file
+        if not os.isfile(projectfile) or (not opt_projectdir and not opt_projectfile) then
+            projectfile = main._find_root(projectfile)
+        end
 
-    -- enter the project directory
-    if os.isdir(os.projectdir()) then
-        os.cd(os.projectdir())
+        -- update and enter project
+        xmake._PROJECT_DIR  = path.directory(projectfile)
+        xmake._PROJECT_FILE = projectfile
+
+        -- enter the project directory
+        if os.isdir(os.projectdir()) then
+            os.cd(os.projectdir())
+        end
     end
 
     -- add the directory of the program file (xmake) to $PATH environment
@@ -255,8 +259,8 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- save command lines to history
-    local skipHistory = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
-    if os.isfile(os.projectfile()) and skipHistory == '' then
+    local skip_history = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
+    if os.projectfile() and os.isfile(os.projectfile()) and skip_history == '' then
         history("local.history"):save("cmdlines", option.cmdline())
     end
 
