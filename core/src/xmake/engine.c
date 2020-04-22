@@ -984,7 +984,7 @@ tb_int_t xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** arg
     if (luaopts) 
     {
         tb_int_t   argc2 = argc + 3;
-        tb_char_t* argv2[argc2 + 1];
+        tb_char_t* argv2[256];
         argv2[0]  = argv[0];
         argv2[1]  = "lua";
         argv2[2]  = (tb_char_t*)luaopts;
@@ -996,7 +996,7 @@ tb_int_t xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** arg
     else
     {
         tb_int_t   argc2 = argc + 2;
-        tb_char_t* argv2[argc2 + 1];
+        tb_char_t* argv2[256];
         argv2[0]  = argv[0];
         argv2[1]  = "lua";
         argv2[2]  = "lua.main";
