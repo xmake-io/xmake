@@ -15,7 +15,7 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
     if (xm_init())
     {
         // init engine
-        xm_engine_ref_t engine = xm_engine_init();
+        xm_engine_ref_t engine = xm_engine_init(tb_null);
         if (engine)
         {
             // do engine main entry

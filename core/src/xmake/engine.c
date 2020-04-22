@@ -743,10 +743,10 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-xm_engine_ref_t xm_engine_init()
+xm_engine_ref_t xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer)
 {
     // done
-    tb_bool_t      ok = tb_false;
+    tb_bool_t     ok = tb_false;
     xm_engine_t*  engine = tb_null;
     do
     {
@@ -828,6 +828,9 @@ xm_engine_ref_t xm_engine_init()
         // init namespace: xmake
         lua_newtable(engine->lua);
         lua_setglobal(engine->lua, "xmake");
+
+        // do lua initializer
+        if (lua_initalizer) lua_initalizer(engine->lua);
 
 #ifdef TB_CONFIG_OS_WINDOWS
         // enable terminal colors output for windows cmd

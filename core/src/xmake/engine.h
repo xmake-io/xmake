@@ -38,6 +38,9 @@ __tb_extern_c_enter__
 /// the xmake engine type
 typedef struct {tb_int_t dummy;} const*   xm_engine_ref_t;
 
+/// the lua initializer callback type
+typedef tb_bool_t (*xm_engine_lua_initializer_cb_t)(lua_State* lua);
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
  */
@@ -46,7 +49,7 @@ typedef struct {tb_int_t dummy;} const*   xm_engine_ref_t;
  *
  * @return          the engine
  */
-xm_engine_ref_t     xm_engine_init(tb_noarg_t);
+xm_engine_ref_t     xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer);
 
 /*! exit the engine 
  *
