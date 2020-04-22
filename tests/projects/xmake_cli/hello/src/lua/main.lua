@@ -1,8 +1,8 @@
 import("core.base.option")
-import("lib.lni.test")
+import("lib.lni")
 
 function main ()
-    print(test)
+    print(lni)
     print("hello xmake!")
     local argv = option.get("arguments")
     if argv then
