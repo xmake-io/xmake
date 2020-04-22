@@ -11,7 +11,6 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
             ok = xm_engine_main(engine, argc, argv);
             xm_engine_exit(engine);
         }
-
         xm_exit();
     }
     return ok;

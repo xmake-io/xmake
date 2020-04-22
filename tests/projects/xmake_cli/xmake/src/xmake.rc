@@ -1,0 +1,43 @@
+#include "xmake.config.h"
+#include "winres.h"
+
+#define _STR(x) #x
+#define STR(x) _STR(x)
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION XM_CONFIG_VERSION_MAJOR, XM_CONFIG_VERSION_MINOR, XM_CONFIG_VERSION_ALTER, 0
+ PRODUCTVERSION XM_CONFIG_VERSION_MAJOR, XM_CONFIG_VERSION_MINOR, XM_CONFIG_VERSION_ALTER, 0
+ FILEFLAGSMASK VS_FFI_FILEFLAGSMASK
+#ifdef _DEBUG
+ FILEFLAGS VS_FF_DEBUG
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS VOS_NT_WINDOWS32
+ FILETYPE VFT_APP
+ FILESUBTYPE VFT2_UNKNOWN
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "000004B0"
+        BEGIN
+            VALUE "Comments", "A cross-platform build utility based on Lua\nwebsite: https://xmake.io"
+            VALUE "CompanyName", "The TBOOX Open Source Group"
+            VALUE "FileDescription", "XMake build utility"
+            VALUE "FileVersion", XM_CONFIG_VERSION "+" STR(XM_CONFIG_VERSION_BUILD)
+            VALUE "InternalName", "xmake"
+            VALUE "LegalCopyright", "Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+            VALUE "LegalTrademarks", ""
+            VALUE "OriginalFilename", "xmake.exe"
+            VALUE "ProductName", "XMake"
+            VALUE "ProductVersion", XM_CONFIG_VERSION "+" STR(XM_CONFIG_VERSION_BUILD)
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x0, 1200
+    END
+END
+
+
+IDI_APP ICON DISCARDABLE "xmake.ico"
