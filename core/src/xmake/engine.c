@@ -743,7 +743,7 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-xm_engine_ref_t xm_engine_init(xm_engine_lni_initalizer_cb_t lni_initalizer)
+xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     // done
     tb_bool_t     ok = tb_false;
@@ -824,6 +824,10 @@ xm_engine_ref_t xm_engine_init(xm_engine_lni_initalizer_cb_t lni_initalizer)
         tb_snprintf(version_cstr, sizeof(version_cstr), "%u.%u.%u", version->major, version->minor, version->alter);
         lua_pushstring(engine->lua, version_cstr);
         lua_setglobal(engine->lua, "_VERSION_SHORT");
+
+        // init engine name
+        lua_pushstring(engine->lua, name? name : "xmake");
+        lua_setglobal(engine->lua, "_NAME");
 
         // init namespace: xmake
         lua_newtable(engine->lua);
@@ -960,12 +964,12 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     luaL_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
 }
-tb_int_t xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer)
+tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     tb_int_t ok = -1;
     if (xm_init())
     {
-        xm_engine_ref_t engine = xm_engine_init(lni_initalizer);
+        xm_engine_ref_t engine = xm_engine_init(name, lni_initalizer);
         if (engine)
         {
             ok = xm_engine_main(engine, argc, argv);
@@ -975,7 +979,7 @@ tb_int_t xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer
     }
     return ok;
 }
-tb_int_t xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts)
+tb_int_t xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts)
 {
     if (luaopts) 
     {
@@ -987,7 +991,7 @@ tb_int_t xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_inital
         argv2[3]  = "lua.main";
         if (argc > 1) tb_memcpy(argv2 + 4, argv + 1, (argc - 1) * sizeof(tb_char_t*));
         argv2[argc2] = tb_null;
-        return xm_engine_run(argc2, argv2, lni_initalizer);
+        return xm_engine_run(name, argc2, argv2, lni_initalizer);
     }
     else
     {
@@ -998,6 +1002,6 @@ tb_int_t xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_inital
         argv2[2]  = "lua.main";
         if (argc > 1) tb_memcpy(argv2 + 3, argv + 1, (argc - 1) * sizeof(tb_char_t*));
         argv2[argc2] = tb_null;
-        return xm_engine_run(argc2, argv2, lni_initalizer);
+        return xm_engine_run(name, argc2, argv2, lni_initalizer);
     }
 }

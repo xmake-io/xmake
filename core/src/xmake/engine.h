@@ -47,11 +47,12 @@ typedef tb_bool_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_S
 
 /*! init the engine
  *
+ * @param name              the engine name
  * @param lni_initalizer    the lni initializer
  *
  * @return                  the engine
  */
-xm_engine_ref_t             xm_engine_init(xm_engine_lni_initalizer_cb_t lni_initalizer);
+xm_engine_ref_t             xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /*! exit the engine 
  *
@@ -79,18 +80,20 @@ tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t
 
 /*! run main entry of the engine singleton
  *
+ * @param name              the engine name
  * @param argc              the argument count of the console
  * @param argv              the argument list of the console
  * @param lni_initalizer    the lni initializer
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer);
+tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /*! run lua action entry of the engine singleton for `xmake lua [-vD] lua.main`
  * 
  * @note we need set $XMAKE_MODULES_DIR with the directory of "lua\\*.lua"
  *
+ * @param name              the engine name
  * @param argc              the argument count of the console
  * @param argv              the argument list of the console
  * @param lni_initalizer    the lni initializer
@@ -98,7 +101,7 @@ tb_int_t                    xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_en
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts);
+tb_int_t                    xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern

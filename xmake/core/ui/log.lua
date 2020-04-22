@@ -28,7 +28,7 @@ local log = log or (function ()
     -- get log directory
     local logdir = nil
     if os.isfile(os.projectfile()) then
-        logdir = path.join(os.projectdir(), ".xmake")
+        logdir = path.join(os.projectdir(), "." .. xmake._NAME)
     else
         logdir = os.tmpdir()
     end

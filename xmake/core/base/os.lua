@@ -555,7 +555,8 @@ function os.tmpdir(opt)
     -- make sub-directory name
     local subdir = os._TMPSUBDIR
     if not subdir then
-        subdir = path.join((os._FAKEROOT and ".xmakefake" or ".xmake") .. (os.uid().euid or ""), os.date("%y%m%d"))
+        local name = "." .. xmake._NAME
+        subdir = path.join((os._FAKEROOT and (name .. "fake") or name) .. (os.uid().euid or ""), os.date("%y%m%d"))
         os._TMPSUBDIR = subdir
     end
 

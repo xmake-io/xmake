@@ -24,6 +24,11 @@ local xmake = xmake or {}
 -- load modules
 local semver = require("base/semver")
 
+-- get name
+function xmake.name()
+    return xmake._NAME or "xmake"
+end
+
 -- get xmake version
 function xmake.version()
     if xmake._VERSION_CACHE == nil then

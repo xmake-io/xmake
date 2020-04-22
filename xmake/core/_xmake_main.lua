@@ -20,6 +20,7 @@
 
 -- init namespace: xmake
 xmake                   = xmake or {}
+xmake._NAME             = _NAME
 xmake._ARGV             = _ARGV
 xmake._HOST             = _HOST
 xmake._ARCH             = _ARCH

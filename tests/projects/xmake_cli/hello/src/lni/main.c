@@ -21,5 +21,5 @@ tb_int_t main(tb_int_t argc, tb_char_t** argv)
 #else
     tb_char_t const* luaopts = "-D";
 #endif
-    return xm_engine_run_lua(argc, argv, lni_initalizer, luaopts);
+    return xm_engine_run_lua("hello", argc, argv, lni_initalizer, luaopts);
 }
