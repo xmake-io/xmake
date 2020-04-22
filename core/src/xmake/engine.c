@@ -743,7 +743,7 @@ static tb_void_t xm_engine_init_features(xm_engine_t* engine)
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-xm_engine_ref_t xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer)
+xm_engine_ref_t xm_engine_init(xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     // done
     tb_bool_t     ok = tb_false;
@@ -834,7 +834,7 @@ xm_engine_ref_t xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer)
          * we can get the lni modules for _lni or `import("lib.lni.xxx")` in sandbox
          */
         lua_newtable(engine->lua);
-        if (lua_initalizer) lua_initalizer((xm_engine_ref_t)engine, engine->lua);
+        if (lni_initalizer) lni_initalizer((xm_engine_ref_t)engine, engine->lua);
         lua_setglobal(engine->lua, "_lni");
 
 #ifdef TB_CONFIG_OS_WINDOWS
@@ -959,4 +959,45 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     lua_newtable(engine->lua);
     luaL_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
+}
+tb_int_t xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer)
+{
+    tb_int_t ok = -1;
+    if (xm_init())
+    {
+        xm_engine_ref_t engine = xm_engine_init(lni_initalizer);
+        if (engine)
+        {
+            ok = xm_engine_main(engine, argc, argv);
+            xm_engine_exit(engine);
+        }
+        xm_exit();
+    }
+    return ok;
+}
+tb_int_t xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts)
+{
+    if (luaopts) 
+    {
+        tb_int_t   argc2 = argc + 3;
+        tb_char_t* argv2[argc2 + 1];
+        argv2[0]  = argv[0];
+        argv2[1]  = "lua";
+        argv2[2]  = (tb_char_t*)luaopts;
+        argv2[3]  = "lua.main";
+        if (argc > 1) tb_memcpy(argv2 + 4, argv + 1, (argc - 1) * sizeof(tb_char_t*));
+        argv2[argc2] = tb_null;
+        return xm_engine_run(argc2, argv2, lni_initalizer);
+    }
+    else
+    {
+        tb_int_t   argc2 = argc + 2;
+        tb_char_t* argv2[argc2 + 1];
+        argv2[0]  = argv[0];
+        argv2[1]  = "lua";
+        argv2[2]  = "lua.main";
+        if (argc > 1) tb_memcpy(argv2 + 3, argv + 1, (argc - 1) * sizeof(tb_char_t*));
+        argv2[argc2] = tb_null;
+        return xm_engine_run(argc2, argv2, lni_initalizer);
+    }
 }

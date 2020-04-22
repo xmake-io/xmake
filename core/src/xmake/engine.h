@@ -36,10 +36,10 @@ __tb_extern_c_enter__
  */
 
 /// the xmake engine type
-typedef struct {tb_int_t dummy;} const*   xm_engine_ref_t;
+typedef struct {tb_int_t dummy;} const* xm_engine_ref_t;
 
-/// the lua initializer callback type
-typedef tb_bool_t (*xm_engine_lua_initializer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
+/// the lni initializer callback type
+typedef tb_bool_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
@@ -47,33 +47,58 @@ typedef tb_bool_t (*xm_engine_lua_initializer_cb_t)(xm_engine_ref_t engine, lua_
 
 /*! init the engine
  *
- * @return          the engine
+ * @param lni_initalizer    the lni initializer
+ *
+ * @return                  the engine
  */
-xm_engine_ref_t     xm_engine_init(xm_engine_lua_initializer_cb_t lua_initalizer);
+xm_engine_ref_t             xm_engine_init(xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /*! exit the engine 
  *
- * @param engine    the engine
+ * @param engine            the engine
  */
-tb_void_t           xm_engine_exit(xm_engine_ref_t engine);
+tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
 
 /*! do the main entry of the engine 
  *
- * @param engine    the engine
- * @param argc      the argument count of the console
- * @param argv      the argument list of the console
+ * @param engine            the engine
+ * @param argc              the argument count of the console
+ * @param argv              the argument list of the console
  *
- * @return          the error code of main()
+ * @return                  the error code of main()
  */
-tb_int_t            xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv);
+tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv);
 
-/*! register lni modules in the engine, @note we need call it in lua_initalizer()
+/*! register lni modules in the engine, @note we need call it in lni_initalizer()
  *
- * @param engine    the engine
- * @param module    the lni module name
- * @param funcs     the lni module functions
+ * @param engine            the engine
+ * @param module            the lni module name
+ * @param funcs             the lni module functions
  */
-tb_void_t           xm_engine_register(xm_engine_ref_t engine, tb_char_t const* module, luaL_Reg const funcs[]);
+tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t const* module, luaL_Reg const funcs[]);
+
+/*! run main entry of the engine singleton
+ *
+ * @param argc              the argument count of the console
+ * @param argv              the argument list of the console
+ * @param lni_initalizer    the lni initializer
+ *
+ * @return                  the error code of main()
+ */
+tb_int_t                    xm_engine_run(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer);
+
+/*! run lua action entry of the engine singleton for `xmake lua [-vD] lua.main`
+ * 
+ * @note we need set $XMAKE_MODULES_DIR with the directory of "lua\\*.lua"
+ *
+ * @param argc              the argument count of the console
+ * @param argv              the argument list of the console
+ * @param lni_initalizer    the lni initializer
+ * @param luaopts           the lua options, e.g. "-vD"
+ *
+ * @return                  the error code of main()
+ */
+tb_int_t                    xm_engine_run_lua(tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
