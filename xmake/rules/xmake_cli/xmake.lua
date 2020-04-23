@@ -25,37 +25,34 @@ rule("xmake.cli")
         assert(target:pkg("libxmake"), 'please add_packages("libxmake") to target(%s) first!', target:name())
     end)
     after_install(function (target)
-        -- install xmake/cli program
+
+        -- install xmake-core lua scripts first
+        local libxmake = target:pkg("libxmake")
+        local programdir = path.join(path.directory(libxmake:get("linkdirs")), "share", "xmake")
+        local installdir = path.join(target:installdir(), "share", target:name())
+        assert(os.isdir(programdir), "%s not found!", programdir)
+        if not os.isdir(installdir) then
+            os.mkdir(installdir)
+        end
+        os.vcp(path.join(programdir, "*"), installdir)
+
+        -- install xmake/cli lua scripts
         --
         --  - bin
         --    - hello
         --  - share
         --    - hello
-        --      - lua
-        --        - main.lua
-        --      - core
-        --        - ..
+        --      - modules
+        --        - lua
+        --          - main.lua
         --
+
         local scriptdir = path.join(target:scriptdir(), "src")
         if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
             import("lib.detect.find_path")
             scriptdir = assert(find_path("lua/main.lua", path.join(target:scriptdir(), "**")), "lua/main.lua not found!")
         end
-        local installdir = path.join(target:installdir(), "share", target:name())
-        if not os.isdir(installdir) then
-            os.mkdir(installdir)
-        end
-        os.vcp(path.join(scriptdir, "lua"), installdir)
-
-        -- install xmake-core lua scripts
-        local libxmake = target:pkg("libxmake")
-        local programdir = path.join(path.directory(libxmake:get("linkdirs")), "share", "xmake")
-        assert(os.isdir(programdir), "%s not found!", programdir)
-        local coredir = path.join(installdir, "core")
-        if not os.isdir(coredir) then
-            os.mkdir(coredir)
-        end
-        os.vcp(path.join(programdir, "*"), coredir)
+        os.vcp(path.join(scriptdir, "lua"), path.join(installdir, "modules"))
     end)
     before_run(function (target)
         local scriptdir = path.join(target:scriptdir(), "src")
