@@ -26,6 +26,13 @@ rule("xmake.cli")
     end)
     after_install(function (target)
 
+        -- get lua script directory
+        local scriptdir = path.join(target:scriptdir(), "src")
+        if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
+            import("lib.detect.find_path")
+            scriptdir = find_path("lua/main.lua", path.join(target:scriptdir(), "**"))
+        end
+
         -- install xmake-core lua scripts first
         local libxmake = target:pkg("libxmake")
         local programdir = path.join(path.directory(libxmake:get("linkdirs")), "share", "xmake")
@@ -34,7 +41,16 @@ rule("xmake.cli")
         if not os.isdir(installdir) then
             os.mkdir(installdir)
         end
-        os.vcp(path.join(programdir, "*"), installdir)
+        if scriptdir then
+            os.mkdir(path.join(installdir, "plugins"))
+            os.vcp(path.join(programdir, "core"), installdir)
+            os.vcp(path.join(programdir, "modules"), installdir)
+            os.vcp(path.join(programdir, "themes"), installdir)
+            os.vcp(path.join(programdir, "plugins", "lua"), path.join(installdir, "plugins"))
+            os.vcp(path.join(programdir, "actions", "build", "xmake.lua"), path.join(installdir, "actions", "build", "xmake.lua"))
+        else
+            os.vcp(path.join(programdir, "*"), installdir)
+        end
 
         -- install xmake/cli lua scripts
         --
@@ -47,22 +63,21 @@ rule("xmake.cli")
         --          - main.lua
         --
 
-        local scriptdir = path.join(target:scriptdir(), "src")
-        if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
-            import("lib.detect.find_path")
-            scriptdir = assert(find_path("lua/main.lua", path.join(target:scriptdir(), "**")), "lua/main.lua not found!")
+        if scriptdir then
+            os.vcp(path.join(scriptdir, "lua"), path.join(installdir, "modules"))
         end
-        os.vcp(path.join(scriptdir, "lua"), path.join(installdir, "modules"))
     end)
     before_run(function (target)
         local scriptdir = path.join(target:scriptdir(), "src")
         if not os.isfile(path.join(scriptdir, "lua", "main.lua")) then
             import("lib.detect.find_path")
-            scriptdir = assert(find_path("lua/main.lua", path.join(target:scriptdir(), "**")), "lua/main.lua not found!")
+            scriptdir = find_path("lua/main.lua", path.join(target:scriptdir(), "**"))
+        end
+        if scriptdir then
+            os.setenv("XMAKE_MODULES_DIR", scriptdir)
         end
         local libxmake = target:pkg("libxmake")
         local programdir = path.join(path.directory(libxmake:get("linkdirs")), "share", "xmake")
         assert(os.isdir(programdir), "%s not found!", programdir)
         os.setenv("XMAKE_PROGRAM_DIR", programdir)
-        os.setenv("XMAKE_MODULES_DIR", scriptdir)
     end)
