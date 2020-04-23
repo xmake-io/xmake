@@ -39,7 +39,7 @@ __tb_extern_c_enter__
 typedef struct {tb_int_t dummy;} const* xm_engine_ref_t;
 
 /// the lni initializer callback type
-typedef tb_bool_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
+typedef tb_void_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_State* lua);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * interfaces
