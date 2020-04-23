@@ -43,7 +43,6 @@ rule("xcode.framework")
             target:set("kind", "shared")
         end
         target:set("filename", target:basename())
-        target:set("targetdir", contentsdir)
 
         -- export frameworks for `add_deps()`
         target:data_set("inherit.links", false) -- disable to inherit links, @see rule("utils.inherit.links")
@@ -108,6 +107,12 @@ rule("xcode.framework")
             cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
         end
 
+        -- copy target file
+        if not os.isdir(contentsdir) then
+            os.mkdir(contentsdir)
+        end
+        os.vcp(target:targetfile(), contentsdir)
+
         -- move header files
         os.tryrm(headersdir)
         os.mv(path.join(contentsdir, "Headers.tmp", target:basename()), headersdir)
@@ -145,8 +150,10 @@ rule("xcode.framework")
         os.ln(path.join("Versions/Current", target_filename), target_filename)
         os.cd(oldir)
 
-        -- do codesign
-        codesign(contentsdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+        -- do codesign, only for dynamic library
+        if target:targetkind() == "shared" then
+            codesign(contentsdir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+        end
 
         -- update files and values to the dependent file
         dependinfo.files = {bundledir}
