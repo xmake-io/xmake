@@ -93,27 +93,17 @@ function sandbox_core_base_option.parse(argv, options, ...)
     -- parse it
     local results, errors = option.parse(argv, options)
     if not results then
-
-        -- show help
         show_help()
-
-        -- raise errors
         raise(errors)
     end
 
     -- help?
     if results.help then
-
-        -- show help
         show_help()
-
-        -- exit
-        raise()
+        os.exit()
     else
         results.help = show_help
     end
-
-    -- ok
     return results
 end
 
