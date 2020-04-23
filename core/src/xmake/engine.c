@@ -50,6 +50,9 @@ typedef struct __xm_engine_t
     // the lua 
     lua_State*              lua;
 
+    // the engine name
+    tb_char_t               name[64];
+
 }xm_engine_t;
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -528,11 +531,15 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
             tb_char_t const* rootdir = tb_path_directory(programpath, data, sizeof(data));
             tb_assert_and_check_break(rootdir);
 
+            // init share/name sub-directory
+            tb_char_t sharedir[128];
+            tb_snprintf(sharedir, sizeof(sharedir), "../share/%s", engine->name);
+
             // find the program (lua) directory
             tb_size_t i;
             tb_file_info_t info;
             tb_char_t scriptpath[TB_PATH_MAXN];
-            tb_char_t const* subdirs[] = {"", "../share/xmake"};
+            tb_char_t const* subdirs[] = {"", sharedir};
             for (i = 0; i < tb_arrayn(subdirs); i++)
             {
                 // get program directory
@@ -753,6 +760,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         // init self
         engine = tb_malloc0_type(xm_engine_t);
         tb_assert_and_check_break(engine);
+
+        // init name
+        tb_strlcpy(engine->name, name, sizeof(engine->name));
 
         // init lua 
         engine->lua = lua_open();

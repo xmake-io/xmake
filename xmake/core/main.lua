@@ -179,6 +179,10 @@ function main._init()
         if os.isdir(os.projectdir()) then
             os.cd(os.projectdir())
         end
+    else
+        -- patch a fake project file and directory for other lua programs with xmake/engine
+        xmake._PROJECT_DIR  = path.join(os.tmpdir(), "local")
+        xmake._PROJECT_FILE = path.join(xmake._PROJECT_DIR, xmake._NAME .. ".lua")
     end
 
     -- add the directory of the program file (xmake) to $PATH environment
