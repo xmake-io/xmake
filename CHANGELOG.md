@@ -9,6 +9,7 @@
 * [#743](https://github.com/xmake-io/xmake/issues/743): Support to generate objc/framework program.
 * Support to compile bundle, framework, mac application and ios application, and all some project templates
 * Support generate ios *.ipa file and codesign
+* Add xmake.cli rule to develop lua program with xmake core engine
 
 ### Change
 
@@ -725,6 +726,7 @@
 * 支持编译bundle, framework程序，以及mac, ios应用程序，并新增一些工程模板
 * 支持对ios应用程序打包生成ipa文件，以及代码签名支持
 * 增加一些ipa打包、安装、重签名等辅助工具
+* 添加xmake.cli规则来支持开发带有xmake/core引擎的lua扩展程序
 
 ### 改进
 
