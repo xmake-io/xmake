@@ -39,11 +39,6 @@ function main (target)
     -- set target directory for app 
     target:set("kind", "binary")
     target:set("filename", target:basename())
-    if is_plat("macosx") then
-        target:set("targetdir", path.join(contentsdir, "MacOS"))
-    else
-        target:set("targetdir", bundledir)
-    end
 
     -- set install directory
     if is_plat("macosx") and not target:get("installdir") then

@@ -29,6 +29,7 @@ function main (target, opt)
 
     -- get app and resources directory
     local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
+    local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
     local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
     -- need re-compile it?
@@ -44,6 +45,13 @@ function main (target, opt)
         cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
     else
         cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+    end
+
+    -- copy target file
+    if is_plat("macosx") then
+        os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
+    else
+        os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))
     end
 
     -- copy PkgInfo to the contents directory

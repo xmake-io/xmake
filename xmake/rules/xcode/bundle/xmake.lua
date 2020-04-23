@@ -44,7 +44,6 @@ rule("xcode.bundle")
 
         -- set target info for bundle 
         target:set("filename", target:basename())
-        target:set("targetdir", path.join(contentsdir, "MacOS"))
 
         -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
         target:set("kind", "binary")
@@ -64,6 +63,7 @@ rule("xcode.bundle")
 
         -- get bundle and resources directory
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
+        local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
         -- need re-generate it?
@@ -79,6 +79,13 @@ rule("xcode.bundle")
             cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
         else
             cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+        end
+
+        -- copy target file
+        if is_plat("macosx") then
+            os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
+        else
+            os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))
         end
 
         -- copy resource files
