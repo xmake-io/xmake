@@ -104,6 +104,22 @@ function dump()
     print(mobile_provisions())
 end
 
+-- remove signature 
+function unsign(programdir)
+
+    -- only for macosx
+    assert(is_host("macosx"), "codesign: only support for macOS!")
+
+    -- get codesign
+    local codesign = find_tool("codesign")
+    if not codesign then
+        return
+    end
+
+    -- remove signature
+    os.vrunv(codesign.program, {"--remove-signature", programdir})
+end
+
 -- main entry
 function main (programdir, codesign_identity, mobile_provision)
 
