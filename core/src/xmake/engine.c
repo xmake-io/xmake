@@ -395,7 +395,19 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
 #endif
 
     // put a new table into the stack
-    lua_createtable(engine->lua, argc, 0);
+    lua_newtable(engine->lua);
+
+    // patch the task arguments list
+    if (taskargv)
+    {
+        tb_char_t** taskarg = taskargv;
+        while (*taskarg)
+        {
+            lua_pushstring(engine->lua, *taskarg);
+            lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
+            taskarg++;
+        }
+    }
 
     // save all arguments to the new table
     tb_int_t i = 0;
@@ -410,18 +422,6 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
         lua_pushstring(engine->lua, argv[i]);
 #endif
         lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
-
-        // patch the task arguments list
-        if (taskargv && i == 1)
-        {
-            tb_char_t** taskarg = taskargv;
-            while (*taskarg)
-            {
-                lua_pushstring(engine->lua, *taskarg);
-                lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
-                taskarg++;
-            }
-        }
     }
 
     // _ARGV = table_new
