@@ -16,10 +16,6 @@ static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
 }
 tb_int_t main(tb_int_t argc, tb_char_t** argv)
 {
-#ifdef __tb_debug__
-    tb_char_t const* luaopts = "-vD";
-#else
-    tb_char_t const* luaopts = "-D";
-#endif
-    return xm_engine_run_lua("${TARGETNAME}", argc, argv, lni_initalizer, luaopts);
+    tb_char_t* taskargv = {"lua", "-D", "lua.main", tb_null};
+    return xm_engine_run("${TARGETNAME}", argc, argv, taskargv, lni_initalizer);
 }

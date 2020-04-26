@@ -385,7 +385,7 @@ static luaL_Reg const g_semver_functions[] =
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb_char_t** argv)
+static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv)
 {
     // check
     tb_assert_and_check_return_val(engine && engine->lua && argc >= 1 && argv, tb_false);
@@ -410,6 +410,18 @@ static tb_bool_t xm_engine_save_arguments(xm_engine_t* engine, tb_int_t argc, tb
         lua_pushstring(engine->lua, argv[i]);
 #endif
         lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
+
+        // patch the task arguments list
+        if (taskargv && i == 1)
+        {
+            tb_char_t** taskarg = taskargv;
+            while (*taskarg)
+            {
+                lua_pushstring(engine->lua, *taskarg);
+                lua_rawseti(engine->lua, -2, (int)lua_objlen(engine->lua, -2) + 1);
+                taskarg++;
+            }
+        }
     }
 
     // _ARGV = table_new
@@ -894,7 +906,7 @@ tb_void_t xm_engine_exit(xm_engine_ref_t self)
     // exit it
     tb_free(engine);
 }
-tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv)
+tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv)
 {
     // check
     xm_engine_t* engine = (xm_engine_t*)self;
@@ -906,7 +918,7 @@ tb_int_t xm_engine_main(xm_engine_ref_t self, tb_int_t argc, tb_char_t** argv)
 #endif
 
     // save main arguments to the global variable: _ARGV
-    if (!xm_engine_save_arguments(engine, argc, argv)) return -1;
+    if (!xm_engine_save_arguments(engine, argc, argv, taskargv)) return -1;
 
     // get the project directory
     tb_char_t path[TB_PATH_MAXN] = {0};
@@ -974,7 +986,7 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     luaL_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
 }
-tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer)
+tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)
 {
     tb_int_t ok = -1;
     if (xm_init())
@@ -982,36 +994,10 @@ tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, x
         xm_engine_ref_t engine = xm_engine_init(name, lni_initalizer);
         if (engine)
         {
-            ok = xm_engine_main(engine, argc, argv);
+            ok = xm_engine_main(engine, argc, argv, taskargv);
             xm_engine_exit(engine);
         }
         xm_exit();
     }
     return ok;
-}
-tb_int_t xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts)
-{
-    if (luaopts) 
-    {
-        tb_int_t   argc2 = argc + 3;
-        tb_char_t* argv2[256];
-        argv2[0]  = argv[0];
-        argv2[1]  = "lua";
-        argv2[2]  = (tb_char_t*)luaopts;
-        argv2[3]  = "lua.main";
-        if (argc > 1) tb_memcpy(argv2 + 4, argv + 1, (argc - 1) * sizeof(tb_char_t*));
-        argv2[argc2] = tb_null;
-        return xm_engine_run(name, argc2, argv2, lni_initalizer);
-    }
-    else
-    {
-        tb_int_t   argc2 = argc + 2;
-        tb_char_t* argv2[256];
-        argv2[0]  = argv[0];
-        argv2[1]  = "lua";
-        argv2[2]  = "lua.main";
-        if (argc > 1) tb_memcpy(argv2 + 3, argv + 1, (argc - 1) * sizeof(tb_char_t*));
-        argv2[argc2] = tb_null;
-        return xm_engine_run(name, argc2, argv2, lni_initalizer);
-    }
 }

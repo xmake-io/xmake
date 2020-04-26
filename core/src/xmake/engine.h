@@ -65,10 +65,11 @@ tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
  * @param engine            the engine
  * @param argc              the argument count of the console
  * @param argv              the argument list of the console
+ * @param taskargv          the argument list of sub-task, e.g. taskargv(lua -vD lua.main) for xmake lua -vD lua.main arg1 arg2 ..
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv);
+tb_int_t                    xm_engine_main(xm_engine_ref_t engine, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv);
 
 /*! register lni modules in the engine, @note we need call it in lni_initalizer()
  *
@@ -83,25 +84,12 @@ tb_void_t                   xm_engine_register(xm_engine_ref_t engine, tb_char_t
  * @param name              the engine name
  * @param argc              the argument count of the console
  * @param argv              the argument list of the console
+ * @param taskargv          the argument list of sub-task, e.g. taskargv(lua -vD lua.main) for xmake lua -vD lua.main arg1 arg2 ..
  * @param lni_initalizer    the lni initializer
  *
  * @return                  the error code of main()
  */
-tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer);
-
-/*! run lua action entry of the engine singleton for `xmake lua [-vD] lua.main`
- * 
- * @note we need set $XMAKE_MODULES_DIR with the directory of "lua\\*.lua"
- *
- * @param name              the engine name
- * @param argc              the argument count of the console
- * @param argv              the argument list of the console
- * @param lni_initalizer    the lni initializer
- * @param luaopts           the lua options, e.g. "-vD"
- *
- * @return                  the error code of main()
- */
-tb_int_t                    xm_engine_run_lua(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, xm_engine_lni_initalizer_cb_t lni_initalizer, tb_char_t const* luaopts);
+tb_int_t                    xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * extern
