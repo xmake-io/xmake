@@ -16,6 +16,7 @@
 ### Change
 
 * [#750](https://github.com/xmake-io/xmake/issues/750): Improve qt.widgetapp rule to support private slot
+* Improve Qt/deploy for android and support Qt 5.14.0
 
 ## v2.3.2
 
@@ -735,6 +736,7 @@
 ### 改进
 
 * [#750](https://github.com/xmake-io/xmake/issues/750): 改进qt.widgetapp规则，支持qt私有槽
+* 改进Qt/android的apk部署，并且支持Qt5.14.0新版本sdk
 
 ## v2.3.2
 
