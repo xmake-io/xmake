@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#771](https://github.com/xmake-io/xmake/issues/771): Check includedirs, linkdirs and frameworkdirs
+
 ## v2.3.3
 
 ### New features
@@ -720,6 +724,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#771](https://github.com/xmake-io/xmake/issues/771): 检测includedirs,linkdirs和frameworkdirs的输入有效性
 
 ## v2.3.3
 
