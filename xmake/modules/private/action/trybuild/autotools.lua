@@ -51,11 +51,11 @@ end
 function _get_buildenvs()
     local envs = {}
     if is_plat(os.subhost()) then
-        local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
-        local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
-        local asflags  = table.copy(table.wrap(package:config("asflags")))
-        local ldflags  = table.copy(table.wrap(package:config("ldflags")))
-        if package:is_plat("linux") and package:is_arch("i386") then
+        local cflags   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+        local cxxflags = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+        local asflags  = table.copy(table.wrap(_get_buildenv("asflags")))
+        local ldflags  = table.copy(table.wrap(_get_buildenv("ldflags")))
+        if is_plat("linux") and is_arch("i386") then
             table.insert(cflags,   "-m32")
             table.insert(cxxflags, "-m32")
             table.insert(asflags,  "-m32")
