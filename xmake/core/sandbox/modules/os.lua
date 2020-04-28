@@ -337,7 +337,7 @@ function sandbox_os.exec(cmd, ...)
 
     -- run it
     local ok, errors = os.exec(cmd)
-    if ok ~= 0 and errors then
+    if ok ~= 0 then
         if ok ~= nil then
             errors = string.format("exec(%s) failed(%d)", cmd, ok)
         else
