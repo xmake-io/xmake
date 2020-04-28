@@ -13,8 +13,8 @@ function test_build:build(argv)
     os.exec("xmake")
     os.exec("xmake p -D")
     if not is_host("windows") then
-        os.exec("xmake install -o /tmp -a -D")
-        os.exec("xmake uninstall --installdir=/tmp -D")
+        os.exec("xmake install -o $(tmpdir) -a -D")
+        os.exec("xmake uninstall --installdir=$(tmpdir) -D")
     end
     os.exec("xmake c -D")
     os.exec("xmake f --mode=debug -D")
