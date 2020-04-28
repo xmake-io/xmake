@@ -54,7 +54,7 @@ function main(target)
         for _, value in ipairs(_get_values_from_target(target, name)) do
             if not os.isdir(value) then
                 local sourceinfo = (target:get("__sourceinfo_" .. name) or {})[value] or {}
-                cprint("${color.warning}%s(%s).add_%s(\"%s\"): path not found at %s:%d", target:type(), target:name(), name, value, sourceinfo.file or "", sourceinfo.line or -1)
+                cprint("${color.warning}${text.warning}: %s(%s).add_%s(\"%s\") path not found at %s:%d", target:type(), target:name(), name, value, sourceinfo.file or "", sourceinfo.line or -1)
             end
         end
     end

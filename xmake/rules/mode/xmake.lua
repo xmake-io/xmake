@@ -173,6 +173,62 @@ rule("mode.tsan")
         end
     end)
 
+-- define rule: msan mode
+rule("mode.msan")
+    after_load(function (target)
+
+        -- is msan mode now? xmake f -m msan
+        if is_mode("msan") then
+
+            -- enable the debug symbols
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
+
+            -- enable optimization
+            if not target:get("optimize") then
+                if is_plat("android", "iphoneos") then
+                    target:set("optimize", "smallest")
+                else
+                    target:set("optimize", "fastest")
+                end
+            end
+
+            -- enable msan checker
+            target:add("cxflags", "-fsanitize=memory")
+            target:add("mxflags", "-fsanitize=memory")
+            target:add("ldflags", "-fsanitize=memory")
+        end
+    end)
+
+-- define rule: lsan mode
+rule("mode.lsan")
+    after_load(function (target)
+
+        -- is lsan mode now? xmake f -m lsan
+        if is_mode("lsan") then
+
+            -- enable the debug symbols
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
+
+            -- enable optimization
+            if not target:get("optimize") then
+                if is_plat("android", "iphoneos") then
+                    target:set("optimize", "smallest")
+                else
+                    target:set("optimize", "fastest")
+                end
+            end
+
+            -- enable lsan checker
+            target:add("cxflags", "-fsanitize=leak")
+            target:add("mxflags", "-fsanitize=leak")
+            target:add("ldflags", "-fsanitize=leak")
+        end
+    end)
+
 -- define rule: ubsan mode
 rule("mode.ubsan")
     after_load(function (target)
