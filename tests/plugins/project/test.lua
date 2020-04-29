@@ -5,7 +5,7 @@ import("core.platform.environment")
 
 function test_vsxmake(t)
 
-    if os.subhost() ~= "windows" then
+    if not is_subhost("windows") then
         return t:skip("wrong host platform")
     end
 
@@ -23,10 +23,9 @@ function test_vsxmake(t)
     config.set("arch", arch, {readonly = true, force = true})
     config.check()
     platform.load(config.plat())
-    local vs = config.get("vs")
-    environment.enter("toolchains")
 
     -- create sln & vcxproj
+    local vs = config.get("vs")
     local vstype = "vsxmake" .. vs
     os.execv("xmake", {"project", "-k", vstype, "-a", arch})
     os.cd(vstype)
@@ -35,22 +34,23 @@ function test_vsxmake(t)
     try
     {
         function ()
+            environment.enter("toolchains")
             os.exec("msbuild /P:XmakeDiagnosis=true /P:XmakeVerbose=true")
+            environment.leave("toolchains")
         end,
         catch
         {
             function ()
-                io.write("--- sln file ---\n")
+                print("--- sln file ---")
                 io.cat(projname .. "_" .. vstype .. ".sln")
-                io.write("--- vcx file ---\n")
+                print("--- vcx file ---")
                 io.cat(projname .. "/" .. projname .. ".vcxproj")
-                io.write("--- filter file ---\n")
+                print("--- filter file ---")
                 io.cat(projname .. "/" .. projname .. ".vcxproj.filters")
                 raise("msbuild failed")
             end
         }
     }
-    environment.leave("toolchains")
 
     -- clean up
     os.cd(os.scriptdir())
