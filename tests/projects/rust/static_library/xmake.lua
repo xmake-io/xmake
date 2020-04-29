@@ -22,7 +22,4 @@ target("test")
     -- add files
     add_files("src/main.rs")
 
-    -- add link directory
-    add_linkdirs("$(buildir)/$(mode)/$(arch)")
-
 

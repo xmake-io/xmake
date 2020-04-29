@@ -60,7 +60,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     end
 
     -- trace progress into
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress.start)
+    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", progress)
     if verbose then
         cprint("${dim color.build.target}linking.$(mode) %s", path.filename(targetfile))
     else

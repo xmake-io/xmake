@@ -23,6 +23,11 @@ rule("rust.build")
     set_sourcekinds("rc")    
     on_build("build.target")
 
--- define rule: cpp
+-- define rule: rust
 rule("rust")
+
+    -- add build rules
     add_deps("rust.build")
+
+    -- inherit links and linkdirs of all dependent targets by default
+    add_deps("utils.inherit.links")
