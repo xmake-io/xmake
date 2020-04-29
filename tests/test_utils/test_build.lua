@@ -23,10 +23,6 @@ function test_build:build(argv)
     os.exec("xmake m -e buildtest")
     os.exec("xmake m -l")
     os.exec("xmake m buildtest")
-    if sudo.has() then
-        sudo.exec("xmake install --all -D")
-        sudo.exec("xmake uninstall -D")
-    end
     os.exec("xmake m -d buildtest")
 
     -- test iphoneos?
