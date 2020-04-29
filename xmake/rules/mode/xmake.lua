@@ -142,6 +142,7 @@ rule("mode.asan")
             target:add("cxflags", "-fsanitize=address")
             target:add("mxflags", "-fsanitize=address")
             target:add("ldflags", "-fsanitize=address")
+            target:add("shflags", "-fsanitize=address")
         end
     end)
 
@@ -170,6 +171,7 @@ rule("mode.tsan")
             target:add("cxflags", "-fsanitize=thread")
             target:add("mxflags", "-fsanitize=thread")
             target:add("ldflags", "-fsanitize=thread")
+            target:add("shflags", "-fsanitize=thread")
         end
     end)
 
@@ -198,6 +200,7 @@ rule("mode.msan")
             target:add("cxflags", "-fsanitize=memory")
             target:add("mxflags", "-fsanitize=memory")
             target:add("ldflags", "-fsanitize=memory")
+            target:add("shflags", "-fsanitize=memory")
         end
     end)
 
@@ -226,6 +229,7 @@ rule("mode.lsan")
             target:add("cxflags", "-fsanitize=leak")
             target:add("mxflags", "-fsanitize=leak")
             target:add("ldflags", "-fsanitize=leak")
+            target:add("shflags", "-fsanitize=leak")
         end
     end)
 
@@ -254,6 +258,7 @@ rule("mode.ubsan")
             target:add("cxflags", "-fsanitize=undefined")
             target:add("mxflags", "-fsanitize=undefined")
             target:add("ldflags", "-fsanitize=undefined")
+            target:add("shflags", "-fsanitize=undefined")
         end
     end)
 
@@ -302,6 +307,7 @@ rule("mode.check")
                 target:add("cxflags", "-fsanitize=address", "-ftrapv")
                 target:add("mxflags", "-fsanitize=address", "-ftrapv")
                 target:add("ldflags", "-fsanitize=address")
+                target:add("shflags", "-fsanitize=address")
             end
         end
     end)
