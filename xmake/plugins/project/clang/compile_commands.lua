@@ -23,6 +23,11 @@ import("core.tool.compiler")
 import("core.project.project")
 import("core.language.language")
 
+-- escape path
+function _escape_path(p)
+    return os.args(p, {escape = true, nowrap = true})
+end
+
 -- make the object
 function _make_object(jsonfile, target, sourcefile, objectfile)
 
@@ -40,7 +45,7 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     -- escape '"', '\'
     local arguments_escape = {}
     for _, arg in ipairs(arguments) do
-        table.insert(arguments_escape, os.args(arg, {escape = true}))
+        table.insert(arguments_escape, _escape_path(arg))
     end
 
     -- make body
@@ -49,7 +54,7 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
   "directory": "%s",
   "arguments": ["%s"],
   "file": "%s"
-}]], (_g.firstline and "" or ",\n"), os.args(os.projectdir(), {escape = true}), table.concat(arguments_escape, "\", \""), os.args(sourcefile, {escape = true}))
+}]], (_g.firstline and "" or ",\n"), _escape_path(os.projectdir()), table.concat(arguments_escape, "\", \""), _escape_path(sourcefile))
 
     -- clear first line marks
     _g.firstline = false

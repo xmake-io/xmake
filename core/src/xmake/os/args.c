@@ -33,7 +33,7 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
-static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr, tb_size_t size, tb_bool_t escape)
+static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr, tb_size_t size, tb_bool_t escape, tb_bool_t nowrap)
 {
     // check
     tb_assert_and_check_return(size < TB_PATH_MAXN);
@@ -60,7 +60,7 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     buff[n] = '\0';
 
     // wrap "" if exists escape characters and spaces?
-    if (wrap_quote) 
+    if (wrap_quote && !nowrap) 
     {
         tb_string_chrcat(result, '\"');
         tb_size_t i = 0;
@@ -90,10 +90,21 @@ tb_int_t xm_os_args(lua_State* lua)
     tb_bool_t escape = tb_false;
     if (lua_istable(lua, 2)) 
     { 
-        // is detached?
+        // is escape?
         lua_pushstring(lua, "escape");
         lua_gettable(lua, 2);
         escape = lua_toboolean(lua, -1);
+        lua_pop(lua, 1);
+    }
+
+    // disable to wrap quote characters in global?
+    tb_bool_t nowrap = tb_false;
+    if (lua_istable(lua, 2)) 
+    { 
+        // is nowrap?
+        lua_pushstring(lua, "nowrap");
+        lua_gettable(lua, 2);
+        nowrap = lua_toboolean(lua, -1);
         lua_pop(lua, 1);
     }
 
@@ -117,7 +128,7 @@ tb_int_t xm_os_args(lua_State* lua)
             size_t size = 0;
             tb_char_t const* cstr = luaL_checklstring(lua, -1, &size);
             if (cstr && size)
-                tb_os_args_append(&result, cstr, size, escape);
+                tb_os_args_append(&result, cstr, size, escape, nowrap);
             lua_pop(lua, 1);
         }
     }
@@ -126,7 +137,7 @@ tb_int_t xm_os_args(lua_State* lua)
         size_t size = 0;
         tb_char_t const* cstr = luaL_checklstring(lua, 1, &size);
         if (cstr && size)
-            tb_os_args_append(&result, cstr, size, escape);
+            tb_os_args_append(&result, cstr, size, escape, nowrap);
     }
 
     // return result

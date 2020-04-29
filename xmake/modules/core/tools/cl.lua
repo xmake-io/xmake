@@ -235,6 +235,8 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
+    -- @note we use os.args() to escape and wrap it, 
+    -- because all flags will be preprocessed in `builder:_preprocess_flags`/`os.argv()`
     return "-I" .. os.args(path.translate(dir))
 end
 
@@ -310,7 +312,7 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     end
 
     -- make the compile arguments list
-    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. os.args(pcoutputfile), "-Fo" .. os.args(pcoutputfile .. ".obj"), pcheaderfile)
+    return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
 -- make the compile arguments list
@@ -323,7 +325,8 @@ function compargv(self, sourcefile, objectfile, flags)
     end
 
     -- make the compile arguments list
-    return self:program(), table.join("-c", flags, "-Fo" .. os.args(objectfile), sourcefile)
+    -- @note only flags in nf_xxx() need be wrapped via os.args, @see nf_includedir
+    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- compile the source file
