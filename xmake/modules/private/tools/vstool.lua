@@ -63,7 +63,7 @@ function runv(program, argv, opt)
             if ok ~= nil then
                 errors = string.format("vstool.runv(%s) failed(%d)", cmd, ok)
             else
-                errors = string.format("vstool.runv(%s), error: %s", cmd, syserrors and syserrors or "unknown")
+                errors = string.format("vstool.runv(%s), %s", cmd, syserrors and syserrors or "unknown reason")
             end
         end
 
@@ -129,7 +129,7 @@ function iorunv(program, argv, opt)
             if ok ~= nil then
                 errors = string.format("vstool.iorunv(%s) failed(%d)", cmd, ok)
             else
-                errors = string.format("vstool.iorunv(%s), error: %s", cmd, syserrors and syserrors or "unknown")
+                errors = string.format("vstool.iorunv(%s), %s", cmd, syserrors and syserrors or "unknown reason")
             end
         end
 

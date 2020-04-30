@@ -341,7 +341,7 @@ function sandbox_os.exec(cmd, ...)
         if ok ~= nil then
             errors = string.format("exec(%s) failed(%d)", cmd, ok)
         else
-            errors = string.format("cannot exec(%s), error: %s", cmd, errors and errors or "unknown")
+            errors = string.format("cannot exec(%s), %s", cmd, errors and errors or "unknown reason")
         end
         os.raise(errors)
     end
@@ -382,7 +382,7 @@ function sandbox_os.execv(program, argv, opt)
         if ok ~= nil then
             errors = string.format("execv(%s) failed(%d)", cmd, ok)
         else
-            errors = string.format("cannot execv(%s), error: %s", cmd, errors and errors or "unknown")
+            errors = string.format("cannot execv(%s), %s", cmd, errors and errors or "unknown reason")
         end
         os.raise(errors)
     end

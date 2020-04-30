@@ -71,7 +71,7 @@ function poller:insert(obj, events, udata)
     -- insert it
     local ok, errors = io.poller_insert(obj:otype(), obj:cdata(), events) 
     if not ok then
-        return false, string.format("%s: insert events(%d) to poller failed, error: %s", obj, events, errors or "unknown")
+        return false, string.format("%s: insert events(%d) to poller failed, %s", obj, events, errors or "unknown reason")
     end
 
     -- save poller object data and save obj/ref for gc
@@ -85,7 +85,7 @@ function poller:modify(obj, events, udata)
     -- modify it
     local ok, errors = io.poller_modify(obj:otype(), obj:cdata(), events) 
     if not ok then
-        return false, string.format("%s: modify events(%d) to poller failed, error: %s", obj, events, errors or "unknown")
+        return false, string.format("%s: modify events(%d) to poller failed, %s", obj, events, errors or "unknown reason")
     end
 
     -- update poller object data 
@@ -99,7 +99,7 @@ function poller:remove(obj)
     -- remove it
     local ok, errors = io.poller_remove(obj:otype(), obj:cdata()) 
     if not ok then
-        return false, string.format("%s: remove events from poller failed, error: %s", obj, errors or "unknown")
+        return false, string.format("%s: remove events from poller failed, %s", obj, errors or "unknown reason")
     end
 
     -- remove poller object data 

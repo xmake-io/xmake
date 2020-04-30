@@ -317,7 +317,7 @@ function pipe.open(name, mode, buffsize)
     if pipefile then
         return _instance.new(pipefile, name)
     else
-        return nil, string.format("failed to open pipe: %s, error: %s", name, errors or "unknown")
+        return nil, string.format("failed to open pipe: %s, %s", name, errors or "unknown reason")
     end
 end
 
@@ -334,7 +334,7 @@ function pipe.openpair(buffsize)
     if rpipefile and wpipefile then
         return _instance.new(rpipefile), _instance.new(wpipefile)
     else
-        return nil, nil, string.format("failed to open anonymous pipe pair, error: %s", errors or "unknown")
+        return nil, nil, string.format("failed to open anonymous pipe pair, %s", errors or "unknown reason")
     end
 end
 

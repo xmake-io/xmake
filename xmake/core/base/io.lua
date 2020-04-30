@@ -563,7 +563,7 @@ function io.open(filepath, mode, opt)
     if file then
         return _file.new(filepath, file)
     else
-        return nil, string.format("cannot open file: %s, error: %s", filepath, os.strerror())
+        return nil, string.format("cannot open file: %s, %s", filepath, os.strerror())
     end
 end
 
@@ -578,7 +578,7 @@ function io.openlock(filepath)
     if lock then
         return _filelock.new(filepath, lock)
     else
-        return nil, string.format("cannot open lock: %s, error: %s", filepath, os.strerror())
+        return nil, string.format("cannot open lock: %s, %s", filepath, os.strerror())
     end
 end
 

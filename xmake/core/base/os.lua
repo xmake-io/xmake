@@ -59,7 +59,7 @@ function os._cp(src, dst, rootdir)
             src = path.absolute(src)
         end
         if not src:startswith(rootdir) then
-            return false, string.format("cannot copy file %s to %s, error: invalid rootdir(%s)", src, dst, rootdir)
+            return false, string.format("cannot copy file %s to %s, invalid rootdir(%s)", src, dst, rootdir)
         end
     end
 
@@ -77,7 +77,7 @@ function os._cp(src, dst, rootdir)
 
         -- copy file
         if not os.cpfile(src, dst) then
-            return false, string.format("cannot copy file %s to %s, error: %s", src, dst, os.strerror())
+            return false, string.format("cannot copy file %s to %s, %s", src, dst, os.strerror())
         end
     -- is directory?
     elseif os.isdir(src) then
@@ -93,12 +93,12 @@ function os._cp(src, dst, rootdir)
 
         -- copy directory
         if not os.cpdir(src, dst) then
-            return false, string.format("cannot copy directory %s to %s, error:  %s", src, dst, os.strerror())
+            return false, string.format("cannot copy directory %s to %s,  %s", src, dst, os.strerror())
         end
 
     -- not exists?
     else
-        return false, string.format("cannot copy file %s, error: not found this file", src)
+        return false, string.format("cannot copy file %s, not found this file", src)
     end
 
     -- ok
@@ -438,7 +438,7 @@ function os.ln(srcpath, dstpath)
         return false, string.format("symlink is not supported!")
     end
     if not os.link(srcpath, dstpath) then
-        return false, string.format("cannot link %s to %s, error: %s", srcpath, dstpath, os.strerror())
+        return false, string.format("cannot link %s to %s, %s", srcpath, dstpath, os.strerror())
     end
     return true
 end
@@ -501,7 +501,7 @@ function os.mkdir(dir)
     local dirs = table.wrap(os._match_wildcard_pathes(dir))
     for _, _dir in ipairs(dirs) do
         if not os._mkdir(_dir) then
-            return false, string.format("cannot create directory: %s, error: %s", _dir, os.strerror())
+            return false, string.format("cannot create directory: %s, %s", _dir, os.strerror())
         end
     end
     return true
@@ -519,7 +519,7 @@ function os.rmdir(dir)
     local dirs = table.wrap(os._match_wildcard_pathes(dir))
     for _, _dir in ipairs(dirs) do
         if not os._rmdir(_dir) then
-            return false, string.format("cannot remove directory: %s, error: %s", _dir, os.strerror())
+            return false, string.format("cannot remove directory: %s, %s", _dir, os.strerror())
         end
     end
     return true
@@ -630,7 +630,7 @@ function os.runv(program, argv, opt)
                 errors = string.format("runv(%s) failed(%d)", cmd, ok)
             end
         else
-            errors = string.format("cannot runv(%s), error: %s", cmd, errors and errors or "unknown")
+            errors = string.format("cannot runv(%s), %s", cmd, errors and errors or "unknown reason")
         end
 
         -- remove the temporary log file
@@ -753,7 +753,7 @@ function os.iorunv(program, argv, opt)
         if argv then
             cmd = cmd .. " " .. os.args(argv)
         end
-        errors = string.format("cannot runv(%s), error: %s", cmd, errors and errors or "unknown")
+        errors = string.format("cannot runv(%s), %s", cmd, errors and errors or "unknown reason")
     end
 
     -- get output and error data

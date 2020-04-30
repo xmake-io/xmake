@@ -130,7 +130,7 @@ function main()
                         ok = true
                     end
                 end
-                assert(ok, "install failed, error: %s", errors or "unknown")
+                assert(ok, "install failed, %s", errors or "unknown reason")
             end
         }
     }

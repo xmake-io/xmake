@@ -92,7 +92,7 @@ function main()
                         ok = true
                     end
                 end
-                assert(ok, "uninstall failed, error: %s", errors or "unknown")
+                assert(ok, "uninstall failed, %s", errors or "unknown reason")
             end
         }
     }
