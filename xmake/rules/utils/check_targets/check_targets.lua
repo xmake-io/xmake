@@ -18,33 +18,11 @@
 -- @file        check_targets.lua
 --
 
--- add values from target options
-function _add_values_from_targetopts(values, target, name)
-    for _, opt in ipairs(target:orderopts()) do
-        table.join2(values, table.wrap(opt:get(name)))
-    end
-end
-
--- add values from target packages
-function _add_values_from_targetpkgs(values, target, name)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        local configinfo = target:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
-        else
-            -- uses the builtin package configs
-            table.join2(values, pkg:get(name))
-        end
-    end
-end
-
 -- get values from target
 function _get_values_from_target(target, name)
     local values = table.wrap(target:get(name))
-    _add_values_from_targetopts(values, target, name)
-    _add_values_from_targetpkgs(values, target, name)
+    table.join2(values, target:get_from_opts(name))
+    table.join2(values, target:get_from_pkgs(name))
     return values
 end
 

@@ -305,6 +305,47 @@ function _instance:get(name, opt)
     end
 end
 
+-- get values from target dependencies
+function _instance:get_from_deps(name, opt)
+    local values = {}
+    local orderdeps = self:orderdeps()
+    local total = #orderdeps
+    for idx, _ in ipairs(orderdeps) do
+        local dep = orderdeps[total + 1 - idx]
+        local depinherit = self:extraconf("deps", dep:name(), "inherit")
+        if depinherit == nil or depinherit then
+            table.join2(values, dep:get(name, opt))
+        end
+    end
+    return values
+end
+
+-- get values from target options
+function _instance:get_from_opts(name)
+    local values = {}
+    for _, opt in ipairs(self:orderopts()) do
+        table.join2(values, table.wrap(opt:get(name)))
+    end
+    return values
+end
+
+-- get values from target packages
+function _instance:get_from_pkgs(name)
+    local values = {}
+    for _, pkg in ipairs(self:orderpkgs()) do
+        -- uses them instead of the builtin configs if exists extra package config
+        -- e.g. `add_packages("xxx", {links = "xxx"})`
+        local configinfo = self:pkgconfig(pkg:name())
+        if configinfo and configinfo[name] then
+            table.join2(values, configinfo[name])
+        else
+            -- uses the builtin package configs
+            table.join2(values, pkg:get(name))
+        end
+    end
+    return values
+end
+
 -- set the value to the target info
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)

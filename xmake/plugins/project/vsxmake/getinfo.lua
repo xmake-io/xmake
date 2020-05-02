@@ -99,35 +99,12 @@ function _make_arrs(arr)
     return table.concat(r, ";")
 end
 
-function _get_values(target, name)
+-- get values from target
+function _get_values_from_target(target, name)
     local values = table.wrap(target:get(name))
-
-    -- from deps
-    for _, dep in irpairs(target:orderdeps()) do
-        local depinherit = target:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, { interface = true }))
-        end
-    end
-
-    -- from opts
-    for _, opt in ipairs(target:orderopts()) do
-        table.join2(values, table.wrap(opt:get(name)))
-    end
-
-    -- from packages
-    for _, pkg in ipairs(target:orderpkgs()) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        local configinfo = target:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
-        else
-            -- uses the builtin package configs
-            table.join2(values, pkg:get(name))
-        end
-    end
-
+    table.join2(values, target:get_from_opts(name))
+    table.join2(values, target:get_from_pkgs(name))
+    table.join2(values, target:get_from_deps(name, {interface = true}))
     return table.unique(values)
 end
 
@@ -160,13 +137,13 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.rundir        = _make_dirs(target:get("rundir"))
     targetinfo.configdir     = _make_dirs(os.getenv("XMAKE_CONFIGDIR"))
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
-    targetinfo.includedirs   = _make_dirs(_get_values(target, "includedirs"))
-    targetinfo.linkdirs      = _make_dirs(_get_values(target, "linkdirs"))
-    targetinfo.sourcedirs    = _make_dirs(_get_values(target, "values.project.vsxmake.sourcedirs"))
+    targetinfo.includedirs   = _make_dirs(_get_values_from_target(target, "includedirs"))
+    targetinfo.linkdirs      = _make_dirs(_get_values_from_target(target, "linkdirs"))
+    targetinfo.sourcedirs    = _make_dirs(_get_values_from_target(target, "values.project.vsxmake.sourcedirs"))
 
     -- save defines
-    targetinfo.defines       = _make_arrs(_get_values(target, "defines"))
-    targetinfo.languages     = _make_arrs(_get_values(target, "languages"))
+    targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
+    targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
     local configcache = cache("local.config")
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do

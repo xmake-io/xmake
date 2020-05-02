@@ -30,41 +30,6 @@ function _get_unix_path(filepath)
     return (path.translate(filepath):gsub('\\', '/'))
 end
 
--- add values from target options
-function _add_values_from_targetopts(values, target, name)
-	for _, opt in ipairs(target:orderopts()) do
-		table.join2(values, table.wrap(opt:get(name)))
-	end
-end
-
--- add values from target dependencies
-function _add_values_from_targetdeps(values, target, name)
-    local orderdeps = target:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-        local dep = orderdeps[total + 1 - idx]
-        local depinherit = target:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, {interface = true}))
-        end
-    end
-end
-
--- add values from target packages
-function _add_values_from_targetpkgs(values, target, name)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        local configinfo = target:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
-        else
-            -- uses the builtin package configs
-            table.join2(values, pkg:get(name))
-        end
-    end
-end
-
 -- add project info
 function _add_project(cmakelists)
     cmakelists:print([[# this is the build file for project %s
@@ -144,9 +109,9 @@ end
 -- add target include directories
 function _add_target_include_directories(cmakelists, target)
     local includedirs = table.wrap(target:get("includedirs"))
-    _add_values_from_targetopts(includedirs, target, "includedirs")
-    _add_values_from_targetpkgs(includedirs, target, "includedirs")
-    _add_values_from_targetdeps(includedirs, target, "includedirs")
+    table.join2(includedirs, target:get_from_opts("includedirs"))
+    table.join2(includedirs, target:get_from_pkgs("includedirs"))
+    table.join2(includedirs, target:get_from_deps("includedirs", {interface = true}))
     includedirs = table.unique(includedirs)
     if #includedirs > 0 then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
@@ -183,9 +148,9 @@ end
 -- add target compile definitions
 function _add_target_compile_definitions(cmakelists, target)
     local defines = table.wrap(target:get("defines"))
-    _add_values_from_targetopts(defines, target, "defines")
-    _add_values_from_targetpkgs(defines, target, "defines")
-    _add_values_from_targetdeps(defines, target, "defines")
+    table.join2(defines, target:get_from_opts("defines"))
+    table.join2(defines, target:get_from_pkgs("defines"))
+    table.join2(defines, target:get_from_deps("defines", {interface = true}))
     defines = table.unique(defines)
     if #defines > 0 then
         cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
@@ -338,21 +303,13 @@ function _add_target_link_libraries(cmakelists, target)
 
     -- add links
     local links = table.wrap(target:get("links"))
-    _add_values_from_targetopts(links, target, "links")
-    _add_values_from_targetpkgs(links, target, "links")
-
-    -- add links from target deps
-    local targetkind = target:targetkind()
-    if targetkind == "binary" or targetkind == "shared" then
-        for _, dep in irpairs(target:orderdeps()) do
-            local depkind = dep:targetkind()
-            if depkind == "static" or depkind == "shared" then
-                table.insert(links, dep:name())
-            end
-        end
-    end
-    _add_values_from_targetdeps(links, target, "links")
+    table.join2(links, target:get_from_opts("links"))
+    table.join2(links, target:get_from_pkgs("links"))
+    table.join2(links, target:get_from_deps("links", {interface = true}))
     table.join2(links, target:get("syslinks"))
+    table.join2(links, target:get_from_opts("syslinks"))
+    table.join2(links, target:get_from_pkgs("syslinks"))
+    table.join2(links, target:get_from_deps("syslinks", {interface = true}))
     links = table.unique(links)
     if #links > 0 then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
@@ -366,9 +323,9 @@ end
 -- add target link directories
 function _add_target_link_directories(cmakelists, target)
     local linkdirs = table.wrap(target:get("linkdirs"))
-    _add_values_from_targetopts(linkdirs, target, "linkdirs")
-    _add_values_from_targetpkgs(linkdirs, target, "linkdirs")
-    _add_values_from_targetdeps(linkdirs, target, "linkdirs")
+    table.join2(linkdirs, target:get_from_opts("linkdirs"))
+    table.join2(linkdirs, target:get_from_pkgs("linkdirs"))
+    table.join2(linkdirs, target:get_from_deps("linkdirs", {interface = true}))
     linkdirs = table.unique(linkdirs)
     if #linkdirs > 0 then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())

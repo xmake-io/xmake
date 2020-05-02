@@ -131,46 +131,6 @@ function builder:_inherit_flags_from_targetdeps(flags, target)
     end
 end
 
--- inherit values (only for public/interface) from target deps
---
--- e.g. 
--- add_defines("", {public = true})
--- add_defines("", {interface = true})
---
-function builder:_inherit_values_from_targetdeps(values, target, name)
-    local orderdeps = target:orderdeps()
-    local total = #orderdeps
-    for idx, _ in ipairs(orderdeps) do
-        local dep = orderdeps[total + 1 - idx]
-        local depinherit = target:extraconf("deps", dep:name(), "inherit")
-        if depinherit == nil or depinherit then
-            table.join2(values, dep:get(name, {interface = true}))
-        end
-    end
-end
-
--- add values from target options
-function builder:_add_values_from_targetopts(values, target, name)
-    for _, opt in ipairs(target:orderopts()) do
-        table.join2(values, table.wrap(opt:get(name)))
-    end
-end
-
--- add values from target packages
-function builder:_add_values_from_targetpkgs(values, target, name)
-    for _, pkg in ipairs(target:orderpkgs()) do
-        -- uses them instead of the builtin configs if exists extra package config
-        -- e.g. `add_packages("xxx", {links = "xxx"})`
-        local configinfo = target:pkgconfig(pkg:name())
-        if configinfo and configinfo[name] then
-            table.join2(values, configinfo[name])
-        else
-            -- uses the builtin package configs
-            table.join2(values, pkg:get(name))
-        end
-    end
-end
-
 -- add flags from the flagkind 
 function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
     local targetflags = target:get(flagkind, opt)
@@ -315,8 +275,8 @@ function builder:_add_flags_from_language(flags, target, getters)
                             local results = {}
                             if target:type() == "target" then
 
-                                -- inherit flagvalues (public or interface) of all dependent targets
-                                self:_inherit_values_from_targetdeps(results, target, name)
+                                -- get flagvalues (public or interface) of all dependent targets
+                                table.join2(results, target:get_from_deps(name, {interface = true}))
 
                                 -- get flagvalues of target with given flagname
                                 table.join2(results, target:get(name))
@@ -328,8 +288,8 @@ function builder:_add_flags_from_language(flags, target, getters)
                             -- is target? get flagvalues of the attached options and packages
                             local results = {}
                             if target:type() == "target" then
-                                self:_add_values_from_targetopts(results, target, name)
-                                self:_add_values_from_targetpkgs(results, target, name)
+                                table.join2(results, target:get_from_opts(name))
+                                table.join2(results, target:get_from_pkgs(name))
 
                             -- is option? get flagvalues of option with given flagname
                             elseif target:type() == "option" then
