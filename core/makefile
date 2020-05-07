@@ -252,7 +252,7 @@ ifeq ($(HOST),macosx)
 SED			:= perl -pi -e
 SEDX		:= perl -p -e
 else
-ifeq isbsd
+ifdef isbsd
 SED			:= perl -pi -e
 SEDX		:= perl -p -e
 else
