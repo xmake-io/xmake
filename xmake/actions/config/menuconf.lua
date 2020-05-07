@@ -54,7 +54,7 @@ end
 -- get menu config dialog
 function app:mconfdialog()
     if not self._MCONFDIALOG then
-        local mconfdialog = mconfdialog:new("app.config.mconfdialog", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
+        local mconfdialog = mconfdialog:new("app.config.mconfdialog", rect{1, 1, self:width() - 1, self:height() - 1}, "menu config")
         mconfdialog:action_set(action.ac_on_exit, function (v) 
             self:quit() 
             os.exit()
@@ -66,6 +66,12 @@ function app:mconfdialog()
         self._MCONFDIALOG = mconfdialog
     end
     return self._MCONFDIALOG
+end
+
+-- on resize
+function app:on_resize()
+    self:mconfdialog():bounds_set(rect{1, 1, self:width() - 1, self:height() - 1})
+    application.on_resize(self)
 end
 
 -- filter option
