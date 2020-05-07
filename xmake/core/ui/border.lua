@@ -39,10 +39,10 @@ function border:init(name, bounds)
 end
 
 -- draw border
-function border:draw(transparent)
+function border:on_draw(transparent)
 
     -- draw background (transparent)
-    view.draw(self, true)
+    view.on_draw(self, true)
 
     -- get corner attribute
     local cornerattr = self:cornerattr()
@@ -50,13 +50,13 @@ function border:draw(transparent)
     -- the left-upper attribute
     local attr_ul = curses.color_pair(cornerattr[1], self:background())
     if self:background() == cornerattr[1] then
-        attr_ul = {attr_ul, "standout"}
+        attr_ul = {attr_ul, "bold"}
     end
 
     -- the right-lower attribute
     local attr_rl = curses.color_pair(cornerattr[2], self:background())
     if self:background() == cornerattr[2] then
-        attr_rl = {attr_rl, "standout"}
+        attr_rl = {attr_rl, "bold"}
     end
 
     -- the border characters

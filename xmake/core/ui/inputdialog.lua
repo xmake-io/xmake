@@ -59,6 +59,11 @@ function inputdialog:init(name, bounds, title)
             end
         end
     end)
+
+    -- on resize for panel
+    self:panel():action_add(action.ac_on_resized, function (v)
+        self:textedit():bounds_set(rect{0, 1, v:width(), v:height() - 1})
+    end)
 end
 
 -- get textedit

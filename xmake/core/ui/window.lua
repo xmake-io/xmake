@@ -43,6 +43,7 @@ function window:init(name, bounds, title, shadow)
 
     -- insert shadow
     if shadow then
+        self._SHADOW = view:new("window.shadow", rect{2, 1, self:width(), self:height()}):background_set("black")
         self:insert(self:shadow())
         self:frame():bounds():movee(-2, -1)
         self:frame():invalidate(true)
@@ -98,9 +99,6 @@ end
 
 -- get shadow 
 function window:shadow()
-    if not self._SHADOW then
-        self._SHADOW = view:new("window.shadow", rect{2, 1, self:width(), self:height()}):background_set("black")
-    end
     return self._SHADOW
 end
 
@@ -113,7 +111,7 @@ function window:border()
 end
 
 -- on event
-function window:event_on(e)
+function window:on_event(e)
 
     -- select panel?
     if e.type == event.ev_keyboard then
@@ -121,6 +119,22 @@ function window:event_on(e)
             return self:panel():select_next()
         end
     end   
+end
+
+-- on resize
+function window:on_resize()
+    self:frame():bounds_set(rect{0, 0, self:width(), self:height()})
+    if self:shadow() then
+        self:shadow():bounds_set(rect{2, 1, self:width(), self:height()})
+        self:frame():bounds():movee(-2, -1)
+    end
+    self:border():bounds_set(self:frame():bounds())
+    if self:title() then
+        self:frame():center(self:title(), {centerx = true})
+    end
+    self:panel():bounds_set(self:frame():bounds())
+    self:panel():bounds():grow(-1, -1)
+    panel.on_resize(self)
 end
 
 -- return module

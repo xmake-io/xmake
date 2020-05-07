@@ -42,7 +42,7 @@ function choicedialog:init(name, bounds, title)
 
     -- init buttons
     self:button_add("select", "< Select >", function (v, e) 
-        self:choicebox():event_on(event.command {"cm_enter"}) 
+        self:choicebox():on_event(event.command {"cm_enter"}) 
         self:quit()
     end)
     self:button_add("cancel", "< Cancel >", function (v, e) 
@@ -68,7 +68,7 @@ function choicedialog:choicebox()
 end
 
 -- on event
-function choicedialog:event_on(e)
+function choicedialog:on_event(e)
 
     -- load values first
     if e.type == event.ev_idle then
@@ -79,10 +79,10 @@ function choicedialog:event_on(e)
     -- select value
     elseif e.type == event.ev_keyboard then
         if e.key_name == "Down" or e.key_name == "Up" or e.key_name == " " then
-            return self:choicebox():event_on(e)
+            return self:choicebox():on_event(e)
         end
     end
-    return boxdialog.event_on(self, e) 
+    return boxdialog.on_event(self, e) 
 end
 
 -- return module

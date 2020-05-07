@@ -35,39 +35,50 @@ function boxdialog:init(name, bounds, title)
     -- init window
     textdialog.init(self, name, bounds, title)
 
-    -- insert box
-    self:panel():insert(self:box())
-
     -- resize text
-    self:text():bounds().ey = 3
+    self._TEXT_EY = 3
+    self:text():bounds().ey = self._TEXT_EY
     self:text():invalidate(true)
     self:text():option_set("selectable", false)
     self:text():option_set("progress", false)
+
+    -- insert box
+    self:panel():insert(self:box())
 
     -- text changed
     self:text():action_set(action.ac_on_text_changed, function (v)
         if v:text() then
             local lines = #self:text():splitext(v:text())
             if lines > 0 and lines < self:height() then
-                self:box():bounds().sy = lines
-                self:text():bounds().ey = lines
-                self:box():invalidate(true)
-                self:text():invalidate(true)
+                self._TEXT_EY = lines
+                self:panel():invalidate(true)
             end
         end
     end)
 
     -- select buttons by default
     self:panel():select(self:buttons())
+
+    -- on resize for panel
+    self:panel():action_add(action.ac_on_resized, function (v)
+        self:text():bounds().ey = self._TEXT_EY
+        self:box():bounds_set(rect{0, self._TEXT_EY, v:width(), v:height() - 1})
+    end)
 end
 
 -- get box
 function boxdialog:box()
     if not self._BOX then
-        self._BOX = window:new("boxdialog.box", rect{0, 3, self:panel():width(), self:panel():height() - 1})
+        self._BOX = window:new("boxdialog.box", rect{0, self._TEXT_EY, self:panel():width(), self:panel():height() - 1})
         self._BOX:border():cornerattr_set("black", "white")
     end
     return self._BOX
+end
+
+-- on resize
+function boxdialog:on_resize()
+    self:text():text_set(self:text():text())
+    textdialog.on_resize(self)
 end
 
 -- return module

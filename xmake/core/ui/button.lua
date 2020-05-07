@@ -46,10 +46,10 @@ function button:init(name, bounds, text, on_action)
 end
 
 -- draw button
-function button:draw(transparent)
+function button:on_draw(transparent)
 
     -- draw background
-    view.draw(self, transparent)
+    view.on_draw(self, transparent)
 
     -- strip text string
     local str = self:text()
@@ -73,7 +73,7 @@ function button:draw(transparent)
 end
 
 -- on event
-function button:event_on(e)
+function button:on_event(e)
 
     -- selected?
     if not self:state("selected") then

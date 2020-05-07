@@ -43,7 +43,7 @@ function menuconf:init(name, bounds)
 end
 
 -- on event
-function menuconf:event_on(e)
+function menuconf:on_event(e)
  
     -- select config
     local back = false

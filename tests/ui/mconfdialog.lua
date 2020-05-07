@@ -16,7 +16,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- 
--- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        mconfdialog.lua
@@ -71,16 +71,29 @@ function demo:init()
     table.insert(configs, menuconf.choice {value = 3, values = {1, 5, 6, 7}, description = "choice config item"})
 
     -- init menu config dialog
-    local mconfdialog = mconfdialog:new("mconfdialog.main", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-    mconfdialog:load(configs)
-    mconfdialog:action_set(action.ac_on_exit, function (v) self:quit() end)
-    mconfdialog:action_set(action.ac_on_save, function (v) 
-        for _, config in ipairs(configs) do
-            log:print("%s", config)
-        end
-        mconfdialog:quit()
-    end)
-    self:insert(mconfdialog)
+    self:dialog_mconf():load(configs)
+    self:insert(self:dialog_mconf())
+end
+
+-- get mconfdialog
+function demo:dialog_mconf()
+    local dialog_mconf = self._DIALOG_MCONF
+    if not dialog_mconf then
+        dialog_mconf = mconfdialog:new("mconfdialog.main", rect{1, 1, self:width() - 1, self:height() - 1}, "menu config")
+        dialog_mconf:action_set(action.ac_on_exit, function (v) self:quit() end)
+        dialog_mconf:action_set(action.ac_on_save, function (v) 
+            -- TODO save configs
+            dialog_mconf:quit()
+        end)
+        self._DIALOG_MCONF = dialog_mconf
+    end
+    return dialog_mconf
+end
+
+-- on resize
+function demo:on_resize()
+    self:dialog_mconf():bounds_set(rect{1, 1, self:width() - 1, self:height() - 1})
+    application.on_resize(self)
 end
 
 -- main entry

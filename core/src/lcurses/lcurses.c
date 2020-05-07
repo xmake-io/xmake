@@ -72,6 +72,10 @@ Notes:
 #include <curses.h>
 #include <signal.h>
 
+#if defined(NCURSES_VERSION)
+#include <locale.h>
+#endif
+
 #if defined(PDCURSES) && (PDC_BUILD < 3100)
 # error Please upgrade to PDCurses 3.1 or later
 #endif
@@ -2345,6 +2349,14 @@ int xm_curses_register (lua_State *L)
     lua_pushcclosure(L, lc_initscr, 1);
     lua_settable(L, -3);
 
+    /* Since version 5.4, the ncurses library decides how to interpret non-ASCII data using the nl_langinfo function. 
+     * That means that you have to call setlocale() in the application and encode Unicode strings using one of the system’s available encodings.
+     *
+     * And we need link libncursesw.so for drawing vline, hline characters
+     */
+#if defined(NCURSES_VERSION)
+    setlocale(LC_ALL, "");
+#endif
     return 1;
 }
 

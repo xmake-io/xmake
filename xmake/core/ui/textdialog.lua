@@ -25,6 +25,7 @@ local event    = require("ui/event")
 local dialog   = require("ui/dialog")
 local curses   = require("ui/curses")
 local textarea = require("ui/textarea")
+local action   = require("ui/action")
 
 -- define module
 local textdialog = textdialog or dialog()
@@ -40,6 +41,11 @@ function textdialog:init(name, bounds, title)
 
     -- select buttons by default
     self:panel():select(self:buttons())
+
+    -- on resize for panel
+    self:panel():action_add(action.ac_on_resized, function (v)
+        self:text():bounds_set(rect:new(0, 0, v:width(), v:height() - 1))
+    end)
 end
 
 -- get text
@@ -51,16 +57,16 @@ function textdialog:text()
 end
 
 -- on event
-function textdialog:event_on(e)
+function textdialog:on_event(e)
     
     -- pass event to dialog
-    if dialog.event_on(self, e) then
+    if dialog.on_event(self, e) then
         return true
     end
 
     -- pass keyboard event to text area to scroll
     if e.type == event.ev_keyboard then
-        return self:text():event_on(e)
+        return self:text():on_event(e)
     end
 end
 

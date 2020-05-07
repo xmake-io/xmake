@@ -43,7 +43,7 @@ function choicebox:init(name, bounds)
 end
 
 -- on event
-function choicebox:event_on(e)
+function choicebox:on_event(e)
  
     -- select config
     if e.type == event.ev_keyboard then

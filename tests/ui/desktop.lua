@@ -16,7 +16,7 @@
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
 -- 
--- Copyright (C) 2015 - 2019, TBOOX Open Source Group.
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        desktop.lua
@@ -49,7 +49,7 @@ function demo:init()
     self:menubar():title():text_set("Menu Bar (Hello)")
 
     -- add title label
-    self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello xmake!"):textattr_set("white"), {centerx = true})
+    self:desktop():insert(label:new("title", rect {0, 0, 12, 1}, "hello ltui!"):textattr_set("white"), {centerx = true})
 
     -- add yes button
     self:desktop():insert(button:new("yes", rect {0, 1, 7, 2}, "< Yes >"):textattr_set("white"), {centerx = true})
@@ -59,8 +59,8 @@ function demo:init()
 end
 
 -- on event
-function demo:event_on(e)
-    if application.event_on(self, e) then
+function demo:on_event(e)
+    if application.on_event(self, e) then
         return true
     end
     if e.type == event.ev_keyboard then
@@ -73,6 +73,14 @@ function demo:event_on(e)
             self:desktop():show(not self:desktop():state("visible"))
         end
     end
+end
+
+-- on resize
+function demo:on_resize()
+    for v in self:desktop():views() do
+        self:center(v, {centerx = true})
+    end
+    application.on_resize(self)
 end
 
 -- main entry

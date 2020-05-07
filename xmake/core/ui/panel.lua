@@ -89,17 +89,8 @@ function panel:view(name)
     return self._VIEWS_CACHE[name]
 end
 
--- insert view
-function panel:insert(v, opt)
-
-    -- check
-    assert(not v:parent() or v:parent() == self)
-    assert(not self:view(v:name()), v:name() .. " has been in this panel!")
-
-    -- this view has been inserted into this panel? remove it first
-    if v:parent() == self then
-        self:remove(v)
-    end
+-- center view
+function panel:center(v, opt)
 
     -- center this view if centerx or centery are set
     local bounds = v:bounds()
@@ -117,6 +108,22 @@ function panel:insert(v, opt)
         bounds:move(org.x - bounds.sx, org.y - bounds.sy)
         v:invalidate(true)
     end
+end
+
+-- insert view
+function panel:insert(v, opt)
+
+    -- check
+    assert(not v:parent() or v:parent() == self)
+    assert(not self:view(v:name()), v:name() .. " has been in this panel!")
+
+    -- this view has been inserted into this panel? remove it first
+    if v:parent() == self then
+        self:remove(v)
+    end
+
+    -- center this view if centerx or centery are set
+    self:center(v, opt)
 
     -- insert this view
     self._VIEWS:push(v)
@@ -269,11 +276,11 @@ function panel:select_prev(start)
 end
 
 -- on event
-function panel:event_on(e)
+function panel:on_event(e)
  
     -- select view?
     if e.type == event.ev_keyboard then
-        if e.key_name == "Right" then
+        if e.key_name == "Right" or e.key_name == "Tab" then
             return self:select_next()
         elseif e.key_name == "Left" then
             return self:select_prev()
@@ -291,14 +298,14 @@ function panel:state_set(name, enable)
 end
 
 -- draw panel 
-function panel:draw(transparent)
+function panel:on_draw(transparent)
 
     -- redraw panel?
     local redraw = self:state("redraw")
 
     -- draw panel background first
     if redraw then
-        view.draw(self, transparent)
+        view.on_draw(self, transparent)
     end
 
     -- draw all child views
@@ -307,33 +314,28 @@ function panel:draw(transparent)
             v:state_set("redraw", true)
         end
         if v:state("visible") and (v:state("redraw") or v:type() == "panel") then
-            v:draw(transparent)
+            v:on_draw(transparent)
         end
     end
 end
 
 -- resize panel 
-function panel:resize()
+function panel:on_resize()
 
-    -- resize panel?
-    local resize = self:state("resize")
-    if resize then
-        view.resize(self)
-    end
+    -- resize panel
+    view.on_resize(self)
 
     -- resize all child views
     for v in self:views() do
-        if resize then
-            v:state_set("resize", true)
-        end
-        if v:state("visible") and (v:state("resize") or v:type() == "panel") then
-            v:resize()
+        v:state_set("resize", true)
+        if v:state("visible") then
+            v:on_resize()
         end
     end
 end
 
 -- refresh panel
-function panel:refresh()
+function panel:on_refresh()
 
     -- need not refresh? do not refresh it
     if not self:state("refresh") or not self:state("visible") then
@@ -343,13 +345,13 @@ function panel:refresh()
     -- refresh all child views
     for v in self:views() do
         if v:state("refresh") then
-            v:refresh()
+            v:on_refresh()
             v:state_set("refresh", false)
         end
     end
 
     -- refresh it
-    view.refresh(self)
+    view.on_refresh(self)
 
     -- clear mark
     self:state_set("refresh", false)

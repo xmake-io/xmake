@@ -18,11 +18,6 @@
 -- @file        program.lua
 --
 
---[[ Console User Interface (cui) ]-----------------------------------------
-Author: Tiago Dionizio (tiago.dionizio AT gmail.com)
-$Id: program.lua 18 2007-06-21 20:43:52Z tngd $
---------------------------------------------------------------------------]]
-
 -- load modules
 local log    = require("ui/log")
 local rect   = require("ui/rect")
@@ -145,7 +140,7 @@ function program:event()
 end
 
 -- on event
-function program:event_on(e)
+function program:on_event(e)
 
     -- get the top focused view
     local focused_view = self
@@ -156,16 +151,28 @@ function program:event_on(e)
     -- do event for focused views
     while focused_view and focused_view ~= self do
         local parent = focused_view:parent()
-        if focused_view:event_on(e) then
+        if focused_view:on_event(e) then
             return true
         end
         focused_view = parent
     end
 
+    -- do event
+    if e.type == event.ev_keyboard then
+        -- resize?
+        if e.key_name == "Resize" then
+            self:bounds_set(rect {0, 0, curses.columns(), curses.lines()})
+            return true
+        -- refresh?
+        elseif e.key_name == "Refresh" then
+            self:invalidate() 
+            return true
+        -- ctrl+c? quit program
+        elseif e.key_name == "CtrlC" then
+            self:send("cm_exit")
+            return true
+        end
     -- quit program?
-    if e.type == event.ev_keyboard and e.key_name == "CtrlC" then
-        self:send("cm_exit")
-        return true
     elseif event.is_command(e, "cm_exit") then
         self:quit()
         return true
@@ -173,7 +180,7 @@ function program:event_on(e)
 end
 
 -- put an event to view
-function program:event_put(e)
+function program:put_event(e)
     
     -- init event queue
     self._EVENT_QUEUE = self._EVENT_QUEUE or {}
@@ -184,7 +191,7 @@ end
 
 -- send command
 function program:send(command, extra)
-    self:event_put(event.command {command, extra})
+    self:put_event(event.command {command, extra})
 end
 
 -- quit program
@@ -206,11 +213,11 @@ function program:loop(argv)
         -- do event
         if e then
             event.dump(e)
-            self:event_on(e)
+            self:on_event(e)
             sleep = false
         else
             -- do idle event
-            self:event_on(event.idle())
+            self:on_event(event.idle())
             sleep = true
         end
 
@@ -220,13 +227,17 @@ function program:loop(argv)
         end
 
         -- resize views
-        self:resize()
+        if self:state("resize") then
+            self:on_resize()
+        end
 
         -- draw views
-        self:draw()
+        self:on_draw()
 
         -- refresh views
-        self:refresh()
+        if self:state("refresh") then
+            self:on_refresh()
+        end
 
         -- wait some time, 50ms
         if sleep then
@@ -236,15 +247,10 @@ function program:loop(argv)
 end
 
 -- refresh program
-function program:refresh()
-
-    -- need not refresh? do not refresh it
-    if not self:state("refresh") then
-        return 
-    end
+function program:on_refresh()
 
     -- refresh views
-    panel.refresh(self)
+    panel.on_refresh(self)
 
     -- trace
     log:print("%s: refresh ..", self)

@@ -50,10 +50,10 @@ function textedit:init(name, bounds, text)
 end
 
 -- draw textedit
-function textedit:draw(transparent)
+function textedit:on_draw(transparent)
 
     -- draw label
-    textarea.draw(self, transparent)
+    textarea.on_draw(self, transparent)
 
     -- move cursor
     if not self:text() or #self:text() == 0 then
@@ -71,7 +71,7 @@ function textedit:text_set(text)
 end
 
 -- on event
-function textedit:event_on(e)
+function textedit:on_event(e)
 
     -- update text
     if e.type == event.ev_keyboard then
@@ -97,7 +97,7 @@ function textedit:event_on(e)
     end
 
     -- do textarea event
-    return textarea.event_on(self, e) 
+    return textarea.on_event(self, e) 
 end
 
 -- return module
