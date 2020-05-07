@@ -145,7 +145,14 @@ HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i cygwin},cygwin,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i msys},msys,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i mingw},msys,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i windows},msys,))
+HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i freebsd},freebsd,))
 HOST 		:=$(if $(HOST),$(HOST),linux)
+
+# is *bsd host?
+isbsd =
+ifeq ($(HOST),freebsd)
+	isbsd = yes
+endif
 
 # platform
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
@@ -242,10 +249,16 @@ DISTCC		:=
 
 # sed
 ifeq ($(HOST),macosx)
-#SED			:= sed -i ''
 SED			:= perl -pi -e
+SEDX		:= perl -p -e
+else
+ifeq isbsd
+SED			:= perl -pi -e
+SEDX		:= perl -p -e
 else
 SED			:= sed -i
+SEDX		:= sed
+endif
 endif
 
 # echo
@@ -258,15 +271,9 @@ endif
 ECHO 		:= echo -e
 
 # make upper 
-ifeq ($(HOST),macosx)
 define MAKE_UPPER
-${shell echo $(1) | perl -p -e "s/(.*)/\U\1/g"}
+${shell echo $(1) | $(SEDX) "s/(.*)/\U\1/g"}
 endef
-else
-define MAKE_UPPER
-${shell echo $(1) | sed "s/\(.*\)/\U\1/g"}
-endef
-endif
 
 # config base
 ifeq ($(PLAT),macosx)
