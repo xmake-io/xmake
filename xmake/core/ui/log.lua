@@ -22,8 +22,9 @@
 local log = log or (function ()
 
     -- load modules
-    local os   = require("base/os")
-    local path = require("base/path")
+    local os    = require("base/os")
+    local path  = require("base/path")
+    local table = require("base/table")
 
     -- get log directory
     local logdir = nil
