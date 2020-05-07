@@ -67,6 +67,12 @@ function app:mconfdialog()
     return self._MCONFDIALOG
 end
 
+-- on resize
+function app:on_resize()
+    self:mconfdialog():bounds_set(rect{1, 1, self:width() - 1, self:height() - 1})
+    application.on_resize(self)
+end
+
 -- filter option
 function app:_filter_option(name)
     local options = 
