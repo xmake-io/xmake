@@ -145,14 +145,8 @@ HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i cygwin},cygwin,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i msys},msys,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i mingw},msys,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i windows},msys,))
-HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i freebsd},freebsd,))
+HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i bsd},bsd,))
 HOST 		:=$(if $(HOST),$(HOST),linux)
-
-# is *bsd host?
-isbsd =
-ifeq ($(HOST),freebsd)
-	isbsd = yes
-endif
 
 # platform
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
@@ -161,6 +155,7 @@ PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msys},msys,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i mingw},msys,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i windows},windows,))
+PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i bsd},bsd,))
 PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
@@ -252,7 +247,7 @@ ifeq ($(HOST),macosx)
 SED			:= perl -pi -e
 SEDX		:= perl -p -e
 else
-ifdef isbsd
+ifeq ($(HOST),bsd)
 SED			:= perl -pi -e
 SEDX		:= perl -p -e
 else
@@ -266,6 +261,9 @@ ifeq ($(HOST),macosx)
 SHELL 		= bash
 endif
 ifeq ($(HOST),linux)
+SHELL 		= bash
+endif
+ifeq ($(HOST),bsd)
 SHELL 		= bash
 endif
 ECHO 		:= echo -e
