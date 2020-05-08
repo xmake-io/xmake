@@ -297,6 +297,14 @@ base_LIBNAMES 	+= m dl pthread
 endif
 endif
 
+ifeq ($(PLAT),bsd)
+base_LIBPATH 	:=
+base_LIBNAMES 	:= 
+base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi ) 
+base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) 
+base_LIBNAMES 	+= m dl pthread
+endif
+
 # check jit compiler
 ifeq ($(PLAT),linux)
 luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
