@@ -28,6 +28,14 @@ if [ -d $tmpdir ]; then
     rm -rf $tmpdir
 fi
 
+# get make
+if gmake --version >/dev/null 2>&1
+then
+    make=gmake
+else
+    make=make
+fi
+
 remote_get_content() {
     if curl --version >/dev/null 2>&1
     then
@@ -88,7 +96,7 @@ then
     do
         pre=$(which xmake | sed 's/\/bin\/xmake$//')
         # don't care if make exists -- if there's no make, how xmake built and installed?
-        echo "$makefile" | make -f - uninstall prefix="$pre" 2>/dev/null || echo "$makefile" | $sudoprefix make -f - uninstall prefix="$pre" || exit $?
+        echo "$makefile" | $make -f - uninstall prefix="$pre" 2>/dev/null || echo "$makefile" | $sudoprefix $make -f - uninstall prefix="$pre" || exit $?
     done
     exit
 fi
@@ -128,7 +136,7 @@ test_tools()
     prog='#include<stdio.h>\n#include<readline/readline.h>\nint main(){readline(0);return 0;}'
     {
         git --version &&
-        make --version &&
+        $make --version &&
         {
             echo -e "$prog" | cc -xc - -o /dev/null -lreadline ||
             echo -e "$prog" | gcc -xc - -o /dev/null -lreadline ||
@@ -186,11 +194,11 @@ fi
 
 # do build
 if [ 'x__install_only__' != "x$2" ]; then
-    make -C $projectdir --no-print-directory build 
+    $make -C $projectdir --no-print-directory build 
     rv=$?
     if [ $rv -ne 0 ]
     then
-        make -C $projectdir/core --no-print-directory error
+        $make -C $projectdir/core --no-print-directory error
         my_exit "$(echo -e 'Build Fail\nDetail:\n' | cat - /tmp/xmake.out)" $rv
     fi
 fi
@@ -204,9 +212,9 @@ if [ "$prefix" = "" ]; then
     prefix=~/.local
 fi
 if [ "x$prefix" != x ]; then
-    make -C $projectdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
+    $make -C $projectdir --no-print-directory install prefix="$prefix"|| my_exit 'Install Fail'
 else
-    $sudoprefix make -C $projectdir --no-print-directory install || my_exit 'Install Fail'
+    $sudoprefix $make -C $projectdir --no-print-directory install || my_exit 'Install Fail'
 fi
 write_profile()
 {
