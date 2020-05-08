@@ -41,6 +41,21 @@
 #endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
+ * macros
+ */
+#if defined(TB_CONFIG_OS_LINUX)
+#   define XM_PROC_SELF_FILE        "/proc/self/exe"
+#elif defined(TB_CONFIG_OS_BSD)
+#   if defined(__FreeBSD__)
+#       define XM_PROC_SELF_FILE    "/proc/curproc/file"
+#   elif defined(__NetBSD__)
+#       define XM_PROC_SELF_FILE    "/proc/curproc/exe"
+#   else
+#       define XM_PROC_SELF_FILE    "/proc/curproc/file"
+#   endif
+#endif
+
+/* //////////////////////////////////////////////////////////////////////////////////////
  * types
  */
 
@@ -467,9 +482,9 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         tb_uint32_t bufsize = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
-#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD)
+#elif defined(XM_PROC_SELF_FILE)
         // get the executale file path as program directory
-        ssize_t size = readlink("/proc/self/exe", path, (size_t)maxn);
+        ssize_t size = readlink(XM_PROC_SELF_FILE, path, (size_t)maxn);
         if (size > 0 && size < maxn)
         {
             // end
