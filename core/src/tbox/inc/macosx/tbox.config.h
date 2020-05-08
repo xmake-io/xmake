@@ -181,8 +181,8 @@
 /* #undef TB_CONFIG_POSIX_HAVE_PIPE2 */
 #define TB_CONFIG_POSIX_HAVE_MKFIFO 1
 
-// freebsd functions
-#define TB_CONFIG_FREEBSD_HAVE_FLOCK 1
+// bsd functions
+#define TB_CONFIG_BSD_HAVE_FLOCK 1
 
 // systemv functions
 #define TB_CONFIG_SYSTEMV_HAVE_SEMGET 1

@@ -9,7 +9,7 @@
 #define TB_CONFIG_VERSION_BUILD 201907051345
 
 // defines
-#define TB_CONFIG_OS_LINUX 1
+#define TB_CONFIG_OS_BSD 1
 #define _GNU_SOURCE 1
 #define _REENTRANT 1
 #define TB_CONFIG_SMALL 1
@@ -181,8 +181,8 @@
 /* #undef TB_CONFIG_POSIX_HAVE_PIPE2 */
 #define TB_CONFIG_POSIX_HAVE_MKFIFO 1
 
-// freebsd functions
-#define TB_CONFIG_FREEBSD_HAVE_FLOCK 1
+// bsd functions
+#define TB_CONFIG_BSD_HAVE_FLOCK 1
 
 // systemv functions
 #define TB_CONFIG_SYSTEMV_HAVE_SEMGET 1
