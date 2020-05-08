@@ -36,7 +36,7 @@
 #elif defined(TB_CONFIG_OS_MACOSX)
 #   include <unistd.h>
 #   include <mach-o/dyld.h>
-#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_ANDROID)
+#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID)
 #   include <unistd.h>
 #endif
 
@@ -467,7 +467,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         tb_uint32_t bufsize = (tb_uint32_t)maxn;
         if (!_NSGetExecutablePath(path, &bufsize))
             ok = tb_true;
-#elif defined(TB_CONFIG_OS_LINUX)
+#elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD)
         // get the executale file path as program directory
         ssize_t size = readlink("/proc/self/exe", path, (size_t)maxn);
         if (size > 0 && size < maxn)
@@ -630,6 +630,8 @@ static tb_void_t xm_engine_init_host(xm_engine_t* engine)
     syshost = "macosx";
 #elif defined(TB_CONFIG_OS_LINUX)
     syshost = "linux";
+#elif defined(TB_CONFIG_OS_BSD)
+    syshost = "bsd";
 #elif defined(TB_CONFIG_OS_IOS)
     syshost = "ios";
 #elif defined(TB_CONFIG_OS_ANDROID)
