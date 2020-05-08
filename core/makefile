@@ -271,7 +271,7 @@ ECHO 		:= echo -e
 
 # make upper 
 define MAKE_UPPER
-${shell echo $(1) | $(SEDX) "s/(.*)/\U\1/g"}
+${shell echo $(1) | $(SEDX) "s/\(.*\)/\U\1/g"}
 endef
 
 # config base
