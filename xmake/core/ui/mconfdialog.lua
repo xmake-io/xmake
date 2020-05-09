@@ -194,7 +194,7 @@ function mconfdialog:searchdialog()
                     results = results .. "\nkind: " .. config.kind
                 end
                 if config.default then
-                    results = results .. "\ndefault: " .. config.default
+                    results = results .. "\ndefault: " .. tostring(config.default)
                 end
                 if config.path then
                     results = results .. "\npath: " .. config.path
