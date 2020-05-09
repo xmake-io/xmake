@@ -166,6 +166,7 @@ $ xmake f --menu
 * Windows (x86, x64)
 * macOS (i386, x86_64)
 * Linux (i386, x86_64, cross-toolchains ..)
+* *BSD (i386, x86_64)
 * Android (x86, x86_64, armeabi, armeabi-v7a, arm64-v8a)
 * iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)

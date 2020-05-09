@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#630](https://github.com/xmake-io/xmake/issues/630): Support *BSD system, e.g. FreeBSD, ..
+
 ### Change
 
 * [#771](https://github.com/xmake-io/xmake/issues/771): Check includedirs, linkdirs and frameworkdirs
@@ -725,6 +729,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#630](https://github.com/xmake-io/xmake/issues/630): 支持*BSD系统，例如：FreeBSD, ..
 
 ### 改进
 
