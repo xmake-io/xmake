@@ -35,6 +35,9 @@ task("build")
                 -- description
             ,   description = "Build targets if no given tasks."
 
+                -- xmake b
+            ,   shortname = 'b'
+
                 -- options
             ,   options = 
                 {
