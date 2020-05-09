@@ -86,31 +86,31 @@ function _toolchains()
                         cu = cu, ["cu-ld"] = cu_ld, ["cu-ccbin"] = cu_ccbin}
 
     -- init the c compiler
-    cc:add("$(env CC)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
+    cc:add("$(env CC)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
 
     -- init the c++ compiler
     cxx:add("$(env CXX)")
-    cxx:add({name = "gcc", cross = cross})
     cxx:add({name = "clang", cross = cross})
-    cxx:add({name = "g++", cross = cross})
+    cxx:add({name = "gcc", cross = cross})
     cxx:add({name = "clang++", cross = cross})
+    cxx:add({name = "g++", cross = cross})
 
     -- init the assember
-    as:add("$(env AS)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
+    as:add("$(env AS)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
 
     -- init the linker
     ld:add("$(env LD)", "$(env CXX)")
-    ld:add({name = "g++", cross = cross})
-    ld:add({name = "gcc", cross = cross})
     ld:add({name = "clang++", cross = cross})
     ld:add({name = "clang", cross = cross})
+    ld:add({name = "g++", cross = cross})
+    ld:add({name = "gcc", cross = cross})
 
     -- init the shared library linker
     sh:add("$(env SH)", "$(env CXX)")
-    sh:add({name = "g++", cross = cross})
-    sh:add({name = "gcc", cross = cross})
     sh:add({name = "clang++", cross = cross})
     sh:add({name = "clang", cross = cross})
+    sh:add({name = "g++", cross = cross})
+    sh:add({name = "gcc", cross = cross})
 
     -- init the static library archiver
     ar:add("$(env AR)", {name = "ar", cross = cross})
