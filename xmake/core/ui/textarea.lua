@@ -62,9 +62,12 @@ function textarea:on_draw(transparent)
 
     -- draw progress
     if self:option("progress") then
-        local progress = math.floor((self._STARTLINE + math.min(self:height(), self._LINECOUNT)) * 100 / self._LINECOUNT)
-        if (self._STARTLINE > 0 or progress < 100) and self:width() > 20 then
-            self:canvas():move(self:width() - 10, self:height() - 1):putstr(string.format("(%d%%)", progress))
+        local tb = self._STARTLINE
+        local fator = self:height() / self._LINECOUNT
+        local sb = math.min(math.floor(tb * fator), self:height() - 1)
+        local se = math.min(sb + math.ceil(self:height() * fator), self:height())
+        if se > sb and se - sb < self:height() then
+            self:canvas():attr("black"):move(self:width() - 1, sb):putchar(' ', se - sb, true)
         end
     end
 end
