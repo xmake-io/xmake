@@ -135,8 +135,13 @@ function install(package, configs, opt)
         if option.get("verbose") then
             table.insert(argv, "VERBOSE=1")
         end
-        os.vrunv("make", argv)
-        os.vrunv("make", {"install"})
+        if is_host("bsd") then
+            os.vrunv("gmake", argv)
+            os.vrunv("gmake", {"install"})
+        else
+            os.vrunv("make", argv)
+            os.vrunv("make", {"install"})
+        end
         os.trycp("install/lib", package:installdir())
         os.cp("install/include", package:installdir())
     end

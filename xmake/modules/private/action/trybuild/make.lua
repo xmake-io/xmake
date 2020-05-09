@@ -48,7 +48,11 @@ function build()
         os.vexecv("nmake", argv)
     else
         table.insert(argv, "-j" .. option.get("jobs"))
-        os.vexecv("make", argv)
+        if is_host("bsd") then
+            os.vexecv("gmake", argv)
+        else
+            os.vexecv("make", argv)
+        end
     end
     cprint("${color.success}build ok!")
 end

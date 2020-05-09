@@ -212,8 +212,13 @@ function build()
     if option.get("verbose") then
         table.insert(argv, "V=1")
     end
-    os.vexecv("make", argv)
-    os.vexec("make install")
+    if is_host("bsd") then
+        os.vexecv("gmake", argv)
+        os.vexec("gmake install")
+    else
+        os.vexecv("make", argv)
+        os.vexec("make install")
+    end
     cprint("output to ${bright}%s", artifacts_dir)
     cprint("${color.success}build ok!")
 end

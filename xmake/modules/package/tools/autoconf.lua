@@ -181,7 +181,12 @@ function install(package, configs, opt)
     if option.get("verbose") then
         table.insert(argv, "V=1")
     end
-    os.vrunv("make", argv)
-    os.vrun("make install")
+    if is_host("bsd") then
+        os.vrunv("gmake", argv)
+        os.vrun("gmake install")
+    else
+        os.vrunv("make", argv)
+        os.vrun("make install")
+    end
 end
 

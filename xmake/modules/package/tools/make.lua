@@ -98,5 +98,9 @@ function build(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
+    if is_host("bsd") then
+        os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
+    else
+        os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
+    end
 end
