@@ -50,8 +50,9 @@ function main(name, opt)
 
     -- init triplet
     local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and opt.vs_runtime == "MT" then
+    if opt.plat == "windows" and opt.shared ~= true then
         triplet = triplet .. "-static"
+        assert(not opt.vs_runtime or opt.vs_runtime:startswith("MT"), "only support static libraries with /MT[d] for vcpkg!")
     end
 
     -- init argv

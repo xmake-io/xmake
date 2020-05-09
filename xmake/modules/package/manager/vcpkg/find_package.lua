@@ -57,8 +57,10 @@ function main(name, opt)
 
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local triplet = arch .. "-" .. plat
-    if plat == "windows" and opt.pkgconfigs and opt.pkgconfigs.vs_runtime == "MT" then
+    local pkgconfigs = opt.pkgconfigs
+    if plat == "windows" and pkgconfigs and pkgconfigs.shared ~= true then
         triplet = triplet .. "-static"
+        assert(not pkgconfigs.vs_runtime or pkgconfigs.vs_runtime:startswith("MT"), "only support static libraries with /MT[d] for vcpkg!")
     end
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodir)
 
