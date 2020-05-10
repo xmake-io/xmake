@@ -52,7 +52,7 @@ rule("wdk.mof")
         -- get wmimofck
         local wmimofck = nil
         if arch == "x64" then
-            wmimofck = path.join(wdk.bindir, wdk.sdkver, "x86", "x64", "wmimofck.exe")
+            wmimofck = path.join(wdk.bindir, wdk.sdkver, "x64", "wmimofck.exe")
         else
             wmimofck = path.join(wdk.bindir, wdk.sdkver, "x86", "wmimofck.exe")
         end
