@@ -68,7 +68,7 @@ tb_int_t xm_os_getenvs(lua_State* lua)
     tb_wchar_t const* p = (tb_wchar_t const*)GetEnvironmentStringsW();
     if (p)
     {
-        tb_int_t    i = 0;
+        tb_int_t    i = 1;
         tb_char_t*  data = tb_null;
         tb_size_t   maxn = 0;
         tb_char_t   line[TB_PATH_MAXN];
@@ -113,7 +113,7 @@ tb_int_t xm_os_getenvs(lua_State* lua)
     tb_char_t const** p = (tb_char_t const**)environ;
     if (p) 
     {
-        tb_int_t  i = 0;
+        tb_int_t  i = 1;
         tb_size_t n = 0;
         while (*p) 
         {
