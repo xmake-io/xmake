@@ -33,17 +33,21 @@ function _find_bindir(sdkdir, opt)
     table.insert(bindirs, path.join(sdkdir, "bin"))
     table.insert(bindirs, path.join(sdkdir, "**", "bin"))
 
-    -- attempt to find *-ld
-    local ldname = is_host("windows") and "ld.exe" or "ld"
-    local ldpath = find_file((opt.cross or '*-') .. ldname, bindirs)
-    if ldpath then
-        return path.directory(ldpath), path.basename(ldpath):sub(1, -3)
-    end
-    
-    -- find ld
-    ldpath = find_file(ldname, bindirs)
-    if ldpath then
-        return path.directory(ldpath), ""
+    -- attempt to find *-[gcc|clang|ld]
+    for _, toolname in ipairs({"gcc", "clang", "ld"}) do
+        if is_plat("windows") then
+            toolname = toolname .. ".exe"
+        end
+        local toolpath = find_file((opt.cross or '*-') .. toolname, bindirs)
+        if toolpath then
+            return path.directory(toolpath), path.filename(toolpath):sub(1, -(#toolname + 1))
+        end
+        
+        -- find tool path
+        toolpath = find_file(toolname, bindirs)
+        if toolpath then
+            return path.directory(toolpath), ""
+        end
     end
 
     -- attempt to use the bin directory
