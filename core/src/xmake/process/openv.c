@@ -106,7 +106,7 @@ tb_int_t xm_process_openv(lua_State* lua)
     { 
         // is detached?
         lua_pushstring(lua, "detach");
-        lua_gettable(lua, 2);
+        lua_gettable(lua, 3);
         if (lua_toboolean(lua, -1))
             attr.flags |= TB_PROCESS_FLAG_DETACH;
         lua_pop(lua, 1);
