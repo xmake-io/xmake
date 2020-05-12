@@ -24,6 +24,9 @@ import("core.tool.compiler")
 -- init it
 function init(self)
     self:set("arflags", "cr")
+    if is_plat("cross") and is_subhost("windows") then
+        self:set("formats", { static = "$(name).lib" })
+    end
 end
 
 -- make the strip flag
