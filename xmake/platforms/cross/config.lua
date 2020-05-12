@@ -52,11 +52,64 @@ function _check_cross_toolchain()
     end
 end
 
+-- get llvm toolchains
+function _toolchains_llvm()
+
+    -- init toolchains
+    local cc         = toolchain("the c compiler")
+    local cxx        = toolchain("the c++ compiler")
+    local cpp        = toolchain("the c preprocessor")
+    local ld         = toolchain("the linker")
+    local sh         = toolchain("the shared library linker")
+    local ar         = toolchain("the static library archiver")
+    local ex         = toolchain("the static library extractor")
+    local strip      = toolchain("the symbols stripper")
+    local ranlib     = toolchain("the static library index generator")
+    local as         = toolchain("the assember")
+    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip}
+
+    -- init the c compiler
+    cc:add("$(env CC)", "clang")
+
+    -- init the c preprocessor
+    cpp:add("$(env CPP)", "clang -E")
+
+    -- init the c++ compiler
+    cxx:add("$(env CXX)", "clang", "clang++")
+
+    -- init the assember
+    as:add("$(env AS)", "clang")
+
+    -- init the linker
+    ld:add("$(env LD)", "$(env CXX)", "clang++", "clang")
+
+    -- init the shared library linker
+    sh:add("$(env SH)", "$(env CXX)", "clang++", "clang")
+
+    -- init the static library archiver
+    ar:add("$(env AR)", "llvm-ar")
+
+    -- init the static library extractor
+    ex:add("$(env AR)", "llvm-ar")
+
+    -- init the static library index generator
+    ranlib:add("$(env RANLIB)", "llvm-ranlib")
+
+    -- init the symbols stripper
+    strip:add("$(env STRIP)", "llvm-strip")
+    return toolchains
+end
+
 -- get toolchains
 function _toolchains()
 
     -- get cross prefix
     local cross = config.get("cross") or ""
+
+    -- for llvm toolchains?
+    if cross == "" and config.get("sdkname") == "llvm" then
+        return _toolchains_llvm()
+    end
 
     -- init toolchains
     local cc         = toolchain("the c compiler")

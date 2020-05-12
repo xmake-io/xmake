@@ -166,6 +166,9 @@ task("config")
                                                           , "    - sdk/bin"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
+                ,   {nil, "sdkname",    "kv", nil,          "The Cross SDK Name"
+                                                          , "e.g."
+                                                          , "    - llvm"                                                    }
 
                     -- show language menu options
                 ,   function ()
