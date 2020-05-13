@@ -49,7 +49,7 @@ function _add(name, url, branch, is_global)
     end
 
     -- trace
-    cprint("${color.success}add %s repository(%s): %s%s ok!", ifelse(is_global, "global", "local"), name, url, branch and (" " .. branch) or "")
+    cprint("${color.success}add %s repository(%s): %s%s ok!", (is_global and "global" or "local"), name, url, branch and (" " .. branch) or "")
 
     -- leave environment 
     environment.leave()
@@ -68,7 +68,7 @@ function _remove(name, is_global)
     end
 
     -- trace
-    cprint("${bright}remove %s repository(%s): ok!", ifelse(is_global, "global", "local"), name)
+    cprint("${bright}remove %s repository(%s): ok!", (is_global and "global" or "local"), name)
 end
 
 -- update repositories
@@ -156,7 +156,7 @@ function _clear(is_global)
     end
 
     -- trace
-    cprint("${color.success}clear %s repositories: ok!", ifelse(is_global, "global", "local"))
+    cprint("${color.success}clear %s repositories: ok!", (is_global and "global" or "local"))
 end
 
 -- list all repositories

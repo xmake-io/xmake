@@ -121,7 +121,7 @@ end
 function repository._cache(is_global)
 
     -- get position
-    local position = utils.ifelse(is_global, "global", "local")
+    local position = is_global and "global" or "local"
 
     -- get it from cache first if exists
     if repository._CACHE and repository._CACHE[position] then
