@@ -235,27 +235,42 @@ function utils.error(format, ...)
     end
 end
 
--- the warning function
+-- add warning message
 function utils.warning(format, ...)
 
     -- check
     assert(format)
 
     -- format message
-    local msg = "${bright color.warning}${text.warning}: ${color.warning}" .. string.tryformat(format, ...)
+    local args = table.pack(...)
+    local msg = (args.n > 0 and string.tryformat(format, ...) or format)
 
     -- init warnings
-    utils._WARNINGS = utils._WARNINGS or {}
     local warnings = utils._WARNINGS
-
-    -- trace only once
-    if not warnings[msg] then
-        utils.cprint(msg)
-        warnings[msg] = true
+    if not warnings then
+        warnings = {}
+        utils._WARNINGS = warnings
     end
 
-    -- flush
-    log:flush()
+    -- add warning msg
+    table.insert(warnings, msg)
+end
+
+-- show warnings
+function utils.show_warnings()
+    local warnings = utils._WARNINGS
+    if warnings then
+        for idx, msg in ipairs(table.unique(warnings)) do
+            if idx == 1 then
+                print("")
+            end
+            if not option.get("verbose") and idx > 1 then
+                utils.cprint("${bright color.warning}${text.warning}: ${color.warning}add -v for getting more warnings ..")
+                break
+            end
+            utils.cprint("${bright color.warning}${text.warning}: ${color.warning}%s", msg)
+        end
+    end
 end
 
 -- ifelse, a? b : c

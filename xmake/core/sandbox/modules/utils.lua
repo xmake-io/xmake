@@ -167,6 +167,11 @@ function sandbox_utils.dprintf(format, ...)
     end
 end
 
+-- print the warning information 
+function sandbox_utils.wprint(format, ...)
+    utils.warning(vformat(format, ...))
+end
+
 -- clear the current terminal line
 function sandbox_utils.clearline()
 

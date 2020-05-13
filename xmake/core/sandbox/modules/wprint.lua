@@ -15,24 +15,9 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        deprecated.lua
+-- @file        wprint.lua
 --
 
--- define module
-local deprecated = deprecated or {}
+-- load module
+return require("sandbox/modules/utils").wprint
 
--- add deprecated entry
-function deprecated.add(newformat, oldformat, ...)
-
-    local utils = require("base/utils")
-    local old = string.format(oldformat, ...)
-    local new = newformat and string.format(newformat, ...) or false
-    if new then
-        utils.warning("%s is deprecated, please uses %s instead of it", old, new)
-    else
-        utils.warning("%s is deprecated, please remove it", old)
-    end
-end
-
--- return module
-return deprecated

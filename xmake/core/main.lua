@@ -29,7 +29,6 @@ local utils         = require("base/utils")
 local option        = require("base/option")
 local table         = require("base/table")
 local global        = require("base/global")
-local deprecated    = require("base/deprecated")
 local privilege     = require("base/privilege")
 local task          = require("base/task")
 local colors        = require("base/colors")
@@ -206,6 +205,9 @@ function main._exit(errors)
         utils.error(errors)
     end
 
+    -- show warnings
+    utils.show_warnings()
+
     -- close log
     log:close()
 
@@ -286,10 +288,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     if not ok then
         return main._exit(errors)
     end
-    
-    -- dump deprecated entries
-    deprecated.dump()
-
+   
     -- stop profiling
     -- profiler:stop()
 
