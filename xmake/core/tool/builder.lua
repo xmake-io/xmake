@@ -62,28 +62,25 @@ function builder:_mapflag(flag, flagkind, mapflags)
     for k, v in pairs(mapflags) do
         local flag_mapped, count = flag:gsub("^" .. k .. "$", function (w) return v end)
         if flag_mapped and count ~= 0 then
-            return utils.ifelse(#flag_mapped ~= 0, flag_mapped, nil) 
+            return #flag_mapped ~= 0 and flag_mapped
         end
     end
 
     -- has this flag?
     if self:has_flags(flag, flagkind) then
         return flag
+    else
+        utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
     end
 end
 
 -- map gcc flags to the given builder flags
 function builder:_mapflags(flags, flagkind)
 
-    -- wrap flags first
-    flags = table.wrap(flags)
-
-    -- done
     local results = {}
     local mapflags = self:get("mapflags")
+    flags = table.wrap(flags)
     if mapflags then
-
-        -- map flags
         for _, flag in pairs(flags) do
             local flag_mapped = self:_mapflag(flag, flagkind, mapflags)
             if flag_mapped then
@@ -92,17 +89,14 @@ function builder:_mapflags(flags, flagkind)
         end
 
     else
-
-        -- has flags?
         for _, flag in pairs(flags) do
             if self:has_flags(flag, flagkind) then
                 table.insert(results, flag)
+            else
+                utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
             end
         end
-
     end
-
-    -- ok?
     return results
 end
 
