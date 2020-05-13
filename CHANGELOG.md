@@ -5,6 +5,7 @@
 ### New features
 
 * [#630](https://github.com/xmake-io/xmake/issues/630): Support *BSD system, e.g. FreeBSD, ..
+* Add wprint builtin api to show warnings
 
 ### Change
 
@@ -734,6 +735,7 @@
 ### 新特性
 
 * [#630](https://github.com/xmake-io/xmake/issues/630): 支持*BSD系统，例如：FreeBSD, ..
+* 添加wprint接口去显示警告信息
 
 ### 改进
 

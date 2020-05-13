@@ -261,9 +261,6 @@ function utils.show_warnings()
     local warnings = utils._WARNINGS
     if warnings then
         for idx, msg in ipairs(table.unique(warnings)) do
-            if idx == 1 then
-                print("")
-            end
             if not option.get("verbose") and idx > 1 then
                 utils.cprint("${bright color.warning}${text.warning}: ${color.warning}add -v for getting more warnings ..")
                 break
