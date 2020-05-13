@@ -107,7 +107,7 @@ function _toolchains()
     local cross = config.get("cross") or ""
 
     -- for llvm toolchains?
-    if cross == "" and config.get("sdkname") == "llvm" then
+    if cross == "" and config.get("toolchain") == "llvm" then
         return _toolchains_llvm()
     end
 
