@@ -35,6 +35,9 @@ local environment = require("platform/environment")
 local package     = require("package/package")
 local import      = require("sandbox/modules/import")
 
+-- export some readonly interfaces
+sandbox_core_project.version = project.version
+
 -- load project
 function sandbox_core_project.load()
     -- deprecated
@@ -213,11 +216,6 @@ function sandbox_core_project.name()
         name = name[1]
     end
     return name
-end
-
--- get the project version, the root version of the target scope
-function sandbox_core_project.version()
-    return project.get("target.version")
 end
 
 -- get the project modes
