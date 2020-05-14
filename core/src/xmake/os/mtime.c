@@ -47,7 +47,5 @@ tb_int_t xm_os_mtime(lua_State* lua)
     if (tb_file_info(path, &info))
         lua_pushinteger(lua, (lua_Integer)info.mtime);
     else lua_pushinteger(lua, 0);
-
-    // ok
     return 1;
 }

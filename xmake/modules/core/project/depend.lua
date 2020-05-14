@@ -104,8 +104,8 @@ function is_changed(dependinfo, opt)
         local mtime = files_mtime[file] or os.mtime(file)
         files_mtime[file] = mtime
 
-        -- source and header files have been changed?
-        if mtime == nil or mtime > lastmtime then
+        -- source and header files have been changed or not exists?
+        if mtime == 0 or mtime > lastmtime then
             return true
         end
     end
