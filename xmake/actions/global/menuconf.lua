@@ -229,7 +229,6 @@ function app:_global_configs(cache)
         -- choice option? 
         local values = opt.values
         if values then
-            kind = "choice"
             if type(values) == "function" then
                 values = values()
             end
@@ -239,6 +238,9 @@ function app:_global_configs(cache)
                     break
                 end
             end
+        end
+        if values then
+            kind = "choice"
         end
 
         -- get description
