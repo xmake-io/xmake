@@ -6,6 +6,7 @@
 
 * [#630](https://github.com/xmake-io/xmake/issues/630): Support *BSD system, e.g. FreeBSD, ..
 * Add wprint builtin api to show warnings
+* [#784](https://github.com/xmake-io/xmake/issues/784): Add `set_policy()` to set and modify some builtin policies
 
 ### Change
 
@@ -736,6 +737,7 @@
 
 * [#630](https://github.com/xmake-io/xmake/issues/630): 支持*BSD系统，例如：FreeBSD, ..
 * 添加wprint接口去显示警告信息
+* [#784](https://github.com/xmake-io/xmake/issues/784): 添加`set_policy()`去设置修改一些内置的策略，比如：禁用自动flags检测和映射
 
 ### 改进
 
