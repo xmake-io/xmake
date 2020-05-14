@@ -45,7 +45,20 @@ end
 
 -- check policy value
 function policy.check(name, value)
-    return value
+    local defined_policy = policy.policies()[name]
+    if defined_policy then
+        if value == nil then
+            value = defined_policy.default
+        else
+            local valtype = type(value)
+            if valtype ~= defined_policy.type then
+                utils.warning("policy(%s): invalid value type(%s), it shound be '%s'!", name, valtype, defined_policy.type)
+            end
+        end
+        return value
+    else
+        os.raise("unknown policy(%s)!", name)
+    end
 end
 
 -- return module: policy

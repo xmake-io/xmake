@@ -472,9 +472,7 @@ end
 -- get the target policy
 function _instance:policy(name)
     local policies = self:get("policy")
-    if policies then
-        return policy.check(name, policies[name])
-    end
+    return policy.check(name, policies and policies[name])
 end
 
 -- get the base name of target file

@@ -812,9 +812,7 @@ end
 -- get the project policy, the root policy of the target scope
 function project.policy(name)
     local policies = project.get("target.policy")
-    if policies then
-        return policy.check(name, policies[name])
-    end
+    return policy.check(name, policies and policies[name])
 end
 
 -- clear project cache to reload targets and options

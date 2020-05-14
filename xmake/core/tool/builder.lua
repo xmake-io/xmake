@@ -70,7 +70,7 @@ function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
     if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
         return flag
     else
-        utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
+        utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` or call `set_policy(\"check.auto_ignore_flags\", false)` if you want to set it.", flagkind, flag)
     end
 end
 
@@ -94,7 +94,7 @@ function builder:_mapflags(flags, flagkind, target)
             if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
                 table.insert(results, flag)
             else
-                utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
+                utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` or call `set_policy(\"check.auto_ignore_flags\", false)` if you want to set it.", flagkind, flag)
             end
         end
     end
