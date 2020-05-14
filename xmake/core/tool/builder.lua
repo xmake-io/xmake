@@ -79,8 +79,8 @@ function builder:_mapflags(flags, flagkind, target)
 
     local results = {}
     local mapflags = self:get("mapflags")
-    local auto_map_flags = target and target:policy("check.auto_map_flags")
-    local auto_ignore_flags = target and target:policy("check.auto_ignore_flags")
+    local auto_map_flags = target and target.policy and target:policy("check.auto_map_flags")
+    local auto_ignore_flags = target and target.policy and target:policy("check.auto_ignore_flags")
     flags = table.wrap(flags)
     if mapflags and (auto_map_flags ~= false) then
         for _, flag in pairs(flags) do
