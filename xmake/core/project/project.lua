@@ -36,6 +36,7 @@ local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
+local policy                = require("project/policy")
 local requireinfo           = require("project/requireinfo")
 local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
@@ -812,8 +813,7 @@ end
 function project.policy(name)
     local policies = project.get("target.policy")
     if policies then
-        local value = policies[name]
-        return value and table.unwrap(value)
+        return policy.check(name, policies[name])
     end
 end
 

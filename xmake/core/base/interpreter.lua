@@ -490,7 +490,7 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
 
         -- remove repeat first for each slice with deleted item (__del_xxx)
         if remove_repeat and not table.is_dictionary(values) then
-            values = table.unique(values, function (v) return v:startswith("__del_") end)
+            values = table.unique(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
         end
 
         -- filter values
@@ -1118,6 +1118,9 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
+        -- expand values if only one
+        values = table.unwrap(values)
+
         -- save values to "name"
         scope[name] = scope[name] or {}
         scope[name][key] = values
@@ -1162,9 +1165,12 @@ function interpreter:api_register_add_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
+        -- expand values if only one
+        values = table.unwrap(values)
+
         -- save values to "name"
         scope[name] = scope[name] or {}
-        scope[name][key] = table.join2(scope[name][key] or {}, values)
+        scope[name][key] = table.join2(table.wrap(scope[name][key]), values)
 
         -- save values to "name.key"
         local name_key = name .. "." .. key

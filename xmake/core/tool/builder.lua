@@ -50,7 +50,7 @@ function builder:_targetkind()
 end
 
 -- map gcc flag to the given builder flag
-function builder:_mapflag(flag, flagkind, mapflags)
+function builder:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
 
     -- attempt to map it directly
     local flag_mapped = mapflags[flag]
@@ -67,7 +67,7 @@ function builder:_mapflag(flag, flagkind, mapflags)
     end
 
     -- has this flag?
-    if self:has_flags(flag, flagkind) then
+    if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
         return flag
     else
         utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
@@ -75,22 +75,23 @@ function builder:_mapflag(flag, flagkind, mapflags)
 end
 
 -- map gcc flags to the given builder flags
-function builder:_mapflags(flags, flagkind)
+function builder:_mapflags(flags, flagkind, target)
 
     local results = {}
     local mapflags = self:get("mapflags")
+    local auto_map_flags = target and target:policy("check.auto_map_flags")
+    local auto_ignore_flags = target and target:policy("check.auto_ignore_flags")
     flags = table.wrap(flags)
-    if mapflags then
+    if mapflags and (auto_map_flags ~= false) then
         for _, flag in pairs(flags) do
-            local flag_mapped = self:_mapflag(flag, flagkind, mapflags)
+            local flag_mapped = self:_mapflag(flag, flagkind, mapflags, auto_ignore_flags)
             if flag_mapped then
                 table.insert(results, flag_mapped)
             end
         end
-
     else
         for _, flag in pairs(flags) do
-            if self:has_flags(flag, flagkind) then
+            if auto_ignore_flags == false or self:has_flags(flag, flagkind) then
                 table.insert(results, flag)
             else
                 utils.warning("add_%s(\"%s\") is ignored, please pass `{force = true}` if you want to set it.", flagkind, flag)
@@ -136,11 +137,11 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
             if flagconf and flagconf.force then
                 table.join2(flags, flag)
             else
-                table.join2(flags, self:_mapflags(flag, flagkind))
+                table.join2(flags, self:_mapflags(flag, flagkind, target))
             end
         end
     else
-        table.join2(flags, self:_mapflags(targetflags, flagkind))
+        table.join2(flags, self:_mapflags(targetflags, flagkind, target))
     end
 end
 
@@ -162,9 +163,9 @@ function builder:_add_flags_from_option(flags, opt)
 end
 
 -- add flags from the package 
-function builder:_add_flags_from_package(flags, pkg)
+function builder:_add_flags_from_package(flags, pkg, target)
     for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind))
+        table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
     end
 end
 
@@ -199,7 +200,7 @@ function builder:_add_flags_from_target(flags, target)
 
             -- add flags from packages
             for _, pkg in ipairs(target:orderpkgs()) do
-                self:_add_flags_from_package(targetflags, pkg)
+                self:_add_flags_from_package(targetflags, pkg, target)
             end
 
             -- inherit flags (public/interface) from all dependent targets
@@ -226,7 +227,7 @@ function builder:_add_flags_from_argument(flags, target, args)
     for _, flagkind in ipairs(self:_flagkinds()) do
 
         -- add auto mapping flags
-        table.join2(flags, self:_mapflags(args[flagkind], flagkind))
+        table.join2(flags, self:_mapflags(args[flagkind], flagkind, target))
 
         -- add original flags
         local original_flags = (args.force or {})[flagkind]
@@ -388,8 +389,6 @@ end
 
 -- get the format of the given target kind 
 function builder:format(targetkind)
-
-    -- get formats
     local formats = self:get("formats")
     if formats then
         return formats[targetkind]

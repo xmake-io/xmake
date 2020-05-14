@@ -173,8 +173,8 @@ function _instance:_api_set_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- expand values
-    values = table.join(unpack(values))
+    -- expand values if only one
+    values = table.unwrap(values)
 
     -- save values to "name"
     scope[name] = scope[name] or {}
@@ -213,8 +213,8 @@ function _instance:_api_add_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- expand values
-    values = table.join(unpack(values))
+    -- expand values if only one
+    values = table.unwrap(values)
 
     -- save values to "name"
     scope[name] = scope[name] or {}

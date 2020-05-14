@@ -33,6 +33,7 @@ local deprecated     = require("base/deprecated")
 local rule           = require("project/rule")
 local option         = require("project/option")
 local config         = require("project/config")
+local policy         = require("project/policy")
 local requireinfo    = require("project/requireinfo")
 local tool           = require("tool/tool")
 local linker         = require("tool/linker")
@@ -472,8 +473,7 @@ end
 function _instance:policy(name)
     local policies = self:get("policy")
     if policies then
-        local value = policies[name]
-        return value and table.unwrap(value)
+        return policy.check(name, policies[name])
     end
 end
 

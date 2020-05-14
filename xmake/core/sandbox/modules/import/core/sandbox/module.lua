@@ -165,7 +165,7 @@ function core_sandbox_module._load(dir, name, instance, module)
                 end
 
                 -- bind main entry 
-                if result.main then
+                if type(result) == "table" and result.main then
                     setmetatable(result, { __call = function (_, ...) return result.main(...) end})
                 end
 
