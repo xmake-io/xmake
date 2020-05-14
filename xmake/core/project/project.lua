@@ -595,44 +595,10 @@ function project._load_packages()
     return project._load_scope("package", true, false)
 end
 
--- get interpreter
-function project.interpreter()
+-- get project apis
+function project.apis()
 
-    -- the interpreter has been initialized? return it directly
-    if project._INTERPRETER then
-        return project._INTERPRETER
-    end
-
-    -- init interpreter
-    local interp = interpreter.new()
-    assert(interp)
-
-    -- set root directory
-    interp:rootdir_set(project.directory())
-
-    -- set root scope
-    interp:rootscope_set("target")
-
-    -- define apis for rule
-    interp:api_define(rule.apis())
-
-    -- define apis for task
-    interp:api_define(task.apis())
-
-    -- define apis for target
-    interp:api_define(target.apis())
-
-    -- define apis for option
-    interp:api_define(option.apis())
-
-    -- define apis for package
-    interp:api_define(package.apis())
-
-    -- define apis for language
-    interp:api_define(language.apis())
-
-    -- define apis for project
-    interp:api_define
+    return
     {
         values =
         {
@@ -675,6 +641,46 @@ function project.interpreter()
         ,   {"add_platformdirs",        project._api_add_platformdirs }
         }
     }
+end
+
+-- get interpreter
+function project.interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if project._INTERPRETER then
+        return project._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+
+    -- set root directory
+    interp:rootdir_set(project.directory())
+
+    -- set root scope
+    interp:rootscope_set("target")
+
+    -- define apis for rule
+    interp:api_define(rule.apis())
+
+    -- define apis for task
+    interp:api_define(task.apis())
+
+    -- define apis for target
+    interp:api_define(target.apis())
+
+    -- define apis for option
+    interp:api_define(option.apis())
+
+    -- define apis for package
+    interp:api_define(package.apis())
+
+    -- define apis for language
+    interp:api_define(language.apis())
+
+    -- define apis for project
+    interp:api_define(project.apis())
 
     -- register api: deprecated
     deprecated_project.api_register(interp)
@@ -786,9 +792,29 @@ function project.get(name)
     return project._INFO and project._INFO:get(name) or nil
 end
 
+-- get the project name
+function project.name()
+    local name = project.get("project")
+    -- TODO multi project names? we only get the first name now.
+    -- and we need improve it in the future.
+    if type(name) == "table" then
+        name = name[1]
+    end
+    return name
+end
+
 -- get the project version, the root version of the target scope
 function project.version()
     return project.get("target.version")
+end
+
+-- get the project policy, the root policy of the target scope
+function project.policy(name)
+    local policies = project.get("target.policy")
+    if policies then
+        local value = policies[name]
+        return value and table.unwrap(value)
+    end
 end
 
 -- clear project cache to reload targets and options
@@ -939,17 +965,6 @@ end
 -- get the mtimes
 function project.mtimes()
     return project.interpreter():mtimes()
-end
-
--- get the project name
-function project.name()
-    local name = project.get("project")
-    -- TODO multi project names? we only get the first name now.
-    -- and we need improve it in the future.
-    if type(name) == "table" then
-        name = name[1]
-    end
-    return name
 end
 
 -- get the project modes

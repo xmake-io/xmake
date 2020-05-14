@@ -465,9 +465,16 @@ function _instance:version()
             end
         end
     end
-
-    -- ok?
     return version, version_build
+end
+
+-- get the target policy
+function _instance:policy(name)
+    local policies = self:get("policy")
+    if policies then
+        local value = policies[name]
+        return value and table.unwrap(value)
+    end
 end
 
 -- get the base name of target file
@@ -1669,6 +1676,7 @@ function target.apis()
         ,   "target.set_configvar"
         ,   "target.set_runenv"
         ,   "target.set_toolchain"
+        ,   "target.set_policy"
             -- target.add_xxx
         ,   "target.add_values"
         ,   "target.add_runenvs"

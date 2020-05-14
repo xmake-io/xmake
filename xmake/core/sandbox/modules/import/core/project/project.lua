@@ -55,6 +55,7 @@ sandbox_core_project.version      = project.version
 sandbox_core_project.require      = project.require
 sandbox_core_project.requires     = project.requires
 sandbox_core_project.requires_str = project.requires_str
+sandbox_core_project.policy       = project.policy
 
 -- load project
 function sandbox_core_project.load()
