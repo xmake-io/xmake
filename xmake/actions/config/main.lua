@@ -51,8 +51,8 @@ function _option_filter(name)
 end
 
 -- host changed?
-function _host_changed(targetname)
-    return os.host() ~= config.read("host", targetname)
+function _host_changed()
+    return os.host() ~= config.read("host")
 end
 
 -- need check
@@ -114,31 +114,19 @@ end
 
 -- check target
 function _check_target(targetname)
-
-    -- check
     assert(targetname)
-
-    -- all?
     if targetname == "all" then
-
-        -- check the dependent targets
         for _, target in pairs(project.targets()) do
             _check_target_deps(target)
         end
     else
-
-        -- get target
         local target = project.target(targetname)
-
-        -- check target name
         assert(target, "unknown target: %s", targetname)
-
-        -- check the dependent targets
         _check_target_deps(target)
     end
 end
 
--- main
+-- main entry
 function main()
 
     -- avoid to run this task repeatly
@@ -197,7 +185,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local options_changed = false
     local options_history = {}
     if not option.get("clean") and not autogen then
-        options_history = configcache:get("options_" .. targetname) or {}
+        options_history = configcache:get("options") or {}
         options = options or options_history
     end
     for name, value in pairs(options) do
@@ -215,8 +203,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- so we need known whether options have been changed
     --
     local configcache_loaded = false
-    if not options_changed and not option.get("clean") and not _host_changed(targetname) then
-        configcache_loaded = config.load(targetname) 
+    if not options_changed and not option.get("clean") and not _host_changed() then
+        configcache_loaded = config.load() 
     end
 
     -- merge the global configure 
@@ -291,16 +279,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- save options and configure for the given target
-    config.save(targetname)
-    configcache:set("options_" .. targetname, options)
-
-    -- save options and configure for each targets if be all
-    if not trybuild and targetname == "all" then
-        for _, target in pairs(project.targets()) do
-            config.save(target:name())
-            configcache:set("options_" .. target:name(), options)
-        end
-    end
+    config.save()
+    configcache:set("options", options)
 
     -- flush config cache
     configcache:flush()
