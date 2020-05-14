@@ -36,17 +36,29 @@ local package     = require("package/package")
 local import      = require("sandbox/modules/import")
 
 -- export some readonly interfaces
-sandbox_core_project.version = project.version
+sandbox_core_project.get          = project.get
+sandbox_core_project.rule         = project.rule
+sandbox_core_project.rules        = project.rules
+sandbox_core_project.target       = project.target
+sandbox_core_project.targets      = project.targets
+sandbox_core_project.option       = project.option
+sandbox_core_project.options      = project.options
+sandbox_core_project.rootfile     = project.rootfile
+sandbox_core_project.allfiles     = project.allfiles
+sandbox_core_project.rcfile       = project.rcfile
+sandbox_core_project.directory    = project.directory
+sandbox_core_project.clear        = project.clear
+sandbox_core_project.name         = project.name
+sandbox_core_project.modes        = project.modes
+sandbox_core_project.mtimes       = project.mtimes
+sandbox_core_project.version      = project.version
+sandbox_core_project.require      = project.require
+sandbox_core_project.requires     = project.requires
+sandbox_core_project.requires_str = project.requires_str
 
 -- load project
 function sandbox_core_project.load()
-    -- deprecated
     deprecated.add("project.clear() or only remove it", "project.load()")
-end
-
--- clear project
-function sandbox_core_project.clear()
-    project.clear()
 end
 
 -- check project options
@@ -112,56 +124,6 @@ function sandbox_core_project.check()
     end
 end
 
--- get the given project rule
-function sandbox_core_project.rule(name)
-    return project.rule(name)
-end
-
--- get the all project rules
-function sandbox_core_project.rules()
-    return project.rules()
-end
-
--- get the given target
-function sandbox_core_project.target(name)
-    return project.target(name)
-end
-
--- get the all targets
-function sandbox_core_project.targets()
-    return project.targets()
-end
-
--- get the given option
-function sandbox_core_project.option(name)
-    return project.option(name)
-end
-
--- get the all options
-function sandbox_core_project.options()
-    return project.options()
-end
-
--- get the root project file
-function sandbox_core_project.rootfile()
-    return project.rootfile()
-end
-
--- get the all loaded project files
-function sandbox_core_project.allfiles()
-    return project.allfiles()
-end
-
--- get the project rcfile
-function sandbox_core_project.rcfile()
-    return project.rcfile()
-end
-
--- get the project directory
-function sandbox_core_project.directory()
-    return project.directory()
-end
-
 -- get the filelock of the whole project directory
 function sandbox_core_project.filelock()
     local filelock = project.filelock()
@@ -195,56 +157,6 @@ function sandbox_core_project.unlock()
     if not ok then
         raise(errors)
     end
-end
-
--- get the project mtimes
-function sandbox_core_project.mtimes()
-    return project.mtimes()
-end
-
--- get the project info from the given name
-function sandbox_core_project.get(name)
-    return project.get(name)
-end
-
--- get the project name
-function sandbox_core_project.name()
-    local name = project.get("project")
-    -- TODO multi project names? we only get the first name now.
-    -- and we need improve it in the future.
-    if type(name) == "table" then
-        name = name[1]
-    end
-    return name
-end
-
--- get the project modes
-function sandbox_core_project.modes()
-    local modes = project.get("modes") or {}
-    for _, target in pairs(table.wrap(project.targets())) do
-        for _, rule in ipairs(target:orderules()) do
-            local name = rule:name()
-            if name:startswith("mode.") then
-                table.insert(modes, name:sub(6))
-            end
-        end
-    end
-    return table.unique(modes)
-end
-
--- get the the given require info
-function sandbox_core_project.require(name)
-    return project.require(name)
-end
-
--- get the all requires
-function sandbox_core_project.requires()
-    return project.requires()
-end
-
--- get the all raw string requires
-function sandbox_core_project.requires_str()
-    return project.requires_str()
 end
 
 -- return module

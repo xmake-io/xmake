@@ -941,6 +941,31 @@ function project.mtimes()
     return project.interpreter():mtimes()
 end
 
+-- get the project name
+function project.name()
+    local name = project.get("project")
+    -- TODO multi project names? we only get the first name now.
+    -- and we need improve it in the future.
+    if type(name) == "table" then
+        name = name[1]
+    end
+    return name
+end
+
+-- get the project modes
+function project.modes()
+    local modes = project.get("modes") or {}
+    for _, target in pairs(table.wrap(project.targets())) do
+        for _, rule in ipairs(target:orderules()) do
+            local name = rule:name()
+            if name:startswith("mode.") then
+                table.insert(modes, name:sub(6))
+            end
+        end
+    end
+    return table.unique(modes)
+end
+
 -- get the project menu
 function project.menu()
 
