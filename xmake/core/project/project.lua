@@ -811,7 +811,19 @@ end
 
 -- get the project policy, the root policy of the target scope
 function project.policy(name)
-    local policies = project.get("target.policy")
+    local policies = project._POLICIES
+    if not policies then
+        policies = project.get("target.policy")
+        project._POLICIES = policies
+        if policies then
+            local defined_policies = policy.policies()
+            for name, _ in pairs(policies) do
+                if not defined_policies[name] then
+                    utils.warning("unknown policy(%s), please run `xmake l core.project.policy.policies` if you want to all policies", name)
+                end
+            end
+        end
+    end
     return policy.check(name, policies and policies[name])
 end
 

@@ -241,9 +241,10 @@ function _instance:_visibility(opt)
     return visibility
 end
 
--- invalidate the previous cache key
+-- invalidate the previous cache 
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
+    self._POLICIES = nil
     -- we need flush the source files cache if target/files are modified, e.g. `target:add("files", "xxx.c")`
     if name == "files" then
         self._SOURCEFILES = nil
@@ -471,7 +472,19 @@ end
 
 -- get the target policy
 function _instance:policy(name)
-    local policies = self:get("policy")
+    local policies = self._POLICIES
+    if not policies then
+        policies = self:get("policy")
+        self._POLICIES = policies
+        if policies then
+            local defined_policies = policy.policies()
+            for name, _ in pairs(policies) do
+                if not defined_policies[name] then
+                    utils.warning("unknown policy(%s), please run `xmake l core.project.policy.policies` if you want to all policies", name)
+                end
+            end
+        end
+    end
     return policy.check(name, policies and policies[name])
 end
 
