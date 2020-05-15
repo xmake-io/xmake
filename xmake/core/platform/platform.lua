@@ -103,6 +103,11 @@ function _instance:archs()
     return self._INFO:get("archs")
 end
 
+-- get the toolchains
+function _instance:toolchains()
+    return self._INFO:get("toolchains")
+end
+
 -- get the platform script
 function _instance:script(name)
     return self._INFO:get(name)
@@ -175,6 +180,7 @@ function platform._apis()
         ,   "platform.set_hosts"
         ,   "platform.set_archs"
         ,   "platform.set_installdir"
+        ,   "platform.set_toolchains"
         }
     ,   script =
         {

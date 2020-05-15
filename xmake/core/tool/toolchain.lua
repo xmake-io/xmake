@@ -1,0 +1,231 @@
+--!A cross-toolchain build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        toolchain.lua
+--
+
+-- define module
+local toolchain      = toolchain or {}
+local _instance     = _instance or {}
+
+-- load modules
+local os             = require("base/os")
+local path           = require("base/path")
+local utils          = require("base/utils")
+local table          = require("base/table")
+local interpreter    = require("base/interpreter")
+local language       = require("language/language")
+local sandbox        = require("sandbox/sandbox")
+
+-- new an instance
+function _instance.new(name, info, rootdir)
+    local instance    = table.inherit(_instance)
+    instance._NAME    = name
+    instance._INFO    = info
+    instance._ROOTDIR = rootdir
+    return instance
+end
+
+-- get toolchain name
+function _instance:name()
+    return self._NAME
+end
+
+-- set the value to the toolchain configuration
+function _instance:set(name, ...)
+    self._INFO:apival_set(name, ...)
+end
+
+-- add the value to the toolchain configuration
+function _instance:add(name, ...)
+    self._INFO:apival_add(name, ...)
+end
+
+-- get the toolchain configuration
+function _instance:get(name)
+
+    -- attempt to get the static configure value
+    local value = self._INFO:get(name)
+    if value ~= nil then
+        return value
+    end
+
+    -- lazy loading toolchain if get other configuration
+    if not self._LOADED and not self:_is_builtin_conf(name) then
+        local on_load = self._INFO:get("load")
+        if on_load then
+            local ok, errors = sandbox.load(on_load, self)
+            if not ok then
+                os.raise(errors)
+            end
+        end
+        self._LOADED = true
+    end
+
+    -- get other toolchain info
+    return self._INFO:get(name)
+end
+
+-- get the toolchain script
+function _instance:script(name)
+    return self._INFO:get(name)
+end
+
+-- is builtin configuration?
+function _instance:_is_builtin_conf(name)
+
+    local builtin_configs = self._BUILTIN_CONFIGS
+    if not builtin_configs then
+        builtin_configs = {}
+        for apiname, _ in pairs(toolchain._interpreter():apis("toolchain")) do
+            local pos = apiname:find('_', 1, true)
+            if pos then
+                builtin_configs[apiname:sub(pos + 1)] = true
+            end
+        end
+        self._BUILTIN_CONFIGS = builtin_configs
+    end
+    return builtin_configs[name]
+end
+
+-- the interpreter
+function toolchain._interpreter()
+
+    -- the interpreter has been initialized? return it directly
+    if toolchain._INTERPRETER then
+        return toolchain._INTERPRETER
+    end
+
+    -- init interpreter
+    local interp = interpreter.new()
+    assert(interp)
+ 
+    -- define apis
+    interp:api_define(toolchain._apis())
+
+    -- define apis for language
+    interp:api_define(language.apis())
+    
+    -- save interpreter
+    toolchain._INTERPRETER = interp
+
+    -- ok?
+    return interp
+end
+
+-- get toolchain apis
+function toolchain._apis()
+    return 
+    {
+        values =
+        {
+            -- toolchain.set_xxx
+            "toolchain.set_cc"
+        ,   "toolchain.set_cxx"
+        ,   "toolchain.set_ld"
+        ,   "toolchain.set_sh"
+        }
+    ,   script =
+        {
+            -- toolchain.on_xxx
+            "toolchain.on_load"
+        }
+    ,   dictionary =
+        {
+            -- toolchain.set_xxx
+        ,   "toolchain.set_formats"
+        }
+    }
+end
+
+-- get toolchain directories
+function toolchain.directories()
+
+    -- init directories
+    local dirs = toolchain._DIRS or {   path.join(global.directory(), "toolchains")
+                                    ,   path.join(os.programdir(), "toolchains")
+                                    }
+                                
+    -- save directories to cache
+    toolchain._DIRS = dirs
+    return dirs
+end
+
+-- load the given toolchain 
+function toolchain.load(name, plat)
+
+    -- get toolchain name
+    plat = plat or config.get("plat") or os.host()
+    if not plat then
+        return nil, string.format("unknown toolchain!")
+    end
+
+    -- get cache key
+    local cachekey = plat .. "_" .. (config.get("arch") or os.arch())
+
+    -- get it directly from cache dirst
+    toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
+    if toolchain._TOOLCHAINS[cachekey] then
+        return toolchain._TOOLCHAINS[cachekey]
+    end
+
+    -- find the toolchain script path
+    local scriptpath = nil
+    for _, dir in ipairs(toolchain.directories()) do
+        scriptpath = path.join(dir, name, "xmake.lua")
+        if os.isfile(scriptpath) then
+            break
+        end
+    end
+    if not scriptpath or not os.isfile(scriptpath) then
+        return nil, string.format("the toolchain %s not found!", name)
+    end
+
+    -- get interpreter
+    local interp = toolchain._interpreter()
+
+    -- load script
+    local ok, errors = interp:load(scriptpath)
+    if not ok then
+        return nil, errors
+    end
+
+    -- load toolchain
+    local results, errors = interp:make("toolchain", true, false)
+    if not results and os.isfile(scriptpath) then
+        return nil, errors
+    end
+
+    -- check the toolchain name
+    local result = results[name]
+    if not result then
+        return nil, string.format("the toolchain %s not found!", name)
+    end
+
+    -- new an instance
+    local instance, errors = _instance.new(name, result, interp:rootdir())
+    if not instance then
+        return nil, errors
+    end
+
+    -- save instance to the cache
+    toolchain._TOOLCHAINS[cachekey] = instance
+    return instance
+end
+
+-- return module
+return toolchain

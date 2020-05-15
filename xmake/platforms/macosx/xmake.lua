@@ -45,6 +45,9 @@ platform("macosx")
     -- on load
     on_load("load")
 
+    -- set toolchains
+    set_toolchains("envs", "xcode", "clang", "gcc", "dlang", "rust", "go", "cuda")
+
     -- set menu
     set_menu {
                 config = 
