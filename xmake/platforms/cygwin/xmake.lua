@@ -25,7 +25,7 @@ platform("cygwin")
     set_os("windows")
 
     -- set hosts
-    set_hosts("cygwin")
+    set_hosts("windows")
 
     -- set archs
     set_archs("i386", "x86_64")

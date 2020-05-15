@@ -25,7 +25,7 @@ platform("msys")
     set_os("windows")
 
     -- set hosts
-    set_hosts("msys")
+    set_hosts("windows")
 
     -- set archs
     set_archs("i386", "x86_64")

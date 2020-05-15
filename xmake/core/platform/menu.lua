@@ -49,9 +49,9 @@ function menu.options(action)
             return nil, errors
         end
 
-        -- get menu
+        -- get menu of the supported platform on the current host
         local menu = instance:menu()
-        if menu then
+        if menu and os.is_host(table.unpack(table.wrap(instance:hosts()))) then
 
             -- get the options for this action
             local options = menu[action]
@@ -74,8 +74,6 @@ function menu.options(action)
             end
         end
     end
-
-    -- ok?
     return results
 end
 

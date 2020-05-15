@@ -367,11 +367,7 @@ function platform.plats()
             end
         end
     end
-
-    -- save them
     platform._PLATS = plats
-
-    -- ok
     return plats
 end
 
