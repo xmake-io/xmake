@@ -37,18 +37,28 @@ function _package_library(target)
     local targetname = target:name()
 
     -- copy the library file to the output directory
-    os.cp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
+    os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
 
     -- copy the symbol file to the output directory
     local symbolfile = target:symbolfile()
     if os.isfile(symbolfile) then
-        os.cp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile))) 
+        os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile))) 
+    end
+
+    -- copy *.lib for shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/787
+    if target:targetkind() == "shared" and is_plat("windows", "mingw") then
+        local targetfile = target:targetfile()
+        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
+        if os.isfile(targetfile_lib) then
+            os.vcp(targetfile_lib, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/", outputdir, targetname))
+        end
     end
 
     -- copy the config.h to the output directory (deprecated)
     local configheader = target:configheader()
     if configheader then
-        os.cp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader))) 
+        os.vcp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader))) 
     end
 
     -- copy headers
@@ -58,7 +68,7 @@ function _package_library(target)
         for _, srcheader in ipairs(srcheaders) do
             local dstheader = dstheaders[i]
             if dstheader then
-                os.cp(srcheader, dstheader)
+                os.vcp(srcheader, dstheader)
             end
             i = i + 1
         end
