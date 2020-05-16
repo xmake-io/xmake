@@ -366,6 +366,7 @@ function platform.tool(toolkind, plat)
         if program then
             config.set(toolkind, program, {force = true, readonly = true})
             config.set("__toolname_" .. toolkind, toolname)
+            config.save()
         else
             -- TODO deprecated
             -- check it first
