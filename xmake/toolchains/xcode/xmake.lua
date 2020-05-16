@@ -21,3 +21,19 @@
 -- define toolchain
 toolchain("xcode")
 
+    -- set toolsets
+    set_toolsets("cc", "xcrun -sdk macosx clang")
+    set_toolsets("cxx", "xcrun -sdk macosx clang", "xcrun -sdk macosx clang++")
+    set_toolsets("as", "xcrun -sdk macosx clang")
+    set_toolsets("ld", "xcrun -sdk macosx clang++", "xcrun -sdk macosx clang")
+    set_toolsets("sh", "xcrun -sdk macosx clang++", "xcrun -sdk macosx clang")
+    set_toolsets("ar", "xcrun -sdk macosx ar")
+    set_toolsets("ex", "xcrun -sdk macosx ar")
+    set_toolsets("strip", "xcrun -sdk macosx strip")
+    set_toolsets("dsymutil", "xcrun -sdk macosx dsymutil", "dsymutil")
+    set_toolsets("mm", "xcrun -sdk macosx clang")
+    set_toolsets("mxx", "xcrun -sdk macosx clang", "xcrun -sdk macosx clang++")
+    set_toolsets("sc", "xcrun -sdk macosx swiftc", "swiftc")
+    set_toolsets("scld", "xcrun -sdk macosx swiftc", "swiftc")
+    set_toolsets("scsh", "xcrun -sdk macosx swiftc", "swiftc")
+

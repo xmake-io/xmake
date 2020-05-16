@@ -32,7 +32,6 @@ local toolchain      = require("tool/toolchain")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
-local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info, rootdir)

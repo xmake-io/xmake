@@ -28,10 +28,12 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local global         = require("base/global")
+local option         = require("base/option")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
 local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
+local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
 function _instance.new(name, info, rootdir)
@@ -84,11 +86,97 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    local toolpathes = self:get("toolsets." .. toolkind)
+    if toolpathes then
+        for _, toolpath in ipairs(toolpathes) do
+            local program, toolname = self:_checktool(toolkind, toolpath)
+            if program then
+                return program, toolname
+            end
+        end
+    end
 end
 
 -- get the toolchain script
 function _instance:script(name)
     return self._INFO:get(name)
+end
+
+-- get the bin directory
+function _instance:bindir()
+    return config.get("bin") or self:get("bindir")
+end
+
+-- get the tool description from the tool kind
+function _instance:_description(toolkind)
+    local descriptions = self._DESCRIPTIONS
+    if not descriptions then
+        descriptions = 
+        {
+            cc         = "the c compiler",
+            cxx        = "the c++ compiler",
+            ld         = "the linker",
+            sh         = "the shared library linker",
+            ar         = "the static library archiver",
+            ex         = "the static library extractor",
+            strip      = "the symbols stripper",
+            dsymutil   = "the symbols generator",
+            mm         = "the objc compiler",
+            mxx        = "the objc++ compiler",
+            as         = "the assember",
+            sc         = "the swift compiler",
+            scld       = "the swift linker",
+            scsh       = "the swift shared library linker",
+            gc         = "the golang compiler",
+            gcld       = "the golang linker",
+            gcar       = "the golang static library archiver",
+            dc         = "the dlang compiler",
+            dcld       = "the dlang linker",
+            dcsh       = "the dlang shared library linker",
+            dcar       = "the dlang static library archiver",
+            rc         = "the rust compiler",
+            rcld       = "the rust linker",
+            rcsh       = "the rust shared library linker",
+            rcar       = "the rust static library archiver",
+            cu         = "the cuda compiler",
+            culd       = "the cuda linker",
+            cuccbin    = "the cuda host c++ compiler",
+        }
+        self._DESCRIPTIONS = descriptions
+    end
+    return descriptions
+end
+
+-- check the given tool path
+function _instance:_checktool(toolkind, toolpath)
+
+    -- get find_tool
+    local find_tool = self._find_tool
+    if not find_tool then
+        find_tool = sandbox_module.import("lib.detect.find_tool", {anonymous = true})
+        self._find_tool = find_tool
+    end
+
+    -- find tool program
+    local program, toolname
+    local tool = find_tool(toolpath, {program = toolpath, pathes = self:bindir()})
+    if tool then
+        program = tool.program
+        toolname = tool.name
+    end
+
+    -- get tool description from the tool kind
+    local description = self:_description(toolkind) or ("unknown toolkind " .. toolkind)
+
+    -- trace
+    if option.get("verbose") then
+        if program then
+            utils.cprint("${dim}checking for %s (%s) ... ${color.success}%s", description, toolkind, path.filename(program))
+        else
+            utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, name)
+        end
+    end
+    return program, toolname
 end
 
 -- is builtin configuration?
@@ -137,13 +225,14 @@ end
 function toolchain._apis()
     return 
     {
-        values =
+        values = 
+        {
+            "toolchain.set_bindir"
+        }
+    ,   keyvalues =
         {
             -- toolchain.set_xxx
-            "toolchain.set_cc"
-        ,   "toolchain.set_cxx"
-        ,   "toolchain.set_ld"
-        ,   "toolchain.set_sh"
+            "toolchain.set_toolsets"
         }
     ,   script =
         {
