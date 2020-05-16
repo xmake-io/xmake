@@ -28,6 +28,7 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local interpreter    = require("base/interpreter")
+local toolchain      = require("tool/toolchain")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
@@ -105,7 +106,40 @@ end
 
 -- get the toolchains
 function _instance:toolchains()
-    return self._INFO:get("toolchains")
+    local toolchains = self._TOOLCHAINS
+    if not toolchains then
+        local names = {}
+        if config.get("toolchain") then
+            table.insert(names, config.get("toolchain"))
+        end
+        if self._INFO:get("toolchains") then
+            table.join2(names, self._INFO:get("toolchains"))
+        end
+        toolchains = {}
+        for _, name in ipairs(names) do
+            local toolchain_inst, errors = toolchain.load(name, self:name())
+            if not toolchain_inst then
+                os.raise(errors)
+            end
+            table.insert(toolchains, toolchain_inst)
+        end
+        self._TOOLCHAINS = toolchains
+    end
+    return toolchains
+end
+
+-- get the program and name of the given tool kind
+function _instance:tool(toolkind)
+    local toolchains = self:toolchains()
+    for idx, toolchain_inst in ipairs(toolchains) do
+        local program, toolname = toolchain_inst:tool(toolkind)
+        if program then
+            -- move this toolchain to head
+            table.remove(toolchains, idx)
+            table.insert(toolchains, 1, toolchain_inst)
+            return program, toolname
+        end
+    end
 end
 
 -- get the platform script
@@ -327,16 +361,24 @@ function platform.tool(toolkind, plat)
         if not instance then
             os.raise(errors)
         end
-        
-        -- check it first
-        local on_check = instance:script("config_check")
-        if on_check then
-            on_check(instance, toolkind)
-        end
 
-        -- get it again
-        program = config.get(toolkind)
-        toolname = config.get("__toolname_" .. toolkind)
+        -- get it from the platform toolchains
+        program, toolname = instance:tool(toolkind)
+        if program then
+            config.set(toolkind, program, {force = true, readonly = true})
+            config.set("__toolname_" .. toolkind, toolname)
+        else
+            -- TODO deprecated
+            -- check it first
+            local on_check = instance:script("config_check")
+            if on_check then
+                on_check(instance, toolkind)
+            end
+
+            -- get it again
+            program = config.get(toolkind)
+            toolname = config.get("__toolname_" .. toolkind)
+        end
     end
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'

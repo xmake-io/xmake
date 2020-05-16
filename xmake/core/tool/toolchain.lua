@@ -80,6 +80,10 @@ function _instance:get(name)
     return self._INFO:get(name)
 end
 
+-- get the program and name of the given tool kind
+function _instance:tool(toolkind)
+end
+
 -- get the toolchain script
 function _instance:script(name)
     return self._INFO:get(name)
