@@ -88,7 +88,7 @@ end
 function _instance:tool(toolkind)
     local toolpathes = self:get("toolsets." .. toolkind)
     if toolpathes then
-        for _, toolpath in ipairs(toolpathes) do
+        for _, toolpath in ipairs(table.wrap(toolpathes)) do
             local program, toolname = self:_checktool(toolkind, toolpath)
             if program then
                 return program, toolname
@@ -144,7 +144,7 @@ function _instance:_description(toolkind)
         }
         self._DESCRIPTIONS = descriptions
     end
-    return descriptions
+    return descriptions[toolkind]
 end
 
 -- check the given tool path
