@@ -81,7 +81,7 @@ function _toolchains()
     local rc_sh      = toolchain("the rust shared library linker")
     local rc_ar      = toolchain("the rust static library archiver")
     local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip, 
-                        rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar}
+                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar}
 
     -- init the c compiler
     cc:add({name = "gcc", cross = cross}, "clang")

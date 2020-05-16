@@ -28,7 +28,7 @@ language("golang")
     set_sourceflags {gc = "gcflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "gc-ld", static = "gc-ar"}
+    set_targetkinds {binary = "gcld", static = "gcar"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags"}
@@ -109,7 +109,7 @@ language("golang")
                 ,   {nil, "go",         "kv", nil,          "The Golang Compiler"              }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"          }
-                ,   {nil, "gc-ld",      "kv", nil,          "The Golang Linker"                }
+                ,   {nil, "gcld",      "kv", nil,          "The Golang Linker"                }
                 ,   {nil, "go-ar",      "kv", nil,          "The Golang Static Library Linker" }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"   }

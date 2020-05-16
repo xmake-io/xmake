@@ -53,7 +53,7 @@ function _toolchains()
     local sc_ld      = toolchain("the swift linker")
     local sc_sh      = toolchain("the swift shared library linker")
     local toolchains = {cc = cc, cpp = cpp, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
-                        mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh}
+                        mm = mm, mxx = mxx, sc = sc, ["scld"] = sc_ld, ["scsh"] = sc_sh}
 
     -- init the c compiler
     cc:add({name = "clang", cross = cross})

@@ -305,15 +305,15 @@ function main(platform)
     if targets_rust[arch] then
         platform:add("rcflags", "--target=" .. targets_rust[arch])
     end
-    platform:add("rc-shflags", "-C link-args=\"" .. (table.concat(platform:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
-    platform:add("rc-ldflags", "-C link-args=\"" .. (table.concat(platform:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    platform:add("rcshflags", "-C link-args=\"" .. (table.concat(platform:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    platform:add("rcldflags", "-C link-args=\"" .. (table.concat(platform:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
     local sh = config.get("sh")
     if sh then
-        platform:add("rc-shflags", "-C linker=" .. sh)
+        platform:add("rcshflags", "-C linker=" .. sh)
     end
     local ld = config.get("ld")
     if ld then
-        platform:add("rc-ldflags", "-C linker=" .. ld)
+        platform:add("rcldflags", "-C linker=" .. ld)
     end
 end
 

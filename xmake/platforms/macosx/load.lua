@@ -74,21 +74,21 @@ function main(platform)
     -- init flags for swift
     if target_minver and xcode_sdkdir then
         platform:add("scflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
-        platform:add("sc-shflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
-        platform:add("sc-ldflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+        platform:add("scshflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+        platform:add("scldflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
     end
 
     -- init flags for golang
-    platform:set("gc-ldflags", "")
+    platform:set("gcldflags", "")
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
     platform:add("dcflags", dc_archs[arch] or "")
-    platform:add("dc-shflags", dc_archs[arch] or "")
-    platform:add("dc-ldflags", dc_archs[arch] or "" )
+    platform:add("dcshflags", dc_archs[arch] or "")
+    platform:add("dcldflags", dc_archs[arch] or "" )
 
     -- init flags for rust
-    platform:set("rc-shflags", "")
-    platform:set("rc-ldflags", "")
+    platform:set("rcshflags", "")
+    platform:set("rcldflags", "")
 end
 

@@ -53,9 +53,9 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local toolchains = {cc = cc, cxx = cxx, mrc = mrc, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
-                        gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
-                        dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
-                        rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
+                        gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
+                        dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
+                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar,
                         cu = cu, ["cu-ld"] = cu_ld}
 
     -- init the c compiler

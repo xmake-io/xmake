@@ -27,13 +27,13 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    self:set("rc-arflags", "--crate-type=lib")
+    self:set("rcarflags", "--crate-type=lib")
 
     -- init shflags
-    self:set("rc-shflags", "--crate-type=dylib")
+    self:set("rcshflags", "--crate-type=dylib")
 
     -- init ldflags
-    self:set("rc-ldflags", "--crate-type=bin")
+    self:set("rcldflags", "--crate-type=bin")
 
     -- init the file formats
     self:set("formats", { static = "lib$(name).rlib" })

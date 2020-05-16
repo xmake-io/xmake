@@ -33,6 +33,6 @@ function main(platform)
     -- init flags for dlang
     local dc_archs = { x86 = "-m32", x64 = "-m64" }
     platform:add("dcflags", dc_archs[arch])
-    platform:add("dc-shflags", dc_archs[arch])
-    platform:add("dc-ldflags", dc_archs[arch])
+    platform:add("dcshflags", dc_archs[arch])
+    platform:add("dcldflags", dc_archs[arch])
 end

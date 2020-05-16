@@ -39,7 +39,7 @@ local compiler  = require("tool/compiler")
 -- add flags from the platform 
 function linker:_add_flags_from_platform(flags, targetkind)
 
-    -- attempt to add special lanugage flags first for target kind, e.g. binary.go.gc-ldflags, static.dc-arflags
+    -- attempt to add special lanugage flags first for target kind, e.g. binary.go.gcldflags, static.dcarflags
     if targetkind then
         local toolkind = self:kind()
         local toolname = self:name()
@@ -57,7 +57,7 @@ function linker:_add_flags_from_linker(flags)
     local toolkind = self:kind()
     for _, flagkind in ipairs(self:_flagkinds()) do
 
-        -- attempt to add special lanugage flags first, e.g. gc-ldflags, dc-arflags
+        -- attempt to add special lanugage flags first, e.g. gcldflags, dcarflags
         table.join2(flags, self:get(toolkind .. 'flags') or self:get(flagkind))
     end
 end
@@ -185,7 +185,7 @@ function linker.load(targetkind, sourcekinds, target)
     local toolname = linkertool:name()
     for _, flagkind in ipairs(instance:_flagkinds()) do
 
-        -- add special lanugage flags first, e.g. go.gc-ldflags or gcc.ldflags or gc-ldflags or ldflags
+        -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
         linkertool:add(toolkind .. 'flags', platform.get(toolname .. '.' .. toolkind .. 'flags') or platform.get(toolkind .. 'flags'))
         linkertool:add(flagkind, platform.get(toolname .. '.' .. flagkind) or platform.get(flagkind))
     end

@@ -28,7 +28,7 @@ language("dlang")
     set_sourceflags {dc = "dcflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "dc-ld", static = "dc-ar", shared = "dc-sh"}
+    set_targetkinds {binary = "dcld", static = "dcar", shared = "dcsh"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
@@ -113,9 +113,9 @@ language("dlang")
                 ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"           }
-                ,   {nil, "dc-ld",      "kv", nil,          "The Dlang Linker"                  }
-                ,   {nil, "dc-ar",      "kv", nil,          "The Dlang Static Library Archiver" }
-                ,   {nil, "dc-sh",      "kv", nil,          "The Dlang Shared Library Linker"   }
+                ,   {nil, "dcld",      "kv", nil,          "The Dlang Linker"                  }
+                ,   {nil, "dcar",      "kv", nil,          "The Dlang Static Library Archiver" }
+                ,   {nil, "dcsh",      "kv", nil,          "The Dlang Shared Library Linker"   }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"    }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                }

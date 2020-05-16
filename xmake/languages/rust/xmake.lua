@@ -28,7 +28,7 @@ language("rust")
     set_sourceflags {rc = "rcflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "rc-ld", static = "rc-ar", shared = "rc-sh"}
+    set_targetkinds {binary = "rcld", static = "rcar", shared = "rcsh"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
@@ -94,9 +94,9 @@ language("rust")
                 ,   {nil, "rc",         "kv", nil,          "The Rust Compiler"                }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"          }
-                ,   {nil, "rc-ld",      "kv", nil,          "The Rust Linker"                  }
-                ,   {nil, "rc-ar",      "kv", nil,          "The Rust Static Library Archiver" }
-                ,   {nil, "rc-sh",      "kv", nil,          "The Rust Shared Library Linker"   }
+                ,   {nil, "rcld",      "kv", nil,          "The Rust Linker"                  }
+                ,   {nil, "rcar",      "kv", nil,          "The Rust Static Library Archiver" }
+                ,   {nil, "rcsh",      "kv", nil,          "The Rust Shared Library Linker"   }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"   }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }

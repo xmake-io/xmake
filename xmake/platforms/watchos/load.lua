@@ -53,7 +53,7 @@ function main(platform)
 
     -- init flags for swift (with platform:add("ldflags and platform:add("shflags)
     platform:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
-    platform:add("sc-shflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir) 
-    platform:add("sc-ldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+    platform:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir) 
+    platform:add("scldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
 end
 

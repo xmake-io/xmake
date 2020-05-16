@@ -62,10 +62,10 @@ function _toolchains()
     local cu_ld      = toolchain("the cuda linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
     local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
-                        mm = mm, mxx = mxx, sc = sc, ["sc-ld"] = sc_ld, ["sc-sh"] = sc_sh,
-                        gc = gc, ["gc-ld"] = gc_ld, ["gc-ar"] = gc_ar,
-                        dc = dc, ["dc-ld"] = dc_ld, ["dc-sh"] = dc_sh, ["dc-ar"] = dc_ar,
-                        rc = rc, ["rc-ld"] = rc_ld, ["rc-sh"] = rc_sh, ["rc-ar"] = rc_ar,
+                        mm = mm, mxx = mxx, sc = sc, ["scld"] = sc_ld, ["scsh"] = sc_sh,
+                        gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
+                        dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
+                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar,
                         cu = cu, ["cu-ld"] = cu_ld, ["cu-ccbin"] = cu_ccbin}
 
     -- init the c compiler

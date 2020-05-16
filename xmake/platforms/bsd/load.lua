@@ -66,16 +66,16 @@ function main(platform)
     platform:add("asflags", archflags)
 
     -- init flags for golang
-    platform:set("gc-ldflags", "")
+    platform:set("gcldflags", "")
 
     -- init flags for dlang
     local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
     platform:add("dcflags", dc_archs[arch] or "")
-    platform:add("dc-shflags", dc_archs[arch] or "")
-    platform:add("dc-ldflags", dc_archs[arch] or "")
+    platform:add("dcshflags", dc_archs[arch] or "")
+    platform:add("dcldflags", dc_archs[arch] or "")
 
     -- init flags for rust
-    platform:set("rc-shflags", "")
-    platform:set("rc-ldflags", "")
+    platform:set("rcshflags", "")
+    platform:set("rcldflags", "")
 end
 
