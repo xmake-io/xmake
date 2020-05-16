@@ -151,7 +151,7 @@ function toolchain._apis()
     ,   dictionary =
         {
             -- toolchain.set_xxx
-        ,   "toolchain.set_formats"
+            "toolchain.set_formats"
         }
     }
 end
