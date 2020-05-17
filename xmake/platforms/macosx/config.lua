@@ -146,6 +146,7 @@ end
 -- check it
 function main(platform, name)
 
+    --[[
     -- only check the given config name?
     if name then
         local toolchain = singleton.get("macosx.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
@@ -159,6 +160,6 @@ function main(platform, name)
 
         -- check xcode 
         check_xcode(config, true)
-    end
+    end]]
 end
 

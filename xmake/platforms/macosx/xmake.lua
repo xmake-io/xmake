@@ -37,7 +37,7 @@ platform("macosx")
     set_installdir("/usr/local")
 
     -- on check project configuration
-    on_config_check("config")
+--    on_config_check("config")
 
     -- on check global configuration
     on_global_check("global")

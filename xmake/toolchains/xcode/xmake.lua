@@ -37,3 +37,8 @@ toolchain("xcode")
     set_toolsets("scld", "xcrun -sdk macosx swiftc", "swiftc")
     set_toolsets("scsh", "xcrun -sdk macosx swiftc", "swiftc")
 
+    -- check toolchain
+    on_check("check")
+
+    -- load toolchain
+    on_load("load")
