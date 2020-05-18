@@ -296,7 +296,7 @@ function toolchain.load(name, plat)
     end
 
     -- get cache key
-    local cachekey = plat .. "_" .. (config.get("arch") or os.arch())
+    local cachekey = name .. "_" .. plat .. "_" .. (config.get("arch") or os.arch())
 
     -- get it directly from cache dirst
     toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
