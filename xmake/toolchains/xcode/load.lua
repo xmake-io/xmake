@@ -33,7 +33,7 @@ function main(toolchain)
     local xcode_sdkver  = config.get("xcode_sdkver")
     local xcode_sdkdir  = nil
     if xcode_dir and xcode_sdkver then
-        xcode_sdkdir = xcode_dir .. "/Contents/Developer/toolchains/MacOSX.toolchain/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+        xcode_sdkdir = xcode_dir .. "/Contents/Developer/platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
     end
 
     -- init flags for c/c++

@@ -50,7 +50,7 @@ function sandbox_core_platform.archs(plat)
     return platform.archs(plat)
 end
 
--- get the current platform configure
+-- get the current platform configuration
 function sandbox_core_platform.get(name, plat)
     return platform.get(name, plat)
 end
@@ -61,6 +61,11 @@ end
 --
 function sandbox_core_platform.tool(toolkind)
     return platform.tool(toolkind)
+end
+
+-- get the current platform tool configuration
+function sandbox_core_platform.toolconfig(name, plat)
+    return platform.toolconfig(name, plat)
 end
 
 -- return module

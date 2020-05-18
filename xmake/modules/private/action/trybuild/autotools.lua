@@ -39,7 +39,7 @@ end
 function _get_buildenv(key)
     local value = config.get(key)
     if value == nil then
-        value = platform.get(key, config.plat())
+        value = platform.toolconfig(key, config.plat())
     end
     if value == nil then
         value = platform.tool(key, config.plat())

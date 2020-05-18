@@ -263,7 +263,7 @@ function builder:_add_flags_from_language(flags, target, getters)
                             end
                             return values
                         end
-    ,   platform    =   platform.get
+    ,   platform    =   platform.toolconfig
     ,   target      =   function (name) 
 
                             -- only for target

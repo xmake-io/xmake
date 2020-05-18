@@ -141,6 +141,36 @@ function _instance:tool(toolkind)
     end
 end
 
+-- get tool configuration from the toolchains
+function _instance:toolconfig(name)
+
+    -- init tool configs
+    local toolconfigs = self._TOOLCONFIGS
+    if not toolconfigs then
+        toolconfigs = {}
+        self._TOOLCONFIGS = toolconfigs
+    end
+
+    -- get configuration
+    local toolconfig = toolconfigs[name]
+    if toolconfig == nil then
+
+        -- get them from all toolchains
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            local values = toolchain_inst:get(name)
+            if values then
+                toolconfig = toolconfig or {}
+                table.join2(toolconfig, values)
+            end
+        end
+
+        -- cache it
+        toolconfig = toolconfig or false
+        toolconfigs[name] = toolconfig
+    end
+    return toolconfig or nil
+end
+
 -- get the platform script
 function _instance:script(name)
     return self._INFO:get(name)
@@ -386,6 +416,16 @@ function platform.tool(toolkind, plat)
         end
     end
     return program, toolname
+end
+
+-- get the given tool configuration 
+function platform.toolconfig(name, plat)
+    local instance, errors = platform.load(plat)
+    if instance then
+        return instance:toolconfig(name)
+    else
+        os.raise(errors)
+    end
 end
 
 -- get the all platforms

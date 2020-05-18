@@ -44,8 +44,8 @@ function linker:_add_flags_from_platform(flags, targetkind)
         local toolkind = self:kind()
         local toolname = self:name()
         for _, flagkind in ipairs(self:_flagkinds()) do
-            local toolflags = platform.get(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or platform.get(targetkind .. '.' .. toolname .. '.' .. flagkind)
-            table.join2(flags, toolflags or platform.get(targetkind .. '.' .. toolkind .. 'flags') or platform.get(targetkind .. '.' .. flagkind))
+            local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+            table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. flagkind))
         end
     end
 end
@@ -186,8 +186,8 @@ function linker.load(targetkind, sourcekinds, target)
     for _, flagkind in ipairs(instance:_flagkinds()) do
 
         -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
-        linkertool:add(toolkind .. 'flags', platform.get(toolname .. '.' .. toolkind .. 'flags') or platform.get(toolkind .. 'flags'))
-        linkertool:add(flagkind, platform.get(toolname .. '.' .. flagkind) or platform.get(flagkind))
+        linkertool:add(toolkind .. 'flags', platform.toolconfig(toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(toolkind .. 'flags'))
+        linkertool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
     end
 
     -- ok
