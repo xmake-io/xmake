@@ -20,105 +20,20 @@
 
 -- imports
 import("core.project.config")
-import("core.base.singleton")
-import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_xcode")
-import("private.platform.check_toolchain")
-
--- get toolchains
-function _toolchains()
-
-    -- init architecture
-    local arch = config.get("arch")
-    local simulator = (arch == "i386")
-
-    -- init cross
-    local cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local strip      = toolchain("the symbols stripper")
-    local dsymutil   = toolchain("the symbols generator")
-    local mm         = toolchain("the objc compiler")
-    local mxx        = toolchain("the objc++ compiler")
-    local as         = toolchain("the assember")
-    local sc         = toolchain("the swift compiler")
-    local sc_ld      = toolchain("the swift linker")
-    local sc_sh      = toolchain("the swift shared library linker")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
-                        mm = mm, mxx = mxx, sc = sc, ["scld"] = sc_ld, ["scsh"] = sc_sh}
-
-    -- init the c compiler
-    cc:add({name = "clang", cross = cross})
-
-    -- init the c++ compiler
-    cxx:add({name = "clang", cross = cross})
-    cxx:add({name = "clang++", cross = cross})
-
-    -- init the assember
-    if simulator then
-        as:add({name = "clang", cross = cross})
-    else
-        as:add({name = "clang", cross = path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross)})
-    end
-
-    -- init the linker
-    ld:add({name = "clang++", cross = cross})
-    ld:add({name = "clang", cross = cross})
-
-    -- init the shared library linker
-    sh:add({name = "clang++", cross = cross})
-    sh:add({name = "clang", cross = cross})
-
-    -- init the static library archiver
-    ar:add({name = "ar", cross = cross})
-
-    -- init the static library extractor
-    ex:add({name = "ar", cross = cross})
-
-    -- init the symbols stripper
-    strip:add({name = "strip", cross = cross})
-
-    -- init the symbols generator
-    dsymutil:add({name = "dsymutil", cross = cross})
-
-    -- init the objc compiler
-    mm:add({name = "clang", cross = cross})
-
-    -- init the objc++ compiler
-    mxx:add({name = "clang", cross = cross})
-    mxx:add({name = "clang++", cross = cross})
-
-    -- init the swift compiler and linker
-    sc:add({name = "swiftc", cross = cross})
-    sc_ld:add({name = "swiftc", cross = cross})
-    sc_sh:add({name = "swiftc", cross = cross})
-
-    return toolchains
-end
 
 -- check it
-function main(platform, name)
+function main(platform)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("watchos.toolchains", _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
+    -- check arch
+    check_arch(config, "armv7k")
+
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    for idx, toolchain in irpairs(toolchains) do
+        if not toolchain:check() then
+            table.remove(toolchains, idx)
         end
-    else
-
-        -- check arch
-        check_arch(config, "armv7k")
-
-        -- check xcode 
-        check_xcode(config)
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
-
