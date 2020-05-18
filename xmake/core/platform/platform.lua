@@ -163,6 +163,14 @@ function _instance:data_add(name, data)
     self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
 end
 
+-- do check
+function _instance:check()
+    local on_check = self:script("check")
+    if on_check then
+        on_check(self)
+    end
+end
+
 -- is builtin configuration?
 function _instance:_is_builtin_conf(name)
 
@@ -219,8 +227,7 @@ function platform._apis()
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_config_check"
-        ,   "platform.on_global_check"
+        ,   "platform.on_check"
         ,   "platform.on_environment_enter"
         ,   "platform.on_environment_leave"
         }
@@ -367,17 +374,6 @@ function platform.tool(toolkind, plat)
             config.set(toolkind, program, {force = true, readonly = true})
             config.set("__toolname_" .. toolkind, toolname)
             config.save()
-        else
-            -- TODO deprecated
-            -- check it first
-            local on_check = instance:script("config_check")
-            if on_check then
-                on_check(instance, toolkind)
-            end
-
-            -- get it again
-            program = config.get(toolkind)
-            toolname = config.get("__toolname_" .. toolkind)
         end
     end
 

@@ -30,8 +30,8 @@ platform("sdcc")
     -- set formats
     set_formats {static = "$(name).lib", object = "$(name).rel", binary = "$(name).bin", symbol = "$(name).sym"}
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check
+    on_check("check")
 
     -- on load
     on_load("load")

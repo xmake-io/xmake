@@ -25,4 +25,5 @@ import("private.platform.check_xcode")
 -- main entry
 function main(toolchain)
     check_xcode(config, true)
+    return true
 end

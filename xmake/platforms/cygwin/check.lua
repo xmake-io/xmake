@@ -15,22 +15,43 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        check.lua
 --
 
 -- imports
 import("core.project.config")
 import("core.base.singleton")
+import("detect.sdks.find_cross_toolchain")
 import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_xcode")
 import("private.platform.check_toolchain")
+
+-- check the architecture
+function _check_arch()
+
+    -- get the architecture
+    local arch = config.get("arch")
+    if not arch then
+
+        -- init the default architecture
+        config.set("arch", config.get("cross") and "none" or os.subarch())
+
+        -- trace
+        print("checking for the architecture ... %s", config.get("arch"))
+    end
+end
 
 -- get toolchains
 function _toolchains()
 
-    -- init cross
-    local cross = "xcrun -sdk macosx "
+    -- find cross toolchain
+    local cross = ""
+    local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
+    if cross_toolchain then
+        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
+        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
+        cross = cross_toolchain.cross
+    end
 
     -- init toolchains
     local cc         = toolchain("the c compiler")
@@ -39,14 +60,9 @@ function _toolchains()
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
-    local strip      = toolchain("the symbols stripper")
-    local dsymutil   = toolchain("the symbols generator")
     local mm         = toolchain("the objc compiler")
     local mxx        = toolchain("the objc++ compiler")
     local as         = toolchain("the assember")
-    local sc         = toolchain("the swift compiler")
-    local sc_ld      = toolchain("the swift linker")
-    local sc_sh      = toolchain("the swift shared library linker")
     local gc         = toolchain("the golang compiler")
     local gc_ld      = toolchain("the golang linker")
     local gc_ar      = toolchain("the golang static library archiver")
@@ -61,62 +77,55 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
-                        mm = mm, mxx = mxx, sc = sc, ["scld"] = sc_ld, ["scsh"] = sc_sh,
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
+                        mm = mm, mxx = mxx,
                         gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
                         dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
                         rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar,
                         cu = cu, ["cu-ld"] = cu_ld, ["cu-ccbin"] = cu_ccbin}
 
     -- init the c compiler
-    cc:add("$(env CC)", {name = "clang", cross = cross}, "clang", "gcc")
+    cc:add("$(env CC)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
 
     -- init the c++ compiler
     cxx:add("$(env CXX)")
+    cxx:add({name = "gcc", cross = cross})
     cxx:add({name = "clang", cross = cross})
+    cxx:add({name = "g++", cross = cross})
     cxx:add({name = "clang++", cross = cross})
-    cxx:add("clang", "clang++", "gcc", "g++")
 
     -- init the assember
-    as:add("$(env AS)", {name = "clang", cross = cross}, "clang", "gcc")
+    as:add("$(env AS)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
 
     -- init the linker
     ld:add("$(env LD)", "$(env CXX)")
+    ld:add({name = "g++", cross = cross})
+    ld:add({name = "gcc", cross = cross})
     ld:add({name = "clang++", cross = cross})
     ld:add({name = "clang", cross = cross})
-    ld:add("clang++", "g++", "clang", "gcc")
 
     -- init the shared library linker
     sh:add("$(env SH)", "$(env CXX)")
+    sh:add({name = "g++", cross = cross})
+    sh:add({name = "gcc", cross = cross})
     sh:add({name = "clang++", cross = cross})
     sh:add({name = "clang", cross = cross})
-    sh:add("clang++", "g++", "clang", "gcc")
 
     -- init the static library archiver
-    ar:add("$(env AR)", {name = "ar", cross = cross}, "ar")
+    ar:add("$(env AR)", {name = "ar", cross = cross})
 
     -- init the static library extractor
-    ex:add({name = "ar", cross = cross}, "ar")
-
-    -- init the symbols stripper
-    strip:add({name = "strip", cross = cross}, "strip")
-
-    -- init the symbols generator
-    dsymutil:add({name = "dsymutil", cross = cross}, "dsymutil")
+    ex:add("$(env AR)", {name = "ar", cross = cross})
 
     -- init the objc compiler
-    mm:add("$(env MM)", {name = "clang", cross = cross}, "clang", "gcc")
+    mm:add("$(env MM)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
 
     -- init the objc++ compiler
     mxx:add("$(env MXX)")
     mxx:add({name = "clang", cross = cross})
     mxx:add({name = "clang++", cross = cross})
-    mxx:add("clang", "clang++", "gcc", "g++")
-
-    -- init the swift compiler and linker
-    sc:add("$(env SC)", {name = "swiftc", cross = cross}, "swiftc")
-    sc_ld:add("$(env SC)", {name = "swiftc", cross = cross}, "swiftc")
-    sc_sh:add("$(env SC)", {name = "swiftc", cross = cross}, "swiftc")
+    mxx:add({name = "gcc", cross = cross})
+    mxx:add({name = "g++", cross = cross})
 
     -- init the golang compiler and linker
     gc:add("$(env GC)", "go", "gccgo")
@@ -136,9 +145,11 @@ function _toolchains()
     rc_ar:add("$(env RC)", "rustc")
 
     -- init the cuda compiler and linker
-    cu:add("nvcc", "clang")
+    cu:add("nvcc", "clang++", "clang")
     cu_ld:add("nvcc")
-    cu_ccbin:add("$(env CXX)", "$(env CC)", "clang", "gcc")
+    if not cross or cross == "" then
+        cu_ccbin:add("$(env CXX)", "$(env CC)", "gcc", "clang", "g++", "clang++")
+    end
 
     return toolchains
 end
@@ -146,20 +157,16 @@ end
 -- check it
 function main(platform, name)
 
-    --[[
     -- only check the given config name?
     if name then
-        local toolchain = singleton.get("macosx.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
+        local toolchain = singleton.get("cygwin.toolchains", _toolchains)[name]
         if toolchain then
             check_toolchain(config, name, toolchain)
         end
     else
 
         -- check arch
-        check_arch(config)
-
-        -- check xcode 
-        check_xcode(config, true)
-    end]]
+        _check_arch()
+    end
 end
 

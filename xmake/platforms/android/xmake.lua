@@ -39,8 +39,8 @@ platform("android")
     -- set formats
     set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check
+    on_check("check")
 
     -- on load
     on_load("load")

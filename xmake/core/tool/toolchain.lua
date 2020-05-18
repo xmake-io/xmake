@@ -61,6 +61,19 @@ end
 
 -- get the toolchain configuration
 function _instance:get(name)
+
+    -- attempt to get the static configure value
+    local value = self._INFO:get(name)
+    if value ~= nil then
+        return value
+    end
+
+    -- lazy loading platform if get other configuration
+    if not self:_is_builtin_conf(name) then
+        self:_load()
+    end
+
+    -- get other platform info
     return self._INFO:get(name)
 end
 
@@ -102,17 +115,21 @@ function _instance:_load()
 end
 
 -- do check 
-function _instance:_check()
+function _instance:check()
+    local checkok = true
     if not self._CHECKED then
         local on_check = self._INFO:get("check")
         if on_check then
-            local ok, errors = sandbox.load(on_check, self)
-            if not ok then
-                os.raise(errors)
+            local ok, results_or_errors = sandbox.load(on_check, self)
+            if ok then
+                checkok = results_or_errors
+            else
+                os.raise(results_or_errors)
             end
         end
         self._CHECKED = true
     end
+    return checkok
 end
 
 -- get the tool description from the tool kind
@@ -158,9 +175,6 @@ end
 -- check the given tool path
 function _instance:_checktool(toolkind, toolpath)
 
-    -- ensure to check this toolchain first
-    self:_check()
-
     -- get find_tool
     local find_tool = self._find_tool
     if not find_tool then
@@ -186,11 +200,6 @@ function _instance:_checktool(toolkind, toolpath)
         else
             utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, name)
         end
-    end
-
-    -- we only load it when checking the given tool successfully
-    if program then
-        self:_load()
     end
     return program, toolname
 end

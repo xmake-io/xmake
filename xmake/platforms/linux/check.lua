@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        check.lua
 --
 
 -- imports
@@ -34,7 +34,7 @@ function _check_arch()
     if not arch then
 
         -- init the default architecture
-        config.set("arch", config.get("cross") and "none" or os.subarch())
+        config.set("arch", config.get("cross") and "none" or os.arch())
 
         -- trace
         print("checking for the architecture ... %s", config.get("arch"))
@@ -60,6 +60,7 @@ function _toolchains()
     local sh         = toolchain("the shared library linker")
     local ar         = toolchain("the static library archiver")
     local ex         = toolchain("the static library extractor")
+    local strip      = toolchain("the symbols stripper")
     local mm         = toolchain("the objc compiler")
     local mxx        = toolchain("the objc++ compiler")
     local as         = toolchain("the assember")
@@ -77,7 +78,7 @@ function _toolchains()
     local cu         = toolchain("the cuda compiler")
     local cu_ld      = toolchain("the cuda linker")
     local cu_ccbin   = toolchain("the cuda host c++ compiler")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
+    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip,
                         mm = mm, mxx = mxx,
                         gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
                         dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
@@ -117,6 +118,9 @@ function _toolchains()
     -- init the static library extractor
     ex:add("$(env AR)", {name = "ar", cross = cross})
 
+    -- init the symbols stripper
+    strip:add("$(env STRIP)", {name = "strip", cross = cross})
+
     -- init the objc compiler
     mm:add("$(env MM)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
 
@@ -150,7 +154,6 @@ function _toolchains()
     if not cross or cross == "" then
         cu_ccbin:add("$(env CXX)", "$(env CC)", "gcc", "clang", "g++", "clang++")
     end
-
     return toolchains
 end
 
@@ -159,7 +162,7 @@ function main(platform, name)
 
     -- only check the given config name?
     if name then
-        local toolchain = singleton.get("cygwin.toolchains", _toolchains)[name]
+        local toolchain = singleton.get("linux.toolchains", _toolchains)[name]
         if toolchain then
             check_toolchain(config, name, toolchain)
         end

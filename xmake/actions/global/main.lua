@@ -59,11 +59,6 @@ function main()
         end
     end
 
-    -- check the global configure 
-    if changed or option.get("clean") then
-        global.check()
-    end
-
     -- load and check theme
     local themename = option.get("theme")
     if themename then

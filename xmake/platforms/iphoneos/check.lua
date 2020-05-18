@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        config.lua
+-- @file        check.lua
 --
 
 -- imports
@@ -30,14 +30,15 @@ import("private.platform.check_toolchain")
 function _toolchains()
 
     -- init architecture
-    local arch = config.get("arch")
-    local simulator = (arch == "i386")
+    local arch = config.get("arch") or os.arch()
+    local simulator = (arch == "i386" or arch == "x86_64")
 
     -- init cross
-    local cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
+    local cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
 
     -- init toolchains
     local cc         = toolchain("the c compiler")
+    local cpp        = toolchain("the c preprocessor")
     local cxx        = toolchain("the c++ compiler")
     local ld         = toolchain("the linker")
     local sh         = toolchain("the shared library linker")
@@ -51,11 +52,14 @@ function _toolchains()
     local sc         = toolchain("the swift compiler")
     local sc_ld      = toolchain("the swift linker")
     local sc_sh      = toolchain("the swift shared library linker")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
+    local toolchains = {cc = cc, cpp = cpp, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip, dsymutil = dsymutil,
                         mm = mm, mxx = mxx, sc = sc, ["scld"] = sc_ld, ["scsh"] = sc_sh}
 
     -- init the c compiler
     cc:add({name = "clang", cross = cross})
+
+    -- init the c preprocessor
+    cpp:add({name = "clang -arch " .. arch .. " -E", cross = cross})
 
     -- init the c++ compiler
     cxx:add({name = "clang", cross = cross})
@@ -108,14 +112,14 @@ function main(platform, name)
 
     -- only check the given config name?
     if name then
-        local toolchain = singleton.get("watchos.toolchains", _toolchains)[name]
+        local toolchain = singleton.get("iphoneos.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
         if toolchain then
             check_toolchain(config, name, toolchain)
         end
     else
 
         -- check arch
-        check_arch(config, "armv7k")
+        check_arch(config, "arm64")
 
         -- check xcode 
         check_xcode(config)

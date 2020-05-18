@@ -36,8 +36,8 @@ platform("cygwin")
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check 
+    on_check("check")
 
     -- on load
     on_load("load")

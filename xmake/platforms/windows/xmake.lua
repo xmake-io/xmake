@@ -33,11 +33,8 @@ platform("windows")
     -- set formats
     set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
 
-    -- on check project configuration
-    on_config_check("config")
-
-    -- on check global configuration
-    on_global_check("global")
+    -- on check
+    on_check("check")
 
     -- on environment enter
     on_environment_enter("environment.enter")
