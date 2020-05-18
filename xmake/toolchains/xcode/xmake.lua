@@ -28,16 +28,16 @@ toolchain("xcode")
     on_load(function (toolchain)
 
         -- get cross
-        local cross
+        local cross, arch, simulator
         if is_plat("macosx") then
             cross = "xcrun -sdk macosx "
         elseif is_plat("iphoneos") then
-            local arch = get_config("arch") or os.arch()
-            local simulator = (arch == "i386" or arch == "x86_64")
+            arch = get_config("arch") or os.arch()
+            simulator = (arch == "i386" or arch == "x86_64")
             cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
         elseif is_plat("watchos") then
-            local arch = get_config("arch") or os.arch()
-            local simulator = (arch == "i386")
+            arch = get_config("arch") or os.arch()
+            simulator = (arch == "i386")
             cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
         else
             raise("unknown platform for xcode!")
@@ -46,7 +46,6 @@ toolchain("xcode")
         -- set toolsets
         toolchain:set("toolsets", "cc", cross .. "clang")
         toolchain:set("toolsets", "cxx", cross .. "clang", cross .. "clang++")
-        toolchain:set("toolsets", "as", cross .. "clang")
         toolchain:set("toolsets", "ld", cross .. "clang++", cross .. "clang")
         toolchain:set("toolsets", "sh", cross .. "clang++", cross .. "clang")
         toolchain:set("toolsets", "ar", cross .. "ar")
@@ -58,6 +57,16 @@ toolchain("xcode")
         toolchain:set("toolsets", "sc", cross .. "swiftc", "swiftc")
         toolchain:set("toolsets", "scld", cross .. "swiftc", "swiftc")
         toolchain:set("toolsets", "scsh", cross .. "swiftc", "swiftc")
+        if arch then
+            toolchain:set("toolsets", "cpp", cross .. "clang -arch " .. arch .. " -E")
+        end
+        if is_plat("macosx") then
+            toolchain:set("toolsets", "as", cross .. "clang")
+        elseif simulator then
+            toolchain:set("toolsets", "as", cross .. "clang")
+        else
+            toolchain:set("toolsets", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross) .. "clang")
+        end
 
         -- load configurations
         import("load_" .. get_config("plat"))(toolchain)
