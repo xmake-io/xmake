@@ -155,6 +155,7 @@ function main(platform)
             table.remove(toolchains, idx)
         end
     end
+    assert(#toolchains > 0, "toolchains not found!")
 
     --[[
     -- only check the given config name?

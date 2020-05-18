@@ -19,11 +19,33 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
-import("private.platform.check_xcode")
+import("detect.sdks.find_xcode")
 
 -- main entry
 function main(toolchain)
-    check_xcode(config, true)
+
+    -- find xcode
+    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
+    if xcode then
+        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
+    else
+        return false
+    end
+
+    -- save target minver
+    local xcode_sdkver = config.get("xcode_sdkver")
+    local target_minver = config.get("target_minver")
+    if xcode_sdkver and not target_minver then
+        target_minver = xcode_sdkver
+        if is_plat("macosx") then
+            local macos_ver = macos.version()
+            if macos_ver then
+                target_minver = macos_ver:major() .. "." .. macos_ver:minor()
+            end
+        end
+        config.set("target_minver", target_minver)
+    end
     return true
 end
