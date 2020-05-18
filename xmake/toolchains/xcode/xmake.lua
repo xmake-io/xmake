@@ -35,6 +35,10 @@ toolchain("xcode")
             local arch = get_config("arch") or os.arch()
             local simulator = (arch == "i386" or arch == "x86_64")
             cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
+        elseif is_plat("watchos") then
+            local arch = get_config("arch") or os.arch()
+            local simulator = (arch == "i386")
+            cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
         else
             raise("unknown platform for xcode!")
         end

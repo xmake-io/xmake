@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-toolchain build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        load.lua
+-- @file        load_watchos.lua
 --
 
 -- imports
 import("core.project.config")
 
--- load it
-function main(platform)
+-- main entry
+function main(toolchain)
 
     -- init architecture
     local arch = config.get("arch")
@@ -41,19 +41,19 @@ function main(platform)
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 
     -- init flags for c/c++
-    platform:add("cxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
-    platform:add("ldflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
-    platform:add("shflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    toolchain:add("cxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    toolchain:add("ldflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    toolchain:add("shflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
     -- init flags for objc/c++
-    platform:add("mxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    toolchain:add("mxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
     -- init flags for asm
-    platform:add("asflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
+    toolchain:add("asflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sdkdir)
 
-    -- init flags for swift (with platform:add("ldflags and platform:add("shflags)
-    platform:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
-    platform:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir) 
-    platform:add("scldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+    -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
+    toolchain:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
+    toolchain:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir) 
+    toolchain:add("scldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
 end
 

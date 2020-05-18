@@ -64,8 +64,6 @@ function main(toolchain)
     end
 
     -- init flags for asm 
---    toolchain:add("yasm.asflags", arch == "x86_64" and "macho64" or "macho32")
---    toolchain:set("fasm.asflags", "")
     toolchain:add("asflags", "-arch " .. arch)
     if xcode_sdkdir then
         toolchain:add("asflags", "-isysroot " .. xcode_sdkdir)
@@ -77,18 +75,4 @@ function main(toolchain)
         toolchain:add("scshflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
         toolchain:add("scldflags", format("-target %s-apple-macosx%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
     end
-
-    --[[
-    -- init flags for golang
-    toolchain:set("gcldflags", "")
-
-    -- init flags for dlang
-    local dc_archs = { i386 = "-m32", x86_64 = "-m64" }
-    toolchain:add("dcflags", dc_archs[arch] or "")
-    toolchain:add("dcshflags", dc_archs[arch] or "")
-    toolchain:add("dcldflags", dc_archs[arch] or "" )
-
-    -- init flags for rust
-    toolchain:set("rcshflags", "")
-    toolchain:set("rcldflags", "")]]
 end
