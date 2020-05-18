@@ -39,9 +39,6 @@ platform("macosx")
     -- on check 
     on_check("check")
 
-    -- on load
-    on_load("load")
-
     -- set toolchains
 --    set_toolchains("custom", "xcode", "clang", "gcc", "dlang", "rust", "go", "cuda")
     set_toolchains("xcode")

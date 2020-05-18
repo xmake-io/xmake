@@ -20,11 +20,11 @@
 
 -- imports
 import("core.project.config")
+import("private.platform.check_arch")
 
 --[[
 import("core.base.singleton")
 import("private.platform.toolchain")
-import("private.platform.check_arch")
 import("private.platform.check_xcode")
 import("private.platform.check_toolchain")
 
@@ -148,6 +148,9 @@ end]]
 -- check it
 function main(platform)
 
+    -- check arch
+    check_arch(config)
+
     -- check toolchains
     local toolchains = platform:toolchains()
     for idx, toolchain in irpairs(toolchains) do
@@ -156,21 +159,5 @@ function main(platform)
         end
     end
     assert(#toolchains > 0, "toolchains not found!")
-
-    --[[
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("macosx.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
-        end
-    else
-
-        -- check arch
-        check_arch(config)
-
-        -- check xcode 
-        check_xcode(config, true)
-    end]]
 end
 

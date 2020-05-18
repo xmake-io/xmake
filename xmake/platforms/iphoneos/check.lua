@@ -20,9 +20,11 @@
 
 -- imports
 import("core.project.config")
+import("private.platform.check_arch")
+
+--[[
 import("core.base.singleton")
 import("private.platform.toolchain")
-import("private.platform.check_arch")
 import("private.platform.check_xcode")
 import("private.platform.check_toolchain")
 
@@ -105,24 +107,21 @@ function _toolchains()
     sc_sh:add({name = "swiftc", cross = cross})
 
     return toolchains
-end
+end]]
 
 -- check it
 function main(platform, name)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("iphoneos.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
+    -- check arch
+    check_arch(config, "arm64")
+
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    for idx, toolchain in irpairs(toolchains) do
+        if not toolchain:check() then
+            table.remove(toolchains, idx)
         end
-    else
-
-        -- check arch
-        check_arch(config, "arm64")
-
-        -- check xcode 
-        check_xcode(config)
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
 

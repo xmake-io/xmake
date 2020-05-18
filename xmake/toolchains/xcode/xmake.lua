@@ -21,24 +21,40 @@
 -- define toolchain
 toolchain("xcode")
 
-    -- set toolsets
-    set_toolsets("cc", "xcrun -sdk macosx clang")
-    set_toolsets("cxx", "xcrun -sdk macosx clang", "xcrun -sdk macosx clang++")
-    set_toolsets("as", "xcrun -sdk macosx clang")
-    set_toolsets("ld", "xcrun -sdk macosx clang++", "xcrun -sdk macosx clang")
-    set_toolsets("sh", "xcrun -sdk macosx clang++", "xcrun -sdk macosx clang")
-    set_toolsets("ar", "xcrun -sdk macosx ar")
-    set_toolsets("ex", "xcrun -sdk macosx ar")
-    set_toolsets("strip", "xcrun -sdk macosx strip")
-    set_toolsets("dsymutil", "xcrun -sdk macosx dsymutil", "dsymutil")
-    set_toolsets("mm", "xcrun -sdk macosx clang")
-    set_toolsets("mxx", "xcrun -sdk macosx clang", "xcrun -sdk macosx clang++")
-    set_toolsets("sc", "xcrun -sdk macosx swiftc", "swiftc")
-    set_toolsets("scld", "xcrun -sdk macosx swiftc", "swiftc")
-    set_toolsets("scsh", "xcrun -sdk macosx swiftc", "swiftc")
-
     -- check toolchain
     on_check("check")
 
     -- load toolchain
-    on_load("load")
+    on_load(function (toolchain)
+
+        -- get cross
+        local cross
+        if is_plat("macosx") then
+            cross = "xcrun -sdk macosx "
+        elseif is_plat("iphoneos") then
+            local arch = get_config("arch") or os.arch()
+            local simulator = (arch == "i386" or arch == "x86_64")
+            cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
+        else
+            raise("unknown platform for xcode!")
+        end
+
+        -- set toolsets
+        toolchain:set("toolsets", "cc", cross .. "clang")
+        toolchain:set("toolsets", "cxx", cross .. "clang", cross .. "clang++")
+        toolchain:set("toolsets", "as", cross .. "clang")
+        toolchain:set("toolsets", "ld", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolsets", "sh", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolsets", "ar", cross .. "ar")
+        toolchain:set("toolsets", "ex", cross .. "ar")
+        toolchain:set("toolsets", "strip", cross .. "strip")
+        toolchain:set("toolsets", "dsymutil", cross .. "dsymutil", "dsymutil")
+        toolchain:set("toolsets", "mm", cross .. "clang")
+        toolchain:set("toolsets", "mxx", cross .. "clang", cross .. "clang++")
+        toolchain:set("toolsets", "sc", cross .. "swiftc", "swiftc")
+        toolchain:set("toolsets", "scld", cross .. "swiftc", "swiftc")
+        toolchain:set("toolsets", "scsh", cross .. "swiftc", "swiftc")
+
+        -- load configurations
+        import("load_" .. get_config("plat"))(toolchain)
+    end)
