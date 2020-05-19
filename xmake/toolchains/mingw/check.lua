@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-toolchain build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -20,21 +20,21 @@
 
 -- imports
 import("core.project.config")
-import("private.platform.check_arch")
+import("detect.sdks.find_mingw")
 
--- check it
-function main(platform)
-
-    -- check arch
-    check_arch(config, "x86_64")
-
-    -- check toolchains
-    local toolchains = platform:toolchains()
-    for idx, toolchain in irpairs(toolchains) do
-        if not toolchain:check() then
-            table.remove(toolchains, idx)
-        end
+-- check the mingw toolchain
+function main(toolchain)
+    local mingw = find_mingw(config.get("mingw"), {verbose = true, bindir = config.get("bin"), cross = config.get("cross")})
+    if mingw then
+        config.set("mingw", mingw.sdkdir, {force = true, readonly = true}) 
+        config.set("cross", mingw.cross, {readonly = true, force = true})
+        config.set("bin", mingw.bindir, {readonly = true, force = true})
+    else
+        -- failed
+        cprint("${bright color.error}please run:")
+        cprint("    - xmake config --mingw=xxx")
+        cprint("or  - xmake global --mingw=xxx")
+        raise()
     end
-    assert(#toolchains > 0, "toolchains not found!")
+    return true
 end
-

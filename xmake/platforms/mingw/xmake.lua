@@ -36,8 +36,8 @@ platform("mingw")
     -- on check
     on_check("check")
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("envs", "mingw")
 
     -- set menu
     set_menu {

@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_ndk")
 import("detect.sdks.find_android_sdk")

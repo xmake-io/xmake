@@ -54,7 +54,7 @@ function _find_mingw(sdkdir, bindir, cross)
     -- find mingw root directory
     sdkdir = _find_mingwdir(sdkdir)
     if not sdkdir then
-        return {}
+        return 
     end
 
     -- select cross on macos, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
