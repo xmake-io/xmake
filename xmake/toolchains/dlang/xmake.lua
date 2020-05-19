@@ -19,22 +19,18 @@
 --
 
 -- define toolchain
-toolchain("envs")
+toolchain("dlang")
         
     -- set toolsets
-    set_toolsets("cc",    "$(env CC)")
-    set_toolsets("cxx",   "$(env CXX)")
-    set_toolsets("ld",    "$(env LD)")
-    set_toolsets("sh",    "$(env SH)")
-    set_toolsets("ar",    "$(env AR)")
-    set_toolsets("ex",    "$(env EX)", "$(env AR)")
-    set_toolsets("strip", "$(env STRIP)")
-    set_toolsets("ranlib","$(env RANLIB)")
-    set_toolsets("mm",    "$(env MM)")
-    set_toolsets("mxx",   "$(env MXX)")
-    set_toolsets("as",    "$(env AS)")
-    set_toolsets("dc",    "$(env DC)")
-    set_toolsets("sc",    "$(env SC)")
-    set_toolsets("gc",    "$(env GC)")
-    set_toolsets("rc",    "$(env RC)")
+    set_toolsets("dc", "dmd", "ldc2", "gdc")
+    set_toolsets("dcld", "dmd", "ldc2", "gdc")
+    set_toolsets("dcsh", "dmd", "ldc2", "gdc")
+    set_toolsets("dcar", "dmd", "ldc2", "gdc")
 
+    -- on load
+    on_load(function (toolchain)
+        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
+        toolchain:add("dcflags",   march)
+        toolchain:add("dcshflags", march)
+        toolchain:add("dcldflags", march)
+    end)

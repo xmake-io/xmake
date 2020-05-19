@@ -134,15 +134,30 @@ end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
-    local flag = "-L-rpath=" .. os.args(dir)
-    if self:has_flags(flag) then
-        return flag
+    dir = path.translate(dir)
+    if self:has_flags("-L-rpath=" .. dir, "ldflags") then
+        return "-L-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
+            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+            return maps[name]
+        end))
+
+    elseif self:has_flags("-L-rpath -L" .. dir, "ldflags") then
+        return "-L-rpath -L" .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
     end
 end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "-of" .. targetfile, objectfiles)
+
+    -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
+    local flags_extra = {}
+    if targetkind == "shared" and is_plat("macosx") then
+        table.insert(flags_extra, "-L-install_name")
+        table.insert(flags_extra, "-L@rpath/" .. path.filename(targetfile))
+    end
+
+    -- init arguments
+    return self:program(), table.join(flags, flags_extra, "-of" .. targetfile, objectfiles)
 end
 
 -- link the target file

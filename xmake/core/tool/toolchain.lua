@@ -187,7 +187,12 @@ function _instance:_checktool(toolkind, toolpath)
     if sandbox_inst then
         local filter = sandbox_inst:filter()
         if filter then
-            toolpath = filter:handle(toolpath)
+            local value = filter:handle(toolpath)
+            if value and value:trim() ~= "" then
+                toolpath = value
+            else
+                return
+            end
         end
     end
 
@@ -207,7 +212,7 @@ function _instance:_checktool(toolkind, toolpath)
         if program then
             utils.cprint("${dim}checking for %s (%s) ... ${color.success}%s", description, toolkind, path.filename(program))
         else
-            utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, name)
+            utils.cprint("${dim}checking for %s (%s: ${bright}%s${clear}) ... ${color.nothing}${text.nothing}", description, toolkind, toolpath)
         end
     end
     return program, toolname
