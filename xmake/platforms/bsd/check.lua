@@ -20,156 +20,21 @@
 
 -- imports
 import("core.project.config")
-import("core.base.singleton")
-import("detect.sdks.find_cross_toolchain")
-import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_toolchain")
-
--- check the architecture
-function _check_arch()
-
-    -- get the architecture
-    local arch = config.get("arch")
-    if not arch then
-
-        -- init the default architecture
-        config.set("arch", config.get("cross") and "none" or os.arch())
-
-        -- trace
-        print("checking for the architecture ... %s", config.get("arch"))
-    end
-end
-
--- get toolchains
-function _toolchains()
-
-    -- find cross toolchain
-    local cross = ""
-    local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
-    if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        cross = cross_toolchain.cross
-    end
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local strip      = toolchain("the symbols stripper")
-    local mm         = toolchain("the objc compiler")
-    local mxx        = toolchain("the objc++ compiler")
-    local as         = toolchain("the assember")
-    local gc         = toolchain("the golang compiler")
-    local gc_ld      = toolchain("the golang linker")
-    local gc_ar      = toolchain("the golang static library archiver")
-    local dc         = toolchain("the dlang compiler")
-    local dc_ld      = toolchain("the dlang linker")
-    local dc_sh      = toolchain("the dlang shared library linker")
-    local dc_ar      = toolchain("the dlang static library archiver")
-    local rc         = toolchain("the rust compiler")
-    local rc_ld      = toolchain("the rust linker")
-    local rc_sh      = toolchain("the rust shared library linker")
-    local rc_ar      = toolchain("the rust static library archiver")
-    local cu         = toolchain("the cuda compiler")
-    local cu_ld      = toolchain("the cuda linker")
-    local cu_ccbin   = toolchain("the cuda host c++ compiler")
-    local toolchains = {cc = cc, cxx = cxx, as = as, ld = ld, sh = sh, ar = ar, ex = ex, strip = strip,
-                        mm = mm, mxx = mxx,
-                        gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
-                        dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
-                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar,
-                        cu = cu, ["culd"] = cu_ld, ["cu-ccbin"] = cu_ccbin}
-
-    -- init the c compiler
-    cc:add("$(env CC)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
-
-    -- init the c++ compiler
-    cxx:add("$(env CXX)")
-    cxx:add({name = "clang", cross = cross})
-    cxx:add({name = "gcc", cross = cross})
-    cxx:add({name = "clang++", cross = cross})
-    cxx:add({name = "g++", cross = cross})
-
-    -- init the assember
-    as:add("$(env AS)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
-
-    -- init the linker
-    ld:add("$(env LD)", "$(env CXX)")
-    ld:add({name = "clang++", cross = cross})
-    ld:add({name = "clang", cross = cross})
-    ld:add({name = "g++", cross = cross})
-    ld:add({name = "gcc", cross = cross})
-
-    -- init the shared library linker
-    sh:add("$(env SH)", "$(env CXX)")
-    sh:add({name = "clang++", cross = cross})
-    sh:add({name = "clang", cross = cross})
-    sh:add({name = "g++", cross = cross})
-    sh:add({name = "gcc", cross = cross})
-
-    -- init the static library archiver
-    ar:add("$(env AR)", {name = "ar", cross = cross})
-
-    -- init the static library extractor
-    ex:add("$(env AR)", {name = "ar", cross = cross})
-
-    -- init the symbols stripper
-    strip:add("$(env STRIP)", {name = "strip", cross = cross})
-
-    -- init the objc compiler
-    mm:add("$(env MM)", {name = "clang", cross = cross}, {name = "gcc", cross = cross})
-
-    -- init the objc++ compiler
-    mxx:add("$(env MXX)")
-    mxx:add({name = "clang", cross = cross})
-    mxx:add({name = "clang++", cross = cross})
-    mxx:add({name = "gcc", cross = cross})
-    mxx:add({name = "g++", cross = cross})
-
-    -- init the golang compiler and linker
-    gc:add("$(env GC)", "go", "gccgo")
-    gc_ld:add("$(env GC)", "go", "gccgo")
-    gc_ar:add("$(env GC)", "go", "gccgo")
-
-    -- init the dlang compiler and linker
-    dc:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_ld:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_sh:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_ar:add("$(env DC)", "dmd", "ldc2", "gdc")
-
-    -- init the rust compiler and linker
-    rc:add("$(env RC)", "rustc")
-    rc_ld:add("$(env RC)", "rustc")
-    rc_sh:add("$(env RC)", "rustc")
-    rc_ar:add("$(env RC)", "rustc")
-
-    -- init the cuda compiler and linker
-    cu:add("nvcc", "clang++", "clang")
-    cu_ld:add("nvcc")
-    if not cross or cross == "" then
-        cu_ccbin:add("$(env CXX)", "$(env CC)", "gcc", "clang", "g++", "clang++")
-    end
-    return toolchains
-end
 
 -- check it
-function main(platform, name)
+function main(platform)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("linux.toolchains", _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
+    -- check arch
+    check_arch(config, os.arch())
+
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    for idx, toolchain in irpairs(toolchains) do
+        if not toolchain:check() then
+            table.remove(toolchains, idx)
         end
-    else
-
-        -- check arch
-        _check_arch()
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
 

@@ -39,8 +39,8 @@ platform("bsd")
     -- on check
     on_check("check")
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust")
 
     -- set menu
     set_menu {
