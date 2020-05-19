@@ -19,18 +19,10 @@
 --
 
 -- define toolchain
-toolchain("dlang")
+toolchain("go")
         
     -- set toolsets
-    set_toolsets("dc",   "dmd", "ldc2", "gdc")
-    set_toolsets("dcld", "dmd", "ldc2", "gdc")
-    set_toolsets("dcsh", "dmd", "ldc2", "gdc")
-    set_toolsets("dcar", "dmd", "ldc2", "gdc")
+    set_toolsets("gc",   "go", "gccgo")
+    set_toolsets("gcld", "go", "gccgo")
+    set_toolsets("gcar", "go", "gccgo")
 
-    -- on load
-    on_load(function (toolchain)
-        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
-        toolchain:add("dcflags",   march)
-        toolchain:add("dcshflags", march)
-        toolchain:add("dcldflags", march)
-    end)

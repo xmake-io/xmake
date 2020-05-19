@@ -19,18 +19,15 @@
 --
 
 -- define toolchain
-toolchain("dlang")
+toolchain("rust")
         
     -- set toolsets
-    set_toolsets("dc",   "dmd", "ldc2", "gdc")
-    set_toolsets("dcld", "dmd", "ldc2", "gdc")
-    set_toolsets("dcsh", "dmd", "ldc2", "gdc")
-    set_toolsets("dcar", "dmd", "ldc2", "gdc")
+    set_toolsets("rc",   "rustc")
+    set_toolsets("rcld", "rustc")
+    set_toolsets("rcsh", "rustc")
+    set_toolsets("rcar", "rustc")
 
     -- on load
     on_load(function (toolchain)
-        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
-        toolchain:add("dcflags",   march)
-        toolchain:add("dcshflags", march)
-        toolchain:add("dcldflags", march)
+        -- TODO for android ndk
     end)
