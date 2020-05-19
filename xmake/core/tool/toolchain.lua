@@ -182,6 +182,15 @@ function _instance:_checktool(toolkind, toolpath)
         self._find_tool = find_tool
     end
 
+    -- do filter for toolpath variables, e.g. set_toolsets("cc", "$(env CC)")
+    local sandbox_inst = sandbox.instance()
+    if sandbox_inst then
+        local filter = sandbox_inst:filter()
+        if filter then
+            toolpath = filter:handle(toolpath)
+        end
+    end
+
     -- find tool program
     local program, toolname
     local tool = find_tool(toolpath, {program = toolpath, pathes = self:bindir()})

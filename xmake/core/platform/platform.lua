@@ -129,16 +129,34 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-    local toolchains = self:toolchains()
-    for idx, toolchain_inst in ipairs(toolchains) do
-        local program, toolname = toolchain_inst:tool(toolkind)
-        if program then
-            -- move this toolchain to head
-            table.remove(toolchains, idx)
-            table.insert(toolchains, 1, toolchain_inst)
-            return program, toolname
-        end
+
+    -- init tools
+    local tools = self._TOOLS
+    if not tools then
+        tools = {}
+        self._TOOLS = tools
     end
+
+    -- get tool program
+    local program, toolname
+    local toolinfo = tools[toolkind]
+    if toolinfo == nil then
+        toolinfo = {}
+        local toolchains = self:toolchains()
+        for idx, toolchain_inst in ipairs(toolchains) do
+            program, toolname = toolchain_inst:tool(toolkind)
+            if program then
+                toolinfo[1] = program
+                toolinfo[2] = toolname
+                break
+            end
+        end
+        tools[toolkind] = toolinfo
+    else
+        program  = toolinfo[1]
+        toolname = toolinfo[2]
+    end
+    return program, toolname
 end
 
 -- get tool configuration from the toolchains
