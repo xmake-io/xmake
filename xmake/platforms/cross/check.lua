@@ -20,11 +20,6 @@
 
 -- imports
 import("core.project.config")
-import("core.base.singleton")
-import("detect.sdks.find_cross_toolchain")
-import("private.platform.toolchain")
-import("private.platform.check_arch")
-import("private.platform.check_toolchain")
 
 -- check the architecture
 function _check_arch()
@@ -36,154 +31,19 @@ function _check_arch()
     end
 end
 
--- check the cross toolchain
-function _check_cross_toolchain()
-    -- find cross toolchain
-    local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
-    if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-
-        -- TODO add to environment module
-        -- add bin search library for loading some dependent .dll files windows 
-        if cross_toolchain.bindir and is_host("windows") then
-            os.addenv("PATH", cross_toolchain.bindir)
-        end
-    end
-end
-
--- get llvm toolchains
-function _toolchains_llvm()
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local cpp        = toolchain("the c preprocessor")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local strip      = toolchain("the symbols stripper")
-    local ranlib     = toolchain("the static library index generator")
-    local as         = toolchain("the assember")
-    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip}
-
-    -- init the c compiler
-    cc:add("$(env CC)", "clang")
-
-    -- init the c preprocessor
-    cpp:add("$(env CPP)", "clang -E")
-
-    -- init the c++ compiler
-    cxx:add("$(env CXX)", "clang", "clang++")
-
-    -- init the assember
-    as:add("$(env AS)", "clang")
-
-    -- init the linker
-    ld:add("$(env LD)", "$(env CXX)", "clang++", "clang")
-
-    -- init the shared library linker
-    sh:add("$(env SH)", "$(env CXX)", "clang++", "clang")
-
-    -- init the static library archiver
-    ar:add("$(env AR)", "llvm-ar")
-
-    -- init the static library extractor
-    ex:add("$(env AR)", "llvm-ar")
-
-    -- init the static library index generator
-    ranlib:add("$(env RANLIB)", "llvm-ranlib")
-
-    -- init the symbols stripper
-    strip:add("$(env STRIP)", "llvm-strip")
-    return toolchains
-end
-
--- get toolchains
-function _toolchains()
-
-    -- get cross prefix
-    local cross = config.get("cross") or ""
-
-    -- for llvm toolchains?
-    if cross == "" and config.get("toolchain") == "llvm" then
-        return _toolchains_llvm()
-    end
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local cpp        = toolchain("the c preprocessor")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local strip      = toolchain("the symbols stripper")
-    local ranlib     = toolchain("the static library index generator")
-    local as         = toolchain("the assember")
-    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip}
-
-    -- init the c compiler
-    cc:add("$(env CC)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
-
-    -- init the c preprocessor
-    cpp:add("$(env CPP)", {name = "gcc -E", cross = cross}, {name = "clang -E", cross = cross})
-
-    -- init the c++ compiler
-    cxx:add("$(env CXX)")
-    cxx:add({name = "gcc", cross = cross})
-    cxx:add({name = "clang", cross = cross})
-    cxx:add({name = "g++", cross = cross})
-    cxx:add({name = "clang++", cross = cross})
-
-    -- init the assember
-    as:add("$(env AS)", {name = "gcc", cross = cross}, {name = "clang", cross = cross})
-
-    -- init the linker
-    ld:add("$(env LD)", "$(env CXX)")
-    ld:add({name = "g++", cross = cross})
-    ld:add({name = "gcc", cross = cross})
-    ld:add({name = "clang++", cross = cross})
-    ld:add({name = "clang", cross = cross})
-
-    -- init the shared library linker
-    sh:add("$(env SH)", "$(env CXX)")
-    sh:add({name = "g++", cross = cross})
-    sh:add({name = "gcc", cross = cross})
-    sh:add({name = "clang++", cross = cross})
-    sh:add({name = "clang", cross = cross})
-
-    -- init the static library archiver
-    ar:add("$(env AR)", {name = "ar", cross = cross})
-
-    -- init the static library extractor
-    ex:add("$(env AR)", {name = "ar", cross = cross})
-
-    -- init the static library index generator
-    ranlib:add("$(env RANLIB)", {name = "ranlib", cross = cross})
-
-    -- init the symbols stripper
-    strip:add("$(env STRIP)", {name = "strip", cross = cross})
-    return toolchains
-end
-
 -- check it
-function main(platform, name)
+function main(platform)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("cross.toolchains", _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
+    -- check arch
+    _check_arch()
+
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    for idx, toolchain in irpairs(toolchains) do
+        if not toolchain:check() then
+            table.remove(toolchains, idx)
         end
-    else
-
-        -- check arch
-        _check_arch()
-
-        -- check cross toolchain
-        _check_cross_toolchain()
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
 

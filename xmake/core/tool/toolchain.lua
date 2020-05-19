@@ -100,6 +100,11 @@ function _instance:bindir()
     return config.get("bin") or self:get("bindir")
 end
 
+-- get the sdk directory
+function _instance:sdkdir()
+    return config.get("sdk") or self:get("sdkdir")
+end
+
 -- do load 
 function _instance:_load()
     if not self._LOADED then
@@ -267,6 +272,7 @@ function toolchain._apis()
         values = 
         {
             "toolchain.set_bindir"
+        ,   "toolchain.set_sdkdir"
         }
     ,   keyvalues =
         {

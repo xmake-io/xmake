@@ -110,8 +110,7 @@ function _instance:toolchains()
         local names = {}
         if config.get("toolchain") then
             table.insert(names, config.get("toolchain"))
-        end
-        if self._INFO:get("toolchains") then
+        elseif self._INFO:get("toolchains") then
             table.join2(names, self._INFO:get("toolchains"))
         end
         toolchains = {}
