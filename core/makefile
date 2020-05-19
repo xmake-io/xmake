@@ -139,7 +139,7 @@ endif
 # #
 
 # host
-HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i linux},linux,))
+HOST 		:=$(if ${shell uname | egrep -i linux},linux,)
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i darwin},macosx,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i cygwin},cygwin,))
 HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i msys},msys,))
@@ -149,7 +149,7 @@ HOST 		:=$(if $(HOST),$(HOST),$(if ${shell uname | egrep -i bsd},bsd,))
 HOST 		:=$(if $(HOST),$(HOST),linux)
 
 # platform
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
+PLAT 		:=$(if ${shell uname | egrep -i linux},linux,)
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msys},msys,))

@@ -23,7 +23,7 @@ TMP_DIR 	:=$(if $(TMP_DIR),$(TMP_DIR),$(TMPDIR))
 endif
 
 # platform
-PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i linux},linux,))
+PLAT 		:=$(if ${shell uname | egrep -i linux},linux,)
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i darwin},macosx,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i cygwin},cygwin,))
 PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i msys},msys,))
