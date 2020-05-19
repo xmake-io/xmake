@@ -37,7 +37,7 @@ platform("watchos")
     on_check("check")
 
     -- set toolchains
-    set_toolchains("xcode")
+    set_toolchains("envs", "xcode")
 
     -- set menu
     set_menu {
