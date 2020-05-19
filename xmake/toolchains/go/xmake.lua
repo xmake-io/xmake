@@ -22,7 +22,7 @@
 toolchain("go")
         
     -- set toolsets
-    set_toolsets("gc",   "go", "gccgo")
-    set_toolsets("gcld", "go", "gccgo")
-    set_toolsets("gcar", "go", "gccgo")
+    set_toolsets("gc",   "$(env GC)", "go", "gccgo")
+    set_toolsets("gcld", "$(env GC)", "go", "gccgo")
+    set_toolsets("gcar", "$(env GC)", "go", "gccgo")
 

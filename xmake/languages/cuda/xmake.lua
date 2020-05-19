@@ -28,7 +28,7 @@ language("cuda")
     set_sourceflags {cu = "cuflags"}
 
     -- set target kinds
-    set_targetkinds {gpucode = "cu-ld", binary = "ld", static = "ar", shared = "sh"}
+    set_targetkinds {gpucode = "culd", binary = "ld", static = "ar", shared = "sh"}
 
     -- set target flags
     set_targetflags {gpucode = "culdflags", binary = "ldflags", static = "arflags", shared = "shflags"}
@@ -140,7 +140,7 @@ language("cuda")
                     {category = "Cross Complation Configuration/Compiler Configuration"         }
                 ,   {nil, "cu",         "kv", nil,          "The Cuda Compiler"                 }
                 ,   {nil, "cu-ccbin",   "kv", nil,          "The Cuda Host C++ Compiler"        }
-                ,   {nil, "cu-ld",      "kv", nil,          "The Cuda Linker"                   }
+                ,   {nil, "culd",      "kv", nil,          "The Cuda Linker"                   }
 
                 ,   {category = "Cross Complation Configuration/Compiler Flags Configuration"   }
                 ,   {nil, "cuflags",    "kv", nil,          "The Cuda Compiler Flags"           }

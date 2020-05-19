@@ -33,8 +33,5 @@ toolchain("envs")
     set_toolsets("mm",    "$(env MM)")
     set_toolsets("mxx",   "$(env MXX)")
     set_toolsets("as",    "$(env AS)")
-    set_toolsets("dc",    "$(env DC)")
     set_toolsets("sc",    "$(env SC)")
-    set_toolsets("gc",    "$(env GC)")
-    set_toolsets("rc",    "$(env RC)")
 

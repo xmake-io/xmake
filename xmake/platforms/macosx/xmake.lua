@@ -40,8 +40,7 @@ platform("macosx")
     on_check("check")
 
     -- set toolchains
---    set_toolchains("custom", "xcode", "clang", "gcc", "dlang", "rust", "go", "cuda")
-    set_toolchains("envs", "xcode", "clang", "gcc", "dlang", "rust", "go")
+    set_toolchains("envs", "xcode", "clang", "gcc", "dlang", "rust", "go", "cuda")
 
     -- set menu
     set_menu {

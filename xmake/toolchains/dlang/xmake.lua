@@ -22,10 +22,10 @@
 toolchain("dlang")
         
     -- set toolsets
-    set_toolsets("dc",   "dmd", "ldc2", "gdc")
-    set_toolsets("dcld", "dmd", "ldc2", "gdc")
-    set_toolsets("dcsh", "dmd", "ldc2", "gdc")
-    set_toolsets("dcar", "dmd", "ldc2", "gdc")
+    set_toolsets("dc",   "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolsets("dcld", "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolsets("dcsh", "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolsets("dcar", "$(env DC)", "dmd", "ldc2", "gdc")
 
     -- on load
     on_load(function (toolchain)

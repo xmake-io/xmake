@@ -19,15 +19,10 @@
 --
 
 -- define toolchain
-toolchain("rust")
+toolchain("cuda")
         
     -- set toolsets
-    set_toolsets("rc",   "$(env RC)", "rustc")
-    set_toolsets("rcld", "$(env RC)", "rustc")
-    set_toolsets("rcsh", "$(env RC)", "rustc")
-    set_toolsets("rcar", "$(env RC)", "rustc")
+    set_toolsets("cu",   "nvcc", "clang")
+    set_toolsets("culd", "nvcc")
+    set_toolsets("cu-ccbin", "$(env CXX)", "$(env CC)", "clang", "gcc")
 
-    -- on load
-    on_load(function (toolchain)
-        -- TODO for android ndk
-    end)
