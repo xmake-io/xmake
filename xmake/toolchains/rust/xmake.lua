@@ -26,3 +26,9 @@ toolchain("rust")
     set_toolsets("rcld", "$(env RC)", "rustc")
     set_toolsets("rcsh", "$(env RC)", "rustc")
     set_toolsets("rcar", "$(env RC)", "rustc")
+
+    -- on load
+    on_load(function (toolchain)
+        toolchain:set("rcshflags", "")
+        toolchain:set("rcldflags", "")
+    end)

@@ -37,3 +37,33 @@ toolchain("gcc")
     on_check(function (toolchain)
         return import("lib.detect.find_tool")("gcc")
     end)
+
+    -- on load
+    on_load(function (toolchain)
+
+        -- get march
+        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
+
+        -- init flags for c/c++
+        toolchain:add("cxflags", march)
+        toolchain:add("ldflags", march)
+        toolchain:add("shflags", march)
+        if not is_plat("windows") and os.isdir("/usr") then
+            for _, includedir in ipairs({"/usr/local/include", "/usr/include"}) do
+                if os.isdir(includedir) then
+                    toolchain:add("includedirs", includedir)
+                end
+            end
+            for _, linkdir in ipairs({"/usr/local/lib", "/usr/lib"}) do
+                if os.isdir(linkdir) then
+                    toolchain:add("linkdirs", linkdir)
+                end
+            end
+        end
+
+        -- init flags for objc/c++  (with ldflags and shflags)
+        toolchain:add("mxflags", march)
+
+        -- init flags for asm
+        toolchain:add("asflags", march)
+    end)

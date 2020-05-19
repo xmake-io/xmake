@@ -26,3 +26,8 @@ toolchain("go")
     set_toolsets("gcld", "$(env GC)", "go", "gccgo")
     set_toolsets("gcar", "$(env GC)", "go", "gccgo")
 
+    -- on load
+    on_load(function (toolchain)
+        toolchain:set("gcldflags", "")
+    end)
+
