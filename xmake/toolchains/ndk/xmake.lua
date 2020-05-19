@@ -19,10 +19,10 @@
 --
 
 -- define toolchain
-toolchain("rust")
-        
-    -- set toolsets
-    set_toolsets("rc",   "$(env RC)", "rustc")
-    set_toolsets("rcld", "$(env RC)", "rustc")
-    set_toolsets("rcsh", "$(env RC)", "rustc")
-    set_toolsets("rcar", "$(env RC)", "rustc")
+toolchain("ndk")
+
+    -- check toolchain
+    on_check("check")
+
+    -- load toolchain
+    on_load("load")

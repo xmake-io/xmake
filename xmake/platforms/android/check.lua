@@ -20,136 +20,21 @@
 
 -- imports
 import("core.project.config")
-import("core.base.singleton")
-import("detect.sdks.find_ndk")
-import("detect.sdks.find_android_sdk")
-import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_toolchain")
-
--- check the ndk toolchain
-function _check_ndk()
-    local ndk = find_ndk(config.get("ndk"), {force = true, verbose = true})
-    if ndk then
-        config.set("ndk", ndk.sdkdir, {force = true, readonly = true}) -- maybe to global
-        config.set("bin", ndk.bindir, {force = true, readonly = true})
-        config.set("cross", ndk.cross, {force = true, readonly = true})
-        config.set("gcc_toolchain", ndk.gcc_toolchain, {force = true, readonly = true})
-    else
-        -- failed
-        cprint("${bright color.error}please run:")
-        cprint("    - xmake config --ndk=xxx")
-        cprint("or  - xmake global --ndk=xxx")
-        raise()
-    end
-end
-
--- check the android sdk
-function _check_android_sdk()
-    local sdk = find_android_sdk(config.get("android_sdk"), {force = true, verbose = true})
-    if sdk then
-        config.set("sdk", sdk.sdkdir, {force = true, readonly = true}) -- maybe to global
-    end
-end
-
--- get toolchains
-function _toolchains()
-
-    -- get cross
-    local cross = config.get("cross")
-
-    -- get gcc toolchain bin directory
-    local gcc_toolchain_bin = nil
-    local gcc_toolchain = config.get("gcc_toolchain")
-    if gcc_toolchain then
-        gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
-    end
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local cpp        = toolchain("the c preprocessor")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local ranlib     = toolchain("the static library index generator")
-    local strip      = toolchain("the symbols stripper")
-    local as         = toolchain("the assember")
-    local rc         = toolchain("the rust compiler")
-    local rc_ld      = toolchain("the rust linker")
-    local rc_sh      = toolchain("the rust shared library linker")
-    local rc_ar      = toolchain("the rust static library archiver")
-    local toolchains = {cc = cc, cxx = cxx, cpp = cpp, as = as, ld = ld, sh = sh, ar = ar, ex = ex, ranlib = ranlib, strip = strip, 
-                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar}
-
-    -- init the c compiler
-    cc:add({name = "gcc", cross = cross}, "clang")
-
-    -- init the c++ compiler
-    cxx:add({name = "g++", cross = cross}, "clang++")
-
-    -- init the c preprocessor
-    cpp:add({name = "gcc -E", cross = cross}, "clang -E")
-
-    -- init the assember
-    as:add({name = "gcc", cross = cross}, "clang")
-
-    -- init the linker
-    ld:add({name = "g++", cross = cross})
-    ld:add({name = "gcc", cross = cross})
-    ld:add("clang++", "clang")
-
-    -- init the shared library linker
-    sh:add({name = "g++", cross = cross})
-    sh:add({name = "gcc", cross = cross})
-    sh:add("clang++", "clang")
-
-    -- init the static library archiver
-    ar:add({name = "ar", cross = cross, pathes = gcc_toolchain_bin}, "llvm-ar")
-
-    -- init the static library extractor
-    ex:add({name = "ar", cross = cross, pathes = gcc_toolchain_bin}, "llvm-ar")
-
-    -- init the static library index generator
-    ranlib:add({name = "ranlib", cross = cross, pathes = gcc_toolchain_bin}, "ranlib")
-
-    -- init the symbols stripper
-    strip:add({name = "strip", cross = cross, pathes = gcc_toolchain_bin}, "strip")
-
-    -- init the rust compiler and linker
-    rc:add("$(env RC)", "rustc")
-    rc_ld:add("$(env RC)", "rustc")
-    rc_sh:add("$(env RC)", "rustc")
-    rc_ar:add("$(env RC)", "rustc")
-
-    return toolchains
-end
 
 -- check it
-function main(platform, name)
+function main(platform)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("android.toolchains", _toolchains)[name]
-        if toolchain then
-            check_toolchain(config, name, toolchain)
+    -- check arch
+    check_arch(config, "armeabi-v7a")
+
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    for idx, toolchain in irpairs(toolchains) do
+        if not toolchain:check() then
+            table.remove(toolchains, idx)
         end
-    else
-
-        -- check arch
-        check_arch(config, "armeabi-v7a")
-
-        -- check android sdk
-        _check_android_sdk()
-
-        -- check ndk
-        _check_ndk()
-
-        -- check ld and sh, @note toolchains must be initialized after calling check_ndk()
-        local toolchains = singleton.get("android.toolchains", _toolchains)
-        check_toolchain(config, "ld", toolchains.ld)
-        check_toolchain(config, "sh", toolchains.sh)
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
 

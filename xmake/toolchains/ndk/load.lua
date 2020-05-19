@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-toolchain build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -21,20 +21,42 @@
 -- imports
 import("core.project.config")
 
--- load it
-function main(platform)
+-- main entry
+function main(toolchain)
+
+    -- get cross
+    local cross = config.get("cross") or ""
+
+    -- get gcc toolchain bin directory
+    local gcc_toolchain_bin = nil
+    local gcc_toolchain = config.get("gcc_toolchain")
+    if gcc_toolchain then
+        gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
+    end
+
+    -- set toolsets
+    toolchain:set("toolsets", "cc", "clang", cross .. "gcc")
+    toolchain:set("toolsets", "cxx", "clang++", cross .. "g++")
+    toolchain:set("toolsets", "cpp", "clang -E", cross .. "gcc -E")
+    toolchain:set("toolsets", "as", "clang", cross .. "gcc")
+    toolchain:set("toolsets", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    toolchain:set("toolsets", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    toolchain:set("toolsets", "ar", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
+    toolchain:set("toolsets", "ex", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
+    toolchain:set("toolsets", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
+    toolchain:set("toolsets", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"))
 
     -- init flags
     local arm32 = false
     local arch = config.get("arch")
-    platform:add("ldflags", "-llog")
-    platform:add("shflags", "-llog")
+    toolchain:add("ldflags", "-llog")
+    toolchain:add("shflags", "-llog")
     if arch and (arch == "armeabi" or arch == "armeabi-v7a" or arch == "armv5te" or arch == "armv7-a") then -- armv5te/armv7-a are deprecated
         arm32 = true
-        platform:add("cxflags", "-mthumb")
-        platform:add("asflags", "-mthumb")
-        platform:add("ldflags", "-mthumb")
-        platform:add("shflags", "-mthumb")
+        toolchain:add("cxflags", "-mthumb")
+        toolchain:add("asflags", "-mthumb")
+        toolchain:add("ldflags", "-mthumb")
+        toolchain:add("shflags", "-mthumb")
     end
 
     -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
@@ -62,18 +84,18 @@ function main(platform)
         ,   ["mips64"]      = "mips64el-none-linux-android"     -- removed in ndk r17
         }
         assert(targets[arch], "unknown arch(%s) for android!", arch)
-        platform:add("cxflags", "-target " .. targets[arch])
-        platform:add("asflags", "-target " .. targets[arch])
-        platform:add("ldflags", "-target " .. targets[arch])
-        platform:add("shflags", "-target " .. targets[arch])
+        toolchain:add("cxflags", "-target " .. targets[arch])
+        toolchain:add("asflags", "-target " .. targets[arch])
+        toolchain:add("ldflags", "-target " .. targets[arch])
+        toolchain:add("shflags", "-target " .. targets[arch])
         
         -- add gcc toolchain
         local gcc_toolchain = config.get("gcc_toolchain")
         if gcc_toolchain then
-            platform:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
-            platform:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
-            platform:add("ldflags", "-gcc-toolchain " .. gcc_toolchain)
-            platform:add("shflags", "-gcc-toolchain " .. gcc_toolchain)
+            toolchain:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
+            toolchain:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
+            toolchain:add("ldflags", "-gcc-toolchain " .. gcc_toolchain)
+            toolchain:add("shflags", "-gcc-toolchain " .. gcc_toolchain)
         end
     else
         local march = arch
@@ -83,14 +105,14 @@ function main(platform)
             march = "armv5te"
         end
         -- old version ndk
-        platform:add("cxflags", "-march=" .. march)
-        platform:add("asflags", "-march=" .. march)
-        platform:add("ldflags", "-march=" .. march)
-        platform:add("shflags", "-march=" .. march)
+        toolchain:add("cxflags", "-march=" .. march)
+        toolchain:add("asflags", "-march=" .. march)
+        toolchain:add("ldflags", "-march=" .. march)
+        toolchain:add("shflags", "-march=" .. march)
     end
 
     -- init cxflags for the target kind: binary 
-    platform:add("binary.cxflags", "-fPIE", "-pie")
+    toolchain:add("binary.cxflags", "-fPIE", "-pie")
 
     -- add flags for the sdk directory of ndk
     local ndk = config.get("ndk")
@@ -148,29 +170,29 @@ function main(platform)
             ,   mips            = "mips-linux-android"      -- removed in ndk r17
             ,   mips64          = "mips64-linux-android"    -- removed in ndk r17
             }
-            platform:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            platform:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            platform:add("cflags",  "--sysroot=" .. ndk_sysroot_be_r14)
-            platform:add("cxxflags","--sysroot=" .. ndk_sysroot_be_r14)
-            platform:add("asflags", "--sysroot=" .. ndk_sysroot_be_r14)
-            platform:add("cflags",  "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
-            platform:add("cxxflags","-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
-            platform:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot_be_r14)
+            toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot_be_r14)
+            toolchain:add("asflags", "--sysroot=" .. ndk_sysroot_be_r14)
+            toolchain:add("cflags",  "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            toolchain:add("cxxflags","-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            toolchain:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
         else
             if sysroot_arch then
-                platform:add("cflags",   format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-                platform:add("cxxflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-                platform:add("asflags",  format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                toolchain:add("cflags",   format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                toolchain:add("cxxflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                toolchain:add("asflags",  format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
             end
         end
         if sysroot_arch then
-            platform:add("ldflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-            platform:add("shflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+            toolchain:add("ldflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+            toolchain:add("shflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
         end
 
         -- add "-fPIE -pie" to ldflags
-        platform:add("ldflags", "-fPIE")
-        platform:add("ldflags", "-pie")
+        toolchain:add("ldflags", "-fPIE")
+        toolchain:add("ldflags", "-pie")
 
         -- get llvm c++ stl sdk directory
         local cxxstl_sdkdir_llvmstl = path.translate(format("%s/sources/cxx-stl/llvm-libc++", ndk))
@@ -228,65 +250,65 @@ function main(platform)
 
             -- add c++ stl include and link directories
             if toolchains_arch then
-                platform:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
-                platform:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
+                toolchain:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
+                toolchain:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
-                platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                toolchain:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
                 local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
                 local before_r13 = path.join(abi_path, "libcxxabi")
                 local after_r13 = path.join(abi_path, "include")
                 if os.isdir(before_r13) then
-                    platform:add("cxxflags", "-I" .. before_r13)
+                    toolchain:add("cxxflags", "-I" .. before_r13)
                 elseif os.isdir(after_r13) then
-                    platform:add("cxxflags", "-I" .. after_r13)
+                    toolchain:add("cxxflags", "-I" .. after_r13)
                 end
             elseif ndk_cxxstl:startswith("gnustl") then
-                platform:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                toolchain:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    platform:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
             elseif ndk_cxxstl:startswith("stlport") then
-                platform:add("cxxflags", format("-I%s/stlport", cxxstl_sdkdir))
+                toolchain:add("cxxflags", format("-I%s/stlport", cxxstl_sdkdir))
             end
 
             -- add c++ stl links
             if ndk_cxxstl == "c++_static" or ndk_cxxstl == "llvmstl_static" then
-                platform:add("ldflags", "-lc++_static", "-lc++abi")
-                platform:add("shflags", "-lc++_static", "-lc++abi")
+                toolchain:add("ldflags", "-lc++_static", "-lc++abi")
+                toolchain:add("shflags", "-lc++_static", "-lc++abi")
                 if arm32 then
-                    platform:add("ldflags", "-lunwind", "-latomic")
-                    platform:add("shflags", "-lunwind", "-latomic")
+                    toolchain:add("ldflags", "-lunwind", "-latomic")
+                    toolchain:add("shflags", "-lunwind", "-latomic")
                 end
             elseif ndk_cxxstl == "c++_shared" or ndk_cxxstl == "llvmstl_shared" then
-                platform:add("ldflags", "-lc++_shared", "-lc++abi")
-                platform:add("shflags", "-lc++_shared", "-lc++abi")
+                toolchain:add("ldflags", "-lc++_shared", "-lc++abi")
+                toolchain:add("shflags", "-lc++_shared", "-lc++abi")
                 if arm32 then
-                    platform:add("ldflags", "-lunwind", "-latomic")
-                    platform:add("shflags", "-lunwind", "-latomic")
+                    toolchain:add("ldflags", "-lunwind", "-latomic")
+                    toolchain:add("shflags", "-lunwind", "-latomic")
                 end
             elseif ndk_cxxstl == "gnustl_static" then
-                platform:add("ldflags", "-lgnustl_static")
-                platform:add("shflags", "-lgnustl_static")
+                toolchain:add("ldflags", "-lgnustl_static")
+                toolchain:add("shflags", "-lgnustl_static")
             elseif ndk_cxxstl == "gnustl_shared" then
-                platform:add("ldflags", "-lgnustl_shared")
-                platform:add("shflags", "-lgnustl_shared")
+                toolchain:add("ldflags", "-lgnustl_shared")
+                toolchain:add("shflags", "-lgnustl_shared")
             elseif ndk_cxxstl == "stlport_static" then
-                platform:add("ldflags", "-lstlport_static")
-                platform:add("shflags", "-lstlport_static")
+                toolchain:add("ldflags", "-lstlport_static")
+                toolchain:add("shflags", "-lstlport_static")
             elseif ndk_cxxstl == "stlport_shared" then
-                platform:add("ldflags", "-lstlport_shared")
-                platform:add("shflags", "-lstlport_shared")
+                toolchain:add("ldflags", "-lstlport_shared")
+                toolchain:add("shflags", "-lstlport_shared")
             end
 
             -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
             -- @see https://github.com/xmake-io/xmake/issues/684
             if ndkver and ndkver >= 20 and (ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl")) then
-                platform:add("ldflags", "-nostdlib++")
-                platform:add("shflags", "-nostdlib++")
+                toolchain:add("ldflags", "-nostdlib++")
+                toolchain:add("shflags", "-nostdlib++")
             end
         end
     end
@@ -303,18 +325,16 @@ function main(platform)
 
     -- init flags for rust
     if targets_rust[arch] then
-        platform:add("rcflags", "--target=" .. targets_rust[arch])
+        toolchain:add("rcflags", "--target=" .. targets_rust[arch])
     end
-    platform:add("rcshflags", "-C link-args=\"" .. (table.concat(platform:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
-    platform:add("rcldflags", "-C link-args=\"" .. (table.concat(platform:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
-    local sh = config.get("sh")
+    toolchain:add("rcshflags", "-C link-args=\"" .. (table.concat(toolchain:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    toolchain:add("rcldflags", "-C link-args=\"" .. (table.concat(toolchain:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need check sh first
     if sh then
-        platform:add("rcshflags", "-C linker=" .. sh)
+        toolchain:add("rcshflags", "-C linker=" .. sh)
     end
-    local ld = config.get("ld")
+    local ld = toolchain:tool("ld")
     if ld then
-        platform:add("rcldflags", "-C linker=" .. ld)
+        toolchain:add("rcldflags", "-C linker=" .. ld)
     end
 end
-
-

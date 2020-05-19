@@ -42,8 +42,8 @@ platform("android")
     -- on check
     on_check("check")
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("envs", "ndk", "rust")
 
     -- set menu
     set_menu {
