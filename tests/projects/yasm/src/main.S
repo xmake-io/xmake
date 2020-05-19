@@ -1,18 +1,20 @@
-;asm00.s
+bits 64
+
+extern _puts
 
 section .data
-    msg       db     'Hello world!'
-    nl        db     0x0a
-    msgLen    equ    $-msg
-section .text
-global _start
-_start:
-    mov rax, 1
-    mov rdi, 1
-    mov rsi, qword msg
-    mov rdx, qword msgLen
-    syscall
 
-    mov rax, 60
-    mov rdi, 0
-    syscall
+message:
+  db 'hello xmake!', 0
+
+section .text
+
+global _main
+_main:
+  push rbp
+  mov rbp, rsp
+  lea rdi, [rel message]
+  call _puts
+  xor rax, rax
+  pop rbp
+  ret
