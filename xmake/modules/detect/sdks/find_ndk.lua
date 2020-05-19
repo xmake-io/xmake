@@ -101,7 +101,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     -- find ndk root directory
     sdkdir = _find_ndkdir(sdkdir)
     if not sdkdir then
-        return {}
+        return 
     end
 
     -- get cross
@@ -142,14 +142,11 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
         bindir = find_directory("bin", path.join(sdkdir, "toolchains", gcc_toolchain_subdir, "prebuilt", "*"))
     end
     if not bindir then
-        return {}
+        return 
     end
 
     -- find the sdk version
     local sdkver = ndk_sdkver or _find_ndk_sdkver(sdkdir, bindir, arch)
-    if not sdkver then
-        return {}
-    end
 
     -- find the gcc toolchain
     local gcc_toolchain = find_directory("bin", path.join(sdkdir, "toolchains", gcc_toolchain_subdir, "prebuilt", "*"))
@@ -159,9 +156,6 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
 
     -- find the toolchains version
     local toolchains_ver = ndk_toolchains_ver or _find_ndk_toolchains_ver(gcc_toolchain or bindir)
-    if not toolchains_ver then
-        return {}
-    end
 
     -- get ndk version, e.g. r16b, ..
     local ndkver = nil
