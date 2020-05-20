@@ -115,10 +115,12 @@ end
 
 -- do load 
 function _instance:_load()
-    if not self._LOADED then
+    if not self._LOADED and not self._LOADING then
         local on_load = self._INFO:get("load")
         if on_load then
+            self._LOADING = true
             local ok, errors = sandbox.load(on_load, self)
+            self._LOADING = false
             if not ok then
                 os.raise(errors)
             end
