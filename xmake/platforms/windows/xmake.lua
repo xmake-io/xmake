@@ -42,8 +42,8 @@ platform("windows")
     -- on environment leave
     on_environment_leave("environment.leave")
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("vs", "yasm", "nasm", "cuda", "dlang", "rust", "go")
 
     -- set menu
     set_menu {

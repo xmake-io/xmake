@@ -20,120 +20,32 @@
 
 -- imports
 import("core.project.config")
-import("core.base.singleton")
-import("core.platform.environment")
-import("private.platform.toolchain")
 import("private.platform.check_arch")
-import("private.platform.check_vstudio")
-import("private.platform.check_toolchain")
-
--- get toolchains
-function _toolchains()
-
-    -- init toolchains
-    local cc         = toolchain("the c compiler")
-    local cxx        = toolchain("the c++ compiler")
-    local mrc        = toolchain("the resource compiler")
-    local ld         = toolchain("the linker")
-    local sh         = toolchain("the shared library linker")
-    local ar         = toolchain("the static library archiver")
-    local ex         = toolchain("the static library extractor")
-    local as         = toolchain("the assember")
-    local gc         = toolchain("the golang compiler")
-    local gc_ld      = toolchain("the golang linker")
-    local gc_ar      = toolchain("the golang static library archiver")
-    local dc         = toolchain("the dlang compiler")
-    local dc_ld      = toolchain("the dlang linker")
-    local dc_sh      = toolchain("the dlang shared library linker")
-    local dc_ar      = toolchain("the dlang static library archiver")
-    local rc         = toolchain("the rust compiler")
-    local rc_ld      = toolchain("the rust linker")
-    local rc_sh      = toolchain("the rust shared library linker")
-    local rc_ar      = toolchain("the rust static library archiver")
-    local cu         = toolchain("the cuda compiler")
-    local cu_ld      = toolchain("the cuda linker")
-    local toolchains = {cc = cc, cxx = cxx, mrc = mrc, as = as, ld = ld, sh = sh, ar = ar, ex = ex, 
-                        gc = gc, ["gcld"] = gc_ld, ["gcar"] = gc_ar,
-                        dc = dc, ["dcld"] = dc_ld, ["dcsh"] = dc_sh, ["dcar"] = dc_ar,
-                        rc = rc, ["rcld"] = rc_ld, ["rcsh"] = rc_sh, ["rcar"] = rc_ar,
-                        cu = cu, ["culd"] = cu_ld}
-
-    -- init the c compiler
-    cc:add("cl.exe")
-
-    -- init the c++ compiler
-    cxx:add("cl.exe")
-
-    -- init the resource compiler
-    mrc:add("rc.exe")
-
-    -- init the assember
-    local arch = config.get("arch")
-    if arch and arch:find("64") then
-        as:add("ml64.exe")
-    else
-        as:add("ml.exe")
-    end
-
-    -- init the linker
-    ld:add("link.exe")
-
-    -- init the shared library linker
-    sh:add("link.exe -dll")
-
-    -- init the static library archiver
-    ar:add("link.exe -lib")
-
-    -- init the static library extractor
-    ex:add("lib.exe")
-
-    -- init the golang compiler and linker
-    gc:add("$(env GC)", "go", "gccgo")
-    gc_ld:add("$(env GC)", "go", "gccgo")
-    gc_ar:add("$(env GC)", "go", "gccgo")
-
-    -- init the dlang compiler and linker
-    dc:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_ld:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_sh:add("$(env DC)", "dmd", "ldc2", "gdc")
-    dc_ar:add("$(env DC)", "dmd", "ldc2", "gdc")
-
-    -- init the rust compiler and linker
-    rc:add("$(env RC)", "rustc")
-    rc_ld:add("$(env RC)", "rustc")
-    rc_sh:add("$(env RC)", "rustc")
-    rc_ar:add("$(env RC)", "rustc")
-
-    -- init the cuda compiler and linker
-    cu:add("nvcc", "clang")
-    cu_ld:add("nvcc")
-
-    return toolchains
-end
 
 -- check it
-function main(platform, name)
+function main(platform)
 
-    -- only check the given config name?
-    if name then
-        local toolchain = singleton.get("windows.toolchains." .. (config.get("arch") or os.arch()), _toolchains)[name]
-        if toolchain then
-            environment.enter("toolchains")
-            check_toolchain(config, name, toolchain)
-            environment.leave("toolchains")
-        end
-    else
+    -- check arch 
+    check_arch(config)
 
-        -- check arch 
-        check_arch(config)
-
-        -- check vstudio
-        local cc  = path.basename(config.get("cc") or "cl"):lower()
-        local cxx = path.basename(config.get("cxx") or "cl"):lower()
-        local mrc = path.basename(config.get("mrc") or "rc"):lower()
-        if cc == "cl" or cxx == "cl" or mrc == "rc" then
-            check_vstudio(config)
+    -- check toolchains
+    local toolchains = platform:toolchains()
+    local idx = 1
+    local num = #toolchains
+    local standalone = false
+    while idx <= num do
+        local toolchain = toolchains[idx]
+        -- we need remove other standalone toolchains if standalone toolchain found
+        if (standalone and toolchain:standalone()) or not toolchain:check() then
+            table.remove(toolchains, idx)
+            num = num - 1
+        else
+            if toolchain:standalone() then
+                standalone = true
+            end
+            idx = idx + 1
         end
     end
+    assert(#toolchains > 0, "toolchains not found!")
 end
 
