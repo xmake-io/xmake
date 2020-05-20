@@ -83,7 +83,7 @@ function _check_vsenv()
 end
 
 -- check the visual studio
-function main()
+function _check_vstudio()
     local vs = _check_vsenv()
     if vs then
         config.set("vs", vs, {readonly = true, force = true})
@@ -98,5 +98,16 @@ function main()
         end
     end
     return vs
+end
+
+-- main entry
+function main()
+    -- @see https://github.com/xmake-io/xmake/pull/679
+    local cc  = path.basename(config.get("cc") or "cl"):lower()
+    local cxx = path.basename(config.get("cxx") or "cl"):lower()
+    local mrc = path.basename(config.get("mrc") or "rc"):lower()
+    if cc == "cl" or cxx == "cl" or mrc == "rc" then
+        return _check_vstudio(config)
+    end
 end
 
