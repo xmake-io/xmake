@@ -25,17 +25,22 @@ import("detect.sdks.find_cross_toolchain")
 -- check the cross toolchain
 function main(toolchain)
 
+    -- get sdk directory
+    local sdkdir = config.get("sdk")
+    local bindir = config.get("bin")
+    if not sdkdir and not bindir then
+        if is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
+            sdkdir = "/usr"
+        end
+    end
+
     -- find cross toolchain
-    local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
+    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir})
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
     else
-        -- failed
-        cprint("${bright color.error}cross toolchain not found, please run:")
-        cprint("    - xmake config --sdk=xxx")
-        cprint("or  - xmake global --sdk=xxx")
-        raise()
+        raise("llvm toolchain not found!")
     end
     return cross_toolchain
 end
