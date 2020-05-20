@@ -68,10 +68,8 @@ function _instance:get(name)
         return value
     end
 
-    -- lazy loading platform if get other configuration
-    if not self:_is_builtin_conf(name) then
-        self:_load()
-    end
+    -- lazy loading platform 
+    self:_load()
 
     -- get other platform info
     return self._INFO:get(name)
@@ -233,23 +231,6 @@ function _instance:_checktool(toolkind, toolpath)
     return program, toolname
 end
 
--- is builtin configuration?
-function _instance:_is_builtin_conf(name)
-
-    local builtin_configs = self._BUILTIN_CONFIGS
-    if not builtin_configs then
-        builtin_configs = {}
-        for apiname, _ in pairs(toolchain._interpreter():apis("toolchain")) do
-            local pos = apiname:find('_', 1, true)
-            if pos then
-                builtin_configs[apiname:sub(pos + 1)] = true
-            end
-        end
-        self._BUILTIN_CONFIGS = builtin_configs
-    end
-    return builtin_configs[name]
-end
-
 -- the interpreter
 function toolchain._interpreter()
 
@@ -289,6 +270,8 @@ function toolchain._apis()
         {
             -- toolchain.set_xxx
             "toolchain.set_toolsets"
+            -- toolchain.add_xxx
+        ,   "toolchain.add_runenvs"
         }
     ,   script =
         {

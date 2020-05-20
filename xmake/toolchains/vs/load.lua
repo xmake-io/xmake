@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-toolchain build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -15,25 +15,25 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        enter.lua
+-- @file        load.lua
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
-import("core.base.global")
 import("detect.sdks.find_vstudio")
 
--- enter the given environment
-function _enter(platform, name)
+-- add the given vs environment
+function _add_vsenv(toolchain, name)
 
     -- get vcvarsall
-    local vcvarsall = config.get("__vcvarsall") or global.get("__vcvarsall")
+    local vcvarsall = config.get("__vcvarsall") 
     if not vcvarsall then
         return 
     end
 
     -- get arch
-    local arch = config.get("arch") or global.get("arch") or ""
+    local arch = config.get("arch") or ""
 
     -- get vs environment for the current arch
     local vsenv = vcvarsall[arch] or {}
@@ -58,38 +58,33 @@ function _enter(platform, name)
     end
 
     -- get the pathes for the vs environment
-    local old = nil
     local new = vsenv[name]
     if new then
-
-        -- get the current pathes
-        old = os.getenv(name) or ""
-
-        -- append the current pathes
-        new = new .. ";" .. old
-
-        -- update the pathes for the environment
-        os.setenv(name, new)
+        toolchain:add("runenvs", name:upper(), path.splitenv(new))
     end
-
-    -- save the previous environment
-    platform:data_set("windows.environment." .. name, old)
 end
 
--- enter the toolchains environment
-function _enter_toolchains(platform)
-    _enter(platform, "path")
-    _enter(platform, "lib")
-    _enter(platform, "include")
-    _enter(platform, "libpath")
-end
+-- main entry
+function main(toolchain)
 
--- enter environment
-function main(platform, name)
-    local maps = {toolchains = _enter_toolchains}
-    local func = maps[name]
-    if func then
-        func(platform)
+    -- set toolsets
+    toolchain:set("toolsets", "cc",  "cl.exe")
+    toolchain:set("toolsets", "cxx", "cl.exe")
+    toolchain:set("toolsets", "mrc", "rc.exe")
+    if is_arch("x64") then
+        toolchain:set("toolsets", "as",  "ml64.exe")
+    else
+        toolchain:set("toolsets", "as",  "ml.exe")
     end
+    toolchain:set("toolsets", "ld",  "link.exe")
+    toolchain:set("toolsets", "sh",  "link.exe -dll")
+    toolchain:set("toolsets", "ar",  "link.exe -lib")
+    toolchain:set("toolsets", "ex",  "lib.exe")
+
+    -- add vs environments
+    _add_vsenv(toolchain, "path")
+    _add_vsenv(toolchain, "lib")
+    _add_vsenv(toolchain, "include")
+    _add_vsenv(toolchain, "libpath")
 end
 

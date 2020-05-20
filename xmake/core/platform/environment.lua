@@ -23,6 +23,7 @@ local environment = environment or {}
 
 -- load modules
 local os            = require("base/os")
+local table         = require("base/table")
 local global        = require("base/global")
 local platform_core = require("platform/platform")
 local sandbox       = require("sandbox/sandbox")
@@ -32,97 +33,80 @@ local import        = require("sandbox/modules/import")
 -- enter the toolchains environment
 function environment._enter_toolchains()
 
-    -- save the toolchains environment
-    environment._PATH = os.getenv("PATH")
-
-    -- add $programdir/winenv/bin to $path
-    if os.host() == "windows" then
-        os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
-    end
-end
-
--- leave the toolchains environment
-function environment._leave_toolchains()
-
-    -- leave the toolchains environment
-    os.setenv("PATH", environment._PATH)
-end
-
--- enter the running environment
-function environment._enter_run()
-
-    -- save the running environment
-    environment._PATH            = os.getenv("PATH")
-    environment._LD_LIBRARY_PATH = os.getenv("LD_LIBRARY_PATH")
-end
-
--- leave the running environment
-function environment._leave_run()
-
-    -- leave the running environment
-    os.setenv("PATH", environment._PATH)
-    os.setenv("LD_LIBRARY_PATH", environment._LD_LIBRARY_PATH)
-end
-
--- enter the environment for the current platform
-function environment.enter(name)
-
     -- get the current platform 
     local platform, errors = platform_core.load()
     if not platform then
         return false, errors
     end
 
-    -- the maps
-    local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
-    
-    -- enter the common environment
-    local func = maps[name]
-    if func then
-        func()
+    -- add $programdir/winenv/bin to $path
+    local oldenvs = {}
+    oldenvs.PATH = os.getenv("PATH")
+    if os.host() == "windows" then
+        os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
     end
 
-    -- enter the environment of the given platform
-    local on_enter = platform:script("environment_enter")
-    if on_enter then
-        local ok, errors = sandbox.load(on_enter, platform, name)
+    -- add the runenvs of toolchains
+    for name, values in pairs(platform:runenvs()) do
+        if not oldenvs[name] then
+            oldenvs[name] = os.getenv(name)
+        end
+        os.addenv(name, table.unpack(table.wrap(values)))
+    end
+    environment._OLDENVS_TOOLCHAINS = oldenvs
+    return true
+end
+
+-- leave the toolchains environment
+function environment._leave_toolchains()
+    local oldenvs = environment._OLDENVS_TOOLCHAINS
+    for name, values in pairs(oldenvs) do
+        os.setenv(name, values)
+    end
+    return true
+end
+
+-- enter the running environment
+function environment._enter_run()
+    local oldenvs            = {}
+    oldenvs.PATH             = os.getenv("PATH")
+    oldenvs.LD_LIBRARY_PATH  = os.getenv("LD_LIBRARY_PATH")
+    environment._OLDENVS_RUN = oldenvs
+    return true
+end
+
+-- leave the running environment
+function environment._leave_run()
+    local oldenvs = environment._OLDENVS_RUN
+    for name, values in pairs(oldenvs) do
+        os.setenv(name, values)
+    end
+    return true
+end
+
+-- enter the environment for the current platform
+function environment.enter(name)
+    local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
+    local func = maps[name]
+    if func then
+        local ok, errors = func()
         if not ok then
             return false, errors
         end
     end
-
-    -- ok
     return true
 end
 
 -- leave the environment for the current platform
 function environment.leave(name)
-
-    -- get the current platform 
-    local platform, errors = platform_core.load()
-    if not platform then
-        return false, errors
-    end
-
-    -- leave the environment of the given platform
-    local on_leave = platform:script("environment_leave")
-    if on_leave then
-        local ok, errors = sandbox.load(on_leave, platform, name)
+    local maps = {toolchains = environment._leave_toolchains, run = environment._leave_run}
+    local func = maps[name]
+    if func then
+        local ok, errors = func()
         if not ok then
             return false, errors
         end
     end
-
-    -- the maps
-    local maps = {toolchains = environment._leave_toolchains, run = environment._leave_run}
-    
-    -- leave the common environment
-    local func = maps[name]
-    if func then
-        func()
-    end
-
-    -- ok
     return true
 end
 

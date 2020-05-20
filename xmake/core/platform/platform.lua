@@ -103,6 +103,24 @@ function _instance:archs()
     return self._INFO:get("archs")
 end
 
+-- get runenvs of toolchains
+function _instance:runenvs()
+    local runenvs = self._RUNENVS
+    if not runenvs then
+        runenvs = {}
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            local toolchain_runenvs = toolchain_inst:get("runenvs")
+            if toolchain_runenvs then
+                for name, values in pairs(toolchain_runenvs) do
+                    runenvs[name] = table.join2(table.wrap(runenvs[name]), values)
+                end
+            end
+        end
+        self._RUNENVS = runenvs
+    end
+    return runenvs
+end
+
 -- get the toolchains
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
@@ -284,8 +302,6 @@ function platform._apis()
             -- platform.on_xxx
             "platform.on_load"
         ,   "platform.on_check"
-        ,   "platform.on_environment_enter"
-        ,   "platform.on_environment_leave"
         }
     ,   dictionary =
         {

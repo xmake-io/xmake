@@ -36,12 +36,6 @@ platform("windows")
     -- on check
     on_check("check")
 
-    -- on environment enter
-    on_environment_enter("environment.enter")
-
-    -- on environment leave
-    on_environment_leave("environment.leave")
-
     -- set toolchains
     set_toolchains("vs", "yasm", "nasm", "cuda", "dlang", "rust", "go")
 

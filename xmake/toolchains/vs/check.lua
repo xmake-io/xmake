@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
-import("core.platform.environment")
 
 -- attempt to check vs environment
 function _check_vsenv()
@@ -60,13 +59,19 @@ function _check_vsenv()
                 config.set("__vcvarsall", vcvarsall)
 
                 -- check compiler
-                environment.enter("toolchains")
+                local oldenvs = {}
+                oldenvs.PATH    = os.getenv("PATH")
+                oldenvs.LIB     = os.getenv("LIB")
+                os.setenv("PATH",    vsenv.path .. ';' .. (oldenvs.PATH or ""))
+                os.setenv("LIB",     vsenv.lib .. ';' .. (oldenvs.LIB or ""))
                 local program = nil
                 local tool = find_tool("cl.exe", {force = true})
                 if tool then
                     program = tool.program
                 end
-                environment.leave("toolchains")
+                for name, values in pairs(oldenvs) do
+                    os.setenv(name, values)
+                end
 
                 -- ok?
                 if program then

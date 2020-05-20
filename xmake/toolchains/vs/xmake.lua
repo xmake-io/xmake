@@ -28,19 +28,4 @@ toolchain("vs")
     on_check("check")
 
     -- load toolchain
-    on_load(function (toolchain)
-        
-        -- set toolsets
-        toolchain:set("toolsets", "cc",  "cl.exe")
-        toolchain:set("toolsets", "cxx", "cl.exe")
-        toolchain:set("toolsets", "mrc", "rc.exe")
-        if is_arch("x64") then
-            toolchain:set("toolsets", "as",  "ml64.exe")
-        else
-            toolchain:set("toolsets", "as",  "ml.exe")
-        end
-        toolchain:set("toolsets", "ld",  "link.exe")
-        toolchain:set("toolsets", "sh",  "link.exe -dll")
-        toolchain:set("toolsets", "ar",  "link.exe -lib")
-        toolchain:set("toolsets", "ex",  "lib.exe")
-    end)
+    on_load("load")
