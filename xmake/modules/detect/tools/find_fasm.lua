@@ -39,6 +39,7 @@ function main(opt)
 
     -- init options
     opt = opt or {}
+    opt.norun = true
     
     -- find program
     local program = find_program(opt.program or "fasm", opt)

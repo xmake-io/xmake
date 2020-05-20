@@ -156,7 +156,7 @@ task("config")
                                                           , "    - sdk/bin"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
-                ,   {nil, "toolchain",  "kv", nil,          "The Cross Toolchain Name"
+                ,   {nil, "toolchain",  "kv", nil,          "The Toolchain Name"
                                                           , "e.g."
                                                           , "    - llvm"                                                    }
 

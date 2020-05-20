@@ -21,6 +21,9 @@
 -- define toolchain
 toolchain("xcode")
 
+    -- mark as standalone toolchain
+    set_kind("standalone")
+
     -- check toolchain
     on_check("check")
 

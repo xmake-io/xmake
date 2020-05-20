@@ -22,12 +22,6 @@
 import("core.project.config")
 import("private.platform.check_arch")
 
--- is basic toolchain?
-function _is_basic_toolchain(toolchain)
-    local name = toolchain:name()
-    return name == "xcode" or name == "clang" or name == "gcc"
-end
-
 -- check it
 function main(platform)
 
@@ -38,16 +32,16 @@ function main(platform)
     local toolchains = platform:toolchains()
     local idx = 1
     local num = #toolchains
-    local has_basic = false
+    local standalone = false
     while idx <= num do
         local toolchain = toolchains[idx]
-        -- we need remove other same basic toolchains if basic toolchain found
-        if (has_basic and _is_basic_toolchain(toolchain)) or not toolchain:check() then
+        -- we need remove other standalone toolchains if standalone toolchain found
+        if (standalone and toolchain:standalone()) or not toolchain:check() then
             table.remove(toolchains, idx)
             num = num - 1
         else
-            if _is_basic_toolchain(toolchain) then
-                has_basic = true
+            if toolchain:standalone() then
+                standalone = true
             end
             idx = idx + 1
         end

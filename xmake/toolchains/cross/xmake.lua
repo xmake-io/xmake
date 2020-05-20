@@ -20,6 +20,9 @@
 
 -- define toolchain
 toolchain("cross")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
        
     -- check toolchain
     on_check("check")

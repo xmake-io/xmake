@@ -77,6 +77,16 @@ function _instance:get(name)
     return self._INFO:get(name)
 end
 
+-- get toolchain kind
+function _instance:kind()
+    return self._INFO:get("kind")
+end
+
+-- is standalone toolchain?
+function _instance:standalone()
+    return self:kind() == "standalone"
+end
+
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     local toolpathes = self:get("toolsets." .. toolkind)
@@ -271,7 +281,8 @@ function toolchain._apis()
     {
         values = 
         {
-            "toolchain.set_bindir"
+            "toolchain.set_kind"
+        ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         }
     ,   keyvalues =

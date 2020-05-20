@@ -107,19 +107,28 @@ end
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
     if not toolchains then
-        local names = {}
-        if config.get("toolchain") then
-            table.insert(names, config.get("toolchain"))
-        elseif self._INFO:get("toolchains") then
-            table.join2(names, self._INFO:get("toolchains"))
-        end
+
+        -- get the given toolchain
         toolchains = {}
-        for _, name in ipairs(names) do
-            local toolchain_inst, errors = toolchain.load(name, self:name())
+        local toolchain_given = config.get("toolchain")
+        if toolchain_given then
+            local toolchain_inst, errors = toolchain.load(toolchain_given, self:name())
             if not toolchain_inst then
                 os.raise(errors)
             end
             table.insert(toolchains, toolchain_inst)
+            toolchain_given = toolchain_inst
+        end
+
+        -- get the platform toolchains
+        if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
+            for _, name in ipairs(self._INFO:get("toolchains")) do
+                local toolchain_inst, errors = toolchain.load(name, self:name())
+                if not toolchain_inst then
+                    os.raise(errors)
+                end
+                table.insert(toolchains, toolchain_inst)
+            end
         end
         self._TOOLCHAINS = toolchains
     end

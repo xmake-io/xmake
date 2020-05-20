@@ -20,6 +20,9 @@
 
 -- define toolchain
 toolchain("gcc")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
         
     -- set toolsets
     set_toolsets("cc", "gcc")
