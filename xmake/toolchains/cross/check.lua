@@ -25,17 +25,21 @@ import("detect.sdks.find_cross_toolchain")
 -- check the cross toolchain
 function main(toolchain)
 
+    -- is cross?
+    local sdkdir = config.get("sdk")
+    local bindir = config.get("bin")
+    local cross  = config.get("cross")
+    if not sdkdir and not bindir and not cross then
+        return
+    end
+
     -- find cross toolchain
-    local cross_toolchain = find_cross_toolchain(config.get("sdk") or config.get("bin"), {bindir = config.get("bin"), cross = config.get("cross")})
+    local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
     else
-        -- failed
-        cprint("${bright color.error}cross toolchain not found, please run:")
-        cprint("    - xmake config --sdk=xxx")
-        cprint("or  - xmake global --sdk=xxx")
-        raise()
+        raise("cross toolchain not found!")
     end
     return cross_toolchain
 end

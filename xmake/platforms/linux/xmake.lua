@@ -40,7 +40,7 @@ platform("linux")
     on_check("check")
 
     -- set toolchains
-    set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust")
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust")
 
     -- set menu
     set_menu {
