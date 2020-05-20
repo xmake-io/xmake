@@ -19,22 +19,20 @@
 --
 
 -- define toolchain
-toolchain("llvm")
+toolchain("sdcc")
 
     -- mark as standalone toolchain
     set_kind("standalone")
 
     -- set toolsets
-    set_toolsets("cc",     "clang")
-    set_toolsets("cxx",    "clang", "clang++")
-    set_toolsets("cpp",    "clang -E")
-    set_toolsets("as",     "clang")
-    set_toolsets("ld",     "clang++", "clang")
-    set_toolsets("sh",     "clang++", "clang")
-    set_toolsets("ar",     "llvm-ar")
-    set_toolsets("ex",     "llvm-ar")
-    set_toolsets("ranlib", "llvm-ranlib")
-    set_toolsets("strip",  "llvm-strip")
+    set_toolsets("cc",  "sdcc")
+    set_toolsets("cxx", "sdcc")
+    set_toolsets("cpp", "sdcpp")
+    set_toolsets("as",  "sdcc")
+    set_toolsets("ld",  "sdcc")
+    set_toolsets("sh",  "sdcc")
+    set_toolsets("ar",  "sdar")
+    set_toolsets("ex",  "sdar")
        
     -- check toolchain
     on_check("check")
@@ -55,9 +53,10 @@ toolchain("llvm")
             end
         end
 
-        -- add bin search library for loading some dependent .dll files windows 
-        local bindir = toolchain:bindir()
-        if bindir and is_host("windows") then
-            os.addenv("PATH", bindir)
+        -- add port flags for arch
+        local arch = get_config("arch")
+        if arch then
+            toolchain:add("cxflags", "-m" .. arch)
+            toolchain:add("ldflags", "-m" .. arch)
         end
     end)
