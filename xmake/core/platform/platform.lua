@@ -321,11 +321,14 @@ function platform._apis()
             "platform.on_load"
         ,   "platform.on_check"
         }
+    ,   keyvalues =
+        {
+            "platform.set_formats"
+        }
     ,   dictionary =
         {
             -- platform.set_xxx
             "platform.set_menu"
-        ,   "platform.set_formats"
         }
     }
 end

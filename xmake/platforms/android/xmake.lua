@@ -37,7 +37,10 @@ platform("android")
     set_archs("armeabi", "armeabi-v7a", "arm64-v8a", "x86", "x86_64", "mips", "mip64")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    set_formats("static", "lib$(name).a")
+    set_formats("object", "$(name).o")
+    set_formats("shared", "lib$(name).so")
+    set_formats("symbol", "$(name).sym")
 
     -- on check
     on_check("check")

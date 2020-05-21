@@ -272,7 +272,8 @@ function toolchain._apis()
     ,   keyvalues =
         {
             -- toolchain.set_xxx
-            "toolchain.set_toolsets"
+            "toolchain.set_formats"
+        ,   "toolchain.set_toolsets"
             -- toolchain.add_xxx
         ,   "toolchain.add_runenvs"
         }
@@ -281,11 +282,6 @@ function toolchain._apis()
             -- toolchain.on_xxx
             "toolchain.on_load"
         ,   "toolchain.on_check"
-        }
-    ,   dictionary =
-        {
-            -- toolchain.set_xxx
-            "toolchain.set_formats"
         }
     }
 end

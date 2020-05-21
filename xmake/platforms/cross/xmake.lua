@@ -28,7 +28,10 @@ platform("cross")
     set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).so", symbol = "$(name).sym"}
+    set_formats("static", "lib$(name).a")
+    set_formats("object", "$(name).o")
+    set_formats("shared", "lib$(name).so")
+    set_formats("symbol", "$(name).sym")
 
     -- on check 
     on_check("check")

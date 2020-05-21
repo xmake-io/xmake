@@ -31,7 +31,11 @@ platform("windows")
     set_archs("x86", "x64")
 
     -- set formats
-    set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
+    set_formats("static", "$(name).lib")
+    set_formats("object", "$(name).obj")
+    set_formats("shared", "$(name).dll")
+    set_formats("binary", "$(name).exe")
+    set_formats("symbol", "$(name).pdb")
 
     -- on check
     on_check("check")

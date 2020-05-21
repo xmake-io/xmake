@@ -38,7 +38,10 @@ toolchain("sdcc")
     set_archs("stm8", "mcs51", "z80", "z180", "r2k", "r3ka", "s08", "hc08")
 
     -- set formats
-    set_formats {static = "$(name).lib", object = "$(name).rel", binary = "$(name).bin", symbol = "$(name).sym"}
+    set_formats("static", "$(name).lib")
+    set_formats("object", "$(name).rel")
+    set_formats("binary", "$(name).bin")
+    set_formats("symbol", "$(name).sym")
        
     -- check toolchain
     on_check("check")
