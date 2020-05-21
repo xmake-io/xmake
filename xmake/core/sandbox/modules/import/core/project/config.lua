@@ -116,7 +116,10 @@ function sandbox_core_project_config.check()
     -- get the current platform 
     local instance, errors = platform.load()
     if instance then
-        instance:check()
+        local ok, errors = instance:check()
+        if not ok then
+            raise(errors)
+        end
     else
         raise(errors)
     end

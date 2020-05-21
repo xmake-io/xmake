@@ -24,28 +24,6 @@ import("private.platform.check_arch")
 
 -- check it
 function main(platform)
-
-    -- check arch
     check_arch(config, os.arch())
-
-    -- check toolchains
-    local toolchains = platform:toolchains()
-    local idx = 1
-    local num = #toolchains
-    local standalone = false
-    while idx <= num do
-        local toolchain = toolchains[idx]
-        -- we need remove other standalone toolchains if standalone toolchain found
-        if (standalone and toolchain:standalone()) or not toolchain:check() then
-            table.remove(toolchains, idx)
-            num = num - 1
-        else
-            if toolchain:standalone() then
-                standalone = true
-            end
-            idx = idx + 1
-        end
-    end
-    assert(#toolchains > 0, "toolchains not found!")
 end
 

@@ -122,25 +122,34 @@ function _instance:runenvs()
 end
 
 -- get the toolchains
-function _instance:toolchains()
+function _instance:toolchains(opt)
     local toolchains = self._TOOLCHAINS
     if not toolchains then
 
-        -- get the given toolchain
+        -- get current valid toolchains from configuration cache
+        local names = nil
         toolchains = {}
-        local toolchain_given = config.get("toolchain")
-        if toolchain_given then
-            local toolchain_inst, errors = toolchain.load(toolchain_given, self:name())
-            if not toolchain_inst then
-                os.raise(errors)
+        if not (opt and opt.all) then
+            names = config.get("__toolchains")
+        else
+            -- get the given toolchain
+            local toolchain_given = config.get("toolchain")
+            if toolchain_given then
+                local toolchain_inst, errors = toolchain.load(toolchain_given, self:name())
+                if not toolchain_inst then
+                    os.raise(errors)
+                end
+                table.insert(toolchains, toolchain_inst)
+                toolchain_given = toolchain_inst
             end
-            table.insert(toolchains, toolchain_inst)
-            toolchain_given = toolchain_inst
-        end
 
-        -- get the platform toolchains
-        if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
-            for _, name in ipairs(self._INFO:get("toolchains")) do
+            -- get the platform toolchains
+            if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
+                names = self._INFO:get("toolchains")
+            end
+        end
+        if names then
+            for _, name in ipairs(names) do
                 local toolchain_inst, errors = toolchain.load(name, self:name())
                 if not toolchain_inst then
                     os.raise(errors)
@@ -239,10 +248,43 @@ end
 
 -- do check
 function _instance:check()
+
+    -- check platform
     local on_check = self:script("check")
     if on_check then
-        on_check(self)
+        local ok, errors = sandbox.load(on_check, self)
+        if not ok then
+            return false, errors
+        end
     end
+
+    -- check toolchains
+    local toolchains = self:toolchains({all = true})
+    local idx = 1
+    local num = #toolchains
+    local standalone = false
+    local toolchains_valid = {}
+    while idx <= num do
+        local toolchain = toolchains[idx]
+        -- we need remove other standalone toolchains if standalone toolchain found
+        if (standalone and toolchain:standalone()) or not toolchain:check() then
+            table.remove(toolchains, idx)
+            num = num - 1
+        else
+            if toolchain:standalone() then
+                standalone = true
+            end
+            idx = idx + 1
+            table.insert(toolchains_valid, toolchain:name())
+        end
+    end
+    if #toolchains == 0 then
+        return false, "toolchains not found!"
+    end
+
+    -- save valid toolchains
+    config.set("__toolchains", toolchains_valid)
+    return true
 end
 
 -- get formats

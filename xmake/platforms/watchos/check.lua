@@ -24,16 +24,5 @@ import("private.platform.check_arch")
 
 -- check it
 function main(platform)
-
-    -- check arch
     check_arch(config, "armv7k")
-
-    -- check toolchains
-    local toolchains = platform:toolchains()
-    for idx, toolchain in irpairs(toolchains) do
-        if not toolchain:check() then
-            table.remove(toolchains, idx)
-        end
-    end
-    assert(#toolchains > 0, "toolchains not found!")
 end
