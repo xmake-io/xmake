@@ -245,6 +245,24 @@ function _instance:check()
     end
 end
 
+-- get formats
+function _instance:formats()
+    local formats = self._FORMATS
+    if not formats then
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            formats = toolchain_inst:get("formats")
+            if formats then
+                break
+            end
+        end
+        if not formats then
+            formats = self._INFO:get("formats")
+        end
+        self._FORMATS = formats
+    end
+    return formats
+end
+
 -- is builtin configuration?
 function _instance:_is_builtin_conf(name)
 
@@ -510,8 +528,14 @@ end
 -- get the format of the given target kind for platform
 function platform.format(targetkind)
 
+    -- get platform instance
+    local instance, errors = platform.load(plat)
+    if not instance then
+        os.raise(errors)
+    end
+
     -- get formats
-    local formats = platform.get("formats")
+    local formats = instance:formats()
     if formats then
         return formats[targetkind]
     end

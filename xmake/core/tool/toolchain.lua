@@ -267,6 +267,7 @@ function toolchain._apis()
             "toolchain.set_kind"
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
+        ,   "toolchain.set_archs"
         }
     ,   keyvalues =
         {
