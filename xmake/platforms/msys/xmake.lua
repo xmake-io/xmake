@@ -40,8 +40,15 @@ platform("msys")
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check
-    on_check("check")
+    -- on check 
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", os.subarch())
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
     -- set toolchains
     set_toolchains("envs", "cross", "gcc", "clang", "yasm")

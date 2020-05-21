@@ -34,7 +34,14 @@ platform("cross")
     set_formats("symbol", "$(name).sym")
 
     -- on check 
-    on_check("check")
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", "none")
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
     -- set toolchains
     set_toolchains("envs", "cross")

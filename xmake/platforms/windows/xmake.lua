@@ -37,8 +37,15 @@ platform("windows")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    -- on check
-    on_check("check")
+    -- on check 
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", os.arch())
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
     -- set toolchains
     set_toolchains("vs", "clang", "yasm", "nasm", "cuda", "dlang", "rust", "go")

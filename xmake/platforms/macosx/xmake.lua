@@ -40,7 +40,14 @@ platform("macosx")
     set_installdir("/usr/local")
 
     -- on check 
-    on_check("check")
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", os.arch())
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
     -- set toolchains
     set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "dlang", "rust", "go")
