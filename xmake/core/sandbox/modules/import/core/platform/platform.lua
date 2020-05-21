@@ -45,6 +45,11 @@ function sandbox_core_platform.plats()
     return assert(platform.plats())
 end
 
+-- get the all toolchains
+function sandbox_core_platform.toolchains()
+    return assert(platform.toolchains())
+end
+
 -- get the all architectures for the given platform
 function sandbox_core_platform.archs(plat)
     return platform.archs(plat)

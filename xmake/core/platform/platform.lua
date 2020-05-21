@@ -503,9 +503,7 @@ function platform.plats()
     local plats = {}
     local dirs  = platform.directories()
     for _, dir in ipairs(dirs) do
-
-        -- get the platform list 
-        local platpathes = os.match(path.join(dir, "*"), true)
+        local platpathes = os.dirs(path.join(dir, "*"))
         if platpathes then
             for _, platpath in ipairs(platpathes) do
                 if os.isfile(path.join(platpath, "xmake.lua")) then
@@ -516,6 +514,31 @@ function platform.plats()
     end
     platform._PLATS = plats
     return plats
+end
+
+-- get the all toolchains
+function platform.toolchains()
+    
+    -- return it directly if exists
+    if platform._TOOLCHAINS then
+        return platform._TOOLCHAINS 
+    end
+
+    -- get all toolchains
+    local toolchains = {}
+    local dirs  = toolchain.directories()
+    for _, dir in ipairs(dirs) do
+        local dirs = os.dirs(path.join(dir, "*"))
+        if dirs then
+            for _, dir in ipairs(dirs) do
+                if os.isfile(path.join(dir, "xmake.lua")) then
+                    table.insert(toolchains, path.basename(dir))
+                end
+            end
+        end
+    end
+    platform._TOOLCHAINS = toolchains
+    return toolchains
 end
 
 -- get the platform os

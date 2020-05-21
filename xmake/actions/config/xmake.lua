@@ -55,7 +55,7 @@ task("config")
                 ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
                                                         ,   values = function (complete, opt)
 
-                                                                -- import
+                                                                -- imports
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
 
@@ -77,10 +77,10 @@ task("config")
                                                             -- show the description of all architectures
                                                             function ()
 
-                                                                -- import platform
+                                                                -- imports
                                                                 import("core.platform.platform")
 
-                                                                -- make description
+                                                                -- get all architectures
                                                                 local description = {}
                                                                 for i, plat in ipairs(platform.plats()) do
                                                                     local archs = platform.archs(plat)
@@ -91,20 +91,17 @@ task("config")
                                                                         end
                                                                     end
                                                                 end
-
-                                                                -- get it
                                                                 return description
                                                             end
                                                         ,   values = function (complete, opt)
                                                                 if not complete then return end
 
-                                                                -- import
+                                                                -- imports
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
 
-                                                                -- get archs
+                                                                -- get all architectures
                                                                 local archset = hashset.new()
-
                                                                 for _, plat in ipairs(opt.plat and { opt.plat } or platform.plats()) do
                                                                     local archs = platform.archs(plat)
                                                                     if archs then
@@ -113,8 +110,6 @@ task("config")
                                                                         end
                                                                     end
                                                                 end
-
-                                                                -- get it
                                                                 return archset:to_array()
                                                             end                                                             }
                 ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
@@ -157,8 +152,10 @@ task("config")
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
                 ,   {nil, "toolchain",  "kv", nil,          "The Toolchain Name"
-                                                          , "e.g."
-                                                          , "    - llvm"                                                    }
+                                                          , values = function (complete, opt)
+                                                                import("core.platform.platform")
+                                                                return platform.toolchains()
+                                                            end                                                             }
 
                     -- show language menu options
                 ,   function ()
