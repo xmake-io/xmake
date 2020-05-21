@@ -15,20 +15,16 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        toolchains.lua
+-- @file        showlist.lua
 --
 
 -- imports
 import("core.base.option")
-import("core.platform.platform")
-import(".showlist")
 
--- show all toolchains
-function main()
-    if option.get("verbose") then
-        -- TODO show description
-        showlist(platform.toolchains())
-    else
-        showlist(platform.toolchains())
+-- show values
+function main(values)
+    -- TODO use text.table
+    for _, value in ipairs(values) do
+        print(value)
     end
 end
