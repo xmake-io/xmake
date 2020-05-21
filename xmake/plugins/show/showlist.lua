@@ -20,11 +20,21 @@
 
 -- imports
 import("core.base.option")
+import("core.base.text")
 
 -- show values
 function main(values)
-    -- TODO use text.table
+    local tbl = {align = 'l', sep = "  "}
+    local row = {}
     for _, value in ipairs(values) do
-        print(value)
+        table.insert(row, value)
+        if #row > 10 then
+            table.insert(tbl, row)
+            row = {}
+        end
     end
+    if #row > 0 then
+        table.insert(tbl, row)
+    end
+    print(text.table(tbl))
 end

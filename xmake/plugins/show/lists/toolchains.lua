@@ -25,10 +25,5 @@ import(".showlist")
 
 -- show all toolchains
 function main()
-    if option.get("verbose") then
-        -- TODO show description
-        showlist(platform.toolchains())
-    else
-        showlist(platform.toolchains())
-    end
+    showlist(platform.toolchains())
 end
