@@ -152,9 +152,15 @@ task("config")
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
                 ,   {nil, "toolchain",  "kv", nil,          "The Toolchain Name"
+                                                          , "e.g. "
+                                                          , "    - xmake f --toolchain=clang"
+                                                          , "    - xmake f --toolchain=[cross|llvm|sdcc ..] --sdk=/xxx"
+                                                          , "    - run `xmake show -l toolchains` to get all toolchains"
                                                           , values = function (complete, opt)
-                                                                import("core.platform.platform")
-                                                                return platform.toolchains()
+                                                                if complete then
+                                                                    import("core.platform.platform")
+                                                                    return platform.toolchains()
+                                                                end
                                                             end                                                             }
 
                     -- show language menu options
