@@ -24,7 +24,7 @@ import("core.base.text")
 
 -- show values
 function main(values)
-    local tbl = {align = 'l', sep = "  "}
+    local tbl = {align = 'l', sep = "    "}
     local row = {}
     for _, value in ipairs(values) do
         table.insert(row, value)
