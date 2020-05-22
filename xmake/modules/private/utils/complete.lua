@@ -43,6 +43,11 @@ function _print_candidate(is_complate, ...)
 end
 
 function _find_candidates(candidates, find)
+
+    if type(candidates) ~= 'table' then
+        return {}
+    end
+
     local has_candidate = false
     local results = table.new(#candidates, 0)
 
