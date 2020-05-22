@@ -36,11 +36,10 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, rootdir)
+function _instance.new(name, info)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
     instance._INFO    = info
-    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -370,15 +369,15 @@ function toolchain.load(name)
         return nil, string.format("the toolchain %s not found!", name)
     end
 
-    -- new an instance
-    local instance, errors = _instance.new(name, result, interp:rootdir())
-    if not instance then
-        return nil, errors
-    end
-
     -- save instance to the cache
+    local instance = _instance.new(name, result)
     toolchain._TOOLCHAINS[name] = instance
     return instance
+end
+
+-- new toolchain 
+function toolchain.new(name, info)
+    return _instance.new(name, info)
 end
 
 -- return module

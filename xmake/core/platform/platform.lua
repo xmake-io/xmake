@@ -34,11 +34,10 @@ local config         = require("project/config")
 local global         = require("base/global")
 
 -- new an instance
-function _instance.new(name, info, rootdir)
+function _instance.new(name, info)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
     instance._INFO    = info
-    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -465,13 +464,8 @@ function platform.load(plat)
         return nil, string.format("the platform %s not found!", plat)
     end
 
-    -- new an instance
-    local instance, errors = _instance.new(plat, result, interp:rootdir())
-    if not instance then
-        return nil, errors
-    end
-
     -- save instance to the cache
+    local instance = _instance.new(plat, result)
     platform._PLATFORMS[cachekey] = instance
     return instance
 end
