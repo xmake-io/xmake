@@ -20,10 +20,15 @@
 
 -- imports
 import("core.base.option")
+import("core.project.project")
 import("core.platform.platform")
 import(".showlist")
 
 -- show all toolchains
 function main()
-    showlist(platform.toolchains())
+    local names = table.copy(platform.toolchains())
+    for name, _ in pairs(project.toolchains()) do
+        table.insert(names, name)
+    end
+    showlist(names)
 end
