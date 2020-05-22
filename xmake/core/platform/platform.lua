@@ -135,6 +135,10 @@ function _instance:toolchains(opt)
             local toolchain_given = config.get("toolchain")
             if toolchain_given then
                 local toolchain_inst, errors = toolchain.load(toolchain_given)
+                -- attempt to load toolchain from project
+                if not toolchain_inst and platform._project() then
+                    toolchain_inst = platform._project().toolchain(toolchain_given)
+                end
                 if not toolchain_inst then
                     os.raise(errors)
                 end
@@ -149,7 +153,11 @@ function _instance:toolchains(opt)
         end
         if names then
             for _, name in ipairs(names) do
-                local toolchain_inst, errors = toolchain.load(name, self:name())
+                local toolchain_inst, errors = toolchain.load(name)
+                -- attempt to load toolchain from project
+                if not toolchain_inst and platform._project() then
+                    toolchain_inst = platform._project().toolchain(name)
+                end
                 if not toolchain_inst then
                     os.raise(errors)
                 end
@@ -341,6 +349,11 @@ function platform._interpreter()
 
     -- ok?
     return interp
+end
+
+-- get project 
+function platform._project()
+    return platform._PROJECT
 end
 
 -- get platform apis

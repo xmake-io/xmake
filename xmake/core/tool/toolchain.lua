@@ -139,7 +139,7 @@ function _instance:sdkdir()
     return config.get("sdk") or self:get("sdkdir")
 end
 
--- do load 
+-- do load, @note we need load it repeatly for each architectures 
 function _instance:_load()
     local info = self:info()
     if not info:get("__loaded") and not info:get("__loading") then
@@ -156,11 +156,10 @@ function _instance:_load()
     end
 end
 
--- do check 
+-- do check, we only check it once for all architectures 
 function _instance:check()
     local checkok = true
-    local info = self:info()
-    if not info:get("__checked") then
+    if not self._CHECKED then
         local on_check = self:info():get("check")
         if on_check then
             local ok, results_or_errors = sandbox.load(on_check, self)
@@ -170,7 +169,7 @@ function _instance:check()
                 os.raise(results_or_errors)
             end
         end
-        info:set("__checked", true)
+        self._CHECKED = true
     end
     return checkok
 end
