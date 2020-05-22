@@ -135,7 +135,7 @@ function _instance:toolchains(opt)
             -- get the given toolchain
             local toolchain_given = config.get("toolchain")
             if toolchain_given then
-                local toolchain_inst, errors = toolchain.load(toolchain_given, self:name())
+                local toolchain_inst, errors = toolchain.load(toolchain_given)
                 if not toolchain_inst then
                     os.raise(errors)
                 end

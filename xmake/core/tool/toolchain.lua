@@ -49,21 +49,48 @@ function _instance:name()
     return self._NAME
 end
 
+-- get toolchain platform
+function _instance:plat()
+    return config.get("plat") or os.host() 
+end
+
+-- get toolchain architecture
+function _instance:arch()
+    return config.get("arch") or os.arch() 
+end
+
+-- get toolchain info
+function _instance:info()
+    local arch = self:arch()
+    local infos = self._INFOS
+    if not infos then
+        infos = {}
+        self._INFOS = infos
+    end
+    local info = infos[arch]
+    if not info then
+        -- we need multiple info objects for different architectures
+        info = self._INFO:clone()
+        infos[arch] = info
+    end
+    return info
+end
+
 -- set the value to the toolchain configuration
 function _instance:set(name, ...)
-    self._INFO:apival_set(name, ...)
+    self:info():apival_set(name, ...)
 end
 
 -- add the value to the toolchain configuration
 function _instance:add(name, ...)
-    self._INFO:apival_add(name, ...)
+    self:info():apival_add(name, ...)
 end
 
 -- get the toolchain configuration
 function _instance:get(name)
 
     -- attempt to get the static configure value
-    local value = self._INFO:get(name)
+    local value = self:info():get(name)
     if value ~= nil then
         return value
     end
@@ -72,12 +99,12 @@ function _instance:get(name)
     self:_load()
 
     -- get other platform info
-    return self._INFO:get(name)
+    return self:info():get(name)
 end
 
 -- get toolchain kind
 function _instance:kind()
-    return self._INFO:get("kind")
+    return self:info():get("kind")
 end
 
 -- is standalone toolchain?
@@ -100,7 +127,7 @@ end
 
 -- get the toolchain script
 function _instance:script(name)
-    return self._INFO:get(name)
+    return self:info():get(name)
 end
 
 -- get the bin directory
@@ -115,25 +142,27 @@ end
 
 -- do load 
 function _instance:_load()
-    if not self._LOADED and not self._LOADING then
-        local on_load = self._INFO:get("load")
+    local info = self:info()
+    if not info:get("__loaded") and not info:get("__loading") then
+        local on_load = info:get("load")
         if on_load then
-            self._LOADING = true
+            info:set("__loading", true)
             local ok, errors = sandbox.load(on_load, self)
-            self._LOADING = false
+            info:set("__loading", false)
             if not ok then
                 os.raise(errors)
             end
         end
-        self._LOADED = true
+        info:set("__loaded", true)
     end
 end
 
 -- do check 
 function _instance:check()
     local checkok = true
-    if not self._CHECKED then
-        local on_check = self._INFO:get("check")
+    local info = self:info()
+    if not info:get("__checked") then
+        local on_check = self:info():get("check")
         if on_check then
             local ok, results_or_errors = sandbox.load(on_check, self)
             if ok then
@@ -142,7 +171,7 @@ function _instance:check()
                 os.raise(results_or_errors)
             end
         end
-        self._CHECKED = true
+        info:set("__checked", true)
     end
     return checkok
 end
@@ -246,7 +275,7 @@ function toolchain._interpreter()
     assert(interp)
  
     -- define apis
-    interp:api_define(toolchain._apis())
+    interp:api_define(toolchain.apis())
 
     -- define apis for language
     interp:api_define(language.apis())
@@ -259,7 +288,7 @@ function toolchain._interpreter()
 end
 
 -- get toolchain apis
-function toolchain._apis()
+function toolchain.apis()
     return 
     {
         values = 
@@ -300,21 +329,12 @@ function toolchain.directories()
 end
 
 -- load the given toolchain 
-function toolchain.load(name, plat)
-
-    -- get toolchain name
-    plat = plat or config.get("plat") or os.host()
-    if not plat then
-        return nil, string.format("unknown toolchain!")
-    end
-
-    -- get cache key
-    local cachekey = name .. "_" .. plat .. "_" .. (config.get("arch") or os.arch())
+function toolchain.load(name)
 
     -- get it directly from cache dirst
     toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
-    if toolchain._TOOLCHAINS[cachekey] then
-        return toolchain._TOOLCHAINS[cachekey]
+    if toolchain._TOOLCHAINS[name] then
+        return toolchain._TOOLCHAINS[name]
     end
 
     -- find the toolchain script path
@@ -357,7 +377,7 @@ function toolchain.load(name, plat)
     end
 
     -- save instance to the cache
-    toolchain._TOOLCHAINS[cachekey] = instance
+    toolchain._TOOLCHAINS[name] = instance
     return instance
 end
 
