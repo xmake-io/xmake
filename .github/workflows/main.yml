@@ -1,6 +1,6 @@
 name: build
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -9,15 +9,21 @@ jobs:
         os: [ubuntu-latest, windows-latest, macOS-latest]
 
     runs-on: ${{ matrix.os }}
-    
+
     steps:
-    - uses: actions/checkout@v1
-    - uses: xmake-io/github-action-setup-xmake@v1
-      with:
-        xmake-version: branch@dev
-    - uses: mihails-strasuns/setup-dlang@v0.5.0
-      with:
-        compiler: dmd-latest
-    - name: tests
-      run: |
-        xmake lua -v -D tests/run.lua
+      - uses: actions/checkout@v1
+      - uses: xmake-io/github-action-setup-xmake@v1
+        if: matrix.os != 'windows-latest' || github.event_name == 'push'
+        with:
+          xmake-version: sha@${{ github.sha }}
+      - uses: xmake-io/github-action-setup-xmake@v1
+        # this is not supported, use dev branch instead
+        if: matrix.os == 'windows-latest' && github.event_name == 'pull_request'
+        with:
+          xmake-version: branch@dev
+      - uses: mihails-strasuns/setup-dlang@v0.5.0
+        with:
+          compiler: dmd-latest
+      - name: tests
+        run: |
+          xmake lua -v -D tests/run.lua
