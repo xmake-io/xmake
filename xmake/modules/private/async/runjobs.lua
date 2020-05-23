@@ -20,31 +20,24 @@
 
 -- imports
 import("core.base.scheduler")
+import("private.utils.progress")
 
 -- print back characters
 function _print_backchars(backnum)
     if backnum > 0 then
-        local str = ""
-        for i = 1, backnum do
-            str = str .. '\b'
-        end
-        for i = 1, backnum do
-            str = str .. ' '
-        end
-        for i = 1, backnum do
-            str = str .. '\b'
-        end
+        local str = ('\b'):rep(backnum) .. (' '):rep(backnum) .. ('\b'):rep(backnum)
         if #str > 0 then
             printf(str)
         end
     end
 end
 
--- asynchronous run jobs 
+-- asynchronous run jobs
 --
--- e.g. 
+-- e.g.
 -- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
--- runjobs("test", function () os.sleep(10000) end, {showtips = true})
+-- runjobs("test", function () os.sleep(10000) end, { progress = true })
+-- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module private.utils.progress
 --
 -- local jobs = jobpool.new()
 -- local root = jobs:addjob("job/root", function (idx, total)
@@ -71,10 +64,14 @@ function main(name, jobs, opt)
     assert(jobs, "runjobs: no jobs!")
 
     -- show waiting tips?
-    local waitindex = 0
-    local waitchars = opt.waitchars or {'\\', '-', '/', '|'}
+    local showprogress = io.isatty() and (opt.progress or opt.showtips) -- we need hide wait characters if is not a tty
+    local progress_helper
     local backnum = 0
-    local showtips = io.isatty() and opt.showtips -- we need hide wait characters if is not a tty
+    if showprogress then
+        local opt = nil
+        if type(showprogress) == 'table' then opt = showprogress end
+        progress_helper = progress.new(nil, opt)
+    end
 
     -- run timer
     local stop = false
@@ -88,17 +85,13 @@ function main(name, jobs, opt)
                 end
             end
         end)
-    elseif showtips then
+    elseif showprogress then
         scheduler.co_start_named(name .. "/tips", function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
 
-                    -- print back characters
-                    _print_backchars(backnum)
-
                     -- show waitchars
-                    waitindex = ((waitindex + 1) % #waitchars)
                     local tips = nil
                     local waitobjs = scheduler.co_group_waitobjs(group_name)
                     if waitobjs:size() > 0 then
@@ -121,14 +114,16 @@ function main(name, jobs, opt)
                             tips = string.format("(%d/%s)", waitobjs:size(), names)
                         end
                     end
+
+                    -- print back characters
+                    progress_helper:clear()
+                    _print_backchars(backnum)
+
                     if tips then
-                        cprintf("${dim}%s${clear} %s", tips, waitchars[waitindex + 1])
-                        backnum = #tips + 2
-                    else
-                        printf(waitchars[waitindex + 1])
-                        backnum = 1
+                        cprintf("${dim}%s${clear} ", tips)
+                        backnum = #tips + 1
                     end
-                    io.flush()
+                    progress_helper:write()
                 end
             end
         end)
@@ -198,10 +193,9 @@ function main(name, jobs, opt)
                                 stop = true
 
                                 -- remove wait charactor
-                                if showtips then
+                                if showprogress then
                                     _print_backchars(backnum)
-                                    print("")
-                                    io.flush()
+                                    progress_helper:stop()
                                 end
 
                                 -- do exit callback
@@ -235,9 +229,9 @@ function main(name, jobs, opt)
     stop = true
 
     -- remove wait charactor
-    if showtips then
+    if showprogress then
         _print_backchars(backnum)
-        io.flush()
+        progress_helper:stop()
     end
 
     -- do exit callback
