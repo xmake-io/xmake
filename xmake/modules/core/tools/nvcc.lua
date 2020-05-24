@@ -283,19 +283,20 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     try
     {
         function ()
-            -- support `-M -MF depfile.d`?
-            if depfile and _g._HAS_M_MF == nil then
-                _g._HAS_M_MF = self:has_flags({"-M", "-MF", os.nuldev()}, "cuflags", { flagskey = "-M -MF" }) or false
+
+            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
+            if depfile and _g._HAS_MMD_MF == nil then
+                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cxflags", { flagskey = "-MMD -MF" }) or false
             end
 
             -- generate includes file
-            if depfile and _g._HAS_M_MF then
-                -- since -MD is not supported, run nvcc twice
-                local compflags = table.join(flags, "-M", "-MF", depfile)
-                os.runv(_compargv1(self, sourcefile, objectfile, compflags))
+            local compflags = flags
+            if depfile and _g._HAS_MMD_MF then
+                compflags = table.join(compflags, "-MMD", "-MF", depfile)
             end
 
-            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+            -- do compile
+            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -337,7 +338,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- generate the dependent includes
                 if depfile and os.isfile(depfile) then
-                    if dependinfo and self:kind() ~= "as" then
+                    if dependinfo then
                         -- nvcc uses gcc-style depfiles
                         dependinfo.depfiles_gcc = io.readfile(depfile, {continuation = "\\"})
                     end
