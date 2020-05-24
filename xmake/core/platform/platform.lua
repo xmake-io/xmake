@@ -28,17 +28,16 @@ local path           = require("base/path")
 local utils          = require("base/utils")
 local table          = require("base/table")
 local interpreter    = require("base/interpreter")
+local toolchain      = require("tool/toolchain")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
-local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, rootdir)
+function _instance.new(name, info)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
     instance._INFO    = info
-    instance._ROOTDIR = rootdir
     return instance
 end
 
@@ -103,6 +102,135 @@ function _instance:archs()
     return self._INFO:get("archs")
 end
 
+-- get runenvs of toolchains
+function _instance:runenvs()
+    local runenvs = self._RUNENVS
+    if not runenvs then
+        runenvs = {}
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            local toolchain_runenvs = toolchain_inst:get("runenvs")
+            if toolchain_runenvs then
+                for name, values in pairs(toolchain_runenvs) do
+                    runenvs[name] = table.join2(table.wrap(runenvs[name]), values)
+                end
+            end
+        end
+        self._RUNENVS = runenvs
+    end
+    return runenvs
+end
+
+-- get the toolchains
+function _instance:toolchains(opt)
+    local toolchains = self._TOOLCHAINS
+    if not toolchains then
+
+        -- get current valid toolchains from configuration cache
+        local names = nil
+        toolchains = {}
+        if not (opt and opt.all) then
+            names = config.get("__toolchains")
+        else
+            -- get the given toolchain
+            local toolchain_given = config.get("toolchain")
+            if toolchain_given then
+                local toolchain_inst, errors = toolchain.load(toolchain_given)
+                -- attempt to load toolchain from project
+                if not toolchain_inst and platform._project() then
+                    toolchain_inst = platform._project().toolchain(toolchain_given)
+                end
+                if not toolchain_inst then
+                    os.raise(errors)
+                end
+                table.insert(toolchains, toolchain_inst)
+                toolchain_given = toolchain_inst
+            end
+
+            -- get the platform toolchains
+            if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
+                names = self._INFO:get("toolchains")
+            end
+        end
+        if names then
+            for _, name in ipairs(names) do
+                local toolchain_inst, errors = toolchain.load(name)
+                -- attempt to load toolchain from project
+                if not toolchain_inst and platform._project() then
+                    toolchain_inst = platform._project().toolchain(name)
+                end
+                if not toolchain_inst then
+                    os.raise(errors)
+                end
+                table.insert(toolchains, toolchain_inst)
+            end
+        end
+        self._TOOLCHAINS = toolchains
+    end
+    return toolchains
+end
+
+-- get the program and name of the given tool kind
+function _instance:tool(toolkind)
+
+    -- init tools
+    local tools = self._TOOLS
+    if not tools then
+        tools = {}
+        self._TOOLS = tools
+    end
+
+    -- get tool program
+    local program, toolname
+    local toolinfo = tools[toolkind]
+    if toolinfo == nil then
+        toolinfo = {}
+        local toolchains = self:toolchains()
+        for idx, toolchain_inst in ipairs(toolchains) do
+            program, toolname = toolchain_inst:tool(toolkind)
+            if program then
+                toolinfo[1] = program
+                toolinfo[2] = toolname
+                break
+            end
+        end
+        tools[toolkind] = toolinfo
+    else
+        program  = toolinfo[1]
+        toolname = toolinfo[2]
+    end
+    return program, toolname
+end
+
+-- get tool configuration from the toolchains
+function _instance:toolconfig(name)
+
+    -- init tool configs
+    local toolconfigs = self._TOOLCONFIGS
+    if not toolconfigs then
+        toolconfigs = {}
+        self._TOOLCONFIGS = toolconfigs
+    end
+
+    -- get configuration
+    local toolconfig = toolconfigs[name]
+    if toolconfig == nil then
+
+        -- get them from all toolchains
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            local values = toolchain_inst:get(name)
+            if values then
+                toolconfig = toolconfig or {}
+                table.join2(toolconfig, values)
+            end
+        end
+
+        -- cache it
+        toolconfig = toolconfig or false
+        toolconfigs[name] = toolconfig
+    end
+    return toolconfig or nil
+end
+
 -- get the platform script
 function _instance:script(name)
     return self._INFO:get(name)
@@ -123,6 +251,65 @@ end
 function _instance:data_add(name, data)
     self._DATA = self._DATA or {}
     self._DATA[name] = table.unwrap(table.join(self._DATA[name] or {}, data))
+end
+
+-- do check
+function _instance:check()
+
+    -- check platform
+    local on_check = self:script("check")
+    if on_check then
+        local ok, errors = sandbox.load(on_check, self)
+        if not ok then
+            return false, errors
+        end
+    end
+
+    -- check toolchains
+    local toolchains = self:toolchains({all = true})
+    local idx = 1
+    local num = #toolchains
+    local standalone = false
+    local toolchains_valid = {}
+    while idx <= num do
+        local toolchain = toolchains[idx]
+        -- we need remove other standalone toolchains if standalone toolchain found
+        if (standalone and toolchain:standalone()) or not toolchain:check() then
+            table.remove(toolchains, idx)
+            num = num - 1
+        else
+            if toolchain:standalone() then
+                standalone = true
+            end
+            idx = idx + 1
+            table.insert(toolchains_valid, toolchain:name())
+        end
+    end
+    if #toolchains == 0 then
+        return false, "toolchains not found!"
+    end
+
+    -- save valid toolchains
+    config.set("__toolchains", toolchains_valid)
+    return true
+end
+
+-- get formats
+function _instance:formats()
+    local formats = self._FORMATS
+    if not formats then
+        for _, toolchain_inst in ipairs(self:toolchains()) do
+            formats = toolchain_inst:get("formats")
+            if formats then
+                break
+            end
+        end
+        if not formats then
+            formats = self._INFO:get("formats")
+        end
+        self._FORMATS = formats
+    end
+    return formats
 end
 
 -- is builtin configuration?
@@ -164,6 +351,11 @@ function platform._interpreter()
     return interp
 end
 
+-- get project 
+function platform._project()
+    return platform._PROJECT
+end
+
 -- get platform apis
 function platform._apis()
     return 
@@ -175,21 +367,22 @@ function platform._apis()
         ,   "platform.set_hosts"
         ,   "platform.set_archs"
         ,   "platform.set_installdir"
+        ,   "platform.set_toolchains"
         }
     ,   script =
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_config_check"
-        ,   "platform.on_global_check"
-        ,   "platform.on_environment_enter"
-        ,   "platform.on_environment_leave"
+        ,   "platform.on_check"
+        }
+    ,   keyvalues =
+        {
+            "platform.set_formats"
         }
     ,   dictionary =
         {
             -- platform.set_xxx
             "platform.set_menu"
-        ,   "platform.set_formats"
         }
     }
 end
@@ -284,13 +477,8 @@ function platform.load(plat)
         return nil, string.format("the platform %s not found!", plat)
     end
 
-    -- new an instance
-    local instance, errors = _instance.new(plat, result, interp:rootdir())
-    if not instance then
-        return nil, errors
-    end
-
     -- save instance to the cache
+    local instance = _instance.new(plat, result)
     platform._PLATFORMS[cachekey] = instance
     return instance
 end
@@ -321,16 +509,14 @@ function platform.tool(toolkind, plat)
         if not instance then
             os.raise(errors)
         end
-        
-        -- check it first
-        local on_check = instance:script("config_check")
-        if on_check then
-            on_check(instance, toolkind)
-        end
 
-        -- get it again
-        program = config.get(toolkind)
-        toolname = config.get("__toolname_" .. toolkind)
+        -- get it from the platform toolchains
+        program, toolname = instance:tool(toolkind)
+        if program then
+            config.set(toolkind, program, {force = true, readonly = true})
+            config.set("__toolname_" .. toolkind, toolname)
+            config.save()
+        end
     end
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -342,6 +528,16 @@ function platform.tool(toolkind, plat)
         end
     end
     return program, toolname
+end
+
+-- get the given tool configuration 
+function platform.toolconfig(name, plat)
+    local instance, errors = platform.load(plat)
+    if instance then
+        return instance:toolconfig(name)
+    else
+        os.raise(errors)
+    end
 end
 
 -- get the all platforms
@@ -356,9 +552,7 @@ function platform.plats()
     local plats = {}
     local dirs  = platform.directories()
     for _, dir in ipairs(dirs) do
-
-        -- get the platform list 
-        local platpathes = os.match(path.join(dir, "*"), true)
+        local platpathes = os.dirs(path.join(dir, "*"))
         if platpathes then
             for _, platpath in ipairs(platpathes) do
                 if os.isfile(path.join(platpath, "xmake.lua")) then
@@ -369,6 +563,31 @@ function platform.plats()
     end
     platform._PLATS = plats
     return plats
+end
+
+-- get the all toolchains
+function platform.toolchains()
+    
+    -- return it directly if exists
+    if platform._TOOLCHAINS then
+        return platform._TOOLCHAINS 
+    end
+
+    -- get all toolchains
+    local toolchains = {}
+    local dirs  = toolchain.directories()
+    for _, dir in ipairs(dirs) do
+        local dirs = os.dirs(path.join(dir, "*"))
+        if dirs then
+            for _, dir in ipairs(dirs) do
+                if os.isfile(path.join(dir, "xmake.lua")) then
+                    table.insert(toolchains, path.basename(dir))
+                end
+            end
+        end
+    end
+    platform._TOOLCHAINS = toolchains
+    return toolchains
 end
 
 -- get the platform os
@@ -384,8 +603,14 @@ end
 -- get the format of the given target kind for platform
 function platform.format(targetkind)
 
+    -- get platform instance
+    local instance, errors = platform.load(plat)
+    if not instance then
+        os.raise(errors)
+    end
+
     -- get formats
-    local formats = platform.get("formats")
+    local formats = instance:formats()
     if formats then
         return formats[targetkind]
     end

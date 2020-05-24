@@ -191,7 +191,6 @@ function main._init()
     else
         os.addenv("PATH", os.programdir())
     end
-
     return true
 end
 

@@ -27,7 +27,7 @@ import("core.project.project")
 function init(self)
     
     -- init arflags
-    self:set("gc-arflags", "grc")
+    self:set("gcarflags", "grc")
 
     -- init the file formats
     self:set("formats", { static = "$(name).a" })

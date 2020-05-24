@@ -47,8 +47,8 @@ function compiler:_add_flags_from_platform(flags, targetkind)
     if targetkind then
         local toolname = self:name()
         for _, flagkind in ipairs(self:_flagkinds()) do
-            local toolflags = platform.get(targetkind .. '.' .. toolname .. '.' .. flagkind)
-            table.join2(flags, toolflags or platform.get(targetkind .. '.' .. flagkind))
+            local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+            table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. flagkind))
         end
     end
 end
@@ -140,7 +140,7 @@ function compiler.load(sourcekind, target)
     for _, flagkind in ipairs(instance:_flagkinds()) do
 
         -- add flags for platform, e.g. gcc.cxflags or cxflags
-        compiler_tool:add(flagkind, platform.get(toolname .. '.' .. flagkind) or platform.get(flagkind))
+        compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
     end
 
     -- ok

@@ -28,7 +28,7 @@ language("swift")
     set_sourceflags {sc = "scflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "sc-ld", static = "ar", shared = "sc-sh"}
+    set_targetkinds {binary = "scld", static = "ar", shared = "scsh"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
@@ -153,8 +153,8 @@ language("swift")
                 ,   { nil, "sc",            "kv", nil,          "The Swift Compiler"                                 }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"                                }
-                ,   { nil, "sc-ld",         "kv", nil,          "The Swift Linker"                                   }
-                ,   { nil, "sc-sh",         "kv", nil,          "The Swift Shared Library Linker"                    }
+                ,   { nil, "scld",         "kv", nil,          "The Swift Linker"                                   }
+                ,   { nil, "scsh",         "kv", nil,          "The Swift Shared Library Linker"                    }
 
                 ,   { category = "Cross Complation Configuration/Builtin Flags Configuration"                        }
                 ,   { nil, "links",         "kv", nil,          "The Link Libraries"                                 }

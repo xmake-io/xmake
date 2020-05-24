@@ -42,9 +42,13 @@ local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
 local platform              = require("platform/platform")
 local environment           = require("platform/environment")
+local toolchain             = require("tool/toolchain")
 local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
 local sandbox_module        = require("sandbox/modules/import/core/sandbox/module")
+
+-- register project to platform
+platform._PROJECT = project
 
 -- the current os is belong to the given os?
 function project._api_is_os(interp, ...)
@@ -325,6 +329,29 @@ function project._load_rules()
         project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
     end
     return rules
+end
+
+-- load toolchains
+function project._load_toolchains()
+
+    -- load the project file first if has not been loaded?
+    local ok, errors = project._load()
+    if not ok then
+        return nil, errors
+    end
+ 
+    -- load the toolchain from the the project file
+    local results, errors = project._load_scope("toolchain", true, true)
+    if not results then
+        return nil, errors
+    end
+
+    -- make toolchain instances
+    local toolchains = {}
+    for toolchain_name, toolchain_info in pairs(results) do
+        toolchains[toolchain_name] = toolchain.new(toolchain_name, toolchain_info)
+    end
+    return toolchains
 end
 
 -- load targets 
@@ -680,6 +707,9 @@ function project.interpreter()
     -- define apis for language
     interp:api_define(language.apis())
 
+    -- define apis for toolchain
+    interp:api_define(toolchain.apis())
+
     -- define apis for project
     interp:api_define(project.apis())
 
@@ -924,10 +954,7 @@ end
 
 -- get project rules
 function project.rules()
-
     if not project._RULES then
-
-        -- load rules
         local rules, errors = project._load_rules()
         if not rules then
             os.raise(errors)
@@ -935,6 +962,23 @@ function project.rules()
         project._RULES = rules
     end
     return project._RULES
+end
+
+-- get the given toolchain
+function project.toolchain(name)
+    return project.toolchains()[name]
+end
+
+-- get project toolchains
+function project.toolchains()
+    if not project._TOOLCHAINS then
+        local toolchains, errors = project._load_toolchains()
+        if not toolchains then
+            os.raise(errors)
+        end
+        project._TOOLCHAINS = toolchains
+    end
+    return project._TOOLCHAINS
 end
 
 -- get the given task

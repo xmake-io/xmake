@@ -31,22 +31,24 @@ platform("windows")
     set_archs("x86", "x64")
 
     -- set formats
-    set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
+    set_formats("static", "$(name).lib")
+    set_formats("object", "$(name).obj")
+    set_formats("shared", "$(name).dll")
+    set_formats("binary", "$(name).exe")
+    set_formats("symbol", "$(name).pdb")
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check 
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", os.arch())
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
-    -- on check global configuration
-    on_global_check("global")
-
-    -- on environment enter
-    on_environment_enter("environment.enter")
-
-    -- on environment leave
-    on_environment_leave("environment.leave")
-
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("vs", "clang", "yasm", "nasm", "cuda", "dlang", "rust", "go")
 
     -- set menu
     set_menu {

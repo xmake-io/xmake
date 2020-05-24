@@ -30,7 +30,7 @@ import("net.fasturl")
 function _conan_get_build_env(name, plat)
     local value = config.get(name)
     if value == nil then
-        value = platform.get(name, plat)
+        value = platform.toolconfig(name, plat)
     end
     if value == nil then
         value = platform.tool(name, plat)

@@ -68,31 +68,6 @@ function sandbox_core_base_global.clear()
     return global.clear()
 end
 
--- check the configure
-function sandbox_core_base_global.check()
-
-    -- check all platforms with the current host
-    for _, plat in ipairs(table.wrap(platform.plats())) do
-
-        -- load platform 
-        local instance, errors = platform.load(plat)
-        if not instance then
-            raise(errors)
-        end
-
-        -- belong to the current host?
-        for _, host in ipairs(table.wrap(instance:hosts())) do
-            if host == os.host() then
-                local on_check = instance:script("global_check")
-                if on_check then
-                    on_check(instance)
-                end
-                break
-            end
-        end
-    end
-end
-
 -- get all options
 function sandbox_core_base_global.options()
     return global.options()

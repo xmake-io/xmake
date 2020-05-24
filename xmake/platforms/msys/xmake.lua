@@ -31,14 +31,25 @@ platform("msys")
     set_archs("i386", "x86_64")
 
     -- set formats
-    set_formats {static = "lib$(name).a", object = "$(name).o", shared = "lib$(name).dll", binary = "$(name).exe", symbol = "$(name).sym"}
+    set_formats("static", "lib$(name).a")
+    set_formats("object", "$(name).o")
+    set_formats("shared", "lib$(name).dll")
+    set_formats("binary", "$(name).exe")
+    set_formats("symbol", "$(name).sym")
 
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check 
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", os.subarch())
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm")
 

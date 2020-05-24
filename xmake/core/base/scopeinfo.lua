@@ -546,7 +546,12 @@ function _instance:extraconf(name, item, key)
     return value
 end
 
--- new an scope instance
+-- clone a new instance from the current
+function _instance:clone()
+    return _instance.new(self:kind(), self:info(), {interpreter = self:interpreter(), remove_repeat = self._REMOVE_REPEAT, enable_filter = self._ENABLE_FILTER})
+end
+
+-- new a scope instance
 function scopeinfo.new(...)
     return _instance.new(...)
 end

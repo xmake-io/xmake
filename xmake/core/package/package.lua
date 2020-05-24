@@ -492,7 +492,7 @@ function _instance:build_envs(lazy_loading)
         setmetatable(build_envs, { __index = function (tbl, key)
             local value = config.get(key)
             if value == nil then
-                value = platform.get(key, self:plat())
+                value = platform.toolconfig(key, self:plat())
             end
             if value == nil then
                 value = platform.tool(key, self:plat())

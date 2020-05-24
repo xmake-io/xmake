@@ -31,13 +31,24 @@ platform("mingw")
     set_archs("i386", "x86_64")
 
     -- set formats
-    set_formats {static = "$(name).lib", object = "$(name).obj", shared = "$(name).dll", binary = "$(name).exe", symbol = "$(name).pdb"}
+    set_formats("static", "$(name).lib")
+    set_formats("object", "$(name).obj")
+    set_formats("shared", "$(name).dll")
+    set_formats("binary", "$(name).exe")
+    set_formats("symbol", "$(name).pdb")
 
-    -- on check project configuration
-    on_config_check("config")
+    -- on check 
+    on_check(function (platform)
+        import("core.project.config")
+        local arch = config.get("arch")
+        if not arch then
+            config.set("arch", "x86_64")
+            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+        end
+    end)
 
-    -- on load
-    on_load("load")
+    -- set toolchains
+    set_toolchains("envs", "mingw")
 
     -- set menu
     set_menu {
