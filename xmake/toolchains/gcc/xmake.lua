@@ -44,13 +44,22 @@ toolchain("gcc")
     -- on load
     on_load(function (toolchain)
 
-        -- get march
-        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
+        -- add march flags
+        local march
+        if is_arch("x86_64", "x64") then
+            march = "-m64"
+        elseif is_arch("i386", "x86") then
+            march = "-m32"
+        end
+        if march then
+            toolchain:add("cxflags", march)
+            toolchain:add("mxflags", march)
+            toolchain:add("asflags", march)
+            toolchain:add("ldflags", march)
+            toolchain:add("shflags", march)
+        end
 
-        -- init flags for c/c++
-        toolchain:add("cxflags", march)
-        toolchain:add("ldflags", march)
-        toolchain:add("shflags", march)
+        -- add includedirs and linkdirs
         if not is_plat("windows") and os.isdir("/usr") then
             for _, includedir in ipairs({"/usr/local/include", "/usr/include"}) do
                 if os.isdir(includedir) then
@@ -63,10 +72,4 @@ toolchain("gcc")
                 end
             end
         end
-
-        -- init flags for objc/c++  (with ldflags and shflags)
-        toolchain:add("mxflags", march)
-
-        -- init flags for asm
-        toolchain:add("asflags", march)
     end)
