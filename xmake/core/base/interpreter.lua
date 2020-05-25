@@ -1118,16 +1118,13 @@ function interpreter:api_register_set_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
-        -- expand values if only one
-        values = table.unwrap(values)
-
         -- save values to "name"
         scope[name] = scope[name] or {}
-        scope[name][key] = values
+        scope[name][key] = table.unwrap(values) -- expand values if only one
 
         -- save values to "name.key"
         local name_key = name .. "." .. key
-        scope[name_key] = values
+        scope[name_key] = scope[name][key]
 
         -- fix override attributes
         scope["__override_" .. name] = false
@@ -1165,12 +1162,14 @@ function interpreter:api_register_add_keyvalues(scope_kind, ...)
             extra_config = nil
         end
 
-        -- expand values if only one
-        values = table.unwrap(values)
-
         -- save values to "name"
         scope[name] = scope[name] or {}
-        scope[name][key] = table.join2(table.wrap(scope[name][key]), values)
+        if scope[name][key] == nil then
+            -- expand values if only one
+            scope[name][key] = table.unwrap(values)
+        else
+            scope[name][key] = table.join2(table.wrap(scope[name][key]), values)
+        end
 
         -- save values to "name.key"
         local name_key = name .. "." .. key

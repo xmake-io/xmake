@@ -173,9 +173,6 @@ function _instance:_api_set_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- expand values if only one
-    values = table.unwrap(values)
-
     -- save values to "name"
     scope[name] = scope[name] or {}
     scope[name][key] = self:_api_handle(values)
@@ -213,12 +210,13 @@ function _instance:_api_add_keyvalues(name, key, ...)
         extra_config = nil
     end
 
-    -- expand values if only one
-    values = table.unwrap(values)
-
     -- save values to "name"
     scope[name] = scope[name] or {}
-    scope[name][key] = self:_api_handle(table.join2(table.wrap(scope[name][key]), values))
+    if scope[name][key] == nil then
+        scope[name][key] = self:_api_handle(values)
+    else
+        scope[name][key] = self:_api_handle(table.join2(table.wrap(scope[name][key]), values))
+    end
 
     -- save values to "name.key"
     local name_key = name .. "." .. key
