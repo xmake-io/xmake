@@ -36,6 +36,12 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_rpathdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_rcflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_rpathdirs"
     }
     _g.pathes = 
     {

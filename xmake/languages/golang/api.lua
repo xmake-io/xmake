@@ -36,6 +36,12 @@ function apis()
     ,   "option.add_gcflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_gcflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
     }
     _g.pathes = 
     {

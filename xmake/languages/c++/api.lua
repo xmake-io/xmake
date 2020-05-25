@@ -217,6 +217,22 @@ function apis()
     ,   "package.add_linkdirs"
     ,   "package.add_includedirs" --@note we need not uses pathes for package, see https://github.com/xmake-io/xmake/issues/717
     ,   "package.add_frameworkdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_cflags"
+    ,   "toolchain.add_cxflags"
+    ,   "toolchain.add_cxxflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
+    ,   "toolchain.add_frameworks"
+    ,   "toolchain.add_rpathdirs"
+    ,   "toolchain.add_linkdirs"
+    ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_frameworkdirs"
     }
     _g.pathes = 
     {

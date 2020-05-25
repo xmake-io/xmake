@@ -28,6 +28,8 @@ function apis()
         "target.add_mrcflags"
         -- option.add_xxx
     ,   "option.add_mrcflags"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_mrcflags"
     }
     _g.pathes = 
     {

@@ -48,6 +48,18 @@ function apis()
     ,   "option.add_defines"
     ,   "option.add_undefines"
     ,   "option.add_rpathdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_cugencodes"
+    ,   "toolchain.add_cuflags"
+    ,   "toolchain.add_culdflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
+    ,   "toolchain.add_rpathdirs"
     }
     _g.pathes = 
     {

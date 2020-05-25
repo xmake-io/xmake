@@ -64,6 +64,22 @@ function apis()
     ,   "option.add_undefines_h_if_ok"
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_mflags"
+    ,   "toolchain.add_mxflags"
+    ,   "toolchain.add_mxxflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
+    ,   "toolchain.add_frameworks"
+    ,   "toolchain.add_rpathdirs"
+    ,   "toolchain.add_linkdirs"
+    ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_frameworkdirs"
     }
     _g.pathes = 
     {
