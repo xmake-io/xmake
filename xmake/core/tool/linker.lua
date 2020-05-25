@@ -79,7 +79,7 @@ function linker._load_tool(targetkind, sourcekinds, target)
 
         -- get program from target
         local program, toolname
-        if target then
+        if target and target:type() == "target" then
             program, toolname = target:tool(_linkerinfo.linkerkind)
         end
 

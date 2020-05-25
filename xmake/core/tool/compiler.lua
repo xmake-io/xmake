@@ -72,7 +72,7 @@ function compiler._load_tool(sourcekind, target)
 
     -- get program from target
     local program, toolname
-    if target then
+    if target and target:type() == "target" then
         program, toolname = target:tool(sourcekind)
     end
 
