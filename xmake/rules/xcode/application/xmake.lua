@@ -39,3 +39,5 @@ rule("xcode.application")
     -- uninstall application
     on_uninstall("uninstall")
 
+    -- run application
+    on_run("run")
