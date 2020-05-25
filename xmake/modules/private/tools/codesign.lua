@@ -121,9 +121,10 @@ function unsign(programdir)
 end
 
 -- main entry
-function main (programdir, codesign_identity, mobile_provision)
+function main (programdir, codesign_identity, mobile_provision, opt)
 
     -- only for macosx
+    opt = opt or {}
     assert(is_host("macosx"), "codesign: only support for macOS!")
 
     -- get codesign
@@ -172,6 +173,9 @@ function main (programdir, codesign_identity, mobile_provision)
 
     -- do sign
     local argv = {"--force", "--timestamp=none"}
+    if opt.deep then
+        table.insert(argv, "--deep")
+    end
     table.insert(argv, "--sign")
     table.insert(argv, sign)
     if entitlements then

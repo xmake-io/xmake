@@ -48,14 +48,21 @@ function main (target, opt)
     end
 
     -- copy target file
+    local binarydir = contentsdir
     if is_plat("macosx") then
-        os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
-    else
-        os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))
+        binarydir = path.join(contentsdir, "MacOS")
+    end
+    os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
+
+    -- copy dependent dynamic libraries, TODO copy frameworks
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:targetkind() == "shared" then
+            os.vcp(dep:targetfile(), binarydir)
+        end
     end
 
     -- copy PkgInfo to the contents directory
-    os.cp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
+    os.vcp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
 
     -- copy resource files to the resources directory
     local srcfiles, dstfiles = target:installfiles(resourcesdir)
@@ -85,7 +92,7 @@ function main (target, opt)
     end
 
     -- do codesign
-    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision)
+    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision, {deep = true})
 
     -- update files and values to the dependent file
     dependinfo.files = {bundledir}
