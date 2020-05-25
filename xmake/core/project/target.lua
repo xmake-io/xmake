@@ -1650,6 +1650,67 @@ function _instance:pcoutputfile(langkind)
     end
 end
 
+-- get the toolchains
+function _instance:toolchains()
+    local toolchains = self._TOOLCHAINS
+    if toolchains == nil then
+        local instance, errors = platform.load()
+        if not instance then
+            os.raise(errors)
+        end
+        toolchains = instance:toolchains()
+        self._TOOLCHAINS = toolchains
+    end
+    return toolchains
+end
+
+-- get the program and name of the given tool kind
+function _instance:tool(toolkind)
+
+    -- init tools
+    local tools = self._TOOLS
+    if not tools then
+        tools = {}
+        self._TOOLS = tools
+    end
+
+    -- get tool program
+    local program, toolname
+    local toolinfo = tools[toolkind]
+    if toolinfo == nil then
+        toolinfo = {}
+
+        -- get program from set_toolchain/set_tools (deprecated)
+        program = self:get("toolchain." .. toolkind)
+        if not program then
+            local tools = self:get("tools") -- TODO: deprecated
+            if tools then
+                program = tools[toolkind]
+            end
+        end
+
+        -- get program from target/toolchains
+        if not program then
+            local toolchains = self:toolchains()
+            for idx, toolchain_inst in ipairs(toolchains) do
+                program, toolname = toolchain_inst:tool(toolkind)
+                if program then
+                    break
+                end
+            end
+        end
+        if program then
+            toolinfo[1] = program
+            toolinfo[2] = toolname
+        end
+        tools[toolkind] = toolinfo
+    else
+        program  = toolinfo[1]
+        toolname = toolinfo[2]
+    end
+    return program, toolname
+end
+
 -- get target apis
 function target.apis()
 
@@ -1671,6 +1732,7 @@ function target.apis()
         ,   "target.set_warnings"
         ,   "target.set_optimize"
         ,   "target.set_languages"
+        ,   "target.set_toolchains"
             -- target.add_xxx
         ,   "target.add_deps"
         ,   "target.add_rules"

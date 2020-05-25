@@ -429,12 +429,29 @@ function project._load_targets()
             end
         end
 
-        -- laod packages
+        -- load packages
         t._PACKAGES = t._PACKAGES or {}
         for _, packagename in ipairs(table.wrap(t:get("packages"))) do
             local p = requires[packagename]
             if p then
                 table.insert(t._PACKAGES, p)
+            end
+        end
+
+        -- load toolchains
+        local toolchains = t:get("toolchains")
+        if toolchains then
+            t._TOOLCHAINS = {}
+            for _, name in ipairs(table.wrap(toolchains)) do
+                local toolchain_inst, errors = toolchain.load(name)
+                -- attempt to load toolchain from project
+                if not toolchain_inst then
+                    toolchain_inst = project.toolchain(name)
+                end
+                if not toolchain_inst then
+                    return nil, errors
+                end
+                table.insert(t._TOOLCHAINS, toolchain_inst)
             end
         end
     end

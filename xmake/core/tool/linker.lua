@@ -78,19 +78,13 @@ function linker._load_tool(targetkind, sourcekinds, target)
     for _, _linkerinfo in ipairs(linkerinfos) do
 
         -- get program from target
-        local program = nil
+        local program, toolname
         if target then
-            program = target:get("toolchain." .. _linkerinfo.linkerkind)
-            if not program then
-                local tools = target:get("tools") -- TODO: deprecated
-                if tools then
-                    program = tools[_linkerinfo.linkerkind]
-                end
-            end
+            program, toolname = target:tool(_linkerinfo.linkerkind)
         end
 
         -- load the linker tool from the linker kind (with cache)
-        linkertool, errors = tool.load(_linkerinfo.linkerkind, program)
+        linkertool, errors = tool.load(_linkerinfo.linkerkind, program, toolname)
         if linkertool then 
             linkerinfo = _linkerinfo
             linkerinfo.program = program
