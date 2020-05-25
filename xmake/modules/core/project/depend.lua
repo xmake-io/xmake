@@ -22,37 +22,15 @@
 import("private.tools.cl.parse_deps", {alias = "parse_deps_cl"})
 import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 
--- load depfiles for gcc
-function _load_depfiles_gcc(dependinfo)
-
-    local depfiles = dependinfo.depfiles_gcc
+-- load depfiles 
+function _load_depfiles(parser, dependinfo, depfiles)
+    depfiles = parser(depfiles)
     if depfiles then
-        depfiles = parse_deps_gcc(depfiles)
-        if depfiles then
-            if dependinfo.files then
-                table.join2(dependinfo.files, depfiles)
-            else
-                dependinfo.files = depfiles
-            end
+        if dependinfo.files then
+            table.join2(dependinfo.files, depfiles)
+        else
+            dependinfo.files = depfiles
         end
-        dependinfo.depfiles_gcc = nil
-    end
-end
-
--- load depfiles for cl
-function _load_depfiles_cl(dependinfo)
-
-    local depfiles = dependinfo.depfiles_cl
-    if depfiles then
-        depfiles = parse_deps_cl(depfiles)
-        if depfiles then
-            if dependinfo.files then
-                table.join2(dependinfo.files, depfiles)
-            else
-                dependinfo.files = depfiles
-            end
-        end
-        dependinfo.depfiles_cl = nil
     end
 end
 
@@ -64,10 +42,12 @@ function load(dependfile)
         local dependinfo = try { function() return io.load(dependfile) end }
         if dependinfo then
             -- attempt to load depfiles from the compilers
-            if is_plat("windows") then
-                _load_depfiles_cl(dependinfo)
-            else
-                _load_depfiles_gcc(dependinfo)
+            if dependinfo.depfiles_gcc then
+                _load_depfiles(parse_deps_gcc, dependinfo, dependinfo.depfiles_gcc)
+                dependinfo.depfiles_gcc = nil
+            elseif dependinfo.depfiles_cl then
+                _load_depfiles(parse_deps_cl, dependinfo, dependinfo.depfiles_cl)
+                dependinfo.depfiles_cl = nil
             end
             return dependinfo
         end
