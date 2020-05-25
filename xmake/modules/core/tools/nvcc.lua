@@ -267,13 +267,33 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
+-- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
+function _has_flags_mmd_mf(self)
+    local has_mmd_mf = _g._HAS_MMD_MF
+    if has_mmd_mf == nil then
+       has_mmd_mf = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cuflags", { flagskey = "-MMD -MF" }) or false
+        _g._HAS_MMD_MF = has_mmd_mf
+    end
+    return has_mmd_mf
+end
+
+-- support `-MM -o depfile.d`? 
+function _has_flags_mm(self)
+    local has_mm = _g._HAS_MM
+    if not has_mmd_mf and has_mm == nil then 
+        has_mm = self:has_flags("-MM", "cuflags", { flagskey = "-MM" }) or false 
+        _g._HAS_MM = has_mm
+    end 
+    return has_mm
+end
+
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags)
     return ccache.cmdargv(self:program(), table.join("-c", flags, "-o", objectfile, sourcefile))
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -284,19 +304,19 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     {
         function ()
 
-            -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
-            if depfile and _g._HAS_MMD_MF == nil then
-                _g._HAS_MMD_MF = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cxflags", { flagskey = "-MMD -MF" }) or false
-            end
-
             -- generate includes file
             local compflags = flags
-            if depfile and _g._HAS_MMD_MF then
-                compflags = table.join(compflags, "-MMD", "-MF", depfile)
+            if depfile then
+                if _has_flags_mmd_mf(self) then
+                    compflags = table.join(compflags, "-MMD", "-MF", depfile)
+                elseif _has_flags_mm(self) then
+                    -- since -MD is not supported, run nvcc twice 
+                    os.runv(compargv(self, sourcefile, depfile, table.join(flags, "-MM")))
+                end
             end
 
             -- do compile
-            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, compflags))
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, compflags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -349,25 +369,5 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
             end
         }
     }
-end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
 end
 
