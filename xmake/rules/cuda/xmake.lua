@@ -26,5 +26,13 @@ rule("cuda.build")
 
 -- define rule: cuda
 rule("cuda")
+    
+    -- add build rules
     add_deps("cuda.build", "cuda.gencodes")
+
+    -- inherit links and linkdirs of all dependent targets by default
+    add_deps("utils.inherit.links")
+
+    -- check targets
+    add_deps("utils.check.targets")
 
