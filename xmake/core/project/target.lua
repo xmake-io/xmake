@@ -1681,7 +1681,7 @@ function _instance:tool(toolkind)
         toolinfo = {}
 
         -- get program from set_toolchain/set_tools (deprecated)
-        program = self:get("toolchain." .. toolkind)
+        program = self:get("toolsets." .. toolkind) or self:get("toolchain." .. toolkind)
         if not program then
             local tools = self:get("tools") -- TODO: deprecated
             if tools then
@@ -1778,7 +1778,8 @@ function target.apis()
             "target.set_values"
         ,   "target.set_configvar"
         ,   "target.set_runenv"
-        ,   "target.set_toolchain"
+        ,   "target.set_toolchain" -- TODO: deprecated
+        ,   "target.set_toolsets"
         ,   "target.set_policy"
             -- target.add_xxx
         ,   "target.add_values"

@@ -25,6 +25,7 @@ add_rules("mode.debug", "mode.release")
 target("test")
     set_kind("static")
     add_files("src/interface.cpp")
+    set_toolsets("ar", "ar")
 
 target("demo")
     set_kind("binary")

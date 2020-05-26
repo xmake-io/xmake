@@ -253,7 +253,25 @@ function deprecated_project._api_target_set_tools(interp)
     interp:_api_within_scope_set("target", "set_tools", function (key, value, ...) 
 
                                             -- deprecated
-                                            deprecated.add("set_tools(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
+                                            deprecated.add("set_toolsets(%s, %s)", "set_tools(%s, %s)", tostring(key), tostring(value))
+                                          
+                                            -- dispatch it
+                                            apifunc(key, value, ...)
+                                        end)
+end
+
+-- set_toolchain for target
+function deprecated_project._api_target_set_toolchain(interp)
+
+    -- get api function
+    local apifunc = interp:_api_within_scope("target", "set_toolchain")
+    assert(apifunc)
+
+    -- register api
+    interp:_api_within_scope_set("target", "set_toolchain", function (key, value, ...) 
+
+                                            -- deprecated
+                                            deprecated.add("set_toolsets(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
                                           
                                             -- dispatch it
                                             apifunc(key, value, ...)
@@ -331,9 +349,10 @@ function deprecated_project.api_register(interp)
     -- register api: set_headerdir() to target
     deprecated_project._api_target_set_headerdir(interp)
 
-    -- register api: set_tools/add_tools() to target
+    -- register api: set_toolchain/set_tools/add_tools() to target
     deprecated_project._api_target_set_tools(interp)
     deprecated_project._api_target_add_tools(interp)
+    deprecated_project._api_target_set_toolchain(interp)
 end
 
 -- return module: deprecated_project
