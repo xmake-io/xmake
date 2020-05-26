@@ -56,7 +56,7 @@ function init(self)
 
          -- strip
     ,   ["-s"]  = "-s"
-    ,   ["-S"]  = "-S"
+    ,   ["-S"]  = "-Wl,-S"
     })
 
     -- for macho target
@@ -64,7 +64,6 @@ function init(self)
         self:add("mapflags", 
         {
             ["-s"] = "-Wl,-x"
-        ,   ["-S"] = "-Wl,-S"
         })
     end
 end
@@ -73,14 +72,11 @@ end
 function nf_strip(self, level)
     local maps = 
     {   
-        debug = "-S"
+        debug = "-Wl,-S"
     ,   all   = "-s"
     }
-
-    local plat = config.plat()
-    if plat == "macosx" or plat == "iphoneos" then
+    if is_plat("macosx") or is_plat("iphoneos") then
         maps.all   = "-Wl,-x"
-        maps.debug = "-Wl,-S"
     end
     return maps[level]
 end
