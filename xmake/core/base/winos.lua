@@ -25,7 +25,6 @@ local winos = winos or {}
 local os     = require("base/os")
 local semver = require("base/semver")
 
-
 winos._ansi_cp  = winos._ansi_cp or winos.ansi_cp
 winos._oem_cp   = winos._oem_cp  or winos.oem_cp
 
@@ -148,9 +147,34 @@ function winos.version()
 
     -- save to cache
     winos._VERSION = winver or false
-
-    -- done
     return winver
+end
+
+-- get command arguments on windows to solve 8192 character command line length limit
+function winos.cmdargv(argv, key)
+
+    -- too long arguments? 
+    local argn = 0
+    for _, arg in ipairs(argv) do
+        argn = argn + #arg
+        if argn > 1024 then
+            break
+        end
+    end
+    if argn > 1024 then
+        local argsfile = os.tmpfile(key or table.concat(argv, '')) .. ".args.txt" 
+        local f = io.open(argsfile, 'w')
+        if f then
+            -- we need split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
+            -- @see https://github.com/xmake-io/xmake/issues/812
+            for _, arg in ipairs(argv) do
+                f:write(os.args(arg, {escape = true}) .. "\n")
+            end
+            f:close()
+        end
+        argv = {"@" .. argsfile}
+    end
+    return argv
 end
 
 -- return module: winos

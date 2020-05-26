@@ -33,6 +33,7 @@ sandbox_winos.console_cp        = winos.console_cp
 sandbox_winos.console_output_cp = winos.console_output_cp
 sandbox_winos.registry_query    = winos.registry_query
 sandbox_winos.logical_drives    = winos.logical_drives
+sandbox_winos.cmdargv           = winos.cmdargv
 
 -- get windows system version
 function sandbox_winos.version()
