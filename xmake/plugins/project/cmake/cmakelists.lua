@@ -340,6 +340,20 @@ end
 function _add_target_link_options(cmakelists, target)
     local shflags = target:get("shflags")
     local ldflags = target:get("ldflags")
+    local frameworks = target:get("frameworks")
+    if frameworks then
+        if target:targetkind() == "binary" then
+            ldflags = ldflags and table.copy(ldflags) or {}
+            for _, framework in ipairs(frameworks) do
+                table.insert(ldflags, "-framework " .. framework)
+            end
+        elseif target:targetkind() == "shared" then
+            shflags = shflags and table.copy(shflags) or {}
+            for _, framework in ipairs(frameworks) do
+                table.insert(shflags, "-framework " .. framework)
+            end
+        end
+    end
     if ldflags or shflags then
         cmakelists:print("target_link_options(%s PRIVATE", target:name())
         for _, flag in ipairs(ldflags) do
