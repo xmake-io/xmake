@@ -7,6 +7,8 @@
 * [#630](https://github.com/xmake-io/xmake/issues/630): Support *BSD system, e.g. FreeBSD, ..
 * Add wprint builtin api to show warnings
 * [#784](https://github.com/xmake-io/xmake/issues/784): Add `set_policy()` to set and modify some builtin policies
+* [#780](https://github.com/xmake-io/xmake/issues/780): Add set_toolchains/set_toolsets for target and improve to detect cross-compilation toolchains
+* [#798](https://github.com/xmake-io/xmake/issues/798): Add `xmake show` plugin to show some builtin configuration values and infos
 
 ### Change
 
@@ -17,6 +19,7 @@
 ### Bug fixed
 
 * [#786](https://github.com/xmake-io/xmake/issues/786): Fix check header file deps
+* [#810](https://github.com/xmake-io/xmake/issues/810): Fix strip debug bug for linux
 
 ## v2.3.3
 
@@ -742,6 +745,8 @@
 * [#630](https://github.com/xmake-io/xmake/issues/630): 支持*BSD系统，例如：FreeBSD, ..
 * 添加wprint接口去显示警告信息
 * [#784](https://github.com/xmake-io/xmake/issues/784): 添加`set_policy()`去设置修改一些内置的策略，比如：禁用自动flags检测和映射
+* [#780](https://github.com/xmake-io/xmake/issues/780): 针对target添加set_toolchains/set_toolsets实现更完善的工具链设置，并且实现platform和toolchains分离
+* [#798](https://github.com/xmake-io/xmake/issues/798): 添加`xmake show`插件去显示xmake内置的各种信息
 
 ### 改进
 
@@ -751,7 +756,8 @@
 
 ### Bugs修复
 
-* [#786](https://github.com/xmake-io/xmake/issues/786): Fix check header file deps
+* [#786](https://github.com/xmake-io/xmake/issues/786): 修复头文件依赖检测
+* [#810](https://github.com/xmake-io/xmake/issues/810): 修复linux下gcc strip debug符号问题
 
 ## v2.3.3
 
