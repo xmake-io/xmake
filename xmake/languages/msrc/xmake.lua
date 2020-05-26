@@ -52,9 +52,9 @@ language("msrc")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
-        ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     }
 

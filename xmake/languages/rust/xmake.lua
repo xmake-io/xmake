@@ -67,8 +67,8 @@ language("rust")
         ,   "target.symbols"
         ,   "option.linkdirs"
         ,   "option.rpathdirs"
-        ,   "platform.linkdirs"
-        ,   "platform.rpathdirs"
+        ,   "toolchain.linkdirs"
+        ,   "toolchain.rpathdirs"
         }
     ,   shared =
         {
@@ -77,7 +77,7 @@ language("rust")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         }
     ,   static = 
         {

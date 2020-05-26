@@ -61,9 +61,9 @@ language("golang")
         ,   "target.defines"
         ,   "target.undefines"
         ,   "target.includedirs"
-        ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     ,   binary =
         {
@@ -72,15 +72,15 @@ language("golang")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared =
         {
@@ -89,15 +89,15 @@ language("golang")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     }
 

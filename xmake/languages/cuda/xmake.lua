@@ -70,9 +70,9 @@ language("cuda")
         ,   "option.languages"
         ,   "option.defines"
         ,   "option.undefines"
-        ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     ,   binary =
         {
@@ -83,16 +83,16 @@ language("cuda")
         ,   "target.symbols"
         ,   "option.linkdirs"
         ,   "option.rpathdirs"
-        ,   "platform.linkdirs"
-        ,   "platform.rpathdirs"
+        ,   "toolchain.linkdirs"
+        ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared =
         {
@@ -101,15 +101,15 @@ language("cuda")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = 
         {
@@ -121,15 +121,15 @@ language("cuda")
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     }
 

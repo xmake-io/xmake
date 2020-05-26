@@ -263,7 +263,13 @@ function builder:_add_flags_from_language(flags, target, getters)
                             end
                             return values
                         end
-    ,   platform    =   platform.toolconfig
+    ,   toolchain   =   function (name)
+                            if target and target:type() == "target" then
+                                return target:toolconfig(name)
+                            else
+                                return platform.toolconfig(name)
+                            end
+                        end
     ,   target      =   function (name) 
 
                             -- only for target

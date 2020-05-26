@@ -69,9 +69,9 @@ language("asm")
         ,   "option.undefines"
         ,   "option.defines_if_ok"
         ,   "option.undefines_if_ok"
-        ,   "platform.includedirs"
-        ,   "platform.defines"
-        ,   "platform.undefines"
+        ,   "toolchain.includedirs"
+        ,   "toolchain.defines"
+        ,   "toolchain.undefines"
         }
     ,   binary =
         {
@@ -84,12 +84,12 @@ language("asm")
         ,   "option.symbols"
         ,   "option.linkdirs"
         ,   "option.rpathdirs"
-        ,   "platform.linkdirs"
-        ,   "platform.rpathdirs"
+        ,   "toolchain.linkdirs"
+        ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         }
     ,   shared =
         {
@@ -100,15 +100,15 @@ language("asm")
         ,   "option.strip"
         ,   "option.symbols"
         ,   "option.linkdirs"
-        ,   "platform.linkdirs"
+        ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
         ,   "option.links"
-        ,   "platform.links"
+        ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "option.syslinks"
-        ,   "platform.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = 
         {

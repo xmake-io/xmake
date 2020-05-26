@@ -40,15 +40,22 @@ function compiler:_language()
     return self._LANGUAGE
 end
 
--- add flags from the platform 
-function compiler:_add_flags_from_platform(flags, targetkind)
+-- add flags from the toolchains 
+function compiler:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
     if targetkind then
         local toolname = self:name()
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
-            table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. flagkind))
+        if target and target:type() == "target" then
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                local toolflags = target:toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+                table.join2(flags, toolflags or target:toolconfig(targetkind .. '.' .. flagkind))
+            end
+        else
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+                table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. flagkind))
+            end
         end
     end
 end
@@ -129,15 +136,17 @@ function compiler.load(sourcekind, target)
     -- save this instance
     compiler._INSTANCES[cachekey] = instance
 
-    -- add platform flags to the compiler tool
+    -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
     local toolname = compiler_tool:name()
-    for _, flagkind in ipairs(instance:_flagkinds()) do
-
-        -- add flags for platform, e.g. gcc.cxflags or cxflags
-        compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+    if target and target:type() == "target" then
+        for _, flagkind in ipairs(instance:_flagkinds()) do
+            compiler_tool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
+        end
+    else
+        for _, flagkind in ipairs(instance:_flagkinds()) do
+            compiler_tool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+        end
     end
-
-    -- ok
     return instance
 end
 
@@ -312,8 +321,8 @@ function compiler:compflags(opt)
         self:_add_flags_from_argument(flags, target, configs)
     end
 
-    -- add flags from the platform 
-    self:_add_flags_from_platform(flags, targetkind)
+    -- add flags from the toolchains 
+    self:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- add flags from the compiler 
     self:_add_flags_from_compiler(flags, targetkind)

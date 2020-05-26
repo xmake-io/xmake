@@ -36,16 +36,23 @@ local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
--- add flags from the platform 
-function linker:_add_flags_from_platform(flags, targetkind)
+-- add flags from the toolchains 
+function linker:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- attempt to add special lanugage flags first for target kind, e.g. binary.go.gcldflags, static.dcarflags
     if targetkind then
         local toolkind = self:kind()
         local toolname = self:name()
-        for _, flagkind in ipairs(self:_flagkinds()) do
-            local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
-            table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. flagkind))
+        if target and target:type() == "target" then
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                local toolflags = target:toolconfig(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or target:toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+                table.join2(flags, toolflags or target:toolconfig(targetkind .. '.' .. toolkind .. 'flags') or target:toolconfig(targetkind .. '.' .. flagkind))
+            end
+        else
+            for _, flagkind in ipairs(self:_flagkinds()) do
+                local toolflags = platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
+                table.join2(flags, toolflags or platform.toolconfig(targetkind .. '.' .. toolkind .. 'flags') or platform.toolconfig(targetkind .. '.' .. flagkind))
+            end
         end
     end
 end
@@ -174,17 +181,21 @@ function linker.load(targetkind, sourcekinds, target)
     -- save this instance
     builder._INSTANCES[cachekey] = instance
 
-    -- add platform flags to the linker tool
+    -- add toolchains flags to the linker tool
+    -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
     local toolkind = linkertool:kind()
     local toolname = linkertool:name()
-    for _, flagkind in ipairs(instance:_flagkinds()) do
-
-        -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
-        linkertool:add(toolkind .. 'flags', platform.toolconfig(toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(toolkind .. 'flags'))
-        linkertool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+    if target and target:type() == "target" then
+        for _, flagkind in ipairs(instance:_flagkinds()) do
+            linkertool:add(toolkind .. 'flags', target:toolconfig(toolname .. '.' .. toolkind .. 'flags') or target:toolconfig(toolkind .. 'flags'))
+            linkertool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
+        end
+    else
+        for _, flagkind in ipairs(instance:_flagkinds()) do
+            linkertool:add(toolkind .. 'flags', platform.toolconfig(toolname .. '.' .. toolkind .. 'flags') or platform.toolconfig(toolkind .. 'flags'))
+            linkertool:add(flagkind, platform.toolconfig(toolname .. '.' .. flagkind) or platform.toolconfig(flagkind))
+        end
     end
-
-    -- ok
     return instance
 end
 
@@ -236,8 +247,8 @@ function linker:linkflags(opt)
         self:_add_flags_from_argument(flags, target, configs)
     end
 
-    -- add flags from the platform 
-    self:_add_flags_from_platform(flags, targetkind)
+    -- add flags from the toolchains
+    self:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- add flags from the linker 
     self:_add_flags_from_linker(flags)
