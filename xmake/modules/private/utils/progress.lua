@@ -19,8 +19,8 @@
 --
 
 -- imports
-import('core.base.object')
-import('core.theme.theme')
+import("core.base.object")
+import("core.theme.theme")
 
 -- print back characters
 function _make_clearchars(backnum)
