@@ -84,6 +84,7 @@ function new(stream, opt)
     opt = opt or {}
     if opt.chars == nil or #opt.chars == 0 then
         opt.chars = theme.get("text.spinner.chars")
+        opt.width = 2
     end
     opt.width = opt.width or #opt.chars[1]
 
