@@ -25,6 +25,7 @@ import("core.base.global")
 import("core.base.hashset")
 import("core.base.scheduler")
 import("private.async.runjobs")
+import("private.utils.progress")
 import("lib.detect.cache", {alias = "detectcache"})
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
@@ -532,11 +533,10 @@ end
 function _install_packages(packages_install, packages_download)
 
     -- we need hide wait characters if is not a tty
-    local show_wait = io.isatty() 
+    local show_wait = io.isatty()
 
     -- do install
-    local waitindex = 0
-    local waitchars = {'\\', '-', '/', '|'}
+    local progress_helper = show_wait and progress.new() or nil
     local packages_installing = {}
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
@@ -635,11 +635,8 @@ function _install_packages(packages_install, packages_download)
 
         -- do not print progress info if be verbose 
         if option.get("verbose") or not show_wait then
-            return 
+            return
         end
- 
-        -- update waitchar index
-        waitindex = ((waitindex + 1) % #waitchars)
 
         -- make installing and downloading packages list
         local installing = {}
@@ -680,6 +677,7 @@ function _install_packages(packages_install, packages_download)
         end
 
         -- trace
+        progress_helper:clear()
         utils.clearline()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
@@ -688,8 +686,8 @@ function _install_packages(packages_install, packages_download)
         if #installing > 0 then
             cprintf("%sinstalling ${magenta}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
-        cprintf(" .. %s%s", tips and ("${dim}" .. tips .. "${clear} ") or "", waitchars[waitindex + 1])
-        io.flush()
+        cprintf(" .. %s", tips and ("${dim}" .. tips .. "${clear} ") or "")
+        progress_helper:write()
     end, exit = function(errors)
         if errors then
             utils.clearline()

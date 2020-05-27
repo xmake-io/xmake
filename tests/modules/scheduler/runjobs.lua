@@ -45,7 +45,7 @@ function main()
     printf("testing .. ")
     runjobs("test", function () 
         os.sleep(10000)
-    end, {showtips = true})
+    end, {progress = true})
     print("ok")
 end
 

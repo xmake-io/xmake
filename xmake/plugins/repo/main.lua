@@ -133,7 +133,7 @@ function _update()
     if option.get("verbose") then
         task()
     else
-        runjobs("update repo", task, {showtips = true})
+        runjobs("update repo", task, {progress = true})
     end
 
     -- leave environment 
