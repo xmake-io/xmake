@@ -310,21 +310,14 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
 
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and is_plat("mingw") then
-        table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")))
+        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib"))
     end
 
     -- init arguments
+    opt = opt or {}
     local argv = table.join("-o", targetfile, objectfiles, flags, flags_extra)
-
-    -- too long arguments for windows? 
-    if is_host("windows") then
-        opt = opt or {}
-        local args = os.args(argv, {escape = true})
-        if #args > 1024 and not opt.rawargs then
-            local argsfile = os.tmpfile(args) .. ".args.txt" 
-            io.writefile(argsfile, args)
-            argv = {"@" .. argsfile}
-        end
+    if is_host("windows") and not opt.rawargs then
+        argv = winos.cmdargv(argv)
     end
     return self:program(), argv
 end

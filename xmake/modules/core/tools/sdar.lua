@@ -49,17 +49,10 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     assert(targetkind == "static")
 
     -- init arguments
+    opt = opt or {}
     local argv = table.join(flags, targetfile, objectfiles)
-
-    -- too long arguments for windows? 
-    if is_host("windows") then
-        opt = opt or {}
-        local args = os.args(argv, {escape = true})
-        if #args > 1024 and not opt.rawargs then
-            local argsfile = os.tmpfile(args) .. ".args.txt" 
-            io.writefile(argsfile, args)
-            argv = {"@" .. argsfile}
-        end
+    if is_host("windows") and not opt.rawargs then
+        argv = winos.cmdargv(argv)
     end
 
     -- make it
