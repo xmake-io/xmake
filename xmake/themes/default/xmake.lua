@@ -51,6 +51,11 @@ theme("default")
     -- the building target file
     set_color("build.target", "magenta bright")
 
+    -- the spinner chars
+    set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+--    set_text("spinner.chars", '⢎⠀', '⢆⡀', '⢄⡠', '⢀⡰','⠀⡱', '⠈⠱', '⠊⠑', '⠎⠁')
+--    set_text("spinner.chars", '\\', '-', '/', '|')
+
     -- color dump
     set_text("dump.default_format", "%s")
     set_text("dump.udata_format", "%s")

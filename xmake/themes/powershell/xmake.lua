@@ -51,6 +51,9 @@ theme("powershell")
     -- the building target file
     set_color("build.target", "cyan bright")
 
+    -- the spinner chars
+    set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+
     -- color dump
     set_text("dump.default_format", "%s")
     set_text("dump.udata_format", "%s")

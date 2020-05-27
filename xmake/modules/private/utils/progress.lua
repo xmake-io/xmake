@@ -20,6 +20,7 @@
 
 -- imports
 import('core.base.object')
+import('core.theme.theme')
 
 -- print back characters
 function _make_clearchars(backnum)
@@ -75,15 +76,14 @@ end
 -- @params stream - stream to write to, will use io.stdout if not provided
 -- @params opt - options
 --               - chars - an array of chars for progress indicator
---               - width - width of progress indicator, will use #opt.chars[0] if not provided
+--               - width - width of progress indicator, will use #opt.chars[1] if not provided
 function new(stream, opt)
 
     -- set default values
     stream = stream or io.stdout
     opt = opt or {}
     if opt.chars == nil or #opt.chars == 0 then
-        opt.chars = {'⢎⠀', '⢆⡀', '⢄⡠', '⢀⡰','⠀⡱', '⠈⠱', '⠊⠑', '⠎⠁'}
-        opt.width = 2
+        opt.chars = theme.get("text.spinner.chars")
     end
     opt.width = opt.width or #opt.chars[1]
 
