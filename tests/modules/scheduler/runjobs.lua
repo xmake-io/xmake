@@ -39,13 +39,5 @@ function main()
     runjobs("test", jobs, {comax = 6, timeout = 1000, timer = function (running_jobs_indices)
         print("%s: timeout (%d ms), running: %s", scheduler.co_running(), os.mclock() - t, table.concat(running_jobs_indices, ","))
     end})
-
-    -- test tips
-    print("==================================== test tips ====================================")
-    printf("testing .. ")
-    runjobs("test", function () 
-        os.sleep(10000)
-    end, {progress = true})
-    print("ok")
 end
 
