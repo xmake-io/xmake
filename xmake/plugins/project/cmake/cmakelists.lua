@@ -30,6 +30,16 @@ function _get_unix_path(filepath)
     return (path.translate(filepath):gsub('\\', '/'))
 end
 
+-- get configs from target
+function _get_configs_from_target(target, name)
+    local values = table.wrap(target:get(name))
+    table.join2(values, target:get_from_opts(name))
+    table.join2(values, target:get_from_pkgs(name))
+    table.join2(values, target:get_from_deps(name, {interface = true}))
+    table.join2(values, target:toolconfig(name))
+    return table.unique(values)
+end
+
 -- add project info
 function _add_project(cmakelists)
     cmakelists:print([[# this is the build file for project %s
@@ -108,11 +118,7 @@ end
 
 -- add target include directories
 function _add_target_include_directories(cmakelists, target)
-    local includedirs = table.wrap(target:get("includedirs"))
-    table.join2(includedirs, target:get_from_opts("includedirs"))
-    table.join2(includedirs, target:get_from_pkgs("includedirs"))
-    table.join2(includedirs, target:get_from_deps("includedirs", {interface = true}))
-    includedirs = table.unique(includedirs)
+    local includedirs = _get_configs_from_target(target, "includedirs")
     if #includedirs > 0 then
         cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
@@ -147,11 +153,7 @@ end
 
 -- add target compile definitions
 function _add_target_compile_definitions(cmakelists, target)
-    local defines = table.wrap(target:get("defines"))
-    table.join2(defines, target:get_from_opts("defines"))
-    table.join2(defines, target:get_from_pkgs("defines"))
-    table.join2(defines, target:get_from_deps("defines", {interface = true}))
-    defines = table.unique(defines)
+    local defines = _get_configs_from_target(target, "defines")
     if #defines > 0 then
         cmakelists:print("target_compile_definitions(%s PRIVATE", target:name())
         for _, define in ipairs(defines) do
@@ -163,11 +165,11 @@ end
 
 -- add target compile options
 function _add_target_compile_options(cmakelists, target)
-    local cflags   = target:get("cflags")
-    local cxflags  = target:get("cxflags")
-    local cxxflags = target:get("cxxflags")
-    local cuflags  = target:get("cuflags")
-    if cflags or cxflags or cxxflags or cuflags then
+    local cflags   = _get_configs_from_target(target, "cflags")
+    local cxflags  = _get_configs_from_target(target, "cxflags")
+    local cxxflags = _get_configs_from_target(target, "cxxflags")
+    local cuflags  = _get_configs_from_target(target, "cuflags")
+    if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(cflags) do
             if compiler.has_flags("c", flag, {target = target}) then
@@ -302,15 +304,15 @@ end
 function _add_target_link_libraries(cmakelists, target)
 
     -- add links
-    local links = table.wrap(target:get("links"))
-    table.join2(links, target:get_from_opts("links"))
-    table.join2(links, target:get_from_pkgs("links"))
-    table.join2(links, target:get_from_deps("links", {interface = true}))
-    table.join2(links, target:get("syslinks"))
-    table.join2(links, target:get_from_opts("syslinks"))
-    table.join2(links, target:get_from_pkgs("syslinks"))
-    table.join2(links, target:get_from_deps("syslinks", {interface = true}))
-    links = table.unique(links)
+    local links      = _get_configs_from_target(target, "links")
+    local syslinks   = _get_configs_from_target(target, "syslinks")
+    local frameworks = _get_configs_from_target(target, "frameworks")
+    if #frameworks > 0 then
+        for _, framework in ipairs(frameworks) do
+            table.insert(links, "\"-framework " .. framework .. "\"")
+        end
+    end
+    table.join2(links, syslinks)
     if #links > 0 then
         cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
         for _, link in ipairs(links) do
@@ -322,11 +324,7 @@ end
 
 -- add target link directories
 function _add_target_link_directories(cmakelists, target)
-    local linkdirs = table.wrap(target:get("linkdirs"))
-    table.join2(linkdirs, target:get_from_opts("linkdirs"))
-    table.join2(linkdirs, target:get_from_pkgs("linkdirs"))
-    table.join2(linkdirs, target:get_from_deps("linkdirs", {interface = true}))
-    linkdirs = table.unique(linkdirs)
+    local linkdirs = _get_configs_from_target(target, "linkdirs")
     if #linkdirs > 0 then
         cmakelists:print("target_link_directories(%s PRIVATE", target:name())
         for _, linkdir in ipairs(linkdirs) do
@@ -338,30 +336,11 @@ end
 
 -- add target link options
 function _add_target_link_options(cmakelists, target)
-    local shflags = target:get("shflags")
-    local ldflags = target:get("ldflags")
-    local frameworks = target:get("frameworks")
-    if frameworks then
-        if target:targetkind() == "binary" then
-            ldflags = ldflags and table.copy(ldflags) or {}
-            for _, framework in ipairs(frameworks) do
-                table.insert(ldflags, "-framework " .. framework)
-            end
-        elseif target:targetkind() == "shared" then
-            shflags = shflags and table.copy(shflags) or {}
-            for _, framework in ipairs(frameworks) do
-                table.insert(shflags, "-framework " .. framework)
-            end
-        end
-    end
-    if ldflags or shflags then
+    local ldflags    = _get_configs_from_target(target, "ldflags")
+    local shflags    = _get_configs_from_target(target, "shflags")
+    if #ldflags > 0 or #shflags > 0 then
         cmakelists:print("target_link_options(%s PRIVATE", target:name())
-        for _, flag in ipairs(ldflags) do
-            if target:linker():has_flags(flag) then
-                cmakelists:print("    " .. flag)
-            end
-        end
-        for _, flag in ipairs(shflags) do
+        for _, flag in ipairs(table.unique(table.join(ldflags, shflags))) do
             if target:linker():has_flags(flag) then
                 cmakelists:print("    " .. flag)
             end
