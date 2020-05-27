@@ -53,7 +53,6 @@ theme("default")
 
     -- the spinner chars
     set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
---    set_text("spinner.chars", '⢎⠀', '⢆⡀', '⢄⡠', '⢀⡰','⠀⡱', '⠈⠱', '⠊⠑', '⠎⠁')
 --    set_text("spinner.chars", '\\', '-', '/', '|')
 
     -- color dump

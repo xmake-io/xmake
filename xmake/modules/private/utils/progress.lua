@@ -22,7 +22,15 @@
 import("core.base.object")
 import("core.theme.theme")
 
--- print back characters
+-- make back characters
+function _make_backchars(backnum)
+    if backnum > 0 then
+        return ('\b'):rep(backnum)
+    end
+    return ''
+end
+
+-- make clear characters
 function _make_clearchars(backnum)
     if backnum > 0 then
         return ('\b'):rep(backnum) .. (' '):rep(backnum) .. ('\b'):rep(backnum)
@@ -39,6 +47,14 @@ function process:stop()
         self:clear()
         self._RUNNING = 0
         self._INDEX = 0
+    end
+end
+
+function process:_back()
+    if self._RUNNING == 1 then
+        self._STREAM:write(self._BACK)
+        self._RUNNING = 2
+        return true
     end
 end
 
@@ -60,7 +76,7 @@ end
 -- write next frame of the progress indicator
 function process:write()
     local chars = self._OPT.chars[self._INDEX % #self._OPT.chars + 1]
-    self:_clear()
+    self:_back()
     self._STREAM:write(chars)
     self._STREAM:flush()
     self._INDEX = self._INDEX + 1
@@ -84,9 +100,15 @@ function new(stream, opt)
     opt = opt or {}
     if opt.chars == nil or #opt.chars == 0 then
         opt.chars = theme.get("text.spinner.chars")
-        opt.width = 2
     end
-    opt.width = opt.width or #opt.chars[1]
-
-    return process { _OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0, _CLEAR  = _make_clearchars(opt.width) }
+    if opt.width == nil then
+        -- only support one character now e.g. {'x', 'y', ..}
+        -- TODO we need to get the display width of characters more accurately if support multi-characters, e.g. {"xx", "yy", ..}
+        if is_subhost("windows") and #opt.chars[1] > 1 then -- is unicode character?
+            opt.width = 2
+        else
+            opt.width = 1
+        end
+    end
+    return process {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0, _CLEAR = _make_clearchars(opt.width), _BACK = _make_backchars(opt.width)}
 end
