@@ -31,7 +31,14 @@ toolchain("mingw")
         import("core.project.config")
 
         -- get cross
-        local cross = config.get("cross") or ""
+        local cross
+        if is_arch("x86_64") then
+            cross = "x86_64-w64-mingw32-"
+        elseif is_arch("i386") then
+            cross = "i686-w64-mingw32-"
+        else
+            cross = config.get("cross") or ""
+        end
 
         -- TODO add to environment module
         -- add bin search library for loading some dependent .dll files windows 
@@ -47,9 +54,9 @@ toolchain("mingw")
         toolchain:set("toolsets", "as", cross .. "gcc")
         toolchain:set("toolsets", "ld", cross .. "g++", cross .. "gcc")
         toolchain:set("toolsets", "sh", cross .. "g++", cross .. "gcc")
-        toolchain:set("toolsets", "ar", cross .. "ar")
-        toolchain:set("toolsets", "ex", cross .. "ar")
-        toolchain:set("toolsets", "ranlib", cross .. "ranlib")
+        toolchain:set("toolsets", "ar", cross .. "ar", cross .. "gcc-ar")
+        toolchain:set("toolsets", "ex", cross .. "ar", cross .. "gcc-ar")
+        toolchain:set("toolsets", "ranlib", cross .. "ranlib", cross .. "gcc-ranlib")
         toolchain:set("toolsets", "mrc", cross .. "windres")
 
         -- init flags for architecture
