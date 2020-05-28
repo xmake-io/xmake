@@ -1689,6 +1689,12 @@ function _instance:tool(toolkind)
             end
         end
 
+        -- attempt to get program from config first
+        if not program then 
+            program = config.get(toolkind)
+            toolname = config.get("__toolname_" .. toolkind)
+        end
+
         -- get program from target/toolchains
         if not program then
             local toolchains = self:toolchains()
@@ -1699,6 +1705,16 @@ function _instance:tool(toolkind)
                 end
             end
         end
+        
+        -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
+        if program and type(program) == "string" then
+            local pos = program:find('@', 1, true)
+            if pos then
+                toolname = program:sub(1, pos - 1)
+                program = program:sub(pos + 1)
+            end
+        end
+
         if program then
             toolinfo[1] = program
             toolinfo[2] = toolname
