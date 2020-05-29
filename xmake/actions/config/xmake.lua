@@ -158,13 +158,8 @@ task("config")
                                                           , "    - run `xmake show -l toolchains` to get all toolchains"
                                                           , values = function (complete, opt)
                                                                 if complete then
-                                                                    import("core.project.project")
-                                                                    import("core.platform.platform")
-                                                                    local names = table.copy(platform.toolchains())
-                                                                    for name, _ in pairs(project.toolchains()) do
-                                                                        table.insert(names, name)
-                                                                    end
-                                                                    return names
+                                                                    import("core.tool.toolchain")
+                                                                    return toolchain.list()
                                                                 end
                                                             end                                                             }
 

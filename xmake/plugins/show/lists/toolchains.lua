@@ -19,16 +19,16 @@
 --
 
 -- imports
-import("core.base.option")
-import("core.project.project")
-import("core.platform.platform")
-import(".showlist")
+import("core.tool.toolchain")
+import("core.base.text")
 
 -- show all toolchains
 function main()
-    local names = table.copy(platform.toolchains())
-    for name, _ in pairs(project.toolchains()) do
-        table.insert(names, name)
+
+    local tbl = {align = 'l', sep = "        "}
+    for _, name in ipairs(toolchain.list()) do
+        local t = toolchain.load(name)
+        table.insert(tbl, {name, t:get("description")})
     end
-    showlist(names)
+    print(text.table(tbl))
 end

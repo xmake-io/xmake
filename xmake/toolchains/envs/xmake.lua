@@ -20,6 +20,9 @@
 
 -- define toolchain
 toolchain("envs")
+ 
+    -- set description
+    set_description("Environment variables toolchain")
         
     -- set toolsets
     set_toolsets("cc",    "$(env CC)")
