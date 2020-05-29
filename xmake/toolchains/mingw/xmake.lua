@@ -40,11 +40,10 @@ toolchain("mingw")
             cross = config.get("cross") or ""
         end
 
-        -- TODO add to environment module
         -- add bin search library for loading some dependent .dll files windows 
         local bindir = toolchain:bindir()
         if bindir and is_host("windows") then
-            os.addenv("PATH", bindir)
+            toolchain:add("runenvs", "PATH", bindir)
         end
 
         -- set toolsets

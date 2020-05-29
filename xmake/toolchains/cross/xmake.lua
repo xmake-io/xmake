@@ -64,6 +64,6 @@ toolchain("cross")
         -- add bin search library for loading some dependent .dll files windows 
         local bindir = toolchain:bindir()
         if bindir and is_host("windows") then
-            os.addenv("PATH", bindir)
+            toolchain:add("runenvs", "PATH", bindir)
         end
     end)
