@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("nasm")
+ 
+    -- set homepage
+    set_homepage("https://www.nasm.us/")
+    set_description("NASM Assembler")
         
     -- set toolsets
     set_toolsets("as", "nasm")

@@ -21,6 +21,10 @@
 -- define toolchain
 toolchain("xcode")
 
+    -- set homepage
+    set_homepage("https://developer.apple.com/xcode/")
+    set_description("Xcode IDE")
+
     -- mark as standalone toolchain
     set_kind("standalone")
 

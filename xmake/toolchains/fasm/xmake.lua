@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("fasm")
+ 
+    -- set homepage
+    set_homepage("https://flatassembler.net/")
+    set_description("Flat Assembler")
         
     -- set toolsets
     set_toolsets("as", "fasm")

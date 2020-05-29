@@ -21,6 +21,9 @@
 -- define toolchain
 toolchain("cross")
 
+    -- set descrption
+    set_description("Common cross compilation toolchain")
+
     -- mark as standalone toolchain
     set_kind("standalone")
        

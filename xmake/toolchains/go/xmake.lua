@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("go")
+
+    -- set homepage
+    set_homepage("https://golang.org/")
+    set_description("Go Programming Language Compiler")
         
     -- set toolsets
     set_toolsets("gc",   "$(env GC)", "go", "gccgo")

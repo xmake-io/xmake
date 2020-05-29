@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("cuda")
+
+    -- set homepage
+    set_homepage("https://developer.nvidia.com/cuda-toolkit")
+    set_description("CUDA Toolkit")
         
     -- set toolsets
     set_toolsets("cu",   "nvcc", "clang")

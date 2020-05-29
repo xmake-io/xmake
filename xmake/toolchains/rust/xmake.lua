@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("rust")
+ 
+    -- set homepage
+    set_homepage("https://www.rust-lang.org/")
+    set_description("Rust Programming Language Compiler")
         
     -- set toolsets
     set_toolsets("rc",   "$(env RC)", "rustc")

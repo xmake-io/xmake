@@ -21,6 +21,10 @@
 -- define toolchain
 toolchain("clang")
 
+    -- set homepage
+    set_homepage("https://clang.llvm.org/")
+    set_description("A C language family frontend for LLVM")
+
     -- mark as standalone toolchain
     set_kind("standalone")
         

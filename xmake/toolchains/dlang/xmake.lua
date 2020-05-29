@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("dlang")
+
+    -- set homepage
+    set_homepage("https://dlang.org/")
+    set_description("D Programming Language Compiler")
         
     -- set toolsets
     set_toolsets("dc",   "$(env DC)", "dmd", "ldc2", "gdc")

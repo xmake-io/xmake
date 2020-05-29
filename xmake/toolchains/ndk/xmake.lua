@@ -21,6 +21,13 @@
 -- define toolchain
 toolchain("ndk")
 
+    -- set homepage
+    set_homepage("https://developer.android.com/ndk")
+    set_description("Android NDK")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
+
     -- check toolchain
     on_check("check")
 

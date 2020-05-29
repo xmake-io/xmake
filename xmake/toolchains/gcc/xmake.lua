@@ -21,6 +21,10 @@
 -- define toolchain
 toolchain("gcc")
 
+    -- set homepage
+    set_homepage("https://gcc.gnu.org/")
+    set_description("GNU Compiler Collection")
+
     -- mark as standalone toolchain
     set_kind("standalone")
         

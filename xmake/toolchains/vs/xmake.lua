@@ -21,6 +21,10 @@
 -- define toolchain
 toolchain("vs")
 
+    -- set homepage
+    set_homepage("https://visualstudio.microsoft.com")
+    set_description("VisualStudio IDE")
+
     -- mark as standalone toolchain
     set_kind("standalone")
 
