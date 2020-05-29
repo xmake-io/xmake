@@ -48,7 +48,7 @@ platform("mingw")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "mingw")
+    set_toolchains("envs", "mingw", "yasm", "nasm", "fasm")
 
     -- set menu
     set_menu {
