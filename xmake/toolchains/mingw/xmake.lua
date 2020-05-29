@@ -54,16 +54,24 @@ toolchain("mingw")
         end
 
         -- set toolsets
-        toolchain:set("toolsets", "cc", cross .. "gcc")
-        toolchain:set("toolsets", "cxx", cross .. "gcc", cross .. "g++")
-        toolchain:set("toolsets", "cpp", cross .. "gcc -E")
-        toolchain:set("toolsets", "as", cross .. "gcc")
-        toolchain:set("toolsets", "ld", cross .. "g++", cross .. "gcc")
-        toolchain:set("toolsets", "sh", cross .. "g++", cross .. "gcc")
-        toolchain:set("toolsets", "ar", cross .. "ar", cross .. "gcc-ar")
-        toolchain:set("toolsets", "ex", cross .. "ar", cross .. "gcc-ar")
-        toolchain:set("toolsets", "ranlib", cross .. "ranlib", cross .. "gcc-ranlib")
-        toolchain:set("toolsets", "mrc", cross .. "windres")
+        if is_host("windows") and bindir then
+            -- @note we uses bin/ar.exe instead of bin/cross-gcc-ar.exe, @see https://github.com/xmake-io/xmake/issues/807#issuecomment-635779210
+            toolchain:add("toolsets", "ar", path.join(bindir, "ar"))
+            toolchain:add("toolsets", "ex", path.join(bindir, "ar"))
+            toolchain:add("toolsets", "strip", path.join(bindir, "strip"))
+            toolchain:add("toolsets", "ranlib", path.join(bindir, "ranlib"))
+        end
+        toolchain:add("toolsets", "cc", cross .. "gcc")
+        toolchain:add("toolsets", "cxx", cross .. "gcc", cross .. "g++")
+        toolchain:add("toolsets", "cpp", cross .. "gcc -E")
+        toolchain:add("toolsets", "as", cross .. "gcc")
+        toolchain:add("toolsets", "ld", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolsets", "sh", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolsets", "ar", cross .. "ar")
+        toolchain:add("toolsets", "ex", cross .. "ar")
+        toolchain:add("toolsets", "strip", cross .. "strip")
+        toolchain:add("toolsets", "ranlib", cross .. "ranlib")
+        toolchain:add("toolsets", "mrc", cross .. "windres")
 
         -- init flags for architecture
         local archflags = nil

@@ -303,6 +303,7 @@ function toolchain.apis()
             -- toolchain.set_xxx
             "toolchain.set_formats"
         ,   "toolchain.set_toolsets"
+        ,   "toolchain.add_toolsets"
             -- toolchain.add_xxx
         ,   "toolchain.add_runenvs"
         }
