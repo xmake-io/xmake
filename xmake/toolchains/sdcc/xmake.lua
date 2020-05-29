@@ -21,6 +21,10 @@
 -- define toolchain
 toolchain("sdcc")
 
+    -- set homepage
+    set_homepage("http://sdcc.sourceforge.net/")
+    set_description("Small Device C Compiler")
+
     -- mark as standalone toolchain
     set_kind("standalone")
 

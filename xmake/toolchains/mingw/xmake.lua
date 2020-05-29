@@ -20,6 +20,13 @@
 
 -- define toolchain
 toolchain("mingw")
+
+    -- set homepage
+    set_homepage("http://www.mingw.org/")
+    set_description("Minimalist GNU for Windows")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
        
     -- check toolchain
     on_check("check")

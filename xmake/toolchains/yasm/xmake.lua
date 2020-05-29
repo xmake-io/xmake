@@ -20,6 +20,10 @@
 
 -- define toolchain
 toolchain("yasm")
+
+    -- set homepage
+    set_homepage("https://yasm.tortall.net/")
+    set_description("The Yasm Modular Assembler")
         
     -- set toolsets
     set_toolsets("as", "yasm")
