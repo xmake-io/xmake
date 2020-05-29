@@ -19,32 +19,38 @@
 --
 
 -- define toolchain
-toolchain("llvm")
+toolchain("gnu-rm")
 
     -- set homepage
-    set_homepage("https://llvm.org/")
-    set_description("A collection of modular and reusable compiler and toolchain technologies")
+    set_homepage("https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm")
+    set_description("GNU Arm Embedded Toolchain")
 
     -- mark as standalone toolchain
     set_kind("standalone")
-
-    -- set toolsets
-    set_toolsets("cc",     "clang")
-    set_toolsets("cxx",    "clang", "clang++")
-    set_toolsets("cpp",    "clang -E")
-    set_toolsets("as",     "clang")
-    set_toolsets("ld",     "clang++", "clang")
-    set_toolsets("sh",     "clang++", "clang")
-    set_toolsets("ar",     "llvm-ar")
-    set_toolsets("ex",     "llvm-ar")
-    set_toolsets("ranlib", "llvm-ranlib")
-    set_toolsets("strip",  "llvm-strip")
        
     -- check toolchain
     on_check("check")
 
     -- on load
     on_load(function (toolchain)
+
+        -- imports
+        import("core.project.config")
+
+        -- get cross prefix
+        local cross = config.get("cross") or ""
+
+        -- set toolsets
+        toolchain:set("toolsets", "cc", cross .. "gcc", cross .. "clang")
+        toolchain:set("toolsets", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
+        toolchain:set("toolsets", "cpp", cross .. "gcc -E", cross .. "clang -E")
+        toolchain:set("toolsets", "as", cross .. "gcc", cross .. "clang")
+        toolchain:set("toolsets", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolsets", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolsets", "ar", cross .. "ar")
+        toolchain:set("toolsets", "ex", cross .. "ar")
+        toolchain:set("toolsets", "ranlib", cross .. "ranlib")
+        toolchain:set("toolsets", "strip", cross .. "strip")
 
         -- init linkdirs and includedirs
         local sdkdir = toolchain:sdkdir()
@@ -64,4 +70,10 @@ toolchain("llvm")
         if bindir and is_host("windows") then
             toolchain:add("runenvs", "PATH", bindir)
         end
+
+        -- add basic flags
+        toolchain:add("ldflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
+        toolchain:add("shflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
+        toolchain:add("ldflags", "-Wl,--start-group", "-lc", "-lm", "-Wl,--end-group", {force = true})
+        toolchain:add("shflags", "-Wl,--start-group", "-lc", "-lm", "-Wl,--end-group", {force = true})
     end)

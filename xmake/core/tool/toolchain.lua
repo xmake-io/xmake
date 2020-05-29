@@ -295,6 +295,8 @@ function toolchain.apis()
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         ,   "toolchain.set_archs"
+        ,   "toolchain.set_homepage"
+        ,   "toolchain.set_description"
         }
     ,   keyvalues =
         {
