@@ -50,6 +50,7 @@ rule("lex")
         import("core.project.config")
         import("core.project.depend")
         import("core.tool.compiler")
+        import("private.utils.progress")
 
         -- get lex
         local lex = assert(config.get("__lex"), "lex not found!")
@@ -84,12 +85,7 @@ rule("lex")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.lex %s", sourcefile_lex)
-        else
-            cprint("${color.build.object}compiling.lex %s", sourcefile_lex)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.lex %s", sourcefile_lex)
 
         -- ensure the source file directory
         if not os.isdir(sourcefile_dir) then

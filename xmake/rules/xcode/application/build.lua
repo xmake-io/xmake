@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.theme.theme")
 import("core.project.depend")
 import("private.tools.codesign")
+import("private.utils.progress")
 
 -- main entry
 function main (target, opt)
@@ -40,12 +41,7 @@ function main (target, opt)
     end
  
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-    if option.get("verbose") then
-        cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
-    else
-        cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
-    end
+    progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
     -- copy target file
     local binarydir = contentsdir

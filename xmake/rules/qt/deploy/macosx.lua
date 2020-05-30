@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.depend")
 import("lib.detect.find_path")
+import("private.utils.progress")
 
 -- save Info.plist
 function _save_info_plist(target, info_plist_file)
@@ -74,12 +75,7 @@ function main(target, opt)
     end
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-    if option.get("verbose") then
-        cprint("${dim color.build.target}generating.qt.app %s.app", target:basename())
-    else
-        cprint("${color.build.target}generating.qt.app %s.app", target:basename())
-    end
+    progress.show(opt.progress, "${color.build.target}generating.qt.app %s.app", target:basename())
 
     -- get qt sdk
     local qt = target:data("qt")

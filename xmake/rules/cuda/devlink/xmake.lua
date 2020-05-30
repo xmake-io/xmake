@@ -34,6 +34,7 @@ rule("cuda.build.devlink")
         import("core.project.depend")
         import("core.tool.linker")
         import("core.platform.platform")
+        import("private.utils.progress")
 
         -- disable devlink?
         if target:values("cuda.build.devlink") == false then
@@ -92,12 +93,7 @@ rule("cuda.build.devlink")
         local verbose = option.get("verbose")
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if verbose then
-            cprint("${dim color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
-        else
-            cprint("${color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
-        end
+        progress.show(opt.progress, "${color.build.target}devlinking.$(mode) %s", path.filename(targetfile))
 
         -- trace verbose info
         if verbose then

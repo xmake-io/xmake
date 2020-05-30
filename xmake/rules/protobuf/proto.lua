@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.depend")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
+import("private.utils.progress")
 
 -- build protobuf file
 function main(target, sourcekind, sourcefile_proto, opt)
@@ -84,12 +85,7 @@ function main(target, sourcekind, sourcefile_proto, opt)
     end
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-    if option.get("verbose") then
-        cprint("${dim color.build.object}compiling.proto %s", sourcefile_proto)
-    else
-        cprint("${color.build.object}compiling.proto %s", sourcefile_proto)
-    end
+    progress.show(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
 
     -- ensure the source file directory
     if not os.isdir(sourcefile_dir) then

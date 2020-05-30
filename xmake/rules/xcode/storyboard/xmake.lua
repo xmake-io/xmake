@@ -31,6 +31,7 @@ rule("xcode.storyboard")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("private.utils.progress")
 
         -- get xcode sdk directory
         local xcode_sdkdir = assert(get_config("xcode"), "xcode not found!")
@@ -50,12 +51,7 @@ rule("xcode.storyboard")
         end
         
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.xcode.$(mode) %s", sourcefile)
-        else
-            cprint("${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
 
         -- clear Base.lproj first
         os.tryrm(base_lproj)

@@ -93,6 +93,7 @@ rule("wdk.sign")
         import("core.project.config")
         import("core.project.depend")
         import("lib.detect.find_file")
+        import("private.utils.progress")
 
         -- need build this object?
         local tempfile = os.tmpfile(target:targetfile())
@@ -109,12 +110,7 @@ rule("wdk.sign")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
-        else
-            cprint("${color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
-        end
+        progress.show(opt.progress, "${color.build.target}signing.%s %s", signmode, path.filename(target:targetfile()))
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")

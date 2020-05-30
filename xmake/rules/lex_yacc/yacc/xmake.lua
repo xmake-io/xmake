@@ -50,6 +50,7 @@ rule("yacc")
         import("core.project.config")
         import("core.project.depend")
         import("core.tool.compiler")
+        import("private.utils.progress")
 
         -- get yacc
         local yacc = assert(config.get("__yacc"), "yacc not found!")
@@ -84,12 +85,7 @@ rule("yacc")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.yacc %s", sourcefile_yacc)
-        else
-            cprint("${color.build.object}compiling.yacc %s", sourcefile_yacc)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
 
         -- ensure the source file directory
         if not os.isdir(sourcefile_dir) then

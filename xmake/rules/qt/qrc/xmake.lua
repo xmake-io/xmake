@@ -47,6 +47,7 @@ rule("qt.qrc")
         import("core.project.config")
         import("core.project.depend")
         import("core.tool.compiler")
+        import("private.utils.progress")
 
         -- get rcc
         local rcc = target:data("qt.rcc")
@@ -78,12 +79,7 @@ rule("qt.qrc")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
-        else
-            cprint("${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
 
         -- ensure the source file directory
         if not os.isdir(sourcefile_dir) then

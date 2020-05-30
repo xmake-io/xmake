@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
 import("core.project.depend")
+import("private.utils.progress")
 
 -- escape path
 function _escape_path(p)
@@ -45,12 +46,7 @@ function main(target, opt)
     end
 
     -- trace progress info
-    cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-    if option.get("verbose") then
-        cprint("${dim color.build.target}generating.qt.app %s.apk", target:basename())
-    else
-        cprint("${color.build.target}generating.qt.app %s.apk", target:basename())
-    end
+    progress.show(opt.progress, "${color.build.target}generating.qt.app %s.apk", target:basename())
 
     -- get qt sdk
     local qt = target:data("qt")

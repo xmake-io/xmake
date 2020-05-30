@@ -60,6 +60,7 @@ rule("xcode.bundle")
         import("core.theme.theme")
         import("core.project.depend")
         import("private.tools.codesign")
+        import("private.utils.progress")
 
         -- get bundle and resources directory
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
@@ -74,12 +75,7 @@ rule("xcode.bundle")
         end
      
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
-        else
-            cprint("${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
-        end
+        progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
         -- copy target file
         if is_plat("macosx") then

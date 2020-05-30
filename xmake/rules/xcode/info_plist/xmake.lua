@@ -31,6 +31,7 @@ rule("xcode.info_plist")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("private.utils.process")
 
         -- check
         assert(path.filename(sourcefile) == "Info.plist", "we only support Info.plist file!")
@@ -47,12 +48,7 @@ rule("xcode.info_plist")
         end
         
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}processing.xcode.$(mode) %s", sourcefile)
-        else
-            cprint("${color.build.object}processing.xcode.$(mode) %s", sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}processing.xcode.$(mode) %s", sourcefile)
 
         -- process and generate Info.plist
         local info_plist_file = path.join(target:rule("xcode.framework") and resourcesdir or contentsdir, path.filename(sourcefile))

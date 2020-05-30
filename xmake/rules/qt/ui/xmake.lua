@@ -46,6 +46,7 @@ rule("qt.ui")
         import("core.theme.theme")
         import("core.project.config")
         import("core.project.depend")
+        import("private.utils.progress")
 
         -- get uic
         local uic = target:data("qt.uic")
@@ -65,12 +66,7 @@ rule("qt.ui")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.qt.ui %s", sourcefile_ui)
-        else
-            cprint("${color.build.object}compiling.qt.ui %s", sourcefile_ui)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.qt.ui %s", sourcefile_ui)
 
         -- ensure ui header file directory
         if not os.isdir(headerfile_dir) then

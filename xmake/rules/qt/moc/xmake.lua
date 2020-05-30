@@ -48,6 +48,7 @@ rule("qt.moc")
         import("core.project.config")
         import("core.tool.compiler")
         import("core.project.depend")
+        import("private.utils.progress")
 
         -- get c++ source file for moc
         --
@@ -84,12 +85,7 @@ rule("qt.moc")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.qt.moc %s", sourcefile)
-        else
-            cprint("${color.build.object}compiling.qt.moc %s", sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.qt.moc %s", sourcefile)
 
         -- generate c++ source file for moc
         moc.generate(target, sourcefile, sourcefile_moc)

@@ -54,6 +54,7 @@ rule("wdk.inf")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("private.utils.progress")
 
         -- the target file
         local targetfile = path.join(target:targetdir(), path.basename(sourcefile) .. ".inf")
@@ -88,12 +89,7 @@ rule("wdk.inf")
         end
 
         -- trace progress info
-        cprintf("${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} ", opt.progress)
-        if option.get("verbose") then
-            cprint("${dim color.build.object}compiling.wdk.inf %s", sourcefile)
-        else
-            cprint("${color.build.object}compiling.wdk.inf %s", sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}compiling.wdk.inf %s", sourcefile)
 
         -- get stampinf
         local stampinf = target:data("wdk.stampinf")
