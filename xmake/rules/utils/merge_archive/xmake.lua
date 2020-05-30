@@ -33,6 +33,7 @@ rule("utils.merge.archive")
         import("core.project.depend")
         import("core.tool.extractor")
         import("core.project.target", {alias = "project_target"})
+        import("private.utils.progress")
 
         -- @note we cannot process archives in parallel because the current directory may be changed
         for i = 1, #sourcebatch.sourcefiles do
@@ -55,13 +56,7 @@ rule("utils.merge.archive")
             end
 
             -- trace progress info
-            local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-            if option.get("verbose") then
-                cprint(progress_prefix .. "${dim color.build.object}inserting.$(mode) %s", opt.progress, sourcefile_lib)
-                print("extracting %s to %s", sourcefile_lib, objectdir)
-            else
-                cprint(progress_prefix .. "${color.build.object}inserting.$(mode) %s", opt.progress, sourcefile_lib)
-            end
+            progress.show(opt.progress, "${color.build.object}inserting.$(mode) %s", sourcefile_lib)
 
             -- extract the archive library 
             os.tryrm(objectdir)

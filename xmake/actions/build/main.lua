@@ -26,6 +26,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
 import("core.theme.theme")
+import("private.utils.progress")
 import("build")
 import("build_files")
 import("cleaner")
@@ -138,6 +139,5 @@ function main()
     os.cd(oldir)
 
     -- trace
-    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-    cprint(progress_prefix .. "${color.success}build ok!", 100)
+    progress.show(100, "${color.success}build ok!")
 end

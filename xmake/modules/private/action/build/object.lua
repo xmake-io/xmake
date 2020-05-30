@@ -25,6 +25,7 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("private.tools.ccache")
 import("private.async.runjobs")
+import("private.utils.progress")
 
 -- do build file
 function _do_build_file(target, sourcefile, opt)
@@ -33,7 +34,6 @@ function _do_build_file(target, sourcefile, opt)
     local objectfile = opt.objectfile
     local dependfile = opt.dependfile
     local sourcekind = opt.sourcekind
-    local progress   = opt.progress
 
     -- load compiler 
     local compinst = compiler.load(sourcekind, {target = target})
@@ -60,12 +60,7 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace progress info
     if not opt.quiet then
-        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-        if verbose then
-            cprint(progress_prefix .. "${dim color.build.object}%scompiling.$(mode) %s", progress, exists_ccache and "ccache " or "", sourcefile)
-        else
-            cprint(progress_prefix .. "${color.build.object}%scompiling.$(mode) %s", progress, exists_ccache and "ccache " or "", sourcefile)
-        end
+        progress.show(opt.progress, "${color.build.object}%scompiling.$(mode) %s", exists_ccache and "ccache " or "", sourcefile)
     end
 
     -- trace verbose info

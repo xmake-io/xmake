@@ -41,6 +41,7 @@ rule("utils.symbols.extract")
         import("core.theme.theme")
         import("core.project.depend")
         import("core.platform.platform")
+        import("private.utils.progress")
 
         -- get strip
         local strip = platform.tool("strip")
@@ -67,12 +68,7 @@ rule("utils.symbols.extract")
         end
 
         -- trace progress info
-        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-        if option.get("verbose") then
-            cprint(progress_prefix .. "${dim color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
-        else
-            cprint(progress_prefix .. "${color.build.target}generating.$(mode) %s", opt.progress, path.filename(symbolfile))
-        end
+        progress.show(opt.progress, "${color.build.target}generating.$(mode) %s", path.filename(symbolfile))
 
         -- we remove the previous symbol file to ensure that it will be re-generated and it's mtime will be changed.
         local dryrun = option.get("dry-run")

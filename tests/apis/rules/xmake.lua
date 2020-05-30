@@ -27,8 +27,8 @@ rule("c code")
     end)
     on_build_file(function (target, sourcefile, opt)
         import("core.theme.theme")
-        local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
-        cprint(progress_prefix .. "compiling.$(mode) %s", opt.progress, sourcefile)
+        import("private.utils.progress")
+        progress.show(opt.progress, "compiling.$(mode) %s", sourcefile)
         local objectfile_o = os.tmpfile() .. ".o"
         local sourcefile_c = os.tmpfile() .. ".c"
         os.cp(sourcefile, sourcefile_c)

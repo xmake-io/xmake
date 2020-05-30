@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.object")
 import("core.theme.theme")
 
@@ -86,6 +87,16 @@ end
 -- check if the progress indicator is running
 function process:running()
     return self._RUNNING and true or false
+end
+
+-- show the message with process
+function show(progress, format, ...)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    if option.get("verbose") then
+        cprint(progress_prefix .. "${dim}" .. format, progress, ...)
+    else
+        cprint(progress_prefix .. format, progress, ...)
+    end
 end
 
 -- build a progress indicator
