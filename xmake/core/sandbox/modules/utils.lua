@@ -174,8 +174,6 @@ end
 
 -- assert
 function sandbox_utils.assert(value, format, ...)
-
-    -- check
     if not value then
         if format ~= nil then
             os.raiselevel(2, format, ...)
@@ -183,8 +181,6 @@ function sandbox_utils.assert(value, format, ...)
             os.raiselevel(2, "assertion failed!")
         end
     end
-
-    -- return it
     return value
 end
 

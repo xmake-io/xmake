@@ -56,6 +56,48 @@ function tty.erase_line()
     return tty
 end
 
+-- erases the screen from the current line down to the bottom of the screen.
+function tty.erase_down()
+    tty._iowrite("\x1b[J")
+    return tty
+end
+
+-- erases the screen from the current line up to the top of the screen.
+function tty.erase_up()
+    tty._iowrite("\x1b[1J")
+    return tty
+end
+
+-- erases the screen with the background colour and moves the cursor to home.
+function tty.erase_screen()
+    tty._iowrite("\x1b[2J")
+    return tty
+end
+
+-- save current cursor position.
+function tty.cursor_save()
+    tty._iowrite("\x1b[s")
+    return tty
+end
+
+-- restores cursor position after a save cursor.
+function tty.cursor_restore()
+    tty._iowrite("\x1b[u")
+    return tty
+end
+
+-- save current cursor position and color attrs
+function tty.cursor_and_attrs_save()
+    tty._iowrite("\x1b7")
+    return tty
+end
+
+-- restores cursor position and color attrs after a save cursor.
+function tty.cursor_and_attrs_restore()
+    tty._iowrite("\x1b8")
+    return tty
+end
+
 -- carriage return
 function tty.cr()
     tty._iowrite("\r")
