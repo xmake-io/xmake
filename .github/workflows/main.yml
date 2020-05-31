@@ -39,7 +39,7 @@ jobs:
           scripts/archive-all
           scripts/makeself/build-runfile.sh 
       - name: artifact
-        if: matrix.os == 'linux-latest'
+        if: matrix.os == 'ubuntu-latest'
         run: |
           sudo apt-get install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
@@ -52,7 +52,7 @@ jobs:
           name: xmake-latest.macosx.pkg
           path: xmake-latest.pkg
       - uses: actions/upload-artifact@v2
-        if: matrix.os == 'linux-latest'
+        if: matrix.os == 'ubuntu-latest'
         with:
           name: xmake-latest.amd64.deb
           path: xmake-latest.deb
