@@ -42,8 +42,4 @@ jobs:
         with:
           name: xmake.xz.run
           path: scripts/makeself/xmake.xz.run
-      - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
-        with:
-          name: xmake-latest.tar.gz
-          path: *.tar.gz
+
