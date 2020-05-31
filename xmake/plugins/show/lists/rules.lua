@@ -15,26 +15,21 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        showlist.lua
+-- @file        rules.lua
 --
 
 -- imports
-import("core.base.option")
-import("core.base.text")
+import("core.project.config")
+import("core.project.rule")
+import(".showlist")
 
--- show values
-function main(values)
-    local tbl = {align = 'l', sep = "    "}
-    local row = {}
-    for _, value in ipairs(values) do
-        table.insert(row, value)
-        if #row > 5 then
-            table.insert(tbl, row)
-            row = {}
-        end
+-- show all platforms
+function main()
+    config.load()
+    local rules = {}
+    for _, r in pairs(rule.rules()) do
+        table.insert(rules, r:name())
     end
-    if #row > 0 then
-        table.insert(tbl, row)
-    end
-    print(text.table(tbl))
+    table.sort(rules)
+    showlist(rules)
 end
