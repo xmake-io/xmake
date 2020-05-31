@@ -15,13 +15,13 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        vtansi.lua
+-- @file        terminal.lua
 --
 
 -- define module
-local vtansi = vtansi or {}
+local terminal = terminal or {}
 
--- TODO http://www.termsys.demon.co.uk/vtansi.htm
+-- TODO http://www.termsys.demon.co.uk/terminal.htm
 
 -- return module
-return vtansi
+return terminal
