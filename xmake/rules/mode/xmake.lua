@@ -65,6 +65,58 @@ rule("mode.release")
         end
     end)
 
+-- define rule: release with debug symbols mode
+rule("mode.releasedbg")
+    after_load(function (target)
+
+        -- is releasedbg mode now? xmake f -m releasedbg
+        if is_mode("releasedbg") then
+ 
+            -- set the symbols visibility: debug
+            if not target:get("symbols") then
+                target:set("symbols", "debug")
+            end
+
+            -- enable optimization
+            if not target:get("optimize") then
+                if is_plat("android", "iphoneos") then
+                    target:set("optimize", "smallest")
+                else
+                    target:set("optimize", "fastest")
+                end
+            end
+
+            -- strip all symbols, but it will generate debug symbol file because debug/symbols is setted
+            if not target:get("strip") then
+                target:set("strip", "all")
+            end
+        end
+    end)
+
+-- define rule: release with minsize mode
+rule("mode.minsizerel")
+    after_load(function (target)
+
+        -- is minsizerel mode now? xmake f -m minsizerel
+        if is_mode("minsizerel") then
+ 
+            -- set the symbols visibility: hidden
+            if not target:get("symbols") then
+                target:set("symbols", "hidden")
+            end
+
+            -- enable optimization
+            if not target:get("optimize") then
+                target:set("optimize", "smallest")
+            end
+
+            -- strip all symbols
+            if not target:get("strip") then
+                target:set("strip", "all")
+            end
+        end
+    end)
+
 -- define rule: profile mode
 rule("mode.profile")
     after_load(function (target)
