@@ -11,6 +11,7 @@
 * [#798](https://github.com/xmake-io/xmake/issues/798): Add `xmake show` plugin to show some builtin configuration values and infos
 * [#797](https://github.com/xmake-io/xmake/issues/797): Add ninja theme style, e.g. `xmake g --theme=ninja`
 * [#816](https://github.com/xmake-io/xmake/issues/816): Add mode.releasedbg and mode.minsizerel rules
+* [#819](https://github.com/xmake-io/xmake/issues/819): Support ansi/vt100 terminal control
 
 ### Change
 
@@ -752,6 +753,7 @@
 * [#798](https://github.com/xmake-io/xmake/issues/798): 添加`xmake show`插件去显示xmake内置的各种信息
 * [#797](https://github.com/xmake-io/xmake/issues/797): 添加ninja主题风格，显示ninja风格的构建进度条，`xmake g --theme=ninja`
 * [#816](https://github.com/xmake-io/xmake/issues/816): 添加mode.releasedbg和mode.minsizerel编译模式规则
+* [#819](https://github.com/xmake-io/xmake/issues/819): 支持ansi/vt100终端字符控制
 
 ### 改进
 
