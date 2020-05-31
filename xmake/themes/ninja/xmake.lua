@@ -53,7 +53,11 @@ theme("ninja")
     set_color("build.target", "magenta bright")
 
     -- the spinner chars
-    set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+    if os.subhost() ~= "msys" and os.subhost() ~= "cygwin" then
+        set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+    else
+        set_text("spinner.chars", '\\', '-', '/', '|')
+    end
 
     -- color dump
     set_text("dump.default_format", "%s")
