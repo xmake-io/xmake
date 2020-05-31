@@ -55,7 +55,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           name: xmake-latest.amd64.deb
-          path: xmake-latest.deb
+          path: xmake_latest_amd64.deb
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
