@@ -116,9 +116,11 @@ function show(progress, format, ...)
             if #msg_plain <= maxwidth then
                 cprintf(msg)
             else
-                -- windows width is too small? strip this message and disable colors
+                -- windows width is too small? strip the partial message in middle
                 local partlen = math.floor(maxwidth / 2) - 3
-                printf(msg_plain:sub(1, partlen) .. "..." .. msg_plain:sub(#msg_plain - partlen))
+                local sep = msg_plain:sub(partlen, #msg_plain - partlen)
+                local split = msg:split(sep, {plain = true, strict = true})
+                cprintf(table.concat(split, "..."))
             end
             if math.floor(progress) == 100 then
                 print("")
