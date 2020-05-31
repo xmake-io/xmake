@@ -3,6 +3,10 @@
 # ./scripts/archive-all
 tmpdir=/tmp/.xmake_archive
 xmakeroot=`pwd`
+artifactsdir=$xmakeroot/artifacts
+if [ ! -d $artifactsdir ]; then
+    mkdir $artifactsdir
+fi
 if [ -d $tmpdir ]; then
     rm -rf $tmpdir
 fi
@@ -27,8 +31,7 @@ cd $tmpdir/xmake || exit
 rm -rf ./core/src/tbox/tbox/src/demo
 
 # archive files
-version=`cat ./core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
-outputfile=$xmakeroot/"xmake-v$version"
+outputfile=$artifactsdir/"xmake"
 if [ -f "$outputfile.zip" ]; then
     rm "$outputfile.zip"
 fi

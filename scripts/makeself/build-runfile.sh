@@ -4,6 +4,10 @@
 cd "$(dirname "$0")/../.."
 xmakeroot=`pwd`
 buildroot=$xmakeroot/scripts/makeself
+artifactsdir=$xmakeroot/artifacts
+if [ ! -d $artifactsdir ]; then
+    mkdir $artifactsdir
+fi
 tmpdir=/tmp/xmake-makeself
 if [ -d $tmpdir ]; then
     rm -rf $tmpdir
@@ -47,7 +51,7 @@ sh ./makeself-2.4.0.run
     --lsm ./lsm \
     --help-header ./header \
     ./xmake \
-    $buildroot/xmake.gz.run \
+    $artifactsdir/xmake.gz.run \
     xmake-v$version-runfile \
     ./scripts/get.sh __local__
 ./makeself-2.4.0/makeself.sh \
@@ -56,6 +60,6 @@ sh ./makeself-2.4.0.run
     --lsm ./lsm \
     --help-header ./header \
     ./xmake \
-    $buildroot/xmake.xz.run \
+    $artifactsdir/xmake.xz.run \
     xmake-v$version-runfile \
     ./scripts/get.sh __local__

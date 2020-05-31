@@ -35,11 +35,21 @@ jobs:
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
-          name: xmake.gz.run
-          path: scripts/makeself/xmake.gz.run
+          name: xmake-latest.gz.run
+          path: artifacts/xmake.gz.run
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
-          name: xmake.xz.run
-          path: scripts/makeself/xmake.xz.run
+          name: xmake-latest.xz.run
+          path: artifacts/xmake.xz.run
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake-latest.tar.gz
+          path: artifacts/xmake.tar.gz
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake-latest.zip
+          path: artifacts/xmake.zip
 
