@@ -218,9 +218,9 @@ function main(targetname)
     local batchjobs = get_batchjobs(targetname)
     if batchjobs and batchjobs:size() > 0 then
         environment.enter("toolchains")
-        runjobs("build", batchjobs, {comax = option.get("jobs") or 1, exit = function ()
+        runjobs("build", batchjobs, {comax = option.get("jobs") or 1, on_exit = function (errors)
             import("private.utils.progress")
-            if progress.showing_without_scroll() then
+            if errors and progress.showing_without_scroll() then
                 print("")
             end
         end})

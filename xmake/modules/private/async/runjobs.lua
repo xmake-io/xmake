@@ -35,7 +35,7 @@ end
 -- asynchronous run jobs
 --
 -- e.g.
--- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
+-- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 -- runjobs("test", function () os.sleep(10000) end, { progress = true })
 -- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module private.utils.progress
 --
@@ -48,7 +48,7 @@ end
 --         print(idx, total)
 --     end, root)
 -- end
--- runjobs("test", jobs, {comax = 6, timeout = 1000, timer = function (running_jobs_indices) end})
+-- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 -- 
 --
 function main(name, jobs, opt)
@@ -76,12 +76,12 @@ function main(name, jobs, opt)
     -- run timer
     local stop = false
     local running_jobs_indices
-    if opt.timer then
+    if opt.on_timer then
         scheduler.co_start_named(name .. "/timer", function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
-                    opt.timer(running_jobs_indices)
+                    opt.on_timer(running_jobs_indices)
                 end
             end
         end)
@@ -199,8 +199,8 @@ function main(name, jobs, opt)
                                 end
 
                                 -- do exit callback
-                                if opt.exit then
-                                    opt.exit(errors)
+                                if opt.on_exit then
+                                    opt.on_exit(errors)
                                 end
 
                                 -- re-throw this errors and abort scheduler
@@ -235,7 +235,7 @@ function main(name, jobs, opt)
     end
 
     -- do exit callback
-    if opt.exit then
-        opt.exit()
+    if opt.on_exit then
+        opt.on_exit()
     end
 end
