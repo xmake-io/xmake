@@ -32,14 +32,25 @@ jobs:
         run: |
           brew install gnu-tar
           gem install --no-document fpm
+          git submodule update --init
           scripts/makepkg osxpkg latest
           scripts/archive-all
           scripts/makeself/build-runfile.sh 
+        if: matrix.os == 'linux-latest'
+        run: |
+          sudo apt-get install -y ruby ruby-dev rubygems build-essential
+          sudo gem install --no-document fpm
+          git submodule update --init
+          scripts/makepkg deb latest
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.macosx.pkg
           path: xmake-latest.pkg
+        if: matrix.os == 'linux-latest'
+        with:
+          name: xmake-latest.amd64.deb
+          path: xmake-latest.deb
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
