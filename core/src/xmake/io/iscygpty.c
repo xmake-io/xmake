@@ -120,7 +120,7 @@ int is_cygpty(HANDLE h)
     if (GetFileType(h) != FILE_TYPE_PIPE) {
         return 0;
     }
-    nameinfo = malloc(size + sizeof(WCHAR));
+    nameinfo = (FILE_NAME_INFO*)malloc(size + sizeof(WCHAR));
     if (nameinfo == NULL) {
         return 0;
     }
