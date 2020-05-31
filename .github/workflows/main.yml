@@ -24,9 +24,11 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+        # tests
       - name: tests
         run: |
           xmake lua -v -D tests/run.lua
+        # build artifacts
       - name: artifact
         if: matrix.os == 'macOS-latest'
         run: |
@@ -43,6 +45,7 @@ jobs:
           sudo gem install --no-document fpm
           git submodule update --init
           scripts/makepkg deb latest
+        # upload artifacts
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
