@@ -118,7 +118,7 @@ function show(progress, format, ...)
             else
                 -- windows width is too small? strip the partial message in middle
                 local partlen = math.floor(maxwidth / 2) - 3
-                local sep = msg_plain:sub(partlen, #msg_plain - partlen)
+                local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
                 local split = msg:split(sep, {plain = true, strict = true})
                 cprintf(table.concat(split, "..."))
             end
