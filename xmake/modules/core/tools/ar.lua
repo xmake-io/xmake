@@ -20,6 +20,7 @@
 
 -- imports
 import("core.tool.compiler")
+import("private.utils.progress")
 
 -- init it
 function init(self)

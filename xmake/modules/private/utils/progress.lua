@@ -89,13 +89,35 @@ function process:running()
     return self._RUNNING and true or false
 end
 
+-- showing progress line without scroll?
+function showing_without_scroll()
+    return _g.showing_without_scroll
+end
+
 -- show the message with process
 function show(progress, format, ...)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         cprint(progress_prefix .. "${dim}" .. format, progress, ...)
     else
-        cprint(progress_prefix .. format, progress, ...)
+        local is_scroll = _g.is_scroll
+        if is_scroll == nil then
+            is_scroll = theme.get("text.build.progress_style") == "scroll"
+            _g.is_scroll = is_scroll
+        end
+        if is_scroll then
+            cprint(progress_prefix .. format, progress, ...)
+        else
+            utils.clearline()
+            cprintf(progress_prefix .. format, progress, ...)
+            if math.floor(progress) == 100 then
+                print("")
+                _g.showing_without_scroll = false
+            else
+                _g.showing_without_scroll = true
+            end
+            io.flush()
+        end
     end
 end
 

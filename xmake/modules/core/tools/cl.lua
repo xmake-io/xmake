@@ -24,6 +24,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
+import("private.utils.progress")
 
 -- init it
 function init(self)
@@ -400,6 +401,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                         end
                         if #lines > 0 then
                             local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\r\n")
+                            if progress.showing_without_scroll() then
+                                print("")
+                            end
                             cprint("${color.warning}%s", warnings)
                         end
                     end

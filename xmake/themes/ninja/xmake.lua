@@ -19,7 +19,7 @@
 --
 
 -- define theme
-theme("powershell")
+theme("ninja")
 
     -- the success status 
     set_text("success", "$ok")
@@ -39,18 +39,18 @@ theme("powershell")
 
     -- the warning info
     set_text("warning", "$warning")
-    set_color("warning", "yellow")
+    set_color("warning", "yellow bright")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
-    set_text("build.progress_style", "scroll")
+    set_text("build.progress_style", "noscroll")
     set_color("build.progress", "green bright")
 
     -- the building object file
     set_color("build.object", "")
 
     -- the building target file
-    set_color("build.target", "cyan bright")
+    set_color("build.target", "magenta bright")
 
     -- the spinner chars
     set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
@@ -66,19 +66,19 @@ theme("powershell")
     set_color("dump.default", "red")
     set_color("dump.udata", "yellow")
     set_color("dump.table", "bright")
-    set_color("dump.string", "red bright")
-    set_color("dump.string_quote", "red")
+    set_color("dump.string", "magenta bright")
+    set_color("dump.string_quote", "magenta")
     set_color("dump.keyword", "blue")
     set_color("dump.number", "green bright")
     set_color("dump.function", "cyan")
 
     -- menu
-    set_color("menu.main.task.name", "cyan bright")
-    set_color("menu.option.name", "green bright")
+    set_color("menu.main.task.name", "magenta")
+    set_color("menu.option.name", "green")
     set_color("menu.usage", "cyan")
 
     -- interactive mode
     set_text("interactive.prompt", "xmake>")
     set_text("interactive.prompt2", "xmake>>")
     set_color("interactive.prompt", "green")
-    set_color("interactive.prompt2", "green dim")
+    set_color("interactive.prompt2", "green")

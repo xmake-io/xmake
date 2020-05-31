@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.language.language")
 import("private.tools.ccache")
+import("private.utils.progress")
 
 -- init it
 function init(self)
@@ -353,6 +354,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                 -- print some warnings
                 if warnings and #warnings > 0 and (option.get("verbose") or option.get("warning")) then
+                    if progress.showing_without_scroll() then
+                        print("")
+                    end
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n', {plain = true}), 1, 8), '\n'))
                 end
 

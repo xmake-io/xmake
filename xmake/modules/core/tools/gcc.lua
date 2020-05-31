@@ -25,6 +25,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
+import("private.utils.progress")
 
 -- init it
 function init(self)
@@ -463,6 +464,9 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
+                        if progress.showing_without_scroll() then
+                            print("")
+                        end
                         cprint("${color.warning}%s", warnings)
                     end
                 end

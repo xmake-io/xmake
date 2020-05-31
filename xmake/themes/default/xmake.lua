@@ -43,6 +43,7 @@ theme("default")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
+    set_text("build.progress_style", "scroll")
     set_color("build.progress", "green bright")
 
     -- the building object file
