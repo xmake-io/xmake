@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.object")
+import("core.base.colors")
 import("core.theme.theme")
 
 -- make back characters
@@ -109,7 +110,16 @@ function show(progress, format, ...)
             cprint(progress_prefix .. format, progress, ...)
         else
             utils.clearline()
-            cprintf(progress_prefix .. format, progress, ...)
+            local msg = vformat(progress_prefix .. format, progress, ...)
+            local msg_plain = colors.translate(msg, {plain = true})
+            local maxwidth = os.getwinsize().width
+            if #msg_plain <= maxwidth then
+                cprintf(msg)
+            else
+                -- windows width is too small? strip this message and disable colors
+                local partlen = math.floor(maxwidth / 2) - 3
+                printf(msg_plain:sub(1, partlen) .. "..." .. msg_plain:sub(#msg_plain - partlen))
+            end
             if math.floor(progress) == 100 then
                 print("")
                 _g.showing_without_scroll = false

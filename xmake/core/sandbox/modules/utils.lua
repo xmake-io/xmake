@@ -185,7 +185,7 @@ function sandbox_utils.clearline()
     if not emptychars then
 
         -- get left width
-        local width = os.getwinsize()["width"] - 1
+        local width = os.getwinsize()["width"]
         if not width or width <= 0 then
             width = 64
         end
