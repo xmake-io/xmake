@@ -27,3 +27,23 @@ jobs:
       - name: tests
         run: |
           xmake lua -v -D tests/run.lua
+      - name: artifact
+        if: matrix.os == 'macOS-latest'
+        run: |
+          scripts/archive-all
+          scripts/makeself/build-runfile.sh 
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake.gz.run
+          path: scripts/makeself/xmake.gz.run
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake.xz.run
+          path: scripts/makeself/xmake.xz.run
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake-latest.tar.gz
+          path: *.tar.gz
