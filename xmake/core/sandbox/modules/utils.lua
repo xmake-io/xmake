@@ -179,27 +179,7 @@ function sandbox_utils.clearline()
     if not io.isatty() then
         return 
     end
-
-    -- get empty line chars
-    local emptychars = sandbox_utils._EMPTYCHARS
-    if not emptychars then
-
-        -- get left width
-        local width = os.getwinsize()["width"]
-        if not width or width <= 0 then
-            width = 64
-        end
-
-        -- make empty chars
-        emptychars = ""
-        for i = 1, width do
-            emptychars = emptychars .. " "
-        end
-        sandbox_utils._EMPTYCHARS = emptychars
-    end
-
-    -- clear line 
-    sandbox_utils.printf("\r" .. emptychars .. "\r")
+    sandbox_utils.printf("\x1b[2K\r")
 end
 
 -- assert

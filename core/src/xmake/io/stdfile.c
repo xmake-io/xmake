@@ -30,7 +30,8 @@
  */
 #include "prefix.h"
 #ifdef TB_CONFIG_OS_WINDOWS
-#    include <io.h>
+#   include <io.h>
+#   include "iscygpty.c"
 #else
 #    include <unistd.h>
 #endif
@@ -50,7 +51,7 @@
 static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
 {
     tb_bool_t answer = tb_false;
-#ifdef TB_CONFIG_OS_WINDOWS
+#if defined(TB_CONFIG_OS_WINDOWS)
     DWORD  mode;
     HANDLE console_handle;
     switch (type)
@@ -60,6 +61,8 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     case XM_IO_FILE_TYPE_STDERR: console_handle = GetStdHandle(STD_ERROR_HANDLE); break;
     }
     answer = GetConsoleMode(console_handle, &mode);
+    if (!answer)
+        answer = is_cygpty(console_handle);
 #else
     switch (type)
     {
