@@ -30,8 +30,16 @@ jobs:
       - name: artifact
         if: matrix.os == 'macOS-latest'
         run: |
+          brew install gnu-tar
+          gem install --no-document fpm
+          scripts/makepkg osxpkg latest
           scripts/archive-all
           scripts/makeself/build-runfile.sh 
+      - uses: actions/upload-artifact@v2
+        if: matrix.os == 'macOS-latest'
+        with:
+          name: xmake-latest.macosx.pkg
+          path: xmake-latest.pkg
       - uses: actions/upload-artifact@v2
         if: matrix.os == 'macOS-latest'
         with:
