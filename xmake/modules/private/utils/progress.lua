@@ -25,24 +25,8 @@ import("core.base.colors")
 import("core.base.tty")
 import("core.theme.theme")
 
--- make back characters
-function _make_backchars(backnum)
-    if backnum > 0 then
-        return ('\b'):rep(backnum)
-    end
-    return ''
-end
-
--- make clear characters
-function _make_clearchars(backnum)
-    if backnum > 0 then
-        return ('\b'):rep(backnum) .. (' '):rep(backnum) .. ('\b'):rep(backnum)
-    end
-    return ''
-end
-
 -- define module
-local process = process or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT", "_CLEAR" } }
+local process = process or object { _init = { "_RUNNING", "_INDEX", "_STREAM", "_OPT" } }
 
 -- stop the progress indicator, clear written frames
 function process:stop()
@@ -53,17 +37,9 @@ function process:stop()
     end
 end
 
-function process:_back()
-    if self._RUNNING == 1 then
-        self._STREAM:write(self._BACK)
-        self._RUNNING = 2
-        return true
-    end
-end
-
 function process:_clear()
     if self._RUNNING == 1 then
-        self._STREAM:write(self._CLEAR)
+        tty.erase_line_to_end()
         self._RUNNING = 2
         return true
     end
@@ -79,9 +55,10 @@ end
 -- write next frame of the progress indicator
 function process:write()
     local chars = self._OPT.chars[self._INDEX % #self._OPT.chars + 1]
-    self:_back()
+    tty.cursor_and_attrs_save()
     self._STREAM:write(chars)
     self._STREAM:flush()
+    tty.cursor_and_attrs_restore()
     self._INDEX = self._INDEX + 1
     self._RUNNING = 1
 end
@@ -138,7 +115,6 @@ end
 -- @params stream - stream to write to, will use io.stdout if not provided
 -- @params opt - options
 --               - chars - an array of chars for progress indicator
---               - width - width of progress indicator, will use #opt.chars[1] if not provided
 function new(stream, opt)
 
     -- set default values
@@ -147,14 +123,5 @@ function new(stream, opt)
     if opt.chars == nil or #opt.chars == 0 then
         opt.chars = theme.get("text.spinner.chars")
     end
-    if opt.width == nil then
-        -- only support one character now e.g. {'x', 'y', ..}
-        -- TODO we need to get the display width of characters more accurately if support multi-characters, e.g. {"xx", "yy", ..}
-        if is_subhost("windows") and #opt.chars[1] > 1 then -- is unicode character?
-            opt.width = 2
-        else
-            opt.width = 1
-        end
-    end
-    return process {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0, _CLEAR = _make_clearchars(opt.width), _BACK = _make_backchars(opt.width)}
+    return process {_OPT = opt, _STREAM = stream, _RUNNING = 0, _INDEX = 0}
 end
