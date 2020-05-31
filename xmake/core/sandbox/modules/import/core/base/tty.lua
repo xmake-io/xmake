@@ -15,13 +15,10 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        terminal.lua
+-- @file        tty.lua
 --
 
--- define module
-local terminal = terminal or {}
+-- load modules
+return require("base/tty")
 
--- TODO http://www.termsys.demon.co.uk/terminal.htm
 
--- return module
-return terminal

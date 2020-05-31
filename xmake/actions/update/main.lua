@@ -23,6 +23,7 @@ import("core.base.semver")
 import("core.base.option")
 import("core.base.task")
 import("core.base.process")
+import("core.base.tty")
 import("net.http")
 import("devel.git")
 import("devel.git.submodule")
@@ -146,7 +147,7 @@ function _install(sourcedir)
         local installdir = is_host("windows") and os.programdir() or "~/.local/bin"
 
         -- trace
-        utils.clearline()
+        tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ${clear}installing to %s .. ", installdir)
         local ok = try
         {
@@ -187,7 +188,7 @@ function _install(sourcedir)
 
         -- trace
         if ok then
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             cprint("${yellow}  => ${clear}install to %s .. ${color.success}${text.success}", installdir)
         else
             raise("install failed!")
@@ -342,7 +343,7 @@ function main()
     -- the download task
     local download_task = function ()
         for idx, url in ipairs(mainurls) do
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             cprintf("${yellow}  => ${clear}downloading %s .. ", url)
             local ok = try
             {
@@ -373,7 +374,7 @@ function main()
                     end
                 }
             }
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             if ok then
                 cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
                 break

@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.tty")
 import("core.project.target")
 import("lib.detect.find_file")
 import("test")
@@ -203,7 +204,7 @@ function main(package)
             package:envs_leave()
 
             -- trace
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             cprint("${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:name(), package:version_str() or "")
         end,
 
@@ -222,7 +223,7 @@ function main(package)
                 end
 
                 -- trace
-                utils.clearline()
+                tty.erase_line_to_start().cr()
                 cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:name(), package:version_str() or "")
 
                 -- leave the package environments

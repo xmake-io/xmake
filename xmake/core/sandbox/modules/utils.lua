@@ -172,16 +172,6 @@ function sandbox_utils.wprint(format, ...)
     utils.warning(vformat(format, ...))
 end
 
--- clear the current terminal line
-function sandbox_utils.clearline()
-
-    -- we need not clear line if is not a tty
-    if not io.isatty() then
-        return 
-    end
-    sandbox_utils.printf("\x1b[2K\r")
-end
-
 -- assert
 function sandbox_utils.assert(value, format, ...)
 

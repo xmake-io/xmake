@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.object")
 import("core.base.colors")
+import("core.base.tty")
 import("core.theme.theme")
 
 -- make back characters
@@ -109,7 +110,7 @@ function show(progress, format, ...)
         if is_scroll then
             cprint(progress_prefix .. format, progress, ...)
         else
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             local msg = vformat(progress_prefix .. format, progress, ...)
             local msg_plain = colors.translate(msg, {plain = true})
             local maxwidth = os.getwinsize().width

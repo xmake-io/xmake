@@ -139,7 +139,7 @@ colors._keys24 =
 }
 
 -- the escape string
-colors._escape = '\x1b[%sm'
+colors._ESC = '\x1b[%sm'
 
 -- get colorterm setting
 --
@@ -418,7 +418,7 @@ function colors.translate(str, opt)
         -- make result
         local result = ""
         if #color_buffer > 0 and not nocolors then
-            result = result .. colors._escape:format(table.concat(color_buffer, ";")) 
+            result = result .. colors._ESC:format(table.concat(color_buffer, ";")) 
         end
         if #text_buffer > 0 then
             result = result .. table.concat(text_buffer, " ")

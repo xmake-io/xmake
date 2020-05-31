@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.tty")
 import(".utils.filter")
 import("net.http")
 import("devel.git")
@@ -35,7 +36,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
-        utils.clearline()
+        tty.erase_line_to_start().cr()
         return 
     end
 
@@ -64,7 +65,7 @@ function _checkout(package, url, sourcedir, url_alias)
     os.mv(sourcedir .. ".tmp", sourcedir)
 
     -- trace
-    utils.clearline()
+    tty.erase_line_to_start().cr()
     cprint("${yellow}  => ${clear}clone %s %s .. ${color.success}${text.success}", url, package:version_str())
 end
 
@@ -117,7 +118,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     package:originfile_set(path.absolute(packagefile))
 
     -- trace
-    utils.clearline()
+    tty.erase_line_to_start().cr()
     if not cached then
         cprint("${yellow}  => ${clear}download %s .. ${color.success}${text.success}", url)
     end
@@ -200,7 +201,7 @@ function main(package)
                     end
 
                     -- trace
-                    utils.clearline()
+                    tty.erase_line_to_start().cr()
                     if git.checkurl(url) then
                         cprint("${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
                     else

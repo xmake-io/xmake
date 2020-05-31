@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
 import("lib.detect.cache", {alias = "detectcache"})
@@ -678,7 +679,7 @@ function _install_packages(packages_install, packages_download)
 
         -- trace
         progress_helper:clear()
-        utils.clearline()
+        tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
             cprintf("downloading ${magenta}%s", table.concat(downloading, ", "))
@@ -690,7 +691,7 @@ function _install_packages(packages_install, packages_download)
         progress_helper:write()
     end, exit = function(errors)
         if errors then
-            utils.clearline()
+            tty.erase_line_to_start().cr()
             io.flush()
         end
     end})
