@@ -46,6 +46,21 @@ toolchain("llvm")
     -- on load
     on_load(function (toolchain)
 
+        -- add march flags
+        local march
+        if is_arch("x86_64", "x64") then
+            march = "-m64"
+        elseif is_arch("i386", "x86") then
+            march = "-m32"
+        end
+        if march then
+            toolchain:add("cxflags", march)
+            toolchain:add("mxflags", march)
+            toolchain:add("asflags", march)
+            toolchain:add("ldflags", march)
+            toolchain:add("shflags", march)
+        end
+
         -- init linkdirs and includedirs
         local sdkdir = toolchain:sdkdir()
         if sdkdir then
