@@ -15,25 +15,16 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        template.lua
+-- @file        packages.lua
 --
 
--- define module
-local sandbox_core_project_template = sandbox_core_project_template or {}
+-- imports
+import("core.project.config")
+import("require.list", {rootdir = path.join(os.programdir(), "actions"), alias = "show_packages"})
+import(".showlist")
 
--- load modules
-local template  = require("project/template")
-local raise     = require("sandbox/modules/raise")
-
--- get all languages
-function sandbox_core_project_template.languages()
-    return assert(template.languages())
+-- show all packages
+function main()
+    config.load()
+    show_packages()
 end
-
--- load all templates from the given language 
-function sandbox_core_project_template.templates(language)
-    return assert(template.templates(language))
-end
-
--- return module
-return sandbox_core_project_template

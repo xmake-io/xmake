@@ -23,7 +23,7 @@ import("core.base.option")
 
 -- show list
 function _show_list(name)
-    return assert(import("lists." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)()
+    assert(import("lists." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)()
 end
 
 -- main entry
@@ -32,6 +32,15 @@ function main()
     -- show list?
     local listname = option.get("list")
     if listname then
-        return _show_list(listname)
+        _show_list(listname)
+    else
+        for _, filepath in ipairs(os.files(path.join(os.scriptdir(), "info", "*.lua"))) do
+            local name = path.basename(filepath)
+            if option.get(name) then
+                local show_info = assert(import("info." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)
+                show_info(option.get(name))
+                break
+            end
+        end
     end
 end

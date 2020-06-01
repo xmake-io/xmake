@@ -41,7 +41,8 @@ task("show")
                     {'l', "list"        , "kv"  , nil   ,   "Show the values list of the given name."
                                                         ,   values = function (complete, opt)
                                                                 return import("list").lists()
-                                                            end}
+                                                            end},
+                    {'t', "target"      , "kv"  , nil   ,   "Show the information of the given target."}
                 }
             }
 
