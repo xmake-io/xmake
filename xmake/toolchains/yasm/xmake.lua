@@ -35,6 +35,6 @@ toolchain("yasm")
         elseif is_plat("linux", "bsd") then
             toolchain:add("yasm.asflags", "-f", is_arch("x86_64") and "elf64" or "elf32")
         elseif is_plat("windows", "mingw", "msys", "cygwin") then
-            toolchain:add("yasm.asflags", "-f", is_arch("x64") and "win64" or "win32")
+            toolchain:add("yasm.asflags", "-f", is_arch("x86_64", "x64") and "win64" or "win32")
         end
     end)
