@@ -35,10 +35,27 @@ function main(name)
     print("The information of target(%s):", name)
     cprint("    ${color.dump.string}kind${clear}: %s", target:targetkind())
     cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
-    cprint("    ${color.dump.string}deps${clear}: %s", table.concat(table.wrap(target:get("deps")), ", "))
-    cprint("    ${color.dump.string}rules${clear}: %s", table.concat(table.wrap(target:get("rules")), ", "))
-    cprint("    ${color.dump.string}options${clear}: %s", table.concat(table.wrap(target:get("options")), ", "))
-    cprint("    ${color.dump.string}packages${clear}: %s", table.concat(table.wrap(target:get("packages")), ", "))
+    local deps = target:get("deps")
+    if deps then
+        cprint("    ${color.dump.string}deps${clear}: %s", table.concat(table.wrap(deps), ", "))
+    end
+    local rules = target:get("rules")
+    if rules then
+        cprint("    ${color.dump.string}rules${clear}: %s", table.concat(table.wrap(rules), ", "))
+    end
+    local options = {}
+    for _, opt in ipairs(target:get("options")) do
+        if not opt:startswith("__") then
+            table.insert(options, opt)
+        end
+    end
+    if #options > 0 then
+        cprint("    ${color.dump.string}options${clear}: %s", table.concat(options, ", "))
+    end
+    local packages = target:get("packages")
+    if packages then
+        cprint("    ${color.dump.string}packages${clear}: %s", table.concat(table.wrap(packages), ", "))
+    end
     for _, apiname in ipairs(table.join(language.apis().values, language.apis().pathes)) do
         if apiname:startswith("target.") then
             local valuename = apiname:split('.add_', {plain = true})[2]
