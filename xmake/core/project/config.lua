@@ -148,7 +148,13 @@ end
 -- get the configure directory on the current host/arch platform
 function config.directory()
     if config._DIRECTORY == nil then
-        local rootdir = os.getenv("XMAKE_CONFIGDIR") or os.projectdir()
+        local rootdir = os.getenv("XMAKE_CONFIGDIR") 
+        if not rootdir and os.isdir(path.join(os.workingdir(), ".xmake")) then
+            rootdir = os.workingdir()
+        end
+        if not rootdir then
+            rootdir = os.projectdir()
+        end
         config._DIRECTORY = path.join(rootdir, "." .. xmake._NAME, os.host(), os.arch())
     end
     return config._DIRECTORY
