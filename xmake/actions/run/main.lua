@@ -59,7 +59,6 @@ function _do_run_target(target)
     if option.get("debug") then
         debugger.run(targetfile, option.get("arguments"))
     else
-        print(targetfile)
         os.execv(targetfile, option.get("arguments"))
     end
 
