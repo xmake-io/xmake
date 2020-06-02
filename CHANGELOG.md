@@ -19,6 +19,7 @@
 * [#774](https://github.com/xmake-io/xmake/issues/774): Support ltui windows resize for `xmake f --menu`
 * [#782](https://github.com/xmake-io/xmake/issues/782): Add check flags failed tips for add_cxflags, ..
 * [#808](https://github.com/xmake-io/xmake/issues/808): Support add_frameworks for cmakelists
+* [#820](https://github.com/xmake-io/xmake/issues/820): Support independent working/build directory
 
 ### Bug fixed
 
@@ -761,6 +762,7 @@
 * [#774](https://github.com/xmake-io/xmake/issues/774): `xmake f --menu`可视化配置菜单支持窗口大小Resize调整
 * [#782](https://github.com/xmake-io/xmake/issues/782): 添加add_cxflags等配置flags自动检测失败提示
 * [#808](https://github.com/xmake-io/xmake/issues/808): 生成cmakelists插件增加对add_frameworks的支持
+* [#820](https://github.com/xmake-io/xmake/issues/820): 支持独立的工作目录和构建目录，保持项目目录完全干净
 
 ### Bugs修复
 
