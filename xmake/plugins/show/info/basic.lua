@@ -51,10 +51,18 @@ function main()
         if version then
             cprint("    ${color.dump.string}version${clear}: %s", version)
         end
-        cprint("    ${color.dump.string}plat${clear}: %s", config.plat())
-        cprint("    ${color.dump.string}arch${clear}: %s", config.arch())
-        cprint("    ${color.dump.string}mode${clear}: %s", config.mode())
-        cprint("    ${color.dump.string}buildir${clear}: %s", config.buildir())
+        if config.plat() then
+            cprint("    ${color.dump.string}plat${clear}: %s", config.plat())
+        end
+        if config.arch() then
+            cprint("    ${color.dump.string}arch${clear}: %s", config.arch())
+        end
+        if config.mode() then
+            cprint("    ${color.dump.string}mode${clear}: %s", config.mode())
+        end
+        if config.buildir() then
+            cprint("    ${color.dump.string}buildir${clear}: %s", config.buildir())
+        end
         cprint("    ${color.dump.string}configdir${clear}: %s", config.directory())
         cprint("    ${color.dump.string}projectdir${clear}: %s", os.projectdir())
         cprint("    ${color.dump.string}projectfile${clear}: %s", projectfile)
