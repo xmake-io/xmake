@@ -35,6 +35,7 @@ local colors        = require("base/colors")
 local process       = require("base/process")
 local scheduler     = require("base/scheduler")
 local theme         = require("theme/theme")
+local config        = require("project/config")
 local project       = require("project/project")
 local history       = require("project/history")
 --local profiler      = require("base/profiler")
@@ -263,9 +264,9 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         return main._exit()
     end
 
-    -- save command lines to history
+    -- save command lines to history and we need to make sure that the .xmake directory is not generated everywhere
     local skip_history = (os.getenv('XMAKE_SKIP_HISTORY') or ''):trim()
-    if os.projectfile() and os.isfile(os.projectfile()) and skip_history == '' then
+    if os.projectfile() and os.isfile(os.projectfile()) and os.isdir(config.directory()) and skip_history == '' then
         history("local.history"):save("cmdlines", option.cmdline())
     end
 
