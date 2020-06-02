@@ -32,15 +32,18 @@ function main()
     -- show list?
     local listname = option.get("list")
     if listname then
-        _show_list(listname)
+        return _show_list(listname)
     else
+        -- show the information of the given object
         for _, filepath in ipairs(os.files(path.join(os.scriptdir(), "info", "*.lua"))) do
             local name = path.basename(filepath)
             if option.get(name) then
-                local show_info = assert(import("info." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)
-                show_info(option.get(name))
-                break
+                local show_info = assert(import("info." .. name, {try = true, anonymous = true}), "unknown option name(%s)", name)
+                return show_info(option.get(name))
             end
         end
     end
+
+    -- show the basic information of xmake and the current project
+    assert(import("info.basic", {try = true, anonymous = true}))()
 end
