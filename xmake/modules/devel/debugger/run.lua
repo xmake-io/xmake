@@ -88,6 +88,7 @@ function _run_lldb(program, argv)
     -- patch arguments
     argv = argv or {}
     table.insert(argv, 1, program)
+    table.insert(argv, 1, "-f")
     for i = #names, 2, -1 do
         table.insert(argv, 1, names[i])
     end
