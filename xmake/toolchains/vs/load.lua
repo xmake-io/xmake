@@ -67,19 +67,19 @@ end
 -- main entry
 function main(toolchain)
 
-    -- set toolsets
-    toolchain:set("toolsets", "cc",  "cl.exe")
-    toolchain:set("toolsets", "cxx", "cl.exe")
-    toolchain:set("toolsets", "mrc", "rc.exe")
+    -- set toolset
+    toolchain:set("toolset", "cc",  "cl.exe")
+    toolchain:set("toolset", "cxx", "cl.exe")
+    toolchain:set("toolset", "mrc", "rc.exe")
     if is_arch("x64") then
-        toolchain:set("toolsets", "as",  "ml64.exe")
+        toolchain:set("toolset", "as",  "ml64.exe")
     else
-        toolchain:set("toolsets", "as",  "ml.exe")
+        toolchain:set("toolset", "as",  "ml.exe")
     end
-    toolchain:set("toolsets", "ld",  "link.exe")
-    toolchain:set("toolsets", "sh",  "link.exe -dll")
-    toolchain:set("toolsets", "ar",  "link.exe -lib")
-    toolchain:set("toolsets", "ex",  "lib.exe")
+    toolchain:set("toolset", "ld",  "link.exe")
+    toolchain:set("toolset", "sh",  "link.exe -dll")
+    toolchain:set("toolset", "ar",  "link.exe -lib")
+    toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add vs environments
     _add_vsenv(toolchain, "path")

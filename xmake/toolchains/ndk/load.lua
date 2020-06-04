@@ -34,17 +34,17 @@ function main(toolchain)
         gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
     end
 
-    -- set toolsets
-    toolchain:set("toolsets", "cc", "clang", cross .. "gcc")
-    toolchain:set("toolsets", "cxx", "clang++", cross .. "g++")
-    toolchain:set("toolsets", "cpp", "clang -E", cross .. "gcc -E")
-    toolchain:set("toolsets", "as", "clang", cross .. "gcc")
-    toolchain:set("toolsets", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
-    toolchain:set("toolsets", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
-    toolchain:set("toolsets", "ar", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
-    toolchain:set("toolsets", "ex", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
-    toolchain:set("toolsets", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
-    toolchain:set("toolsets", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"))
+    -- set toolset
+    toolchain:set("toolset", "cc", "clang", cross .. "gcc")
+    toolchain:set("toolset", "cxx", "clang++", cross .. "g++")
+    toolchain:set("toolset", "cpp", "clang -E", cross .. "gcc -E")
+    toolchain:set("toolset", "as", "clang", cross .. "gcc")
+    toolchain:set("toolset", "ld", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    toolchain:set("toolset", "sh", "clang++", "clang", cross .. "g++", cross .. "gcc")
+    toolchain:set("toolset", "ar", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
+    toolchain:set("toolset", "ex", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ar") or (cross .. "ar"), "llvm-ar")
+    toolchain:set("toolset", "ranlib", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "ranlib") or (cross .. "ranlib"))
+    toolchain:set("toolset", "strip", gcc_toolchain_bin and path.join(gcc_toolchain_bin, cross .. "strip") or (cross .. "strip"))
 
     -- init flags
     local arm32 = false

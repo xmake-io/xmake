@@ -50,29 +50,29 @@ toolchain("xcode")
             raise("unknown platform for xcode!")
         end
 
-        -- set toolsets
-        toolchain:set("toolsets", "cc", cross .. "clang")
-        toolchain:set("toolsets", "cxx", cross .. "clang", cross .. "clang++")
-        toolchain:set("toolsets", "ld", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolsets", "sh", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolsets", "ar", cross .. "ar")
-        toolchain:set("toolsets", "ex", cross .. "ar")
-        toolchain:set("toolsets", "strip", cross .. "strip")
-        toolchain:set("toolsets", "dsymutil", cross .. "dsymutil", "dsymutil")
-        toolchain:set("toolsets", "mm", cross .. "clang")
-        toolchain:set("toolsets", "mxx", cross .. "clang", cross .. "clang++")
-        toolchain:set("toolsets", "sc", cross .. "swiftc", "swiftc")
-        toolchain:set("toolsets", "scld", cross .. "swiftc", "swiftc")
-        toolchain:set("toolsets", "scsh", cross .. "swiftc", "swiftc")
+        -- set toolset
+        toolchain:set("toolset", "cc", cross .. "clang")
+        toolchain:set("toolset", "cxx", cross .. "clang", cross .. "clang++")
+        toolchain:set("toolset", "ld", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolset", "sh", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolset", "ar", cross .. "ar")
+        toolchain:set("toolset", "ex", cross .. "ar")
+        toolchain:set("toolset", "strip", cross .. "strip")
+        toolchain:set("toolset", "dsymutil", cross .. "dsymutil", "dsymutil")
+        toolchain:set("toolset", "mm", cross .. "clang")
+        toolchain:set("toolset", "mxx", cross .. "clang", cross .. "clang++")
+        toolchain:set("toolset", "sc", cross .. "swiftc", "swiftc")
+        toolchain:set("toolset", "scld", cross .. "swiftc", "swiftc")
+        toolchain:set("toolset", "scsh", cross .. "swiftc", "swiftc")
         if arch then
-            toolchain:set("toolsets", "cpp", cross .. "clang -arch " .. arch .. " -E")
+            toolchain:set("toolset", "cpp", cross .. "clang -arch " .. arch .. " -E")
         end
         if is_plat("macosx") then
-            toolchain:set("toolsets", "as", cross .. "clang")
+            toolchain:set("toolset", "as", cross .. "clang")
         elseif simulator then
-            toolchain:set("toolsets", "as", cross .. "clang")
+            toolchain:set("toolset", "as", cross .. "clang")
         else
-            toolchain:set("toolsets", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross) .. "clang")
+            toolchain:set("toolset", "as", path.join(os.programdir(), "scripts", "gas-preprocessor.pl " .. cross) .. "clang")
         end
 
         -- load configurations

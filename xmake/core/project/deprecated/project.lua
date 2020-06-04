@@ -253,7 +253,7 @@ function deprecated_project._api_target_set_tools(interp)
     interp:_api_within_scope_set("target", "set_tools", function (key, value, ...) 
 
                                             -- deprecated
-                                            deprecated.add("set_toolsets(%s, %s)", "set_tools(%s, %s)", tostring(key), tostring(value))
+                                            deprecated.add("set_toolset(%s, %s)", "set_tools(%s, %s)", tostring(key), tostring(value))
                                           
                                             -- dispatch it
                                             apifunc(key, value, ...)
@@ -271,7 +271,7 @@ function deprecated_project._api_target_set_toolchain(interp)
     interp:_api_within_scope_set("target", "set_toolchain", function (key, value, ...) 
 
                                             -- deprecated
-                                            deprecated.add("set_toolsets(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
+                                            deprecated.add("set_toolset(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
                                           
                                             -- dispatch it
                                             apifunc(key, value, ...)

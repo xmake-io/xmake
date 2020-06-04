@@ -28,17 +28,17 @@ toolchain("clang")
     -- mark as standalone toolchain
     set_kind("standalone")
         
-    -- set toolsets
-    set_toolsets("cc", "clang")
-    set_toolsets("cxx", "clang", "clang++")
-    set_toolsets("ld", "clang++", "clang")
-    set_toolsets("sh", "clang++", "clang")
-    set_toolsets("ar", "ar")
-    set_toolsets("ex", "ar")
-    set_toolsets("strip", "strip")
-    set_toolsets("mm", "clang")
-    set_toolsets("mxx", "clang", "clang++")
-    set_toolsets("as", "clang")
+    -- set toolset
+    set_toolset("cc", "clang")
+    set_toolset("cxx", "clang", "clang++")
+    set_toolset("ld", "clang++", "clang")
+    set_toolset("sh", "clang++", "clang")
+    set_toolset("ar", "ar")
+    set_toolset("ex", "ar")
+    set_toolset("strip", "strip")
+    set_toolset("mm", "clang")
+    set_toolset("mxx", "clang", "clang++")
+    set_toolset("as", "clang")
 
     -- check toolchain
     on_check(function (toolchain)

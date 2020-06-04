@@ -28,17 +28,17 @@ toolchain("llvm")
     -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- set toolsets
-    set_toolsets("cc",     "clang")
-    set_toolsets("cxx",    "clang", "clang++")
-    set_toolsets("cpp",    "clang -E")
-    set_toolsets("as",     "clang")
-    set_toolsets("ld",     "clang++", "clang")
-    set_toolsets("sh",     "clang++", "clang")
-    set_toolsets("ar",     "llvm-ar")
-    set_toolsets("ex",     "llvm-ar")
-    set_toolsets("ranlib", "llvm-ranlib")
-    set_toolsets("strip",  "llvm-strip")
+    -- set toolset
+    set_toolset("cc",     "clang")
+    set_toolset("cxx",    "clang", "clang++")
+    set_toolset("cpp",    "clang -E")
+    set_toolset("as",     "clang")
+    set_toolset("ld",     "clang++", "clang")
+    set_toolset("sh",     "clang++", "clang")
+    set_toolset("ar",     "llvm-ar")
+    set_toolset("ex",     "llvm-ar")
+    set_toolset("ranlib", "llvm-ranlib")
+    set_toolset("strip",  "llvm-strip")
        
     -- check toolchain
     on_check("check")

@@ -28,17 +28,17 @@ toolchain("gcc")
     -- mark as standalone toolchain
     set_kind("standalone")
         
-    -- set toolsets
-    set_toolsets("cc", "gcc")
-    set_toolsets("cxx", "gcc", "g++")
-    set_toolsets("ld", "g++", "gcc")
-    set_toolsets("sh", "g++", "gcc")
-    set_toolsets("ar", "ar")
-    set_toolsets("ex", "ar")
-    set_toolsets("strip", "strip")
-    set_toolsets("mm", "gcc")
-    set_toolsets("mxx", "gcc", "g++")
-    set_toolsets("as", "gcc")
+    -- set toolset
+    set_toolset("cc", "gcc")
+    set_toolset("cxx", "gcc", "g++")
+    set_toolset("ld", "g++", "gcc")
+    set_toolset("sh", "g++", "gcc")
+    set_toolset("ar", "ar")
+    set_toolset("ex", "ar")
+    set_toolset("strip", "strip")
+    set_toolset("mm", "gcc")
+    set_toolset("mxx", "gcc", "g++")
+    set_toolset("as", "gcc")
 
     -- check toolchain
     on_check(function (toolchain)

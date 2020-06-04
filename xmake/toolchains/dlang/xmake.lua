@@ -25,11 +25,11 @@ toolchain("dlang")
     set_homepage("https://dlang.org/")
     set_description("D Programming Language Compiler")
         
-    -- set toolsets
-    set_toolsets("dc",   "$(env DC)", "dmd", "ldc2", "gdc")
-    set_toolsets("dcld", "$(env DC)", "dmd", "ldc2", "gdc")
-    set_toolsets("dcsh", "$(env DC)", "dmd", "ldc2", "gdc")
-    set_toolsets("dcar", "$(env DC)", "dmd", "ldc2", "gdc")
+    -- set toolset
+    set_toolset("dc",   "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolset("dcld", "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolset("dcsh", "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolset("dcar", "$(env DC)", "dmd", "ldc2", "gdc")
 
     -- on load
     on_load(function (toolchain)

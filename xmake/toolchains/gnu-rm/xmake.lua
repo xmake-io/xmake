@@ -40,17 +40,17 @@ toolchain("gnu-rm")
         -- get cross prefix
         local cross = config.get("cross") or ""
 
-        -- set toolsets
-        toolchain:set("toolsets", "cc", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolsets", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
-        toolchain:set("toolsets", "cpp", cross .. "gcc -E", cross .. "clang -E")
-        toolchain:set("toolsets", "as", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolsets", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolsets", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolsets", "ar", cross .. "ar")
-        toolchain:set("toolsets", "ex", cross .. "ar")
-        toolchain:set("toolsets", "ranlib", cross .. "ranlib")
-        toolchain:set("toolsets", "strip", cross .. "strip")
+        -- set toolset
+        toolchain:set("toolset", "cc", cross .. "gcc", cross .. "clang")
+        toolchain:set("toolset", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
+        toolchain:set("toolset", "cpp", cross .. "gcc -E", cross .. "clang -E")
+        toolchain:set("toolset", "as", cross .. "gcc", cross .. "clang")
+        toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolset", "ar", cross .. "ar")
+        toolchain:set("toolset", "ex", cross .. "ar")
+        toolchain:set("toolset", "ranlib", cross .. "ranlib")
+        toolchain:set("toolset", "strip", cross .. "strip")
 
         -- init linkdirs and includedirs
         local sdkdir = toolchain:sdkdir()

@@ -25,8 +25,8 @@ toolchain("yasm")
     set_homepage("https://yasm.tortall.net/")
     set_description("The Yasm Modular Assembler")
         
-    -- set toolsets
-    set_toolsets("as", "yasm")
+    -- set toolset
+    set_toolset("as", "yasm")
 
     -- on load
     on_load(function (toolchain)

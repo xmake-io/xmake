@@ -53,25 +53,25 @@ toolchain("mingw")
             toolchain:add("runenvs", "PATH", bindir)
         end
 
-        -- set toolsets
+        -- set toolset
         if is_host("windows") and bindir then
             -- @note we uses bin/ar.exe instead of bin/cross-gcc-ar.exe, @see https://github.com/xmake-io/xmake/issues/807#issuecomment-635779210
-            toolchain:add("toolsets", "ar", path.join(bindir, "ar"))
-            toolchain:add("toolsets", "ex", path.join(bindir, "ar"))
-            toolchain:add("toolsets", "strip", path.join(bindir, "strip"))
-            toolchain:add("toolsets", "ranlib", path.join(bindir, "ranlib"))
+            toolchain:add("toolset", "ar", path.join(bindir, "ar"))
+            toolchain:add("toolset", "ex", path.join(bindir, "ar"))
+            toolchain:add("toolset", "strip", path.join(bindir, "strip"))
+            toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
         end
-        toolchain:add("toolsets", "cc", cross .. "gcc")
-        toolchain:add("toolsets", "cxx", cross .. "gcc", cross .. "g++")
-        toolchain:add("toolsets", "cpp", cross .. "gcc -E")
-        toolchain:add("toolsets", "as", cross .. "gcc")
-        toolchain:add("toolsets", "ld", cross .. "g++", cross .. "gcc")
-        toolchain:add("toolsets", "sh", cross .. "g++", cross .. "gcc")
-        toolchain:add("toolsets", "ar", cross .. "ar")
-        toolchain:add("toolsets", "ex", cross .. "ar")
-        toolchain:add("toolsets", "strip", cross .. "strip")
-        toolchain:add("toolsets", "ranlib", cross .. "ranlib")
-        toolchain:add("toolsets", "mrc", cross .. "windres")
+        toolchain:add("toolset", "cc", cross .. "gcc")
+        toolchain:add("toolset", "cxx", cross .. "gcc", cross .. "g++")
+        toolchain:add("toolset", "cpp", cross .. "gcc -E")
+        toolchain:add("toolset", "as", cross .. "gcc")
+        toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolset", "ar", cross .. "ar")
+        toolchain:add("toolset", "ex", cross .. "ar")
+        toolchain:add("toolset", "strip", cross .. "strip")
+        toolchain:add("toolset", "ranlib", cross .. "ranlib")
+        toolchain:add("toolset", "mrc", cross .. "windres")
 
         -- init flags for architecture
         local archflags = nil

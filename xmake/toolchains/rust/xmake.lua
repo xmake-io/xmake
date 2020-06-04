@@ -25,11 +25,11 @@ toolchain("rust")
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
         
-    -- set toolsets
-    set_toolsets("rc",   "$(env RC)", "rustc")
-    set_toolsets("rcld", "$(env RC)", "rustc")
-    set_toolsets("rcsh", "$(env RC)", "rustc")
-    set_toolsets("rcar", "$(env RC)", "rustc")
+    -- set toolset
+    set_toolset("rc",   "$(env RC)", "rustc")
+    set_toolset("rcld", "$(env RC)", "rustc")
+    set_toolset("rcsh", "$(env RC)", "rustc")
+    set_toolset("rcar", "$(env RC)", "rustc")
 
     -- on load
     on_load(function (toolchain)

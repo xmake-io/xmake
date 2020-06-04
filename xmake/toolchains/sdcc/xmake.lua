@@ -28,15 +28,15 @@ toolchain("sdcc")
     -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- set toolsets
-    set_toolsets("cc",  "sdcc")
-    set_toolsets("cxx", "sdcc")
-    set_toolsets("cpp", "sdcpp")
-    set_toolsets("as",  "sdcc")
-    set_toolsets("ld",  "sdcc")
-    set_toolsets("sh",  "sdcc")
-    set_toolsets("ar",  "sdar")
-    set_toolsets("ex",  "sdar")
+    -- set toolset
+    set_toolset("cc",  "sdcc")
+    set_toolset("cxx", "sdcc")
+    set_toolset("cpp", "sdcpp")
+    set_toolset("as",  "sdcc")
+    set_toolset("ld",  "sdcc")
+    set_toolset("sh",  "sdcc")
+    set_toolset("ar",  "sdar")
+    set_toolset("ex",  "sdar")
 
     -- set archs
     set_archs("stm8", "mcs51", "z80", "z180", "r2k", "r3ka", "s08", "hc08")

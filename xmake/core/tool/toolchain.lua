@@ -113,7 +113,7 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-    local toolpathes = self:get("toolsets." .. toolkind)
+    local toolpathes = self:get("toolset." .. toolkind)
     if toolpathes then
         for _, toolpath in ipairs(table.wrap(toolpathes)) do
             local program, toolname = self:_checktool(toolkind, toolpath)
@@ -224,7 +224,7 @@ function _instance:_checktool(toolkind, toolpath)
         self._find_tool = find_tool
     end
 
-    -- do filter for toolpath variables, e.g. set_toolsets("cc", "$(env CC)")
+    -- do filter for toolpath variables, e.g. set_toolset("cc", "$(env CC)")
     local sandbox_inst = sandbox.instance()
     if sandbox_inst then
         local filter = sandbox_inst:filter()
@@ -302,8 +302,8 @@ function toolchain.apis()
         {
             -- toolchain.set_xxx
             "toolchain.set_formats"
-        ,   "toolchain.set_toolsets"
-        ,   "toolchain.add_toolsets"
+        ,   "toolchain.set_toolset"
+        ,   "toolchain.add_toolset"
             -- toolchain.add_xxx
         ,   "toolchain.add_runenvs"
         }

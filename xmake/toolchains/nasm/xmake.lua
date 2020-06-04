@@ -25,8 +25,8 @@ toolchain("nasm")
     set_homepage("https://www.nasm.us/")
     set_description("NASM Assembler")
         
-    -- set toolsets
-    set_toolsets("as", "nasm")
+    -- set toolset
+    set_toolset("as", "nasm")
 
     -- on load
     on_load(function (toolchain)

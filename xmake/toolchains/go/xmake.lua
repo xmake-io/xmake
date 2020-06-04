@@ -25,10 +25,10 @@ toolchain("go")
     set_homepage("https://golang.org/")
     set_description("Go Programming Language Compiler")
         
-    -- set toolsets
-    set_toolsets("gc",   "$(env GC)", "go", "gccgo")
-    set_toolsets("gcld", "$(env GC)", "go", "gccgo")
-    set_toolsets("gcar", "$(env GC)", "go", "gccgo")
+    -- set toolset
+    set_toolset("gc",   "$(env GC)", "go", "gccgo")
+    set_toolset("gcld", "$(env GC)", "go", "gccgo")
+    set_toolset("gcar", "$(env GC)", "go", "gccgo")
 
     -- on load
     on_load(function (toolchain)

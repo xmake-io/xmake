@@ -25,8 +25,8 @@ toolchain("cuda")
     set_homepage("https://developer.nvidia.com/cuda-toolkit")
     set_description("CUDA Toolkit")
         
-    -- set toolsets
-    set_toolsets("cu",   "nvcc", "clang")
-    set_toolsets("culd", "nvcc")
-    set_toolsets("cu-ccbin", "$(env CXX)", "$(env CC)", "clang", "gcc")
+    -- set toolset
+    set_toolset("cu",   "nvcc", "clang")
+    set_toolset("culd", "nvcc")
+    set_toolset("cu-ccbin", "$(env CXX)", "$(env CC)", "clang", "gcc")
 

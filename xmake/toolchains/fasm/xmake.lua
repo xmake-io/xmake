@@ -25,8 +25,8 @@ toolchain("fasm")
     set_homepage("https://flatassembler.net/")
     set_description("Flat Assembler")
         
-    -- set toolsets
-    set_toolsets("as", "fasm")
+    -- set toolset
+    set_toolset("as", "fasm")
 
     -- on load
     on_load(function (toolchain)
