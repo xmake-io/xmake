@@ -15,12 +15,9 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        ifelse.lua
+-- @file        is_subhost.lua
 --
 
-return function (...)
-    local utils      = require("base/utils")
-    local deprecated = require("base/deprecated")
-    deprecated.add("(a and b or c)", "ifelse(a, b, c)")
-    return utils.ifelse(...)
-end
+-- return module
+return require("base/os").is_subhost
+

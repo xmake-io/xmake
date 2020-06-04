@@ -35,22 +35,22 @@ theme("emoji")
 
     -- the error info
     set_text("error", "exclamation error")
-    set_color("error", "red")
+    set_color("error", "red bright")
 
     -- the warning info
     set_text("warning", "warning $warning")
-    set_color("warning", "yellow")
+    set_color("warning", "yellow bright")
 
     -- the building progress
     set_text("build.progress_format", "[%3d%%]")
     set_text("build.progress_style", "scroll")
-    set_color("build.progress", "green")
+    set_color("build.progress", "green bright")
 
     -- the building object file
     set_color("build.object", "")
 
     -- the building target file
-    set_color("build.target", "magenta")
+    set_color("build.target", "magenta bright")
 
     -- the spinner chars
     set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')

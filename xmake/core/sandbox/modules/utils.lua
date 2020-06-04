@@ -19,25 +19,27 @@
 --
 
 -- load modules
-local io        = require("base/io")
-local os        = require("base/os")
-local utils     = require("base/utils")
-local colors    = require("base/colors")
-local option    = require("base/option")
-local log       = require("base/log")
-local try       = require("sandbox/modules/try")
-local catch     = require("sandbox/modules/catch")
-local vformat   = require("sandbox/modules/vformat")
+local io         = require("base/io")
+local os         = require("base/os")
+local utils      = require("base/utils")
+local colors     = require("base/colors")
+local option     = require("base/option")
+local log        = require("base/log")
+local deprecated = require("base/deprecated")
+local try        = require("sandbox/modules/try")
+local catch      = require("sandbox/modules/catch")
+local vformat    = require("sandbox/modules/vformat")
 
 -- define module
 local sandbox_utils = sandbox_utils or {}
 
--- inherit the public interfaces of utils
-for k, v in pairs(utils) do
-    if not k:startswith("_") and type(v) == "function" then
-        sandbox_utils[k] = v
-    end
-end
+-- inherit some builtin interfaces
+sandbox_utils.dump    = utils.dump -- do not change to a function call to utils.dump since debug.getinfo is called in utils.dump to get caller info
+sandbox_utils.confirm = utils.confirm
+sandbox_utils.error   = utils.error
+sandbox_utils.warning = utils.warning
+sandbox_utils.trycall = utils.trycall
+sandbox_utils.ifelse  = utils.ifelse
 
 -- print each arguments
 function sandbox_utils._print(...)
@@ -183,15 +185,6 @@ function sandbox_utils.assert(value, format, ...)
     end
     return value
 end
-
--- get user confirm 
-function sandbox_utils.confirm(opt)
-    return utils.confirm(opt)
-end
-
--- dump value
--- do not change to a function call to utils.dump since debug.getinfo is called in utils.dump to get caller info
-sandbox_utils.dump = utils.dump
 
 -- return module
 return sandbox_utils
