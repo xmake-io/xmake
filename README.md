@@ -166,8 +166,31 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64)
 * Cygwin (i386, x86_64)
-* SDCC (stm8, mcs51, ..)
 * Cross (cross-toolchains ..)
+
+## Supported toolchains
+
+```bash
+$ xmake show -l toolchains
+xcode         Xcode IDE
+vs            VisualStudio IDE
+yasm          The Yasm Modular Assembler
+clang         A C language family frontend for LLVM
+go            Go Programming Language Compiler
+dlang         D Programming Language Compiler
+sdcc          Small Device C Compiler
+cuda          CUDA Toolkit
+ndk           Android NDK
+rust          Rust Programming Language Compiler
+llvm          A collection of modular and reusable compiler and toolchain technologies
+cross         Common cross compilation toolchain
+nasm          NASM Assembler
+gcc           GNU Compiler Collection
+mingw         Minimalist GNU for Windows
+gnu-rm        GNU Arm Embedded Toolchain
+envs          Environment variables toolchain
+fasm          Flat Assembler
+```
 
 ## Supported Languages
 
