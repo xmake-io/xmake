@@ -42,7 +42,7 @@ function _find_package_with_builtin_rule(package_name, opt)
     if opt.system ~= false then
 
         -- find it from homebrew
-        if not is_host("windows") and (opt.mode == nil or opt.mode == "release") then
+        if not is_host("windows") then
             table.insert(managers, "brew")
         end
 
@@ -53,7 +53,7 @@ function _find_package_with_builtin_rule(package_name, opt)
         table.insert(managers, "conan")
 
         -- only support the current host platform and architecture
-        if opt.plat == os.host() and opt.arch == os.arch() and (opt.mode == nil or opt.mode == "release") then
+        if opt.plat == os.host() and opt.arch == os.arch() then
 
             -- find it from pkg-config
             table.insert(managers, "pkg_config")
