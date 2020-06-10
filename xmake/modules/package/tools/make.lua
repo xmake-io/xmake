@@ -97,10 +97,37 @@ function build(package, configs, opt)
         end
     end
 
-    -- do configure
+    -- do build
     if is_host("bsd") then
         os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
     else
         os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
     end
 end
+
+-- install package 
+function install(package, configs)
+ 
+    -- pass configurations
+    local argv = {"install"}
+    if option.get("verbose") then
+        table.insert(argv, "VERBOSE=1")
+    end
+    for name, value in pairs(configs) do
+        value = tostring(value):trim()
+        if value ~= "" then
+            if type(name) == "number" then
+                table.insert(argv, value)
+            else
+                table.insert(argv, name .. "=" .. value)
+            end
+        end
+    end
+
+    -- do install
+    if is_host("bsd") then
+        os.vrunv("gmake", argv)
+    else
+        os.vrunv("make", argv)
+    end
+end 
