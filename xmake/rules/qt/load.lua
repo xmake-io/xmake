@@ -19,13 +19,14 @@
 --
 
 -- imports
+import("core.base.semver")
 import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_library")
 
 -- make link for framework
-function _link(linkdirs, framework, major)
-    if major and framework:startswith("Qt") then
+function _link(linkdirs, framework, qt_sdkver)
+    if framework:startswith("Qt") then
         local debug_suffix = "_debug"
         if is_plat("windows") then
             debug_suffix = "d"
@@ -34,7 +35,7 @@ function _link(linkdirs, framework, major)
         elseif is_plat("android") or is_plat("linux") then
             debug_suffix = ""
         end
-        framework = "Qt" .. major .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
+        framework = "Qt" .. qt_sdkver:major() .. framework:sub(3) .. (is_mode("debug") and debug_suffix or "")
         if is_plat("android") then --> -lQt5Core_armeabi/-lQt5CoreDebug_armeabi for 5.14.x
             local libinfo = find_library(framework .. "_" .. config.arch(), linkdirs)
             if libinfo and libinfo.link then
@@ -46,7 +47,7 @@ function _link(linkdirs, framework, major)
 end
 
 -- find the static links from the given qt link directories, e.g. libqt*.a
-function _find_static_links_3rd(linkdirs, major, libpattern)
+function _find_static_links_3rd(linkdirs, qt_sdkver, libpattern)
     local links = {}
     local debug_suffix = "_debug"
     if is_plat("windows") then
@@ -60,7 +61,7 @@ function _find_static_links_3rd(linkdirs, major, libpattern)
         for _, libpath in ipairs(os.files(path.join(linkdir, libpattern))) do
             local basename = path.basename(libpath)
             -- we need ignore qt framework libraries, e.g. libQt5xxx.a, Qt5Core.lib ..
-            if not basename:startswith("libQt" .. major) and not basename:startswith("Qt" .. major) then
+            if not basename:startswith("libQt" .. qt_sdkver:major()) and not basename:startswith("Qt" .. qt_sdkver:major()) then
                 if (is_mode("debug") and basename:endswith(debug_suffix)) or (not is_mode("debug") and not basename:endswith(debug_suffix)) then
                     table.insert(links, target.linkname(path.filename(libpath)))
                 end
@@ -92,10 +93,12 @@ function main(target, opt)
     -- get qt sdk
     local qt = target:data("qt")
 
-    -- get major version
-    local major = nil
+    -- get qt sdk version
+    local qt_sdkver = nil
     if qt.sdkver then
-        major = qt.sdkver:split('%.')[1]
+        qt_sdkver = semver.new(qt.sdkver)
+    else
+        raise("Qt SDK version not found, please run `xmake f --qt_sdkver=xxx` to set it.")
     end
 
     -- add -fPIC
@@ -200,11 +203,11 @@ function main(target, opt)
                         target:add("includedirs", path.join(frameworkdir, "Headers"))
                         useframeworks = true
                     else
-                        target:add("syslinks", _link(qt.linkdirs, framework, major))
+                        target:add("syslinks", _link(qt.linkdirs, framework, qt_sdkver))
                         target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                     end
                 else
-                    target:add("syslinks", _link(qt.linkdirs, framework, major))
+                    target:add("syslinks", _link(qt.linkdirs, framework, qt_sdkver))
                     target:add("includedirs", path.join(qt.sdkdir, "include", framework))
                 end
             end
@@ -222,7 +225,7 @@ function main(target, opt)
 
     -- add some static third-party links if exists, e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a
     -- and exclude qt framework libraries, e.g. libQt5xxx.a, Qt5xxx.lib
-    target:add("syslinks", _find_static_links_3rd(qt.linkdirs, major, is_plat("windows") and "qt*.lib" or "libqt*.a"))
+    target:add("syslinks", _find_static_links_3rd(qt.linkdirs, qt_sdkver, is_plat("windows") and "qt*.lib" or "libqt*.a"))
 
     -- add user syslinks
     if syslinks_user then

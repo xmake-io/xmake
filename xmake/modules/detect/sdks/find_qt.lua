@@ -177,7 +177,11 @@ function main(sdkdir, opt)
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for the Qt SDK directory ... ${color.success}%s", qt.sdkdir)
-            cprint("checking for the Qt SDK version ... ${color.success}%s", qt.sdkver)
+            if qt.sdkver then
+                cprint("checking for the Qt SDK version ... ${color.success}%s", qt.sdkver)
+            else
+                cprint("checking for the Qt SDK version ... ${color.nothing}${text.nothing}")
+            end
         end
     else
 
