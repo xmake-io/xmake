@@ -1,4 +1,5 @@
 syntax = "proto3";
+import subdir/test2.proto
 package test;
 message TestCase {
     string name = 4;

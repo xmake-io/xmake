@@ -53,7 +53,7 @@ theme("default")
     set_color("build.target", "magenta bright")
 
     -- the spinner chars
-    if not os.subhost("msys", "cygwin") then
+    if not is_subhost("msys", "cygwin") then
         set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
     else
         set_text("spinner.chars", '\\', '-', '/', '|')
