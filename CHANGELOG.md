@@ -2,6 +2,17 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#828](https://github.com/xmake-io/xmake/issues/828): Support to import sub-directory files for protobuf rules
+* [#835](https://github.com/xmake-io/xmake/issues/835): Improve mode.minsizerel to add /GL flags for msvc
+
+### Bugs fixed
+
+* Fix the progress bug for theme
+* [#829](https://github.com/xmake-io/xmake/issues/829): Fix invalid sysroot path for macOS
+* [#832](https://github.com/xmake-io/xmake/issues/832): Fix find_packages bug for the debug mode
+
 ## v2.3.4
 
 ### New features
@@ -23,7 +34,7 @@
 * [#808](https://github.com/xmake-io/xmake/issues/808): Support add_frameworks for cmakelists
 * [#820](https://github.com/xmake-io/xmake/issues/820): Support independent working/build directory
 
-### Bug fixed
+### Bugs fixed
 
 * [#786](https://github.com/xmake-io/xmake/issues/786): Fix check header file deps
 * [#810](https://github.com/xmake-io/xmake/issues/810): Fix strip debug bug for linux
@@ -746,6 +757,17 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#828](https://github.com/xmake-io/xmake/issues/828): 针对protobuf规则增加导入子目录proto文件支持
+* [#835](https://github.com/xmake-io/xmake/issues/835): 改进mode.minsizerel模式，针对msvc增加/GL支持，进一步优化目标程序大小
+
+### Bugs修复
+
+* 修复进度字符显示
+* [#829](https://github.com/xmake-io/xmake/issues/829): 修复由于macOS大小写不敏感系统导致的sysroot无效路径问题
+* [#832](https://github.com/xmake-io/xmake/issues/832): 修复find_packages在debug模式下找不到的问题
 
 ## v2.3.4
 
