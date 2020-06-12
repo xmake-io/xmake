@@ -802,6 +802,43 @@ function _instance:autogendir(opt)
     return autogendir
 end
 
+-- get the autogen file path from the given source file path 
+function _instance:autogenfile(sourcefile, opt)
+
+    -- get relative directory in the autogen directory
+    local relativedir = nil
+    local origindir  = path.directory(path.absolute(sourcefile))
+    local autogendir = path.absolute(self:autogendir())
+    if origindir:startswith(autogendir) then
+        relativedir = path.join("gens", path.relative(origindir, autogendir))
+    end
+
+    -- get relative directory in the source directory
+    if not relativedir then
+        relativedir = path.directory(sourcefile)
+    end
+
+    -- translate path
+    --
+    -- e.g. 
+    --
+    -- src/xxx.c
+    --      project/xmake.lua
+    --          build/.objs
+    --          build/.gens
+    --
+    -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
+    -- autogenfile: project/build/.gens/xxxx/../../xxx.c will be out of range for autogendir
+    --
+    -- we need replace '..' to '__' in this case
+    --
+    if path.is_absolute(relativedir) and os.host() == "windows" then
+        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
+    end
+    relativedir = relativedir:gsub("%.%.", "__")
+    return path.join((opt and opt.rootdir) and opt.rootdir or self:autogendir(), relativedir, (opt and opt.filename) and opt.filename or path.filename(sourcefile))
+end
+
 -- get the target kind
 function _instance:targetkind()
     return self:get("kind") or "phony"
@@ -1081,41 +1118,8 @@ function _instance:sourcefiles()
 end
 
 -- get object file from source file
-function _instance:objectfile(sourcefile, sourcekind)
-
-    -- get relative directory in the autogen directory
-    local relativedir = nil
-    local origindir  = path.directory(path.absolute(sourcefile))
-    local autogendir = path.absolute(self:autogendir())
-    if origindir:startswith(autogendir) then
-        relativedir = path.join("gens", path.relative(origindir, autogendir))
-    end
-
-    -- get relative directory in the source directory
-    if not relativedir then
-        relativedir = path.directory(sourcefile)
-    end
-
-    -- translate path
-    --
-    -- e.g. 
-    --
-    -- src/xxx.c
-    --      project/xmake.lua
-    --          build/.objs
-    --
-    -- objectfile: project/build/.objs/xxxx/../../xxx.c will be out of range for objectdir
-    --
-    -- we need replace '..' to '__' in this case
-    --
-    if path.is_absolute(relativedir) and os.host() == "windows" then
-        relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
-    end
-    relativedir = relativedir:gsub("%.%.", "__")
-
-    -- make object file
-    -- full file name(not base) to avoid name-clash of object file
-    return path.join(self:objectdir(), relativedir, target.filename(path.filename(sourcefile), "object"))
+function _instance:objectfile(sourcefile)
+    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object")})
 end
 
 -- get the object files

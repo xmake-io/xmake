@@ -52,7 +52,9 @@ function main(target, sourcekind, sourcefile_proto, opt)
     protoc = assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
 
     -- get c/c++ source file for protobuf
-    local sourcefile_cx = path.join(target:autogendir(), "rules", "protobuf", path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c"))
+    local rootdir = path.join(target:autogendir(), "rules", "protobuf")
+    local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
+    local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
     local sourcefile_dir = path.directory(sourcefile_cx)
 
     -- add includedirs

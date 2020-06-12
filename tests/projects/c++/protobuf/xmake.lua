@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 add_requires("protobuf-cpp")
 
 -- add target
-target("console_c++")
+target("test")
 
     -- set kind
     set_kind("binary")

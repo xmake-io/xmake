@@ -6,7 +6,7 @@ add_rules("mode.debug", "mode.release")
 add_requires("protobuf-c")
 
 -- add target
-target("console_c")
+target("test")
 
     -- set kind
     set_kind("binary")
@@ -16,5 +16,5 @@ target("console_c")
 
     -- add files
     add_files("src/*.c")
-    add_files("src/*.proto", {rules = "protobuf.c"})
+    add_files("src/**.proto", {rules = "protobuf.c"})
 
