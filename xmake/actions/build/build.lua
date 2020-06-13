@@ -131,7 +131,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_after_build, target)
 
     -- add before_build job for target
-    batchjobs:addjob(target:name() .. "/before_build", function (index, total)
+    local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
 
         -- enter the environments of the target packages
         for name, values in pairs(target:pkgenvs()) do
@@ -157,7 +157,9 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
             end
         end
     end, job_build_leaf)
-    return job_build, job_after_build
+
+    -- we need do build_before after all dependent targets if across_targets_in_parallel is disabled
+    return target:policy("build.across_targets_in_parallel") == false and job_build_before or job_build, job_after_build
 end
 
 -- add batch jobs for the given target and deps
