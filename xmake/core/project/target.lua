@@ -963,10 +963,12 @@ function _instance:filerules(sourcefile)
 
     -- add rules from file config
     local rules = {}
+    local override = false
     local fileconfig = self:fileconfig(sourcefile)
     if fileconfig then
         local filerules = fileconfig.rules or fileconfig.rule 
         if filerules then
+            override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
                 local r = self._PROJECT.rule(rulename) or rule.rule(rulename)
                 if r then
@@ -974,6 +976,10 @@ function _instance:filerules(sourcefile)
                 end
             end
         end
+    end
+    -- override? e.g. add_files("src/*.c", {rules = {"xxx", override = true}})
+    if override then
+        return rules, true
     end
 
     -- load all rules for this target with sourcekinds and extensions
@@ -1427,7 +1433,7 @@ function _instance:sourcebatches()
     for _, sourcefile in ipairs(sourcefiles) do
 
         -- get file rules
-        local filerules = self:filerules(sourcefile)
+        local filerules, override = self:filerules(sourcefile)
         if #filerules == 0 then
             os.raise("unknown source file: %s", sourcefile)
         end
@@ -1450,7 +1456,7 @@ function _instance:sourcebatches()
 
             -- attempt to get source kind from the builtin languages
             local sourcekind = self:sourcekind_of(sourcefile)
-            if sourcekind then
+            if sourcekind and not override then
 
                 -- save source kind
                 sourcebatch.sourcekind = sourcekind
