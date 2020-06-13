@@ -39,6 +39,7 @@ local tool           = require("tool/tool")
 local linker         = require("tool/linker")
 local compiler       = require("tool/compiler")
 local platform       = require("platform/platform")
+local environment    = require("platform/environment")
 local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
@@ -1708,12 +1709,14 @@ function _instance:tool(toolkind)
         -- get program from target/toolchains
         if not program then
             local toolchains = self:toolchains()
+            environment.enter("toolchains")
             for idx, toolchain_inst in ipairs(toolchains) do
                 program, toolname = toolchain_inst:tool(toolkind)
                 if program then
                     break
                 end
             end
+            environment.leave("toolchains")
         end
         
         -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'

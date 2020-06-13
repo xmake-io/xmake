@@ -86,6 +86,18 @@ end
 
 -- enter the environment for the current platform
 function environment.enter(name)
+
+    -- need enter?
+    local entered = environment._ENTERED or {}
+    environment._ENTERED = entered
+    if entered[name] then
+        entered[name] = entered[name] + 1
+        return true
+    else
+        entered[name] = 1
+    end
+
+    -- do enter
     local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
     local func = maps[name]
     if func then
@@ -99,6 +111,19 @@ end
 
 -- leave the environment for the current platform
 function environment.leave(name)
+
+    -- need leave?
+    local entered = environment._ENTERED or {}
+    if entered[name] then
+        entered[name] = entered[name] - 1
+    end
+    if entered[name] == 0 then
+        entered[name] = nil
+    else
+        return true
+    end
+
+    -- do leave
     local maps = {toolchains = environment._leave_toolchains, run = environment._leave_run}
     local func = maps[name]
     if func then
