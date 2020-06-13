@@ -1074,6 +1074,7 @@ function _instance:sourcefiles()
     local i = 1
     local count = 0
     local sourcefiles = {}
+    local sourcefiles_deleted = {}
     for _, file in ipairs(table.wrap(files)) do
 
         -- mark as deleted files?
@@ -1106,22 +1107,24 @@ function _instance:sourcefiles()
 
             -- add or delete it
             if deleted then
-                sourcefiles[sourcefile] = nil
+                sourcefiles_deleted[sourcefile] = true
             else
-                sourcefiles[sourcefile] = true
+                table.insert(sourcefiles, sourcefile)
             end
         end
     end
 
-    -- make last source files
-    local sourcefiles_last = {}
-    for sourcefile, _ in pairs(sourcefiles) do
-        table.insert(sourcefiles_last, sourcefile)
+    -- remove all deleted source files
+    for i = #sourcefiles, 1, -1 do
+        local sourcefile = sourcefiles[i]
+        if sourcefiles_deleted[sourcefile] then
+            table.remove(sourcefiles, i)
+        end
     end
-    self._SOURCEFILES = sourcefiles_last
+    self._SOURCEFILES = sourcefiles
 
     -- ok and sourcefiles are modified
-    return sourcefiles_last, true
+    return sourcefiles, true
 end
 
 -- get object file from source file
