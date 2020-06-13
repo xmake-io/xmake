@@ -1,8 +1,10 @@
 syntax = "proto3";
+import "subdir/test2.proto";
 package test;
 message TestCase {
     string name = 4;
 }
 message Test {
     repeated TestCase case = 1;
+    repeated test2.TestCase2 case2 = 2;
 }

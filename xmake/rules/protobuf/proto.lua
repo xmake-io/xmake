@@ -52,10 +52,15 @@ function main(target, sourcekind, sourcefile_proto, opt)
     protoc = assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
 
     -- get c/c++ source file for protobuf
+    local prefixdir
+    local fileconfig = target:fileconfig(sourcefile_proto)
+    if fileconfig then
+        prefixdir = fileconfig.proto_rootdir
+    end
     local rootdir = path.join(target:autogendir(), "rules", "protobuf")
     local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
     local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
-    local sourcefile_dir = path.directory(sourcefile_cx)
+    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
     -- add includedirs
     target:add("includedirs", sourcefile_dir)
@@ -94,8 +99,17 @@ function main(target, sourcekind, sourcefile_proto, opt)
         os.mkdir(sourcefile_dir)
     end
 
-    -- compile protobuf 
-    os.vrunv(protoc, {sourcefile_proto, "-I" .. os.args(path.directory(sourcefile_proto)), (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
+    -- get compilation flags
+    local argv = {sourcefile_proto}
+    if prefixdir then
+        table.insert(argv, "-I" .. prefixdir)
+    else
+        table.insert(argv, "-I" .. path.directory(sourcefile_proto))
+    end
+    table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
+
+    -- do compile
+    os.vrunv(protoc, argv)
 
     -- trace
     if option.get("verbose") then
