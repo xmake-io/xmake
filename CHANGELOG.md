@@ -6,6 +6,7 @@
 
 * [#828](https://github.com/xmake-io/xmake/issues/828): Support to import sub-directory files for protobuf rules
 * [#835](https://github.com/xmake-io/xmake/issues/835): Improve mode.minsizerel to add /GL flags for msvc
+* [#828](https://github.com/xmake-io/xmake/issues/828): Support multi-level directories for protobuf/import
 
 ### Bugs fixed
 
@@ -762,6 +763,7 @@
 
 * [#828](https://github.com/xmake-io/xmake/issues/828): 针对protobuf规则增加导入子目录proto文件支持
 * [#835](https://github.com/xmake-io/xmake/issues/835): 改进mode.minsizerel模式，针对msvc增加/GL支持，进一步优化目标程序大小
+* [#828](https://github.com/xmake-io/xmake/issues/828): protobuf规则支持import多级子目录
 
 ### Bugs修复
 
