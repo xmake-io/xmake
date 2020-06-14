@@ -124,7 +124,8 @@ function _find_qt(sdkdir, sdkver)
 
     -- get the bin directory 
     local bindir = path.join(sdkdir, "bin")
-    if not os.isexec(path.join(bindir, "qmake")) then
+    local qmake = path.join(bindir, "qmake" .. (is_host("windows") and ".exe" or ""))
+    if not os.isexec(qmake) then
         return nil
     end
 
@@ -135,7 +136,15 @@ function _find_qt(sdkdir, sdkver)
     local includedirs = {path.join(sdkdir, "include")}
 
     -- get sdk version
-    sdkver = sdkver or sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    if not sdkver then
+        sdkver = try {function () return os.iorunv(qmake, {"-query", "QT_VERSION"}) end}
+        if sdkver then
+            sdkver = sdkver:trim()
+        end
+    end
+    if not sdkver then
+        sdkver = sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    end
 
     -- get toolchains
     return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, sdkver = sdkver}
