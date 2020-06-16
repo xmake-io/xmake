@@ -23,6 +23,7 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+
         # tests
       - name: tests
         run: |

@@ -22,10 +22,12 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+
         # tests
       - name: tests
         run: |
           xmake lua -v -D tests/run.lua
+
         # build artifacts
       - name: artifact
         run: |
@@ -38,14 +40,16 @@ jobs:
         with:
           name: xmake-latest.amd64.deb
           path: xmake_latest_amd64.deb
+
         # publish release
       - name: publish
-          if: github.event.action == 'published'
-          uses: actions/upload-release-asset@v1.0.1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            upload_url: ${{ github.event.release.upload_url }}
-            asset_path: xmake_latest_amd64.deb
-            asset_name: xmake-${GITHUB_REF##*/}.amd64.deb
-            asset_content_type: application/zip
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: xmake_latest_amd64.deb
+          asset_name: xmake-${GITHUB_REF##*/}.amd64.deb
+        asset_content_type: application/zip
+
