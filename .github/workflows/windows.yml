@@ -1,0 +1,30 @@
+name: Windows
+
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [windows-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: xmake-io/github-action-setup-xmake@v1
+        # this is not supported, use dev branch instead
+        with:
+          xmake-version: branch@dev
+      - uses: mihails-strasuns/setup-dlang@v0.5.0
+        with:
+          compiler: dmd-latest
+        # tests
+      - name: tests
+        run: |
+          xmake lua -v -D tests/run.lua
+

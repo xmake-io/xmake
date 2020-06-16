@@ -1,26 +1,24 @@
-name: build
+name: macOS
 
-on: [push, pull_request]
+on:
+  pull_request:
+  push:
+  release:
+    types: published
 
 jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macOS-latest]
+        os: [macOS-latest]
 
     runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v1
       - uses: xmake-io/github-action-setup-xmake@v1
-        if: matrix.os != 'windows-latest' || github.event_name == 'push'
         with:
           xmake-version: sha@${{ github.sha }}
-      - uses: xmake-io/github-action-setup-xmake@v1
-        # this is not supported, use dev branch instead
-        if: matrix.os == 'windows-latest' && github.event_name == 'pull_request'
-        with:
-          xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
@@ -30,7 +28,6 @@ jobs:
           xmake lua -v -D tests/run.lua
         # build artifacts
       - name: artifact
-        if: matrix.os == 'macOS-latest'
         run: |
           brew install gnu-tar
           gem install --no-document fpm
@@ -38,41 +35,23 @@ jobs:
           scripts/makepkg osxpkg latest
           scripts/archive-all
           scripts/makeself/build-runfile.sh 
-      - name: artifact
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get install -y ruby ruby-dev rubygems build-essential
-          sudo gem install --no-document fpm
-          git submodule update --init
-          scripts/makepkg deb latest
         # upload artifacts
       - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.macosx.pkg
           path: xmake-latest.pkg
-      - uses: actions/upload-artifact@v2
-        if: matrix.os == 'ubuntu-latest'
-        with:
-          name: xmake-latest.amd64.deb
-          path: xmake_latest_amd64.deb
-      - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.gz.run
           path: artifacts/xmake.gz.run
       - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.xz.run
           path: artifacts/xmake.xz.run
       - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.tar.gz
           path: artifacts/xmake.tar.gz
       - uses: actions/upload-artifact@v2
-        if: matrix.os == 'macOS-latest'
         with:
           name: xmake-latest.zip
           path: artifacts/xmake.zip

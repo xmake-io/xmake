@@ -1,0 +1,41 @@
+name: Linux
+
+on:
+  pull_request:
+  push:
+  release:
+    types: published
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v1
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: sha@${{ github.sha }}
+      - uses: mihails-strasuns/setup-dlang@v0.5.0
+        with:
+          compiler: dmd-latest
+        # tests
+      - name: tests
+        run: |
+          xmake lua -v -D tests/run.lua
+        # build artifacts
+      - name: artifact
+        run: |
+          sudo apt-get install -y ruby ruby-dev rubygems build-essential
+          sudo gem install --no-document fpm
+          git submodule update --init
+          scripts/makepkg deb latest
+        # upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.amd64.deb
+          path: xmake_latest_amd64.deb
+
