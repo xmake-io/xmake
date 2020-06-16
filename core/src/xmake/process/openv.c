@@ -111,6 +111,12 @@ tb_int_t xm_process_openv(lua_State* lua)
             attr.flags |= TB_PROCESS_FLAG_DETACH;
         lua_pop(lua, 1);
 
+        // get curdir
+        lua_pushstring(lua, "curdir");
+        lua_gettable(lua, 3);
+        attr.curdir = lua_tostring(lua, -1);
+        lua_pop(lua, 1);
+
         // get outpath
         lua_pushstring(lua, "outpath");
         lua_gettable(lua, 3);
@@ -201,7 +207,7 @@ tb_int_t xm_process_openv(lua_State* lua)
         }
         lua_pop(lua, 1);
     }
- 
+
     // redirect stdout?
     if (outpath)
     {

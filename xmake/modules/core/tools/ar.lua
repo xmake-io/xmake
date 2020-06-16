@@ -84,11 +84,11 @@ function extract(self, libraryfile, objectdir)
     libraryfile = path.absolute(libraryfile)
 
     -- extract it
-    os.runv(self:program(), {"-x", libraryfile})
+    os.runv(self:program(), {"-x", libraryfile}, {curdir = objectdir})
 
     -- check repeat object name
     local repeats = {}
-    local objectfiles = os.iorunv(self:program(), {"-t", libraryfile}, {curdir = objectdir})
+    local objectfiles = os.iorunv(self:program(), {"-t", libraryfile})
     for _, objectfile in ipairs(objectfiles:split('\n')) do
         if repeats[objectfile] then
             raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)
