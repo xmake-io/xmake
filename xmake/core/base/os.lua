@@ -701,9 +701,18 @@ function os.execv(program, argv, opt)
     -- init open options
     local openopt = {envs = envs, stdout = opt.stdout, stderr = opt.stderr}
 
+    -- change the current working directory for child process
+    local oldir
+    if opt.curdir then
+        oldir = os.cd(opt.curdir)
+    end
+
     -- open command
     local ok = -1
     local proc = process.openv(filename, argv or {}, openopt)
+    if oldir then
+        os.cd(oldir)
+    end
     if proc ~= nil then
 
         -- wait process
