@@ -20,6 +20,7 @@
 
 -- imports
 import("private.tools.cl.parse_deps", {alias = "parse_deps_cl"})
+import("private.tools.rc.parse_deps", {alias = "parse_deps_rc"})
 import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 
 -- load depfiles 
@@ -48,6 +49,9 @@ function load(dependfile)
             elseif dependinfo.depfiles_cl then
                 _load_depfiles(parse_deps_cl, dependinfo, dependinfo.depfiles_cl)
                 dependinfo.depfiles_cl = nil
+            elseif dependinfo.depfiles_rc then
+                _load_depfiles(parse_deps_rc, dependinfo, dependinfo.depfiles_rc)
+                dependinfo.depfiles_rc = nil
             end
             return dependinfo
         end

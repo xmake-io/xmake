@@ -425,8 +425,6 @@ function colors.translate(str, opt)
         end
         return result
     end)
-
-    -- ok
     return str
 end
 

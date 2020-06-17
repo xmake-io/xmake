@@ -44,12 +44,12 @@ function nf_includedir(self, dir)
 end
 
 -- make the compile arguments list
-function _compargv1(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags)
     return self:program(), table.join(flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- compile the source file
-function _compile1(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -59,7 +59,7 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
     {
         function ()
             -- @note we need not uses vstool.iorunv to enable unicode output for rc.exe
-            local outdata, errdata = os.iorunv(_compargv1(self, sourcefile, objectfile, flags))
+            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))
             return (outdata or "") .. (errdata or "")
         end,
         catch
@@ -79,34 +79,24 @@ function _compile1(self, sourcefile, objectfile, dependinfo, flags)
         finally
         {
             function (ok, warnings)
-
-                -- print some warnings
                 if warnings and #warnings > 0 and option.get("verbose") then
                     cprint("${color.warning}%s", table.concat(table.slice(warnings:split('\n'), 1, 8), '\n'))
                 end
             end
         }
     }
+
+    -- parse includes
+    local sourcedata = io.readfile(sourcefile)
+    if sourcedata then
+        local depfiles_rc
+        local sourcedir = path.directory(sourcefile)
+        for headerfile in sourcedata:gmatch("#include%s+[\"<](.-)[\">]") do
+            depfiles_rc = (depfiles_rc or "") .. "\n" .. path.join(sourcedir, headerfile)
+        end
+        if dependinfo then
+            dependinfo.depfiles_rc = depfiles_rc
+        end
+    end
 end
-
--- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    return _compargv1(self, sourcefiles, objectfile, flags)
-end
-
--- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- only support single source file now
-    assert(type(sourcefiles) ~= "table", "'object:sources' not support!")
-
-    -- for only single source file
-    _compile1(self, sourcefiles, objectfile, dependinfo, flags)
-end
-
 
