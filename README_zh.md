@@ -6,11 +6,14 @@
   <h1>xmake</h1>
 
   <div>
-    <a href="https://travis-ci.org/xmake-io/xmake">
-      <img src="https://img.shields.io/travis/xmake-io/xmake/master.svg?style=flat-square" alt="travis-ci" />
+    <a href="https://github.com/tboox/tbox/actions?query=workflow%3ALinux">
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Linux/dev.svg?style=flat-square&logo=linux" alt="github-ci" />
     </a>
-    <a href="https://ci.appveyor.com/project/waruqi/xmake/branch/master">
-      <img src="https://img.shields.io/appveyor/ci/waruqi/xmake/master.svg?style=flat-square" alt="appveyor-ci" />
+    <a href="https://github.com/tboox/tbox/actions?query=workflow%3AmacOS">
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/macOS/dev.svg?style=flat-square&logo=apple" alt="github-ci" />
+    </a>
+    <a href="https://github.com/tboox/tbox/actions?query=workflow%3AWindows">
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/dev.svg?style=flat-square&logo=windows" alt="github-ci" />
     </a>
     <a href="https://aur.archlinux.org/packages/xmake">
       <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
