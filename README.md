@@ -6,14 +6,14 @@
   <h1>xmake</h1>
 
   <div>
+    <a href="https://github.com/tboox/tbox/actions?query=workflow%3AWindows">
+      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/dev.svg?style=flat-square&logo=windows" alt="github-ci" />
+    </a>
     <a href="https://github.com/tboox/tbox/actions?query=workflow%3ALinux">
       <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Linux/dev.svg?style=flat-square&logo=linux" alt="github-ci" />
     </a>
     <a href="https://github.com/tboox/tbox/actions?query=workflow%3AmacOS">
       <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/macOS/dev.svg?style=flat-square&logo=apple" alt="github-ci" />
-    </a>
-    <a href="https://github.com/tboox/tbox/actions?query=workflow%3AWindows">
-      <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/dev.svg?style=flat-square&logo=windows" alt="github-ci" />
     </a>
     <a href="https://github.com/xmake-io/xmake/releases">
       <img src="https://img.shields.io/github/release/xmake-io/xmake.svg?style=flat-square" alt="Github All Releases" />
