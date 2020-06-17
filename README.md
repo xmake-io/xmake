@@ -15,7 +15,6 @@
     <a href="https://github.com/tboox/tbox/actions?query=workflow%3AWindows">
       <img src="https://img.shields.io/github/workflow/status/xmake-io/xmake/Windows/dev.svg?style=flat-square&logo=windows" alt="github-ci" />
     </a>
-
     <a href="https://aur.archlinux.org/packages/xmake">
       <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
     </a>
