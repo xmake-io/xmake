@@ -8,6 +8,7 @@
 * [#835](https://github.com/xmake-io/xmake/issues/835): Improve mode.minsizerel to add /GL flags for msvc
 * [#828](https://github.com/xmake-io/xmake/issues/828): Support multi-level directories for protobuf/import
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): Support to override builtin-rules for `add_files("src/*.c", {rules = {"xx", override = true}})`
+* [#847](https://github.com/xmake-io/xmake/issues/847): Support to parse include deps for rc file
 
 ### Bugs fixed
 
@@ -766,6 +767,7 @@
 * [#835](https://github.com/xmake-io/xmake/issues/835): 改进mode.minsizerel模式，针对msvc增加/GL支持，进一步优化目标程序大小
 * [#828](https://github.com/xmake-io/xmake/issues/828): protobuf规则支持import多级子目录
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): 支持完全重写内置的构建规则，`add_files("src/*.c", {rules = {"xx", override = true}})`
+* [#847](https://github.com/xmake-io/xmake/issues/847): 支持rc文件的头文件依赖解析
 
 ### Bugs修复
 
