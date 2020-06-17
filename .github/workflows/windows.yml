@@ -23,9 +23,214 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+      - uses: olegtarasov/get-tag@v2
+        id: tagName
 
-        # tests
-      - name: tests
+        # prepare
+      - name: prepare
         run: |
+          # xmake
+          xmake show
+          git submodule update --init
+          Copy-Item . ../xmake_x86 -Recurse
+          # nsis
+          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
+          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
+          Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
+          Expand-Archive ./nsis.zip -DestinationPath ./nsis
+          Move-Item ./nsis/*/* ./nsis
+          Expand-Archive ./nsis-longstr.zip -DestinationPath ./nsis -Force
+          Expand-Archive ./nsis-uac.zip -DestinationPath ./nsis -Force
+          Move-Item ./nsis/UAC.nsh ./nsis/Include/
+
+        # build (x64)
+      - name: build (x64)
+        run: |
+          xmake f -vD -P core -a x64
+          xmake -vD -P core
+
+        # build (x86)
+      - name: build (x86)
+        run: |
+          Push-Location ../xmake_x86
+          xmake f -vD -P core -a x86
+          xmake -vD -P core
+          Push-Location
+
+        # tests (x64)
+      - name: tests (x64)
+        run: |
+          Copy-Item ./core/build/xmake.exe ./xmake
+          $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
+          Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
+          xmake show
+          xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
 
+       # tests (x86)
+      - name: tests (x86)
+        run: |
+          Push-Location ../xmake_x86
+          Copy-Item ./core/build/xmake.exe ./xmake
+          $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
+          Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
+          xmake show
+          xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
+          xmake lua -v -D tests/run.lua
+          Pop-Location
+
+        # build artifacts (x64)
+      - name: artifact (x64)
+        run: |
+          # build installer
+          (New-Item ./xmake/winenv/bin -ItemType Directory).FullName
+          Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+          Expand-Archive ./unzip.zip -DestinationPath ./unzip
+          Copy-Item ./unzip/bin/unzip.exe ./xmake/winenv/bin
+          Invoke-WebRequest "https://github.com/xmake-io/xmake-win64env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
+          Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win64env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
+          Copy-Item ./curl.exe ./xmake/winenv/bin
+          Copy-Item ./curl-ca-bundle.crt ./xmake/winenv/bin
+          $version = (Get-Command xmake/xmake.exe).FileVersionInfo
+          ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /Dx64 .\scripts\installer.nsi
+          # archive
+          Copy-Item ./*.md ./xmake
+          Add-Type -AssemblyName System.Text.Encoding
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          class FixedEncoder : System.Text.UTF8Encoding {
+              FixedEncoder() : base($true) { }
+              [byte[]] GetBytes([string] $s)
+              {
+                  $s = $s.Replace("\", "/")
+                  return ([System.Text.UTF8Encoding]$this).GetBytes($s)
+              }
+          }
+          Copy-Item ./xmake ./archive/xmake -Recurse
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+          (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
+
+        # build artifacts (x86)
+      - name: artifact (x86)
+        run: |
+          Push-Location ../xmake_x86
+          # build installer
+          (New-Item ./xmake/winenv/bin -ItemType Directory).FullName
+          Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
+          Expand-Archive ./unzip.zip -DestinationPath ./unzip
+          Copy-Item ./unzip/bin/unzip.exe ./xmake/winenv/bin
+          Invoke-WebRequest "https://github.com/xmake-io/xmake-win32env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
+          Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win32env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
+          Copy-Item ./curl.exe ./xmake/winenv/bin
+          Copy-Item ./curl-ca-bundle.crt ./xmake/winenv/bin
+          $version = (Get-Command xmake/xmake.exe).FileVersionInfo
+          ../xmake/nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /Dx86 .\scripts\installer.nsi
+          # archive
+          Copy-Item ./*.md ./xmake
+          Add-Type -AssemblyName System.Text.Encoding
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          class FixedEncoder : System.Text.UTF8Encoding {
+              FixedEncoder() : base($true) { }
+              [byte[]] GetBytes([string] $s)
+              {
+                  $s = $s.Replace("\", "/")
+                  return ([System.Text.UTF8Encoding]$this).GetBytes($s)
+              }
+          }
+          Copy-Item ./xmake ./archive/xmake -Recurse
+          [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
+          (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
+          Pop-Location
+          Copy-Item ../xmake_x86 ./xmake -Recurse
+
+        # upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win64.exe
+          path: scripts/xmake.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win32.exe
+          path: xmake/xmake_x86/scripts/xmake.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win64.zip
+          path: archive.zip
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win32.zip
+          path: xmake/xmake_x86/archive.zip
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win64.sha256
+          path: shafile
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.win32.sha256
+          path: xmake/xmake_x86/shafile
+
+        # publish release
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: scripts/xmake.exe
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win64.exe
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: xmake/xmake_x86/scripts/xmake.exe
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win32.exe
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: archive.zip
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win64.zip
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: xmake/xmake_x86/archive.zip
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win32.zip
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: shafile
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win64.sha256
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: xmake/xmake_x86/shafile
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.win32.sha256
+          asset_content_type: application/zip

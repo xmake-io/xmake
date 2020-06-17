@@ -22,6 +22,8 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+      - uses: olegtarasov/get-tag@v2
+        id: tagName
 
         # tests
       - name: tests
@@ -59,3 +61,58 @@ jobs:
           name: xmake-latest.zip
           path: artifacts/xmake.zip
 
+        # publish release
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: xmake-latest.pkg
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.macosx.pkg
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake.gz.run
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.gz.run
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake.xz.run
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.xz.run
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake.tar.gz
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.tar.gz
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/xmake.zip
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.zip
+          asset_content_type: application/zip

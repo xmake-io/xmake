@@ -22,6 +22,8 @@ jobs:
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
+      - uses: olegtarasov/get-tag@v2
+        id: tagName
 
         # tests
       - name: tests
@@ -50,6 +52,6 @@ jobs:
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: xmake_latest_amd64.deb
-          asset_name: xmake-${GITHUB_REF##*/}.amd64.deb
-        asset_content_type: application/zip
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.amd64.deb
+          asset_content_type: application/zip
 
