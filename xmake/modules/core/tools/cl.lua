@@ -317,7 +317,7 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
 end
 
 -- make the compile arguments list
-function compargv(self, sourcefile, objectfile, flags)
+function compargv(self, sourcefile, objectfile, flags, opt)
 
     -- precompiled header?
     local extension = path.extension(sourcefile)
@@ -327,11 +327,12 @@ function compargv(self, sourcefile, objectfile, flags)
 
     -- make the compile arguments list
     -- @note only flags in nf_xxx() need be wrapped via os.args, @see nf_includedir
-    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    local argv = table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
+    return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     -- @note this path here has been normalized, we can quickly find it by the unique path separator prompt
@@ -352,7 +353,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            return vstool.iorunv(compargv(self, sourcefile, objectfile, compflags))
+            return vstool.iorunv(compargv(self, sourcefile, objectfile, compflags, opt))
         end,
         catch
         {

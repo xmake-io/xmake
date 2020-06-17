@@ -65,7 +65,8 @@ function _do_build_file(target, sourcefile, opt)
 
     -- trace verbose info
     if verbose then
-        print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags}))
+        -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
+        print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags, rawargs = true}))
     end
 
     -- compile it 

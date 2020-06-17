@@ -254,7 +254,7 @@ function compiler:compargv(sourcefiles, objectfile, opt)
         end
         compflags = self:compflags(opt)
     end
-    return self:_tool():compargv(sourcefiles, objectfile, compflags)
+    return self:_tool():compargv(sourcefiles, objectfile, compflags, opt)
 end
 
 -- get the compile command

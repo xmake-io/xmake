@@ -154,14 +154,15 @@ end
 function winos.cmdargv(argv, key)
 
     -- too long arguments? 
+    local limit = 4096
     local argn = 0
     for _, arg in ipairs(argv) do
         argn = argn + #arg
-        if argn > 1024 then
+        if argn > limit then
             break
         end
     end
-    if argn > 1024 then
+    if argn > limit then
         local argsfile = os.tmpfile(key or table.concat(argv, '')) .. ".args.txt" 
         local f = io.open(argsfile, 'w')
         if f then
