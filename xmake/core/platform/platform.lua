@@ -130,7 +130,8 @@ function _instance:toolchains(opt)
         toolchains = {}
         if not (opt and opt.all) then
             names = config.get("__toolchains")
-        else
+        end
+        if not names then
             -- get the given toolchain
             local toolchain_given = config.get("toolchain")
             if toolchain_given then
