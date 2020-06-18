@@ -433,7 +433,9 @@ function project._load_targets()
         if toolchains then
             t._TOOLCHAINS = {}
             for _, name in ipairs(table.wrap(toolchains)) do
-                local toolchain_inst, errors = toolchain.load(name)
+                local toolchain_plat = t:extraconf("toolchains", name, "plat")
+                local toolchain_arch = t:extraconf("toolchains", name, "arch")
+                local toolchain_inst, errors = toolchain.load(name, {plat = toolchain_plat, arch = toolchain_arch})
                 -- attempt to load toolchain from project
                 if not toolchain_inst then
                     toolchain_inst = project.toolchain(name)

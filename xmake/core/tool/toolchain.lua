@@ -36,9 +36,11 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info)
+function _instance.new(name, plat, arch, info)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
+    instance._PLAT    = plat
+    instance._ARCH    = arch
     instance._INFO    = info
     return instance
 end
@@ -50,12 +52,32 @@ end
 
 -- get toolchain platform
 function _instance:plat()
-    return config.get("plat") or os.host() 
+    return self._PLAT
 end
 
 -- get toolchain architecture
 function _instance:arch()
-    return config.get("arch") or os.arch() 
+    return self._ARCH
+end
+
+-- the current platform is belong to the given platforms?
+function _instance:is_plat(...)
+    local plat = self:plat()
+    for _, v in ipairs(table.join(...)) do
+        if v and plat == v then
+            return true
+        end
+    end
+end
+
+-- the current architecture is belong to the given architectures?
+function _instance:is_arch(...)
+    local arch = self:arch()
+    for _, v in ipairs(table.join(...)) do
+        if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
 end
 
 -- get toolchain info
@@ -318,24 +340,26 @@ end
 
 -- get toolchain directories
 function toolchain.directories()
-
-    -- init directories
     local dirs = toolchain._DIRS or {   path.join(global.directory(), "toolchains")
                                     ,   path.join(os.programdir(), "toolchains")
                                     }
-                                
-    -- save directories to cache
     toolchain._DIRS = dirs
     return dirs
 end
 
 -- load the given toolchain 
-function toolchain.load(name)
+function toolchain.load(name, opt)
+
+    -- init cache key
+    opt = opt or {}
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
+    local cachekey = name .. plat .. arch
 
     -- get it directly from cache dirst
     toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
-    if toolchain._TOOLCHAINS[name] then
-        return toolchain._TOOLCHAINS[name]
+    if toolchain._TOOLCHAINS[cachekey] then
+        return toolchain._TOOLCHAINS[cachekey]
     end
 
     -- find the toolchain script path
@@ -372,8 +396,8 @@ function toolchain.load(name)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, result)
-    toolchain._TOOLCHAINS[name] = instance
+    local instance = _instance.new(name, plat, arch, result)
+    toolchain._TOOLCHAINS[cachekey] = instance
     return instance
 end
 

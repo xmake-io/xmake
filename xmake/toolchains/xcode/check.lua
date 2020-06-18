@@ -27,7 +27,7 @@ import("detect.sdks.find_xcode")
 function main(toolchain)
 
     -- find xcode
-    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = config.get("plat"), arch = config.get("arch")})
+    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = toolchain:plat(), arch = toolchain:arch()})
     if xcode then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
     else
@@ -39,7 +39,7 @@ function main(toolchain)
     local target_minver = config.get("target_minver")
     if xcode_sdkver and not target_minver then
         target_minver = xcode_sdkver
-        if is_plat("macosx") then
+        if toolchain:is_plat("macosx") then
             local macos_ver = macos.version()
             if macos_ver then
                 target_minver = macos_ver:major() .. "." .. macos_ver:minor()

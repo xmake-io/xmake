@@ -25,7 +25,7 @@ import("core.project.config")
 function main(toolchain)
 
     -- init architecture
-    local arch = config.get("arch") or "arm64"
+    local arch = toolchain:arch()
     local simulator = (arch == "i386" or arch == "x86_64")
 
     -- init platform name

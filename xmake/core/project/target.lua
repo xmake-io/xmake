@@ -1707,8 +1707,8 @@ function _instance:tool(toolkind)
             end
         end
 
-        -- attempt to get program from config first
-        if not program then 
+        -- attempt to get program from config first if no the given toolchains in target
+        if not program and not self:get("toolchains") then 
             program = config.get(toolkind)
             toolname = config.get("__toolname_" .. toolkind)
         end

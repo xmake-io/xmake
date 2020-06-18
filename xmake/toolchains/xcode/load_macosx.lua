@@ -25,7 +25,7 @@ import("core.project.config")
 function main(toolchain)
 
     -- init flags for architecture
-    local arch          = config.get("arch") or os.arch()
+    local arch          = toolchain:arch()
     local target_minver = config.get("target_minver")
 
     -- init flags for the xcode sdk directory
