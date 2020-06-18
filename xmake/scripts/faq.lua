@@ -1,6 +1,8 @@
 --
--- FAQ
+-- If you want to known more usage about xmake, please see https://xmake.io
 --
+-- ## FAQ
+-- 
 -- You can enter the project directory firstly before building project.
 --
 --   $ cd projectdir
@@ -63,6 +65,4 @@
 --    add_ldflags("-L/usr/local/lib", "-lpthread", {force = true})
 --
 -- @endcode
---
--- 7. If you want to known more usage about xmake, please see https://xmake.io
 --
