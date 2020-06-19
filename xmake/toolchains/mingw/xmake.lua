@@ -39,9 +39,9 @@ toolchain("mingw")
 
         -- get cross
         local cross
-        if is_arch("x86_64") then
+        if toolchain:is_arch("x86_64") then
             cross = "x86_64-w64-mingw32-"
-        elseif is_arch("i386") then
+        elseif toolchain:is_arch("i386") then
             cross = "i686-w64-mingw32-"
         else
             cross = config.get("cross") or ""
@@ -75,7 +75,7 @@ toolchain("mingw")
 
         -- init flags for architecture
         local archflags = nil
-        local arch = config.get("arch")
+        local arch = toolchain:arch()
         if arch then
             if arch == "x86_64" then archflags = "-m64"
             elseif arch == "i386" then archflags = "-m32"

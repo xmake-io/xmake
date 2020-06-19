@@ -33,7 +33,7 @@ toolchain("dlang")
 
     -- on load
     on_load(function (toolchain)
-        local march = is_arch("x86_64", "x64") and "-m64" or "-m32"
+        local march = toolchain:is_arch("x86_64", "x64") and "-m64" or "-m32"
         toolchain:add("dcflags",   march)
         toolchain:add("dcshflags", march)
         toolchain:add("dcldflags", march)
