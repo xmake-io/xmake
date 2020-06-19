@@ -35,8 +35,23 @@ function main(toolchain)
     end
 
     -- save target minver
-    local xcode_sdkver = config.get("xcode_sdkver")
-    local target_minver = config.get("target_minver")
+    --
+    -- @note we need to differentiate the version for the system, 
+    -- because the xcode toolchain of iphoneos/macosx may need to be used at the same time.
+    --
+    -- e.g. 
+    --
+    -- target("test")
+    --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})
+    --
+    local xcode_sdkver = toolchain:is_plat(config.plat()) and config.get("xcode_sdkver")
+    if not xcode_sdkver then
+        xcode_sdkver = config.get("xcode_sdkver_" .. toolchain:plat())
+    end
+    local target_minver = toolchain:is_plat(config.plat()) and config.get("target_minver")
+    if not target_minver then
+        target_minver = config.get("target_minver_" .. toolchain:plat())
+    end
     if xcode_sdkver and not target_minver then
         target_minver = xcode_sdkver
         if toolchain:is_plat("macosx") then
@@ -45,7 +60,7 @@ function main(toolchain)
                 target_minver = macos_ver:major() .. "." .. macos_ver:minor()
             end
         end
-        config.set("target_minver", target_minver)
+        config.set("target_minver_" .. toolchain:plat(), target_minver)
     end
     return true
 end

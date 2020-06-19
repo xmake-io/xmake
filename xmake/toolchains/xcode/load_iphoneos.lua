@@ -32,7 +32,7 @@ function main(toolchain)
     local platname = simulator and "iPhoneSimulator" or "iPhoneOS"
 
     -- init target minimal version
-    local target_minver = config.get("target_minver")
+    local target_minver = config.get("target_minver_iphoneos")
     if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then 
         target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
     end
@@ -40,7 +40,7 @@ function main(toolchain)
 
     -- init the xcode sdk directory
     local xcode_dir     = config.get("xcode")
-    local xcode_sdkver  = config.get("xcode_sdkver")
+    local xcode_sdkver  = config.get("xcode_sdkver_iphoneos")
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 
     -- init flags for c/c++

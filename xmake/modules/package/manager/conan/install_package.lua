@@ -219,7 +219,7 @@ function main(name, opt)
             table.insert(argv, "compiler.runtime=" .. opt.vs_runtime)
         end
     elseif opt.plat == "iphoneos" then
-        local target_minver = config.get("target_minver")
+        local target_minver = config.get("target_minver_iphoneos")
         if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then 
             target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
         end

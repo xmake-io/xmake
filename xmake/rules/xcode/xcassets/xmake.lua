@@ -60,13 +60,16 @@ rule("xcode.xcassets")
         io.writefile(assetcatalog_generated_info_plist, "")
 
         -- do compile
+        local target_minver
         local argv = {"--warnings", "--notices", "--output-format", "human-readable-text"}
         if is_plat("macosx") then
+            target_minver = get_config("target_minver_macosx")
             table.insert(argv, "--target-device")
             table.insert(argv, "mac")
             table.insert(argv, "--platform")
             table.insert(argv, "macosx")
         elseif is_plat("iphoneos") then
+            target_minver = get_config("target_minver_iphoneos")
             table.insert(argv, "--target-device")
             table.insert(argv, "iphone")
             table.insert(argv, "--target-device")
@@ -76,8 +79,10 @@ rule("xcode.xcassets")
         else
             assert("unknown device!")
         end
-        table.insert(argv, "--minimum-deployment-target")
-        table.insert(argv, get_config("target_minver"))
+        if target_minver then
+            table.insert(argv, "--minimum-deployment-target")
+            table.insert(argv, target_minver)
+        end
         table.insert(argv, "--app-icon")
         table.insert(argv, "AppIcon")
         if is_plat("iphoneos") then

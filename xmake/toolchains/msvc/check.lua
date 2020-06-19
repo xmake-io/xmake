@@ -25,7 +25,7 @@ import("detect.sdks.find_vstudio")
 import("lib.detect.find_tool")
 
 -- attempt to check vs environment
-function _check_vsenv()
+function _check_vsenv(toolchain)
 
     -- have been checked?
     local vs = config.get("vs")
@@ -52,7 +52,7 @@ function _check_vsenv()
         -- get vcvarsall
         for _, vsver in ipairs(vsvers) do
             local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
-            local vsenv = vcvarsall[config.get("arch") or ""]
+            local vsenv = vcvarsall[toolchain:arch()]
             if vsenv and vsenv.path and vsenv.include and vsenv.lib then
 
                 -- save vsenv
@@ -83,13 +83,13 @@ function _check_vsenv()
 end
 
 -- check the visual studio
-function _check_vstudio()
-    local vs = _check_vsenv()
+function _check_vstudio(toolchain)
+    local vs = _check_vsenv(toolchain)
     if vs then
         config.set("vs", vs, {readonly = true, force = true})
-        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.success}%s", config.get("arch"), vs)
+        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
-        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", config.get("arch"))
+        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
         if not (opt and opt.try) then
             print("please run:")
             print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
@@ -101,13 +101,13 @@ function _check_vstudio()
 end
 
 -- main entry
-function main()
+function main(toolchain)
     -- @see https://github.com/xmake-io/xmake/pull/679
     local cc  = path.basename(config.get("cc") or "cl"):lower()
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
     local mrc = path.basename(config.get("mrc") or "rc"):lower()
     if cc == "cl" or cxx == "cl" or mrc == "rc" then
-        return _check_vstudio(config)
+        return _check_vstudio(toolchain)
     end
 end
 

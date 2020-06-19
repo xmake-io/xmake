@@ -19,7 +19,7 @@
 --
 
 -- define toolchain
-toolchain("vs")
+toolchain("msvc")
 
     -- set homepage
     set_homepage("https://visualstudio.microsoft.com")
