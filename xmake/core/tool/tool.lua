@@ -39,7 +39,7 @@ function _instance.new(kind, name, program)
     -- import "core.tools.xxx"
     local toolclass = nil
     if os.isfile(path.join(os.programdir(), "modules", "core", "tools", name .. ".lua")) then
-        toolclass = import("core.tools." .. name)
+        toolclass = import("core.tools." .. name, {nocache = true}) -- @note we need create a tool instance with unique toolclass context (_g)
     end
 
     -- not found?
