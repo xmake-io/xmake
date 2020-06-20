@@ -104,25 +104,7 @@ end
 
 -- get run environments
 function _instance:runenvs()
-    local runenvs = self._RUNENVS
-    if runenvs == nil then
-        local toolchain = self:toolchain()
-        if toolchain then
-            local toolchain_runenvs = toolchain:get("runenvs")
-            if toolchain_runenvs then
-                runenvs = {}
-                for name, values in pairs(toolchain_runenvs) do
-                    if type(values) == "table" then
-                        values = path.joinenv(values)
-                    end
-                    runenvs[name] = values
-                end
-            end
-        end
-        runenvs = runenvs or false
-        self._RUNENVS = runenvs
-    end
-    return runenvs or nil
+    return self:toolchain() and self:toolchain():runenvs()
 end
 
 -- set the value to the platform info

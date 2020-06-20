@@ -23,7 +23,7 @@ toolchain("msvc")
 
     -- set homepage
     set_homepage("https://visualstudio.microsoft.com")
-    set_description("VisualStudio IDE")
+    set_description("Microsoft Visual C/C++ Compiler")
 
     -- mark as standalone toolchain
     set_kind("standalone")

@@ -133,6 +133,26 @@ function _instance:standalone()
     return self:kind() == "standalone"
 end
 
+-- get the run environments
+function _instance:runenvs()
+    local runenvs = self._RUNENVS
+    if runenvs == nil then
+        local toolchain_runenvs = self:get("runenvs")
+        if toolchain_runenvs then
+            runenvs = {}
+            for name, values in pairs(toolchain_runenvs) do
+                if type(values) == "table" then
+                    values = path.joinenv(values)
+                end
+                runenvs[name] = values
+            end
+        end
+        runenvs = runenvs or false
+        self._RUNENVS = runenvs
+    end
+    return runenvs or nil
+end
+
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     local toolpathes = self:get("toolset." .. toolkind)
