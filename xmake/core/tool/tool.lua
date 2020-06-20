@@ -239,7 +239,7 @@ function tool.load(kind, opt)
     -- load toolchain instance
     local toolchain_inst
     if toolchain_info and toolchain_info.name then
-        toolchain_inst = toolchain.load(toolchain_info.name, plat, arch)
+        toolchain_inst = toolchain.load(toolchain_info.name, {plat = plat, arch = arch})
     end
 
     -- new an instance

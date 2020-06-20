@@ -189,9 +189,10 @@ function _instance:tool(toolkind)
         for idx, toolchain_inst in ipairs(toolchains) do
             program, toolname = toolchain_inst:tool(toolkind)
             if program then
+                toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
                 toolinfo[1] = program
                 toolinfo[2] = toolname
-                toolinfo[3] = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
+                toolinfo[3] = toolchain_info
                 break
             end
         end

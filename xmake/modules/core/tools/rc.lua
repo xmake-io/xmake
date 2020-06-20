@@ -59,7 +59,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
     {
         function ()
             -- @note we need not uses vstool.iorunv to enable unicode output for rc.exe
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, flags))
+            local program, argv = compargv(self, sourcefile, objectfile, flags)
+            local outdata, errdata = os.iorunv(program, argv, {envs = opt.envs})
             return (outdata or "") .. (errdata or "")
         end,
         catch
