@@ -29,10 +29,10 @@ function init(self)
     self:set("ldflags", "-nologo", "-dynamicbase", "-nxcompat")
 
     -- init arflags
-    self:set("arflags", "-lib", "-nologo")
+    self:set("arflags", "-nologo")
 
     -- init shflags
-    self:set("shflags", "-dll", "-nologo")
+    self:set("shflags", "-nologo")
 
     -- init flags map
     self:set("mapflags",
@@ -94,7 +94,16 @@ end
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
     local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
-    return self:program(), opt.rawargs and argv or winos.cmdargv(argv)
+    if not opt.rawargs then
+        argv = winos.cmdargv(argv)
+    end
+    -- @note we cannot put -lib/-dll to @args.txt
+    if targetkind == "static" then
+        table.insert(argv, 1, "-lib")
+    elseif targetkind == "shared" then
+        table.insert(argv, 1, "-dll")
+    end
+    return self:program(), argv
 end
 
 -- link the target file
