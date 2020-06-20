@@ -34,7 +34,9 @@ function test_vsxmake(t)
     try
     {
         function ()
-            os.execv("msbuild", {"/P:XmakeDiagnosis=true", "/P:XmakeVerbose=true"}, {envs = toolchain.load("msvc"):runenvs()})
+            local runenvs = toolchain.load("msvc"):runenvs()
+            os.addenv("PATH", runenvs.PATH)
+            os.execv("msbuild", {"/P:XmakeDiagnosis=true", "/P:XmakeVerbose=true"}, {envs = runenvs})
         end,
         catch
         {
