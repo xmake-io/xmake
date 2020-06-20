@@ -65,7 +65,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     local cacheinfo = cache.load(cachekey) 
     local result = cacheinfo[program]
     if result ~= nil and not opt.force then
-        return utils.ifelse(result, result, nil)
+        return result and result or nil
     end
 
     -- attempt to get version output info
@@ -98,13 +98,9 @@ function sandbox_lib_detect_find_programver.main(program, opt)
         end
     end
 
-    -- cache result
-    cacheinfo[program] = utils.ifelse(result, result, false)
-
-    -- save cache info
+    -- save result
+    cacheinfo[program] = result and result or false
     cache.save(cachekey, cacheinfo)
-
-    -- ok?
     return result
 end
 
