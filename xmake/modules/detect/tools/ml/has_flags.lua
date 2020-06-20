@@ -44,7 +44,7 @@ function _check_from_arglist(flags, opt)
 
         -- get argument list
         allflags = {}
-        local arglist = os.iorunv(opt.program, {"-?"})
+        local arglist = os.iorunv(opt.program, {"-?"}, {envs = opt.envs})
         if arglist then
             for arg in arglist:gmatch("(/[%-%a%d]+)%s+") do
                 allflags[arg:gsub("/", "-")] = true
@@ -72,7 +72,7 @@ function _check_try_running(flags, opt)
     -- check it
     local errors = nil
     return try  {   function () 
-                        local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile))
+                        local _, errs = os.iorunv(opt.program, table.join("-c", "-nologo", flags, "-Fo" .. os.nuldev(), sourcefile), {envs = opt.envs})
                         if errs and #errs:trim() > 0 then
                             return false, errs
                         end

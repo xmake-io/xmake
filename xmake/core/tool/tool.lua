@@ -165,6 +165,9 @@ function _instance:has_flags(flags, flagkind, opt)
     -- import has_flags()
     self._has_flags = self._has_flags or import("lib.detect.has_flags", {anonymous = true})
 
+    -- bind the run environments
+    opt.envs = self:runenvs()
+
     -- has flags?
     return self._has_flags(self:name(), flags, opt)
 end

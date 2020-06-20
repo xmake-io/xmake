@@ -20,13 +20,12 @@
 
 -- imports
 import("lib.detect.cache")
+import("lib.detect.find_tool")
 
 -- try running 
-function _try_running(...)
-
-    local argv = {...}
+function _try_running(program, argv, opt)
     local errors = nil
-    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+    return try { function () os.runv(program, argv, opt); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
 -- attempt to check it from the argument list 
@@ -55,7 +54,7 @@ function _check_from_arglist(flags, opt)
         local arglist = nil
         try 
         {
-            function () os.runv(opt.program, {"-?"}) end,
+            function () os.runv(opt.program, {"-?"}, {envs = opt.envs}) end,
             catch 
             {
                 function (errors) arglist = errors end
@@ -71,8 +70,6 @@ function _check_from_arglist(flags, opt)
         cacheinfo[flagskey] = allflags
         cache.save(key, cacheinfo)
     end
-
-    -- ok?
     return allflags[flags[1]:gsub("/", "-"):lower()]
 end
 
@@ -94,16 +91,15 @@ function _check_try_running(flags, opt)
     -- compile the source file
     local objectfile = os.tmpfile() .. ".obj"
     local binaryfile = os.tmpfile() .. ".exe"
-    os.runv("cl", {"-c", "-nologo", "-Fo" .. objectfile, sourcefile})
+    local cl = find_tool("cl")
+    if cl then
+        os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = envs})
+    end
 
     -- try link it
-    local ok, errors = _try_running(opt.program, table.join(flags, "-nologo", "-out:" .. binaryfile, objectfile))
-
-    -- remove files
+    local ok, errors = _try_running(opt.program, table.join(flags, "-nologo", "-out:" .. binaryfile, objectfile), {envs = opt.envs})
     os.tryrm(objectfile)
     os.tryrm(binaryfile)
-
-    -- ok?
     return ok, errors
 end
 
