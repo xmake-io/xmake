@@ -85,6 +85,14 @@ function _need_check(changed)
         end
     end
 
+    -- xmake has been updated? force to check config again
+    -- we need clean the dirty config cache of the old version
+    if not changed then
+        if os.mtime(path.join(os.programdir(), "core", "main.lua")) > os.mtime(config.filepath()) then
+            changed = true
+        end
+    end
+
     -- update mtimes
     configcache:set("mtimes", mtimes)
 
