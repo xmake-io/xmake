@@ -29,10 +29,10 @@ function init(self)
     self:set("ldflags", "-nologo", "-dynamicbase", "-nxcompat")
 
     -- init arflags
-    self:set("arflags", "-nologo")
+    self:set("arflags", "-lib", "-nologo")
 
     -- init shflags
-    self:set("shflags", "-nologo")
+    self:set("shflags", "-dll", "-nologo")
 
     -- init flags map
     self:set("mapflags",
@@ -52,7 +52,7 @@ function get(self, name)
     local values = self._INFO[name]
     if name == "ldflags" or name == "arflags" or name == "shflags" then
         -- switch architecture, @note does cache it in init() for generating vs201x project 
-        values = table.join(values, "-machine:" .. (config.arch() or "x86"))
+        values = table.join(values, "-machine:" .. (self:arch() or "x86"))
     end
     return values
 end
@@ -108,7 +108,8 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
         function ()
     
             -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            vstool.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
+            local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
+            vstool.runv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {

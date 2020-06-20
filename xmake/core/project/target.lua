@@ -1693,7 +1693,7 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
-    local program, toolname
+    local program, toolname, toolchain_info
     local toolinfo = tools[toolkind]
     if toolinfo == nil then
         toolinfo = {}
@@ -1711,19 +1711,19 @@ function _instance:tool(toolkind)
         if not program and not self:get("toolchains") then 
             program = config.get(toolkind)
             toolname = config.get("__toolname_" .. toolkind)
+            toolchain_info = config.get("__toolchain_info_" .. toolkind)
         end
 
         -- get program from target/toolchains
         if not program then
             local toolchains = self:toolchains()
-            environment.enter("toolchains")
             for idx, toolchain_inst in ipairs(toolchains) do
                 program, toolname = toolchain_inst:tool(toolkind)
                 if program then
+                    toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
                     break
                 end
             end
-            environment.leave("toolchains")
         end
         
         -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -1738,13 +1738,15 @@ function _instance:tool(toolkind)
         if program then
             toolinfo[1] = program
             toolinfo[2] = toolname
+            toolinfo[3] = toolchain_info
         end
         tools[toolkind] = toolinfo
     else
         program  = toolinfo[1]
         toolname = toolinfo[2]
+        toolchain_info = toolinfo[3]
     end
-    return program, toolname
+    return program, toolname, toolchain_info
 end
 
 -- get tool configuration from the toolchains

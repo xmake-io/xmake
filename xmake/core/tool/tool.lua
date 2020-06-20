@@ -30,11 +30,12 @@ local table         = require("base/table")
 local string        = require("base/string")
 local config        = require("project/config")
 local sandbox       = require("sandbox/sandbox")
+local toolchain     = require("tool/toolchain")
 local platform      = require("platform/platform")
 local import        = require("sandbox/modules/import")
 
 -- new an instance
-function _instance.new(kind, name, program)
+function _instance.new(kind, name, program, plat, arch, toolchain_inst)
 
     -- import "core.tools.xxx"
     local toolclass = nil
@@ -51,10 +52,13 @@ function _instance.new(kind, name, program)
     local instance = table.inherit(_instance, toolclass)
 
     -- save name, kind and program
-    instance._NAME    = name
-    instance._KIND    = kind
-    instance._PROGRAM = program
-    instance._INFO    = {}
+    instance._NAME      = name
+    instance._KIND      = kind
+    instance._PROGRAM   = program
+    instance._PLAT      = plat
+    instance._ARCH      = arch
+    instance._TOOLCHAIN = toolchain_inst
+    instance._INFO      = {}
 
     -- init instance
     if instance.init then
@@ -78,9 +82,47 @@ function _instance:kind()
     return self._KIND
 end
 
+-- get the tool platform
+function _instance:plat()
+    return self._PLAT
+end
+
+-- get the tool architecture
+function _instance:arch()
+    return self._ARCH
+end
+
 -- get the tool program
 function _instance:program()
     return self._PROGRAM
+end
+
+-- get the toolchain of this tool
+function _instance:toolchain()
+    return self._TOOLCHAIN
+end
+
+-- get run environments
+function _instance:runenvs()
+    local runenvs = self._RUNENVS
+    if runenvs == nil then
+        local toolchain = self:toolchain()
+        if toolchain then
+            local toolchain_runenvs = toolchain:get("runenvs")
+            if toolchain_runenvs then
+                runenvs = {}
+                for name, values in pairs(toolchain_runenvs) do
+                    if type(values) == "table" then
+                        values = path.joinenv(values)
+                    end
+                    runenvs[name] = values
+                end
+            end
+        end
+        runenvs = runenvs or false
+        self._RUNENVS = runenvs
+    end
+    return runenvs or nil
 end
 
 -- set the value to the platform info
@@ -129,19 +171,30 @@ end
 
 -- load the given tool from the given kind
 --
--- @param kind      the tool kind e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
--- @param program   the tool program, e.g. /xxx/arm-linux-gcc, gcc@mipscc.exe, (optional)
--- @param toolname  gcc, clang, .. (optional)
+-- @param kind                the tool kind e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
+-- @param opt.program         the tool program, e.g. /xxx/arm-linux-gcc, gcc@mipscc.exe, (optional)
+-- @param opt.toolname        gcc, clang, .. (optional)
+-- @param opt.toolchain_info  the toolchain info (optional)
 --
-function tool.load(kind, program, toolname)
+function tool.load(kind, opt)
 
-    -- init key
-    local key = kind .. (program or "") .. (config.get("arch") or os.arch())
+    -- get tool information
+    opt = opt or {}
+    local program = opt.program
+    local toolname = opt.toolname
+    local toolchain_info = opt.toolchain_info or {}
+
+    -- get platform and architecture
+    local plat = toolchain_info.plat or config.get("plat") or os.host() 
+    local arch = toolchain_info.arch or config.get("arch") or os.arch() 
+
+    -- init cachekey
+    local cachekey = kind .. (program or "") .. plat .. arch
 
     -- get it directly from cache dirst
     tool._TOOLS = tool._TOOLS or {}
-    if tool._TOOLS[key] then
-        return tool._TOOLS[key]
+    if tool._TOOLS[cachekey] then
+        return tool._TOOLS[cachekey]
     end
 
     -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -155,7 +208,11 @@ function tool.load(kind, program, toolname)
 
     -- get the tool program and name
     if not program then
-        program, toolname = platform.tool(kind)
+        program, toolname, toolchain_info = platform.tool(kind)
+        if toolchain_info then
+            assert(toolchain_info.plat == plat)
+            assert(toolchain_info.arch == arch)
+        end
     end
     if not program then
         return nil, string.format("cannot get program for %s", kind)
@@ -176,14 +233,20 @@ function tool.load(kind, program, toolname)
         return nil, string.format("cannot find known tool script for %s", toolname or program)
     end
 
+    -- load toolchain instance
+    local toolchain_inst
+    if toolchain_info and toolchain_info.name then
+        toolchain_inst = toolchain.load(toolchain_info.name, plat, arch)
+    end
+
     -- new an instance
-    local instance, errors = _instance.new(kind, name, program)
+    local instance, errors = _instance.new(kind, name, program, plat, arch, toolchain_inst)
     if not instance then
         return nil, errors
     end
 
     -- save instance to the cache
-    tool._TOOLS[key] = instance
+    tool._TOOLS[cachekey] = instance
 
     -- ok
     return instance

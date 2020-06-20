@@ -181,7 +181,7 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
-    local program, toolname
+    local program, toolname, toolchain_info
     local toolinfo = tools[toolkind]
     if toolinfo == nil then
         toolinfo = {}
@@ -191,15 +191,17 @@ function _instance:tool(toolkind)
             if program then
                 toolinfo[1] = program
                 toolinfo[2] = toolname
+                toolinfo[3] = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
                 break
             end
         end
         tools[toolkind] = toolinfo
     else
-        program  = toolinfo[1]
-        toolname = toolinfo[2]
+        program        = toolinfo[1]
+        toolname       = toolinfo[2]
+        toolchain_info = toolinfo[3]
     end
-    return program, toolname
+    return program, toolname, toolchain_info
 end
 
 -- get tool configuration from the toolchains
@@ -503,6 +505,7 @@ function platform.tool(toolkind, plat)
     -- attempt to get program from config first
     local program = config.get(toolkind)
     local toolname = config.get("__toolname_" .. toolkind)
+    local toolchain_info = config.get("__toolchain_info_" .. toolkind)
     if program == nil then 
 
         -- get the current platform 
@@ -512,10 +515,11 @@ function platform.tool(toolkind, plat)
         end
 
         -- get it from the platform toolchains
-        program, toolname = instance:tool(toolkind)
+        program, toolname, toolchain_info = instance:tool(toolkind)
         if program then
             config.set(toolkind, program, {force = true, readonly = true})
             config.set("__toolname_" .. toolkind, toolname)
+            config.set("__toolchain_info_" .. toolkind, toolchain_info)
             config.save()
         end
     end
@@ -528,7 +532,7 @@ function platform.tool(toolkind, plat)
             program = program:sub(pos + 1)
         end
     end
-    return program, toolname
+    return program, toolname, toolchain_info
 end
 
 -- get the given tool configuration 

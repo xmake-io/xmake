@@ -78,13 +78,13 @@ end
 function compiler._load_tool(sourcekind, target)
 
     -- get program from target
-    local program, toolname
+    local program, toolname, toolchain_info
     if target and target:type() == "target" then
-        program, toolname = target:tool(sourcekind)
+        program, toolname, toolchain_info = target:tool(sourcekind)
     end
 
     -- load the compiler tool from the source kind
-    local result, errors = tool.load(sourcekind, program, toolname)
+    local result, errors = tool.load(sourcekind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
     if not result then 
         return nil, errors
     end
@@ -236,7 +236,7 @@ function compiler:compile(sourcefiles, objectfile, opt)
     end
 
     -- compile it
-    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags)
+    return sandbox.load(self:_tool().compile, self:_tool(), sourcefiles, objectfile, opt.dependinfo, compflags, opt)
 end
 
 -- get the compile arguments list
