@@ -55,14 +55,14 @@ function sandbox_lib_detect_find_program._check(program, opt)
 
     -- no check script? attempt to run it directly
     if not opt.check then
-        return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev()})
+        return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev(), envs = opt.envs})
     end
 
     -- check it
     local ok = false
     local errors = nil
     if type(opt.check) == "string" then
-        ok, errors = os.runv(program, {opt.check})
+        ok, errors = os.runv(program, {opt.check}, {envs = opt.envs})
     else
         ok, errors = sandbox.load(opt.check, program)
     end
@@ -71,8 +71,6 @@ function sandbox_lib_detect_find_program._check(program, opt)
     if not ok and option.get("diagnosis") then
         utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
     end
-
-    -- ok?
     return ok
 end
 
@@ -233,6 +231,7 @@ end
 -- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}, check = function (program) os.run("%s -h", program) end})
 -- local program = find_program("ccache", {pathes = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
 -- local program = find_program("ccache", {pathes = {"$(env PATH)", function () return "/usr/local/bin" end}})
+-- local program = find_program("ccache", {envs = {PATH = "xxx"}})
 --
 -- @endcode
 --
@@ -259,16 +258,27 @@ function sandbox_lib_detect_find_program.main(name, opt)
     local cacheinfo = cache.load(cachekey)
     local result = cacheinfo[name]
     if result ~= nil and not opt.force then
-        return utils.ifelse(result, result, nil)
+        return result and result or nil
+    end
+
+    -- get pathes from the opt.envs.PATH
+    local envs = opt.envs
+    local pathes = opt.pathes
+    if envs and (envs.PATH or envs.path) then
+        local pathenv = envs.PATH or envs.path
+        if type(pathenv) == "string" then
+            pathenv = path.splitenv(pathenv)
+        end
+        pathes = table.join(table.wrap(opt.pathes), pathenv)
     end
 
     -- find executable program
-    checking = utils.ifelse(coroutine_running, name, nil)
-    result = sandbox_lib_detect_find_program._find(name, opt.pathes, opt)
+    checking = coroutine_running and name or nil
+    result = sandbox_lib_detect_find_program._find(name, pathes, opt)
     checking = nil
 
     -- cache result
-    cacheinfo[name] = utils.ifelse(result, result, false)
+    cacheinfo[name] = result and result or false
 
     -- save cache info
     cache.save(cachekey, cacheinfo)
@@ -276,13 +286,11 @@ function sandbox_lib_detect_find_program.main(name, opt)
     -- trace
     if option.get("verbose") or opt.verbose then
         if result then
-            utils.cprint("checking for the %s ... ${color.success}%s", name, utils.ifelse(name == result, "${text.success}", result))
+            utils.cprint("checking for the %s ... ${color.success}%s", name, (name == result and "${text.success}" or result))
         else
             utils.cprint("checking for the %s ... ${color.nothing}${text.nothing}", name)
         end
     end
-
-    -- ok?
     return result
 end
 

@@ -75,8 +75,8 @@ function main(toolchain)
         toolchain:set("toolset", "as",  "ml.exe")
     end
     toolchain:set("toolset", "ld",  "link.exe")
-    toolchain:set("toolset", "sh",  "link.exe -dll")
-    toolchain:set("toolset", "ar",  "link.exe -lib")
+    toolchain:set("toolset", "sh",  "link.exe")
+    toolchain:set("toolset", "ar",  "link.exe")
     toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add vs environments

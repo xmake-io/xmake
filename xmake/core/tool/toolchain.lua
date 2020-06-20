@@ -161,23 +161,6 @@ function _instance:sdkdir()
     return config.get("sdk") or self:get("sdkdir")
 end
 
--- do load, @note we need load it repeatly for each architectures 
-function _instance:_load()
-    local info = self:info()
-    if not info:get("__loaded") and not info:get("__loading") then
-        local on_load = info:get("load")
-        if on_load then
-            info:set("__loading", true)
-            local ok, errors = sandbox.load(on_load, self)
-            info:set("__loading", false)
-            if not ok then
-                os.raise(errors)
-            end
-        end
-        info:set("__loaded", true)
-    end
-end
-
 -- do check, we only check it once for all architectures 
 function _instance:check()
     local checkok = true
@@ -194,6 +177,23 @@ function _instance:check()
         self._CHECKED = true
     end
     return checkok
+end
+
+-- do load, @note we need load it repeatly for each architectures 
+function _instance:_load()
+    local info = self:info()
+    if not info:get("__loaded") and not info:get("__loading") then
+        local on_load = info:get("load")
+        if on_load then
+            info:set("__loading", true)
+            local ok, errors = sandbox.load(on_load, self)
+            info:set("__loading", false)
+            if not ok then
+                os.raise(errors)
+            end
+        end
+        info:set("__loaded", true)
+    end
 end
 
 -- get the tool description from the tool kind
@@ -262,7 +262,7 @@ function _instance:_checktool(toolkind, toolpath)
 
     -- find tool program
     local program, toolname
-    local tool = find_tool(toolpath, {program = toolpath, pathes = self:bindir()})
+    local tool = find_tool(toolpath, {program = toolpath, pathes = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = tool.name

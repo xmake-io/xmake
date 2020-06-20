@@ -50,9 +50,9 @@ function main(opt)
         io.writefile(sourcefile, "int test(void)\n{return 0;}")
 
         -- check it
-        os.run("cl -c -Fo%s %s", objectfile, sourcefile)
-        os.run("link -lib -out:%s %s", libraryfile, objectfile)
-        verinfo = os.iorun("%s -list %s", program, libraryfile)
+        os.runv("cl", {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
+        os.runv("link", {"-lib", "-out:" .. libraryfile, objectfile}, {envs = opt.envs})
+        verinfo = os.iorunv(program, {"-list", libraryfile}, {envs = opt.envs})
 
         -- remove files
         os.rm(objectfile)

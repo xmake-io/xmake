@@ -38,7 +38,7 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.check   = opt.check or function (program) os.run(program) end
+    opt.check   = opt.check or function (program) os.runv(program, {}, {envs = opt.envs}) end
     
     -- find program
     local program = find_program(opt.program or "cl.exe", opt)

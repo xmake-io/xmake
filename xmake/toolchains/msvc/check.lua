@@ -59,21 +59,11 @@ function _check_vsenv(toolchain)
                 config.set("__vcvarsall", vcvarsall)
 
                 -- check compiler
-                local oldenvs = {}
-                oldenvs.PATH    = os.getenv("PATH")
-                oldenvs.LIB     = os.getenv("LIB")
-                os.setenv("PATH",    vsenv.path .. ';' .. (oldenvs.PATH or ""))
-                os.setenv("LIB",     vsenv.lib .. ';' .. (oldenvs.LIB or ""))
                 local program = nil
-                local tool = find_tool("cl.exe", {force = true})
+                local tool = find_tool("cl.exe", {force = true, envs = vsenv})
                 if tool then
                     program = tool.program
                 end
-                for name, values in pairs(oldenvs) do
-                    os.setenv(name, values)
-                end
-
-                -- ok?
                 if program then
                     return vsver
                 end

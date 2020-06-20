@@ -78,7 +78,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. outdata)
         end
     else
-        ok, outdata = os.iorunv(program, {command or "--version"})
+        ok, outdata = os.iorunv(program, {command or "--version"}, {envs = opt.envs})
     end
 
     -- find version info
