@@ -32,7 +32,7 @@ import("core.base.scheduler")
 -- @code
 -- local features = features("clang")
 -- local features = features("clang", {flags = "-O0", program = "xcrun -sdk macosx clang"})
--- local features = features("clang", {flags = {"-g", "-O0"}})
+-- local features = features("clang", {flags = {"-g", "-O0"}, envs = {PATH = ""}})
 -- @endcode
 --
 function main(name, opt)

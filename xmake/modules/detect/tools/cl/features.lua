@@ -36,8 +36,8 @@ function _get_macro_defines(snippets, extension, opt)
     local defines = try 
     {
         function () 
-            os.runv(opt.program, table.join(opt.flags or {}, {"-nologo", "-Fo" .. objectfile, sourcefile, "-link", "-out:" .. binaryfile}))
-            return os.iorunv(binaryfile)
+            os.runv(opt.program, table.join(opt.flags or {}, {"-nologo", "-Fo" .. objectfile, sourcefile, "-link", "-out:" .. binaryfile}), {envs = opt.envs})
+            return os.iorunv(binaryfile, {}, {envs = opt.envs})
         end 
     }
     if defines then
@@ -50,8 +50,6 @@ function _get_macro_defines(snippets, extension, opt)
     os.tryrm(sourcefile)
     os.tryrm(objectfile)
     os.tryrm(binaryfile)
-
-    -- ok?
     return results
 end
 
@@ -97,6 +95,7 @@ end
 function check_features(opt)
 
     -- check features with all extensions
+    opt = opt or {}
     local results = {}
     for extension, features in pairs(_g.features) do
 
