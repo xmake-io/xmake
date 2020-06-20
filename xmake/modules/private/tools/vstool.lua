@@ -31,8 +31,7 @@ function runv(program, argv, opt)
 
     -- enable unicode output for vs toolchains, e.g. cl.exe, link.exe and etc.
     -- @see https://github.com/xmake-io/xmake/issues/528
-    opt.envs = opt.envs or {}
-    opt.envs.VS_UNICODE_OUTPUT = outfile:rawfd()
+    opt.envs = table.join(opt.envs or {}, {VS_UNICODE_OUTPUT = outfile:rawfd()})
 
     -- execute it
     local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath}))
@@ -94,8 +93,7 @@ function iorunv(program, argv, opt)
 
     -- enable unicode output for vs toolchains, e.g. cl.exe, link.exe and etc.
     -- @see https://github.com/xmake-io/xmake/issues/528
-    opt.envs = opt.envs or {}
-    opt.envs.VS_UNICODE_OUTPUT = outfile:rawfd()
+    opt.envs = table.join(opt.envs or {}, {VS_UNICODE_OUTPUT = outfile:rawfd()})
 
     -- run command
     local ok, syserrors = os.execv(program, argv, table.join(opt, {try = true, stdout = outfile, stderr = errpath}))
