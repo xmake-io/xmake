@@ -119,7 +119,7 @@ function sandbox_core_project.check()
     local targets = project.targets()
     if targets then
         for _, target in pairs(targets) do
-            if target:get("enabled") ~= false and target:get("toolchains") then
+            if target:get("enabled") ~= false and (target:get("toolchains") or target:plat() ~= config.get("plat")) then
                 for _, toolchain_inst in pairs(target:toolchains()) do
                     if not toolchain_inst:check() then
                         raise("toolchain(\"%s\"): not found!", toolchain_inst:name())

@@ -446,12 +446,12 @@ end
 
 -- get the platform of this target
 function _instance:plat()
-    return config.get("plat") or os.host()
+    return self:get("plat") or config.get("plat") or os.host()
 end
 
 -- get the architecture of this target
 function _instance:arch()
-    return config.get("arch") or os.arch()
+    return self:get("arch") or config.get("arch") or os.arch()
 end
 
 -- get the cache key 
@@ -728,13 +728,13 @@ function _instance:objectdir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         objectdir = path.join(objectdir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         objectdir = path.join(objectdir, arch)
     end
@@ -763,13 +763,13 @@ function _instance:dependir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         dependir = path.join(dependir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         dependir = path.join(dependir, arch)
     end
@@ -794,13 +794,13 @@ function _instance:autogendir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         autogendir = path.join(autogendir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         autogendir = path.join(autogendir, arch)
     end
@@ -866,13 +866,13 @@ function _instance:targetdir()
         targetdir = config.buildir()
 
         -- append plat sub-directory
-        local plat = config.get("plat")
+        local plat = self:plat()
         if plat then
             targetdir = path.join(targetdir, plat)
         end
 
         -- append arch sub-directory
-        local arch = config.get("arch")
+        local arch = self:arch()
         if arch then
             targetdir = path.join(targetdir, arch)
         end
@@ -1509,8 +1509,8 @@ function _instance:script(name, generic)
     elseif type(script) == "table" then
 
         -- get plat and arch
-        local plat = config.get("plat") or ""
-        local arch = config.get("arch") or ""
+        local plat = self:plat()
+        local arch = self:arch()
 
         -- match pattern
         --
@@ -1801,6 +1801,8 @@ function target.apis()
         {
             -- target.set_xxx
             "target.set_kind"
+        ,   "target.set_plat"
+        ,   "target.set_arch"
         ,   "target.set_strip"
         ,   "target.set_rules"
         ,   "target.set_version"
