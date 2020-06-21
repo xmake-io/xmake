@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.tty")
+import("core.project.config")
 import(".utils.filter")
 import("net.http")
 import("devel.git")
@@ -90,8 +91,12 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         os.tryrm(packagefile)
 
         -- download or copy package file
+        local localfile = path.join(config.buildir(), path.filename(url))
         if os.isfile(url) then
             os.cp(url, packagefile)
+        elseif os.isfile(localfile) then
+            -- we can download package to build/filename manually if network is too slow
+            os.cp(localfile, packagefile)
         else
             http.download(url, packagefile)
         end
@@ -206,6 +211,7 @@ function main(package)
                         cprint("${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
                     else
                         cprint("${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
+                        wprint("we can also download ${bright}%s${clear} to ${bright}$(buildir)/%s${clear} manually", url, path.filename(url))
                     end
 
                     -- failed? break it
