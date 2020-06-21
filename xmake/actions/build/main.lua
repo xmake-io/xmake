@@ -73,9 +73,7 @@ function _try_build()
         if not trybuild then
             task.run("config", {target = targetname, trybuild = trybuild_detected})
         end
-        environment.enter("toolchains")
         tool.build()
-        environment.leave("toolchains")
         return true
     end
 end

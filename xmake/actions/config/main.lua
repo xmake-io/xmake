@@ -249,7 +249,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         config.check()
 
         -- check project options
-        project.check()
+        if not trybuild then
+            project.check()
+        end
     end
 
     -- load platform
