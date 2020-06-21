@@ -454,6 +454,19 @@ function _instance:arch()
     return self:get("arch") or config.get("arch") or os.arch()
 end
 
+-- get the platform instance
+function _instance:platform()
+    local platform_inst = self._PLATFORM
+    if platform_inst == nil then
+        platform_inst, errors = platform.load(self:plat(), self:arch())
+        if not platform_inst then
+            os.raise(errors)
+        end
+        self._PLATFORM = platform_inst
+    end
+    return platform_inst
+end
+
 -- get the cache key 
 function _instance:cachekey()
     return string.format("%s_%d", tostring(self), self._CACHEID)
@@ -903,7 +916,7 @@ function _instance:targetfile()
     end
 
     -- make the target file name and attempt to use the format of linker first
-    local filename = self:get("filename") or target.filename(self:basename(), targetkind, self:linker():format(targetkind))
+    local filename = self:get("filename") or target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
     assert(filename)
 
     -- make the target file path
@@ -918,7 +931,7 @@ function _instance:symbolfile()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
-    local filename = target.filename(self:basename(), "symbol")
+    local filename = target.filename(self:basename(), "symbol", {plat = self:plat(), arch = self:arch()})
     assert(filename)
 
     -- make the symbol file path
@@ -1145,7 +1158,7 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object")})
+    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
 end
 
 -- get the object files
@@ -1684,11 +1697,7 @@ end
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
     if toolchains == nil then
-        local instance, errors = platform.load(self:plat(), self:arch())
-        if not instance then
-            os.raise(errors)
-        end
-        toolchains = instance:toolchains()
+        toolchains = self:platform():toolchains()
         self._TOOLCHAINS = toolchains
     end
     return toolchains
@@ -1899,13 +1908,14 @@ function target.apis()
 end
 
 -- get the filename from the given target name and kind
-function target.filename(targetname, targetkind, targetformat)
+function target.filename(targetname, targetkind, opt)
 
     -- check
+    opt = opt or {}
     assert(targetname and targetkind)
 
     -- make filename by format
-    local format = targetformat or platform.format(targetkind) 
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) 
     return format and (format:gsub("%$%(name%)", targetname)) or targetname
 end
 
@@ -1918,9 +1928,9 @@ function target.linkname(filename)
     if count == 0 and config.is_plat("mingw") then
         -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
         local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-        linkname, count = filename:gsub(target.filename("__pattern__", "static", formats["static"]):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+        linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         if count == 0 then
-            linkname, count = filename:gsub(target.filename("__pattern__", "shared", formats["shared"]):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+            linkname, count = filename:gsub(target.filename("__pattern__", "shared", {format = formats["shared"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         end
     end
     return count > 0 and linkname or nil

@@ -67,7 +67,7 @@ function sandbox_lib_detect_find_library.main(names, pathes, opt)
             if not filepath and config.is_plat("mingw") then
                 -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
                 local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-                filepath = find_file(target.filename(name, kind, formats[kind]), pathes, opt)
+                filepath = find_file(target.filename(name, kind, {format = formats[kind]}), pathes, opt)
             end
             if filepath then
                 local filename = path.filename(filepath)

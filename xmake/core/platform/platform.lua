@@ -492,8 +492,8 @@ function platform.load(plat, arch)
 end
 
 -- get the given platform configuration
-function platform.get(name, plat)
-    local instance, errors = platform.load(plat)
+function platform.get(name, plat, arch)
+    local instance, errors = platform.load(plat, arch)
     if instance then
         return instance:get(name)
     else
@@ -544,8 +544,8 @@ function platform.tool(toolkind, plat, arch)
 end
 
 -- get the given tool configuration 
-function platform.toolconfig(name, plat)
-    local instance, errors = platform.load(plat)
+function platform.toolconfig(name, plat, arch)
+    local instance, errors = platform.load(plat, arch)
     if instance then
         return instance:toolconfig(name)
     else
@@ -604,20 +604,20 @@ function platform.toolchains()
 end
 
 -- get the platform os
-function platform.os(plat)
-    return platform.get("os", plat)
+function platform.os(plat, arch)
+    return platform.get("os", plat, arch)
 end
 
 -- get the platform archs
-function platform.archs(plat)
-    return platform.get("archs", plat)
+function platform.archs(plat, arch)
+    return platform.get("archs", plat, arch)
 end
 
 -- get the format of the given target kind for platform
-function platform.format(targetkind)
+function platform.format(targetkind, plat, arch)
 
     -- get platform instance
-    local instance, errors = platform.load(plat)
+    local instance, errors = platform.load(plat, arch)
     if not instance then
         os.raise(errors)
     end

@@ -26,18 +26,18 @@ local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
 -- load the current platform
-function sandbox_core_platform.load(plat)
+function sandbox_core_platform.load(plat, arch)
 
     -- load the platform configure
-    local ok, errors = platform.load(plat) 
+    local ok, errors = platform.load(plat, arch)
     if not ok then
         raise(errors)
     end
 end
 
 -- get the platform os
-function sandbox_core_platform.os()
-    return platform.os()
+function sandbox_core_platform.os(plat, arch)
+    return platform.os(plat, arch)
 end
 
 -- get the all platforms
@@ -51,26 +51,26 @@ function sandbox_core_platform.toolchains()
 end
 
 -- get the all architectures for the given platform
-function sandbox_core_platform.archs(plat)
-    return platform.archs(plat)
+function sandbox_core_platform.archs(plat, arch)
+    return platform.archs(plat, arch)
 end
 
 -- get the current platform configuration
-function sandbox_core_platform.get(name, plat)
-    return platform.get(name, plat)
+function sandbox_core_platform.get(name, plat, arch)
+    return platform.get(name, plat, arch)
 end
 
 -- get the platform tool from the kind
 --
 -- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
-function sandbox_core_platform.tool(toolkind)
-    return platform.tool(toolkind)
+function sandbox_core_platform.tool(toolkind, plat, arch)
+    return platform.tool(toolkind, plat, arch)
 end
 
 -- get the current platform tool configuration
-function sandbox_core_platform.toolconfig(name, plat)
-    return platform.toolconfig(name, plat)
+function sandbox_core_platform.toolconfig(name, plat, arch)
+    return platform.toolconfig(name, plat, arch)
 end
 
 -- return module
