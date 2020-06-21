@@ -49,7 +49,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
