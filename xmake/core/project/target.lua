@@ -444,6 +444,16 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the platform of this target
+function _instance:plat()
+    return config.get("plat") or os.host()
+end
+
+-- get the architecture of this target
+function _instance:arch()
+    return config.get("arch") or os.arch()
+end
+
 -- get the cache key 
 function _instance:cachekey()
     return string.format("%s_%d", tostring(self), self._CACHEID)
@@ -1672,7 +1682,7 @@ end
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
     if toolchains == nil then
-        local instance, errors = platform.load()
+        local instance, errors = platform.load(self:plat(), self:arch())
         if not instance then
             os.raise(errors)
         end
@@ -1693,8 +1703,9 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
+    local key = toolkind .. "_" .. self:plat() .. "_" .. self:arch()
     local program, toolname, toolchain_info
-    local toolinfo = tools[toolkind]
+    local toolinfo = tools[key]
     if toolinfo == nil then
         toolinfo = {}
 
@@ -1709,9 +1720,9 @@ function _instance:tool(toolkind)
 
         -- attempt to get program from config first if no the given toolchains in target
         if not program and not self:get("toolchains") then 
-            program = config.get(toolkind)
-            toolname = config.get("__toolname_" .. toolkind)
-            toolchain_info = config.get("__toolchain_info_" .. toolkind)
+            program = config.get(toolkind) or config.get("__tool_" .. key)
+            toolname = config.get("__toolname_" .. key)
+            toolchain_info = config.get("__toolchain_info_" .. key)
         end
 
         -- get program from target/toolchains
@@ -1740,7 +1751,7 @@ function _instance:tool(toolkind)
             toolinfo[2] = toolname
             toolinfo[3] = toolchain_info
         end
-        tools[toolkind] = toolinfo
+        tools[key] = toolinfo
     else
         program  = toolinfo[1]
         toolname = toolinfo[2]

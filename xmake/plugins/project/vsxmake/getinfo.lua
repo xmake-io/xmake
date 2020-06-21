@@ -284,6 +284,9 @@ function main(outputdir, vsinfo)
             -- clear project to reload and recheck it
             project.clear()
 
+            -- check configure
+            config.check()
+
             -- check project options
             project.check()
 

@@ -34,9 +34,10 @@ local config         = require("project/config")
 local global         = require("base/global")
 
 -- new an instance
-function _instance.new(name, info)
+function _instance.new(name, arch, info)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
+    instance._ARCH    = arch
     instance._INFO    = info
     return instance
 end
@@ -44,6 +45,11 @@ end
 -- get platform name
 function _instance:name()
     return self._NAME
+end
+
+-- get platform architecture
+function _instance:arch()
+    return self._ARCH or config.get("arch")
 end
 
 -- set the value to the platform configuration
@@ -129,13 +135,13 @@ function _instance:toolchains(opt)
         local names = nil
         toolchains = {}
         if not (opt and opt.all) then
-            names = config.get("__toolchains")
+            names = config.get("__toolchains_" .. self:name() .. "_" .. self:arch())
         end
         if not names then
             -- get the given toolchain
             local toolchain_given = config.get("toolchain")
             if toolchain_given then
-                local toolchain_inst, errors = toolchain.load(toolchain_given, {plat = self:name()})
+                local toolchain_inst, errors = toolchain.load(toolchain_given, {plat = self:name(), arch = self:arch()})
                 -- attempt to load toolchain from project
                 if not toolchain_inst and platform._project() then
                     toolchain_inst = platform._project().toolchain(toolchain_given)
@@ -154,7 +160,7 @@ function _instance:toolchains(opt)
         end
         if names then
             for _, name in ipairs(names) do
-                local toolchain_inst, errors = toolchain.load(name, {plat = self:name()})
+                local toolchain_inst, errors = toolchain.load(name, {plat = self:name(), arch = self:arch()})
                 -- attempt to load toolchain from project
                 if not toolchain_inst and platform._project() then
                     toolchain_inst = platform._project().toolchain(name)
@@ -294,7 +300,7 @@ function _instance:check()
     end
 
     -- save valid toolchains
-    config.set("__toolchains", toolchains_valid)
+    config.set("__toolchains_" .. self:name() .. "_" .. self:arch(), toolchains_valid)
     return true
 end
 
@@ -418,16 +424,14 @@ function platform.add_directories(...)
 end
 
 -- load the given platform 
-function platform.load(plat)
+function platform.load(plat, arch)
 
     -- get platform name
     plat = plat or config.get("plat") or os.host()
-    if not plat then
-        return nil, string.format("unknown platform!")
-    end
+    arch = arch or config.get("arch") or os.arch()
 
     -- get cache key
-    local cachekey = plat .. "_" .. (config.get("arch") or os.arch())
+    local cachekey = plat .. "_" .. arch
 
     -- get it directly from cache dirst
     platform._PLATFORMS = platform._PLATFORMS or {}
@@ -482,7 +486,7 @@ function platform.load(plat)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(plat, result)
+    local instance = _instance.new(plat, arch, result)
     platform._PLATFORMS[cachekey] = instance
     return instance
 end
@@ -501,16 +505,19 @@ end
 --
 -- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
-function platform.tool(toolkind, plat)
+function platform.tool(toolkind, plat, arch)
 
     -- attempt to get program from config first
-    local program = config.get(toolkind)
-    local toolname = config.get("__toolname_" .. toolkind)
-    local toolchain_info = config.get("__toolchain_info_" .. toolkind)
+    plat = plat or config.get("plat") or os.host()
+    arch = arch or config.get("arch") or os.arch()
+    local key = toolkind .. "_" .. plat .. "_" .. arch
+    local program = config.get(toolkind) or config.get("__tool_" .. key)
+    local toolname = config.get("__toolname_" .. key)
+    local toolchain_info = config.get("__toolchain_info_" .. key)
     if program == nil then 
 
         -- get the current platform 
-        local instance, errors = platform.load(plat)
+        local instance, errors = platform.load(plat, arch)
         if not instance then
             os.raise(errors)
         end
@@ -518,9 +525,9 @@ function platform.tool(toolkind, plat)
         -- get it from the platform toolchains
         program, toolname, toolchain_info = instance:tool(toolkind)
         if program then
-            config.set(toolkind, program, {force = true, readonly = true})
-            config.set("__toolname_" .. toolkind, toolname)
-            config.set("__toolchain_info_" .. toolkind, toolchain_info)
+            config.set("__tool_" .. key, program, {force = true, readonly = true})
+            config.set("__toolname_" .. key, toolname)
+            config.set("__toolchain_info_" .. key, toolchain_info)
             config.save()
         end
     end

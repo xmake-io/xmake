@@ -193,7 +193,7 @@ function tool.load(kind, opt)
 
     -- get the tool program and name
     if not program then
-        program, toolname, toolchain_info = platform.tool(kind)
+        program, toolname, toolchain_info = platform.tool(kind, plat, arch)
         if toolchain_info then
             assert(toolchain_info.plat == plat)
             assert(toolchain_info.arch == arch)
