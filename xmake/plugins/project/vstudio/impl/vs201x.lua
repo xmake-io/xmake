@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.environment")
 import("core.tool.compiler")
 import("core.tool.linker")
 import("vs201x_solution")
@@ -247,9 +246,6 @@ function make(outputdir, vsinfo)
             -- ensure to enter project directory
             os.cd(project.directory())
 
-            -- enter environment (maybe check flags by calling tools)
-            environment.enter("toolchains")
-
             -- save targets
             for targetname, target in pairs(project.targets()) do
                 if not target:isphony() then
@@ -277,9 +273,6 @@ function make(outputdir, vsinfo)
                     _make_targetheaders(mode, arch, target, mode_idx == #vsinfo.modes and arch_idx == 2)
                 end
             end
-
-            -- leave environment
-            environment.leave("toolchains")
         end
     end
 

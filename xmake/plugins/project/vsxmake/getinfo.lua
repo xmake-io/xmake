@@ -26,7 +26,6 @@ import("core.project.config")
 import("core.project.cache")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.environment")
 import("core.tool.compiler")
 import("core.tool.linker")
 import("lib.detect.find_tool")
@@ -300,9 +299,6 @@ function main(outputdir, vsinfo)
             -- ensure to enter project directory
             os.cd(project.directory())
 
-            -- enter environment (maybe check flags by calling tools)
-            environment.enter("toolchains")
-
             -- save targets
             for targetname, target in pairs(project.targets()) do
                 if not target:isphony() then
@@ -333,9 +329,6 @@ function main(outputdir, vsinfo)
                     _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
                 end
             end
-
-            -- leave environment
-            environment.leave("toolchains")
         end
     end
 

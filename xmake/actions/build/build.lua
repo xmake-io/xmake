@@ -22,7 +22,6 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.environment")
 import("private.async.jobpool")
 import("private.async.runjobs")
 import("core.base.hashset")
@@ -219,14 +218,12 @@ function main(targetname)
     -- build all jobs
     local batchjobs = get_batchjobs(targetname)
     if batchjobs and batchjobs:size() > 0 then
-        environment.enter("toolchains")
         runjobs("build", batchjobs, {comax = option.get("jobs") or 1, on_exit = function (errors)
             import("private.utils.progress")
             if errors and progress.showing_without_scroll() then
                 print("")
             end
         end})
-        environment.leave("toolchains")
     end
 end
 
