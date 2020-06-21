@@ -14,7 +14,7 @@
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): Support to override builtin-rules for `add_files("src/*.c", {rules = {"xx", override = true}})`
 * [#847](https://github.com/xmake-io/xmake/issues/847): Support to parse include deps for rc file
 * Improve msvc tool chain, remove the dependence of global environment variables
-* Improved `set_toolchains()` when cross-compilation is supported, specific target can be switched to host toolchain and compiled at the same time
+* [#857](https://github.com/xmake-io/xmake/pull/857): Improved `set_toolchains()` when cross-compilation is supported, specific target can be switched to host toolchain and compiled at the same time
 
 ### Bugs fixed
 
@@ -779,7 +779,7 @@
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): 支持完全重写内置的构建规则，`add_files("src/*.c", {rules = {"xx", override = true}})`
 * [#847](https://github.com/xmake-io/xmake/issues/847): 支持rc文件的头文件依赖解析
 * 改进msvc工具链，去除全局环境变量的依赖
-* 改进`set_toolchains()`支持交叉编译的时候，特定target可以切换到host工具链同时编译
+* [#857](https://github.com/xmake-io/xmake/pull/857): 改进`set_toolchains()`支持交叉编译的时候，特定target可以切换到host工具链同时编译
 
 ### Bugs修复
 
