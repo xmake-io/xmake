@@ -116,22 +116,19 @@ function sandbox_core_project.check()
 
     -- check toolchains configuration for all target in the current project
     -- @note we must check targets after loading options
-    local targets = project.targets()
-    if targets then
-        for _, target in pairs(targets) do
-            if target:get("enabled") ~= false and (target:get("toolchains") or target:plat() ~= config.get("plat")) then
-                for _, toolchain_inst in pairs(target:toolchains()) do
-                    -- check toolchains for `target/set_toolchains()`
-                    if target:get("toolchains") then
-                        if not toolchain_inst:check() then
-                            raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
-                        end
-                    else
-                        -- check platform toolchains for `target/set_plat()`
-                        local ok, errors = target:platform():check()
-                        if not ok then
-                            raise(errors)
-                        end
+    for _, target in pairs(table.wrap(targets)) do
+        if target:get("enabled") ~= false and (target:get("toolchains") or target:plat() ~= config.get("plat")) then
+            for _, toolchain_inst in pairs(target:toolchains()) do
+                -- check toolchains for `target/set_toolchains()`
+                if target:get("toolchains") then
+                    if not toolchain_inst:check() then
+                        raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+                    end
+                else
+                    -- check platform toolchains for `target/set_plat()`
+                    local ok, errors = target:platform():check()
+                    if not ok then
+                        raise(errors)
                     end
                 end
             end
