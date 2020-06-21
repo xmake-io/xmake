@@ -1085,6 +1085,7 @@ function _instance:sourcefiles()
     local count = 0
     local sourcefiles = {}
     local sourcefiles_deleted = {}
+    local sourcefiles_inserted = {}
     local deleted_count = 0
     for _, file in ipairs(table.wrap(files)) do
 
@@ -1120,8 +1121,9 @@ function _instance:sourcefiles()
             if deleted then
                 deleted_count = deleted_count + 1
                 sourcefiles_deleted[sourcefile] = true
-            else
+            elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
+                sourcefiles_inserted[sourcefile] = true
             end
         end
     end
