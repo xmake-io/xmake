@@ -91,7 +91,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         os.tryrm(packagefile)
 
         -- download or copy package file
-        local localfile = path.join(config.buildir(), path.filename(url))
+        local localfile = path.join(config.buildir(), path.filename(packagefile))
         if os.isfile(url) then
             os.cp(url, packagefile)
         elseif os.isfile(localfile) then
@@ -211,7 +211,7 @@ function main(package)
                         cprint("${yellow}  => ${clear}clone %s %s .. ${color.failure}${text.failure}", url, package:version_str())
                     else
                         cprint("${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
-                        wprint("we can also download ${bright}%s${clear} to ${bright}$(buildir)/%s${clear} manually", url, path.filename(url))
+                        wprint("we can also download ${bright}%s${clear} to ${bright}$(buildir)/%s${clear} manually and try it again!", url, package:name() .. "-" .. package:version_str() .. archive.extension(url))
                     end
 
                     -- failed? break it
