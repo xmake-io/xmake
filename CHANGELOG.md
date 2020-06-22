@@ -5,6 +5,7 @@
 ### New features
 
 * Add `xmake show -l envs` to show all builtin envirnoment variables
+* [#861](https://github.com/xmake-io/xmake/issues/861): Support search local package file to install remote package
 
 ### Change
 
@@ -770,6 +771,7 @@
 ### 新特性
 
 * 添加`xmake show -l envs`去显示xmake内置的环境变量列表
+* [#861](https://github.com/xmake-io/xmake/issues/861): 支持从指定目录搜索本地包去直接安装远程依赖包
 
 ### 改进
 
