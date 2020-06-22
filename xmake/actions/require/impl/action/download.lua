@@ -107,6 +107,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         end
     end
 
+    print(os.curdir(), os.isdir(sourcedir .. ".tmp"))
     -- extract package file
     os.rm(sourcedir .. ".tmp")
     if archive.extract(packagefile, sourcedir .. ".tmp", {excludes = url_excludes}) then
