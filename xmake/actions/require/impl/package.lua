@@ -139,6 +139,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         version          = version,
         plat             = require_extra.plat,      -- require package in the given platform 
         arch             = require_extra.arch,      -- require package in the given architecture
+        kind             = require_extra.kind,      -- default: library, set package kind, e.g. binary, library, we can set `kind = "binary"` to only detect binary program and ignore library.
         alias            = require_extra.alias,     -- set package alias name
         group            = require_extra.group,     -- only uses the first package in same group
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually

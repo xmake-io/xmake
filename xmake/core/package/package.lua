@@ -244,9 +244,16 @@ function _instance:revision(url_alias)
     return self:sourcehash(url_alias)
 end
 
--- get the package kind, binary or nil(static, shared)
+-- get the package kind, binary or nil(library)
 function _instance:kind()
-    return self:get("kind")
+    local kind = self:get("kind")
+    if not kind then
+        local requireinfo = self:requireinfo()
+        if requireinfo then
+            kind = requireinfo.kind
+        end
+    end
+    return kind
 end
 
 -- get the filelock of the whole package directory
