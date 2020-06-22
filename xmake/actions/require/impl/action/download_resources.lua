@@ -20,6 +20,8 @@
 
 -- imports
 import("core.base.option")
+import("core.package.package", {alias = "core_package"})
+import("lib.detect.find_file")
 import("net.http")
 import("utils.archive")
 
@@ -42,8 +44,12 @@ function _download(package, resource_name, resource_url, resource_hash)
         -- attempt to remove the previous file first
         os.tryrm(resource_file)
 
-        -- download the resource file
-        if resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
+        -- download or copy the resource file
+        local localfile = find_file(path.filename(resource_file), core_package.searchdirs())
+        if localfile and os.isfile(localfile) then
+            -- we can use local resource from the search directories directly if network is too slow
+            os.cp(localfile, resource_file)
+        elseif resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
             http.download(resource_url, resource_file)
         else
             raise("invalid resource url(%s)", resource_url)
@@ -69,7 +75,6 @@ end
 
 -- download all resources of the given package
 function main(package)
-
 
     -- no resources?
     local resources = package:resources()

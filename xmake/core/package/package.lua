@@ -1163,7 +1163,15 @@ end
 
 -- the install directory
 function package.installdir()
-    return path.join(global.directory(), "packages")
+    return global.get("pkg_installdir") or path.join(global.directory(), "packages")
+end
+
+-- the search directories
+function package.searchdirs()
+    local searchdirs = global.get("pkg_searchdirs")
+    if searchdirs then
+        return path.splitenv(searchdirs)
+    end
 end
 
 -- load the package from the system directories

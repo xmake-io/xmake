@@ -21,7 +21,11 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.project")
+import("core.package.package", {alias = "core_package"})
+import("devel.git")
+import("utils.archive")
 import("impl.utils.filter")
 import("impl.package")
 import("impl.repository")
@@ -132,6 +136,18 @@ function main(requires_raw)
 
         -- show install directory
         cprint("      -> ${magenta}installdir${clear}: %s", instance:installdir())
+
+        -- show search directories and search names
+        cprint("      -> ${magenta}searchdirs${clear}: %s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
+        local searchnames = hashset.new()
+        for _, url in ipairs(instance:urls()) do
+            if git.checkurl(url) then
+                searchnames:insert(instance:name() .. archive.extension(url))
+            else
+                searchnames:insert(instance:name() .. "-" .. instance:version_str() .. archive.extension(url))
+            end
+        end
+        cprint("      -> ${magenta}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
 
         -- show fetch info
         cprint("      -> ${magenta}fetchinfo${clear}: %s", _info(instance))
