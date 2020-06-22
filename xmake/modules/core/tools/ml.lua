@@ -96,7 +96,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -106,7 +106,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         function ()
             -- @note we need not uses vstool.runv to enable unicode output for ml.exe
             local program, argv = compargv(self, sourcefile, objectfile, flags)
-            os.runv(program, argv, {envs = opt.envs})
+            os.runv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {

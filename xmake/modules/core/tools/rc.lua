@@ -49,7 +49,7 @@ function compargv(self, sourcefile, objectfile, flags)
 end
 
 -- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
@@ -60,7 +60,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         function ()
             -- @note we need not uses vstool.iorunv to enable unicode output for rc.exe
             local program, argv = compargv(self, sourcefile, objectfile, flags)
-            local outdata, errdata = os.iorunv(program, argv, {envs = opt.envs})
+            local outdata, errdata = os.iorunv(program, argv, {envs = self:runenvs()})
             return (outdata or "") .. (errdata or "")
         end,
         catch
