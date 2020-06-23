@@ -91,7 +91,6 @@ function sandbox_core_package_repository.repositories(is_global)
         end
     end
 
-
     -- load repositories from repository cache 
     for name, repoinfo in pairs(table.wrap(repository.repositories(is_global))) do
         local url = repoinfo
