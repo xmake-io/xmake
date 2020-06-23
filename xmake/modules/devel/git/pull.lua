@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("lib.detect.find_tool")
 
 -- pull remote commits
@@ -63,8 +64,15 @@ function main(opt)
         oldir = os.cd(opt.repodir)
     end
 
+    -- use proxy?
+    local envs
+    local proxy = global.get("proxy")
+    if proxy then
+        envs = {ALL_PROXY = proxy}
+    end
+
     -- pull it
-    os.vrunv(git.program, argv)
+    os.vrunv(git.program, argv, {envs = envs})
 
     -- leave repository directory
     if oldir then

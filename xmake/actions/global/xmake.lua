@@ -49,6 +49,11 @@ task("global")
                                                                 return import("core.theme.theme.names")()
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
+                ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [PROTOCOL://]HOST[:PORT]"
+                                                            , "    e.g."
+                                                            , "    - xmake g --proxy='http://host:port'"
+                                                            , "    - xmake g --proxy='https://host:port'"
+                                                            , "    - xmake g --proxy='socks5://host:port'"                }
 
                     -- package configuration
                 ,   {category = "Package Configuration"}
