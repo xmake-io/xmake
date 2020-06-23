@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("core.base.global")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- get user agent
 function _get_user_agent()
@@ -64,10 +64,10 @@ function _curl_download(tool, url, outputfile)
     end
 
     -- use proxy?
-    local proxy = global.get("proxy")
-    if proxy then
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
         table.insert(argv, "-x")
-        table.insert(argv, proxy)
+        table.insert(argv, proxy_conf)
     end
 
     -- set user-agent
@@ -108,19 +108,19 @@ function _wget_download(tool, url, outputfile)
     end
 
     -- use proxy?
-    local proxy = global.get("proxy")
-    if proxy then
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
         table.insert(argv, "-e")
         table.insert(argv, "use_proxy=yes")
         table.insert(argv, "-e")
         if url:startswith("http://") then
-            table.insert(argv, "http_proxy=" .. proxy)
+            table.insert(argv, "http_proxy=" .. proxy_conf)
         elseif url:startswith("https://") then
-            table.insert(argv, "https_proxy=" .. proxy)
+            table.insert(argv, "https_proxy=" .. proxy_conf)
         elseif url:startswith("ftp://") then
-            table.insert(argv, "ftp_proxy=" .. proxy)
+            table.insert(argv, "ftp_proxy=" .. proxy_conf)
         else
-            table.insert(argv, "http_proxy=" .. proxy)
+            table.insert(argv, "http_proxy=" .. proxy_conf)
         end
     end
 

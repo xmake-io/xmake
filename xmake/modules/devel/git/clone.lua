@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("core.base.global")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- clone url
 --
@@ -78,9 +78,9 @@ function main(url, opt)
 
     -- use proxy?
     local envs
-    local proxy = global.get("proxy")
-    if proxy then
-        envs = {ALL_PROXY = proxy}
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
+        envs = {ALL_PROXY = proxy_conf}
     end
 
     -- clone it

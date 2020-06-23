@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("core.base.global")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- ls_remote to given branch, tag or commit
 --
@@ -58,9 +58,9 @@ function main(reftype, url)
 
     -- use proxy?
     local envs
-    local proxy = global.get("proxy")
-    if proxy then
-        envs = {ALL_PROXY = proxy}
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
+        envs = {ALL_PROXY = proxy_conf}
     end
 
     -- get refs

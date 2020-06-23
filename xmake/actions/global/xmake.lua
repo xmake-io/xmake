@@ -49,11 +49,18 @@ task("global")
                                                                 return import("core.theme.theme.names")()
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
-                ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [PROTOCOL://]HOST[:PORT]"
+
+                    -- proxy configuration
+                ,   {category = "Proxy Configuration"}
+                ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
                                                             , "    e.g."
                                                             , "    - xmake g --proxy='http://host:port'"
                                                             , "    - xmake g --proxy='https://host:port'"
                                                             , "    - xmake g --proxy='socks5://host:port'"                }
+                ,   {nil, "proxy_hosts",    "kv", nil       , "Only enable proxy for the given hosts list, it will enable all if be unset,"
+                                                            , "and we can pass match pattern to list:"
+                                                            , "    e.g."
+                                                            , "    - xmake g --proxy_hosts='github.com,gitlab.*,*.xmake.io'"}
 
                     -- package configuration
                 ,   {category = "Package Configuration"}
