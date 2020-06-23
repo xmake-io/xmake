@@ -6,6 +6,7 @@
 
 * Add `xmake show -l envs` to show all builtin envirnoment variables
 * [#861](https://github.com/xmake-io/xmake/issues/861): Support search local package file to install remote package
+* [#854](https://github.com/xmake-io/xmake/issues/854): Support global proxy settings for curl, wget and git
 
 ### Change
 
@@ -772,6 +773,7 @@
 
 * 添加`xmake show -l envs`去显示xmake内置的环境变量列表
 * [#861](https://github.com/xmake-io/xmake/issues/861): 支持从指定目录搜索本地包去直接安装远程依赖包
+* [#854](https://github.com/xmake-io/xmake/issues/854): 针对wget, curl和git支持全局代理设置
 
 ### 改进
 
