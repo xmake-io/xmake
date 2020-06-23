@@ -20,7 +20,9 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.toolchain")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- get configs
 function _get_configs(package, configs)
@@ -118,10 +120,12 @@ function install(package, configs, opt)
     -- do build and install
     if package:is_plat("windows") then
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.vrun("msbuild \"%s\" -nologo -t:Rebuild -p:Configuration=%s -p:Platform=%s", slnfile, package:debug() and "Debug" or "Release", package:is_arch("x64") and "x64" or "Win32")
+        local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
+        local msbuild = find_tool("msbuild", {envs = runenvs})
+        os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
         if os.isfile(projfile) then
-            os.vrun("msbuild \"%s\" /property:configuration=%s", projfile, package:debug() and "Debug" or "Release")
+            os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
             os.trycp("install/lib", package:installdir()) -- perhaps only headers library
             os.cp("install/include", package:installdir())
         else

@@ -48,7 +48,7 @@ function main(toolchain)
 
     -- init flags
     local arm32 = false
-    local arch = config.get("arch")
+    local arch = toolchain:arch()
     toolchain:add("ldflags", "-llog")
     toolchain:add("shflags", "-llog")
     if arch and (arch == "armeabi" or arch == "armeabi-v7a" or arch == "armv5te" or arch == "armv7-a") then -- armv5te/armv7-a are deprecated

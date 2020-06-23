@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("lib.detect.find_tool")
 
 -- find link 
 --
@@ -43,17 +44,20 @@ function main(opt)
     opt       = opt or {}
     opt.check = opt.check or function (program)
        
+        -- find cl
+        local cl = assert(find_tool("cl", {envs = opt.envs}))
+
         -- make an stub source file
         local binaryfile = os.tmpfile() .. ".exe"
         local objectfile = os.tmpfile() .. ".obj"
         local sourcefile = os.tmpfile() .. ".c"
 
-        -- main entry
+        -- compile sourcefile first
         io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
+        os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
 
-        -- check it
-        os.run("cl -c -Fo%s %s", objectfile, sourcefile)
-        verinfo = os.iorun("%s -out:%s %s", program, binaryfile, objectfile)
+        -- do link
+        verinfo = os.iorunv(program, {"-lib", "-out:" .. binaryfile, objectfile}, {envs = opt.envs})
 
         -- remove files
         os.rm(objectfile)

@@ -36,6 +36,11 @@ function sandbox_core_package_package.installdir()
     return package.installdir()
 end
 
+-- the search directories
+function sandbox_core_package_package.searchdirs()
+    return package.searchdirs()
+end
+
 -- load the package from the project file 
 function sandbox_core_package_package.load_from_project(packagename)
 

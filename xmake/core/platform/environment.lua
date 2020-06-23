@@ -45,14 +45,6 @@ function environment._enter_toolchains()
     if os.host() == "windows" then
         os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
     end
-
-    -- add the runenvs of toolchains
-    for name, values in pairs(platform:runenvs()) do
-        if not oldenvs[name] then
-            oldenvs[name] = os.getenv(name)
-        end
-        os.addenv(name, table.unpack(table.wrap(values)))
-    end
     environment._OLDENVS_TOOLCHAINS = oldenvs
     return true
 end

@@ -32,7 +32,7 @@ function _get_macro_defines(snippets, extension, opt)
 
     -- get defines
     local results = {}
-    local defines = try { function () return os.iorunv(opt.program, table.join(opt.flags or {}, {"-dM", "-E", sourcefile})) end }
+    local defines = try { function () return os.iorunv(opt.program, table.join(opt.flags or {}, {"-dM", "-E", sourcefile}), {envs = opt.envs}) end }
     if defines then
         for _, define in ipairs(defines:split("\n")) do
             local name = define:match("#define%s+(.-)%s+")

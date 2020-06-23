@@ -41,7 +41,6 @@ local requireinfo           = require("project/requireinfo")
 local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
 local platform              = require("platform/platform")
-local environment           = require("platform/environment")
 local toolchain             = require("tool/toolchain")
 local language              = require("language/language")
 local sandbox_os            = require("sandbox/modules/os")
@@ -433,7 +432,7 @@ function project._load_targets()
         if toolchains then
             t._TOOLCHAINS = {}
             for _, name in ipairs(table.wrap(toolchains)) do
-                local toolchain_inst, errors = toolchain.load(name)
+                local toolchain_inst, errors = toolchain.load(name, t:extraconf("toolchains", name))
                 -- attempt to load toolchain from project
                 if not toolchain_inst then
                     toolchain_inst = project.toolchain(name)
@@ -446,9 +445,6 @@ function project._load_targets()
         end
     end
 
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
     -- do load for each target
     local ok = false
     for _, t in pairs(targets) do
@@ -457,9 +453,6 @@ function project._load_targets()
             break
         end
     end
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
 
     -- do load failed?
     if not ok then

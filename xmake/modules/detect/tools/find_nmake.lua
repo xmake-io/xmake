@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_cl.lua
+-- @file        find_nmake.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find cl 
+-- find nmake 
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,7 +30,7 @@ import("lib.detect.find_programver")
 --
 -- @code 
 --
--- local cl = find_cl()
+-- local nmake = find_nmake()
 -- 
 -- @endcode
 --
@@ -38,17 +38,15 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.check   = opt.check or function (program) os.runv(program, {}, {envs = opt.envs}) end
+    opt.check   = "/?"
     
     -- find program
-    local program = find_program(opt.program or "cl.exe", opt)
+    local program = find_program(opt.program or "nmake.exe", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        opt.command = opt.command or function () local _, info = os.iorun(program); return info end
-        opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
-        version     = find_programver(program, opt)
+        version = find_programver(program, opt)
     end
 
     -- ok?

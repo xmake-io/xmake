@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.environment")
 import("private.async.jobpool")
 import("private.async.runjobs")
 import("kinds.object")
@@ -206,9 +205,7 @@ function main(targetname, sourcefiles)
     -- build all jobs
     local batchjobs = _get_batchjobs(targetname, filepatterns)
     if batchjobs and batchjobs:size() > 0 then
-        environment.enter("toolchains")
         runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1})
-        environment.leave("toolchains")
     end
 end
 

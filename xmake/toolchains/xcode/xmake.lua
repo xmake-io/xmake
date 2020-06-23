@@ -36,14 +36,14 @@ toolchain("xcode")
 
         -- get cross
         local cross, arch, simulator
-        if is_plat("macosx") then
+        if toolchain:is_plat("macosx") then
             cross = "xcrun -sdk macosx "
-        elseif is_plat("iphoneos") then
-            arch = get_config("arch") or os.arch()
+        elseif toolchain:is_plat("iphoneos") then
+            arch = toolchain:arch()
             simulator = (arch == "i386" or arch == "x86_64")
             cross = simulator and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
-        elseif is_plat("watchos") then
-            arch = get_config("arch") or os.arch()
+        elseif toolchain:is_plat("watchos") then
+            arch = toolchain:arch()
             simulator = (arch == "i386")
             cross = simulator and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
         else
@@ -67,7 +67,7 @@ toolchain("xcode")
         if arch then
             toolchain:set("toolset", "cpp", cross .. "clang -arch " .. arch .. " -E")
         end
-        if is_plat("macosx") then
+        if toolchain:is_plat("macosx") then
             toolchain:set("toolset", "as", cross .. "clang")
         elseif simulator then
             toolchain:set("toolset", "as", cross .. "clang")
@@ -76,5 +76,5 @@ toolchain("xcode")
         end
 
         -- load configurations
-        import("load_" .. get_config("plat"))(toolchain)
+        import("load_" .. toolchain:plat())(toolchain)
     end)

@@ -25,12 +25,12 @@ import("core.project.config")
 function main(toolchain)
 
     -- init flags for architecture
-    local arch          = config.get("arch") or os.arch()
-    local target_minver = config.get("target_minver")
+    local arch          = toolchain:arch()
+    local target_minver = config.get("target_minver_macosx")
 
     -- init flags for the xcode sdk directory
     local xcode_dir     = config.get("xcode")
-    local xcode_sdkver  = config.get("xcode_sdkver")
+    local xcode_sdkver  = config.get("xcode_sdkver_macosx")
     local xcode_sdkdir  = nil
     if xcode_dir and xcode_sdkver then
         xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"

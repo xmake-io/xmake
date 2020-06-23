@@ -29,7 +29,7 @@ function main(toolchain)
     local sdkdir = config.get("sdk")
     local bindir = config.get("bin")
     if not sdkdir and not bindir then
-        if is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
+        if toolchain:is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
         end
     end

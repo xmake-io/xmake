@@ -22,7 +22,6 @@
 import("core.base.option")
 import("core.base.task")
 import("core.project.config")
-import("core.platform.environment")
 import("make.makefile")
 import("make.xmakefile")
 import("cmake.cmakelists")
@@ -82,14 +81,8 @@ function main()
     -- config it first
     task.run("config")
 
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
     -- make project
     _make(option.get("kind"))
-
-    -- leave toolchains environment
-    environment.leave("toolchains")
 
     -- trace
     cprint("${color.success}create ok!")

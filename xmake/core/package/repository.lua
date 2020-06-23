@@ -185,6 +185,11 @@ end
 -- load the repository 
 function repository.load(name, url, branch, is_global)
 
+    -- check url
+    if not url then
+        return nil, string.format("invalid repo(%s): url not found!", name)
+    end
+
     -- get it directly from cache first
     repository._REPOS = repository._REPOS or {}
     if repository._REPOS[name] then

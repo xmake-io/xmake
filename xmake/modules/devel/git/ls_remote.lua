@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- ls_remote to given branch, tag or commit
 --
@@ -55,8 +56,15 @@ function main(reftype, url)
         print("%s %s", git.program, os.args(argv))
     end
 
+    -- use proxy?
+    local envs
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
+        envs = {ALL_PROXY = proxy_conf}
+    end
+
     -- get refs
-    local data = os.iorunv(git.program, argv)
+    local data = os.iorunv(git.program, argv, {envs = envs})
 
     -- get commmits and tags
     local refs = {}

@@ -57,11 +57,14 @@ rule("xcode.storyboard")
         os.tryrm(base_lproj)
 
         -- do compile
+        local target_minver
         local argv = {"--errors", "--warnings", "--notices", "--auto-activate-custom-fonts", "--output-format", "human-readable-text"}
         if is_plat("macosx") then
+            target_minver = get_config("target_minver_macosx")
             table.insert(argv, "--target-device")
             table.insert(argv, "mac")
         elseif is_plat("iphoneos") then
+            target_minver = get_config("target_minver_iphoneos")
             table.insert(argv, "--target-device")
             table.insert(argv, "iphone")
             table.insert(argv, "--target-device")
@@ -69,8 +72,10 @@ rule("xcode.storyboard")
         else
             assert("unknown device!")
         end
-        table.insert(argv, "--minimum-deployment-target")
-        table.insert(argv, get_config("target_minver"))
+        if target_minver then
+            table.insert(argv, "--minimum-deployment-target")
+            table.insert(argv, target_minver)
+        end
         table.insert(argv, "--compilation-directory")
         table.insert(argv, base_lproj)
         table.insert(argv, sourcefile)
@@ -82,8 +87,10 @@ rule("xcode.storyboard")
             table.insert(argv, "--target-device")
             table.insert(argv, "mac")
         end
-        table.insert(argv, "--minimum-deployment-target")
-        table.insert(argv, get_config("target_minver"))
+        if target_minver then
+            table.insert(argv, "--minimum-deployment-target")
+            table.insert(argv, target_minver)
+        end
         table.insert(argv, "--link")
         table.insert(argv, resourcesdir)
         table.insert(argv, path.join(base_lproj, path.filename(sourcefile) .. "c"))

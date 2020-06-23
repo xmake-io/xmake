@@ -690,6 +690,10 @@ function os.execv(program, argv, opt)
     if opt.envs then
         local envars = os.getenvs()
         for k, v in pairs(opt.envs) do
+            -- TODO
+            if type(v) == "table" then
+                v = path.joinenv(v)
+            end
             envars[k] = v
         end
         envs = {}

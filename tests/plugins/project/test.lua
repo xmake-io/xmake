@@ -1,7 +1,7 @@
-import("detect.sdks.find_vstudio")
 import("core.project.config")
 import("core.platform.platform")
-import("core.platform.environment")
+import("core.tool.toolchain")
+import("lib.detect.find_tool")
 
 function test_vsxmake(t)
 
@@ -34,9 +34,9 @@ function test_vsxmake(t)
     try
     {
         function ()
-            environment.enter("toolchains")
-            os.exec("msbuild /P:XmakeDiagnosis=true /P:XmakeVerbose=true")
-            environment.leave("toolchains")
+            local runenvs = toolchain.load("msvc"):runenvs()
+            local msbuild = find_tool("msbuild", {envs = runenvs})
+            os.execv(msbuild.program, {"/P:XmakeDiagnosis=true", "/P:XmakeVerbose=true"}, {envs = runenvs})
         end,
         catch
         {

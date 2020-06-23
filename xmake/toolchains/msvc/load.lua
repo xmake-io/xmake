@@ -32,10 +32,8 @@ function _add_vsenv(toolchain, name)
         return 
     end
 
-    -- get arch
-    local arch = config.get("arch") or ""
-
     -- get vs environment for the current arch
+    local arch = toolchain:arch()
     local vsenv = vcvarsall[arch] or {}
 
     -- switch vstudio environment if vs_sdkver has been changed 
@@ -71,14 +69,14 @@ function main(toolchain)
     toolchain:set("toolset", "cc",  "cl.exe")
     toolchain:set("toolset", "cxx", "cl.exe")
     toolchain:set("toolset", "mrc", "rc.exe")
-    if is_arch("x64") then
+    if toolchain:is_arch("x64") then
         toolchain:set("toolset", "as",  "ml64.exe")
     else
         toolchain:set("toolset", "as",  "ml.exe")
     end
     toolchain:set("toolset", "ld",  "link.exe")
-    toolchain:set("toolset", "sh",  "link.exe -dll")
-    toolchain:set("toolset", "ar",  "link.exe -lib")
+    toolchain:set("toolset", "sh",  "link.exe")
+    toolchain:set("toolset", "ar",  "link.exe")
     toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add vs environments

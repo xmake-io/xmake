@@ -21,7 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tool.toolchain")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 
 -- detect build-system and configuration file
 function detect()
@@ -32,7 +34,9 @@ end
 
 -- do clean
 function clean()
-    os.vexec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    local runenvs = toolchain.load("msvc"):runenvs()
+    local msbuild = find_tool("msbuild", {envs = runenvs})
+    os.vexecv(msbuild.program, {configfile, "-nologo", "-t:Clean", "-p:Configuration=Release", "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
 -- do build
@@ -42,6 +46,9 @@ function build()
     assert(is_subhost(config.plat()), "msbuild: %s not supported!", config.plat())
 
     -- do build
-    os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=Release -p:Platform=%s", configfile, is_arch("x64") and "x64" or "Win32")
+    local configfile = find_file("*.sln", os.curdir())
+    local runenvs = toolchain.load("msvc"):runenvs()
+    local msbuild = find_tool("msbuild", {envs = runenvs})
+    os.vexecv(msbuild.program, {configfile, "-nologo", "-t:Build", "-p:Configuration=Release", "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     cprint("${color.success}build ok!")
 end

@@ -194,7 +194,7 @@ function sandbox_core_tool_compiler.features(langkind, opt)
         local flags = instance:compflags(opt)
 
         -- get features
-        local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._features, instance:name(), {flags = flags, program = instance:program()})
+        local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._features, instance:name(), {flags = flags, program = instance:program(), envs = instance:runenvs()})
         if not ok then
             raise(results_or_errors)
         end
@@ -257,7 +257,7 @@ function sandbox_core_tool_compiler.has_features(features, opt)
         local flags = instance:compflags(opt)
 
         -- has features?
-        local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._has_features, instance:name(), features, {flags = flags, program = instance:program()})
+        local ok, results_or_errors = sandbox.load(sandbox_core_tool_compiler._has_features, instance:name(), features, {flags = flags, program = instance:program(), envs = instance:runenvs()})
         if not ok then
             raise(results_or_errors)
         end

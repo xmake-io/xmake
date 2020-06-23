@@ -383,6 +383,16 @@ function builder:program()
     return self:_tool():program()
 end
 
+-- get toolchain of this tool
+function builder:toolchain()
+    return self:_tool():toolchain()
+end
+
+-- get the run environments
+function builder:runenvs()
+    return self:_tool():runenvs()
+end
+
 -- get properties of the tool
 function builder:get(name)
     return self:_tool():get(name)

@@ -48,7 +48,7 @@ platform("windows")
     end)
 
     -- set toolchains
-    set_toolchains("vs", "clang", "yasm", "nasm", "cuda", "dlang", "rust", "go")
+    set_toolchains("msvc", "clang", "yasm", "nasm", "cuda", "dlang", "rust", "go")
 
     -- set menu
     set_menu {

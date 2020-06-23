@@ -36,16 +36,6 @@ function _get_toolset_ver(targetinfo, vsinfo)
     if not toolset_ver then
         toolset_ver = vsinfo.toolset_version
     end
-
-    -- for xp?
-    for _, flag in ipairs(targetinfo.linkflags) do
-        if flag:lower():find("^[%-/]subsystem:.-,5%.%d+$") then
-            toolset_ver = toolset_ver .. "_xp"
-            break
-        end
-    end
-
-    -- done
     return toolset_ver
 end
 

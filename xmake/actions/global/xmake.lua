@@ -41,15 +41,33 @@ task("global")
                 -- options
             ,   options = 
                 {
-                    {'c', "clean",      "k" ,   nil     ,   "Clean the cached configure and configure all again."       }
-                ,   {nil, "menu",       "k" ,   nil     ,   "Configure with a menu-driven user interface."              }
-
+                    {'c', "clean",          "k" , nil       , "Clean the cached configure and configure all again."       }
+                ,   {nil, "menu",           "k" , nil       , "Configure with a menu-driven user interface."              }
                 ,   {category = "."}
-                ,   {nil, "theme",      "kv", "default" ,   "The theme name."
-                                                        ,   values = function () 
+                ,   {nil, "theme",          "kv", "default" , "The theme name."
+                                                           , values = function () 
                                                                 return import("core.theme.theme.names")()
-                                                            end                                                         }
-                ,   {nil, "debugger",   "kv", "auto"    ,   "The Debugger Program Path."                                }
+                                                            end}
+                ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
+
+                    -- proxy configuration
+                ,   {category = "Proxy Configuration"}
+                ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
+                                                            , "    e.g."
+                                                            , "    - xmake g --proxy='http://host:port'"
+                                                            , "    - xmake g --proxy='https://host:port'"
+                                                            , "    - xmake g --proxy='socks5://host:port'"                }
+                ,   {nil, "proxy_hosts",    "kv", nil       , "Only enable proxy for the given hosts list, it will enable all if be unset,"
+                                                            , "and we can pass match pattern to list:"
+                                                            , "    e.g."
+                                                            , "    - xmake g --proxy_hosts='github.com,gitlab.*,*.xmake.io'"}
+
+                    -- package configuration
+                ,   {category = "Package Configuration"}
+                ,   {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."
+                                                            , "    e.g."
+                                                            , "    - xmake g --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"}
+                ,   {nil, "pkg_installdir", "kv", nil       , "The install root directory of the remote package."         }
 
                     -- show platform menu options
                 ,   {category = "Platform Configuration"}

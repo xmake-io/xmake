@@ -67,7 +67,7 @@ toolchain("sdcc")
         end
 
         -- add port flags for arch
-        local arch = get_config("arch")
+        local arch = toolchain:arch()
         if arch then
             toolchain:add("cxflags", "-m" .. arch)
             toolchain:add("ldflags", "-m" .. arch)

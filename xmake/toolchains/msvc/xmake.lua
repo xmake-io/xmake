@@ -19,22 +19,17 @@
 --
 
 -- define toolchain
-toolchain("nasm")
- 
-    -- set homepage
-    set_homepage("https://www.nasm.us/")
-    set_description("NASM Assembler")
-        
-    -- set toolset
-    set_toolset("as", "nasm")
+toolchain("msvc")
 
-    -- on load
-    on_load(function (toolchain)
-        if toolchain:is_plat("macosx") then
-            toolchain:add("nasm.asflags", "-f", toolchain:is_arch("x86_64") and "macho64" or "macho32")
-        elseif toolchain:is_plat("linux", "bsd") then
-            toolchain:add("nasm.asflags", "-f", toolchain:is_arch("x86_64") and "elf64" or "elf32")
-        elseif toolchain:is_plat("windows", "mingw", "msys", "cygwin") then
-            toolchain:add("nasm.asflags", "-f", toolchain:is_arch("x64") and "win64" or "win32")
-        end
-    end)
+    -- set homepage
+    set_homepage("https://visualstudio.microsoft.com")
+    set_description("Microsoft Visual C/C++ Compiler")
+
+    -- mark as standalone toolchain
+    set_kind("standalone")
+
+    -- check toolchain
+    on_check("check")
+
+    -- load toolchain
+    on_load("load")

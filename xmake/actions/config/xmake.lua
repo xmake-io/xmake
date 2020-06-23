@@ -43,14 +43,6 @@ task("config")
                 {
                     {'c', "clean",      "k",    nil     ,   "Clean the cached configure and configure all again."           }
                 ,   {nil, "menu",       "k",    nil     ,   "Configure project with a menu-driven user interface."          }
-                ,   {nil, "require",    "kv",   nil     ,   "Require all dependent packages?"
-                                                        ,   values = function (complete)
-                                                                if complete then
-                                                                    return {"yes", "no"}
-                                                                else
-                                                                    return {"y: force to enable", "n: disable" }
-                                                                end
-                                                            end                                                             }
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
                                                         ,   values = function (complete, opt)
@@ -127,6 +119,20 @@ task("config")
                 ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
                                                         ,   values = {"static", "shared", "binary"}                         }
                 ,   {nil, "host",       "kv", "$(host)" ,   "The Current Host Environment."                                 }
+
+                    -- package configuration
+                ,   {category = "Package Configuration"}
+                ,   {nil, "require",    "kv",   nil     ,   "Require all dependent packages?"
+                                                        ,   values = function (complete)
+                                                                if complete then
+                                                                    return {"yes", "no"}
+                                                                else
+                                                                    return {"y: force to enable", "n: disable" }
+                                                                end
+                                                            end                                                             }
+                ,   {nil, "pkg_searchdirs", "kv", nil       , "The search directories of the remote package."
+                                                            , "    e.g."
+                                                            , "    - xmake f --pkg_searchdirs=/dir1" .. path.envsep() .. "/dir2"}
 
                     -- show project menu options
                 ,   function ()

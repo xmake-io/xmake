@@ -28,7 +28,7 @@ function extract(self, libraryfile, objectdir)
     os.mkdir(objectdir)
 
     -- list object files 
-    local objectfiles = vstool.iorunv(self:program(), {"-nologo", "-list", libraryfile})
+    local objectfiles = vstool.iorunv(self:program(), {"-nologo", "-list", libraryfile}, {envs = self:runenvs()})
 
     -- extrace all object files
     for _, objectfile in ipairs(objectfiles:split('\n')) do
@@ -50,7 +50,7 @@ function extract(self, libraryfile, objectdir)
             end
 
             -- extract it
-            vstool.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile})
+            vstool.runv(self:program(), {"-nologo", "-extract:" .. objectfile, "-out:" .. outputfile, libraryfile}, {envs = self:runenvs()})
         end
     end
 end

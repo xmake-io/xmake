@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
+import("net.proxy")
 
 -- clone url
 --
@@ -75,6 +76,13 @@ function main(url, opt)
         table.insert(argv, path.translate(opt.outputdir))
     end
 
+    -- use proxy?
+    local envs
+    local proxy_conf = proxy.get(url)
+    if proxy_conf then
+        envs = {ALL_PROXY = proxy_conf}
+    end
+
     -- clone it
-    os.vrunv(git.program, argv)
+    os.vrunv(git.program, argv, {envs = envs})
 end

@@ -21,6 +21,11 @@
 -- imports
 import("core.base.option")
 import("core.base.tty")
+import("core.base.hashset")
+import("core.project.config")
+import("core.package.package", {alias = "core_package"})
+import("lib.detect.find_file")
+import("lib.detect.find_directory")
 import(".utils.filter")
 import("net.http")
 import("devel.git")
@@ -36,6 +41,14 @@ function _checkout(package, url, sourcedir, url_alias)
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
+        tty.erase_line_to_start().cr()
+        return 
+    end
+
+    -- we can use local package from the search directories directly if network is too slow
+    local localdir = find_directory(package:name() .. archive.extension(url), core_package.searchdirs())
+    if localdir and os.isdir(localdir) then
+        git.clean({repodir = localdir, force = true})
         tty.erase_line_to_start().cr()
         return 
     end
@@ -90,8 +103,12 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         os.tryrm(packagefile)
 
         -- download or copy package file
+        local localfile = find_file(path.filename(packagefile), core_package.searchdirs())
         if os.isfile(url) then
             os.cp(url, packagefile)
+        elseif localfile and os.isfile(localfile) then
+            -- we can use local package from the search directories directly if network is too slow
+            os.cp(localfile, packagefile)
         else
             http.download(url, packagefile)
         end
@@ -164,6 +181,7 @@ function main(package)
 
     -- download package from urls
     local ok = false
+    local urls_failed = {}
     for idx, url in ipairs(urls) do
 
         -- get url alias
@@ -207,9 +225,26 @@ function main(package)
                     else
                         cprint("${yellow}  => ${clear}download %s .. ${color.failure}${text.failure}", url)
                     end
+                    table.insert(urls_failed, url)
 
                     -- failed? break it
                     if idx == #urls and not package:optional() then
+                        if #urls_failed > 0 then
+                            print("")
+                            print("we can also download these packages manually:")
+                            local searchnames = hashset.new()
+                            for _, url_failed in ipairs(urls_failed) do
+                                cprint("  ${yellow}- %s", url_failed)
+                                if git.checkurl(url_failed) then
+                                    searchnames:insert(package:name() .. archive.extension(url_failed))
+                                else
+                                    searchnames:insert(package:name() .. "-" .. package:version_str() .. archive.extension(url_failed))
+                                end
+                            end
+                            cprint("to the local search directories: ${bright}%s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
+                            cprint("  ${bright}- %s", table.concat(searchnames:to_array(), ", "))
+                            cprint("and we can run `xmake g --pkg_searchdirs=/xxx` to set the search directories.")
+                        end
                         raise("download failed!")
                     end
                 end

@@ -226,9 +226,7 @@ function _try_clean()
 
     -- try cleaning it
     if configfile and tool and trybuild then
-        environment.enter("toolchains")
         tool.clean()
-        environment.leave("toolchains")
     end
 end
 

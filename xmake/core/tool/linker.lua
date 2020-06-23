@@ -85,13 +85,13 @@ function linker._load_tool(targetkind, sourcekinds, target)
     for _, _linkerinfo in ipairs(linkerinfos) do
 
         -- get program from target
-        local program, toolname
+        local program, toolname, toolchain_info
         if target and target:type() == "target" then
-            program, toolname = target:tool(_linkerinfo.linkerkind)
+            program, toolname, toolchain_info = target:tool(_linkerinfo.linkerkind)
         end
 
         -- load the linker tool from the linker kind (with cache)
-        linkertool, errors = tool.load(_linkerinfo.linkerkind, program, toolname)
+        linkertool, errors = tool.load(_linkerinfo.linkerkind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
         if linkertool then 
             linkerinfo = _linkerinfo
             linkerinfo.program = program

@@ -22,6 +22,7 @@
 import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
+import("core.tool.toolchain")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -76,7 +77,9 @@ function clean()
         if configfile then
             local oldir = os.cd(buildir)
             if is_plat("windows") then
-                os.vexec("msbuild \"%s\" -nologo -t:Clean -p:Configuration=%s -p:Platform=%s", configfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+                local runenvs = toolchain.load("msvc"):runenvs()
+                local msbuild = find_tool("msbuild", {envs = runenvs})
+                os.vexecv(msbuild.program, {configfile, "-nologo", "-t:Clean", "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"), "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
             else
                 os.vexec("make clean")
             end
@@ -107,11 +110,13 @@ function build()
 
     -- do build
     if is_plat("windows") then
+        local runenvs = toolchain.load("msvc"):runenvs()
+        local msbuild = find_tool("msbuild", {envs = runenvs})
         local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        os.vexec("msbuild \"%s\" -nologo -t:Build -p:Configuration=%s -p:Platform=%s", slnfile, is_mode("debug") and "Debug" or "Release", is_arch("x64") and "x64" or "Win32")
+        os.vexecv(msbuild.program, {slnfile, "-nologo", "-t:Build", "-p:Configuration=" .. (is_mode("debug") and "Debug" or "Release"), "-p:Platform=" .. (is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
         local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
         if os.isfile(projfile) then
-            os.vexec("msbuild \"%s\" /property:configuration=%s", projfile, is_mode("debug") and "Debug" or "Release")
+            os.vexecv(msbuild.program, {projfile, "/property:configuration=" .. (is_mode("debug") and "Debug" or "Release")}, {envs = runenvs})
         end
     else
         local argv = {"-j" .. option.get("jobs")}

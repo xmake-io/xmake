@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
+import("lib.detect.find_tool")
 
 -- find lib 
 --
@@ -50,9 +51,11 @@ function main(opt)
         io.writefile(sourcefile, "int test(void)\n{return 0;}")
 
         -- check it
-        os.run("cl -c -Fo%s %s", objectfile, sourcefile)
-        os.run("link -lib -out:%s %s", libraryfile, objectfile)
-        verinfo = os.iorun("%s -list %s", program, libraryfile)
+        local cl = assert(find_tool("cl"))
+        local link = assert(find_tool("link"))
+        os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
+        os.runv(link.program, {"-lib", "-out:" .. libraryfile, objectfile}, {envs = opt.envs})
+        verinfo = os.iorunv(program, {"-list", libraryfile}, {envs = opt.envs})
 
         -- remove files
         os.rm(objectfile)

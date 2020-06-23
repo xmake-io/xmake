@@ -2,6 +2,12 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add `xmake show -l envs` to show all builtin envirnoment variables
+* [#861](https://github.com/xmake-io/xmake/issues/861): Support search local package file to install remote package
+* [#854](https://github.com/xmake-io/xmake/issues/854): Support global proxy settings for curl, wget and git
+
 ### Change
 
 * [#828](https://github.com/xmake-io/xmake/issues/828): Support to import sub-directory files for protobuf rules
@@ -9,6 +15,8 @@
 * [#828](https://github.com/xmake-io/xmake/issues/828): Support multi-level directories for protobuf/import
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): Support to override builtin-rules for `add_files("src/*.c", {rules = {"xx", override = true}})`
 * [#847](https://github.com/xmake-io/xmake/issues/847): Support to parse include deps for rc file
+* Improve msvc tool chain, remove the dependence of global environment variables
+* [#857](https://github.com/xmake-io/xmake/pull/857): Improved `set_toolchains()` when cross-compilation is supported, specific target can be switched to host toolchain and compiled at the same time
 
 ### Bugs fixed
 
@@ -761,6 +769,12 @@
 
 ## master (开发中)
 
+### 新特性
+
+* 添加`xmake show -l envs`去显示xmake内置的环境变量列表
+* [#861](https://github.com/xmake-io/xmake/issues/861): 支持从指定目录搜索本地包去直接安装远程依赖包
+* [#854](https://github.com/xmake-io/xmake/issues/854): 针对wget, curl和git支持全局代理设置
+
 ### 改进
 
 * [#828](https://github.com/xmake-io/xmake/issues/828): 针对protobuf规则增加导入子目录proto文件支持
@@ -768,6 +782,8 @@
 * [#828](https://github.com/xmake-io/xmake/issues/828): protobuf规则支持import多级子目录
 * [#838](https://github.com/xmake-io/xmake/issues/838#issuecomment-643570920): 支持完全重写内置的构建规则，`add_files("src/*.c", {rules = {"xx", override = true}})`
 * [#847](https://github.com/xmake-io/xmake/issues/847): 支持rc文件的头文件依赖解析
+* 改进msvc工具链，去除全局环境变量的依赖
+* [#857](https://github.com/xmake-io/xmake/pull/857): 改进`set_toolchains()`支持交叉编译的时候，特定target可以切换到host工具链同时编译
 
 ### Bugs修复
 

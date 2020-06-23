@@ -15,21 +15,41 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        find_msbuild.lua
 --
 
--- define toolchain
-toolchain("vs")
+-- imports
+import("lib.detect.find_program")
+import("lib.detect.find_programver")
 
-    -- set homepage
-    set_homepage("https://visualstudio.microsoft.com")
-    set_description("VisualStudio IDE")
+-- find msbuild 
+--
+-- @param opt   the argument options, e.g. {version = true}
+--
+-- @return      program, version
+--
+-- @code 
+--
+-- local msbuild = find_msbuild()
+-- 
+-- @endcode
+--
+function main(opt)
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
+    -- init options
+    opt         = opt or {}
+    opt.check   = "/version"
+    
+    -- find program
+    local program = find_program(opt.program or "msbuild.exe", opt)
 
-    -- check toolchain
-    on_check("check")
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
+    end
 
-    -- load toolchain
-    on_load("load")
+    -- ok?
+    return program, version
+end
+

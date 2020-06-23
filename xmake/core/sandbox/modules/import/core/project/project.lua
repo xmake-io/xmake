@@ -83,9 +83,6 @@ function sandbox_core_project.check()
         raise(errors)
     end
 
-    -- enter toolchains environment
-    environment.enter("toolchains")
-
     -- init check task
     local checked   = {}
     local checktask = function (index) 
@@ -114,11 +111,29 @@ function sandbox_core_project.check()
     local jobs = baseoption.get("jobs") or math.ceil(os.cpuinfo().ncpu * 3 / 2)
     import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = jobs})
 
-    -- leave toolchains environment
-    environment.leave("toolchains")
-
     -- save all options to the cache file
     option.save()
+
+    -- check toolchains configuration for all target in the current project
+    -- @note we must check targets after loading options
+    for _, target in pairs(table.wrap(targets)) do
+        if target:get("enabled") ~= false and (target:get("toolchains") or target:plat() ~= config.get("plat")) then
+            for _, toolchain_inst in pairs(target:toolchains()) do
+                -- check toolchains for `target/set_toolchains()`
+                if target:get("toolchains") then
+                    if not toolchain_inst:check() then
+                        raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+                    end
+                else
+                    -- check platform toolchains for `target/set_plat()`
+                    local ok, errors = target:platform():check()
+                    if not ok then
+                        raise(errors)
+                    end
+                end
+            end
+        end
+    end
 
     -- leave the project directory
     local ok, errors = os.cd(oldir)

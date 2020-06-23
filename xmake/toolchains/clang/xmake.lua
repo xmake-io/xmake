@@ -50,9 +50,9 @@ toolchain("clang")
 
         -- add march flags
         local march
-        if is_arch("x86_64", "x64") then
+        if toolchain:is_arch("x86_64", "x64") then
             march = "-m64"
-        elseif is_arch("i386", "x86") then
+        elseif toolchain:is_arch("i386", "x86") then
             march = "-m32"
         end
         if march then
@@ -64,7 +64,7 @@ toolchain("clang")
         end
 
         -- add includedirs and linkdirs
-        if not is_plat("windows") and os.isdir("/usr") then
+        if not toolchain:is_plat("windows") and os.isdir("/usr") then
             for _, includedir in ipairs({"/usr/local/include", "/usr/include"}) do
                 if os.isdir(includedir) then
                     toolchain:add("includedirs", includedir)

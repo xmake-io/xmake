@@ -71,7 +71,8 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.tryrm(targetfile)
 
     -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
 end
 
 -- extract the static library to object directory

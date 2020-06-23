@@ -444,6 +444,29 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the platform of this target
+function _instance:plat()
+    return self:get("plat") or config.get("plat") or os.host()
+end
+
+-- get the architecture of this target
+function _instance:arch()
+    return self:get("arch") or config.get("arch") or os.arch()
+end
+
+-- get the platform instance
+function _instance:platform()
+    local platform_inst = self._PLATFORM
+    if platform_inst == nil then
+        platform_inst, errors = platform.load(self:plat(), self:arch())
+        if not platform_inst then
+            os.raise(errors)
+        end
+        self._PLATFORM = platform_inst
+    end
+    return platform_inst
+end
+
 -- get the cache key 
 function _instance:cachekey()
     return string.format("%s_%d", tostring(self), self._CACHEID)
@@ -718,13 +741,13 @@ function _instance:objectdir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         objectdir = path.join(objectdir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         objectdir = path.join(objectdir, arch)
     end
@@ -753,13 +776,13 @@ function _instance:dependir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         dependir = path.join(dependir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         dependir = path.join(dependir, arch)
     end
@@ -784,13 +807,13 @@ function _instance:autogendir(opt)
     end
 
     -- append plat sub-directory
-    local plat = config.get("plat")
+    local plat = self:plat()
     if plat then
         autogendir = path.join(autogendir, plat)
     end
 
     -- append arch sub-directory
-    local arch = config.get("arch")
+    local arch = self:arch()
     if arch then
         autogendir = path.join(autogendir, arch)
     end
@@ -856,13 +879,13 @@ function _instance:targetdir()
         targetdir = config.buildir()
 
         -- append plat sub-directory
-        local plat = config.get("plat")
+        local plat = self:plat()
         if plat then
             targetdir = path.join(targetdir, plat)
         end
 
         -- append arch sub-directory
-        local arch = config.get("arch")
+        local arch = self:arch()
         if arch then
             targetdir = path.join(targetdir, arch)
         end
@@ -893,7 +916,7 @@ function _instance:targetfile()
     end
 
     -- make the target file name and attempt to use the format of linker first
-    local filename = self:get("filename") or target.filename(self:basename(), targetkind, self:linker():format(targetkind))
+    local filename = self:get("filename") or target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
     assert(filename)
 
     -- make the target file path
@@ -908,7 +931,7 @@ function _instance:symbolfile()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
-    local filename = target.filename(self:basename(), "symbol")
+    local filename = target.filename(self:basename(), "symbol", {plat = self:plat(), arch = self:arch()})
     assert(filename)
 
     -- make the symbol file path
@@ -1075,6 +1098,7 @@ function _instance:sourcefiles()
     local count = 0
     local sourcefiles = {}
     local sourcefiles_deleted = {}
+    local sourcefiles_inserted = {}
     local deleted_count = 0
     for _, file in ipairs(table.wrap(files)) do
 
@@ -1110,8 +1134,9 @@ function _instance:sourcefiles()
             if deleted then
                 deleted_count = deleted_count + 1
                 sourcefiles_deleted[sourcefile] = true
-            else
+            elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
+                sourcefiles_inserted[sourcefile] = true
             end
         end
     end
@@ -1133,7 +1158,7 @@ end
 
 -- get object file from source file
 function _instance:objectfile(sourcefile)
-    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object")})
+    return self:autogenfile(sourcefile, {rootdir = self:objectdir(), filename = target.filename(path.filename(sourcefile), "object", {plat = self:plat(), arch = self:arch()})})
 end
 
 -- get the object files
@@ -1497,8 +1522,8 @@ function _instance:script(name, generic)
     elseif type(script) == "table" then
 
         -- get plat and arch
-        local plat = config.get("plat") or ""
-        local arch = config.get("arch") or ""
+        local plat = self:plat()
+        local arch = self:arch()
 
         -- match pattern
         --
@@ -1672,11 +1697,7 @@ end
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
     if toolchains == nil then
-        local instance, errors = platform.load()
-        if not instance then
-            os.raise(errors)
-        end
-        toolchains = instance:toolchains()
+        toolchains = self:platform():toolchains()
         self._TOOLCHAINS = toolchains
     end
     return toolchains
@@ -1693,8 +1714,9 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
-    local program, toolname
-    local toolinfo = tools[toolkind]
+    local key = toolkind .. "_" .. self:plat() .. "_" .. self:arch()
+    local program, toolname, toolchain_info
+    local toolinfo = tools[key]
     if toolinfo == nil then
         toolinfo = {}
 
@@ -1707,23 +1729,23 @@ function _instance:tool(toolkind)
             end
         end
 
-        -- attempt to get program from config first
-        if not program then 
-            program = config.get(toolkind)
-            toolname = config.get("__toolname_" .. toolkind)
+        -- attempt to get program from config first if no the given toolchains in target
+        if not program and not self:get("toolchains") then 
+            program = config.get(toolkind) or config.get("__tool_" .. key)
+            toolname = config.get("__toolname_" .. key)
+            toolchain_info = config.get("__toolchain_info_" .. key)
         end
 
         -- get program from target/toolchains
         if not program then
             local toolchains = self:toolchains()
-            environment.enter("toolchains")
             for idx, toolchain_inst in ipairs(toolchains) do
                 program, toolname = toolchain_inst:tool(toolkind)
                 if program then
+                    toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
                     break
                 end
             end
-            environment.leave("toolchains")
         end
         
         -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
@@ -1738,13 +1760,15 @@ function _instance:tool(toolkind)
         if program then
             toolinfo[1] = program
             toolinfo[2] = toolname
+            toolinfo[3] = toolchain_info
         end
-        tools[toolkind] = toolinfo
+        tools[key] = toolinfo
     else
         program  = toolinfo[1]
         toolname = toolinfo[2]
+        toolchain_info = toolinfo[3]
     end
-    return program, toolname
+    return program, toolname, toolchain_info
 end
 
 -- get tool configuration from the toolchains
@@ -1786,6 +1810,8 @@ function target.apis()
         {
             -- target.set_xxx
             "target.set_kind"
+        ,   "target.set_plat"
+        ,   "target.set_arch"
         ,   "target.set_strip"
         ,   "target.set_rules"
         ,   "target.set_version"
@@ -1882,13 +1908,14 @@ function target.apis()
 end
 
 -- get the filename from the given target name and kind
-function target.filename(targetname, targetkind, targetformat)
+function target.filename(targetname, targetkind, opt)
 
     -- check
+    opt = opt or {}
     assert(targetname and targetkind)
 
     -- make filename by format
-    local format = targetformat or platform.format(targetkind) 
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) 
     return format and (format:gsub("%$%(name%)", targetname)) or targetname
 end
 
@@ -1901,9 +1928,9 @@ function target.linkname(filename)
     if count == 0 and config.is_plat("mingw") then
         -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
         local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-        linkname, count = filename:gsub(target.filename("__pattern__", "static", formats["static"]):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+        linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         if count == 0 then
-            linkname, count = filename:gsub(target.filename("__pattern__", "shared", formats["shared"]):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
+            linkname, count = filename:gsub(target.filename("__pattern__", "shared", {format = formats["shared"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         end
     end
     return count > 0 and linkname or nil

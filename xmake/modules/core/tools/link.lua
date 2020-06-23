@@ -52,7 +52,7 @@ function get(self, name)
     local values = self._INFO[name]
     if name == "ldflags" or name == "arflags" or name == "shflags" then
         -- switch architecture, @note does cache it in init() for generating vs201x project 
-        values = table.join(values, "-machine:" .. (config.arch() or "x86"))
+        values = table.join(values, "-machine:" .. (self:arch() or "x86"))
     end
     return values
 end
@@ -94,7 +94,16 @@ end
 function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
     local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
-    return self:program(), opt.rawargs and argv or winos.cmdargv(argv)
+    if not opt.rawargs then
+        argv = winos.cmdargv(argv)
+    end
+    -- @note we cannot put -lib/-dll to @args.txt
+    if targetkind == "static" then
+        table.insert(argv, 1, "-lib")
+    elseif targetkind == "shared" then
+        table.insert(argv, 1, "-dll")
+    end
+    return self:program(), argv
 end
 
 -- link the target file
@@ -108,7 +117,8 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
         function ()
     
             -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            vstool.runv(linkargv(self, objectfiles, targetkind, targetfile, flags, opt))
+            local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
+            vstool.runv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {

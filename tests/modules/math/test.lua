@@ -4,8 +4,8 @@ function test_isinf(t)
 
     t:require_not(math.isinf(0))
     t:require_not(math.isinf(math.nan))
-    t:are_same(math.isinf(math.huge), 1)
-    t:are_same(math.isinf(-math.huge), -1)
+    t:are_same(math.isinf(math.inf), 1)
+    t:are_same(math.isinf(-math.inf), -1)
 end
 
 function test_isnan(t)

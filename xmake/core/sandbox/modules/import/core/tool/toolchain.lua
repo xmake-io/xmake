@@ -39,8 +39,8 @@ function sandbox_core_tool_toolchain.list()
 end
 
 -- load the toolchain from the given name
-function sandbox_core_tool_toolchain.load(name)
-    local instance, errors = toolchain.load(name)
+function sandbox_core_tool_toolchain.load(name, opt)
+    local instance, errors = toolchain.load(name, opt)
     if not instance then
         raise(errors)
     end

@@ -147,13 +147,19 @@ function main(sdkdir, opt)
     local plat = opt.plat or config.get("plat") or "macosx"
     local arch = opt.arch or config.get("arch") or "x86_64"
 
+    -- get xcode sdk version
+    local xcode_sdkver = (plat == config.plat()) and config.get("xcode_sdkver")
+    if not xcode_sdkver then
+        xcode_sdkver = config.get("xcode_sdkver_" .. plat)
+    end
+
     -- find xcode
-    local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode") or config.get("sdk"), opt.sdkver or config.get("xcode_sdkver"), plat, arch)
+    local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode"), opt.sdkver or xcode_sdkver, plat, arch)
     if xcode and xcode.sdkdir then
 
         -- save to config
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-        config.set("xcode_sdkver", xcode.sdkver, {force = true, readonly = true})
+        config.set("xcode_sdkver_" .. plat, xcode.sdkver, {force = true, readonly = true})
         config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
         config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
 
@@ -166,7 +172,7 @@ function main(sdkdir, opt)
             else
                 cprint("checking for the Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
             end
-            if is_plat("iphoneos") then
+            if plat == "iphoneos" then
                 if xcode.mobile_provision then
                     cprint("checking for the Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
                 else

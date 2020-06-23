@@ -48,7 +48,7 @@ function sandbox_string.vformat(format, ...)
     if #{...} > 0 then
 
         -- escape "%$", "%(", "%)", "%%" to '$', '(', ')', '%%'
-        format = format:gsub("%%([%$%(%)%%])", function (ch) return utils.ifelse(ch ~= "%", "%%" .. ch, "%%%%") end)
+        format = format:gsub("%%([%$%(%)%%])", function (ch) return ch ~= "%" and ("%%" .. ch) or "%%%%" end)
 
         -- try to format it
         result = string.format(format, ...)

@@ -23,6 +23,7 @@ local sandbox_core_project_config = sandbox_core_project_config or {}
 
 -- load modules
 local config    = require("project/config")
+local project   = require("project/project")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
@@ -113,7 +114,7 @@ end
 -- check the configuration
 function sandbox_core_project_config.check()
 
-    -- get the current platform 
+    -- check configuration for the current platform
     local instance, errors = platform.load()
     if instance then
         local ok, errors = instance:check()

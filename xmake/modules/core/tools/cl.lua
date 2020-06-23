@@ -353,7 +353,8 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             end
 
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
-            return vstool.iorunv(compargv(self, sourcefile, objectfile, compflags, opt))
+            local program, argv = compargv(self, sourcefile, objectfile, compflags, opt)
+            return vstool.iorunv(program, argv, {envs = self:runenvs()})
         end,
         catch
         {
