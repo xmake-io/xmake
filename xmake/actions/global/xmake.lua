@@ -61,6 +61,14 @@ task("global")
                                                             , "and we can pass match pattern to list:"
                                                             , "    e.g."
                                                             , "    - xmake g --proxy_hosts='github.com,gitlab.*,*.xmake.io'"}
+                ,   {nil, "proxy_pac",      "kv", "pac.lua" , "Set the auto proxy configuration file."
+                                                            , "    e.g."
+                                                            , "    - xmake g --proxy_pac=pac.lua (in $(globaldir) or absolute path)"
+                                                            , "    - function main(url, host)"
+                                                            , "          if host == 'github.com' then"
+                                                            , "               return true"
+                                                            , "          end"
+                                                            , "      end"}
 
                     -- package configuration
                 ,   {category = "Package Configuration"}
