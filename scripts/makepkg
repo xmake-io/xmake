@@ -55,9 +55,9 @@ fpm -s dir -t $target -n xmake -v $version -m "<waruqi@gmail.com>" --description
         xmake=/usr/local/share/ \
         core/src/demo/demo.b=/usr/local/bin/xmake
 if [ "$target" == "osxpkg" ]; then
-    mv xmake-$version.pkg $artifactsdir/xmake.pkg
+    mv "xmake-$version.pkg" "$artifactsdir/xmake.pkg"
 elif [ "$target" == "deb" ]; then
-    mv xmake_$version_amd64.deb $artifactsdir/xmake.deb
+    mv "xmake_${version}_amd64.deb" "$artifactsdir/xmake.deb"
 fi
 
 
