@@ -36,12 +36,12 @@ jobs:
           sudo apt-get install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
           git submodule update --init
-          scripts/makepkg deb latest
+          scripts/makepkg deb 
         # upload artifacts
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.amd64.deb
-          path: xmake_latest_amd64.deb
+          path: artifacts/xmake.deb
 
         # publish release
       - name: publish
