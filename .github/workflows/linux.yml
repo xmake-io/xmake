@@ -51,7 +51,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: xmake_latest_amd64.deb
+          asset_path: artifacts/xmake.deb
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.amd64.deb
           asset_content_type: application/zip
 

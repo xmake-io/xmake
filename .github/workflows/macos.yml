@@ -69,7 +69,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: xmake-latest.pkg
+          asset_path: artifacts/xmake.pkg
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.macosx.pkg
           asset_content_type: application/zip
 
