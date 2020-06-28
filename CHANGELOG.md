@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.5
+
 ### New features
 
 * Add `xmake show -l envs` to show all builtin envirnoment variables
@@ -768,6 +770,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.5
 
 ### 新特性
 
