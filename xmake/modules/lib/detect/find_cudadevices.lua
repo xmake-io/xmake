@@ -125,7 +125,7 @@ function _find_devices(verbose)
 
     -- get cuda devices
     local sourcefile = path.join(os.programdir(), "scripts", "find_cudadevices.cpp")
-    local outfile = os.tmpfile()
+    local outfile = os.tmpfile({ramdisk = false}) -- no execution permision in docker's /shm
     local compile_errors = nil
     local results, errors = try
     {
