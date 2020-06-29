@@ -60,7 +60,7 @@ function main(toolchain)
                 target_minver = macos_ver:major() .. "." .. macos_ver:minor()
             end
         end
-        config.set("target_minver_" .. toolchain:plat(), target_minver)
     end
+    config.set("target_minver_" .. toolchain:plat(), target_minver)
     return true
 end
