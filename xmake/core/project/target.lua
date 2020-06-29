@@ -860,7 +860,11 @@ function _instance:autogenfile(sourcefile, opt)
         relativedir = relativedir:gsub(":[\\/]*", '\\') -- replace C:\xxx\ => C\xxx\
     end
     relativedir = relativedir:gsub("%.%.", "__")
-    return path.join((opt and opt.rootdir) and opt.rootdir or self:autogendir(), relativedir, (opt and opt.filename) and opt.filename or path.filename(sourcefile))
+    local rootdir = (opt and opt.rootdir) and opt.rootdir or self:autogendir()
+    if relativedir ~= "." then
+        rootdir = path.join(rootdir, relativedir)
+    end
+    return path.join(rootdir, (opt and opt.filename) and opt.filename or path.filename(sourcefile))
 end
 
 -- get the target kind
