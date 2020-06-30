@@ -17,8 +17,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - uses: xmake-io/github-action-setup-xmake@v1
-        # this is not supported, use dev branch instead
         with:
+          # this is not supported, use dev branch instead
+          # xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
           xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:

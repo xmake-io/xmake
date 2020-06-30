@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: sha@${{ github.sha }}
+          xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
