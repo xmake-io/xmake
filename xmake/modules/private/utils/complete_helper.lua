@@ -18,31 +18,27 @@
 -- @file        complete_helper.lua
 --
 
+-- imports
+import("core.project.project")
+import("core.project.config")
+
+-- get targets
 function targets()
     return try
     {
         function ()
-            import("core.project.project")
-            import("core.project.config")
-
-            -- load config
             config.load()
-
             return table.keys(project.targets())
         end
     }
 end
 
+-- get runnable targets
 function runable_targets()
     return try
     {
         function ()
-            import("core.project.project")
-            import("core.project.config")
-
-            -- load config
             config.load()
-
             local targets = project.targets()
             local runable = {}
             for k, v in pairs(targets) do

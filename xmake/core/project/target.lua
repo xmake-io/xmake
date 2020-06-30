@@ -895,8 +895,6 @@ function _instance:targetdir()
     if mode then
         targetdir = path.join(targetdir, mode)
     end
-
-    -- ok?
     return targetdir
 end
 
