@@ -206,11 +206,7 @@ task("config")
 
                 ,   {}
                 ,   {nil, "target",     "v" , nil       , "Configure for the given target."
-                                                        , values = function ()
-                                                            return try { function ()
-                                                                return table.keys(import("core.project.project").targets())
-                                                            end }
-                                                        end                                                                 }
+                                                        , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }
 

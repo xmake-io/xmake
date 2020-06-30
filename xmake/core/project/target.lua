@@ -881,24 +881,28 @@ function _instance:targetdir()
 
         -- get build directory
         targetdir = config.buildir()
+    end
 
-        -- append plat sub-directory
-        local plat = self:plat()
-        if plat then
-            targetdir = path.join(targetdir, plat)
-        end
+    if not targetdir then
+        return nil
+    end
 
-        -- append arch sub-directory
-        local arch = self:arch()
-        if arch then
-            targetdir = path.join(targetdir, arch)
-        end
+    -- append plat sub-directory
+    local plat = self:plat()
+    if plat then
+        targetdir = path.join(targetdir, plat)
+    end
 
-        -- append mode sub-directory
-        local mode = config.get("mode")
-        if mode then
-            targetdir = path.join(targetdir, mode)
-        end
+    -- append arch sub-directory
+    local arch = self:arch()
+    if arch then
+        targetdir = path.join(targetdir, arch)
+    end
+
+    -- append mode sub-directory
+    local mode = config.get("mode")
+    if mode then
+        targetdir = path.join(targetdir, mode)
     end
 
     -- ok?

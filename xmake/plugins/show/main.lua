@@ -23,7 +23,7 @@ import("core.base.option")
 
 -- show list
 function _show_list(name)
-    assert(import("lists." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)()
+    assert(#name > 0 and import("lists." .. name, {try = true, anonymous = true}), "unknown list name(%s)", name)()
 end
 
 -- main entry
