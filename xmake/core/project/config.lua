@@ -122,28 +122,27 @@ function config.options()
     return configs
 end
 
--- get the buildir 
+-- get the buildir
 function config.buildir()
-    
-    -- get it 
-    local buildir = config.get("buildir")
-    if buildir then
 
-        -- get the absolute path first
-        if not path.is_absolute(buildir) then
-            local rootdir
-            if os.isdir(path.join(os.workingdir(), ".xmake")) then
-                -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
-                rootdir = os.workingdir()
-            else
-                rootdir = os.projectdir()
-            end
-            buildir = path.absolute(buildir, rootdir)
+    -- get it
+    local buildir = config.get("buildir") or "build"
+
+    -- get the absolute path first
+    if not path.is_absolute(buildir) then
+        local rootdir
+        if os.isdir(path.join(os.workingdir(), ".xmake")) then
+            -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
+            rootdir = os.workingdir()
+        else
+            rootdir = os.projectdir()
         end
-
-        -- adjust path for the current directory
-        buildir = path.relative(buildir, os.curdir())
+        buildir = path.absolute(buildir, rootdir)
     end
+
+    -- adjust path for the current directory
+    buildir = path.relative(buildir, os.curdir())
+
     return buildir
 end
 

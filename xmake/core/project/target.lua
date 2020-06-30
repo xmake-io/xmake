@@ -875,17 +875,8 @@ end
 -- get the target directory
 function _instance:targetdir()
 
-    -- the target directory
-    local targetdir = self:get("targetdir")
-    if not targetdir then
-
-        -- get build directory
-        targetdir = config.buildir()
-    end
-
-    if not targetdir then
-        return nil
-    end
+    -- the target directory or build directory
+    local targetdir = self:get("targetdir") or config.buildir()
 
     -- append plat sub-directory
     local plat = self:plat()
@@ -909,7 +900,7 @@ function _instance:targetdir()
     return targetdir
 end
 
--- get the target file 
+-- get the target file
 function _instance:targetfile()
 
     -- the target directory
@@ -920,7 +911,7 @@ function _instance:targetfile()
 
     -- only compile objects? no target file
     if targetkind == "object" then
-        return 
+        return
     end
 
     -- make the target file name and attempt to use the format of linker first
@@ -935,7 +926,7 @@ end
 function _instance:symbolfile()
 
     -- the target directory
-    local targetdir = self:targetdir() or config.buildir()
+    local targetdir = self:targetdir()
     assert(targetdir and type(targetdir) == "string")
 
     -- the symbol file name
