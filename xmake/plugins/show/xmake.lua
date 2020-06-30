@@ -42,7 +42,8 @@ task("show")
                                                         ,   values = function (complete, opt)
                                                                 return import("list").lists()
                                                             end},
-                    {'t', "target"      , "kv"  , nil   ,   "Show the information of the given target."}
+                    {'t', "target"      , "kv"  , nil   ,   "Show the information of the given target."
+                                                        ,   values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }
 

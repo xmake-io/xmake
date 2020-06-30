@@ -50,7 +50,7 @@ task("install")
 
                 ,   {                                                                               }
                 ,   {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified."
-                                                    , values = function () return try{ function () return table.keys(import("core.project.project").targets()) end } end }
+                                                    , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
             }
 
