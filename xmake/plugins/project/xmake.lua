@@ -43,6 +43,7 @@ task("project")
                                                         ,   "    - xmakefile (makefile with xmake)"
                                                         ,   "    - cmake"
                                                         ,   "    - ninja"
+                                                        ,   "    - xcode (need cmake)"
                                                         ,   "    - compile_flags"
                                                         ,   "    - compile_commands (clang compilation database with json format)"
                                                         ,   "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"

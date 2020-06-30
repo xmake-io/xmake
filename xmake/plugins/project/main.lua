@@ -25,6 +25,7 @@ import("core.project.config")
 import("make.makefile")
 import("make.xmakefile")
 import("cmake.cmakelists")
+import("xcode.xcodeproj")
 import("ninja.build_ninja")
 import("vstudio.vs")
 import("vsxmake.vsxmake")
@@ -41,6 +42,7 @@ function makers()
     ,   xmakefile        = xmakefile.make
     ,   cmake            = cmakelists.make
     ,   cmakelists       = cmakelists.make
+    ,   xcode            = xcodeproj.make
     ,   ninja            = build_ninja.make
     ,   vs2002           = vs.make(2002)
     ,   vs2003           = vs.make(2003)

@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add `xmake project -k xcode` generator (use cmake)
+
 ## v2.3.5
 
 ### New features
@@ -770,6 +774,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加xcode工程生成器插件，`xmake project -k cmake` （当前采用cmake生成）
 
 ## v2.3.5
 
