@@ -23,6 +23,11 @@ function targets()
     {
         function ()
             import("core.project.project")
+            import("core.project.config")
+
+            -- load config
+            config.load()
+
             return table.keys(project.targets())
         end
     }
@@ -33,6 +38,11 @@ function runable_targets()
     {
         function ()
             import("core.project.project")
+            import("core.project.config")
+
+            -- load config
+            config.load()
+
             local targets = project.targets()
             local runable = {}
             for k, v in pairs(targets) do
