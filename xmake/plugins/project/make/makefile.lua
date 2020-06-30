@@ -233,8 +233,9 @@ function _make_target(makefile, target, targetflags)
     makefile:printf("%s:", targetfile)
 
     -- make dependence for the dependent targets
-    for _, dep in ipairs(target:get("deps")) do
-        makefile:write(" " .. project.target(dep):targetfile())
+    for _, depname in ipairs(target:get("deps")) do
+        local dep = project.target(depname)
+        makefile:write(" " .. (dep:isphony() and depname or dep:targetfile()))
     end
 
     -- make dependence for objects
