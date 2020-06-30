@@ -46,7 +46,7 @@ jobs:
         # build
       - name: build
         run: |
-          xmake f -vD -P core -a ${{ martix.arch }}
+          xmake f -vD -P core -a ${{ matrix.arch }}
           xmake -vD -P core
 
         # tests
@@ -72,7 +72,7 @@ jobs:
           Copy-Item ./curl.exe ./xmake/winenv/bin
           Copy-Item ./curl-ca-bundle.crt ./xmake/winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
-          ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ martix.arch }} .\scripts\installer.nsi
+          ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           # archive
           Copy-Item ./*.md ./xmake
           Add-Type -AssemblyName System.Text.Encoding
@@ -92,7 +92,7 @@ jobs:
         # upload artifacts
       - name: set release arch name
         run: |
-          if ("${{ martix.arch }}" -eq "x64"){
+          if ("${{ matrix.arch }}" -eq "x64"){
             echo "::set-env name=RELEASE_NAME::win64"
           } else {
             echo "::set-env name=RELEASE_NAME::win32"
