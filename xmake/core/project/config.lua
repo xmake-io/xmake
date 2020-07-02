@@ -125,10 +125,8 @@ end
 -- get the buildir
 function config.buildir()
 
-    -- get it
-    local buildir = config.get("buildir") or "build"
-
     -- get the absolute path first
+    local buildir = config.get("buildir") or "build"
     if not path.is_absolute(buildir) then
         local rootdir
         if os.isdir(path.join(os.workingdir(), ".xmake")) then
@@ -142,7 +140,6 @@ function config.buildir()
 
     -- adjust path for the current directory
     buildir = path.relative(buildir, os.curdir())
-
     return buildir
 end
 

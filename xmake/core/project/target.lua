@@ -875,25 +875,30 @@ end
 -- get the target directory
 function _instance:targetdir()
 
-    -- the target directory or build directory
-    local targetdir = self:get("targetdir") or config.buildir()
+    -- the target directory
+    local targetdir = self:get("targetdir")
+    if not targetdir then
 
-    -- append plat sub-directory
-    local plat = self:plat()
-    if plat then
-        targetdir = path.join(targetdir, plat)
-    end
+        -- get build directory
+        targetdir = config.buildir()
 
-    -- append arch sub-directory
-    local arch = self:arch()
-    if arch then
-        targetdir = path.join(targetdir, arch)
-    end
+        -- append plat sub-directory
+        local plat = self:plat()
+        if plat then
+            targetdir = path.join(targetdir, plat)
+        end
 
-    -- append mode sub-directory
-    local mode = config.get("mode")
-    if mode then
-        targetdir = path.join(targetdir, mode)
+        -- append arch sub-directory
+        local arch = self:arch()
+        if arch then
+            targetdir = path.join(targetdir, arch)
+        end
+
+        -- append mode sub-directory
+        local mode = config.get("mode")
+        if mode then
+            targetdir = path.join(targetdir, mode)
+        end
     end
     return targetdir
 end
