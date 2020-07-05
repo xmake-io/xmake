@@ -5,6 +5,7 @@
 ### New features
 
 * Add `xmake project -k xcode` generator (use cmake)
+* [870](https://github.com/xmake-io/xmake/issues/870): Support gfortran compiler
 
 ## v2.3.5
 
@@ -778,6 +779,7 @@
 ### 新特性
 
 * 添加xcode工程生成器插件，`xmake project -k cmake` （当前采用cmake生成）
+* [870](https://github.com/xmake-io/xmake/issues/870): 支持gfortran编译器
 
 ## v2.3.5
 

@@ -23,7 +23,7 @@ toolchain("gfortran")
 
     -- set homepage
     set_homepage("https://fortran.com/")
-    set_description("Fortran Programming Language Compiler")
+    set_description("GNU Fortran Programming Language Compiler")
         
     -- set toolset
     set_toolset("fc",   "$(env FC)", "gfortran")
