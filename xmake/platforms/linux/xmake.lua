@@ -50,7 +50,7 @@ platform("linux")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust")
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust", "gfortran")
 
     -- set menu
     set_menu {

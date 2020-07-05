@@ -38,8 +38,6 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps = 
     {   
         fast        = "-O"
@@ -48,42 +46,30 @@ function nf_optimize(self, level)
     ,   smallest    = "-O -release -boundscheck=off"
     ,   aggressive  = "-O -release -inline -boundscheck=off"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the strip flag
 function nf_strip(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug       = "-L-S"
     ,   all         = "-L-s"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug = "-g -debug"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps = 
     {   
         none        = "-d"
@@ -93,22 +79,16 @@ function nf_warning(self, level)
     ,   everything  = "-w -wi"
     ,   error       = "-de"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-
-    -- the maps
     local maps = 
     {   
         avx         = "-mcpu=avx"
     ,   avx2        = "-mcpu=avx"
     }
-
-    -- make it
     return maps[extension] 
 end
 
@@ -171,17 +151,17 @@ function link(self, objectfiles, targetkind, targetfile, flags)
 end
 
 -- make the compile arguments list
-function compargv(self, sourcefiles, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-of" .. objectfile, sourcefiles)
+function compargv(self, sourcefile, objectfile, flags)
+    return self:program(), table.join("-c", flags, "-of" .. objectfile, sourcefile)
 end
 
 -- compile the source file
-function compile(self, sourcefiles, objectfile, dependinfo, flags)
+function compile(self, sourcefile, objectfile, dependinfo, flags)
 
     -- ensure the object directory
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.runv(compargv(self, sourcefiles, objectfile, flags))
+    os.runv(compargv(self, sourcefile, objectfile, flags))
 end
 

@@ -31,4 +31,7 @@ winenv/
 /core/**/*.b
 /core/**/*.a
 
+# for fortran
+/tests/**/*.mod
+
 !/xmake/actions/build/
