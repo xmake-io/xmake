@@ -20,3 +20,19 @@
 
 -- inherit gcc
 inherit("gcc")
+
+-- init it
+function init(self)
+
+    -- init super
+    _super.init(self)
+
+    -- init shflags
+    self:set("fcshflags", "-shared")
+
+    -- add -fPIC for shared
+    if not is_plat("windows", "mingw") then
+        self:add("fcshflags", "-fPIC")
+        self:add("shared.fcflags", "-fPIC")
+    end
+end
