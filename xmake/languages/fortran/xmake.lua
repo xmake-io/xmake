@@ -28,7 +28,7 @@ language("fortran")
     set_sourceflags {fc = "fcflags"}
 
     -- set target kinds
-    set_targetkinds {binary = "fcld", static = "fcar", shared = "fcsh"}
+    set_targetkinds {binary = "fcld", static = "ar", shared = "fcsh"}
 
     -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}

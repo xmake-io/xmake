@@ -29,7 +29,6 @@ toolchain("fortran")
     set_toolset("fc",   "$(env FC)", "gfortran")
     set_toolset("fcld", "$(env FC)", "gfortran")
     set_toolset("fcsh", "$(env FC)", "gfortran")
-    set_toolset("fcar", "$(env FC)", "gfortran")
 
     -- on load
     on_load(function (toolchain)
