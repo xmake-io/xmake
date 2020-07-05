@@ -19,7 +19,7 @@
 --
 
 -- define toolchain
-toolchain("fortran")
+toolchain("gfortran")
 
     -- set homepage
     set_homepage("https://fortran.com/")

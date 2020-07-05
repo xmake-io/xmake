@@ -51,5 +51,5 @@ platform("cygwin")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "cross", "gcc", "clang", "yasm")
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "gfortran")
 

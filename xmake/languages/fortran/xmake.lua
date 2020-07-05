@@ -114,7 +114,6 @@ language("fortran")
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"            }
                 ,   {nil, "fcld",       "kv", nil,          "The Fortran Linker"                 }
-                ,   {nil, "fcar",       "kv", nil,          "The Fortran Static Library Archiver"}
                 ,   {nil, "fcsh",       "kv", nil,          "The Fortran Shared Library Linker"  }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"     }

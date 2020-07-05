@@ -31,7 +31,7 @@ import("lib.detect.find_programver")
 -- @code 
 --
 -- local gfortran = find_gfortran()
--- local gfortran, version = find_gfortran({program = "gfortran9", version = true})
+-- local gfortran, version = find_gfortran({program = "g95", version = true})
 -- 
 -- @endcode
 --
@@ -42,6 +42,9 @@ function main(opt)
     
     -- find program
     local program = find_program(opt.program or "gfortran", opt)
+    if not program then
+        program = find_program("g95", opt)
+    end
 
     -- find program version
     local version = nil
