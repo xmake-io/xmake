@@ -53,14 +53,24 @@ xmake is a cross-platform build utility based on lua.
 The project focuses on making development and building easier and provides many features (e.g package, install, plugin, macro, action, option, task ...), 
 so that any developer can quickly pick it up and enjoy a productivity boost when developing and building projects.
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake)
 
-If you want to know more, please refer to:
+## Supporting the project
 
-* [Documents](https://xmake.io/#/home)
-* [HomePage](https://xmake.io)
-* [Github](https://github.com/xmake-io/xmake)
-* [Gitee](https://gitee.com/tboox/xmake)
+You can support the project by checking out our sponsor page. 🙏 
+It takes only one click:
+
+<a href="https://tracking.gitads.io/?repo=xmake">
+ <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+</a>
+
+<br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=xmake&redirect=gitads.io">GitAds</a> </i>
+
+### Sponsor
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏 [[Become a sponsor](https://xmake.io/#/about/sponsor)]
+
+<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
 ## Installation
 
@@ -435,26 +445,3 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
 * [OpportunityLiu](https://github.com/OpportunityLiu): improve cuda, tests and ci
-
-## Backers
-
-Thank you to all our backers! 🙏 [[Become a backer](https://opencollective.com/xmake#backer)]
-
-<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
-
-## Sponsors
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. [[Become a sponsor](https://opencollective.com/xmake#sponsor)]
-
-<a href="https://opencollective.com/xmake/sponsor/0/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/1/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/2/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/3/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/4/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/5/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/6/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/7/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/8/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/9/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/9/avatar.svg"></a>
-
-

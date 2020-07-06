@@ -1,6 +1,6 @@
 <div align="center">
   <a href="https://xmake.io/cn">
-    <img width="200" heigth="200" src="https://tboox.org/static/img/xmake/logo256c.png">
+    <img width="160" heigth="160" src="https://tboox.org/static/img/xmake/logo256c.png">
   </a>  
 
   <h1>xmake</h1>
@@ -59,14 +59,23 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 不仅如此，它还提供了许多更加高级的特性，例如插件扩展、脚本宏记录、批量打包、自动文档生成等等。。
 
-<img src="https://xmake.io/assets/img/index/package_manage.png" width="650px" />
+如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)
 
-如果你想要了解更多，请参考：
+## 支持本项目
 
-* [在线文档](https://xmake.io/#/zh-cn/getting_started)
-* [项目主页](https://xmake.io/#/zh-cn/)
-* [Github](https://github.com/xmake-io/xmake)
-* [Gitee](https://gitee.com/tboox/xmake)
+你可以通过查看我们的赞助商页面来支持本项目，仅仅只需要点击🙏 ：
+
+<a href="https://tracking.gitads.io/?repo=xmake">
+ <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+</a>
+
+<br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=xmake&redirect=gitads.io">GitAds</a> </i>
+
+### 赞助支持
+
+通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏 [[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
+
+<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
 ## 安装
 
@@ -441,26 +450,4 @@ $ ./gradlew app:assembleDebug
 * [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本
 * [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)
 * [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci
-
-## 支持项目
-
-xmake项目属于个人开源项目，它的发展需要您的帮助，如果您愿意支持xmake项目的开发，欢迎为其捐赠，支持它的发展。 🙏 [[支持此项目](https://opencollective.com/xmake#backer)]
-
-<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
-
-## 赞助项目
-
-通过赞助支持此项目，您的logo和网站链接将显示在这里。[[赞助此项目](https://opencollective.com/xmake#sponsor)]
-
-<a href="https://opencollective.com/xmake/sponsor/0/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/0/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/1/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/1/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/2/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/2/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/3/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/3/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/4/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/4/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/5/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/5/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/6/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/6/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/7/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/7/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/8/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/8/avatar.svg"></a>
-<a href="https://opencollective.com/xmake/sponsor/9/website" target="_blank"><img src="https://opencollective.com/xmake/sponsor/9/avatar.svg"></a>
-
 
