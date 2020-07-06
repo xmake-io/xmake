@@ -63,18 +63,19 @@ jobs:
       - name: artifact
         run: |
           # build installer
-          (New-Item ./xmake/winenv/bin -ItemType Directory).FullName
+          (New-Item ./winenv/bin -ItemType Directory).FullName
           Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
           Expand-Archive ./unzip.zip -DestinationPath ./unzip
           Copy-Item ./unzip/bin/unzip.exe ./xmake/winenv/bin
           Invoke-WebRequest "https://github.com/xmake-io/xmake-win64env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
           Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win64env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
-          Copy-Item ./curl.exe ./xmake/winenv/bin
-          Copy-Item ./curl-ca-bundle.crt ./xmake/winenv/bin
+          Copy-Item ./curl.exe ./winenv/bin
+          Copy-Item ./curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           # archive
           Copy-Item ./*.md ./xmake
+          Copy-Item ./winenv ./xmake -Recurse
           Add-Type -AssemblyName System.Text.Encoding
           Add-Type -AssemblyName System.IO.Compression.FileSystem
           class FixedEncoder : System.Text.UTF8Encoding {

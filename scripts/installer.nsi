@@ -233,6 +233,7 @@ Section "XMake (required)" InstallExeutable
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
   File "..\*.md"
   File "..\core\build\xmake.exe"
+  File /r /x ".DS_Store" "..\winenv"
 
   WriteUninstaller "uninstall.exe"
 
