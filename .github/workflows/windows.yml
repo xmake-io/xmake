@@ -66,7 +66,7 @@ jobs:
           (New-Item ./winenv/bin -ItemType Directory).FullName
           Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
           Expand-Archive ./unzip.zip -DestinationPath ./unzip
-          Copy-Item ./unzip/bin/unzip.exe ./xmake/winenv/bin
+          Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
           Invoke-WebRequest "https://github.com/xmake-io/xmake-win64env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
           Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win64env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
           Copy-Item ./curl.exe ./winenv/bin
