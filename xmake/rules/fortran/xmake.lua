@@ -18,9 +18,19 @@
 -- @file        xmake.lua
 --
 
+-- define rule: fortran.build.modules
+rule("fortran.build.modules")
+    before_build(function (target)
+        local modulesdir = path.join(target:objectdir(), ".modules")
+        os.mkdir(modulesdir)
+        target:add("fcflags", "-J" .. modulesdir)
+        target:add("includedirs", modulesdir)
+    end)
+
 -- define rule: fortran.build
 rule("fortran.build")
-    set_sourcekinds("fc")    
+    set_sourcekinds("fc")
+    add_deps("fortran.build.modules")
     on_load(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         target:set("policy", "build.across_targets_in_parallel", false)

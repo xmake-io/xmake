@@ -46,6 +46,20 @@
   <p>A cross-platform build utility based on Lua</p>
 </div>
 
+## Supporting the project
+
+xmake is being sponsored by the following tool; please help to support us by taking a look and signing up to a free trial. 🙏
+
+<a href="https://tracking.gitads.io/?repo=xmake">
+ <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+</a>
+
+### Sponsor
+
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏 [[Become a sponsor](https://xmake.io/#/about/sponsor)]
+
+<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
+
 ## Introduction ([中文](/README_zh.md))
 
 xmake is a cross-platform build utility based on lua. 
@@ -54,23 +68,6 @@ The project focuses on making development and building easier and provides many 
 so that any developer can quickly pick it up and enjoy a productivity boost when developing and building projects.
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake)
-
-## Supporting the project
-
-You can support the project by checking out our sponsor page. 🙏 
-It takes only one click:
-
-<a href="https://tracking.gitads.io/?repo=xmake">
- <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
-</a>
-
-<br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=xmake&redirect=gitads.io">GitAds</a> </i>
-
-### Sponsor
-
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏 [[Become a sponsor](https://xmake.io/#/about/sponsor)]
-
-<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
 ## Installation
 

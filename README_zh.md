@@ -46,6 +46,20 @@
   <p>A cross-platform build utility based on Lua</p>
 </div>
 
+## 项目支持
+
+你可以通过查看我们的赞助商页面来支持本项目，仅仅只需要点击🙏 ：
+
+<a href="https://tracking.gitads.io/?repo=xmake">
+ <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+</a>
+
+### 赞助支持
+
+通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏 [[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
+
+<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
+
 ## 简介
 
 XMake是一个基于Lua的轻量级跨平台自动构建工具，支持在各种主流平台上构建项目
@@ -60,22 +74,6 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 不仅如此，它还提供了许多更加高级的特性，例如插件扩展、脚本宏记录、批量打包、自动文档生成等等。。
 
 如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)
-
-## 支持本项目
-
-你可以通过查看我们的赞助商页面来支持本项目，仅仅只需要点击🙏 ：
-
-<a href="https://tracking.gitads.io/?repo=xmake">
- <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
-</a>
-
-<br><i>This advert was placed by <a href="https://tracking.gitads.io/?campaign=gitads&repo=xmake&redirect=gitads.io">GitAds</a> </i>
-
-### 赞助支持
-
-通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏 [[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
-
-<a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
 
 ## 安装
 
