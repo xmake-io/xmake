@@ -48,7 +48,7 @@
 
 ## 项目支持
 
-你可以通过查看我们的赞助商页面来支持本项目，仅仅只需要点击🙏 ：
+xmake由以下工具赞助, 请通过查看并注册免费试用来帮助支持我们。🙏
 
 <a href="https://tracking.gitads.io/?repo=xmake">
  <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
