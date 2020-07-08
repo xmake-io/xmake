@@ -50,7 +50,7 @@ platform("macosx")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "dlang", "rust", "go", "gfortran")
+    set_toolchains("envs", "xcode", "clang", "gcc", "yasm", "nasm", "cuda", "dlang", "rust", "go", "gfortran", "zig")
 
     -- set menu
     set_menu {
