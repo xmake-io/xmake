@@ -36,6 +36,8 @@ toolchain("zig")
         local march
         if is_plat("macosx") then
             march = "x86_64-macosx-gnu"
+        elseif is_plat("linux") then
+            march = "x86_64-linux-gnu"
         end
         if march then
             toolchain:add("zcflags", "-target", march)
