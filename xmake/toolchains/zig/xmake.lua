@@ -35,7 +35,8 @@ toolchain("zig")
     on_load(function (toolchain)
         local march
         if toolchain:is_plat("macosx") then
-            march = toolchain:is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
+            -- FIXME
+            --march = toolchain:is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
         elseif toolchain:is_plat("linux") then
             march = toolchain:is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
         elseif toolchain:is_plat("windows") then
