@@ -196,6 +196,7 @@ clang         A C language family frontend for LLVM
 go            Go Programming Language Compiler
 dlang         D Programming Language Compiler
 gfortran      GNU Fortran Programming Language Compiler
+zig           Zig Programming Language Compiler
 sdcc          Small Device C Compiler
 cuda          CUDA Toolkit
 ndk           Android NDK
@@ -221,6 +222,7 @@ fasm          Flat Assembler
 * Dlang
 * Fortran
 * Cuda
+* Zig
 
 ## 工程类型
 

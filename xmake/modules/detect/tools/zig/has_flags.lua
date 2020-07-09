@@ -20,14 +20,13 @@
 
 -- imports
 import("lib.detect.cache")
-import("core.language.language")
 
 -- is linker?
 function _islinker(flags, opt)
   
-    -- the tool kind is gcld or gcsh?
+    -- the tool kind is ld or sh?
     local toolkind = opt.toolkind or ""
-    return toolkind:endswith("ld") or toolkind:endswith("sh")
+    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
 -- try running 
@@ -38,7 +37,7 @@ function _try_running(...)
     return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
--- attempt to check it from the argument list
+-- attempt to check it from the argument list 
 function _check_from_arglist(flags, opt, islinker)
 
     -- only for compiler
@@ -47,35 +46,26 @@ function _check_from_arglist(flags, opt, islinker)
     end
 
     -- make cache key
-    local key = "detect.tools.go.has_flags"
+    local key = "detect.tools.zig.has_flags"
 
-    -- make flags key
+    -- make allflags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
 
     -- load cache
     local cacheinfo  = cache.load(key)
 
-    -- get all flags from argument list
+    -- get all allflags from argument list
     local allflags = cacheinfo[flagskey]
     if not allflags then
 
-        -- attempt to get argument list from the error info (help menu)
+        -- get argument list
         allflags = {}
-        try 
-        { 
-            function () os.runv(opt.program, {"tool", "compile", "--help"}) end,
-            catch 
-            {
-                function (errors) 
-                    local arglist = errors
-                    if arglist then
-                        for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
-                            allflags[arg] = true
-                        end
-                    end
-                end
-            }
-        }
+        local arglist = os.iorunv(opt.program, {"--help"})
+        if arglist then
+            for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
+                allflags[arg] = true
+            end
+        end
 
         -- save cache
         cacheinfo[flagskey] = allflags
@@ -90,32 +80,27 @@ end
 function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "go_has_flags.go")
-    local objectfile = path.join(os.tmpdir(), "detect", "go_has_flags.o")
-    local targetfile = path.join(os.tmpdir(), "detect", "go_has_flags.bin")
+    local sourcefile = path.join(os.tmpdir(), "detect", "zig_has_flags.zig")
+    local objectdir = path.join(os.tmpdir(), "detect", "zig_has_flags")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, "package main\nfunc main() {\n}")
+        io.writefile(sourcefile, "pub fn main() !void {}")
     end
 
-    -- check flags for linker
+    -- init argv
+    local argv = table.join(flags, "--output-dir", objectdir, sourcefile)
     if islinker then
-
-        -- compile a object file first
-        if not os.isfile(objectfile) and not _try_running(opt.program, table.join("tool", "compile", "-o", objectfile, sourcefile)) then
-            return false
-        end
-
-        -- check it
-        return _try_running(opt.program, table.join("tool", "link", flags, "-o", targetfile, objectfile))
+        table.insert(argv, 1, "build-exe")
+    else
+        table.insert(argv, 1, "build-obj")
     end
 
-    -- check flags for compiler
-    return _try_running(opt.program, table.join("tool", "compile", flags, "-o", objectfile, sourcefile))
+    -- check it
+    return _try_running(opt.program, argv)
 end
 
 -- has_flags(flags)?
 -- 
--- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|mm|mxx]"}
+-- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return      true or false
 --
@@ -124,7 +109,7 @@ function main(flags, opt)
     -- is linker?
     local islinker = _islinker(flags, opt)
 
-    -- attempt to check it from the argument list
+    -- attempt to check it from the argument list 
     if _check_from_arglist(flags, opt, islinker) then
         return true
     end

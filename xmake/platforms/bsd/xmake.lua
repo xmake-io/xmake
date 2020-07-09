@@ -50,7 +50,7 @@ platform("bsd")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust", "gfortran")
+    set_toolchains("envs", "gcc", "clang", "yasm", "nasm", "fasm", "cuda", "dlang", "go", "rust", "gfortran", "zig")
 
     -- set menu
     set_menu {
