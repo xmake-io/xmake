@@ -33,4 +33,11 @@ toolchain("zig")
 
     -- on load
     on_load(function (toolchain)
+        local march
+        if is_plat("macosx") then
+            march = "x86_64-macosx-gnu"
+        end
+        if march then
+            toolchain:add("zcflags", "-target", march)
+        end
     end)
