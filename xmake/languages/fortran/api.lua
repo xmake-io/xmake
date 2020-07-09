@@ -27,7 +27,7 @@ function apis()
         -- target.add_xxx
         "target.add_links"
     ,   "target.add_syslinks"
-    ,   "target.add_dcflags"
+    ,   "target.add_fcflags"
     ,   "target.add_ldflags"
     ,   "target.add_arflags"
     ,   "target.add_shflags"
@@ -35,7 +35,7 @@ function apis()
         -- option.add_xxx
     ,   "option.add_links"
     ,   "option.add_syslinks"
-    ,   "option.add_dcflags"
+    ,   "option.add_fcflags"
     ,   "option.add_ldflags"
     ,   "option.add_arflags"
     ,   "option.add_shflags"
@@ -43,7 +43,7 @@ function apis()
         -- package.add_xxx
     ,   "package.add_links"
     ,   "package.add_syslinks"
-    ,   "package.add_dcflags"
+    ,   "package.add_fcflags"
     ,   "package.add_ldflags"
     ,   "package.add_arflags"
     ,   "package.add_shflags"
@@ -53,7 +53,7 @@ function apis()
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
-    ,   "toolchain.add_dcflags"
+    ,   "toolchain.add_fcflags"
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
     ,   "toolchain.add_shflags"

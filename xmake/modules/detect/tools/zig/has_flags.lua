@@ -83,7 +83,7 @@ function _check_try_running(flags, opt, islinker)
     local sourcefile = path.join(os.tmpdir(), "detect", "zig_has_flags.zig")
     local objectdir = path.join(os.tmpdir(), "detect", "zig_has_flags")
     if not os.isfile(sourcefile) then
-        io.writefile(sourcefile, "pub fn main() !void {\n}")
+        io.writefile(sourcefile, "pub fn main() !void {}")
     end
 
     -- init argv

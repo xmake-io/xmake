@@ -53,13 +53,10 @@ language("zig")
     {
         object =
         {
-            "config.includedirs"
-        ,   "target.symbols"
+            "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
-        ,   "target.includedirs"
-        ,   "toolchain.includedirs"
         }
     ,   binary =
         {
@@ -121,7 +118,6 @@ language("zig")
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                 }
                 ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"          }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"        }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"     }
                 }
             } 
 

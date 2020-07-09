@@ -34,12 +34,16 @@ toolchain("zig")
     -- on load
     on_load(function (toolchain)
         local march
-        if is_plat("macosx") then
-            march = "x86_64-macosx-gnu"
-        elseif is_plat("linux") then
-            march = "x86_64-linux-gnu"
+        if toolchain:is_plat("macosx") then
+            march = toolchain:is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
+        elseif toolchain:is_plat("linux") then
+            march = toolchain:is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
+        elseif toolchain:is_plat("windows") then
+            march = toolchain:is_arch("x86") and "i386-windows-msvc" or "x86_64-windows-msvc"
         end
         if march then
             toolchain:add("zcflags", "-target", march)
+            toolchain:add("zcldflags", "-target", march)
+            toolchain:add("zcshflags", "-target", march)
         end
     end)
