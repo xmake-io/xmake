@@ -35,7 +35,9 @@ rule("fortran.build")
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         target:set("policy", "build.across_targets_in_parallel", false)
     end)
-    on_build_files("private.action.build.object", {batch = true})
+    on_build_files(function (target, sourcebatch, opt)
+        import("private.action.build.object").build(target, sourcebatch, opt)
+    end)
 
 -- define rule: fortran
 rule("fortran")
