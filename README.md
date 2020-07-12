@@ -216,7 +216,7 @@ fasm          Flat Assembler
 * Dlang
 * Fortran
 * Cuda
-* Zig
+* Zig (Experimental)
 
 ## Supported Projects
 
