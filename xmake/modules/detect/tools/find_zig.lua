@@ -38,8 +38,18 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.check   = opt.check or "--help"
+    opt.check   = opt.check or "version"
+    opt.command = opt.command or "version"
     
     -- find program
-    return find_program(opt.program or "zig", opt)
+    local program = find_program(opt.program or "zig", opt)
+
+    -- find program version
+    local version = nil
+    if program and opt and opt.version then
+        version = find_programver(program, opt)
+    end
+
+    -- ok?
+    return program, version
 end

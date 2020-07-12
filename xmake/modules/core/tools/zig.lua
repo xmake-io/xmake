@@ -112,7 +112,11 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
         raise("unknown target kind(%s)!", targetkind)
     end
     local name = targetkind == "binary" and path.basename(targetfile) or target.linkname(path.filename(targetfile))
-    table.join2(argv, flags, "--output-dir", path.directory(targetfile), "--name", name, "--object", objectfiles)
+    table.join2(argv, flags, "--output-dir", path.directory(targetfile), "--name", name)
+    for _, objectfile in ipairs(objectfiles) do
+        table.insert(argv, "--object")
+        table.insert(argv, objectfile)
+    end
     return self:program(), argv
 end
 
