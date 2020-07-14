@@ -58,6 +58,14 @@ function _escape(str)
     return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
 end
 
+function _vs_arch(arch)
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
+end
+
 function _make_dirs(dir)
     if dir == nil then
         return ""
@@ -116,7 +124,7 @@ function _make_targetinfo(mode, arch, target)
         mode = mode
     ,   arch = arch
     ,   plat = config.get("plat")
-    ,   vsarch = (arch == "x86" and "Win32" or arch)
+    ,   vsarch = _vs_arch(arch)
     ,   sdkver = config.get("vs_sdkver")
     }
 
