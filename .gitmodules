@@ -10,3 +10,6 @@
 [submodule "core/src/pdcurses/pdcurses"]
 	path = core/src/pdcurses/pdcurses
 	url = ../../xmake-io/xmake-core-pdcurses.git
+[submodule "core/src/lua-cjson/lua-cjson"]
+	path = core/src/lua-cjson/lua-cjson
+	url = ../../xmake-io/xmake-core-lua-cjson.git
