@@ -15,6 +15,9 @@ set_languages("c99", "cxx11")
 
 -- add release and debug modes
 add_rules("mode.release", "mode.debug")
+if is_mode("release") then
+    set_optimize("smallest")
+end
 
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-error=nullability-completeness", "-Wno-error=parentheses-equality")
