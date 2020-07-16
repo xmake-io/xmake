@@ -8,7 +8,7 @@ target("xmake")
     if has_config("curses") or has_config("pdcurses") then
         add_deps("lcurses")
     end
-    add_deps("sv", "luajit", "tbox")
+    add_deps("sv", "luajit", "lua-cjson", "tbox")
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")

@@ -76,7 +76,7 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
+includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
 if is_plat("windows") then
     includes("src/pdcurses")
 end
