@@ -17,6 +17,9 @@ set_languages("c99", "cxx11")
 add_rules("mode.release", "mode.debug")
 if is_mode("release") then
     set_optimize("smallest")
+    if is_plat("windows") then
+        add_ldflags("/LTCG")
+    end
 end
 
 -- disable some compiler errors
