@@ -1,169 +1,13 @@
-name: build
+name: Windows
 
 on:
   pull_request:
   push:
   release:
-    types: [published]
+    types: published
 
 jobs:
-
-
-  Linux:
-
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: local#
-      - uses: mihails-strasuns/setup-dlang@v0.5.0
-        with:
-          compiler: dmd-latest
-      - uses: olegtarasov/get-tag@v2
-        id: tagName
-
-        # tests
-      - name: tests
-        run: |
-          xmake lua -v -D tests/run.lua
-
-        # build artifacts
-      - name: artifact
-        run: |
-          sudo apt-get install -y ruby ruby-dev rubygems build-essential
-          sudo gem install --no-document fpm
-          git submodule update --init
-          scripts/makepkg deb 
-        # upload artifacts
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.amd64.deb
-          path: artifacts/xmake.deb
-
-        # publish release
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.deb
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.amd64.deb
-          asset_content_type: application/zip
-
-
-  macOS:
-
-    runs-on: macos-latest
-
-    steps:
-      - uses: actions/checkout@v1
-      - uses: xmake-io/github-action-setup-xmake@v1
-        with:
-          xmake-version: local#
-      - uses: mihails-strasuns/setup-dlang@v0.5.0
-        with:
-          compiler: dmd-latest
-      - uses: olegtarasov/get-tag@v2
-        id: tagName
-
-        # tests
-      - name: tests
-        run: |
-          xmake lua -v -D tests/run.lua
-
-        # build artifacts
-      - name: artifact
-        run: |
-          brew install gnu-tar
-          gem install --no-document fpm
-          git submodule update --init
-          scripts/makepkg osxpkg 
-          scripts/archive-all
-          scripts/makeself/build-runfile.sh 
-        # upload artifacts
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.macosx.pkg
-          path: artifacts/xmake.pkg
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.gz.run
-          path: artifacts/xmake.gz.run
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.xz.run
-          path: artifacts/xmake.xz.run
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.tar.gz
-          path: artifacts/xmake.tar.gz
-      - uses: actions/upload-artifact@v2
-        with:
-          name: xmake-latest.zip
-          path: artifacts/xmake.zip
-
-        # publish release
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.pkg
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.macosx.pkg
-          asset_content_type: application/zip
-
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.gz.run
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.gz.run
-          asset_content_type: application/zip
-
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.xz.run
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.xz.run
-          asset_content_type: application/zip
-
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.tar.gz
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.tar.gz
-          asset_content_type: application/zip
-
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/xmake.zip
-          asset_name: xmake-${{ steps.tagName.outputs.tag }}.zip
-          asset_content_type: application/zip
-
-
-  Windows:
+  build:
     strategy:
       matrix:
         arch: [x64, x86]
@@ -175,7 +19,7 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           # this is not supported, use dev branch instead
-          # xmake-version: local#
+          # xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
           xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
