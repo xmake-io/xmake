@@ -12,10 +12,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: prepare local xmake
+        run: cp -rf . ../xmake-source
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: local#
+          xmake-version: local#../xmake-source
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
@@ -32,7 +36,6 @@ jobs:
         run: |
           sudo apt-get install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
-          git submodule update --init
           scripts/makepkg deb 
         # upload artifacts
       - uses: actions/upload-artifact@v2
