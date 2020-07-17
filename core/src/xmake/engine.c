@@ -224,6 +224,11 @@ tb_int_t xm_semver_select(lua_State* lua);
 tb_int_t xm_curses_register(lua_State* lua);
 #endif
 
+// open cjson
+__tb_extern_c_enter__
+tb_int_t luaopen_cjson(lua_State *l);
+__tb_extern_c_leave__
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
  */
@@ -848,6 +853,10 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         xm_curses_register(engine->lua);
         lua_setglobal(engine->lua, "curses");
 #endif
+
+        // bind json
+        luaopen_cjson(engine->lua);
+        lua_setglobal(engine->lua, "json");
 
         // init host
         xm_engine_init_host(engine);

@@ -206,8 +206,8 @@ function dlist:ritems()
 end
 
 -- new dlist
-function dlist:new()
-    return self()
+function dlist.new()
+    return dlist()
 end
 
 -- return module: dlist

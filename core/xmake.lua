@@ -15,6 +15,12 @@ set_languages("c99", "cxx11")
 
 -- add release and debug modes
 add_rules("mode.release", "mode.debug")
+if is_mode("release") then
+    set_optimize("smallest")
+    if is_plat("windows") then
+        add_ldflags("/LTCG")
+    end
+end
 
 -- disable some compiler errors
 add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-error=nullability-completeness", "-Wno-error=parentheses-equality")
@@ -76,7 +82,7 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
+includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
 if is_plat("windows") then
     includes("src/pdcurses")
 end
