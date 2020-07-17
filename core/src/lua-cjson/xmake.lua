@@ -11,7 +11,6 @@ target("lua-cjson")
     if is_plat("windows") then
         -- Windows sprintf()/strtod() handle NaN/inf differently. Not supported.
         add_defines("DISABLE_INVALID_NUMBERS")
-        add_defines("strncasecmp=_strnicmp")
         add_defines("inline=__inline")
     end
            
