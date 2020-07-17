@@ -1,4 +1,4 @@
-name: build
+name: Linux
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     types: [published]
 
 jobs:
-  Linux:
+  build:
 
     runs-on: ubuntu-latest
 
