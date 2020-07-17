@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
   release:
-    types: published
+    types: [published]
 
 jobs:
   build:
@@ -15,11 +15,13 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           # this is not supported, use dev branch instead
-          # xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
+          # xmake-version: local#
           xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
@@ -32,7 +34,6 @@ jobs:
         run: |
           # xmake
           xmake show
-          git submodule update --init
           # nsis
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
