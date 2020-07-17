@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
   release:
-    types: published
+    types: [published]
 
 jobs:
   build:
@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
-          xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
+          xmake-version: local#
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest

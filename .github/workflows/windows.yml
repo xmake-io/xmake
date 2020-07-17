@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
   release:
-    types: published
+    types: [published]
 
 jobs:
   build:
@@ -19,7 +19,7 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           # this is not supported, use dev branch instead
-          # xmake-version: ${{ github.repository }}#sha@${{ github.sha }}
+          # xmake-version: local#
           xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
