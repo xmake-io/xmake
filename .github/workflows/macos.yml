@@ -1,4 +1,4 @@
-name: macOS
+name: build
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     types: [published]
 
 jobs:
-  build:
+  macOS:
 
     runs-on: macos-latest
 

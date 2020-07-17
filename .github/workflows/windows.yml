@@ -1,4 +1,4 @@
-name: Windows
+name: build
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
     types: [published]
 
 jobs:
-  build:
+  Windows:
     strategy:
       matrix:
         arch: [x64, x86]
