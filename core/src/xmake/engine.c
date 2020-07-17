@@ -225,7 +225,9 @@ tb_int_t xm_curses_register(lua_State* lua);
 #endif
 
 // open cjson
+__tb_extern_c_enter__
 tb_int_t luaopen_cjson(lua_State *l);
+__tb_extern_c_leave__
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * globals
