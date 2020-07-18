@@ -51,5 +51,5 @@ platform("msys")
     end)
 
     -- set toolchains
-    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "gfortran")
+    set_toolchains("envs", "cross", "gcc", "clang", "yasm", "go", "gfortran")
 
