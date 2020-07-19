@@ -106,7 +106,8 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
 
     -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
 end
 
 -- make the compile arguments list
@@ -121,6 +122,7 @@ function compile(self, sourcefiles, objectfile, dependinfo, flags)
     os.mkdir(path.directory(objectfile))
 
     -- compile it
-    os.runv(compargv(self, sourcefiles, objectfile, flags))
+    local program, argv = compargv(self, sourcefiles, objectfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
 end
 

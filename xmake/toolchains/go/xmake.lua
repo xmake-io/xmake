@@ -32,6 +32,25 @@ toolchain("go")
 
     -- on load
     on_load(function (toolchain)
+        if not toolchain:is_plat(os.host()) or not toolchain:is_arch(os.arch()) then
+            local goos, goarch
+            if toolchain:is_plat("windows", "mingw", "msys", "cygwin") then
+                goos = "windows"
+                goarch = toolchain:is_arch("x64", "x86_64") and "amd64" or "386"
+            elseif toolchain:is_plat("linux") then
+                goos = "linux"
+                goarch = toolchain:is_arch("x86_64") and "amd64" or "386"
+            elseif toolchain:is_plat("macosx") then
+                goos = "darwin"
+                goarch = toolchain:is_arch("x86_64") and "amd64" or "386"
+            end
+            if goos then
+                toolchain:add("runenvs", "GOOS", goos)
+            end
+            if goarch then
+                toolchain:add("runenvs", "GOARCH", goarch)
+            end
+        end
         toolchain:set("gcldflags", "")
     end)
 
