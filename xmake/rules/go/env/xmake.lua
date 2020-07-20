@@ -31,7 +31,7 @@ rule("go.env")
             local gopkgdir = path.join(goroot, "pkg", goos .. "_" .. goarch)
             if not os.isdir(gopkgdir) or os.emptydir(gopkgdir) then
                 local gosrcdir = path.join(goroot, "src")
-                local confirm = utils.confirm({default = true, description = ("we need build go for %s_%s first!"):format(goos, goarch)})
+                local confirm = utils.confirm({default = true, description = ("we need build go for %s_%s only once first!"):format(goos, goarch)})
                 if confirm then
                     local build_task = function ()
                         tty.erase_line_to_start().cr()
