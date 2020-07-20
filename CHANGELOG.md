@@ -7,6 +7,8 @@
 * Add `xmake project -k xcode` generator (use cmake)
 * [#870](https://github.com/xmake-io/xmake/issues/870): Support gfortran compiler
 * [#887](https://github.com/xmake-io/xmake/pull/887): Support zig compiler
+* [#893](https://github.com/xmake-io/xmake/issues/893): Add json module
+* [#898](https://github.com/xmake-io/xmake/issues/898): Support cross-compilation for golang
 
 ## v2.3.5
 
@@ -782,6 +784,8 @@
 * 添加xcode工程生成器插件，`xmake project -k cmake` （当前采用cmake生成）
 * [#870](https://github.com/xmake-io/xmake/issues/870): 支持gfortran编译器
 * [#887](https://github.com/xmake-io/xmake/pull/887): 支持zig编译器
+* [#893](https://github.com/xmake-io/xmake/issues/893): 添加json模块
+* [#898](https://github.com/xmake-io/xmake/issues/898): 改进golang项目构建，支持交叉编译
 
 ## v2.3.5
 
