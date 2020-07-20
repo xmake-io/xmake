@@ -854,9 +854,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         lua_setglobal(engine->lua, "curses");
 #endif
 
-        // bind json
+        // bind cjson
         luaopen_cjson(engine->lua);
-        lua_setglobal(engine->lua, "json");
+        lua_setglobal(engine->lua, "cjson");
 
         // init host
         xm_engine_init_host(engine);

@@ -158,6 +158,11 @@ function _file:size()
 end
 
 -- read data from file
+--
+-- @param fmt       the reading format
+-- @param opt       the options
+--                  - continuation (concat string with the given continuation characters)
+--
 function _file:read(fmt, opt)
 
     -- ensure opened
@@ -549,6 +554,12 @@ function io.stdfile(filepath)
 end
 
 -- open file
+--
+-- @param filepath      the file path
+-- @param mode          the open mode, e.g. 'r', 'rb', 'w+', 'a+', ..
+-- @param opt           the options
+--                      - encoding, e.g. utf8, utf16, utf16le, utf16be ..
+--
 function io.open(filepath, mode, opt)
 
     -- check

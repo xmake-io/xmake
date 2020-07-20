@@ -18,7 +18,51 @@
 -- @file        json.lua
 --
 
+-- define module
+local sandbox_core_base_json = sandbox_core_base_json or {}
+
 -- load modules
-return require("base/json")
+local json      = require("base/json")
+local raise     = require("sandbox/modules/raise")
 
+-- inherit some builtin interfaces
+sandbox_core_base_json.null = json.null
 
+-- decode the json string to the lua table
+function sandbox_core_base_json.decode(jsonstr, opt)
+    local luatable, errors = json.decode(jsonstr, opt)
+    if not luatable then
+        raise(errors)
+    end
+    return luatable
+end
+
+-- encode the lua table to the json string
+function sandbox_core_base_json.encode(luatable, opt)
+    local jsonstr, errors = json.encode(luatable, opt)
+    if not jsonstr then
+        raise(errors)
+    end
+    return jsonstr
+end
+
+-- load json file to the lua table
+function sandbox_core_base_json.loadfile(filepath, opt)
+    local luatable, errors = json.loadfile(filepath, opt)
+    if not luatable then
+        raise(errors)
+    end
+    return luatable
+end
+
+-- save lua table to the json file 
+function sandbox_core_base_json.savefile(filepath, luatable, opt)
+    local ok, errors = json.savefile(filepath, luatable, opt)
+    if not ok then
+        raise(errors)
+    end
+    return ok
+end
+
+-- return module
+return sandbox_core_base_json
