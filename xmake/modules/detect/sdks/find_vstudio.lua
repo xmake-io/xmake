@@ -127,6 +127,11 @@ end
 --
 function main(opt)
 
+    -- only for windows
+    if not is_host("windows") then
+        return
+    end
+
     -- init vsvers
     local vsvers = 
     {
