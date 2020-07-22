@@ -1763,6 +1763,10 @@ function _instance:tool(toolkind)
             toolinfo[1] = program
             toolinfo[2] = toolname
             toolinfo[3] = toolchain_info
+            config.set("__tool_" .. key, program, {force = true, readonly = true})
+            config.set("__toolname_" .. key, toolname)
+            config.set("__toolchain_info_" .. key, toolchain_info)
+            config.save()
         end
         tools[key] = toolinfo
     else
