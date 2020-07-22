@@ -69,6 +69,8 @@ so that any developer can quickly pick it up and enjoy a productivity boost when
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake)
 
+![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
+
 ## Installation
 
 #### via curl
@@ -419,12 +421,6 @@ Some projects using xmake:
 * [gbox](https://github.com/tboox/gbox)
 * [vm86](https://github.com/tboox/vm86)
 * [more](https://github.com/xmake-io/awesome-xmake)
-
-## Example Video
-
-<a href="https://asciinema.org/a/133693">
-<img src="https://asciinema.org/a/133693.png" width="650px" />
-</a>
 
 ## Contacts
 

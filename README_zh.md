@@ -75,6 +75,8 @@ xmake的目标是开发者更加关注于项目本身开发，简化项目的描
 
 如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)
 
+![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
+
 ## 安装
 
 #### 使用curl
@@ -425,12 +427,6 @@ $ ./gradlew app:assembleDebug
 * [gbox](https://github.com/tboox/gbox)
 * [vm86](https://github.com/tboox/vm86)
 * [更多](https://github.com/xmake-io/awesome-xmake)
-
-## 演示视频
-
-<a href="https://asciinema.org/a/133693">
-<img src="https://asciinema.org/a/133693.png" width="650px" />
-</a>
 
 ## 联系方式
 
