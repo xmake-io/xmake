@@ -192,7 +192,7 @@ function main()
     local targetname = option.get("target")
 
     -- config it first
-    task.run("config", {target = targetname, require = "n"})
+    task.run("config", {target = targetname, require = "n", verbose = false})
 
     -- check targets first
     _check_targets(targetname)
