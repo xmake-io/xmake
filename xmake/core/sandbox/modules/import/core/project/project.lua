@@ -144,9 +144,9 @@ end
 
 -- get the filelock of the whole project directory
 function sandbox_core_project.filelock()
-    local filelock = project.filelock()
+    local filelock, errors = project.filelock()
     if not filelock then
-        raise("cannot create the project lock!")
+        raise("cannot create the project lock, %s!", errors or "unknown errors")
     end
     return filelock
 end

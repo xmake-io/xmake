@@ -808,12 +808,13 @@ end
 
 -- get the filelock of the whole project directory
 function project.filelock()
+    local errors
     local filelock = project._FILELOCK
     if filelock == nil then
-        filelock = io.openlock(path.join(config.directory(), "project.lock"))
+        filelock, errors = io.openlock(path.join(config.directory(), "project.lock"))
         project._FILELOCK = filelock 
     end
-    return filelock
+    return filelock, errors
 end
 
 -- get the project info from the given name
