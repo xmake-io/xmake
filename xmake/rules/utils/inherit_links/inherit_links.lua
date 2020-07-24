@@ -40,6 +40,10 @@ function main(target)
         local targetfile = target:targetfile()
         target:add("links", target:basename(), {interface = true})
         target:add("linkdirs", path.directory(targetfile), {interface = true})
+        if target:rule("go") then
+            -- we need add includedirs to support import modules for golang
+            target:add("includedirs", path.directory(targetfile), {interface = true})
+        end
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
             local values = _get_values_from_target(target, name)
             if values and #values > 0 then
