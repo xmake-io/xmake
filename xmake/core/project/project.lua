@@ -605,8 +605,6 @@ function project._load_requires()
         -- add require info
         requires[alias or packagename] = instance
     end
-
-    -- ok?
     return requires
 end
 

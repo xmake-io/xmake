@@ -61,6 +61,7 @@ language("golang")
         ,   "target.defines"
         ,   "target.undefines"
         ,   "target.includedirs"
+        ,   "option.includedirs"
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"

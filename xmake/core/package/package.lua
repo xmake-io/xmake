@@ -588,6 +588,12 @@ end
 
 -- get the version string 
 function _instance:version_str()
+    if self:is3rd() then
+        local requireinfo = self:requireinfo()
+        if requireinfo then
+            return requireinfo.version
+        end
+    end
     return self._VERSION_STR
 end
 
@@ -803,9 +809,10 @@ function _instance:fetch(opt)
         return fetchinfo
     end
 
-    -- fetch the require version
+    -- fetch the require version 
     local require_ver = opt.version or self:requireinfo().version
-    if not require_ver:find('.', 1, true) then
+    if not self:is3rd() and not require_ver:find('.', 1, true) then
+        -- strip branch version only system package
         require_ver = nil
     end
 
@@ -869,6 +876,7 @@ function _instance:fetch(opt)
                                                          version = require_ver, 
                                                          mode = self:mode(),
                                                          pkgconfigs = self:configs(),
+                                                         buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
                                                          cachekey = "fetch_package_system",
                                                          system = true})
             if fetchinfo then 
@@ -1194,9 +1202,11 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = table.copy(pkg:configs())
-            opt.mode = pkg:debug() and "debug" or "release"
-            opt.plat = pkg:plat()
-            opt.arch = pkg:arch()
+            opt.mode      = pkg:debug() and "debug" or "release"
+            opt.plat      = pkg:plat()
+            opt.arch      = pkg:arch()
+            opt.version   = pkg:version_str()
+            opt.buildhash = pkg:buildhash()
             import("package.manager.install_package")(pkg:name(), opt)
         end
 
