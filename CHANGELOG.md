@@ -9,6 +9,8 @@
 * [#887](https://github.com/xmake-io/xmake/pull/887): Support zig compiler
 * [#893](https://github.com/xmake-io/xmake/issues/893): Add json module
 * [#898](https://github.com/xmake-io/xmake/issues/898): Support cross-compilation for golang
+* [#275](https://github.com/xmake-io/xmake/issues/275): Support go package manager to install go packages
+* [#581](https://github.com/xmake-io/xmake/issues/581): Support dub package manager to install dlang packages
 
 ## v2.3.5
 
@@ -786,6 +788,8 @@
 * [#887](https://github.com/xmake-io/xmake/pull/887): 支持zig编译器
 * [#893](https://github.com/xmake-io/xmake/issues/893): 添加json模块
 * [#898](https://github.com/xmake-io/xmake/issues/898): 改进golang项目构建，支持交叉编译
+* [#275](https://github.com/xmake-io/xmake/issues/275): 支持go包管理器去集成第三方go依赖包
+* [#581](https://github.com/xmake-io/xmake/issues/581): 支持dub包管理器去集成第三方dlang依赖包
 
 ## v2.3.5
 

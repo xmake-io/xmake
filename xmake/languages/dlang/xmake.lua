@@ -59,6 +59,7 @@ language("dlang")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
+        ,   "option.includedirs"
         ,   "toolchain.includedirs"
         }
     ,   binary =

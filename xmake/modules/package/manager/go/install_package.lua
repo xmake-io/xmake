@@ -61,10 +61,8 @@ function main(name, opt)
     end
 
     -- get plat and arch
-    local plat   = opt.plat or config.plat() or os.host()
-    local arch   = opt.arch or config.arch() or os.arch()
-    local goos   = goenv.GOOS(plat)
-    local goarch = goenv.GOARCH(arch)
+    local goos   = goenv.GOOS(opt.plat)
+    local goarch = goenv.GOARCH(opt.arch)
 
     -- get go package to cachedir/pkg/${goos}_${goarch}/github.com/xxx/*.a
     local cachedir = _go_get_cachedir(name, opt)
