@@ -12,6 +12,10 @@
 * [#275](https://github.com/xmake-io/xmake/issues/275): Support go package manager to install go packages
 * [#581](https://github.com/xmake-io/xmake/issues/581): Support dub package manager to install dlang packages
 
+### Change
+
+* [#868](https://github.com/xmake-io/xmake/issues/868): Support new cl.exe dependency report files, `/sourceDependencies xxx.json`
+
 ## v2.3.5
 
 ### New features
@@ -790,6 +794,10 @@
 * [#898](https://github.com/xmake-io/xmake/issues/898): 改进golang项目构建，支持交叉编译
 * [#275](https://github.com/xmake-io/xmake/issues/275): 支持go包管理器去集成第三方go依赖包
 * [#581](https://github.com/xmake-io/xmake/issues/581): 支持dub包管理器去集成第三方dlang依赖包
+
+### 改进
+
+* [#868](https://github.com/xmake-io/xmake/issues/868): 支持新的cl.exe的头文件依赖输出文件格式，`/sourceDependencies xxx.json`
 
 ## v2.3.5
 
