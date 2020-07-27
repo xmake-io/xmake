@@ -316,6 +316,20 @@ function _compargv_pch(self, pcheaderfile, pcoutputfile, flags)
     return self:program(), table.join("-c", "-Yc", pchflags, "-Fp" .. pcoutputfile, "-Fo" .. pcoutputfile .. ".obj", pcheaderfile)
 end
 
+-- has /sourceDependencies xxx.json @see https://github.com/xmake-io/xmake/issues/868?
+function _has_source_dependencies(self)
+    local has_source_dependencies = _g._HAS_SOURCE_DEPENDENCIES
+    if has_source_dependencies == nil then
+        local source_dependencies_jsonfile = os.tmpfile() .. ".json"
+        if self:has_flags("/sourceDependencies " .. source_dependencies_jsonfile, "cl_sourceDependencies") and os.isfile(source_dependencies_jsonfile) then
+            has_source_dependencies = true
+        end
+        has_source_dependencies = has_source_dependencies or false
+        _g._HAS_SOURCE_DEPENDENCIES = has_source_dependencies
+    end
+    return has_source_dependencies
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
 
@@ -342,6 +356,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     end
 
     -- compile it
+    local depfile = nil
     local outdata = try
     {
         function ()
@@ -349,7 +364,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- generate includes file
             local compflags = flags
             if dependinfo then
-                compflags = table.join(flags, "-showIncludes")
+                if _has_source_dependencies(self) then
+                    depfile = os.tmpfile()
+                    compflags = table.join(flags, "/sourceDependencies", depfile)
+                else
+                    compflags = table.join(flags, "-showIncludes")
+                end
             end
 
             -- use vstool to compile and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
@@ -372,12 +392,16 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                     errors = errs
                 end
 
-                -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
                 local results = ""
-                for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
-                    line = line:rtrim()
-                    if not parse_include(line) then
-                        results = results .. line .. "\r\n"
+                if depfile then
+                    results = tostring(errors)
+                else
+                    -- filter includes notes: "Note: including file: xxx.h", @note maybe not english language
+                    for _, line in ipairs(tostring(errors):split("\n", {plain = true})) do
+                        line = line:rtrim()
+                        if not parse_include(line) then
+                            results = results .. line .. "\r\n"
+                        end
                     end
                 end
                 os.raise(results)
@@ -415,8 +439,13 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
     }
 
     -- generate the dependent includes
-    if dependinfo and outdata then
-        dependinfo.depfiles_cl = outdata
+    if dependinfo then
+        if depfile and os.isfile(depfile) then
+            dependinfo.depfiles_cl_json = io.readfile(depfile)
+            os.rm(depfile)
+        elseif outdata then
+            dependinfo.depfiles_cl = outdata
+        end
     end
 end
 
