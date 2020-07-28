@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.6
+
 ### New features
 
 * Add `xmake project -k xcode` generator (use cmake)
@@ -785,6 +787,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.6
 
 ### 新特性
 
