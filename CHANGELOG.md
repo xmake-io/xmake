@@ -15,6 +15,7 @@
 ### Change
 
 * [#868](https://github.com/xmake-io/xmake/issues/868): Support new cl.exe dependency report files, `/sourceDependencies xxx.json`
+* [#902](https://github.com/xmake-io/xmake/issues/902): Improve to detect cross-compilation toolchain
 
 ## v2.3.5
 
@@ -798,6 +799,7 @@
 ### 改进
 
 * [#868](https://github.com/xmake-io/xmake/issues/868): 支持新的cl.exe的头文件依赖输出文件格式，`/sourceDependencies xxx.json`
+* [#902](https://github.com/xmake-io/xmake/issues/902): 改进交叉编译工具链
 
 ## v2.3.5
 
