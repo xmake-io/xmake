@@ -38,6 +38,7 @@ function main(toolchain)
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
+        config.set("sdkdir", cross_toolchain.sdkdir, {readonly = true, force = true})
     else
         raise("cross toolchain not found!")
     end

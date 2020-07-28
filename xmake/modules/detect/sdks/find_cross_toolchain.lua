@@ -78,17 +78,26 @@ function main(sdkdir, opt)
     -- init arguments
     opt = opt or {}
 
-    -- get root directory
-    if not sdkdir or not os.isdir(sdkdir) then
-        return 
+    -- get sdk directories
+    local sdkdirs = {}
+    if sdkdir then
+        table.insert(sdkdirs, sdkdir)
+    elseif opt.cross and not is_subhost("windows") then
+        -- we attempt to find cross toolchain from /usr, e.g. /usr/bin/aarch64-linux-gnu-gcc
+        table.insert(sdkdirs, "/usr/")
+        table.insert(sdkdirs, "/usr/local")
     end
 
     -- find bin directory and cross
-    local bindir, cross = _find_bindir(sdkdir, opt)
-    if not bindir then
-        return 
+    local result
+    for _, _sdkdir in ipairs(sdkdirs) do
+        if os.isdir(_sdkdir) then
+            local bindir, cross = _find_bindir(_sdkdir, opt)
+            if bindir then
+                result = {sdkdir = _sdkdir, bindir = bindir, cross = cross}
+                break
+            end
+        end
     end
-
-    -- found
-    return {sdkdir = sdkdir, bindir = bindir, cross = cross}
+    return result
 end
