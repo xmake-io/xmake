@@ -169,7 +169,7 @@ function main(name, opt)
     result = _find_package(manager_name, package_name, opt)
 
     -- match version?
-    if opt.version and result then
+    if opt.version and opt.version:find('.', {plain = true}) and result then
         if not (result.version and (result.version == opt.version or semver.satisfies(result.version, opt.version))) then
             result = nil
         end
