@@ -61,6 +61,13 @@ jobs:
           xmake lua -v -D tests/run.lua
 
         # build artifacts
+      - name: set release arch name
+        run: |
+          if ("${{ matrix.arch }}" -eq "x64"){
+            echo "::set-env name=RELEASE_NAME::win64"
+          } else {
+            echo "::set-env name=RELEASE_NAME::win32"
+          }
       - name: artifact
         run: |
           # build installer
@@ -90,27 +97,25 @@ jobs:
           Copy-Item ./xmake ./archive/xmake -Recurse
           [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
           (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
+          # copy to artifacts/arch
+          (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
+          Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}
+          Copy-Item archive.zip ./artifacts/${{env.RELEASE_NAME}}
+          Copy-Item shafile ./artifacts/${{env.RELEASE_NAME}}
 
         # upload artifacts
-      - name: set release arch name
-        run: |
-          if ("${{ matrix.arch }}" -eq "x64"){
-            echo "::set-env name=RELEASE_NAME::win64"
-          } else {
-            echo "::set-env name=RELEASE_NAME::win32"
-          }
       - uses: actions/upload-artifact@v2
         with:
-          name: xmake-latest.${{ env.RELEASE_NAME }}.exe
-          path: scripts/xmake.exe
+          name: xmake-latest.${{env.RELEASE_NAME}}.exe
+          path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.zip
-          path: archive.zip
+          path: artifacts/${{env.RELEASE_NAME}}/archive.zip
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
-          path: shafile
+          path: artifacts/${{env.RELEASE_NAME}}/shafile
 
         # publish release
       - name: publish
@@ -120,7 +125,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: scripts/xmake.exe
+          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
@@ -131,7 +136,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: archive.zip
+          asset_path: artifacts/${{env.RELEASE_NAME}}/archive.zip
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.zip
           asset_content_type: application/zip
 
@@ -142,7 +147,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: shafile
+          asset_path: artifacts/${{env.RELEASE_NAME}}/shafile
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.sha256
           asset_content_type: application/zip
 
