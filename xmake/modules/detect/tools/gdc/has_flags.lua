@@ -18,30 +18,8 @@
 -- @file        has_flags.lua
 --
 
--- imports
-import("lib.detect.cache")
-
--- is linker?
-function _islinker(flags, opt)
-
-    -- the flags is "-L=<arg>" or "-L<arg>"?
-    local flags_str = table.concat(flags, " ")
-    if flags_str:startswith("-L=") or flags_str:startswith("-L-") then
-        return true
-    end
-
-    -- the tool kind is ld or sh?
-    local toolkind = opt.toolkind or ""
-    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("ld") or toolkind:endswith("sh")
-end
-
--- try running
-function _try_running(...)
-
-    local argv = {...}
-    local errors = nil
-    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
-end
+-- inherit configuration of dmd
+inherit("detect.tools.dmd.has_flags")
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt, islinker)

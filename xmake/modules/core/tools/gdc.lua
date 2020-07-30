@@ -18,23 +18,7 @@
 -- @file        gdc.lua
 --
 
--- imports
-import("core.base.option")
-import("core.project.config")
-import("core.project.project")
-
--- init it
-function init(self)
-    
-    -- init arflags
-    self:set("dcarflags", "-lib")
-
-    -- init shflags
-    self:set("dcshflags", "-shared", "-fPIC")
-
-    -- init dcflags for the kind: shared
-    self:set("shared.dcflags", "-fPIC")
-end
+inherit("dmd")
 
 -- make the optimize flag
 function nf_optimize(self, level)
@@ -55,15 +39,6 @@ function nf_strip(self, level)
     {   
         debug       = "-S"
     ,   all         = "-s"
-    }
-    return maps[level] 
-end
-
--- make the symbol flag
-function nf_symbol(self, level)
-    local maps = 
-    {   
-        debug = "-g -debug"
     }
     return maps[level] 
 end
@@ -95,11 +70,6 @@ function nf_vectorext(self, extension)
     ,   avx2  = "-mavx2"
     }
     return maps[extension]
-end
-
--- make the includedir flag
-function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
 end
 
 -- make the link flag
