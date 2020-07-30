@@ -92,6 +92,12 @@ end
 
 -- main entry
 function main(toolchain)
+
+    -- only for windows
+    if not is_host("windows") then
+        return
+    end
+
     -- @see https://github.com/xmake-io/xmake/pull/679
     local cc  = path.basename(config.get("cc") or "cl"):lower()
     local cxx = path.basename(config.get("cxx") or "cl"):lower()
