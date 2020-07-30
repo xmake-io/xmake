@@ -38,10 +38,10 @@ toolchain("dlang")
         local cross = config.get("cross") or ""
 
         -- set toolset
-        toolchain:set("toolset", "dc",   "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:set("toolset", "dcld", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:set("toolset", "dcsh", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
-        toolchain:set("toolset", "dcar", "$(env DC)", "dmd", "ldc2", cross .. "gcc-ar")
+        toolchain:add("toolset", "dc",   "$(env DC)", "dmd", "ldc2", cross .. "gdc")
+        toolchain:add("toolset", "dcld", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
+        toolchain:add("toolset", "dcsh", "$(env DC)", "dmd", "ldc2", cross .. "gdc")
+        toolchain:add("toolset", "dcar", "$(env DC)", "dmd", "ldc2", cross .. "gcc-ar")
 
         -- init flags
         local march = toolchain:is_arch("x86_64", "x64") and "-m64" or "-m32"

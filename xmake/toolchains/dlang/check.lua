@@ -20,17 +20,22 @@
 
 -- imports
 import("core.project.config")
+import("lib.detect.find_tool")
 import("detect.sdks.find_cross_toolchain")
 
--- check the cross toolchain, for ldc2/gdc toolchain
 function main(toolchain)
 
-    -- is cross?
+    -- we attempt to find dmd, ldc2 in $PATH
+    if find_tool("dmd") or find_tool("ldc2") then
+        return true
+    end
+
+    -- we need find ldc2 and gdc in the given toolchain sdk directory
     local sdkdir = config.get("sdk")
     local bindir = config.get("bin")
     local cross  = config.get("cross")
     if not sdkdir and not bindir and not cross then
-        return
+        return 
     end
 
     -- find cross toolchain
