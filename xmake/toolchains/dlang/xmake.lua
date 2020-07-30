@@ -29,7 +29,7 @@ toolchain("dlang")
     set_toolset("dc",   "$(env DC)", "dmd", "ldc2", "gdc")
     set_toolset("dcld", "$(env DC)", "dmd", "ldc2", "gdc")
     set_toolset("dcsh", "$(env DC)", "dmd", "ldc2", "gdc")
-    set_toolset("dcar", "$(env DC)", "dmd", "ldc2", "gdc")
+    set_toolset("dcar", "$(env DC)", "dmd", "ldc2", "gcc-ar")
 
     -- on load
     on_load(function (toolchain)

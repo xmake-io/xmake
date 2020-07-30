@@ -25,6 +25,7 @@ import("private.utils.progress")
 -- init it
 function init(self)
     self:set("arflags", "-cr")
+    self:set("dcarflags", "-cr") -- for dlang/gdc, e.g. x86_64-unknown-linux-gnu-gcc-ar
 end
 
 -- make the strip flag
