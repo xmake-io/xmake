@@ -33,7 +33,7 @@ function _islinker(flags, opt)
 
     -- the tool kind is ld or sh?
     local toolkind = opt.toolkind or ""
-    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
+    return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
 -- try running 
