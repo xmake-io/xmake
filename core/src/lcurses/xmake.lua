@@ -17,6 +17,7 @@ target("lcurses")
 
     -- add the common source files
     add_files("lcurses.c")
+    add_defines("XM_CONFIG_API_HAVE_CURSES", {public = true})
   
     -- add options
     if is_plat("windows") then
