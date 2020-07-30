@@ -39,7 +39,6 @@ end
 function _try_running(...)
 
     local argv = {...}
-    print("try_running argv: ", argv)
     local errors = nil
     return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
