@@ -110,15 +110,15 @@ language("dlang")
     set_menu {
                 config = 
                 {   
-                    {category = "Cross Complation Configuration/Compiler Configuration"         }
+                    {category = "Cross Compilation Configuration/Compiler Configuration"         }
                 ,   {nil, "dc",         "kv", nil,          "The Dlang Compiler"                }
 
-                ,   {category = "Cross Complation Configuration/Linker Configuration"           }
+                ,   {category = "Cross Compilation Configuration/Linker Configuration"           }
                 ,   {nil, "dcld",      "kv", nil,          "The Dlang Linker"                  }
                 ,   {nil, "dcar",      "kv", nil,          "The Dlang Static Library Archiver" }
                 ,   {nil, "dcsh",      "kv", nil,          "The Dlang Shared Library Linker"   }
 
-                ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"    }
+                ,   {category = "Cross Compilation Configuration/Builtin Flags Configuration"    }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                }
                 ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"         }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"       }
