@@ -51,7 +51,7 @@
 xmake由以下工具赞助, 请通过查看并注册免费试用来帮助支持我们。🙏
 
 <a href="https://tracking.gitads.io/?repo=xmake">
- <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+ <img src="https://images.gitads.io/xmake" alt="GitAds" width="650px"/> 
 </a>
 
 ### 赞助支持
@@ -418,6 +418,16 @@ $ ./gradlew app:assembleDebug
 > Task :nativelib:assemble
 > Task :app:assembleDebug
 ```
+
+## 技术支持
+
+我们也提供付费的技术支持来为帮助用户快速解决相关问题，具体详情请点击下面的图片链接：
+
+<a href="https://xscode.com/waruqi/xmake">
+<img src="https://tboox.org/assets/img/xmake-xscode.png" width="650px" />
+</a>
+
+或者你也可以考虑赞助我们也获取技术支持服务，[[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
 ## 项目例子
 

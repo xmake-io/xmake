@@ -51,7 +51,7 @@
 xmake is being sponsored by the following tool; please help to support us by taking a look and signing up to a free trial. 🙏
 
 <a href="https://tracking.gitads.io/?repo=xmake">
- <img src="https://images.gitads.io/xmake" alt="GitAds"/> 
+ <img src="https://images.gitads.io/xmake" alt="GitAds" width="650px"/> 
 </a>
 
 ### Sponsor
@@ -412,6 +412,16 @@ $ ./gradlew app:assembleDebug
 > Task :nativelib:assemble
 > Task :app:assembleDebug
 ```
+
+## Technical Support
+
+We also provide paid technical support to help users quickly solve related problems. For details, please click the image link below:
+
+<a href="https://xscode.com/waruqi/xmake">
+<img src="https://tboox.org/assets/img/xmake-xscode.png" width="650px" />
+</a>
+
+Or you can also consider sponsoring us to get technical support services, [[Become a sponsor](https://xmake.io/#/about/sponsor)]
 
 ## Project Examples
 
