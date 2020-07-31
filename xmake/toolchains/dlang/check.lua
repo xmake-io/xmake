@@ -25,8 +25,8 @@ import("detect.sdks.find_cross_toolchain")
 
 function main(toolchain)
 
-    -- we attempt to find dmd, ldc2 in $PATH
-    if find_tool("dmd") or find_tool("ldc2") then
+    -- we attempt to find dmd, ldc2, gdc in $PATH
+    if find_tool("dmd") or find_tool("ldc2") or find_tool("gdc") then
         return true
     end
 
