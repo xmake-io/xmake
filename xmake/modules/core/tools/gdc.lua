@@ -11,15 +11,40 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
--- @author      ruki
+-- @author      ruki, BarrOff
 -- @file        gdc.lua
 --
 
--- inherit dmd
-inherit("dmd")
+-- imports
+inherit("gcc")
 
+-- init it
+function init(self)
+    
+    -- init arflags
+    self:set("dcarflags", "-cr")
+
+    -- init shflags
+    self:set("dcshflags", "-shared", "-fPIC")
+
+    -- init dcflags for the kind: shared
+    self:set("shared.dcflags", "-fPIC")
+end
+
+-- make the optimize flag
+function nf_optimize(self, level)
+    local maps =
+    {
+        fast        = "-O"
+    ,   faster      = "-O -frelease"
+    ,   fastest     = "-O -frelease -fbounds-check=off"
+    ,   smallest    = "-O -frelease -fbounds-check=off"
+    ,   aggressive  = "-O -frelease -fbounds-check=off"
+    }
+    return maps[level]
+end
 
 
