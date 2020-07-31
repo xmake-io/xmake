@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#907](https://github.com/xmake-io/xmake/issues/907): Improve to the linker optimization for msvc
+
+### Bugs fixed
+
+* [#903](https://github.com/xmake-io/xmake/issues/903): Fix install vcpkg packages fails
+
 ## v2.3.6
 
 ### New features
@@ -787,6 +795,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#907](https://github.com/xmake-io/xmake/issues/907): 改进msvc的链接器优化选项，生成更小的可执行程序
+
+### Bugs修复
+
+* [#903](https://github.com/xmake-io/xmake/issues/903): 修复vcpkg包安装失败问题
 
 ## v2.3.6
 
