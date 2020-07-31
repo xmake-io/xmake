@@ -21,10 +21,15 @@
 -- define rule: utils.symbols.extract
 rule("utils.symbols.extract")
     before_link(function(target)
+
+        -- imports
+        import("core.platform.platform")
+
         -- need generate symbols?
         local strip = target:get("strip")
         local targetkind = target:targetkind()
-        if target:get("symbols") == "debug" and (strip == "all" or strip == "debug") and (targetkind == "binary" or targetkind == "shared") then
+        if target:get("symbols") == "debug" and (strip == "all" or strip == "debug") 
+            and (targetkind == "binary" or targetkind == "shared") and platform.tool("strip") then -- only for strip command
             target:data_set("utils.symbols.extract", true)
             target:set("strip", "none") -- disable strip in link stage, because we need to run separate strip commands
         end

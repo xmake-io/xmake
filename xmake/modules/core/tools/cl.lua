@@ -140,7 +140,7 @@ function nf_optimize(self, level)
         none        = "-Od"
     ,   faster      = "-O2"
     ,   fastest     = "-Ox -fp:fast"
-    ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker)
+    ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need enable /ltcg
     ,   aggressive  = "-Ox -fp:fast"
     }
 

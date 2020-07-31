@@ -73,8 +73,6 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps = 
     {   
         none       = "-O0"
@@ -84,15 +82,11 @@ function nf_optimize(self, level)
     ,   smallest   = "-Oz" -- smaller than -Os
     ,   aggressive = "-Ofast"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps = 
     {   
         none       = "-w"
@@ -102,7 +96,5 @@ function nf_warning(self, level)
     ,   everything = "-Weverything"
     ,   error      = "-Werror"
     }
-
-    -- make it
     return maps[level]
 end

@@ -57,6 +57,19 @@ function get(self, name)
     return values
 end
 
+-- make the strip flag
+function nf_strip(self, level)
+    -- @note we explicitly strip some useless code, because `/debug` may keep them
+    -- @see https://github.com/xmake-io/xmake/issues/907
+    --
+    local maps = 
+    {   
+        debug = "/opt:ref /opt:icf"
+    ,   all   = "/opt:ref /opt:icf /ltcg" -- we enable /ltcg for optimize/smallest:/Gl
+    }
+    return maps[level]
+end
+
 -- make the symbol flag
 function nf_symbol(self, level, target)
     
@@ -70,8 +83,6 @@ function nf_symbol(self, level, target)
             flags = "-debug"
         end
     end
-
-    -- none
     return flags
 end
 
