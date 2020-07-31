@@ -44,8 +44,13 @@ toolchain("dlang")
         toolchain:add("toolset", "dcar", "$(env DC)", "dmd", "ldc2", cross .. "gcc-ar")
 
         -- init flags
-        local march = toolchain:is_arch("x86_64", "x64") and "-m64" or "-m32"
-        toolchain:add("dcflags",   march)
-        toolchain:add("dcshflags", march)
-        toolchain:add("dcldflags", march)
+        local march
+        if toolchain:is_arch("x86_64", "x64") then
+            march = "-m64"
+        elseif toolchain:is_arch("i386", "x86") then
+            march = "-m32"
+        end
+        toolchain:add("dcflags",   march or "")
+        toolchain:add("dcshflags", march or "")
+        toolchain:add("dcldflags", march or "")
     end)
