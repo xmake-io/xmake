@@ -9,6 +9,7 @@
 ### Bugs fixed
 
 * [#903](https://github.com/xmake-io/xmake/issues/903): Fix install vcpkg packages fails
+* [#912](https://github.com/xmake-io/xmake/issues/912): Fix the custom toolchain
 
 ## v2.3.6
 
@@ -803,6 +804,7 @@
 ### Bugs修复
 
 * [#903](https://github.com/xmake-io/xmake/issues/903): 修复vcpkg包安装失败问题
+* [#912](https://github.com/xmake-io/xmake/issues/912): 修复自定义工具链
 
 ## v2.3.6
 

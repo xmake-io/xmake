@@ -36,12 +36,12 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, plat, arch, info)
+function _instance.new(name, info, plat, arch)
     local instance    = table.inherit(_instance)
     instance._NAME    = name
+    instance._INFO    = info
     instance._PLAT    = plat
     instance._ARCH    = arch
-    instance._INFO    = info
     return instance
 end
 
@@ -424,14 +424,17 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, plat, arch, result)
+    local instance = _instance.new(name, result, plat, arch)
     toolchain._TOOLCHAINS[cachekey] = instance
     return instance
 end
 
 -- new toolchain 
-function toolchain.new(name, info)
-    return _instance.new(name, info)
+function toolchain.new(name, info, opt)
+    opt = opt or {}
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
+    return _instance.new(name, info, plat, arch)
 end
 
 -- return module
