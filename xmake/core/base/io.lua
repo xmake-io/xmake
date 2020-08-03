@@ -109,6 +109,7 @@ end
 -- gc(file)
 function _file:__gc()
     if self:cdata() and io.file_close(self:cdata()) then
+        -- remove ref to notify gc that it should be freed
         self._FILE = nil
     end
 end

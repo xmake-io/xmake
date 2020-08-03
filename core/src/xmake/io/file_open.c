@@ -275,7 +275,7 @@ tb_int_t xm_io_file_open(lua_State* lua)
     }
 
     // make file
-    xm_io_file_t* file = tb_malloc0_type(xm_io_file_t);
+    xm_io_file_t* file = (xm_io_file_t*)lua_newuserdata(lua, sizeof(xm_io_file_t));
     tb_assert_and_check_return_val(file, 0);
 
     // init file
@@ -289,8 +289,5 @@ tb_int_t xm_io_file_open(lua_State* lua)
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache); 
     tb_buffer_init(&file->wcache); 
-
-    // ok
-    lua_pushlightuserdata(lua, (tb_pointer_t)file);
     return 1;
 }

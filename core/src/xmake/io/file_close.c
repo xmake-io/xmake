@@ -81,8 +81,8 @@ tb_int_t xm_io_file_close(lua_State* lua)
         tb_buffer_exit(&file->rcache);
         tb_buffer_exit(&file->wcache);
 
-        // exit file
-        tb_free(file);
+        // gc will free it if no any refs for lua_newuserdata()
+        // ...
 
         // ok
         lua_pushboolean(lua, tb_true);
