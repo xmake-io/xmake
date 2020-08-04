@@ -55,12 +55,12 @@ tb_int_t xm_io_filelock_trylock(lua_State* lua)
         lua_pop(lua, 1);
     }
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
+    // check lock?
+    if (!xm_lua_ispointer(lua, 1)) 
         return 0;
 
     // get lock
-    tb_filelock_ref_t lock = (tb_filelock_ref_t)lua_touserdata(lua, 1);
+    tb_filelock_ref_t lock = (tb_filelock_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(lock, 0);
 
     // try to lock it
