@@ -93,7 +93,7 @@ static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
     }
 
     // new file
-    xm_io_file_t* file = lua_newuserdata(lua, sizeof(xm_io_file_t));
+    xm_io_file_t* file = (xm_io_file_t*)lua_newuserdata(lua, sizeof(xm_io_file_t));
     tb_assert_and_check_return_val(file, tb_null);
 
     // init file
