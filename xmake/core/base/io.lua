@@ -539,6 +539,7 @@ end
 
 -- get std file, /dev/stdin, /dev/stdout, /dev/stderr
 function io.stdfile(filepath)
+    print("io.stdfile", filepath)
     local file = nil
     if filepath == "/dev/stdin" then
         file = io._stdfile(1)

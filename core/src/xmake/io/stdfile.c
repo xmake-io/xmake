@@ -75,15 +75,10 @@ static tb_size_t xm_io_stdfile_isatty(tb_size_t type)
     if (answer) type |= XM_IO_FILE_FLAG_TTY;
     return type;
 }
-static tb_handle_t xm_io_stdfile_instance_init(tb_cpointer_t* ppriv)
+static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
 {
-    // get stdfile type
-    tb_size_t* ptype = (tb_size_t*)ppriv;
-    tb_assert_and_check_return_val(ptype, tb_null);
-
     // init stdfile
     tb_stdfile_ref_t fp = tb_null;
-    tb_size_t type = *ptype;
     switch (type)
     {
     case XM_IO_FILE_TYPE_STDIN:
@@ -97,9 +92,9 @@ static tb_handle_t xm_io_stdfile_instance_init(tb_cpointer_t* ppriv)
         break;
     }
 
-    // make file
-    xm_io_file_t* file = tb_malloc0_type(xm_io_file_t);
-    tb_assert_and_check_return_val(file, 0);
+    // new file
+    xm_io_file_t* file = lua_newuserdata(lua, sizeof(xm_io_file_t));
+    tb_assert_and_check_return_val(file, tb_null);
 
     // init file
     file->std_ref    = fp;
@@ -111,31 +106,7 @@ static tb_handle_t xm_io_stdfile_instance_init(tb_cpointer_t* ppriv)
     // init the read/write line cache buffer
     tb_buffer_init(&file->rcache); 
     tb_buffer_init(&file->wcache); 
-
-    // ok
-    return (tb_handle_t)file;
-}
-static tb_void_t xm_io_stdfile_instance_exit(tb_handle_t stdfile, tb_cpointer_t priv)
-{
-    xm_io_file_t* file = (xm_io_file_t*)stdfile;
-    if (file)
-    {
-        tb_buffer_exit(&file->rcache);
-        tb_buffer_exit(&file->wcache);
-        tb_free(file);
-    }
-}
-static xm_io_file_t* xm_io_stdfile_input()
-{
-    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDIN, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDIN));
-}
-static xm_io_file_t* xm_io_stdfile_output()
-{
-    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDOUT, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDOUT));
-}
-static xm_io_file_t* xm_io_stdfile_error()
-{
-    return (xm_io_file_t*)tb_singleton_instance(XM_IO_STDFILE_STDERR, xm_io_stdfile_instance_init, xm_io_stdfile_instance_exit, tb_null, tb_u2p(XM_IO_FILE_TYPE_STDERR));
+    return file;
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -151,25 +122,12 @@ tb_int_t xm_io_stdfile(lua_State* lua)
     // get std type
     tb_long_t type = lua_tointeger(lua, 1);
 
-    // get stdfile
-    xm_io_file_t* file = tb_null;
-    switch (type)
-    {
-    case XM_IO_FILE_TYPE_STDIN:
-        file = xm_io_stdfile_input();
-        break;
-    case XM_IO_FILE_TYPE_STDOUT:
-        file = xm_io_stdfile_output();
-        break;
-    case XM_IO_FILE_TYPE_STDERR:
-        file = xm_io_stdfile_error();
-        break;
-    }
-    if (file)
-    {
-        lua_pushlightuserdata(lua, (tb_pointer_t)file);
-        return 1;
-    }
+    /* push a new stdfile
+     *
+     * @note we need to ensure that it is a singleton in the external lua script, and will only be created once, e.g. io.stdin, io.stdout, io.stderr
+     */
+    xm_io_file_t* file = xm_io_stdfile_new(lua, type);
+    if (file) return 1;
     else xm_io_return_error(lua, "invalid stdfile type!");
 }
 

@@ -88,6 +88,18 @@ tb_int_t xm_io_file_close(lua_State* lua)
         lua_pushboolean(lua, tb_true);
         return 1;
     }
-    else xm_io_return_error(lua, "cannot close this file!");
+    else // for stdfile (gc/close)
+    {
+        // exit the line cache buffer
+        tb_buffer_exit(&file->rcache);
+        tb_buffer_exit(&file->wcache);
+
+        // gc will free it if no any refs for lua_newuserdata()
+        // ...
+
+        // ok
+        lua_pushboolean(lua, tb_true);
+        return 1;
+    }
 }
 

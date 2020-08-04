@@ -37,21 +37,21 @@
 /* we use this interface instead of lua_pushlightuserdata() to fix bad light userdata pointer bug
  *
  * @see https://github.com/xmake-io/xmake/issues/914
+ * https://github.com/LuaJIT/LuaJIT/pull/230
  *
- * @note we cannot lua_newuserdata() because we need pass this pointer to lua code in poller_wait()/event_callback, but lua_pushuserdata does not exists
+ * @note we cannot lua_newuserdata() because we need pass this pointer to the external lua code 
+ * in poller_wait()/event_callback, but lua_pushuserdata does not exists
  */
 static __tb_inline__ tb_void_t xm_lua_pushpointer(lua_State* lua, tb_pointer_t ptr)
 {
     tb_uint64_t ptrval = (tb_uint64_t)ptr;
-    tb_trace_i("ptr: %p %llx", ptrval >> 47);
-    if (0)//(ptrval >> 47) == 0)
+    if ((ptrval >> 47) == 0)
         lua_pushlightuserdata(lua, ptr);
     else
     {
         tb_char_t str[64];
         tb_long_t len = tb_snprintf(str, sizeof(str), "%p", ptr);
         lua_pushlstring(lua, str, len);
-        tb_trace_i("push ptr: %p, str: %s", ptr, str);
     }
 }
 static __tb_inline__ tb_bool_t xm_lua_ispointer(lua_State* lua, tb_int_t idx)
@@ -68,12 +68,11 @@ static __tb_inline__ tb_pointer_t xm_lua_topointer2(lua_State* lua, tb_int_t idx
     }
     else
     {
-        size_t           len = 0;
+        size_t len = 0;
         tb_char_t const* str = luaL_checklstring(lua, idx, &len);
         if (str && len > 2 && str[0] == '0' && str[1] == 'x')
             ptr = (tb_pointer_t)tb_s16tou64(str);
         if (pstr) *pstr = str;
-        tb_trace_i("to ptr: %p, str: %s", ptr, str);
     }
     return ptr;
 }
