@@ -10,6 +10,7 @@
 
 * [#903](https://github.com/xmake-io/xmake/issues/903): Fix install vcpkg packages fails
 * [#912](https://github.com/xmake-io/xmake/issues/912): Fix the custom toolchain
+* [#914](https://github.com/xmake-io/xmake/issues/914): Fix bad light userdata pointer for lua on some aarch64 devices
 
 ## v2.3.6
 
@@ -805,6 +806,7 @@
 
 * [#903](https://github.com/xmake-io/xmake/issues/903): 修复vcpkg包安装失败问题
 * [#912](https://github.com/xmake-io/xmake/issues/912): 修复自定义工具链
+* [#914](https://github.com/xmake-io/xmake/issues/914): 修复部分aarch64设备上运行lua出现bad light userdata pointer问题
 
 ## v2.3.6
 
