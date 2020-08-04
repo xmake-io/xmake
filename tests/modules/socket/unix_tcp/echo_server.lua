@@ -3,6 +3,7 @@ import("core.base.socket")
 function main(addr)
 
     addr = addr or path.join(os.tmpdir(), "echo.socket")
+    os.tryrm(addr)
     local sock = socket.bind_unix(addr)
     sock:listen(20)
     print("%s: listening %s ..", sock, addr) 
