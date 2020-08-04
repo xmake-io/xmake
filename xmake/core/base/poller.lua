@@ -130,7 +130,7 @@ function poller:wait(timeout)
             local events = v[3]
             local pollerdata   = self:_pollerdata(cdata)
             if not pollerdata then
-                return -1, string.format("no object data for cdata(%d)!", cdata)
+                return -1, string.format("no object data for cdata(%s)!", cdata)
             end
             local obj = pollerdata[1]
             assert(obj and obj:otype() == otype and obj:cdata() == cdata)

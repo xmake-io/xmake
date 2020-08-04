@@ -40,17 +40,17 @@ tb_int_t xm_io_socket_accept(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
+    // is pointer?
+    if (!xm_lua_ispointer(lua, 1)) 
         return 0;
 
     // get socket
-    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_socket_ref_t sock = (tb_socket_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(sock, 0);
 
     // accept socket
     tb_socket_ref_t client = tb_socket_accept(sock, tb_null);
-    if (client) lua_pushlightuserdata(lua, (tb_pointer_t)client);
+    if (client) xm_lua_pushpointer(lua, (tb_pointer_t)client);
     else lua_pushnil(lua);
     return 1;
 }

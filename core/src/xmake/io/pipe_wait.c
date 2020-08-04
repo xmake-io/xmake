@@ -40,12 +40,12 @@ tb_int_t xm_io_pipe_wait(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
+    // check pipe?
+    if (!xm_lua_ispointer(lua, 1)) 
         return 0;
 
     // get pipe file
-    tb_pipe_file_ref_t pipefile = (tb_pipe_file_ref_t)lua_touserdata(lua, 1);
+    tb_pipe_file_ref_t pipefile = (tb_pipe_file_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(pipefile, 0);
 
     // get events

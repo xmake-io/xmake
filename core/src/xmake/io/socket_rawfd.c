@@ -48,12 +48,12 @@ tb_int_t xm_io_socket_rawfd(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // is user data?
-    if (!lua_isuserdata(lua, 1)) 
+    // is pointer?
+    if (!xm_lua_ispointer(lua, 1)) 
         xm_io_return_error(lua, "get rawfd for invalid sock!");
 
     // get socket
-    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_socket_ref_t sock = (tb_socket_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(sock, 0);
 
     // return result

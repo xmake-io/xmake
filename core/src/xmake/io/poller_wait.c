@@ -51,7 +51,8 @@ static tb_void_t xm_io_poller_event(tb_poller_ref_t poller, tb_poller_object_ref
     lua_newtable(g_lua);
     lua_pushinteger(g_lua, (tb_int_t)object->type);
     lua_rawseti(g_lua, -2, 1);
-    lua_pushlightuserdata(g_lua, object->ref.ptr);
+    if (priv) lua_pushstring(g_lua, (tb_char_t const*)priv);
+    else lua_pushlightuserdata(g_lua, object->ref.ptr);
     lua_rawseti(g_lua, -2, 2);
     lua_pushinteger(g_lua, (tb_int_t)events);
     lua_rawseti(g_lua, -2, 3);

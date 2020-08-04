@@ -41,7 +41,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!lua_isuserdata(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1)) 
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
@@ -49,7 +49,7 @@ tb_int_t xm_io_socket_recv(lua_State* lua)
     }
 
     // get socket
-    tb_socket_ref_t sock = (tb_socket_ref_t)lua_touserdata(lua, 1);
+    tb_socket_ref_t sock = (tb_socket_ref_t)xm_lua_topointer(lua, 1);
     tb_check_return_val(sock, 0);
 
     // get data
