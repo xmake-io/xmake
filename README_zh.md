@@ -48,14 +48,6 @@
 
 ## 项目支持
 
-xmake由以下工具赞助, 请通过查看并注册免费试用来帮助支持我们。🙏
-
-<a href="https://tracking.gitads.io/?repo=xmake">
- <img src="https://images.gitads.io/xmake" alt="GitAds" width="650px"/> 
-</a>
-
-### 赞助支持
-
 通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏 [[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
 <a href="https://opencollective.com/xmake#backers" target="_blank"><img src="https://opencollective.com/xmake/backers.svg?width=890"></a>
