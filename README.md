@@ -62,10 +62,11 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 ## Introduction ([中文](/README_zh.md))
 
-xmake is a cross-platform build utility based on lua. 
+xmake is a lightweight cross-platform build utility based on Lua. It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt, the configuration syntax is more concise and intuitive. It is very friendly to novices and can quickly get started in a short time. Let users focus more on actual project development.
 
-The project focuses on making development and building easier and provides many features (e.g package, install, plugin, macro, action, option, task ...), 
-so that any developer can quickly pick it up and enjoy a productivity boost when developing and building projects.
+Although simple and easy is a major feature of xmake, the function of xmake is also very powerful. It can directly compile projects like Make/Ninja, or generate project files like CMake/Meson, as well as built-in package management. The system helps users solve the problem of integrated use of C/C++ dependent libraries.
+
+At present, xmake is mainly used for the compilation of C/C++ projects, but it also supports the compilation of other native languages, which can support mixed compilation with C/C++, and the compilation speed is also very fast, which can be equal to Ninja.
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake)
 
