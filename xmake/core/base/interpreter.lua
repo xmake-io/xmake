@@ -1043,7 +1043,12 @@ function interpreter:api_register_set_values(scope_kind, ...)
         end
 
         -- save values
-        scope[name] = values
+        if #values > 0 then
+            scope[name] = values
+        else
+            -- set("xx", nil)? remove it
+            scope[name] = nil
+        end
 
         -- save extra config
         if extra_config then

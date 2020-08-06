@@ -115,7 +115,12 @@ function _instance:_api_set_values(name, ...)
     local handled_values = self:_api_handle(values)
 
     -- save values
-    scope[name] = handled_values
+    if #handled_values > 0 then
+        scope[name] = handled_values
+    else
+        -- set("xx", nil)? remove it
+        scope[name] = nil
+    end
 
     -- save extra config
     if extra_config then
