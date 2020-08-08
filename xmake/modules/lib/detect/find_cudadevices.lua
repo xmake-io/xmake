@@ -238,6 +238,7 @@ function _order_by_flops(devices)
     ,   [70] =     64
     ,   [72] =     64
     ,   [75] =     64
+    ,   [80] =     64
     }
 
     for _, dev in ipairs(devices) do
