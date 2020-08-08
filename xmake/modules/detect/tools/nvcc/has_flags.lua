@@ -112,12 +112,19 @@ function _check_try_running(flags, opt, islinker)
         io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end
 
-    -- check flags
-    if islinker then
-        return _try_running(opt.program, table.join(flags, "-o", os.nuldev(), sourcefile))
-    else
-        return _try_running(opt.program, table.join(flags, "-c", "-o", os.nuldev(), sourcefile))
+    local args = table.join(flags, "-o", os.nuldev(), sourcefile)
+
+    if not islinker then
+        table.insert(args, 2, "-c")
     end
+
+    local allow_unsupported_compiler = main("-allow-unsupported-compiler", opt)
+    if allow_unsupported_compiler then
+        table.insert(args, 1, "-allow-unsupported-compiler")
+    end
+
+    -- check flags
+    return _try_running(opt.program, args)
 end
 
 -- has_flags(flags)?
