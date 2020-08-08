@@ -58,7 +58,10 @@ end
 -- make compiling command
 function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
     local argv = {}
-    for _, v in ipairs(compargv) do
+    for i, v in ipairs(compargv) do
+        if i == 1 then
+            v = path.filename(v) -- C:\xxx\ml.exe -> ml.exe
+        end
         v = v:gsub("__sourcefile__", sourcefile)
         v = v:gsub("__objectfile__", objectfile)
         -- -Idir or /Idir
