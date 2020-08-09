@@ -118,8 +118,11 @@ function _check_try_running(flags, opt, islinker)
         table.insert(args, 1, "-c")
     end
 
+    -- avoid recursion
     if flags[1] ~= "-allow-unsupported-compiler" then
-        local allow_unsupported_compiler = main({"-allow-unsupported-compiler"}, opt)
+        -- add -allow-unsupported-compiler if supported to suppress error of unsupported compiler,
+        -- which caused all checks failed.
+        local allow_unsupported_compiler = _has_flags({"-allow-unsupported-compiler"}, opt)
         if allow_unsupported_compiler then
             table.insert(args, 1, "-allow-unsupported-compiler")
         end
@@ -135,7 +138,7 @@ end
 --
 -- @return      true or false
 --
-function main(flags, opt)
+function _has_flags(flags, opt)
 
     -- is linker?
     local islinker = _islinker(flags, opt)
@@ -147,5 +150,9 @@ function main(flags, opt)
 
     -- try running to check it
     return _check_try_running(flags, opt, islinker)
+end
+
+function main(...)
+    return _has_flags(...)
 end
 
