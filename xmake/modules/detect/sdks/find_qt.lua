@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.cache")
 import("lib.detect.find_file")
+import("lib.detect.find_tool")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -102,8 +103,8 @@ function _find_sdkdir(sdkdir, sdkver)
             end
         end
     else
-        table.insert(pathes, "~/Qt*")
         table.insert(pathes, "~/Qt")
+        table.insert(pathes, "~/Qt*")
     end
 
     -- attempt to find qmake
@@ -113,41 +114,62 @@ function _find_sdkdir(sdkdir, sdkver)
     end
 end
 
--- find qt sdk toolchains
-function _find_qt(sdkdir, sdkver)
+-- find qmake
+function _find_qmake(sdkdir, sdkver)
 
     -- find qt directory
     sdkdir = _find_sdkdir(sdkdir, sdkver)
-    if not sdkdir or not os.isdir(sdkdir) then
-        return nil
-    end
 
     -- get the bin directory 
-    local bindir = path.join(sdkdir, "bin")
-    local qmake = path.join(bindir, "qmake" .. (is_host("windows") and ".exe" or ""))
-    if not os.isexec(qmake) then
-        return nil
+    local qmake = find_tool("qmake", {pathes = sdkdir and path.join(sdkdir, "bin")})
+    if qmake then
+        return qmake.program
     end
+end
 
-    -- get linkdirs
-    local linkdirs = {path.join(sdkdir, "lib")}
-
-    -- get includedirs
-    local includedirs = {path.join(sdkdir, "include")}
-
-    -- get sdk version
-    if not sdkver then
-        sdkver = try {function () return os.iorunv(qmake, {"-query", "QT_VERSION"}) end}
-        if sdkver then
-            sdkver = sdkver:trim()
+-- get qt environment
+function _get_qtenvs(qmake)
+    local envs = _g._ENVS
+    if not envs then
+        envs = {}
+        local results = try {function () return os.iorunv(qmake, {"-query"}) end}
+        if results then
+            for _, qtenv in ipairs(results:split('\n', {plain = true})) do
+                local kv = qtenv:split(':', {plain = true})
+                if #kv == 2 then
+                    envs[kv[1]] = kv[2]:trim()
+                end
+            end
         end
+        _g._ENVS = envs
     end
-    if not sdkver then
-        sdkver = sdkdir:match("(%d+%.?%d*%.?%d*.-)")
+    return envs
+end
+
+-- find qt sdk toolchains
+function _find_qt(sdkdir, sdkver)
+
+    -- find qmake
+    local qmake = _find_qmake(sdkdir, sdkver)
+    if not qmake then
+        return
     end
 
-    -- get toolchains
-    return {sdkdir = sdkdir, bindir = bindir, linkdirs = linkdirs, includedirs = includedirs, sdkver = sdkver}
+    -- get qt environments
+    local qtenvs = _get_qtenvs(qmake)
+    if not qtenvs then
+        return
+    end
+
+    -- get qt toolchains
+    sdkdir = qtenvs.QT_INSTALL_PREFIX
+    local sdkver = qtenvs.QT_VERSION
+    local bindir = qtenvs.QT_INSTALL_BINS
+    local qmldir = qtenvs.QT_INSTALL_QML
+    local libdir = qtenvs.QT_INSTALL_LIBS
+    local includedir = qtenvs.QT_INSTALL_HEADERS
+    local mkspecsdir = path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
+    return {sdkdir = sdkdir, bindir = bindir, libdir = libdir, includedir = includedir, qmldir = qmldir, mkspecsdir = mkspecsdir, sdkver = sdkver}
 end
 
 -- find qt sdk toolchains

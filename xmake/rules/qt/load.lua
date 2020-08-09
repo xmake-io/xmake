@@ -180,17 +180,17 @@ function main(target, opt)
             if framework:lower():endswith("private") then
                 local private_dir = framework:sub(1, -#("private") - 1);
                 if is_plat("macosx") then
-                    local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
+                    local frameworkdir = path.join(qt.libdir, framework .. ".framework")
                     if os.isdir(frameworkdir) then
                         target:add("includedirs", path.join(frameworkdir, "Headers", qt.sdkver))
                         target:add("includedirs", path.join(frameworkdir, "Headers", qt.sdkver, private_dir))
                     else
-                        target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver, private_dir))
-                        target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver))
+                        target:add("includedirs", path.join(qt.includedir, private_dir, qt.sdkver, private_dir))
+                        target:add("includedirs", path.join(qt.includedir, private_dir, qt.sdkver))
                     end
                 else
-                    target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver, private_dir))
-                    target:add("includedirs", path.join(qt.sdkdir, "include", private_dir, qt.sdkver))
+                    target:add("includedirs", path.join(qt.includedir, private_dir, qt.sdkver, private_dir))
+                    target:add("includedirs", path.join(qt.includedir, private_dir, qt.sdkver))
                 end
             else
                 -- add defines
@@ -198,17 +198,17 @@ function main(target, opt)
 
                 -- add includedirs
                 if is_plat("macosx") then
-                    local frameworkdir = path.join(qt.sdkdir, "lib", framework .. ".framework")
+                    local frameworkdir = path.join(qt.libdir, framework .. ".framework")
                     if os.isdir(frameworkdir) then
                         target:add("includedirs", path.join(frameworkdir, "Headers"))
                         useframeworks = true
                     else
-                        target:add("syslinks", _link(qt.linkdirs, framework, qt_sdkver))
-                        target:add("includedirs", path.join(qt.sdkdir, "include", framework))
+                        target:add("syslinks", _link(qt.libdir, framework, qt_sdkver))
+                        target:add("includedirs", path.join(qt.includedir, framework))
                     end
                 else
-                    target:add("syslinks", _link(qt.linkdirs, framework, qt_sdkver))
-                    target:add("includedirs", path.join(qt.sdkdir, "include", framework))
+                    target:add("syslinks", _link(qt.libdir, framework, qt_sdkver))
+                    target:add("includedirs", path.join(qt.includedir, framework))
                 end
             end
         end
@@ -225,7 +225,7 @@ function main(target, opt)
 
     -- add some static third-party links if exists, e.g. libqtmain.a, libqtfreetype.q, libqtlibpng.a
     -- and exclude qt framework libraries, e.g. libQt5xxx.a, Qt5xxx.lib
-    target:add("syslinks", _find_static_links_3rd(qt.linkdirs, qt_sdkver, is_plat("windows") and "qt*.lib" or "libqt*.a"))
+    target:add("syslinks", _find_static_links_3rd(qt.libdir, qt_sdkver, is_plat("windows") and "qt*.lib" or "libqt*.a"))
 
     -- add user syslinks
     if syslinks_user then
@@ -237,11 +237,11 @@ function main(target, opt)
         target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics", "OpenGL")
         target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
         if useframeworks then
-            target:add("frameworkdirs", qt.linkdirs)
-            target:add("rpathdirs", "@executable_path/Frameworks", qt.linkdirs)
+            target:add("frameworkdirs", qt.libdir)
+            target:add("rpathdirs", "@executable_path/Frameworks", qt.libdir)
         else
-            target:add("rpathdirs", qt.linkdirs)
-            target:add("includedirs", path.join(qt.sdkdir, "include"))
+            target:add("rpathdirs", qt.libdir)
+            target:add("includedirs", qt.includedir)
 
             -- remove qt frameworks
             local frameworks = table.wrap(target:get("frameworks"))
@@ -253,33 +253,33 @@ function main(target, opt)
             end
             target:set("frameworks", frameworks)
         end
-        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/macx-clang"))
-        target:add("linkdirs", qt.linkdirs)
+        target:add("includedirs", path.join(qt.mkspecsdir, "macx-clang"))
+        target:add("linkdirs", qt.libdir)
 
     elseif is_plat("linux") then
         target:set("frameworks", nil)
-        target:add("includedirs", path.join(qt.sdkdir, "include"))
-        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/linux-g++"))
-        target:add("rpathdirs", qt.linkdirs)
-        target:add("linkdirs", qt.linkdirs)
+        target:add("includedirs", qt.includedir)
+        target:add("includedirs", path.join(qt.mkspecsdir, "linux-g++"))
+        target:add("rpathdirs", qt.libdir)
+        target:add("linkdirs", qt.libdir)
     elseif is_plat("windows") then
         target:set("frameworks", nil)
-        target:add("includedirs", path.join(qt.sdkdir, "include"))
-        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-msvc"))
-        target:add("linkdirs", qt.linkdirs)
+        target:add("includedirs", qt.includedir)
+        target:add("includedirs", path.join(qt.mkspecsdir, "win32-msvc"))
+        target:add("linkdirs", qt.libdir)
         target:add("syslinks", "ws2_32", "gdi32", "ole32", "advapi32", "shell32", "user32", "OpenGL32", "imm32", "winmm", "iphlpapi")
     elseif is_plat("mingw") then
         target:set("frameworks", nil)
-        target:add("includedirs", path.join(qt.sdkdir, "include"))
-        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/win32-g++"))
-        target:add("linkdirs", qt.linkdirs)
+        target:add("includedirs", qt.includedir)
+        target:add("includedirs", path.join(qt.mkspecsdir, "win32-g++"))
+        target:add("linkdirs", qt.libdir)
         target:add("syslinks", "mingw32")
     elseif is_plat("android") then
         target:set("frameworks", nil)
-        target:add("includedirs", path.join(qt.sdkdir, "include"))
-        target:add("includedirs", path.join(qt.sdkdir, "mkspecs/android-clang"))
-        target:add("rpathdirs", qt.linkdirs)
-        target:add("linkdirs", qt.linkdirs)
+        target:add("includedirs", qt.includedir)
+        target:add("includedirs", path.join(qt.mkspecsdir, "android-clang"))
+        target:add("rpathdirs", qt.libdir)
+        target:add("linkdirs", qt.libdir)
     end
 
     -- is gui application?
@@ -303,6 +303,5 @@ function main(target, opt)
             target:add("ldflags", "-mwindows", {force = true})
         end
     end
-
 end
 
