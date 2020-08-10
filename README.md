@@ -278,7 +278,7 @@ target("test")
     set_kind("binary")
     add_files("src/*.cu")
     add_cugencodes("native")
-    add_cugencodes("compute_30")
+    add_cugencodes("compute_35")
 ```
 
 WDK/UMDF Driver Program:
