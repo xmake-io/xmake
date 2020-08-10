@@ -5,6 +5,8 @@
 ### Change
 
 * [#907](https://github.com/xmake-io/xmake/issues/907): Improve to the linker optimization for msvc
+* Improve to detect qt sdk environment
+* [#918](https://github.com/xmake-io/xmake/pull/918): Improve to support cuda11 toolchains
 
 ### Bugs fixed
 
@@ -801,6 +803,8 @@
 ### 改进
 
 * [#907](https://github.com/xmake-io/xmake/issues/907): 改进msvc的链接器优化选项，生成更小的可执行程序
+* 改进ubuntu下Qt环境的支持
+* [#918](https://github.com/xmake-io/xmake/pull/918): 改进cuda11工具链的支持
 
 ### Bugs修复
 
