@@ -27,6 +27,7 @@ local string    = require("base/string")
 local hashset   = require("base/hashset")
 
 segment.__index = segment
+cli._segment = segment
 
 function segment:__tostring()
     return self.string
@@ -120,8 +121,6 @@ function cli.parsev(argv, flags)
     end
     return parsed
 end
-
-cli._segment = segment
 
 -- return module
 return cli
