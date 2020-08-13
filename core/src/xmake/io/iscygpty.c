@@ -56,7 +56,7 @@
 # endif
 #endif /* USE_FILEEXTD */
 
-//#define USE_DYNFILEID
+#define USE_DYNFILEID // we need enable it for supporting xp
 #ifdef USE_DYNFILEID
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
         HANDLE                      hFile,
