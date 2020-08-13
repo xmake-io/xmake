@@ -101,6 +101,9 @@ ManifestDPIAware true
     Quit
   ${EndSwitch}
   
+  ; The UAC plugin changes the error level even in the inner process, reset it.
+  ; note fix install exit code 1223 to 0 with slient /S
+  SetErrorLevel 0
   SetShellVarContext all
 !macroend
  
