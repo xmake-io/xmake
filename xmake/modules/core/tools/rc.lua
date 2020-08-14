@@ -25,7 +25,9 @@ import("private.tools.vstool")
 
 -- init it
 function init(self)
-    self:set("mrcflags", "-nologo")
+    if winos.version():gt("winxp") then
+        self:set("mrcflags", "-nologo")
+    end
 end
 
 -- make the define flag
