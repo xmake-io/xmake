@@ -49,7 +49,7 @@ function _add_vsenv(toolchain, name)
         if vstudio then
             vcvarsall = (vstudio[vs] or {}).vcvarsall or {}
             vsenv = vcvarsall[arch] or {}
-            if vsenv and vsenv.path and vsenv.include and vsenv.lib then
+            if vsenv and vsenv.PATH and vsenv.INCLUDE and vsenv.LIB then
                 config.set("__vcvarsall", vcvarsall)
             end
         end
@@ -80,9 +80,9 @@ function main(toolchain)
     toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add vs environments
-    _add_vsenv(toolchain, "path")
-    _add_vsenv(toolchain, "lib")
-    _add_vsenv(toolchain, "include")
-    _add_vsenv(toolchain, "libpath")
+    _add_vsenv(toolchain, "PATH")
+    _add_vsenv(toolchain, "LIB")
+    _add_vsenv(toolchain, "INCLUDE")
+    _add_vsenv(toolchain, "LIBPATH")
 end
 

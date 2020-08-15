@@ -53,7 +53,7 @@ function _check_vsenv(toolchain)
         for _, vsver in ipairs(vsvers) do
             local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
             local vsenv = vcvarsall[toolchain:arch()]
-            if vsenv and vsenv.path and vsenv.include and vsenv.lib then
+            if vsenv and vsenv.PATH and vsenv.INCLUDE and vsenv.LIB then
 
                 -- save vsenv
                 config.set("__vcvarsall", vcvarsall)

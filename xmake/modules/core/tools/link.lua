@@ -126,7 +126,7 @@ function link(self, objectfiles, targetkind, targetfile, flags, opt)
     try
     {
         function ()
-    
+
             -- use vstool to link and enable vs_unicode_output @see https://github.com/xmake-io/xmake/issues/528
             local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
             vstool.runv(program, argv, {envs = self:runenvs()})

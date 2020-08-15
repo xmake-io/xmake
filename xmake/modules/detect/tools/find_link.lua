@@ -43,7 +43,7 @@ function main(opt)
     -- init options
     opt       = opt or {}
     opt.check = opt.check or function (program)
-       
+
         -- find cl
         local cl = assert(find_tool("cl", {envs = opt.envs}))
 

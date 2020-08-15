@@ -46,12 +46,10 @@ function main(opt)
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        opt.command = opt.command or function () local _, info = os.iorun(program); return info end
+        opt.command = opt.command or function () local _, info = os.iorunv(program, {}, {envs = opt.envs}); return info end
         opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
         version     = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
 

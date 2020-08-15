@@ -114,6 +114,16 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         variables["UCRTVersion"] = UCRTVersion
     end
 
+    -- convert path/lib/include to PATH/LIB/INCLUDE
+    variables.PATH    = variables.path
+    variables.LIB     = variables.lib
+    variables.LIBPATH = variables.libpath
+    variables.INCLUDE = variables.include
+    variables.path    = nil
+    variables.lib     = nil
+    variables.include = nil
+    variables.libpath = nil
+
     -- ok
     return variables
 end
