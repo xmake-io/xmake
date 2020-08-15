@@ -93,7 +93,7 @@ function _check_try_running(flags, opt)
     local binaryfile = os.tmpfile() .. ".exe"
     local cl = find_tool("cl")
     if cl then
-        os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = envs})
+        os.runv(cl.program, {"-c", "-nologo", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
     end
 
     -- try link it
