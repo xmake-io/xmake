@@ -7,6 +7,7 @@
 * [#907](https://github.com/xmake-io/xmake/issues/907): Improve to the linker optimization for msvc
 * Improve to detect qt sdk environment
 * [#918](https://github.com/xmake-io/xmake/pull/918): Improve to support cuda11 toolchains
+* Improve Qt support for ubuntu/apt
 
 ### Bugs fixed
 
@@ -805,6 +806,7 @@
 * [#907](https://github.com/xmake-io/xmake/issues/907): 改进msvc的链接器优化选项，生成更小的可执行程序
 * 改进ubuntu下Qt环境的支持
 * [#918](https://github.com/xmake-io/xmake/pull/918): 改进cuda11工具链的支持
+* 改进Qt支持，对通过 ubuntu/apt 安装的Qt sdk也进行了探测支持，并且检测效率也优化了下
 
 ### Bugs修复
 
