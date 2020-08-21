@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): Add support for winget
+
 ### Change
 
 * [#907](https://github.com/xmake-io/xmake/issues/907): Improve to the linker optimization for msvc
@@ -800,6 +804,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): 支持通过 winget 来安装 xmake
 
 ### 改进
 
