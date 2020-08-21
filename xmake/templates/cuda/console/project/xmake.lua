@@ -1,21 +1,14 @@
-
--- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
--- define target
 target("${TARGETNAME}")
-
-    -- set kind
     set_kind("binary")
+    add_files("src/*.cu")
 
     -- generate relocatable device code for device linker of dependents.
     -- if __device__ or __global__ functions will be called cross file,
     -- or dynamic parallelism will be used,
     -- this instruction should be opted in.
     -- add_cuflags("-rdc=true")
-
-    -- add files
-    add_files("src/*.cu")
 
     -- generate SASS code for SM architecture of current host
     add_cugencodes("native")

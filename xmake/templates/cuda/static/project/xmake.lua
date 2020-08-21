@@ -1,14 +1,8 @@
-
--- add modes: debug and release
 add_rules("mode.debug", "mode.release")
 
--- define target
 target("${TARGETNAME}")
-
-    -- set kind
     set_kind("static")
-
-    -- add include dirs
+    add_files("src/**.cu")
     add_includedirs("inc")
 
     -- generate relocatable device code for device linker of dependents.
@@ -16,9 +10,6 @@ target("${TARGETNAME}")
     -- nor dynamic parallelism will be used,
     -- this instruction could be omitted.
     add_cuflags("-rdc=true")
-
-    -- add files
-    add_files("src/**.cu")
 
     -- generate SASS code for SM architecture of current host
     add_cugencodes("native")
