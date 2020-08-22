@@ -52,7 +52,5 @@ function main(name, features, opt)
             table.insert(results, feature)
         end
     end
-
-    -- ok?
     return results
 end

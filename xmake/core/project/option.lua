@@ -123,6 +123,7 @@ function _instance:_do_check()
         self._core_tool_compiler = self._core_tool_compiler or sandbox_module.import("core.tool.compiler", {anonymous = true})
 
         -- all features are supported?
+        features = table.wrap(features)
         local features_supported = self._core_tool_compiler.has_features(features, {target = self})
         if features_supported and #features_supported == #features then
             passed = true
@@ -130,7 +131,7 @@ function _instance:_do_check()
 
         -- trace
         if baseoption.get("verbose") or baseoption.get("diagnosis") then
-            for _, feature in ipairs(table.wrap(features)) do
+            for _, feature in ipairs(features) do
                 utils.cprint("${dim}checking for the feature(%s) ... %s", feature, passed and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
             end
         end

@@ -41,11 +41,7 @@ function _get_macro_defines(snippets, extension, opt)
             end
         end
     end
-
-    -- remove files
     os.tryrm(sourcefile)
-
-    -- ok?
     return results
 end
 
@@ -111,8 +107,6 @@ function check_features(opt)
             end
         end
     end
-
-    -- ok?
     return results
 end
 
