@@ -1,16 +1,8 @@
--- add rules
 add_rules("mode.debug", "mode.release")
 
--- define target
 target("cuda_console")
-
-    -- set kind
     set_kind("binary")
-
-    -- add include directories
     add_includedirs("inc")
-
-    -- add files
     add_files("src/*.cu")
 
     -- generate SASS code for each SM architecture
