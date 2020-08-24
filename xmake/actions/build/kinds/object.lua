@@ -101,7 +101,7 @@ function add_batchjobs_for_sourcefiles(batchjobs, rootjob, target, sourcebatches
     -- add source batches
     batchjobs:group_enter(target:name() .. "/build_files")
     for _, sourcebatch in pairs(sourcebatches) do
-        if not _add_batchjobs_for_target(target, job_build_after, target, sourcebatch) then
+        if not _add_batchjobs_for_target(batchjobs, job_build_after, target, sourcebatch) then
             _add_batchjobs_for_rule(batchjobs, job_build_after, target, sourcebatch)
         end
     end
