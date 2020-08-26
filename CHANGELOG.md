@@ -5,6 +5,7 @@
 ### New features
 
 * [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): Add support for winget
+* Add xmake-tinyc installer without msvc compiler for windows
 
 ### Change
 
@@ -808,6 +809,7 @@
 ### 新特性
 
 * [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): 支持通过 winget 来安装 xmake
+* 添加 xmake-tinyc 安装包，内置tinyc编译器，支持windows上无msvc环境也可直接编译c代码
 
 ### 改进
 
