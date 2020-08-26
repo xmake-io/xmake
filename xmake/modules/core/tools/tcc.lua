@@ -36,7 +36,7 @@ function init(self)
                       , "-DIBAction=void)__attribute__((ibaction)")
 
     -- init shflags
-    self:set("shflags", "-shared")
+    self:set("shflags", "-shared", "-rdynamic")
 
     -- init cxflags for the kind: shared
     self:set("shared.cxflags", "-fPIC")
@@ -135,7 +135,13 @@ end
 
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join("-o", targetfile, objectfiles, flags)
+    local argv
+    if targetkind == "static" then
+        argv = table.join("-ar", "cr", targetfile, objectfiles)
+    else
+        argv = table.join("-o", targetfile, objectfiles, flags)
+    end
+    return self:program(), argv
 end
 
 -- link the target file
