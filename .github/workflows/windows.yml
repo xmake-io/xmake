@@ -93,7 +93,7 @@ jobs:
           Copy-Item ./tcc/tcc ./winenv/tcc -Recurse
           Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/winapi-full-for-0.9.27.zip" -UseBasicParsing -OutFile .\winapi.zip
           Expand-Archive ./winapi.zip -DestinationPath ./winapi
-          Copy-Item ./winapi/winapi-full-for-0.9.27 ./winenv/tcc/winapi
+          Copy-Item ./winapi/winapi-full-for-0.9.27 ./winenv/tcc/winapi -Recurse
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
           Remove-Item ./winenv/tcc -Recurse
