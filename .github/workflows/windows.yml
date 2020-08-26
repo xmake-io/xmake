@@ -81,6 +81,20 @@ jobs:
           Copy-Item ./curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
+          Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake.exe
+          # build installer for tinyc
+          if ("${{ matrix.arch }}" -eq "x64"){
+            Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27-win64-bin.zip" -UseBasicParsing -OutFile .\tcc.zip
+          } else {
+            Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27-win32-bin.zip" -UseBasicParsing -OutFile .\tcc.zip
+          }
+          Expand-Archive ./tcc.zip -DestinationPath ./winenv/tcc
+          Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/winapi-full-for-0.9.27.zip" -UseBasicParsing -OutFile .\winapi.zip
+          Expand-Archive ./winapi.zip -DestinationPath ./winenv/tcc/winapi
+          ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
+          Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
+          Remove-Item ./winenv/tcc -Recurse
+          Remove-Item ./scripts/xmake.exe
           # archive
           Copy-Item ./*.md ./xmake
           Copy-Item ./winenv ./xmake -Recurse
@@ -99,7 +113,6 @@ jobs:
           (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
           # copy to artifacts/arch
           (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
-          Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}
           Copy-Item archive.zip ./artifacts/${{env.RELEASE_NAME}}
           Copy-Item shafile ./artifacts/${{env.RELEASE_NAME}}
 
@@ -108,6 +121,10 @@ jobs:
         with:
           name: xmake-latest.${{env.RELEASE_NAME}}.exe
           path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-tinyc-latest.${{env.RELEASE_NAME}}.exe
+          path: artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.zip
@@ -127,6 +144,17 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
+          asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
+          asset_name: xmake-tinyc-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
       - name: publish
