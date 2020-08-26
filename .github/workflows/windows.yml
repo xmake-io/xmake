@@ -81,6 +81,7 @@ jobs:
           Copy-Item ./curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
+          (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
           Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake.exe
           # build installer for tinyc
           if ("${{ matrix.arch }}" -eq "x64"){
@@ -111,8 +112,6 @@ jobs:
           Copy-Item ./xmake ./archive/xmake -Recurse
           [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
           (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
-          # copy to artifacts/arch
-          (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
           Copy-Item archive.zip ./artifacts/${{env.RELEASE_NAME}}
           Copy-Item shafile ./artifacts/${{env.RELEASE_NAME}}
 
