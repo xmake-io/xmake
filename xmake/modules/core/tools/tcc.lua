@@ -28,13 +28,6 @@ import("private.tools.ccache")
 -- init it
 function init(self)
 
-    -- init mxflags
-    self:set("mxflags", "-fmessage-length=0"
-                      , "-pipe"
-                      , "-DIBOutlet=__attribute__((iboutlet))"
-                      , "-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))"
-                      , "-DIBAction=void)__attribute__((ibaction)")
-
     -- init shflags
     self:set("shflags", "-shared", "-rdynamic")
 
@@ -58,36 +51,26 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug = "-S"
     ,   all   = "-s"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-
-    -- the maps
     local maps = 
     {   
         debug  = "-g"
     ,   hidden = "-fvisibility=hidden"
     }
-
-    -- make it
     return maps[level] 
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps = 
     {   
         none       = "-w"
@@ -98,8 +81,6 @@ function nf_warning(self, level)
     ,   everything = "-Wall -Wunsupported -Wwrite-strings"
     ,   error      = "-Werror"
     }
-
-    -- make it
     return maps[level]
 end
 

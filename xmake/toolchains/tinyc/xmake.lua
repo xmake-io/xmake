@@ -83,6 +83,11 @@ toolchain("tinyc")
             if os.isdir(includedir) then
                 toolchain:add("includedirs", includedir)
             end
+            local winenv_tcc_winapi = path.join(os.programdir(), "winenv", "tcc", "winapi", "include")
+            if is_host("windows") and os.isdir(winenv_tcc_winapi) then
+                toolchain:add("includedirs", winenv_tcc_winapi)
+                toolchain:add("includedirs", path.join(winenv_tcc_winapi, "winapi"))
+            end
             local linkdir = path.join(sdkdir, "lib")
             if os.isdir(linkdir) then
                 toolchain:add("linkdirs", linkdir)
