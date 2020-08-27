@@ -38,6 +38,10 @@ function main(name, opt)
         return 
     end
 
+    -- fix name, e.g. ffmpeg[x264] as ffmpeg
+    -- @see https://github.com/xmake-io/xmake/issues/925
+    name = name:gsub("%[.-%]", "")
+
     -- get arch, plat and mode
     local arch = opt.arch 
     local plat = opt.plat 
