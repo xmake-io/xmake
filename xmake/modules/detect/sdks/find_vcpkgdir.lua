@@ -100,7 +100,5 @@ function main(sdkdir, opt)
     -- save to cache
     cacheinfo.vcpkg = vcpkg or false
     cache.save(key, cacheinfo)
-
-    -- ok?
     return vcpkg
 end
