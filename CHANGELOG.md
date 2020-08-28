@@ -13,6 +13,7 @@
 * Improve to detect qt sdk environment
 * [#918](https://github.com/xmake-io/xmake/pull/918): Improve to support cuda11 toolchains
 * Improve Qt support for ubuntu/apt
+* Improve CMake project generator
 
 ### Bugs fixed
 
@@ -817,6 +818,7 @@
 * 改进ubuntu下Qt环境的支持
 * [#918](https://github.com/xmake-io/xmake/pull/918): 改进cuda11工具链的支持
 * 改进Qt支持，对通过 ubuntu/apt 安装的Qt sdk也进行了探测支持，并且检测效率也优化了下
+* 改进 CMake 工程文件生成器
 
 ### Bugs修复
 
