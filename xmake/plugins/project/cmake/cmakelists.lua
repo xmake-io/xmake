@@ -381,6 +381,7 @@ function _add_target_link_options(cmakelists, target)
     local ldflags    = _get_configs_from_target(target, "ldflags")
     local shflags    = _get_configs_from_target(target, "shflags")
     if #ldflags > 0 or #shflags > 0 then
+        local cmake_minver = _get_cmake_minver()
         if cmake_minver:ge("3.13.0") then
             cmakelists:print("target_link_options(%s PRIVATE", target:name())
         else
