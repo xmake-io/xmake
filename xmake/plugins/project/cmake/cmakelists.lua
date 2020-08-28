@@ -360,13 +360,13 @@ function _add_target_link_directories(cmakelists, target)
             cmakelists:print(")")
         else
             cmakelists:print("if(MSVC)")
-            cmakelists:print("    target_link_options(%s PRIVATE", target:name())
+            cmakelists:print("    target_link_libraries(%s PRIVATE", target:name())
             for _, linkdir in ipairs(linkdirs) do
                 cmakelists:print("        -libpath:" .. _get_unix_path(linkdir))
             end
             cmakelists:print("    )")
             cmakelists:print("else()")
-            cmakelists:print("    target_link_options(%s PRIVATE", target:name())
+            cmakelists:print("    target_link_libraries(%s PRIVATE", target:name())
             for _, linkdir in ipairs(linkdirs) do
                 cmakelists:print("        -L" .. _get_unix_path(linkdir))
             end
@@ -381,7 +381,11 @@ function _add_target_link_options(cmakelists, target)
     local ldflags    = _get_configs_from_target(target, "ldflags")
     local shflags    = _get_configs_from_target(target, "shflags")
     if #ldflags > 0 or #shflags > 0 then
-        cmakelists:print("target_link_options(%s PRIVATE", target:name())
+        if cmake_minver:ge("3.13.0") then
+            cmakelists:print("target_link_options(%s PRIVATE", target:name())
+        else
+            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+        end
         for _, flag in ipairs(table.unique(table.join(ldflags, shflags))) do
             if target:linker():has_flags(flag) then
                 cmakelists:print("    " .. flag)
