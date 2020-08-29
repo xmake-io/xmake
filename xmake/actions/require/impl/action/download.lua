@@ -88,9 +88,13 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     -- get package file
     local packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(url)
 
-    -- get sourcehash
+    -- get sourcehash from the given url
+    --
+    -- we need not sourcehash and skip checksum to try download it directly if no version list in package()
+    -- @see https://github.com/xmake-io/xmake/issues/930
+    --
     local sourcehash = package:sourcehash(url_alias)
-    assert(sourcehash, "cannot get source hash of %s in package(%s)", url, package:name())
+    assert(not package:get("versions") or sourcehash, "cannot get source hash of %s in package(%s)", url, package:name())
 
     -- the package file have been downloaded?
     local cached = true
@@ -149,7 +153,7 @@ function _urls(package)
     for _, url in ipairs(package:urls()) do
         if git.checkurl(url) then
             table.insert(urls[1], url)
-        elseif package:sourcehash(package:url_alias(url)) then
+        elseif not package:get("versions") or package:sourcehash(package:url_alias(url)) then
             table.insert(urls[2], url)
         end
     end

@@ -15,6 +15,7 @@
 * Improve Qt support for ubuntu/apt
 * Improve CMake project generator
 * [#931](https://github.com/xmake-io/xmake/issues/931): Support to export packages with all dependences
+* [#930](https://github.com/xmake-io/xmake/issues/930): Support to download package without version list directly 
 
 ### Bugs fixed
 
@@ -821,6 +822,7 @@
 * 改进Qt支持，对通过 ubuntu/apt 安装的Qt sdk也进行了探测支持，并且检测效率也优化了下
 * 改进 CMake 工程文件生成器
 * [#931](https://github.com/xmake-io/xmake/issues/931): 改进导出包，支持导出所有依赖包
+* [#930](https://github.com/xmake-io/xmake/issues/930): 如果私有包定义没有版本定义，支持直接尝试下载包
 
 ### Bugs修复
 

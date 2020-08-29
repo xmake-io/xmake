@@ -243,6 +243,11 @@ function _select_package_version(package, requireinfo)
             version, source = semver.select(require_version, package:versions())
         elseif has_giturl then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
+        elseif not package:get("versions") and semver.is_valid(require_version) then
+            -- no version list in package()? try this version directly
+            -- @see https://github.com/xmake-io/xmake/issues/930
+            version = require_version
+            source = "versions"
         else
             raise("package(%s %s): not found!", package:name(), require_version)
         end
