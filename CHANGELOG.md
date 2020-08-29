@@ -14,6 +14,7 @@
 * [#918](https://github.com/xmake-io/xmake/pull/918): Improve to support cuda11 toolchains
 * Improve Qt support for ubuntu/apt
 * Improve CMake project generator
+* [#931](https://github.com/xmake-io/xmake/issues/931): Support to export packages with all dependences
 
 ### Bugs fixed
 
@@ -819,6 +820,7 @@
 * [#918](https://github.com/xmake-io/xmake/pull/918): 改进cuda11工具链的支持
 * 改进Qt支持，对通过 ubuntu/apt 安装的Qt sdk也进行了探测支持，并且检测效率也优化了下
 * 改进 CMake 工程文件生成器
+* [#931](https://github.com/xmake-io/xmake/issues/931): 改进导出包，支持导出所有依赖包
 
 ### Bugs修复
 
