@@ -51,20 +51,11 @@ end
 
 -- try to remove the given file or directory
 function _tryrm(makefile, filedir)
-
-    -- remove it
     if is_plat("windows") then
-        if os.isdir(filedir) then
-            makefile:print("\t@rmdir /S /Q %s > NUL 2>&1", filedir)
-        elseif os.isfile(filedir) then
-            makefile:print("\t@del /F /Q %s > NUL 2>&1", filedir)
-        end
+        -- we attempt to delete it as file first, we remove it as directory if failed 
+        makefile:print("\t@del /F /Q %s > NUL 2>&1 || rmdir /S /Q %s > NUL 2>&1", filedir, filedir)
     else
-        if os.isdir(filedir) then
-            makefile:print("\t@rm -rf %s", filedir)
-        elseif os.isfile(filedir) then
-            makefile:print("\t@rm -f %s", filedir)
-        end
+        makefile:print("\t@rm -rf %s", filedir)
     end
 end
 
