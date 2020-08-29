@@ -52,8 +52,8 @@ function _find_package_with_builtin_rule(package_name, opt)
         -- find it from conan (support multi-platforms/architectures)
         table.insert(managers, "conan")
 
-        -- only support the current host platform and architecture
-        if opt.plat == os.host() and opt.arch == os.arch() then
+        -- only support the current sub-host platform and sub-architecture, e.g. linux, macosx, or msys (subsystem)
+        if opt.plat == os.subhost() and opt.arch == os.subarch() then
 
             -- find it from pkg-config
             table.insert(managers, "pkg_config")
