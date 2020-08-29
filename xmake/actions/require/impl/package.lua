@@ -841,9 +841,6 @@ function export_packages(requires, opt)
     -- init options
     opt = opt or {}
 
-    -- do not export dependent packages
-    opt.nodeps = true
-
     -- get the export directory
     local exportdir = assert(opt.exportdir)
 

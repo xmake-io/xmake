@@ -66,7 +66,7 @@ task("require")
                                                          "    $ xmake require --uninstall",
                                                          "    $ xmake require --uninstall tbox",
                                                          "    $ xmake require --uninstall --extra=\"{debug=true}\" tbox"       }
-                ,   {nil, "export",     "k", nil,        "Export the installed packages.",
+                ,   {nil, "export",     "k", nil,        "Export the installed packages and their dependencies.",
                                                          "e.g.",
                                                          "    $ xmake require --export",
                                                          "    $ xmake require --export tbox zlib",
