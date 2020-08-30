@@ -21,7 +21,12 @@
 -- imports
 import("core.project.config")
 
--- main entry
+-- load ndk toolchain
+--
+-- some extra configuration for target
+-- e.g. 
+--   set_values("ndk.arm_mode", "arm") -- or thumb
+--
 function main(toolchain)
 
     -- get cross
@@ -53,10 +58,6 @@ function main(toolchain)
     toolchain:add("shflags", "-llog")
     if arch and (arch == "armeabi" or arch == "armeabi-v7a" or arch == "armv5te" or arch == "armv7-a") then -- armv5te/armv7-a are deprecated
         arm32 = true
-        toolchain:add("cxflags", "-mthumb")
-        toolchain:add("asflags", "-mthumb")
-        toolchain:add("ldflags", "-mthumb")
-        toolchain:add("shflags", "-mthumb")
     end
 
     -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
@@ -312,6 +313,21 @@ function main(toolchain)
             end
         end
     end
+
+    -- init flags for target
+    local target_on_xxflags = function (target)
+        if arm32 then
+            if target:values("ndk.arm_mode") == "arm" then
+                return "-marm"
+            else
+                return "-mthumb"
+            end
+        end
+    end
+    toolchain:add("target.on_cxflags", target_on_xxflags)
+    toolchain:add("target.on_asflags", target_on_xxflags)
+    toolchain:add("target.on_ldflags", target_on_xxflags)
+    toolchain:add("target.on_shflags", target_on_xxflags)
 
     -- init targets for rust
     local targets_rust = 

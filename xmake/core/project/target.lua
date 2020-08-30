@@ -1793,10 +1793,27 @@ function _instance:toolconfig(name)
 
         -- get them from all toolchains
         for _, toolchain_inst in ipairs(self:toolchains()) do
+
+            -- get xxflags 
             local values = toolchain_inst:get(name)
             if values then
                 toolconfig = toolconfig or {}
                 table.join2(toolconfig, values)
+            end
+
+            -- get flags from target.on_xxflags()
+            local script = toolchain_inst:get("target.on_" .. name)
+            if type(script) == "function" then
+                local ok, result_or_errors = utils.trycall(script, nil, self)
+                if ok then
+                    values = result_or_errors
+                    if values then
+                        toolconfig = toolconfig or {}
+                        table.join2(toolconfig, values)
+                    end
+                else
+                    os.raise(result_or_errors)
+                end
             end
         end
 
