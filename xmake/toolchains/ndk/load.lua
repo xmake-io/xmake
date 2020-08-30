@@ -317,6 +317,7 @@ function main(toolchain)
     -- init flags for target
     local target_on_xxflags = function (target)
         if arm32 then
+            -- @see https://github.com/xmake-io/xmake/issues/927
             if target:values("ndk.arm_mode") == "arm" then
                 return "-marm"
             else
