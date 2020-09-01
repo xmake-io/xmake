@@ -127,7 +127,7 @@ function install(package, configs, opt)
         if os.isfile(projfile) then
             os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
             os.trycp("install/lib", package:installdir()) -- perhaps only headers library
-            os.cp("install/include", package:installdir())
+            os.trycp("install/include", package:installdir())
         else
             os.cp("**.lib", package:installdir("lib"))
             os.cp("**.dll", package:installdir("lib"))
@@ -147,7 +147,7 @@ function install(package, configs, opt)
             os.vrunv("make", {"install"})
         end
         os.trycp("install/lib", package:installdir())
-        os.cp("install/include", package:installdir())
+        os.trycp("install/include", package:installdir())
     end
     os.cd(oldir)
 end
