@@ -293,6 +293,9 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
             scope["__extra_" .. name] = extra_config
         end
 
+        -- mark as override 
+        scope["__override_" .. name] = true
+
         -- get patterns
         local patterns = {}
         if #args > 1 then
