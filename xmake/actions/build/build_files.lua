@@ -205,7 +205,9 @@ function main(targetname, sourcefiles)
     -- build all jobs
     local batchjobs = _get_batchjobs(targetname, filepatterns)
     if batchjobs and batchjobs:size() > 0 then
-        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1})
+        local curdir = os.curdir()
+        runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir})
+        os.cd(curdir)
     end
 end
 
