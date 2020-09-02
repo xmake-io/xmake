@@ -79,6 +79,47 @@ function buildenvs(package)
     return envs
 end
 
+-- build package
+function build(package, configs, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- enter build directory
+    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
+    os.mkdir(path.join(buildir, "install"))
+    local oldir = os.cd(buildir)
+
+    -- init arguments
+    --
+    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
+    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
+    -- 
+    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
+    if package:is_plat("windows") and package:is_arch("x64") then
+        table.insert(argv, "-A")
+        table.insert(argv, "x64")
+    end
+
+    -- pass configurations
+    for name, value in pairs(_get_configs(package, configs)) do
+        value = tostring(value):trim()
+        if type(name) == "number" then
+            if value ~= "" then
+                table.insert(argv, value)
+            end
+        else
+            table.insert(argv, "--" .. name .. "=" .. value)
+        end
+    end
+    table.insert(argv, '..')
+
+    -- do build 
+    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("cmake", {"--build", "."}, {envs = opt.envs or buildenvs(package)})
+    os.cd(oldir)
+end
+
 -- install package
 function install(package, configs, opt)
 
@@ -86,7 +127,7 @@ function install(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = "build_" .. hash.uuid4():split('%-')[1]
+    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
