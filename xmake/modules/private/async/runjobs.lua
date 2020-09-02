@@ -182,6 +182,9 @@ function main(name, jobs, opt)
                     { 
                         function()
                             if jobfunc then
+                                if opt.curdir then
+                                    os.cd(opt.curdir)
+                                end
                                 jobfunc(i, total)
                             end
                         end,
