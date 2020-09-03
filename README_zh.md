@@ -198,6 +198,7 @@ mingw         Minimalist GNU for Windows
 gnu-rm        GNU Arm Embedded Toolchain
 envs          Environment variables toolchain
 fasm          Flat Assembler
+tinyc         Tiny C Compiler
 ```
 
 ## 支持语言
