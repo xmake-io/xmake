@@ -6,6 +6,8 @@
 
 * [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): Add support for winget
 * Add xmake-tinyc installer without msvc compiler for windows
+* Add tinyc compiler toolchain
+* Add emcc compiler toolchain (emscripten) to compiling to asm.js and WebAssembly
 
 ### Change
 
@@ -814,6 +816,8 @@
 
 * [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): 支持通过 winget 来安装 xmake
 * 添加 xmake-tinyc 安装包，内置tinyc编译器，支持windows上无msvc环境也可直接编译c代码
+* 添加 tinyc 编译工具链
+* 添加 emcc (emscripten) 编译工具链去编译 asm.js 和 WebAssembly
 
 ### 改进
 

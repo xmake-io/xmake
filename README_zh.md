@@ -199,6 +199,7 @@ gnu-rm        GNU Arm Embedded Toolchain
 envs          Environment variables toolchain
 fasm          Flat Assembler
 tinyc         Tiny C Compiler
+emcc          A toolchain for compiling to asm.js and WebAssembly
 ```
 
 ## 支持语言
