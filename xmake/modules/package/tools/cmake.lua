@@ -35,6 +35,21 @@ function _get_configs(package, configs)
             table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
             table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
         end
+    elseif package:is_plat("android") then
+        -- https://developer.android.google.cn/ndk/guides/cmake
+        local ndk = get_config("ndk")
+        if ndk and os.isdir(ndk) then
+            local ndk_sdkver = get_config("ndk_sdkver")
+            local ndk_cxxstl = get_config("ndk_cxxstl")
+            table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
+            table.insert(configs, "-DANDROID_ABI=" .. package:arch())
+            if ndk_sdkver then
+                table.insert(configs, "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
+            end
+            if ndk_cxxstl then
+                table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
+            end
+        end
     end
     local cflags = package:config("cflags")
     if cflags then

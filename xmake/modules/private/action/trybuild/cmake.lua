@@ -44,6 +44,24 @@ function _get_configs(artifacts_dir)
     if is_plat("windows") and is_arch("x64") then
         table.insert(configs, "-A")
         table.insert(configs, "x64")
+    elseif is_plat("android") then
+        -- https://developer.android.google.cn/ndk/guides/cmake
+        local ndk = config.get("ndk")
+        if ndk and os.isdir(ndk) then
+            local arch = config.arch()
+            local ndk_sdkver = config.get("ndk_sdkver")
+            local ndk_cxxstl = config.get("ndk_cxxstl")
+            table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
+            if arch then
+                table.insert(configs, "-DANDROID_ABI=" .. arch)
+            end
+            if ndk_sdkver then
+                table.insert(configs,  "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
+            end
+            if ndk_cxxstl then
+                table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
+            end
+        end
     end
 
     -- enable verbose?
@@ -90,9 +108,6 @@ end
 
 -- do build
 function build()
-
-    -- only support the current subsystem host platform now!
-    assert(is_subhost(config.plat()), "cmake: %s not supported!", config.plat())
 
     -- get artifacts directory
     local artifacts_dir = _get_artifacts_dir()
