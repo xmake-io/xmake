@@ -27,5 +27,23 @@ import("lib.detect.pkg_config")
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
-    return pkg_config.find(name, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get library info
+    local libinfo = pkg_config.libinfo(name, opt)
+    if not libinfo then
+        return 
+    end
+
+    local result = nil
+    if libinfo.links or libinfo.includedirs then
+        result             = result or {}
+        result.includedirs = libinfo.includedirs
+        result.linkdirs    = libinfo.linkdirs
+        result.links       = libinfo.links
+        result.version     = libinfo.version
+    end
+    return result
 end

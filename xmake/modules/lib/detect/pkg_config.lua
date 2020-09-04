@@ -151,7 +151,7 @@ function libinfo(name, opt)
 
             -- get links
             local link = flag:match("%-l(.*)")
-            if link then
+            if link and not link:find(path.sep(), 1, true) then
                 result.links = result.links or {}
                 table.insert(result.links, link)
             end
@@ -190,62 +190,3 @@ function libinfo(name, opt)
     return result
 end
 
--- find package 
---
--- @param name  the package name
--- @param opt   the argument options, {plat = "", arch = "", links = {...}}
---
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}}
---
--- @code 
---
--- local libinfo = pkg_config.find("openssl")
--- 
--- @endcode
---
-function find(name, opt)
-
-    -- init options
-    opt = opt or {}
-
-    -- get library info
-    local libinfo = libinfo(name, opt)
-    if not libinfo then
-        return 
-    end
-
-    -- get links
-    local links = libinfo.links
-    if not links or #links == 0 then
-        links = opt.links
-    end
-
-    -- find library 
-    local result = nil
-    local linkdirs = table.wrap(libinfo.linkdirs)
-    for _, link in ipairs(links) do
-        local libinfo = find_library(link, linkdirs)
-        if libinfo then
-            result          = result or {}
-            result.links    = table.join(result.links or {}, libinfo.link)
-            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
-        end
-    end
-    if result and result.links then
-        result.linkdirs = table.unique(result.linkdirs)
-    end
-
-    -- get includedirs
-    if libinfo.includedirs then
-        result             = result or {}
-        result.includedirs = libinfo.includedirs
-    end
-
-    -- save version
-    if result and libinfo.version then
-        result.version = libinfo.version
-    end
-
-    -- ok?
-    return result
-end
