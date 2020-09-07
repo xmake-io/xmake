@@ -23,6 +23,7 @@ import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
+import("core.platform.platform")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -36,6 +37,126 @@ function _get_artifacts_dir()
     return path.absolute(path.join(_get_buildir(), "artifacts"))
 end
 
+-- get the build environment
+function _get_buildenv(key)
+    local value = config.get(key)
+    if value == nil then
+        value = platform.toolconfig(key, config.plat())
+    end
+    if value == nil then
+        value = platform.tool(key, config.plat())
+    end
+    return value
+end
+
+-- get configs for android
+function _get_configs_for_android(configs)
+    -- https://developer.android.google.cn/ndk/guides/cmake
+    local ndk = config.get("ndk")
+    if ndk and os.isdir(ndk) then
+        local arch = config.arch()
+        local ndk_sdkver = config.get("ndk_sdkver")
+        local ndk_cxxstl = config.get("ndk_cxxstl")
+        table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
+        if arch then
+            table.insert(configs, "-DANDROID_ABI=" .. arch)
+        end
+        if ndk_sdkver then
+            table.insert(configs,  "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
+        end
+        if ndk_cxxstl then
+            table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
+        end
+    end
+end
+
+-- get configs for iphoneos
+function _get_configs_for_iphoneos(configs)
+    local envs                     = {}
+    local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+    local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
+    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
+    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
+    envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    envs.CMAKE_OSX_SYSROOT         = ""
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
+-- get configs for mingw
+function _get_configs_for_mingw(configs)
+    local envs                     = {}
+    local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+    local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+    local sdkdir                   = _get_buildenv("mingw") or _get_buildenv("sdk")
+    envs.CMAKE_C_COMPILER          = _get_buildenv("cc")
+    envs.CMAKE_CXX_COMPILER        = _get_buildenv("cxx")
+    envs.CMAKE_ASM_COMPILER        = _get_buildenv("as")
+    envs.CMAKE_AR                  = _get_buildenv("ar")
+    envs.CMAKE_LINKER              = _get_buildenv("ld")
+    envs.CMAKE_RANLIB              = _get_buildenv("ranlib")
+    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
+    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
+    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
+    envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    envs.CMAKE_SYSTEM_NAME         = "Windows"
+    -- avoid find and add system include/library path
+    envs.CMAKE_FIND_ROOT_PATH      = sdkdir
+    envs.CMAKE_SYSROOT             = sdkdir
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    -- avoid add -isysroot on macOS
+    envs.CMAKE_OSX_SYSROOT = ""
+    -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
+    envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
+-- get configs for cross
+function _get_configs_for_cross(configs)
+    local envs                     = {}
+    local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
+    local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
+    local sdkdir                   = _get_buildenv("sdk")
+    envs.CMAKE_C_COMPILER          = _get_buildenv("cc")
+    envs.CMAKE_CXX_COMPILER        = _get_buildenv("cxx")
+    envs.CMAKE_ASM_COMPILER        = _get_buildenv("as")
+    envs.CMAKE_AR                  = _get_buildenv("ar")
+    envs.CMAKE_LINKER              = _get_buildenv("ld")
+    envs.CMAKE_RANLIB              = _get_buildenv("ranlib")
+    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
+    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
+    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(_get_buildenv("asflags")), ' ')
+    envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
+    envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
+    envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    -- avoid find and add system include/library path
+    envs.CMAKE_FIND_ROOT_PATH      = sdkdir
+    envs.CMAKE_SYSROOT             = sdkdir
+    envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
+    envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    -- avoid add -isysroot on macOS
+    envs.CMAKE_OSX_SYSROOT = ""
+    -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
+    envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
+    for k, v in pairs(envs) do
+        table.insert(configs, "-D" .. k .. "=" .. v)
+    end
+end
+
 -- get configs
 function _get_configs(artifacts_dir)
 
@@ -45,23 +166,13 @@ function _get_configs(artifacts_dir)
         table.insert(configs, "-A")
         table.insert(configs, "x64")
     elseif is_plat("android") then
-        -- https://developer.android.google.cn/ndk/guides/cmake
-        local ndk = config.get("ndk")
-        if ndk and os.isdir(ndk) then
-            local arch = config.arch()
-            local ndk_sdkver = config.get("ndk_sdkver")
-            local ndk_cxxstl = config.get("ndk_cxxstl")
-            table.insert(configs, "-DCMAKE_TOOLCHAIN_FILE=" .. path.join(ndk, "build/cmake/android.toolchain.cmake"))
-            if arch then
-                table.insert(configs, "-DANDROID_ABI=" .. arch)
-            end
-            if ndk_sdkver then
-                table.insert(configs,  "-DANDROID_NATIVE_API_LEVEL=" .. ndk_sdkver)
-            end
-            if ndk_cxxstl then
-                table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
-            end
-        end
+        _get_configs_for_android(configs)
+    elseif is_plat("iphoneos") then
+        _get_configs_for_iphoneos(configs)
+    elseif is_plat("mingw") then
+        _get_configs_for_mingw(configs)
+    elseif not is_plat(os.subhost()) then
+        _get_configs_for_cross(configs)
     end
 
     -- enable verbose?
