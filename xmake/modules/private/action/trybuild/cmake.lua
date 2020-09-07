@@ -49,6 +49,14 @@ function _get_buildenv(key)
     return value
 end
 
+-- get configs for windows
+function _get_configs_for_windows(configs)
+    if is_arch("x64") then
+        table.insert(configs, "-A")
+        table.insert(configs, "x64")
+    end
+end
+
 -- get configs for android
 function _get_configs_for_android(configs)
     -- https://developer.android.google.cn/ndk/guides/cmake
@@ -70,8 +78,8 @@ function _get_configs_for_android(configs)
     end
 end
 
--- get configs for iphoneos
-function _get_configs_for_iphoneos(configs)
+-- get configs for appleos
+function _get_configs_for_appleos(configs)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cflags"))
     local cxxflags                 = table.join(table.wrap(_get_buildenv("cxflags")), _get_buildenv("cxxflags"))
@@ -81,10 +89,16 @@ function _get_configs_for_iphoneos(configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
-    envs.CMAKE_SYSTEM_NAME         = "iOS"
+    if is_plat("watchos") then
+        envs.CMAKE_SYSTEM_NAME     = "watchOS"
+    else
+        envs.CMAKE_SYSTEM_NAME     = "iOS"
+    end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    -- avoid install bundle targets
+    envs.CMAKE_MACOSX_BUNDLE       = "NO"
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
@@ -163,13 +177,12 @@ function _get_configs(artifacts_dir)
 
     -- add prefix
     local configs = {"-DCMAKE_INSTALL_PREFIX=" .. artifacts_dir, "-DCMAKE_INSTALL_LIBDIR=" .. path.join(artifacts_dir, "lib")}
-    if is_plat("windows") and is_arch("x64") then
-        table.insert(configs, "-A")
-        table.insert(configs, "x64")
+    if is_plat("windows") then
+        _get_configs_for_windows(configs)
     elseif is_plat("android") then
         _get_configs_for_android(configs)
-    elseif is_plat("iphoneos") then
-        _get_configs_for_iphoneos(configs)
+    elseif is_plat("iphoneos", "watchos") then
+        _get_configs_for_appleos(configs)
     elseif is_plat("mingw") then
         _get_configs_for_mingw(configs)
     elseif not is_plat(os.subhost()) then

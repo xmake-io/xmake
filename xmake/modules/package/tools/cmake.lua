@@ -58,8 +58,8 @@ function _get_configs_for_android(package, configs)
     end
 end
 
--- get configs for iphoneos
-function _get_configs_for_iphoneos(package, configs)
+-- get configs for appleos
+function _get_configs_for_appleos(package, configs)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -69,9 +69,16 @@ function _get_configs_for_iphoneos(package, configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
+    if package:is_plat("watchos") then
+        envs.CMAKE_SYSTEM_NAME     = "watchOS"
+    else
+        envs.CMAKE_SYSTEM_NAME     = "iOS"
+    end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
+    -- avoid install bundle targets
+    envs.CMAKE_MACOSX_BUNDLE       = "NO"
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
@@ -152,8 +159,8 @@ function _get_configs(package, configs)
         _get_configs_for_windows(package, configs)
     elseif package:is_plat("android") then
         _get_configs_for_android(package, configs)
-    elseif package:is_plat("iphoneos") then
-        _get_configs_for_iphoneos(package, configs)
+    elseif package:is_plat("iphoneos", "watchos") then
+        _get_configs_for_appleos(package, configs)
     elseif package:is_plat("mingw") then
         _get_configs_for_mingw(package, configs)
     elseif not package:is_plat(os.subhost()) then
