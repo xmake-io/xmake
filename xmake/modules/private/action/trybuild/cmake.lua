@@ -81,10 +81,10 @@ function _get_configs_for_iphoneos(configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    envs.CMAKE_SYSTEM_NAME         = "iOS"
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_PROGRAM = "NEVER"
-    envs.CMAKE_OSX_SYSROOT         = ""
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
@@ -142,6 +142,7 @@ function _get_configs_for_cross(configs)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(_get_buildenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(_get_buildenv("shflags")), ' ')
+    envs.CMAKE_SYSTEM_NAME         = "Linux"
     -- avoid find and add system include/library path
     envs.CMAKE_FIND_ROOT_PATH      = sdkdir
     envs.CMAKE_SYSROOT             = sdkdir
