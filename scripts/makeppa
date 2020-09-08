@@ -108,3 +108,7 @@ done
 # build package and upload ppa to launchpad.net
 # https://launchpad.net/~xmake-io/+archive/ubuntu/xmake
 #
+# recv and import key on ubuntu
+# gpg --keyserver keyserver.ubuntu.com --recv 2C0C68C9
+# gpg --export --armor 2C0C68C9 | sudo apt-key add -
+#
