@@ -3,7 +3,7 @@ Upstream-Name: xmake
 Source: https://github.com/xmake-io/xmake
 
 Files: *
-Copyright: 2015-2017 ruki <waruqi@gmail.com>
+Copyright: 2015-present ruki <waruqi@gmail.com>
 License: Apache-2.0
  .
 

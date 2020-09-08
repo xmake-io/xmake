@@ -52,7 +52,7 @@ cp -r ../../scripts/debian .
 
 # build package
 echo "building package .."
-debuild -S -k8A0FFB63
+debuild -S -k2C0C68C9
 
 # check package
 echo "checking package .."
@@ -63,7 +63,7 @@ source=xmake_$version-"$patch"_source
 while true; do
     read -p "Do you wish to upload this package? (y/n)" yn
     case $yn in
-        [Yy]* ) if [ -f ../$source.ppa.upload ]; then rm ../$source.ppa.upload; fi ; dput ppa:tboox/xmake ../$source.changes; break;;
+        [Yy]* ) if [ -f ../$source.ppa.upload ]; then rm ../$source.ppa.upload; fi ; dput ppa:xmake-io/xmake ../$source.changes; break;;
         [Nn]* ) exit;;
         * ) echo "Please answer y or n.";;
     esac
@@ -80,4 +80,31 @@ while true; do
     esac
 done
 
-
+# install dh-make and gpg
+# sudo apt install dh-make rng-tools
+#
+# @see https://help.ubuntu.com/community/GnuPrivacyGuardHowto
+#
+# generate key
+# gpg --gen-key
+#
+# save public/private key
+# gpg -a --export 2C0C68C9 > /mnt/xmake_ppa_pgp.pub
+# gpg -a --export-secret-keys 2C0C68C9 > /mnt/xmake_ppa_pgp.sec
+#
+# submit to keykserver and import this key to launchpad.net
+# @see https://launchpad.net/+help-registry/import-pgp-key.html
+# gpg --send-keys --keyserver keyserver.ubuntu.com 2C0C68C9
+#
+# recv email and validate this gpg key
+# gpg --decrypt file.txt
+# goto link
+#
+# show gpg
+# gpg --fingerprint
+# pub   2048R/2C0C68C9 2020-09-08
+#      Key fingerprint = 0271 3554 FA2C E4AA DA20  AB23 167A 22F2 2C0C 68C9
+#
+# build package and upload ppa to launchpad.net
+# https://launchpad.net/~xmake-io/+archive/ubuntu/xmake
+#

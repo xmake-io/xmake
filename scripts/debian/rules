@@ -30,10 +30,7 @@ install: build
 	mkdir -p $(prefix)/bin
 	mkdir -p $(prefix)/share
 	cp -r $(CURDIR)/xmake $(prefix)/share
-	cp $(CURDIR)/core/src/demo/demo.b $(prefix)/share/xmake/xmake 
-	echo '#!/bin/bash' > $(prefix)/bin/xmake
-	echo 'export XMAKE_PROGRAM_DIR=/usr/share/xmake' >> $(prefix)/bin/xmake
-	echo '/usr/share/xmake/xmake "$$@"' >> $(prefix)/bin/xmake
+	cp $(CURDIR)/core/src/demo/demo.b $(prefix)/bin/xmake 
 	chmod 755 $(prefix)/bin/xmake
 
 distclean: clean
