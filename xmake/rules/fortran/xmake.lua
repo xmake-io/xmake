@@ -21,7 +21,7 @@
 -- define rule: fortran.build.modules
 rule("fortran.build.modules")
     before_build(function (target)
-        local modulesdir = path.join(target:objectdir(), ".modules")
+        local modulesdir = target:values("fortran.moduledir") or path.join(target:objectdir(), ".modules")
         os.mkdir(modulesdir)
         target:add("fcflags", "-J" .. modulesdir)
         target:add("includedirs", modulesdir, {public = true})
