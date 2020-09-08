@@ -20,6 +20,8 @@
 
 -- imports
 import("lib.detect.pkg_config")
+import("lib.detect.find_library")
+import("package.manager.system.find_package", {alias = "find_package_from_system"})
 
 -- find package from the pkg-config package manager
 --
@@ -37,6 +39,15 @@ function main(name, opt)
         return 
     end
 
+    -- no linkdirs in pkg-config? attempt to find it from system directories
+    if libinfo.links and not libinfo.linkdirs then
+        local libinfo_sys = find_package_from_system(name, table.join(opt, {links = libinfo.links}))
+        if libinfo_sys then
+            libinfo.linkdirs = libinfo_sys.linkdirs
+        end
+    end
+
+    -- get result
     local result = nil
     if libinfo.links or libinfo.includedirs then
         result             = result or {}
