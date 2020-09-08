@@ -11,9 +11,11 @@ Homepage: http://xmake.io
 Package: xmake
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A make-like build utility based on Lua
- xmake focuses on making development and building easier and
- provides many features (e.g. package, install, plugin, macro, 
- action, option, task ...), so that any developer can quickly 
- pick it up and enjoy the productivity boost when developing 
- and building project.
+Description: A cross-platform build utility based on Lua 
+xmake is a lightweight cross-platform build utility based on Lua. 
+It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt, 
+the configuration syntax is more concise and intuitive. 
+It is very friendly to novices and can quickly get started in a short time. 
+Let users focus more on actual project development.
+
+ 
