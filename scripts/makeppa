@@ -22,7 +22,8 @@ if [ -z $patch ]; then
 fi
 
 # tarball
-tarball=$workdir/xmake-$version.tar.gz
+basename=xmake-$version+$patch
+tarball=$workdir/$basename.tar.gz
 if [ ! -f $tarball ]; then
     ./scripts/archive-all
     cp ./artifacts/xmake.tar.gz $tarball
@@ -30,20 +31,21 @@ fi
 
 # extract tarball
 cd $workdir
-if [ ! -d xmake-$version ]; then
-    mkdir xmake-$version
-    tar -xvf xmake-$version.tar.gz -C xmake-$version
+if [ ! -d $basename ]; then
+    mkdir $basename 
+    tar -xvf $basename.tar.gz -C $basename 
 fi
 
 # enter project directory
-cd xmake-$version
+cd $basename
 
 # make template
 echo "making template .."
 if [ -d debian ]; then
     rm -rf debian
 fi
-USER=ruki dh_make -e waruqi@gmail.com -c apache -y -s -f ../xmake-$version.tar.gz
+export USER=ruki
+dh_make -e waruqi@gmail.com -c apache -y -s -f ../$basename.tar.gz
 
 # copy debian
 echo "instaling debian .."
@@ -58,10 +60,10 @@ debuild -S -k2C0C68C9
 
 # check package
 echo "checking package .."
-lintian ../xmake_$version-$patch.dsc
+lintian ../xmake_$version+$patch.dsc
 
 # upload package
-source=xmake_$version-"$patch"_source
+source=xmake_$version+"$patch"_source
 while true; do
     read -p "Do you wish to upload this package? (y/n)" yn
     case $yn in
