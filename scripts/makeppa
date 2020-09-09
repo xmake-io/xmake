@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
 # check
-if [ $# -lt 0 ]; then
-    echo "Usage: ./scripts/makeppa [patch]"
+if [ $# -lt 1 ]; then
+    echo "Usage: ./scripts/makeppa [serie] [patch]"
     exit
 fi
 
@@ -15,8 +15,14 @@ fi
 # version
 version=`cat ./core/xmake.lua | grep -E "^set_version" | grep -oE "[0-9]*\.[0-9]*\.[0-9]*"`
 
+# serie, e.g. groovy, focal, bionic, xenial, trusty, precise
+serie="$1"
+if [ -z $serie ]; then
+    serie=xenial
+fi
+
 # patch number
-patch="$1"
+patch="$2"
 if [ -z $patch ]; then
     patch=1
 fi
@@ -53,6 +59,11 @@ if [ -d debian ]; then
     rm -rf debian
 fi
 cp -r ../../scripts/debian .
+
+# update changelog
+rm debian/changelog
+dch -v $version+$patch "update $version" -D $serie --create --package xmake -M $USER
+cat debian/changelog
 
 # build package
 echo "building package .."
