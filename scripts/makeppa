@@ -28,7 +28,7 @@ if [ -z $patch ]; then
 fi
 
 # tarball
-basename=xmake-$version+$patch
+basename=xmake-$version+$patch$serie
 tarball=$workdir/$basename.tar.gz
 if [ ! -f $tarball ]; then
     ./scripts/archive-all
@@ -62,7 +62,7 @@ cp -r ../../scripts/debian .
 
 # update changelog
 rm debian/changelog
-dch -v $version+$patch "update $version" -D $serie --create --package xmake -M $USER
+dch -v $version+$patch$serie "update $version" -D $serie --create --package xmake -M $USER
 cat debian/changelog
 
 # build package
@@ -71,10 +71,10 @@ debuild -S -k2C0C68C9
 
 # check package
 echo "checking package .."
-lintian ../xmake_$version+$patch.dsc
+lintian ../xmake_$version+$patch$serie.dsc
 
 # upload package
-source=xmake_$version+"$patch"_source
+source=xmake_$version+"$patch$serie"_source
 while true; do
     read -p "Do you wish to upload this package? (y/n)" yn
     case $yn in
