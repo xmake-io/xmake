@@ -76,7 +76,8 @@ luajit_C_FILES 			+= \
 						luajit/src/lj_buf \
 						luajit/src/lj_strfmt \
 						luajit/src/lj_strfmt_num \
-						luajit/src/lj_profile
+						luajit/src/lj_profile \
+						luajit/src/lj_prng
 
 # asm files
 iswin =
@@ -106,10 +107,7 @@ luajit_INC_DIRS 		+= \
 ifeq ($(luajit_JIT),nojit)
 luajit_CXFLAGS 			+= -DLUAJIT_DISABLE_JIT
 endif
-
-# enable lua5.2 compat, @see http://luajit.org/extensions.html
-#luajit_CXFLAGS 			+= -DLUAJIT_ENABLE_LUA52COMPAT -Wno-error=unused-function
-
+luajit_CXFLAGS 			+= -Wno-error=unused-function
 										
 # suffix
 include $(PRO_DIR)/suffix.mak
