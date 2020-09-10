@@ -263,10 +263,6 @@ function install(package, configs, opt)
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
     -- 
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-    if package:is_plat("windows") and package:is_arch("x64") then
-        table.insert(argv, "-A")
-        table.insert(argv, "x64")
-    end
 
     -- pass configurations
     for name, value in pairs(_get_configs(package, configs)) do
