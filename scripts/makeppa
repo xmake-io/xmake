@@ -50,7 +50,7 @@ echo "making template .."
 if [ -d debian ]; then
     rm -rf debian
 fi
-export USER=ruki
+export USER=`id -u -n`
 dh_make -e waruqi@gmail.com -c apache -y -s -f ../$basename.tar.gz
 
 # copy debian
@@ -74,26 +74,16 @@ echo "checking package .."
 lintian ../xmake_$version+$patch$serie.dsc
 
 # upload package
+echo "uploading package .."
 source=xmake_$version+"$patch$serie"_source
-while true; do
-    read -p "Do you wish to upload this package? (y/n)" yn
-    case $yn in
-        [Yy]* ) if [ -f ../$source.ppa.upload ]; then rm ../$source.ppa.upload; fi ; dput ppa:xmake-io/xmake ../$source.changes; break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer y or n.";;
-    esac
-done
+if [ -f ../$source.ppa.upload ]; then 
+    rm ../$source.ppa.upload
+fi
+dput ppa:xmake-io/xmake ../$source.changes
 
 # remove workdir
 cd ../..
-while true; do
-    read -p "Do you wish to remove working directory? (y/n)" yn
-    case $yn in
-        [Yy]* ) rm -rf xmake-ppa; break;;
-        [Nn]* ) exit;;
-        * ) echo "Please answer y or n.";;
-    esac
-done
+rm -rf xmake-ppa
 
 # install dh-make and gpg
 # sudo apt install dh-make rng-tools

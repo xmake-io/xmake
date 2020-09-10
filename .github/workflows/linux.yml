@@ -34,7 +34,7 @@ jobs:
         # build artifacts
       - name: artifact
         run: |
-          sudo apt-get install -y ruby ruby-dev rubygems build-essential
+          sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
           scripts/makepkg deb 
         # upload artifacts
@@ -54,4 +54,21 @@ jobs:
           asset_path: artifacts/xmake.deb
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.amd64.deb
           asset_content_type: application/zip
+
+      - name: publish
+        if: github.event.action == 'published'
+        env:
+          PPA_GPG_PRIKEY_2C0C68C9: ${{ secrets.PPA_GPG_PRIKEY_2C0C68C9 }}
+        run: |
+          # upload ubuntu/ppa
+          sudo apt install -y dh-make rng-tools devscripts lintian
+          echo "$PPA_GPG_PRIKEY_2C0C68C9" > ppa_gpg.key
+          gpg --import ppa_gpg.key
+          scripts/makeppa groovy  
+          scripts/makeppa focal 
+          scripts/makeppa bionic 
+          scripts/makeppa xenial  
+          scripts/makeppa trusty  
+          scripts/makeppa precise  
+
 
