@@ -6,6 +6,11 @@ if is_plat("msys", "cygwin") then
     plat = "windows"
     arch = is_arch("x86_64") and "x64" or "x86"
 end
+if is_arch("arm64-v8a") then
+    arch = "arm64"
+elseif is_arch("armv7") then
+    arch = "arm"
+end
 if os.isfile("/etc/redhat-release") then
     jit = false
 end
