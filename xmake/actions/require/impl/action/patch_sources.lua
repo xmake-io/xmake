@@ -32,6 +32,11 @@ function _patch(package, patch_url, patch_hash)
     -- get the patch file
     local patch_file = path.join(os.tmpdir(), "patches", package:name(), package:version_str(), (path.filename(patch_url):gsub("%?.+$", "")))
 
+    -- ensure lower hash
+    if patch_hash then
+        patch_hash = patch_hash:lower()
+    end
+
     -- the package file have been downloaded?
     local cached = true
     if option.get("force") or not os.isfile(patch_file) or patch_hash ~= hash.sha256(patch_file) then

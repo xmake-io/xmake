@@ -94,6 +94,9 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
     -- @see https://github.com/xmake-io/xmake/issues/930
     --
     local sourcehash = package:sourcehash(url_alias)
+    if sourcehash then
+        sourcehash = sourcehash:lower()
+    end
     assert(not package:get("versions") or sourcehash, "cannot get source hash of %s in package(%s)", url, package:name())
 
     -- the package file have been downloaded?

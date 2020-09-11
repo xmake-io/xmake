@@ -34,6 +34,11 @@ function _download(package, resource_name, resource_url, resource_hash)
     -- get the resource file
     local resource_file = assert(package:resourcefile(resource_name), "invalid resource file!")
 
+    -- ensure lower hash
+    if resource_hash then
+        resource_hash = resource_hash:lower()
+    end
+
     -- the package file have been downloaded?
     local cached = true
     if option.get("force") or not os.isfile(resource_file) or resource_hash ~= hash.sha256(resource_file) then
