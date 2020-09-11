@@ -24,6 +24,13 @@ import("core.tool.toolchain")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
+-- translate windows bin path
+function _translate_windows_bin_path(bin_path)
+    if bin_path then
+        return bin_path:gsub("\\", "/") .. ".exe"
+    end
+end
+
 -- get configs for windows
 function _get_configs_for_windows(package, configs)
     if package:is_arch("x64") then
@@ -90,12 +97,22 @@ function _get_configs_for_mingw(package, configs)
     local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
-    envs.CMAKE_C_COMPILER          = package:build_getenv("cc")
-    envs.CMAKE_CXX_COMPILER        = package:build_getenv("cxx")
-    envs.CMAKE_ASM_COMPILER        = package:build_getenv("as")
-    envs.CMAKE_AR                  = package:build_getenv("ar")
-    envs.CMAKE_LINKER              = package:build_getenv("ld")
-    envs.CMAKE_RANLIB              = package:build_getenv("ranlib")
+    if is_host("windows") then
+        table.insert(configs, "-G" .. "MSYS Makefiles")
+        envs.CMAKE_C_COMPILER      = _translate_windows_bin_path(package:build_getenv("cc"))
+        envs.CMAKE_CXX_COMPILER    = _translate_windows_bin_path(package:build_getenv("cxx"))
+        envs.CMAKE_ASM_COMPILER    = _translate_windows_bin_path(package:build_getenv("as"))
+        envs.CMAKE_AR              = _translate_windows_bin_path(package:build_getenv("ar"))
+        envs.CMAKE_LINKER          = _translate_windows_bin_path(package:build_getenv("ld"))
+        envs.CMAKE_RANLIB          = _translate_windows_bin_path(package:build_getenv("ranlib"))
+    else
+        envs.CMAKE_C_COMPILER      = package:build_getenv("cc")
+        envs.CMAKE_CXX_COMPILER    = package:build_getenv("cxx")
+        envs.CMAKE_ASM_COMPILER    = package:build_getenv("as")
+        envs.CMAKE_AR              = package:build_getenv("ar")
+        envs.CMAKE_LINKER          = package:build_getenv("ld")
+        envs.CMAKE_RANLIB          = package:build_getenv("ranlib")
+    end
     envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
     envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
     envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
@@ -305,6 +322,11 @@ function install(package, configs, opt)
         if is_host("bsd") then
             os.vrunv("gmake", argv)
             os.vrunv("gmake", {"install"})
+        elseif is_subhost("windows") and is_plat("mingw") then
+            local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+            local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+            os.vrunv(mingw_make, argv)
+            os.vrunv(mingw_make, {"install"})
         else
             os.vrunv("make", argv)
             os.vrunv("make", {"install"})
