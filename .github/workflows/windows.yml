@@ -22,7 +22,7 @@ jobs:
         with:
           # this is not supported, use dev branch instead
           # xmake-version: local#
-          xmake-version: branch@luajit-v2.1
+          xmake-version: branch@dev
       - uses: mihails-strasuns/setup-dlang@v0.5.0
         with:
           compiler: dmd-latest
@@ -57,7 +57,7 @@ jobs:
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
           xmake show
-          xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
+          #xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
 
         # build artifacts
