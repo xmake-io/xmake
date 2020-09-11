@@ -1,10 +1,15 @@
 -- disable jit compiler for redhat and centos
 local jit = true
-local autogendir = "autogen/$(plat)/jit/$(arch)"
+local plat = "$(plat)"
+local arch = "$(arch)"
+if is_plat("msys", "cygwin") then
+    plat = "windows"
+    arch = is_arch("x86_64") and "x64" or "x86"
+end
 if os.isfile("/etc/redhat-release") then
     jit = false
-    autogendir = "autogen/$(plat)/nojit/$(arch)"
 end
+local autogendir = path.join("autogen", plat, jit and "jit" or "nojit", arch)
 
 -- add target
 target("luajit")
