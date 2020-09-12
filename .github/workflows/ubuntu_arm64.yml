@@ -1,0 +1,33 @@
+name: Ubuntu (Arm64)
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - run: |
+          docker run --rm --privileged multiarch/qemu-user-static:register --reset
+
+      - uses: docker://multiarch/ubuntu-core:arm64-bionic
+        with:
+          args: 'uname -a'
+
+      - uses: docker://multiarch/ubuntu-core:arm64-bionic
+        with:
+          args: >
+            bash -c
+            "apt update &&
+            cd /github/workspace &&
+            ./scripts/get.sh __local__ &&
+            source ~/.xmake/profile &&
+            export XMAKE_ROOT=y &&
+            xmake lua -v -D tests/run.lua"
