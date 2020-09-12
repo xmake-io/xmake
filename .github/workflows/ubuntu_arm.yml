@@ -17,7 +17,7 @@ jobs:
       - run: |
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-     - uses: docker://multiarch/ubuntu-core:armhl-bionic
+      - uses: docker://multiarch/ubuntu-core:armhl-bionic
         with:
           args: >
             bash -c
