@@ -351,7 +351,6 @@ config : .null
 	@$(ECHO) "compile:"
 	@$(ECHO) "    plat:\t\t"$(PLAT)
 	@$(ECHO) "    arch:\t\t"$(ARCH)
-	@$(ECHO) "    arch:\t\t"$(shell uname -m)
 	@$(ECHO) "    host:\t\t"$(HOST)
 	@$(ECHO) "    demo:\t\t"$(DEMO)
 	@$(ECHO) "    prof:\t\t"$(PROF)
