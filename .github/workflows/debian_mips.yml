@@ -1,4 +1,4 @@
-name: Debian (Mips64el)
+name: Debian (Mips)
 
 on:
   pull_request:
@@ -8,6 +8,9 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        arch: [mips, mipsel, mips64, mips64el]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -17,11 +20,11 @@ jobs:
       - run: |
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-      - uses: docker://multiarch/debian-debootstrap:mips64el-stretch
+      - uses: docker://multiarch/debian-debootstrap:${{matrix.arch}}-stretch
         with:
           args: 'uname -a'
 
-      - uses: docker://multiarch/debian-debootstrap:mips64el-stretch
+      - uses: docker://multiarch/debian-debootstrap:${{matrix.arch}}-stretch
         with:
           args: >
             bash -c
