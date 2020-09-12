@@ -177,20 +177,17 @@ ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
 ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
 ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
 
-# for arm linux? 
-ifeq ($(PLAT),linux)
+# on termux/ci
 ifneq ($(TERMUX_ARCH),)
-ARCHSTR 	:= $(TERMUX_ARCH) # on termux/ci
-else
-ARCHSTR 	:= $(shell uname -m) # on arm device, e.g. termux app
-endif
-ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring armv7,$(ARCHSTR)),armv7,$(ARCH))
-ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH)) 
+ARCH 		:= $(TERMUX_ARCH) 
 endif
 endif
+
+# translate architecture, e.g. armhf/armv7l -> arm, arm64-v8a -> arm64
+ARCH 		:= $(if $(findstring aarch64,$(ARCH)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring arm64,$(ARCH)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring arm,$(ARCH)),arm,$(ARCH))
+ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH)) 
 
 # debug
 DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)
@@ -354,6 +351,7 @@ config : .null
 	@$(ECHO) "compile:"
 	@$(ECHO) "    plat:\t\t"$(PLAT)
 	@$(ECHO) "    arch:\t\t"$(ARCH)
+	@$(ECHO) "    arch:\t\t"$(shell uname -m)
 	@$(ECHO) "    host:\t\t"$(HOST)
 	@$(ECHO) "    demo:\t\t"$(DEMO)
 	@$(ECHO) "    prof:\t\t"$(PROF)

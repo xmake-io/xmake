@@ -94,12 +94,6 @@ endif
 # autogen plat and arch
 GENPLAT := $(PLAT)
 GENARCH := $(ARCH)
-ifeq ($(ARCH),arm64-v8a)
-GENARCH := arm64
-endif
-ifeq ($(ARCH),armv7)
-GENARCH := arm
-endif
 
 # asm files
 ifdef iswin
