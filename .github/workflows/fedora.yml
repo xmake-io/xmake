@@ -1,0 +1,38 @@
+name: Fedora
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    container: fedora:latest
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: prepare build tools
+        run: |
+          uname -a
+          dnf -y install @development-tools @rpm-development-tools
+          dnf -y install copr-cli make gcc-c++
+          dnf -y upgrade git
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: prepare local xmake
+        run: |
+          cp -rf . ../xmake-source
+      - uses: xmake-io/github-action-setup-xmake@v1
+        with:
+          xmake-version: local#../xmake-source
+
+        # tests
+      - name: tests
+        env:
+          XMAKE_ROOT: y
+        run: |
+          xmake lua -v -D tests/run.lua
+
