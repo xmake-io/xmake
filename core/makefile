@@ -187,7 +187,7 @@ endif
 ARCH 		:= $(if $(findstring aarch64,$(ARCH)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm64,$(ARCH)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCH)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH)) 
+ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH))
 
 # debug
 DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)

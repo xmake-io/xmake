@@ -61,7 +61,7 @@ endif
 ARCH 		:= $(if $(findstring aarch64,$(ARCH)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm64,$(ARCH)),arm64,$(ARCH))
 ARCH 		:= $(if $(findstring arm,$(ARCH)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH)) 
+ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH))
 
 # conditionally map ARCH from amd64 to x86_64 if set from the outside
 #
