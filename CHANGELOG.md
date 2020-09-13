@@ -8,6 +8,7 @@
 * Add xmake-tinyc installer without msvc compiler for windows
 * Add tinyc compiler toolchain
 * Add emcc compiler toolchain (emscripten) to compiling to asm.js and WebAssembly
+* [#947](https://github.com/xmake-io/xmake/issues/947): Add `xmake g --network=private` to enable the private network
 
 ### Change
 
@@ -819,6 +820,7 @@
 * 添加 xmake-tinyc 安装包，内置tinyc编译器，支持windows上无msvc环境也可直接编译c代码
 * 添加 tinyc 编译工具链
 * 添加 emcc (emscripten) 编译工具链去编译 asm.js 和 WebAssembly
+* [#947](https://github.com/xmake-io/xmake/issues/947): 通过 `xmake g --network=private` 配置设置私有网络模式，避免远程依赖包下载访问外网导致编译失败
 
 ### 改进
 
