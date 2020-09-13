@@ -11,15 +11,16 @@ jobs:
       fail-fast: false
       matrix:
         include: [
-          { msystem: MINGW64, arch: x86_64 },
-          { msystem: MINGW32, arch: i686   }
+          { msystem: MINGW64, arch: x86_64, prefix: /mingw64 },
+          { msystem: MINGW32, arch: i686, prefix: /mingw32   }
         ]
+
     steps:
 
       - uses: actions/checkout@v2
         with:
           path: temp
-          fetch-depth: 0
+          submodules: true
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -35,5 +36,6 @@ jobs:
         run: |
           cd /C/_
           make build
-          source .\scripts\srcenv.profile
+          make install PREFIX=${{ matrix.prefix }}
+          xmake --version
           xmake lua -v -D tests/run.lua

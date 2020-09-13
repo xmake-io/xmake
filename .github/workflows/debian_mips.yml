@@ -17,30 +17,6 @@ jobs:
       - run: |
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-      - uses: docker://multiarch/debian-debootstrap:mips-stretch
-        with:
-          args: >
-            bash -c
-            "uname -a &&
-            apt update &&
-            cd /github/workspace &&
-            ./scripts/get.sh __local__ &&
-            source ~/.xmake/profile &&
-            export XMAKE_ROOT=y &&
-            xmake lua -v -D tests/run.lua"
-
-      - uses: docker://multiarch/debian-debootstrap:mipsel-stretch
-        with:
-          args: >
-            bash -c
-            "uname -a &&
-            apt update &&
-            cd /github/workspace &&
-            ./scripts/get.sh __local__ &&
-            source ~/.xmake/profile &&
-            export XMAKE_ROOT=y &&
-            xmake lua -v -D tests/run.lua"
-
       - uses: docker://multiarch/debian-debootstrap:mips64el-stretch
         with:
           args: >
@@ -51,4 +27,5 @@ jobs:
             ./scripts/get.sh __local__ &&
             source ~/.xmake/profile &&
             export XMAKE_ROOT=y &&
+            export XMAKE_TMPDIR=/tmp &&
             xmake lua -v -D tests/run.lua"
