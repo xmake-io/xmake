@@ -22,6 +22,7 @@
 local sandbox_core_package_repository = sandbox_core_package_repository or {}
 
 -- load modules
+local global        = require("base/global")
 local project       = require("project/project")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
@@ -72,7 +73,7 @@ function sandbox_core_package_repository.repositories(is_global)
 
     -- add main global xmake repository
     local repositories = {}
-    if is_global then
+    if is_global and global.get("network") ~= "private" then
 
         -- import fasturl
         import("net.fasturl")

@@ -50,8 +50,10 @@ task("global")
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
 
-                    -- proxy configuration
-                ,   {category = "Proxy Configuration"}
+                    -- network configuration
+                ,   {category = "Network Configuration"}
+                ,   {nil, "network",        "kv", "public"  , "Set the network mode."
+                                                            , values = {"public", "private"}                              }
                 ,   {'x', "proxy",          "kv", nil       , "Use proxy on given port. [protocol://]host[:port]"
                                                             , "    e.g."
                                                             , "    - xmake g --proxy='http://host:port'"
