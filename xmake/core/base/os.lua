@@ -703,7 +703,7 @@ function os.execv(program, argv, opt)
     end
 
     -- init open options
-    local openopt = {envs = envs, stdout = opt.stdout, stderr = opt.stderr, curdir = opt.curdir}
+    local openopt = {envs = envs, stdout = opt.stdout, stderr = opt.stderr, curdir = opt.curdir, detach = opt.detach}
 
     -- open command
     local ok = -1
