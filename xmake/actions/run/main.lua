@@ -57,7 +57,7 @@ function _do_run_target(target)
 
     -- debugging?
     if option.get("debug") then
-        debugger.run(targetfile, option.get("arguments"))
+        debugger.run(targetfile, option.get("arguments"), {detach = true})
     else
         os.execv(targetfile, option.get("arguments"))
     end
