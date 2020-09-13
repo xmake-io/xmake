@@ -23,6 +23,7 @@ jobs:
             bash -c
             "uname -a &&
             apt update &&
+            apt install sudo &&
             cd /github/workspace &&
             ./scripts/get.sh __local__ &&
             source ~/.xmake/profile &&
