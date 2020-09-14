@@ -173,9 +173,6 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             end
         end
 
-        print(variables)
-        print("os.arch", os.arch())
-
         -- replace all variables
         local pattern = fileinfo.pattern or "%${(.-)}"
         io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
