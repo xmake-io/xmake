@@ -839,6 +839,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_tool(self:name(), {version = self:version_str(),
                                                       cachekey = "fetch_package_xmake",
                                                       buildhash = self:buildhash(),
+                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
                                                       force = opt.force}) 
             if fetchinfo then
                 isSys = self._isSys
