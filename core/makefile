@@ -184,10 +184,11 @@ endif
 endif
 
 # translate architecture, e.g. armhf/armv7l -> arm, arm64-v8a -> arm64
-ARCH 		:= $(if $(findstring aarch64,$(ARCH)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm64,$(ARCH)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm,$(ARCH)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCH)),i386,$(ARCH))
+ARCHSTR     := $(ARCH)
+ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
+ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
+ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH))
 
 # debug
 DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)
