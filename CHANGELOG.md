@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.7
+
 ### New features
 
 * [#2941](https://github.com/microsoft/winget-pkgs/pull/2941): Add support for winget
@@ -813,6 +815,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.7
 
 ### 新特性
 
