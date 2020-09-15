@@ -41,6 +41,8 @@ function _checkout(package, url, sourcedir, url_alias)
 
         -- clean the previous build files
         git.clean({repodir = packagedir, force = true})
+        -- reset the previous modified files
+        git.reset({repodir = packagedir, hard = true})
         tty.erase_line_to_start().cr()
         return 
     end
