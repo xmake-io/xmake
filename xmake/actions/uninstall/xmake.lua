@@ -50,6 +50,7 @@ task("uninstall")
                                                       "e.g.",
                                                       "    $ xmake uninstall --prefix=local",
                                                       "or  $ PREFIX=local xmake uninstall"          }
+                ,   {nil, "admin",      "k",  nil   , "Try to request administrator permission to uninstall"}
                 ,   {                                                                               }
                 ,   {nil, "target",     "v",  nil   , "The target name. It will uninstall all default targets if this parameter is not specified."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }

@@ -47,6 +47,7 @@ task("install")
                                                       "or  $ DESTDIR=/usr/local xmake install",
                                                       "or  $ INSTALLDIR=/usr/local xmake install" }
                 ,   {'a', "all",        "k",  nil   , "Install all targets."                      }
+                ,   {nil, "admin",      "k",  nil   , "Try to request administrator permission to install"}
 
                 ,   {                                                                               }
                 ,   {nil, "target",     "v",  nil   , "The target name. It will install all default targets if this parameter is not specified."

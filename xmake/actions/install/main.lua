@@ -116,19 +116,14 @@ function main()
 
                 -- continue to install with administrator permission?
                 local ok = false
-                if sudo.has() then
+                if sudo.has() and option.get("admin") then
 
-                    -- confirm to install?
-                    local confirm = utils.confirm({default = true, description = "try continue to install with administrator permission again"})
-                    if confirm then
+                    -- install target with administrator permission
+                    sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir"), option.get("prefix")})
 
-                        -- install target with administrator permission
-                        sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir"), option.get("prefix")})
-
-                        -- trace
-                        cprint("${color.success}install ok!")
-                        ok = true
-                    end
+                    -- trace
+                    cprint("${color.success}install ok!")
+                    ok = true
                 end
                 assert(ok, "install failed, %s", errors or "unknown reason")
             end
