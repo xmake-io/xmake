@@ -23,6 +23,26 @@ import("core.base.option")
 import("net.http")
 import("devel.git")
 
+-- check sha256 
+function _check_sha256(patch_hash, patch_file)
+    local ok = (patch_hash == hash.sha256(patch_file))
+    if not ok and is_host("windows") then
+        -- `git pull` maybe will replace lf to crlf in the patch text automatically on windows.
+        -- so we need attempt to fix this sha256
+        --
+        -- @see
+        -- https://github.com/xmake-io/xmake-repo/pull/67
+        -- https://stackoverflow.com/questions/1967370/git-replacing-lf-with-crlf
+        --
+        local tmpfile = os.tmpfile(patch_file)
+        os.cp(patch_file, tmpfile)
+        io.gsub(tmpfile, '\n', '\r\n')
+        ok = (patch_hash == hash.sha256(tmpfile))
+        os.rm(tmpfile)
+    end
+    return ok
+end
+
 -- do patch
 function _patch(package, patch_url, patch_hash)
 
@@ -39,7 +59,7 @@ function _patch(package, patch_url, patch_hash)
 
     -- the package file have been downloaded?
     local cached = true
-    if option.get("force") or not os.isfile(patch_file) or patch_hash ~= hash.sha256(patch_file) then
+    if option.get("force") or not os.isfile(patch_file) or not _check_sha256(patch_hash, patch_file) then
 
         -- no cached
         cached = false
@@ -65,7 +85,7 @@ function _patch(package, patch_url, patch_hash)
         end
 
         -- check hash
-        if patch_hash and patch_hash ~= hash.sha256(patch_file) then
+        if patch_hash and not _check_sha256(patch_hash, patch_file) then
             raise("patch(%s): unmatched checksum!", patch_url)
         end
     end
