@@ -36,7 +36,7 @@ function _check_sha256(patch_hash, patch_file)
         --
         local tmpfile = os.tmpfile(patch_file)
         os.cp(patch_file, tmpfile)
-        io.gsub(tmpfile, '\n', '\r\n')
+        io.gsub(tmpfile, '\r\n', '\n')
         ok = (patch_hash == hash.sha256(tmpfile))
         os.rm(tmpfile)
     end
