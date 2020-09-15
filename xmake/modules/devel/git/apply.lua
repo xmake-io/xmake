@@ -42,7 +42,7 @@ function main(patchfile, opt)
 
     -- init argv
     opt = opt or {}
-    local argv = {"apply", "--reject", patchfile}
+    local argv = {"apply", "--reject", "--ignore-whitespace", patchfile}
 
     -- enter repository directory
     local oldir = nil
