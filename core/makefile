@@ -159,36 +159,36 @@ PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i bsd},bsd,))
 PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
-ifeq ($(ARCH),)
+ifeq ($(BUILD_ARCH),)
 ifneq ($(MSYSTEM_CARCH),)
 MSYSARCH 	:= $(if $(findstring mingw32,$(shell which gcc)),i386,$(MSYSTEM_CARCH))
 else
 MSYSARCH 	:= x$(shell getconf LONG_BIT)
 endif
-ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(ARCH))
-ARCH 		:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(ARCH))
-ARCH 		:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
-ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
-ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
-ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
-ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
+BUILD_ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH)) # from msys/mingw32
+BUILD_ARCH 		:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
-ARCH 		:= $(TERMUX_ARCH) 
+BUILD_ARCH 		:= $(TERMUX_ARCH) 
 endif
 endif
 
 # translate architecture, e.g. armhf/armv7l -> arm, arm64-v8a -> arm64
-ARCHSTR     := $(ARCH)
-ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH))
+ARCHSTR     := $(BUILD_ARCH)
+BUILD_ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(BUILD_ARCH))
 
 # debug
 DEBUG 		:=$(if $(DEBUG),$(DEBUG),n)
@@ -208,22 +208,22 @@ DEMO 		:=$(if $(DEMO),$(DEMO),y)
 PROF 		:=$(if $(PROF),$(PROF),n)
 
 # arm
-ARM 		:=$(if $(findstring arm,$(ARCH)),y,n)
+ARM 		:=$(if $(findstring arm,$(BUILD_ARCH)),y,n)
 
 # x86
-x86 		:=$(if $(findstring i386,$(ARCH)),y,n)
+x86 		:=$(if $(findstring i386,$(BUILD_ARCH)),y,n)
 
 # x64
-x64 		:=$(if $(findstring x86_64,$(ARCH)),y,n)
+x64 		:=$(if $(findstring x86_64,$(BUILD_ARCH)),y,n)
 
 # sh4
-SH4 		:=$(if $(findstring sh4,$(ARCH)),y,n)
+SH4 		:=$(if $(findstring sh4,$(BUILD_ARCH)),y,n)
 
 # mips
-MIPS 		:=$(if $(findstring mips,$(ARCH)),y,n)
+MIPS 		:=$(if $(findstring mips,$(BUILD_ARCH)),y,n)
 
 # sparc
-SPARC 		:=$(if $(findstring sparc,$(ARCH)),y,n)
+SPARC 		:=$(if $(findstring sparc,$(BUILD_ARCH)),y,n)
 
 # the project directory
 PRO_DIR		:=$(abspath .)
@@ -351,7 +351,7 @@ config : .null
 	@$(ECHO) "============================================================================="
 	@$(ECHO) "compile:"
 	@$(ECHO) "    plat:\t\t"$(PLAT)
-	@$(ECHO) "    arch:\t\t"$(ARCH)
+	@$(ECHO) "    arch:\t\t"$(BUILD_ARCH)
 	@$(ECHO) "    host:\t\t"$(HOST)
 	@$(ECHO) "    demo:\t\t"$(DEMO)
 	@$(ECHO) "    prof:\t\t"$(PROF)
@@ -442,14 +442,14 @@ config : .null
 	@$(ECHO) "export "$(call MAKE_UPPER,$(PLAT)) 		>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# architecture"							>> .config.mak
-	@$(ECHO) "ARCH ="$(ARCH)							>> .config.mak
+	@$(ECHO) "BUILD_ARCH ="$(BUILD_ARCH)				>> .config.mak
 	@$(ECHO) "ARM ="$(ARM)								>> .config.mak
 	@$(ECHO) "x86 ="$(x86)								>> .config.mak
 	@$(ECHO) "x64 ="$(x64)								>> .config.mak
 	@$(ECHO) "SH4 ="$(SH4)								>> .config.mak
 	@$(ECHO) "MIPS ="$(MIPS)							>> .config.mak
 	@$(ECHO) "SPARC ="$(SPARC)							>> .config.mak
-	@$(ECHO) "export ARCH"								>> .config.mak
+	@$(ECHO) "export BUILD_ARCH"						>> .config.mak
 	@$(ECHO) "export ARM"								>> .config.mak
 	@$(ECHO) "export x86"								>> .config.mak
 	@$(ECHO) "export x64"								>> .config.mak

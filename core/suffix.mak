@@ -120,7 +120,7 @@ endif
 
 # append package includes
 define APPEND_PACKAGE_INC_DIRS
-INC_DIRS 		+= $(PKG_DIR)/$(1).pkg/inc/$(PLAT)/$(ARCH) $(PKG_DIR)/$(1).pkg/inc/$(PLAT) $(PKG_DIR)/$(1).pkg/inc $($(1)_INCPATH)
+INC_DIRS 		+= $(PKG_DIR)/$(1).pkg/inc/$(PLAT)/$(BUILD_ARCH) $(PKG_DIR)/$(1).pkg/inc/$(PLAT) $(PKG_DIR)/$(1).pkg/inc $($(1)_INCPATH)
 endef
 $(foreach name, $(PKG_NAMES), $(eval $(call APPEND_PACKAGE_INC_DIRS,$(name))))
 
@@ -139,7 +139,7 @@ endif
 define APPEND_PACKAGE_OPTIONS_FOR_MODULE
 $(1)_LIBS 		+= $($(2)_LIBNAMES)
 $(1)_INC_DIRS 	+= $($(2)_INCPATH)
-$(1)_LIB_DIRS 	+= $($(2)_LIBPATH) $(PKG_DIR_NATIVE)/$(2).pkg/lib/release/$(PLAT)/$(ARCH)
+$(1)_LIB_DIRS 	+= $($(2)_LIBPATH) $(PKG_DIR_NATIVE)/$(2).pkg/lib/release/$(PLAT)/$(BUILD_ARCH)
 $(1)_CXFLAGS 	+= $($(2)_INCFLAGS)
 $(1)_MXFLAGS 	+= $($(2)_INCFLAGS)
 $(1)_LDFLAGS 	+= $($(2)_LIBFLAGS)
@@ -336,17 +336,17 @@ endef
 
 # make library dirs
 define MAKE_INSTALL_LIB_DIRS
-$(1)_LIB_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/lib/$(PLAT)/$(ARCH)/%,$(1)))
+$(1)_LIB_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/lib/$(PLAT)/$(BUILD_ARCH)/%,$(1)))
 endef
 
 # make dynamic dirs
 define MAKE_INSTALL_DLL_DIRS
-$(1)_DLL_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/lib/$(PLAT)/$(ARCH)/%,$(1)))
+$(1)_DLL_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/lib/$(PLAT)/$(BUILD_ARCH)/%,$(1)))
 endef
 
 # make binary dirs
 define MAKE_INSTALL_BIN_DIRS
-$(1)_BIN_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/bin/$(PLAT)/$(ARCH)/%,$(1)))
+$(1)_BIN_DIRS_ := $(dir $(patsubst $(SRC_DIR)/$(2)/%,$(BIN_DIR)/$(2).pkg/bin/$(PLAT)/$(BUILD_ARCH)/%,$(1)))
 endef
 
 # make install files
@@ -358,7 +358,7 @@ $(foreach file, $($(1)_BIN_FILES), $(eval $(call MAKE_INSTALL_BIN_DIRS,$(file),$
 
 INSTALL_FILES 	+= $($(1)_INC_FILES) $($(1)_LIB_FILES) $($(1)_DLL_FILES) $($(1)_BIN_FILES) $(if $(findstring y,$($(1)_CONFIG)),$(CFG_FILE),)
 
-$(CFG_FILE)_DIRS_ := $(BIN_DIR)/$($(1)_PKG_NAME).pkg/inc/$(PLAT)/$(ARCH)
+$(CFG_FILE)_DIRS_ := $(BIN_DIR)/$($(1)_PKG_NAME).pkg/inc/$(PLAT)/$(BUILD_ARCH)
 endef
 $(foreach name, $(NAMES), $(eval $(call MAKE_INSTALL_FILES,$(name))))
 

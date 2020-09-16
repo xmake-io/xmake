@@ -33,44 +33,44 @@ PLAT 		:=$(if $(PLAT),$(PLAT),$(if ${shell uname | egrep -i bsd},bsd,))
 PLAT 		:=$(if $(PLAT),$(PLAT),linux)
 
 # architecture
-ifeq ($(ARCH),)
+ifeq ($(BUILD_ARCH),)
 ifneq ($(MSYSTEM_CARCH),)
 MSYSARCH 	:= $(if $(findstring mingw32,$(shell which gcc)),i386,$(MSYSTEM_CARCH))
 else
 MSYSARCH 	:= x$(shell getconf LONG_BIT)
 endif
-ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(ARCH))
-ARCH 		:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(ARCH))
-ARCH 		:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(ARCH))
-ARCH 		:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(ARCH))
-ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(ARCH))
-ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(ARCH))
-ARCH 		:=$(if $(findstring i686,$(ARCH)),i386,$(ARCH)) # from msys/mingw32
-ARCH 		:=$(if $(findstring x32,$(ARCH)),i386,$(ARCH))
-ARCH 		:=$(if $(findstring x64,$(ARCH)),x86_64,$(ARCH))
+BUILD_ARCH 		:=$(if $(findstring windows,$(PLAT)),x86,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH)) # from msys/mingw32
+BUILD_ARCH 		:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
+BUILD_ARCH 		:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
-ARCH 		:= $(TERMUX_ARCH) 
+BUILD_ARCH 		:= $(TERMUX_ARCH) 
 endif
 endif
 
 # translate architecture, e.g. armhf/armv7l -> arm, arm64-v8a -> arm64
-ARCHSTR     := $(ARCH)
-ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(ARCH))
-ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(ARCH))
-ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(ARCH))
+ARCHSTR     := $(BUILD_ARCH)
+BUILD_ARCH 		:= $(if $(findstring aarch64,$(ARCHSTR)),arm64,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring arm64,$(ARCHSTR)),arm64,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring arm,$(ARCHSTR)),arm,$(BUILD_ARCH))
+BUILD_ARCH 		:= $(if $(findstring i686,$(ARCHSTR)),i386,$(BUILD_ARCH))
 
-# conditionally map ARCH from amd64 to x86_64 if set from the outside
+# conditionally map BUILD_ARCH from amd64 to x86_64 if set from the outside
 #
-# Some OS provide a definition for $(ARCH) through an environment
+# Some OS provide a definition for $(BUILD_ARCH) through an environment
 # variable. It might be set to amd64 which implies x86_64. Since e.g.
 # luajit expects either i386 or x86_64, the value amd64 is transformed
 # to match a directory for a platform dependent implementation.
-ARCH 		:=$(if $(findstring amd64,$(ARCH)),x86_64,$(ARCH))
+BUILD_ARCH 		:=$(if $(findstring amd64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # is windows?
 iswin =
@@ -108,7 +108,7 @@ build:
 install:
 	@echo installing to $(destdir) ...
 	@echo plat: $(PLAT)
-	@echo arch: $(ARCH)
+	@echo BUILD_ARCH: $(BUILD_ARCH)
 	@# create the xmake install directory
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@if [ ! -d $(xmake_dir_install) ]; then mkdir -p $(xmake_dir_install); fi

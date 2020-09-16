@@ -91,16 +91,16 @@ ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
 
-# autogen plat and arch
+# autogen plat and BUILD_ARCH
 GENPLAT := $(PLAT)
-GENARCH := $(ARCH)
+GENARCH := $(BUILD_ARCH)
 
 # asm files
 ifdef iswin
-ifeq ($(ARCH),x86_64)
+ifeq ($(BUILD_ARCH),x86_64)
 GENARCH := x64
 endif
-ifeq ($(ARCH),i386)
+ifeq ($(BUILD_ARCH),i386)
 GENARCH := x86
 endif
 GENPLAT := windows
