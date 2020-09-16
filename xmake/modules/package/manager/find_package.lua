@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.project.config")
+import("utils.split_package_name")
 
 -- find package with the builtin rule
 --
@@ -131,7 +132,8 @@ end
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true}
 --
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
+-- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}},
+--              manager_name, package_name
 --
 -- @code 
 --
@@ -140,6 +142,7 @@ end
 -- local package = find_package("openssl", {plat = "iphoneos"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
+-- local package, manager_name, package_name = find_package("openssl")
 -- 
 -- @endcode
 --
@@ -151,18 +154,7 @@ function main(name, opt)
     opt.arch = opt.arch or config.get("arch") or os.arch()
     opt.mode = opt.mode or config.mode() or "release"
 
-    -- get package manager name
-    local manager_name, package_name = unpack(name:split("::", {plain = true, strict = true}))
-    if package_name == nil then
-        package_name = manager_name
-        manager_name = nil
-    else
-        manager_name = manager_name:lower():trim()
-    end
-
-    -- get package name and require version
-    local require_version = nil
-    package_name, require_version = unpack(package_name:trim():split("%s"))
+    local manager_name, package_name, require_version = split_package_name(name)
     opt.version = require_version or opt.version
 
     -- find package
@@ -176,5 +168,5 @@ function main(name, opt)
     end
 
     -- ok?
-    return result
+    return result, manager_name, package_name
 end
