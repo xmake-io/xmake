@@ -27,15 +27,18 @@ toolchain("emcc")
 
     -- mark as standalone toolchain
     set_kind("standalone")
+
+    -- add suffix for windows
+    local suffix = is_host("windows") and ".bat" or ""
         
     -- set toolset
-    set_toolset("cc", "emcc")
-    set_toolset("cxx", "emcc", "em++")
-    set_toolset("ld", "em++", "emcc")
-    set_toolset("sh", "em++", "emcc")
-    set_toolset("ar", "emar")
-    set_toolset("ex", "emar")
-    set_toolset("as", "emcc")
+    set_toolset("cc", "emcc" .. suffix)
+    set_toolset("cxx", "emcc" .. suffix, "em++" .. suffix)
+    set_toolset("ld", "em++" .. suffix, "emcc" .. suffix)
+    set_toolset("sh", "em++" .. suffix, "emcc" .. suffix)
+    set_toolset("ar", "emar" .. suffix)
+    set_toolset("ex", "emar" .. suffix)
+    set_toolset("as", "emcc" .. suffix)
 
     -- check toolchain
     on_check(function (toolchain)
@@ -49,3 +52,4 @@ toolchain("emcc")
         toolchain:add("ldflags", "")
         toolchain:add("shflags", "")
     end)
+
