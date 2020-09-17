@@ -38,11 +38,15 @@ toolchain("mingw")
         import("core.project.config")
 
         -- get cross
-        local cross
-        if toolchain:is_arch("x86_64") then
+        local cross 
+        if toolchain:is_arch("x86_64", "x64") then
             cross = "x86_64-w64-mingw32-"
-        elseif toolchain:is_arch("i386") then
+        elseif toolchain:is_arch("i386", "x86", "i686") then
             cross = "i686-w64-mingw32-"
+        elseif toolchain:is_arch("arm64", "aarch64") then
+            cross = "aarch64-w64-mingw32-"
+        elseif toolchain:is_arch("armv7", "arm.*") then
+            cross = "armv7-w64-mingw32-"
         else
             cross = config.get("cross") or ""
         end
@@ -77,11 +81,8 @@ toolchain("mingw")
         -- init flags for architecture
         local archflags = nil
         local arch = toolchain:arch()
-        if arch then
-            if arch == "x86_64" then archflags = "-m64"
-            elseif arch == "i386" then archflags = "-m32"
-            else archflags = "-arch " .. arch
-            end
+        if arch == "x86_64" then archflags = "-m64"
+        elseif arch == "i386" then archflags = "-m32"
         end
         if archflags then
             toolchain:add("cxflags", archflags)

@@ -31,10 +31,14 @@ function _find_mingwdir(sdkdir)
 
     -- get mingw directory
     if not sdkdir then
-        if is_host("macosx") then
-            sdkdir = "/usr/local/opt/mingw-w64"
-        elseif is_host("linux") then
-            sdkdir = "/usr"
+        if is_host("macosx", "linux") and os.isdir("/opt/llvm-mingw") then
+            sdkdir = "/opt/llvm-mingw"
+        else
+            if is_host("macosx") then
+                sdkdir = "/usr/local/opt/mingw-w64"
+            elseif is_host("linux") then
+                sdkdir = "/usr"
+            end
         end
     end
 
@@ -59,11 +63,14 @@ function _find_mingw(sdkdir, bindir, cross)
         return 
     end
 
-    -- select cross on macos, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
-    if is_host("macosx", "linux") and not cross then
-        local arch = config.get("arch")
-        if not arch or arch == "i386" then
+    -- select cross on macOS, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
+    if not cross then
+        if is_arch("i386", "x86", "i686") then
             cross = "i686-*-"
+        elseif is_arch("arm64", "aarch64") then
+            cross = "aarch64-*-" -- for llvm-mingw
+        elseif is_arch("arm.*") then
+            cross = "armv7-*-"   -- for llvm-mingw
         else
             cross = "x86_64-*-"
         end
