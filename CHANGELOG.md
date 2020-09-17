@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
+
 ## v2.3.7
 
 ### New features
@@ -815,6 +819,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#955](https://github.com/xmake-io/xmake/issues/955): 添加 Zig 空工程模板
 
 ## v2.3.7
 
