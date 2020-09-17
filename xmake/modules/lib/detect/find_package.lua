@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.cache")
 import("package.manager.find_package")
-import("utils.split_package_name")
 
 -- find package using the package manager
 --
@@ -75,8 +74,8 @@ function main(name, opt)
     end
 
     -- find package
-    local manager_name, package_name
-    result, manager_name, package_name = find_package(name, opt)
+    local found_manager_name, package_name, orig_manager_name
+    result, found_manager_name, package_name, orig_manager_name = find_package(name, opt)
 
     -- cache result
     cacheinfo[name] = result and result or false
@@ -85,13 +84,13 @@ function main(name, opt)
     -- trace
     if opt.verbose or option.get("verbose") then
         if result then
+
             -- only display manager of found package if the package we searched for
             -- did not specify a package manager
-            local original_manager_name, _, _ = split_package_name(name)
-            local display_name = original_manager_name and package_name
-                or (manager_name .. "::" .. package_name)
-
-            cprint("checking for %s ... ${color.success}found %s %s", name, display_name, result.version and result.version or "")
+            found_manager_name = found_manager_name or ""
+            local display_manager = orig_manager_name == found_manager_name and "" or found_manager_name .. "::"
+            local display_name = display_manager .. package_name
+            cprint("checking for %s ... ${color.success}%s %s", name, display_name, result.version and result.version or "")
         else
             cprint("checking for %s ... ${color.nothing}${text.nothing}", name)
         end

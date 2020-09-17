@@ -22,7 +22,6 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.project.config")
-import("utils.split_package_name")
 
 -- find package with the builtin rule
 --
@@ -65,15 +64,16 @@ function _find_package_with_builtin_rule(package_name, opt)
     end
 
     -- find package from the given package manager
-    local result = nil
+    local result, manager_name = nil, nil
     for _, manager_name in ipairs(managers) do
         dprint("finding %s from %s ..", package_name, manager_name)
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
         if result then
             break
         end
+        manager_name = nil
     end
-    return result
+    return result, manager_name
 end
 
 -- find package 
@@ -107,7 +107,7 @@ function _find_package(manager_name, package_name, opt)
 
         -- find package with the builtin rule
         if not result and not builtin then
-            result = _find_package_with_builtin_rule(package_name, opt)
+            result, manager_name = _find_package_with_builtin_rule(package_name, opt)
         end
     end
 
@@ -120,7 +120,7 @@ function _find_package(manager_name, package_name, opt)
     end
 
     -- ok?
-    return result
+    return result, manager_name
 end
 
 -- find package using the package manager
@@ -154,11 +154,23 @@ function main(name, opt)
     opt.arch = opt.arch or config.get("arch") or os.arch()
     opt.mode = opt.mode or config.mode() or "release"
 
-    local manager_name, package_name, require_version = split_package_name(name)
+    -- get package manager name
+    local manager_name, package_name = unpack(name:split("::", {plain = true, strict = true}))
+    if package_name == nil then
+        package_name = manager_name
+        manager_name = nil
+    else
+        manager_name = manager_name:lower():trim()
+    end
+
+    -- get package name and require version
+    local require_version = nil
+    package_name, require_version = unpack(package_name:trim():split("%s"))
     opt.version = require_version or opt.version
 
     -- find package
-    result = _find_package(manager_name, package_name, opt)
+    local found_manager_name
+    result, found_manager_name = _find_package(manager_name, package_name, opt)
 
     -- match version?
     if opt.version and opt.version:find('.', 1, true) and result then
@@ -168,5 +180,5 @@ function main(name, opt)
     end
 
     -- ok?
-    return result, manager_name, package_name
+    return result, found_manager_name, package_name, manager_name
 end
