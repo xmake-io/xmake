@@ -28,18 +28,6 @@ toolchain("llvm-mingw")
     -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- set toolset
-    set_toolset("cc",     "clang")
-    set_toolset("cxx",    "clang", "clang++")
-    set_toolset("cpp",    "clang -E")
-    set_toolset("as",     "clang")
-    set_toolset("ld",     "clang++", "clang")
-    set_toolset("sh",     "clang++", "clang")
-    set_toolset("ar",     "llvm-ar")
-    set_toolset("ex",     "llvm-ar")
-    set_toolset("ranlib", "llvm-ranlib")
-    set_toolset("strip",  "llvm-strip")
-       
     -- check toolchain
     on_check(function (toolchain)
 
@@ -60,15 +48,6 @@ toolchain("llvm-mingw")
             end
         end
 
-        -- find clang
-        local bindir = get_config("bin")
-        if not bindir and sdkdir then
-            bindir = path.join(sdkdir, "bin")
-        end
-        if not find_tool("clang", {pathes = bindir}) then
-            return
-        end
-
         -- save the sdk directory
         if sdkdir then
             config.set("mingw", sdkdir, {force = true, readonly = true})
@@ -82,27 +61,58 @@ toolchain("llvm-mingw")
     -- on load
     on_load(function (toolchain)
 
-        -- add target flags
-        local target
+        -- get cross
+        local cross 
         if toolchain:is_arch("x86_64", "x64") then
-            target = "x86_64-w64-mingw32"
+            cross = "x86_64-w64-mingw32-"
         elseif toolchain:is_arch("i386", "x86", "i686") then
-            target = "i686-w64-mingw32"
+            cross = "i686-w64-mingw32-"
         elseif toolchain:is_arch("arm64", "aarch64") then
-            target = "aarch64-w64-mingw32"
+            cross = "aarch64-w64-mingw32-"
         elseif toolchain:is_arch("armv7", "arm.*") then
-            target = "armv7-w64-mingw32"
+            cross = "armv7-w64-mingw32-"
         else
-            raise("llvm-mingw: unknown architecture(%s)!", toolchain:arch())
+            cross = config.get("cross") or ""
         end
-        toolchain:add("cxflags", "-target", target)
-        toolchain:add("mxflags", "-target", target)
-        toolchain:add("asflags", "-target", target)
-        toolchain:add("ldflags", "-target", target)
-        toolchain:add("shflags", "-target", target)
 
         -- get sdk directory
-        local sdkdir = get_config("mingw")
+        local sdkdir = get_config("mingw") or toolchain:sdkdir()
+
+        -- get bin directory
+        local bindir = get_config("bin")
+        if not bindir and sdkdir then
+            bindir = path.join(sdkdir, "bin")
+        end
+
+        -- set toolset
+        if is_host("windows") and bindir then
+            -- @note we uses bin/ar.exe instead of bin/cross-gcc-ar.exe, @see https://github.com/xmake-io/xmake/issues/807#issuecomment-635779210
+            toolchain:add("toolset", "ar", path.join(bindir, "ar"))
+            toolchain:add("toolset", "ex", path.join(bindir, "ar"))
+            toolchain:add("toolset", "strip", path.join(bindir, "strip"))
+            toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
+            toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
+        end
+        toolchain:add("toolset", "cc", cross .. "gcc")
+        toolchain:add("toolset", "cxx", cross .. "gcc", cross .. "g++")
+        toolchain:add("toolset", "cpp", cross .. "gcc -E")
+        toolchain:add("toolset", "as", cross .. "gcc")
+        toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc")
+        toolchain:add("toolset", "ar", cross .. "ar")
+        toolchain:add("toolset", "ex", cross .. "ar")
+        toolchain:add("toolset", "strip", cross .. "strip")
+        toolchain:add("toolset", "ranlib", cross .. "ranlib")
+        toolchain:add("toolset", "mrc", cross .. "windres")
+
+        -- init flags
+        toolchain:set("cxflags", "")
+        toolchain:set("mxflags", "")
+        toolchain:set("asflags", "")
+        toolchain:set("ldflags", "")
+        toolchain:set("shflags", "")
+
+        -- add include directories
         if sdkdir then
             toolchain:add("includedirs", path.join(sdkdir, "generic-w64-mingw32", "include"))
             toolchain:add("includedirs", path.join(sdkdir, "generic-w64-mingw32", "include", "c++", "v1"))
