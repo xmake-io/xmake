@@ -74,8 +74,8 @@ function main(name, opt)
     end
 
     -- find package
-    local found_manager_name, package_name, orig_manager_name
-    result, found_manager_name, package_name, orig_manager_name = find_package(name, opt)
+    local found_manager_name, package_name
+    result, found_manager_name, package_name = find_package(name, opt)
 
     -- cache result
     cacheinfo[name] = result and result or false
@@ -87,8 +87,7 @@ function main(name, opt)
 
             -- only display manager of found package if the package we searched for
             -- did not specify a package manager
-            found_manager_name = found_manager_name or ""
-            local display_manager = orig_manager_name == found_manager_name and "" or found_manager_name .. "::"
+            local display_manager = name:find("::", 1, true) and "" or (found_manager_name or "") .. "::"
             local display_name = display_manager .. package_name
             cprint("checking for %s ... ${color.success}%s %s", name, display_name, result.version and result.version or "")
         else

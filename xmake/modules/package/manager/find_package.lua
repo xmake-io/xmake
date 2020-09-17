@@ -64,16 +64,17 @@ function _find_package_with_builtin_rule(package_name, opt)
     end
 
     -- find package from the given package manager
-    local result, manager_name = nil, nil
+    local result = nil
+    local found_manager_name = nil
     for _, manager_name in ipairs(managers) do
         dprint("finding %s from %s ..", package_name, manager_name)
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
         if result then
+            found_manager_name = manager_name
             break
         end
-        manager_name = nil
     end
-    return result, manager_name
+    return result, found_manager_name
 end
 
 -- find package 
@@ -146,6 +147,7 @@ end
 -- 
 -- @endcode
 --
+
 function main(name, opt)
 
     -- get the copied options
@@ -169,7 +171,7 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- find package
-    local found_manager_name
+    local found_manager_name = nil
     result, found_manager_name = _find_package(manager_name, package_name, opt)
 
     -- match version?
@@ -180,5 +182,5 @@ function main(name, opt)
     end
 
     -- ok?
-    return result, found_manager_name, package_name, manager_name
+    return result, found_manager_name, package_name
 end
