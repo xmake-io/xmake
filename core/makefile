@@ -173,13 +173,13 @@ BUILD_ARCH 	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH)) # from msys/mingw32
+BUILD_ARCH 	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring x64,$(BUILD_ARCH)),x86_64,$(BUILD_ARCH))
 
 # on termux/ci
 ifneq ($(TERMUX_ARCH),)
-BUILD_ARCH 	:= $(TERMUX_ARCH) 
+BUILD_ARCH 	:= $(TERMUX_ARCH)
 endif
 endif
 
@@ -307,6 +307,9 @@ endif
 # check jit compiler
 ifeq ($(PLAT),linux)
 luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
+ifeq ($(BUILD_ARCH),mips64) # maybe it is not very stable yet, we need to disable it 
+luajit_JIT :=nojit
+endif
 else
 luajit_JIT :=jit
 endif
@@ -360,6 +363,7 @@ config : .null
 	@$(ECHO) "    small:\t\t"$(SMALL)
 	@$(ECHO) "    ccache:\t\t"$(CCACHE)
 	@$(ECHO) "    distcc:\t\t"$(DISTCC)
+	@$(ECHO) "    luajit:\t\t"$(luajit_JIT)
 	@$(ECHO) ""
 	@$(ECHO) "packages:"
 	@$(ECHO) ""$(foreach name, $(PKG_NAMES), $(call MAKE_PACKAGE_INFO,$(name)))
