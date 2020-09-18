@@ -172,6 +172,7 @@ $ xmake f --menu
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64)
 * Cygwin (i386, x86_64)
+* Wasm (wasm32)
 * Cross (cross-toolchains ..)
 
 ## 支持工具链

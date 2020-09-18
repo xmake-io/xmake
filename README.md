@@ -169,6 +169,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64)
 * Cygwin (i386, x86_64)
+* Wasm (wasm32)
 * Cross (cross-toolchains ..)
 
 ## Supported toolchains

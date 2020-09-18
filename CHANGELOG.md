@@ -5,6 +5,7 @@
 ### New features
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
+* [#956](https://github.com/xmake-io/xmake/issues/956): Add wasm platform and support Qt/Wasm SDK
 
 ### Change
 
@@ -831,6 +832,7 @@
 ### 新特性
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): 添加 Zig 空工程模板
+* [#956](https://github.com/xmake-io/xmake/issues/956): 添加 Wasm 编译平台，并且支持 Qt/Wasm SDK
 
 ### 改进
 
