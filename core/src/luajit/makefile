@@ -120,6 +120,11 @@ ifeq ($(luajit_JIT),nojit)
 luajit_CXFLAGS 			+= -DLUAJIT_DISABLE_JIT
 endif
 luajit_CXFLAGS 			+= -Wno-error=unused-function
+
+# using internal memory management under armv7, gc will cause a crash when free strings in lua_close()
+ifeq ($(BUILD_ARCH),arm)
+luajit_CXFLAGS 			+= -DLUAJIT_USE_SYSMALLOC
+endif
 										
 # suffix
 include $(PRO_DIR)/suffix.mak

@@ -6,9 +6,9 @@ if is_plat("msys", "cygwin") then
     plat = "windows"
     arch = is_arch("x86_64") and "x64" or "x86"
 end
-if is_arch("arm64-v8a") then
+if is_arch("arm64", "arm64-v8a") then
     arch = "arm64"
-elseif is_arch("armv7") then
+elseif is_arch("arm.*") then
     arch = "arm"
 end
 if os.isfile("/etc/redhat-release") then
@@ -50,6 +50,11 @@ target("luajit")
     -- disable jit compiler?
     if not jit then
         add_defines("LUAJIT_DISABLE_JIT")
+    end
+
+    -- using internal memory management under armv7, gc will cause a crash when free strings in lua_close()
+    if arch == "arm" then
+        add_defines("LUAJIT_USE_SYSMALLOC")
     end
 
     -- enable lua5.2 compat, @see http://luajit.org/extensions.html
