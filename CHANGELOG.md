@@ -6,6 +6,14 @@
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
 
+### Change
+
+* [#958](https://github.com/xmake-io/xmake/issues/958): Improve mingw platform to support llvm-mingw toolchain
+
+### Bugs fixed
+
+* [#951](https://github.com/xmake-io/xmake/issues/951): Fix emcc support for windows
+
 ## v2.3.7
 
 ### New features
@@ -823,6 +831,14 @@
 ### 新特性
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): 添加 Zig 空工程模板
+
+### 改进
+
+* [#958](https://github.com/xmake-io/xmake/issues/958): 改进mingw平台，增加对 llvm-mingw 工具链的支持，以及 arm64/arm 架构的支持
+
+### Bugs修复
+
+* [#951](https://github.com/xmake-io/xmake/issues/951): 修复 emcc (WebAssembly) 工具链在windows上的支持
 
 ## v2.3.7
 
