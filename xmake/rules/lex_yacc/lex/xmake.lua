@@ -33,9 +33,9 @@ rule("lex")
             lex = find_tool("flex") or find_tool("lex")
             if lex and lex.program then
                 config.set("__lex", lex.program)
-                cprint("checking for the Lex ... ${color.success}%s", lex.program)
+                cprint("checking for Lex ... ${color.success}%s", lex.program)
             else
-                cprint("checking for the Lex ... ${color.nothing}${text.nothing}")
+                cprint("checking for Lex ... ${color.nothing}${text.nothing}")
                 raise("lex/flex not found!")
             end
         end

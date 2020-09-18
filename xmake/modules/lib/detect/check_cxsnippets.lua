@@ -215,23 +215,23 @@ function main(snippets, opt)
     if opt.verbose or option.get("verbose") or option.get("diagnosis") then
         local kind = opt.sourcekind == "cc" and "c" or "c++"
         if #includes > 0 then
-            cprint("${dim}> checking for the %s includes(%s)", kind, table.concat(includes, ", "))
+            cprint("${dim}> checking for %s includes(%s)", kind, table.concat(includes, ", "))
         end
         if #types > 0 then
-            cprint("${dim}> checking for the %s types(%s)", kind, table.concat(types, ", "))
+            cprint("${dim}> checking for %s types(%s)", kind, table.concat(types, ", "))
         end
         if #funcs > 0 then
-            cprint("${dim}> checking for the %s funcs(%s)", kind, table.concat(funcs, ", "))
+            cprint("${dim}> checking for %s funcs(%s)", kind, table.concat(funcs, ", "))
         end
         if #links > 0 then
-            cprint("${dim}> checking for the %s links(%s)", kind, table.concat(links, ", "))
+            cprint("${dim}> checking for %s links(%s)", kind, table.concat(links, ", "))
         end
         for idx_or_name, snippet in pairs(snippets) do
             local name = idx_or_name
             if type(name) == "number" then
                 name = snippet:sub(1, 16)
             end
-            cprint("${dim}> checking for the %s snippet(%s)", kind, name)
+            cprint("${dim}> checking for %s snippet(%s)", kind, name)
         end
     end
     if errors and option.get("diagnosis") and #tostring(errors) > 0 then

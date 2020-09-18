@@ -220,7 +220,7 @@ function make(outputdir, vsinfo)
         for arch_idx, arch in ipairs(vsinfo.archs) do
 
             -- trace
-            print("checking for the %s.%s ...", mode, arch)
+            print("checking for %s.%s ...", mode, arch)
 
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then

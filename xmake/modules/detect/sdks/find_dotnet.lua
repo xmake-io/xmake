@@ -113,14 +113,14 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the .Net SDK directory ... ${color.success}%s", dotnet.sdkdir)
-            cprint("checking for the .Net SDK version ... ${color.success}%s", dotnet.sdkver)
+            cprint("checking for .Net SDK directory ... ${color.success}%s", dotnet.sdkdir)
+            cprint("checking for .Net SDK version ... ${color.success}%s", dotnet.sdkver)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the .Net SDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for .Net SDK directory ... ${color.nothing}${text.nothing}")
         end
     end
 

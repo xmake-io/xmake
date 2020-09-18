@@ -43,7 +43,7 @@ platform("mingw")
         local arch = config.get("arch")
         if not arch then
             config.set("arch", "x86_64")
-            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
         end
     end)
 

@@ -77,9 +77,9 @@ function _check_vstudio(toolchain)
     local vs = _check_vsenv(toolchain)
     if vs then
         config.set("vs", vs, {readonly = true, force = true})
-        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
+        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
-        cprint("checking for the Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
+        cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
         if not (opt and opt.try) then
             print("please run:")
             print("    - xmake config --vs=xxx [--vs_toolset=xxx]")

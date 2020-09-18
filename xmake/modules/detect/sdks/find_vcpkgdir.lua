@@ -87,13 +87,13 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the vcpkg directory ... ${color.success}%s", vcpkg)
+            cprint("checking for vcpkg directory ... ${color.success}%s", vcpkg)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the vcpkg directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for vcpkg directory ... ${color.nothing}${text.nothing}")
         end
     end
 

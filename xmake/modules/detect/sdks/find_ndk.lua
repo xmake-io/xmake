@@ -216,15 +216,15 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the NDK directory ... ${color.success}%s", ndk.sdkdir)
-            cprint("checking for the SDK version of NDK ... ${color.success}%s", ndk.sdkver)
-            cprint("checking for the toolchains version of NDK ... ${color.success}%s", ndk.toolchains_ver)
+            cprint("checking for NDK directory ... ${color.success}%s", ndk.sdkdir)
+            cprint("checking for SDK version of NDK ... ${color.success}%s", ndk.sdkver)
+            cprint("checking for toolchains version of NDK ... ${color.success}%s", ndk.toolchains_ver)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the NDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for NDK directory ... ${color.nothing}${text.nothing}")
         end
     end
 

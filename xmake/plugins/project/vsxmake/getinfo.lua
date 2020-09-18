@@ -281,7 +281,7 @@ function main(outputdir, vsinfo)
             vsinfo._sub2[mode][arch] = { mode = mode, arch = arch }
 
             -- trace
-            print("checking for the %s.%s ...", mode, arch)
+            print("checking for %s.%s ...", mode, arch)
 
             -- reload config, project and platform
             -- modify config

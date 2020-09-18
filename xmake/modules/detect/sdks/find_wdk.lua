@@ -176,14 +176,14 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the WDK directory ... ${color.success}%s", wdk.sdkdir)
-            cprint("checking for the WDK version ... ${color.success}%s", wdk.sdkver)
+            cprint("checking for WDK directory ... ${color.success}%s", wdk.sdkdir)
+            cprint("checking for WDK version ... ${color.success}%s", wdk.sdkver)
         end
     else
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the WDK directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for WDK directory ... ${color.nothing}${text.nothing}")
         end
     end
 

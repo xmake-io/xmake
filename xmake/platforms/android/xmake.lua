@@ -48,7 +48,7 @@ platform("android")
         local arch = config.get("arch")
         if not arch then
             config.set("arch", "armeabi-v7a")
-            cprint("checking for the architecture ... ${color.success}%s", config.get("arch"))
+            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
         end
     end)
 

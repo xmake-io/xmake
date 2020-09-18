@@ -33,9 +33,9 @@ rule("yacc")
             yacc = find_tool("bison") or find_tool("yacc")
             if yacc and yacc.program then
                 config.set("__yacc", yacc.program)
-                cprint("checking for the Yacc ... ${color.success}%s", yacc.program)
+                cprint("checking for Yacc ... ${color.success}%s", yacc.program)
             else
-                cprint("checking for the Yacc ... ${color.nothing}${text.nothing}")
+                cprint("checking for Yacc ... ${color.nothing}${text.nothing}")
                 raise("yacc/bison not found!")
             end
         end

@@ -165,18 +165,18 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the Xcode directory ... ${color.success}%s", xcode.sdkdir)
-            cprint("checking for the SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
+            cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
+            cprint("checking for SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
             if xcode.codesign_identity then
-                cprint("checking for the Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
+                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
             else
-                cprint("checking for the Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+                cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
             end
             if plat == "iphoneos" then
                 if xcode.mobile_provision then
-                    cprint("checking for the Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
                 else
-                    cprint("checking for the Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+                    cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
                 end
             end
         end
@@ -184,7 +184,7 @@ function main(sdkdir, opt)
 
         -- trace
         if opt.verbose or option.get("verbose") then
-            cprint("checking for the Xcode directory ... ${color.nothing}${text.nothing}")
+            cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
         end
     end
 

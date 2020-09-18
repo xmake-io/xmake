@@ -132,7 +132,7 @@ function _instance:_do_check()
         -- trace
         if baseoption.get("verbose") or baseoption.get("diagnosis") then
             for _, feature in ipairs(features) do
-                utils.cprint("${dim}checking for the feature(%s) ... %s", feature, passed and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+                utils.cprint("${dim}checking for feature(%s) ... %s", feature, passed and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
             end
         end
     end
@@ -174,7 +174,7 @@ function _instance:_check()
     end
 
     -- trace
-    utils.cprint("checking for the %s ... %s", name, self:enabled() and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+    utils.cprint("checking for %s ... %s", name, self:enabled() and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
     if not ok then
         os.raise(errors)
     end
