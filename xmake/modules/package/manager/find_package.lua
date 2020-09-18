@@ -65,14 +65,16 @@ function _find_package_with_builtin_rule(package_name, opt)
 
     -- find package from the given package manager
     local result = nil
+    local found_manager_name = nil
     for _, manager_name in ipairs(managers) do
         dprint("finding %s from %s ..", package_name, manager_name)
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
         if result then
+            found_manager_name = manager_name
             break
         end
     end
-    return result
+    return result, found_manager_name
 end
 
 -- find package 
@@ -106,7 +108,7 @@ function _find_package(manager_name, package_name, opt)
 
         -- find package with the builtin rule
         if not result and not builtin then
-            result = _find_package_with_builtin_rule(package_name, opt)
+            result, manager_name = _find_package_with_builtin_rule(package_name, opt)
         end
     end
 
@@ -119,7 +121,7 @@ function _find_package(manager_name, package_name, opt)
     end
 
     -- ok?
-    return result
+    return result, manager_name
 end
 
 -- find package using the package manager
@@ -131,7 +133,8 @@ end
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true}
 --
--- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
+-- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}},
+--              manager_name, package_name
 --
 -- @code 
 --
@@ -140,9 +143,11 @@ end
 -- local package = find_package("openssl", {plat = "iphoneos"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
+-- local package, manager_name, package_name = find_package("openssl")
 -- 
 -- @endcode
 --
+
 function main(name, opt)
 
     -- get the copied options
@@ -166,7 +171,8 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- find package
-    result = _find_package(manager_name, package_name, opt)
+    local found_manager_name = nil
+    result, found_manager_name = _find_package(manager_name, package_name, opt)
 
     -- match version?
     if opt.version and opt.version:find('.', 1, true) and result then
@@ -176,5 +182,5 @@ function main(name, opt)
     end
 
     -- ok?
-    return result
+    return result, found_manager_name, package_name
 end
