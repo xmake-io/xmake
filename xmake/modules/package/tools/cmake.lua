@@ -259,9 +259,31 @@ function build(package, configs, opt)
     end
     table.insert(argv, '..')
 
-    -- do build 
+    -- do configure 
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
-    os.vrunv("cmake", {"--build", "."}, {envs = opt.envs or buildenvs(package)})
+
+    -- do build
+    if package:is_plat("windows") then
+        local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+        local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
+        local msbuild = find_tool("msbuild", {envs = runenvs})
+        os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    else
+        local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+        argv = {"-j" .. njob}
+        if option.get("verbose") then
+            table.insert(argv, "VERBOSE=1")
+        end
+        if is_host("bsd") then
+            os.vrunv("gmake", argv)
+        elseif is_subhost("windows") and is_plat("mingw") then
+            local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+            local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+            os.vrunv(mingw_make, argv)
+        else
+            os.vrunv("make", argv)
+        end
+    end
     os.cd(oldir)
 end
 
