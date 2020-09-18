@@ -147,29 +147,26 @@ function libinfo(name, opt)
 
         -- init result
         result = {}
-        for _, flag in ipairs(flags:split('%s')) do
-
-            -- get links
-            local link = flag:match("%-l(.*)")
-            if link and not link:find(path.sep(), 1, true) then
+        for _, flag in ipairs(os.argv(flags)) do
+            if flag:startswith("-L") and #flag > 2 then
+                -- get linkdirs
+                local linkdir = flag:sub(3)
+                if linkdir and os.isdir(linkdir) then
+                    result.linkdirs = result.linkdirs or {}
+                    table.insert(result.linkdirs, linkdir)
+                end
+            elseif flag:startswith("-I") and #flag > 2 then
+                -- get includedirs
+                local includedir = flag:sub(3)
+                if includedir and os.isdir(includedir) then
+                    result.includedirs = result.includedirs or {}
+                    table.insert(result.includedirs, includedir)
+                end
+            elseif flag:startswith("-l") and #flag > 2 then
+                -- get links
+                local link = flag:sub(3)
                 result.links = result.links or {}
                 table.insert(result.links, link)
-            end
-       
-            -- get linkdirs
-            local linkdirs = nil
-            local linkdir = flag:match("%-L(.*)")
-            if linkdir and os.isdir(linkdir) then
-                result.linkdirs = result.linkdirs or {}
-                table.insert(result.linkdirs, linkdir)
-            end
-       
-            -- get includedirs
-            local includedirs = nil
-            local includedir = flag:match("%-I(.*)")
-            if includedir and os.isdir(includedir) then
-                result.includedirs = result.includedirs or {}
-                table.insert(result.includedirs, includedir)
             end
         end
     end
@@ -185,8 +182,6 @@ function libinfo(name, opt)
     if configdirs_old then
         os.setenv("PKG_CONFIG_PATH", configdirs_old)
     end
-
-    -- ok?
     return result
 end
 
