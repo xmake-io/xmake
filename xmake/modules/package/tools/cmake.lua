@@ -276,7 +276,7 @@ function build(package, configs, opt)
         end
         if is_host("bsd") then
             os.vrunv("gmake", argv)
-        elseif is_subhost("windows") and is_plat("mingw") then
+        elseif is_subhost("windows") and package:is_plat("mingw") then
             local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
             local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
             os.vrunv(mingw_make, argv)
@@ -346,7 +346,7 @@ function install(package, configs, opt)
         if is_host("bsd") then
             os.vrunv("gmake", argv)
             os.vrunv("gmake", {"install"})
-        elseif is_subhost("windows") and is_plat("mingw") then
+        elseif is_subhost("windows") and package:is_plat("mingw") then
             local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
             local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
             os.vrunv(mingw_make, argv)
