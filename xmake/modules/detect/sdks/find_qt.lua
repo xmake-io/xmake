@@ -61,6 +61,8 @@ function _find_sdkdir(sdkdir, sdkver)
             table.insert(subdirs, path.join(sdkver or "*", subdir, "bin"))
         end
         table.insert(subdirs, path.join(sdkver or "*", "android", "bin"))
+    elseif is_plat("wasm") then
+        table.insert(subdirs, path.join(sdkver or "*", "wasm_32", "bin"))
     else
         table.insert(subdirs, path.join(sdkver or "*", "*", "bin"))
     end
