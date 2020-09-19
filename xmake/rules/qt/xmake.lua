@@ -131,7 +131,7 @@ rule("qt.quickapp")
 
     -- after load
     after_load(function (target)
-        import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore"}})
+        import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}})
     end)
 
     -- deploy application 
