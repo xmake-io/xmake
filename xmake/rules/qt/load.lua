@@ -255,7 +255,6 @@ function main(target, opt)
         end
         target:add("includedirs", path.join(qt.mkspecsdir, "macx-clang"))
         target:add("linkdirs", qt.libdir)
-
     elseif is_plat("linux") then
         target:set("frameworks", nil)
         target:add("includedirs", qt.includedir)

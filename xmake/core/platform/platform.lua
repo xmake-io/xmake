@@ -159,7 +159,7 @@ function _instance:toolchains(opt)
             end
         end
         if names then
-            for _, name in ipairs(names) do
+            for _, name in ipairs(table.wrap(names)) do
                 local toolchain_inst, errors = toolchain.load(name, {plat = self:name(), arch = self:arch()})
                 -- attempt to load toolchain from project
                 if not toolchain_inst and platform._project() then

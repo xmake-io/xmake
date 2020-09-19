@@ -23,12 +23,6 @@ inherit("gcc")
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps = 
-    {   
-        debug = "-Wl,-S"
-    ,   all   = "-s"
-    }
-    return maps[level]
 end
 
 -- make the rpathdir flag
