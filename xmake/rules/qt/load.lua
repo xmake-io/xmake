@@ -279,6 +279,12 @@ function main(target, opt)
         target:add("includedirs", path.join(qt.mkspecsdir, "android-clang"))
         target:add("rpathdirs", qt.libdir)
         target:add("linkdirs", qt.libdir)
+    elseif is_plat("wasm") then
+        target:set("frameworks", nil)
+        target:add("includedirs", qt.includedir)
+        target:add("includedirs", path.join(qt.mkspecsdir, "wasm-emscripten"))
+        target:add("rpathdirs", qt.libdir)
+        target:add("linkdirs", qt.libdir)
     end
 
     -- is gui application?
