@@ -6,6 +6,7 @@
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
 * [#956](https://github.com/xmake-io/xmake/issues/956): Add wasm platform and support Qt/Wasm SDK
+* Upgrade luajit vm and support for runing on mips64 device
 
 ### Change
 
@@ -833,6 +834,7 @@
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): 添加 Zig 空工程模板
 * [#956](https://github.com/xmake-io/xmake/issues/956): 添加 Wasm 编译平台，并且支持 Qt/Wasm SDK
+* 升级luajit到v2.1最新分支版本，并且支持mips64上运行xmake
 
 ### 改进
 
