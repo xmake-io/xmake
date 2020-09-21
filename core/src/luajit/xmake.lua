@@ -10,6 +10,9 @@ if is_arch("arm64", "arm64-v8a") then
     arch = "arm64"
 elseif is_arch("arm.*") then
     arch = "arm"
+elseif is_arch("mips64.*") then
+    arch = "mips64"
+    jit = false
 end
 if os.isfile("/etc/redhat-release") then
     jit = false
