@@ -99,7 +99,6 @@ function _get_configs_for_mingw(package, configs)
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
     if is_host("windows") then
-        table.insert(configs, "-G" .. "MSYS Makefiles")
         envs.CMAKE_C_COMPILER      = _translate_windows_bin_path(package:build_getenv("cc"))
         envs.CMAKE_CXX_COMPILER    = _translate_windows_bin_path(package:build_getenv("cxx"))
         envs.CMAKE_ASM_COMPILER    = _translate_windows_bin_path(package:build_getenv("as"))
@@ -195,6 +194,9 @@ function _get_configs_for_generator(package, configs, opt)
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
+    elseif package:is_plat("mingw") and is_host("host") then
+        table.insert(configs, "-G")
+        table.insert(configs, "MSYS Makefiles")
     end
 end
 
