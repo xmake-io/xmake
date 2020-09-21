@@ -28,7 +28,7 @@ platform("linux")
     set_hosts("macosx", "linux", "windows")
 
     -- set archs
-    set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64")
+    set_archs("i386", "x86_64", "armv7", "armv7s", "arm64-v8a", "mips", "mips64", "mipsel", "mips64el")
 
     -- set formats
     set_formats("static", "lib$(name).a")
