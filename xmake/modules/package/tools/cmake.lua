@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.tool.toolchain")
+import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -171,9 +172,36 @@ function _get_configs_for_cross(package, configs)
     end
 end
 
+-- get configs for cmake generator
+function _get_configs_for_generator(package, configs, opt)
+    opt     = opt or {}
+    configs = configs or {}
+    local cmake_generator = opt.cmake_generator
+    if cmake_generator then
+        if cmake_generator:find("Visual Studio", 1, true) then
+            local vsvers = 
+            {
+                ["2019"] = "16",
+                ["2017"] = "15",
+                ["2015"] = "14",
+                ["2013"] = "12",
+                ["2012"] = "11",
+                ["2010"] = "10",
+                ["2008"] = "9"
+            }
+            local vs = config.get("vs")
+            assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
+            cmake_generator = "Visual Studio " .. vsvers[vs] .. " " .. vs
+        end
+        table.insert(configs, "-G")
+        table.insert(configs, cmake_generator)
+    end
+end
+
 -- get configs
-function _get_configs(package, configs)
-    local configs = configs or {}
+function _get_configs(package, configs, opt)
+    configs = configs or {}
+    _get_configs_for_generator(package, configs, opt)
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs)
     elseif package:is_plat("android") then
@@ -228,6 +256,114 @@ function buildenvs(package)
     return envs
 end
 
+-- do build for msvc
+function _build_for_msvc(package, configs, opt)
+    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
+    local msbuild = find_tool("msbuild", {envs = runenvs})
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+end
+
+-- do build for make
+function _build_for_make(package, configs, opt)
+    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local argv = {"-j" .. njob}
+    if option.get("verbose") then
+        table.insert(argv, "VERBOSE=1")
+    end
+    if is_host("bsd") then
+        os.vrunv("gmake", argv)
+    elseif is_subhost("windows") and package:is_plat("mingw") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+        os.vrunv(mingw_make, argv)
+    else
+        os.vrunv("make", argv)
+    end
+end
+
+-- do build for ninja
+function _build_for_ninja(package, configs, opt)
+    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local ninja = assert(find_tool("ninja"), "ninja not found!")
+    local argv = {"-C", os.curdir()}
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    table.insert(argv, "-j")
+    table.insert(argv, njob)
+    os.vrunv(ninja.program, argv)
+end
+
+-- do build for cmake/build
+function _build_for_cmakebuild(package, configs, opt)
+    os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+end
+
+-- do install for msvc
+function _install_for_msvc(package, configs, opt)
+    local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
+    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
+    local msbuild = find_tool("msbuild", {envs = runenvs})
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
+    if os.isfile(projfile) then
+        os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
+        os.trycp("install/lib", package:installdir()) -- perhaps only headers library
+        os.trycp("install/include", package:installdir())
+    else
+        os.cp("**.lib", package:installdir("lib"))
+        os.cp("**.dll", package:installdir("lib"))
+        os.cp("**.exp", package:installdir("lib"))
+    end
+end
+
+-- do install for make
+function _install_for_make(package, configs, opt)
+    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local argv = {"-j" .. njob}
+    if option.get("verbose") then
+        table.insert(argv, "VERBOSE=1")
+    end
+    if is_host("bsd") then
+        os.vrunv("gmake", argv)
+        os.vrunv("gmake", {"install"})
+    elseif is_subhost("windows") and package:is_plat("mingw") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
+        os.vrunv(mingw_make, argv)
+        os.vrunv(mingw_make, {"install"})
+    else
+        os.vrunv("make", argv)
+        os.vrunv("make", {"install"})
+    end
+    os.trycp("install/lib", package:installdir())
+    os.trycp("install/include", package:installdir())
+end
+
+-- do install for ninja
+function _install_for_ninja(package, configs, opt)
+    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local ninja = assert(find_tool("ninja"), "ninja not found!")
+    local argv = {"install", "-C", os.curdir()}
+    if option.get("verbose") then
+        table.insert(argv, "-v")
+    end
+    table.insert(argv, "-j")
+    table.insert(argv, njob)
+    os.vrunv(ninja.program, argv)
+    os.trycp("install/lib", package:installdir())
+    os.trycp("install/include", package:installdir())
+end
+
+-- do install for cmake/build
+function _install_for_cmakebuild(package, configs, opt)
+    os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("cmake", {"--install", os.curdir()})
+    os.trycp("install/lib", package:installdir())
+    os.trycp("install/include", package:installdir())
+end
+
 -- build package
 function build(package, configs, opt)
 
@@ -247,7 +383,7 @@ function build(package, configs, opt)
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
     -- pass configurations
-    for name, value in pairs(_get_configs(package, configs)) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then
@@ -263,25 +399,22 @@ function build(package, configs, opt)
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build
-    if package:is_plat("windows") then
-        local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-        local msbuild = find_tool("msbuild", {envs = runenvs})
-        os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
-    else
-        local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-        argv = {"-j" .. njob}
-        if option.get("verbose") then
-            table.insert(argv, "VERBOSE=1")
-        end
-        if is_host("bsd") then
-            os.vrunv("gmake", argv)
-        elseif is_subhost("windows") and package:is_plat("mingw") then
-            local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-            local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
-            os.vrunv(mingw_make, argv)
+    local cmake_generator = opt.cmake_generator 
+    if opt.cmake_build then
+        _build_for_cmakebuild(package, configs, opt)
+    elseif cmake_generator then
+        if cmake_generator:find("Visual Studio", 1, true) then
+            _build_for_msvc(package, configs, opt)
+        elseif cmake_generator == "Ninja" then
+            _build_for_ninja(package, configs, opt)
         else
-            os.vrunv("make", argv)
+            raise("unknown cmake generator(%s)!", cmake_generator)
+        end
+    else
+        if package:is_plat("windows") then
+            _build_for_msvc(package, configs, opt)
+        else
+            _build_for_make(package, configs, opt)
         end
     end
     os.cd(oldir)
@@ -306,7 +439,7 @@ function install(package, configs, opt)
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
     -- pass configurations
-    for name, value in pairs(_get_configs(package, configs)) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
             if value ~= "" then
@@ -322,41 +455,23 @@ function install(package, configs, opt)
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build and install
-    if package:is_plat("windows") then
-        local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-        local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-        local msbuild = find_tool("msbuild", {envs = runenvs})
-        os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
-        local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
-        if os.isfile(projfile) then
-            os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
-            os.trycp("install/lib", package:installdir()) -- perhaps only headers library
-            os.trycp("install/include", package:installdir())
+    local cmake_generator = opt.cmake_generator 
+    if opt.cmake_build then
+        _install_for_cmakebuild(package, configs, opt)
+    elseif cmake_generator then
+        if cmake_generator:find("Visual Studio", 1, true) then
+            _install_for_msvc(package, configs, opt)
+        elseif cmake_generator == "Ninja" then
+            _install_for_ninja(package, configs, opt)
         else
-            os.cp("**.lib", package:installdir("lib"))
-            os.cp("**.dll", package:installdir("lib"))
-            os.cp("**.exp", package:installdir("lib"))
+            raise("unknown cmake generator(%s)!", cmake_generator)
         end
     else
-        local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-        argv = {"-j" .. njob}
-        if option.get("verbose") then
-            table.insert(argv, "VERBOSE=1")
-        end
-        if is_host("bsd") then
-            os.vrunv("gmake", argv)
-            os.vrunv("gmake", {"install"})
-        elseif is_subhost("windows") and package:is_plat("mingw") then
-            local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-            local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
-            os.vrunv(mingw_make, argv)
-            os.vrunv(mingw_make, {"install"})
+        if package:is_plat("windows") then
+            _install_for_msvc(package, configs, opt)
         else
-            os.vrunv("make", argv)
-            os.vrunv("make", {"install"})
+            _install_for_make(package, configs, opt)
         end
-        os.trycp("install/lib", package:installdir())
-        os.trycp("install/include", package:installdir())
     end
     os.cd(oldir)
 end
