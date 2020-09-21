@@ -1,0 +1,41 @@
+name: MSYS2 (MingW)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include: [
+          { msystem: MINGW64, arch: x86_64, prefix: /mingw64 },
+          { msystem: MINGW32, arch: i686, prefix: /mingw32   }
+        ]
+
+    steps:
+
+      - uses: actions/checkout@v2
+        with:
+          path: temp
+          submodules: true
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: git base-devel mingw-w64-${{ matrix.arch }}-toolchain
+          update: true
+
+      - name: Move Checkout
+        run: |
+          Copy-Item -Path ".\temp" -Destination "C:\_" -Recurse
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          cd /C/_
+          make build
+          make install PREFIX=${{ matrix.prefix }}
+          xmake --version
+          xmake lua -v -D tests/run.lua

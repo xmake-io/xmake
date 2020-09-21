@@ -33,8 +33,8 @@ MKDIR				= mkdir -p
 MAKE				= gmake -r
 
 # architecture flags
-AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring x86_64,$(ARCH)),-m64,))
-AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(ARCH)),-m32,))
+AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring x86_64,$(BUILD_ARCH)),-m64,))
+AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(BUILD_ARCH)),-m32,))
 
 # check flags for x64 or x86
 ifneq ($(AHFLAGS),)

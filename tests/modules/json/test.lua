@@ -15,5 +15,6 @@ function test_json_encode(t)
     t:are_equal(json.encode({}), '{}')
     t:are_equal(json.encode({}), '{}')
     t:are_equal(json.encode({json.null, 1, "2", false, true}), '[null,1,"2",false,true]')
-    t:are_equal(json.encode({1, "2", {a = 1, b = true}}), '[1,"2",{"a":1,"b":true}]')
+    t:are_equal(json.encode({1, "2", {a = 1}}), '[1,"2",{"a":1}]')
+    t:are_equal(json.encode({1, "2", {b = true}}), '[1,"2",{"b":true}]')
 end

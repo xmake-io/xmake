@@ -99,9 +99,11 @@ function _get_builtinvars_global()
         ,   debug = is_mode("debug") and 1 or 0
         ,   os    = platform.os()
         }
+        local builtinvars_upper = {}
         for name, value in pairs(builtinvars) do
-            builtinvars[name:upper()] = type(value) == "string" and value:upper() or value
+            builtinvars_upper[name:upper()] = type(value) == "string" and value:upper() or value
         end
+        table.join2(builtinvars, builtinvars_upper)
         _g.builtinvars_global = builtinvars
     end
     return builtinvars

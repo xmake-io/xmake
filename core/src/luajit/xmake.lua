@@ -1,10 +1,20 @@
 -- disable jit compiler for redhat and centos
 local jit = true
-local autogendir = "autogen/$(plat)/jit/$(arch)"
+local plat = "$(plat)"
+local arch = "$(arch)"
+if is_plat("msys", "cygwin") then
+    plat = "windows"
+    arch = is_arch("x86_64") and "x64" or "x86"
+end
+if is_arch("arm64", "arm64-v8a") then
+    arch = "arm64"
+elseif is_arch("arm.*") then
+    arch = "arm"
+end
 if os.isfile("/etc/redhat-release") then
     jit = false
-    autogendir = "autogen/$(plat)/nojit/$(arch)"
 end
+local autogendir = path.join("autogen", plat, jit and "jit" or "nojit", arch)
 
 -- add target
 target("luajit")
@@ -40,6 +50,11 @@ target("luajit")
     -- disable jit compiler?
     if not jit then
         add_defines("LUAJIT_DISABLE_JIT")
+    end
+
+    -- using internal memory management under armv7, gc will cause a crash when free strings in lua_close()
+    if arch == "arm" then
+        add_defines("LUAJIT_USE_SYSMALLOC")
     end
 
     -- enable lua5.2 compat, @see http://luajit.org/extensions.html

@@ -16,8 +16,8 @@ DLL_SUFFIX			= .dylib
 ASM_SUFFIX			= .S
 
 # cpu bits
-BITS				:= $(if $(findstring x86_64,$(ARCH)),64,)
-BITS				:= $(if $(findstring i386,$(ARCH)),32,)
+BITS				:= $(if $(findstring x86_64,$(BUILD_ARCH)),64,)
+BITS				:= $(if $(findstring i386,$(BUILD_ARCH)),32,)
 BITS				:= $(if $(BITS),$(BITS),$(shell getconf LONG_BIT))
 
 # prefix
