@@ -98,7 +98,7 @@ function os._cp(src, dst, rootdir)
 
     -- not exists?
     else
-        return false, string.format("cannot copy file %s, not found this file", src)
+        return false, string.format("cannot copy file %s, file not found!", src)
     end
 
     -- ok
@@ -125,7 +125,7 @@ function os._mv(src, dst)
         end
     -- not exists?
     else
-        return false, string.format("cannot move %s to %s, not found this file %s", src, dst, os.strerror())
+        return false, string.format("cannot move %s to %s, file %s not found!", src, dst, os.strerror())
     end
 
     -- ok
