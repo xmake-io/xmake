@@ -5,12 +5,11 @@ Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
 License:    Apache-2.0
 URL:        https://xmake.io
-Source0:    https://github.com/xmake-io/xmake/releases/download/v%{version}/xmake-v%{version}.tar.gz 
 
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
 BuildRequires:  readline-devel
-
+ 
 %description
 It is a lightweight cross-platform build utility based on Lua. 
 It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt, 
@@ -25,7 +24,9 @@ system to help users solve the integrated use of C/C++ dependent libraries.
 %define _binaries_in_noarch_packages_terminate_build   0
  
 %prep
-%autosetup -n xmake-v%{version} -c xmake-v%{version}
+rm -rf xmake-v%{version}
+git clone --recurse-submodules https://github.com/xmake-io/xmake.git -b dev xmake-v%{version}
+cd xmake-v%{version}
 
 %build
 make build
@@ -52,3 +53,4 @@ rm -rf %{buildroot}
 %changelog
 * Mon Sep 14 2020 Ruki Wang <waruqi@gmail.com> - 2.3.7-1
 - Initial Commit
+
