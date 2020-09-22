@@ -38,7 +38,7 @@ cp core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
 chmod 755 %{buildroot}%{_bindir}/%{name}
 
 %check
-xmake --version
+%{buildroot}%{_bindir}/%{name} --version
 
 %clean
 rm -rf %{buildroot}
