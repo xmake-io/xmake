@@ -6,6 +6,7 @@ BuildArch:  noarch
 License:    Apache-2.0
 URL:        https://xmake.io
 
+BuildRequires:  git
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
 BuildRequires:  readline-devel
