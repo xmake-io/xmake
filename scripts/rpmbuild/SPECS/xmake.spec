@@ -35,6 +35,7 @@ cd xmake-v%{version}
 make build
  
 %install
+cd xmake-v%{version}
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir} 
 cp -r xmake %{buildroot}%{_datadir}/%{name}
@@ -48,6 +49,7 @@ chmod 755 %{buildroot}%{_bindir}/%{name}
 rm -rf %{buildroot}
 
 %files
+cd xmake-v%{version}
 %{_bindir}/%{name}
 %{_datadir}/%{name}
 %doc README.md
