@@ -41,6 +41,8 @@ mkdir -p %{buildroot}%{_datadir}
 cp -r xmake %{buildroot}%{_datadir}/%{name}
 cp core/src/demo/demo.b %{buildroot}%{_bindir}/%{name} 
 chmod 755 %{buildroot}%{_bindir}/%{name}
+cp README.md %{buildroot}%{_datadir}
+cp LICENSE.md %{buildroot}%{_datadir}
 
 %check
 %{buildroot}%{_bindir}/%{name} --version
@@ -49,11 +51,10 @@ chmod 755 %{buildroot}%{_bindir}/%{name}
 rm -rf %{buildroot}
 
 %files
-cd xmake-v%{version}
 %{_bindir}/%{name}
 %{_datadir}/%{name}
-%doc README.md
-%license LICENSE.md
+%doc %{_datadir}/README.md
+%license %{_datadir}/LICENSE.md
  
 %changelog
 * Mon Sep 14 2020 Ruki Wang <waruqi@gmail.com> - 2.3.7-1
