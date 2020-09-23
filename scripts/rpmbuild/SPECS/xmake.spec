@@ -26,8 +26,9 @@ system to help users solve the integrated use of C/C++ dependent libraries.
  
 %prep
 rm -rf xmake-v%{version}
-git clone --recurse-submodules https://github.com/xmake-io/xmake.git -b dev xmake-v%{version}
+git clone https://github.com/xmake-io/xmake.git -b dev xmake-v%{version}
 cd xmake-v%{version}
+git submodule update --init
 
 %build
 make build
