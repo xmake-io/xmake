@@ -18,6 +18,9 @@
 -- @file        windows.lua
 --
 
+-- imports
+import("lib.detect.find_file")
+
 -- install headers
 function _install_headers(target)
     local includedir = path.join(target:installdir(), "include")
@@ -31,6 +34,68 @@ function _install_headers(target)
                 os.vcp(srcheader, dstheader)
             end
             i = i + 1
+        end
+    end
+end
+
+-- get dll filename from the given .lib library
+function _get_dll_filename_from_lib(libpath)
+    local libdata = io.readfile(libpath, {encoding = "binary"})
+    local _, _, dllname = libdata:find("__IMPORT_DESCRIPTOR_([%a%d_%-%.]+)\0", 1, false)
+    if dllname then
+        dllname = dllname .. ".dll"
+    end
+    return dllname
+end
+
+-- install shared libraries for package
+function _install_shared_for_package(target, pkg, outputdir)
+    local linkdirs = pkg:get("linkdirs")
+    for _, link in ipairs(table.wrap(pkg:get("links"))) do
+        repeat
+
+            -- first search for dlls with same name as lib
+            local dllname = link .. ".dll"
+            local dllpath = find_file(dllname, linkdirs)
+            if dllpath then
+                if os.isfile(path.join(outputdir, dllname)) then
+                    wprint("'%s' already exists in install dir, overwriting it from package(%s).", dllname, pkg:name())
+                end
+                os.vcp(dllpath, outputdir)
+                break
+            end
+
+            -- dll not the same name as lib, find name from lib and search again
+            local libname = link .. ".lib"
+            local libpath = find_file(libname, linkdirs)
+            if libpath then
+                local dllname = _get_dll_filename_from_lib(libpath)
+                if dllname then
+                    local dllpath = find_file(dllname, linkdirs)
+                    if dllpath then
+                        if os.isfile(path.join(outputdir, dllname)) then
+                            wprint("'%s' already exists in install dir, overwriting it from package(%s).", dllname, pkg:name())
+                        end
+                        os.vcp(dllpath, outputdir)
+                        break
+                    end
+                end
+            end
+        until false
+    end
+end
+
+-- install shared libraries for packages
+function _install_shared_for_packages(target, outputdir)
+    _g.installed_packages = _g.installed_packages or {}
+    for _, pkg in ipairs(target:orderpkgs()) do
+        if not _g.installed_packages[pkg:name()] then
+            local extrainfo = pkg:extrainfo() or {}
+            local has_shared = extrainfo.configs and extrainfo.configs.shared
+            if has_shared and pkg:enabled() and pkg:get("links") and pkg:get("linkdirs") then
+                _install_shared_for_package(target, pkg, outputdir)
+            end
+            _g.installed_packages[pkg:name()] = true
         end
     end
 end
@@ -53,6 +118,9 @@ function install_binary(target)
             end
         end
     end
+
+    -- install shared libraries for all packages
+    _install_shared_for_packages(target, binarydir)
 end
 
 -- install shared library
@@ -72,6 +140,9 @@ function install_shared(target)
         os.mkdir(librarydir)
         os.vcp(targetfile_lib, librarydir)
     end
+
+    -- install shared libraries for all packages
+    _install_shared_for_packages(target, binarydir)
 
     -- install headers
     _install_headers(target)
