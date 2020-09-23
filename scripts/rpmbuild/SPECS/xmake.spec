@@ -1,3 +1,11 @@
+%define     xmake_branch        dev
+%define     tbox_branch         dev
+%define     sv_branch           xmake-core
+%define     lua_cjson_branch    xmake-core
+%define     luajit_branch       2.1-xmake
+%define     _binaries_in_noarch_packages_terminate_build   0
+%undefine   _disable_source_fetch
+
 Name:       xmake
 Version:    2.3.7
 Release:    1%{?dist}
@@ -5,6 +13,11 @@ Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
 License:    Apache-2.0
 URL:        https://xmake.io
+Source0:    https://github.com/xmake-io/xmake/archive/%{xmake_branch}.tar.gz#/xmake-%{xmake_branch}.tar.gz
+Source1:    https://github.com/tboox/tbox/archive/%{tbox_branch}.tar.gz#/tbox-%{tbox_branch}.tar.gz
+Source2:    https://github.com/xmake-io/xmake-core-luajit/archive/v%{luajit_branch}.tar.gz#/xmake-core-luajit-%{luajit_branch}.tar.gz
+Source3:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_branch}.tar.gz#/xmake-core-sv-%{sv_branch}.tar.gz
+Source4:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_branch}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_branch}.tar.gz
 
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
@@ -21,51 +34,29 @@ It can compile the project directly like Make/Ninja, or
 generate project files like CMake/Meson, and it also has a built-in package management 
 system to help users solve the integrated use of C/C++ dependent libraries.
 
-%define xmake_commitid dev
-%define tbox_commitid dev
-%define luajit_commitid 2.1-xmake
-%define sv_commitid xmake-core
-%define lua_cjson_commitid xmake-core
-%define xmake_basename xmake-v%{version}
-%define _binaries_in_noarch_packages_terminate_build   0
- 
 %prep
-# pull xmake sources, we cannot use git because it will crash on fedora-armhfp
-rm -rf %{xmake_basename}
-wget https://github.com/xmake-io/xmake/archive/%{xmake_commitid}.zip -O xmake-%{xmake_commitid}.zip
-unzip xmake-%{xmake_commitid}.zip
-mv xmake-%{xmake_commitid} %{xmake_basename}  
-
-# pull tbox sources
-wget https://github.com/tboox/tbox/archive/%{tbox_commitid}.zip -O tbox-%{tbox_commitid}.zip
-unzip tbox-%{tbox_commitid}.zip
-rm -rf %{xmake_basename}/core/src/tbox/tbox
-mv tbox-%{tbox_commitid} %{xmake_basename}/core/src/tbox/tbox  
-
-# pull luajit sources
-wget https://github.com/xmake-io/xmake-core-luajit/archive/v%{luajit_commitid}.zip -O luajit-%{luajit_commitid}.zip
-unzip luajit-%{luajit_commitid}.zip
-rm -rf %{xmake_basename}/core/src/luajit/luajit  
-mv xmake-core-luajit-%{luajit_commitid} %{xmake_basename}/core/src/luajit/luajit  
-
-# pull sv sources
-wget https://github.com/xmake-io/xmake-core-sv/archive/%{sv_commitid}.zip -O sv-%{sv_commitid}.zip
-unzip sv-%{sv_commitid}.zip
-rm -rf %{xmake_basename}/core/src/sv/sv  
-mv xmake-core-sv-%{sv_commitid} %{xmake_basename}/core/src/sv/sv  
-
-# pull lua-cjson sources
-wget https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_commitid}.zip -O lua-cjson-%{lua_cjson_commitid}.zip
-unzip lua-cjson-%{lua_cjson_commitid}.zip
-rm -rf %{xmake_basename}/core/src/lua-cjson/lua-cjson  
-mv xmake-core-lua-cjson-%{lua_cjson_commitid} %{xmake_basename}/core/src/lua-cjson/lua-cjson   
+%setup -q -T -b 1 -n tbox-%{tbox_branch}
+cd ..
+%setup -q -T -b 2 -n xmake-core-luajit-%{luajit_branch}
+cd ..
+%setup -q -T -b 3 -n xmake-core-sv-%{sv_branch}
+cd ..
+%setup -q -T -b 4 -n xmake-core-lua-cjson-%{lua_cjson_branch}
+cd ..
+%setup -q -T -b 0 -n xmake-%{xmake_branch}
+rm -rf core/src/sv/sv
+rm -rf core/src/tbox/tbox
+rm -rf core/src/luajit/luajit
+rm -rf core/src/lua-cjson/lua-cjson
+ln -s `pwd`/../tbox-dev core/src/tbox/tbox
+ln -s `pwd`/../xmake-core-sv-%{sv_branch} core/src/sv/sv
+ln -s `pwd`/../xmake-core-luajit-%{luajit_branch} core/src/luajit/luajit
+ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_branch} core/src/lua-cjson/lua-cjson
 
 %build
-cd %{xmake_basename} 
 make build
  
 %install
-cd %{xmake_basename} 
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir} 
 cp -r xmake %{buildroot}%{_datadir}/%{name}
