@@ -31,6 +31,7 @@ cd xmake-v%{version}
 git submodule update --init
 
 %build
+cd xmake-v%{version}
 make build
  
 %install
