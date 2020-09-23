@@ -39,82 +39,6 @@ function _install_files(target)
     end
 end
 
--- install binary
-function _install_binary(target)
-
-    -- is phony target?
-    if target:isphony() then
-        return 
-    end
-
-    -- the binary directory
-    local binarydir = path.join(target:installdir(), "bin")
-
-    -- make the binary directory
-    os.mkdir(binarydir)
-
-    -- copy the target file
-    os.vcp(target:targetfile(), binarydir)
-
-    -- copy the dependent shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/961
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" and is_plat("windows", "mingw") then
-            local depfile = dep:targetfile()
-            if os.isfile(depfile) then
-                os.vcp(depfile, binarydir)
-            end
-        end
-    end
-end
-
--- install library
-function _install_library(target)
-
-    -- is phony target?
-    if target:isphony() then
-        return 
-    end
-
-    -- the library directory
-    local librarydir = path.join(target:installdir(), "lib")
-
-    -- the include directory
-    local includedir = path.join(target:installdir(), "include")
-
-    -- make the library directory
-    os.mkdir(librarydir)
-
-    -- make the include directory
-    os.mkdir(includedir)
-
-    -- copy the target file
-    os.vcp(target:targetfile(), librarydir)
-
-    -- copy *.lib for shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/714
-    if target:targetkind() == "shared" and is_plat("windows", "mingw") then
-        local targetfile = target:targetfile()
-        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
-        if os.isfile(targetfile_lib) then
-            os.vcp(targetfile_lib, librarydir)
-        end
-    end
-
-    -- copy headers to the include directory
-    local srcheaders, dstheaders = target:headerfiles(includedir)
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-end
-
 -- do install target
 function _do_install_target(target)
 
@@ -127,18 +51,13 @@ function _do_install_target(target)
     -- trace
     print("installing to %s ..", installdir)
 
-    -- the scripts
-    local scripts =
-    {
-        binary = _install_binary
-    ,   static = _install_library
-    ,   shared = _install_library
-    }
-
     -- call script
-    local script = scripts[target:targetkind()]
-    if script then
-        script(target)
+    if not target:isphony() then
+        local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
+        local script = import("install." .. install_style, {anonymous = true})["install_" .. target:targetkind()]
+        if script then
+            script(target)
+        end
     end
 
     -- install other files
@@ -147,11 +66,6 @@ end
 
 -- on install target
 function _on_install_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
 
     -- trace
     print("installing %s ..", target:name())
@@ -174,6 +88,11 @@ end
 -- install the given target 
 function _install_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- enter project directory
     local oldir = os.cd(project.directory())
 
@@ -189,13 +108,6 @@ function _install_target(target)
     {
         target:script("install_before")
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
-            end
-
-            -- install rules
             for _, r in ipairs(target:orderules()) do
                 local before_install = r:script("install_before")
                 if before_install then
@@ -205,13 +117,6 @@ function _install_target(target)
         end
     ,   target:script("install", _on_install_target)
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
-            end
-
-            -- install rules
             for _, r in ipairs(target:orderules()) do
                 local after_install = r:script("install_after")
                 if after_install then

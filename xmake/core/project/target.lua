@@ -454,6 +454,26 @@ function _instance:arch()
     return self:get("arch") or config.get("arch") or os.arch()
 end
 
+-- the current target is belong to the given platforms?
+function _instance:is_plat(...)
+    local plat = self:plat()
+    for _, v in ipairs(table.join(...)) do
+        if v and plat == v then
+            return true
+        end
+    end
+end
+
+-- the current target is belong to the given architectures?
+function _instance:is_arch(...)
+    local arch = self:arch()
+    for _, v in ipairs(table.join(...)) do
+        if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- get the platform instance
 function _instance:platform()
     local platform_inst = self._PLATFORM
