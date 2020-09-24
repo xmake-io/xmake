@@ -144,7 +144,7 @@ function main._init()
         return false, err
     end
 
-    -- init project pathes only for xmake engine
+    -- init project paths only for xmake engine
     if xmake._NAME == "xmake" then
         local opt_projectdir, opt_projectfile = options.project, options.file
 

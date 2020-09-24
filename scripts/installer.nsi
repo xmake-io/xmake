@@ -148,7 +148,7 @@ VIAddVersionKey /LANG=0 ProductVersion   ${VERSION_FULL}
 
 
 ;--------------------------------
-; Reg pathes
+; Reg paths
 
 !define RegUninstall "Software\Microsoft\Windows\CurrentVersion\Uninstall\XMake"
 

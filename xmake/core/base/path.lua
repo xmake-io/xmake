@@ -112,7 +112,7 @@ function path.envsep()
 end
 
 -- split environment variable with `path.envsep()`,
--- also handles more speical cases such as posix flags and windows quoted pathes
+-- also handles more speical cases such as posix flags and windows quoted paths
 function path.splitenv(env_path)
     local result = {}
     if xmake._HOST == "windows" then
@@ -149,7 +149,7 @@ function path.splitenv(env_path)
 end
 
 -- concat environment variable with `path.envsep()`,
--- also handles more speical cases such as posix flags and windows quoted pathes
+-- also handles more speical cases such as posix flags and windows quoted paths
 function path.joinenv(env_table)
 
     -- check

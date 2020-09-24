@@ -37,14 +37,14 @@ function main(opt)
     --
     if opt.plat == "windows" then
 
-        -- init search pathes
-        local pathes = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\GnuWin32\\Zlib;InstallPath)",
+        -- init search paths
+        local paths = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\GnuWin32\\Zlib;InstallPath)",
                         "$(env PROGRAMFILES)/GnuWin32",
                         "$(env PROGRAMFILES)/zlib"}
 
         -- find library
         local result = {links = {}, linkdirs = {}, includedirs = {}}
-        local linkinfo = find_library("zlib", pathes, {suffixes = "lib"})
+        local linkinfo = find_library("zlib", paths, {suffixes = "lib"})
         if not linkinfo then
             return
         end
@@ -54,7 +54,7 @@ function main(opt)
         table.insert(result.linkdirs, linkinfo.linkdir)
 
         -- find include
-        local includedir = find_path("zlib.h", pathes, {suffixes = "include"})
+        local includedir = find_path("zlib.h", paths, {suffixes = "include"})
         if includedir then
 
             -- save include directory

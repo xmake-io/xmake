@@ -97,7 +97,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                 if (tb_strcmp(rootdir, "."))
                     path += rootlen + 1;
 
-                // exclude pathes
+                // exclude paths
                 tb_int_t i = 0;
                 tb_int_t count = (tb_int_t)lua_objlen(lua, 5);
                 for (i = 0; i < count && !excluded; i++)
