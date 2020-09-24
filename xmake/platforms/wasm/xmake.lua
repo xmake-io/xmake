@@ -34,7 +34,7 @@ platform("wasm")
     set_formats("static", "lib$(name).a")
     set_formats("object", "$(name).o")
     set_formats("shared", "lib$(name).so")
-    set_formats("binary", "$(name).wasm")
+    set_formats("binary", "$(name).js")
     set_formats("symbol", "$(name).sym")
 
     -- on check 

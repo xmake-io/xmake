@@ -21,11 +21,6 @@
 -- define rule: qt/wasm application
 rule("qt._wasm_app")
     add_deps("qt.env")
-    before_load(function (target)
-        if is_plat("wasm") then
-            target:set("filename", target:basename() .. ".js")
-        end
-    end)
     after_build(function (target)
         local qt = target:data("qt")
         local pluginsdir = qt and qt.pluginsdir
