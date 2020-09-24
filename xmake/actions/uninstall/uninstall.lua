@@ -25,57 +25,9 @@ import("core.project.project")
 
 -- uninstall files
 function _uninstall_files(target)
-
     local _, dstfiles = target:installfiles()
     for _, dstfile in ipairs(dstfiles) do
         os.vrm(dstfile)
-    end
-end
-
--- uninstall binary
-function _uninstall_binary(target)
-
-    -- is phony target?
-    if target:isphony() then
-        return 
-    end
-
-    -- the binary directory
-    local binarydir = path.join(target:installdir(), "bin")
-
-    -- remove the target file
-    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
-
-    -- remove the dependent shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/961
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" and is_plat("windows", "mingw") then
-            os.vrm(path.join(binarydir, path.filename(dep:targetfile())))
-        end
-    end
-end
-
--- uninstall library
-function _uninstall_library(target)
-
-    -- is phony target?
-    if target:isphony() then
-        return 
-    end
-
-    -- the library directory
-    local librarydir = path.join(target:installdir(), "lib")
-
-    -- the include directory
-    local includedir = path.join(target:installdir(), "include")
-
-    -- remove the target file
-    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
-
-    -- remove headers from the include directory
-    local _, dstheaders = target:headerfiles(includedir)
-    for _, dstheader in ipairs(dstheaders) do
-        os.vrm(dstheader)
     end
 end
 
@@ -91,18 +43,13 @@ function _do_uninstall_target(target)
     -- trace
     print("uninstalling from %s ..", installdir)
 
-    -- the scripts
-    local scripts =
-    {
-        binary = _uninstall_binary
-    ,   static = _uninstall_library
-    ,   shared = _uninstall_library
-    }
-
     -- call script
-    local script = scripts[target:targetkind()]
-    if script then
-        script(target)
+    if not target:isphony() then
+        local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
+        local script = import("uninstall." .. install_style, {anonymous = true})["uninstall_" .. target:targetkind()]
+        if script then
+            script(target)
+        end
     end
 
     -- uninstall the other files
@@ -111,11 +58,6 @@ end
 
 -- on uninstall target
 function _on_uninstall_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return 
-    end
 
     -- trace
     print("uninstalling %s ..", target:name())
@@ -138,6 +80,11 @@ end
 -- uninstall the given target 
 function _uninstall_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return 
+    end
+
     -- enter project directory
     local oldir = os.cd(project.directory())
 
@@ -153,13 +100,6 @@ function _uninstall_target(target)
     {
         target:script("uninstall_before")
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
-            end
-
-            -- uninstall rules
             for _, r in ipairs(target:orderules()) do
                 local before_uninstall = r:script("uninstall_before")
                 if before_uninstall then
@@ -169,13 +109,6 @@ function _uninstall_target(target)
         end
     ,   target:script("uninstall", _on_uninstall_target)
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return 
-            end
-
-            -- uninstall rules
             for _, r in ipairs(target:orderules()) do
                 local after_uninstall = r:script("uninstall_after")
                 if after_uninstall then

@@ -1,0 +1,72 @@
+--!A cross-platform build utility based on Lua
+--
+-- Licensed under the Apache License, Version 2.0 (the "License");
+-- you may not use this file except in compliance with the License.
+-- You may obtain a copy of the License at
+--
+--     http://www.apache.org/licenses/LICENSE-2.0
+--
+-- Unless required by applicable law or agreed to in writing, software
+-- distributed under the License is distributed on an "AS IS" BASIS,
+-- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-- See the License for the specific language governing permissions and
+-- limitations under the License.
+-- 
+-- Copyright (C) 2015-2020, TBOOX Open Source Group.
+--
+-- @author      ruki
+-- @file        windows.lua
+--
+
+-- uninstall headers
+function _uninstall_headers(target)
+    local includedir = path.join(target:installdir(), "include")
+    local _, dstheaders = target:headerfiles(includedir)
+    for _, dstheader in ipairs(dstheaders) do
+        os.vrm(dstheader)
+    end
+end
+
+-- uninstall binary
+function uninstall_binary(target)
+
+    -- remove the target file
+    local binarydir = path.join(target:installdir(), "bin")
+    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
+
+    -- remove the dependent shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/961
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:targetkind() == "shared" and is_plat("windows", "mingw") then
+            os.vrm(path.join(binarydir, path.filename(dep:targetfile())))
+        end
+    end
+end
+
+-- uninstall shared library
+function uninstall_shared(target)
+
+    -- remove the target file
+    local binarydir = path.join(target:installdir(), "bin")
+    os.vrm(path.join(binarydir, path.filename(target:targetfile())))
+
+    -- remove *.lib for shared/windows (*.dll) target
+    -- @see https://github.com/xmake-io/xmake/issues/714
+    local targetfile = target:targetfile()
+    local librarydir = path.join(target:installdir(), "lib")
+    os.vrm(path.join(librarydir, path.basename(targetfile) .. ".lib"))
+
+    -- remove headers from the include directory
+    _uninstall_headers(target)
+end
+
+-- uninstall static library
+function uninstall_static(target)
+
+    -- remove the target file
+    local librarydir = path.join(target:installdir(), "lib")
+    os.vrm(path.join(librarydir, path.filename(target:targetfile())))
+
+    -- remove headers from the include directory
+    _uninstall_headers(target)
+end
