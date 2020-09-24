@@ -384,6 +384,12 @@ function build(package, configs, opt)
     -- 
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
+    -- exists $CMAKE_GENERATOR? use it
+    local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
+    if not opt.cmake_generator and cmake_generator_env then
+        opt.cmake_generator = cmake_generator_env
+    end
+
     -- pass configurations
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
@@ -439,6 +445,12 @@ function install(package, configs, opt)
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
     -- 
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
+
+    -- exists $CMAKE_GENERATOR? use it
+    local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
+    if not opt.cmake_generator and cmake_generator_env then
+        opt.cmake_generator = cmake_generator_env
+    end
 
     -- pass configurations
     for name, value in pairs(_get_configs(package, configs, opt)) do
