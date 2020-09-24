@@ -70,6 +70,7 @@ function _find_package_from_repo(name, opt)
     -- get links and link directories
     local links = {}
     local linkdirs = {}
+    local libpathes = {}
     for _, linkdir in ipairs(vars.linkdirs) do
         table.insert(linkdirs, path.join(installdir, linkdir))
     end
@@ -102,6 +103,11 @@ function _find_package_from_repo(name, opt)
             end
         end
     end
+    if opt.plat == "windows" then
+        for _, file in ipairs(os.files(path.join(installdir, "bin", "*.dll"))) do
+            table.insert(libpathes, file)
+        end
+    end
 
     -- add root link directories
     if #linkdirs == 0 then
@@ -117,13 +123,16 @@ function _find_package_from_repo(name, opt)
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
-            result.links    = table.join(result.links or {}, libinfo.link)
-            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+            result.links     = table.join(result.links or {}, libinfo.link)
+            result.linkdirs  = table.join(result.linkdirs or {}, libinfo.linkdir)
+            result.libpathes = table.join(result.libpathes or {}, path.join(libinfo.linkdir, libinfo.filename))
         end
     end
-    -- make unique links
     if result.links then
         result.links = table.unique(result.links)
+    end
+    if result.libpathes then
+        result.libpathes = table.join(result.libpathes, libpathes)
     end
 
     -- inherit the other prefix variables
@@ -227,6 +236,7 @@ function _find_package_from_packagedirs(name, opt)
             result          = result or {}
             result.links    = table.join(result.links or {}, libinfo.link)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
+            result.libpathes = table.join(result.libpathes or {}, path.join(libinfo.linkdir, libinfo.filename))
         end
     end
 

@@ -27,6 +27,30 @@ function _uninstall_headers(target)
     end
 end
 
+-- uninstall shared libraries for package
+function _uninstall_shared_for_package(target, pkg, outputdir)
+    for _, dllpath in ipairs(table.wrap(pkg:get("libpathes"))) do
+        if dllpath:endswith(".dll") then
+            os.vrm(path.join(outputdir, dllname))
+        end
+    end
+end
+
+-- uninstall shared libraries for packages
+function _uninstall_shared_for_packages(target, outputdir)
+    _g.uninstalled_packages = _g.uninstalled_packages or {}
+    for _, pkg in ipairs(target:orderpkgs()) do
+        if not _g.uninstalled_packages[pkg:name()] then
+            local extrainfo = pkg:extrainfo() or {}
+            local has_shared = extrainfo.configs and extrainfo.configs.shared
+            if has_shared and pkg:enabled() and pkg:get("libpathes") then
+                _uninstall_shared_for_package(target, pkg, outputdir)
+            end
+            _g.uninstalled_packages[pkg:name()] = true
+        end
+    end
+end
+
 -- uninstall binary
 function uninstall_binary(target)
 
@@ -41,6 +65,9 @@ function uninstall_binary(target)
             os.vrm(path.join(binarydir, path.filename(dep:targetfile())))
         end
     end
+
+    -- uninstall shared libraries for packages
+    _uninstall_shared_for_packages(target, binarydir)
 end
 
 -- uninstall shared library
@@ -58,6 +85,9 @@ function uninstall_shared(target)
 
     -- remove headers from the include directory
     _uninstall_headers(target)
+
+    -- uninstall shared libraries for packages
+    _uninstall_shared_for_packages(target, binarydir)
 end
 
 -- uninstall static library

@@ -88,8 +88,10 @@ function main(name, opt)
                     result = result or {}
                     result.links = result.links or {}
                     result.linkdirs = result.linkdirs or {}
+                    result.libpathes = result.libpathes or {}
                     table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
                     table.insert(result.links, target.linkname(path.filename(line)))
+                    table.insert(result.libpathes, path.join(installdir, path.directory(line), path.filename(line)))
                 end
             end
 
@@ -98,7 +100,9 @@ function main(name, opt)
                 if line:find(plat .. (mode == "debug" and "/debug" or "") .. "/bin/", 1, true) then
                     result = result or {}
                     result.linkdirs = result.linkdirs or {}
+                    result.libpathes = result.libpathes or {}
                     table.insert(result.linkdirs, path.join(installdir, path.directory(line)))
+                    table.insert(result.libpathes, path.join(installdir, path.directory(line), path.filename(line)))
                 end
             end
         end
