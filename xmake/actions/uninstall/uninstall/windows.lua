@@ -29,7 +29,7 @@ end
 
 -- uninstall shared libraries for package
 function _uninstall_shared_for_package(target, pkg, outputdir)
-    for _, dllpath in ipairs(table.wrap(pkg:get("libpathes"))) do
+    for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
             os.vrm(path.join(outputdir, dllname))
         end
@@ -43,7 +43,7 @@ function _uninstall_shared_for_packages(target, outputdir)
         if not _g.uninstalled_packages[pkg:name()] then
             local extrainfo = pkg:extrainfo() or {}
             local has_shared = extrainfo.configs and extrainfo.configs.shared
-            if has_shared and pkg:enabled() and pkg:get("libpathes") then
+            if has_shared and pkg:enabled() and pkg:get("libfiles") then
                 _uninstall_shared_for_package(target, pkg, outputdir)
             end
             _g.uninstalled_packages[pkg:name()] = true
