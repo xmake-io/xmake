@@ -33,7 +33,7 @@ import("detect.tools.find_pkg_config")
 --
 function version(name, opt)
 
-    -- attempt to add search pathes from pkg-config
+    -- attempt to add search paths from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
         return
@@ -72,7 +72,7 @@ end
 --
 function variables(name, variables, opt)
 
-    -- attempt to add search pathes from pkg-config
+    -- attempt to add search paths from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
         return
@@ -124,7 +124,7 @@ end
 --
 function libinfo(name, opt)
 
-    -- attempt to add search pathes from pkg-config
+    -- attempt to add search paths from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
         return

@@ -35,7 +35,7 @@ local find_file         = import("lib.detect.find_file")
 -- find library
 --
 -- @param names     the library names
--- @param pathes    the search pathes
+-- @param paths     the search paths
 -- @param opt       the options, e.g. {kind = "static/shared", suffixes = {"/aa", "/bb"}}
 --
 -- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
@@ -47,10 +47,10 @@ local find_file         = import("lib.detect.find_file")
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_library.main(names, pathes, opt)
+function sandbox_lib_detect_find_library.main(names, paths, opt)
 
-    -- no pathes?
-    if not pathes or #pathes == 0 then
+    -- no paths?
+    if not paths or #paths == 0 then
         return
     end
 
@@ -60,14 +60,14 @@ function sandbox_lib_detect_find_library.main(names, pathes, opt)
     -- init kinds
     kinds = opt.kind or {"static", "shared"}
 
-    -- find library file from the given pathes
+    -- find library file from the given paths
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
-            local filepath = find_file(target.filename(name, kind), pathes, opt)
+            local filepath = find_file(target.filename(name, kind), paths, opt)
             if not filepath and config.is_plat("mingw") then
                 -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
                 local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-                filepath = find_file(target.filename(name, kind, {format = formats[kind]}), pathes, opt)
+                filepath = find_file(target.filename(name, kind, {format = formats[kind]}), paths, opt)
             end
             if filepath then
                 local filename = path.filename(filepath)

@@ -211,13 +211,13 @@ function main(opt)
         end
 
         -- find vcvarsall.bat or vcvars32.bat
-        local pathes =
+        local paths =
         {
             path.join(VCInstallDir, "Auxiliary", "Build"),
             path.join(VCInstallDir, "bin"),
             VCInstallDir
         }
-        local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
+        local vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
         if vcvarsall and os.isfile(vcvarsall) then
 
             -- load vcvarsall
@@ -250,8 +250,8 @@ function main(opt)
             end
         end
 
-        -- init pathes
-        local pathes =
+        -- init paths
+        local paths =
         {
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC7\\bin", version),
@@ -260,24 +260,24 @@ function main(opt)
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC\\Auxiliary\\Build", version)
         }
         if vsenvs[version] then
-            table.insert(pathes, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
+            table.insert(paths, format("$(env %s)\\..\\..\\VC", vsenvs[version]))
         end
         if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
-            table.insert(pathes, vswhere_VCAuxiliaryBuildDir)
+            table.insert(paths, vswhere_VCAuxiliaryBuildDir)
         end
 
-        -- find vs from some logical drives pathes
+        -- find vs from some logical drives paths
         for _, logical_drive in ipairs(winos.logical_drives()) do
             if os.isdir(path.join(logical_drive, "Program Files (x86)")) then
-                table.insert(pathes, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
-                table.insert(pathes, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
+                table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+                table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
             end
-            table.insert(pathes, path.join(logical_drive, "Program Files", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
-            table.insert(pathes, path.join(logical_drive, "Program Files", "Microsoft Visual Studio " .. version, "VC"))
+            table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+            table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio " .. version, "VC"))
         end
 
         -- find vcvarsall.bat, vcvars32.bat for vs7.1
-        local vcvarsall = find_file("vcvarsall.bat", pathes) or find_file("vcvars32.bat", pathes)
+        local vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
         if vcvarsall then
 
             -- load vcvarsall

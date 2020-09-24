@@ -70,13 +70,13 @@ function _find_sdkdir(sdkdir, sdkver)
     table.insert(subdirs, "bin")
 
     -- init the search directories
-    local pathes = {}
+    local paths = {}
     if sdkdir then
-        table.insert(pathes, sdkdir)
+        table.insert(paths, sdkdir)
     end
     if is_host("windows") then
 
-        -- add pathes from registry
+        -- add paths from registry
         local regs =
         {
             "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.c\\shell\\Open\\Command",
@@ -85,7 +85,7 @@ function _find_sdkdir(sdkdir, sdkver)
             "HKEY_CURRENT_USER\\SOFTWARE\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command"
         }
         for _, reg in ipairs(regs) do
-            table.insert(pathes, function ()
+            table.insert(paths, function ()
                 local value = val("reg " .. reg)
                 if value then
                     local p = value:find("\\Tools\\QtCreator", 1, true)
@@ -99,18 +99,18 @@ function _find_sdkdir(sdkdir, sdkver)
         -- add root logical drive pates, e.g. C:/Qt/Qtx.x.x, D:/Qtx.x.x ..
         for idx, drive in ipairs(winos.logical_drives()) do
             if idx < 5 then
-                table.insert(pathes, path.join(drive, "Qt", "Qt*"))
+                table.insert(paths, path.join(drive, "Qt", "Qt*"))
             else
                 break
             end
         end
     else
-        table.insert(pathes, "~/Qt")
-        table.insert(pathes, "~/Qt*")
+        table.insert(paths, "~/Qt")
+        table.insert(paths, "~/Qt*")
     end
 
     -- attempt to find qmake
-    local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", pathes, {suffixes = subdirs})
+    local qmake = find_file(is_host("windows") and "qmake.exe" or "qmake", paths, {suffixes = subdirs})
     if qmake then
         return path.directory(path.directory(qmake))
     end
@@ -123,7 +123,7 @@ function _find_qmake(sdkdir, sdkver)
     sdkdir = _find_sdkdir(sdkdir, sdkver)
 
     -- get the bin directory
-    local qmake = find_tool("qmake", {pathes = sdkdir and path.join(sdkdir, "bin")})
+    local qmake = find_tool("qmake", {paths = sdkdir and path.join(sdkdir, "bin")})
     if qmake then
         return qmake.program
     end

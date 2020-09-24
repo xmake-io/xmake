@@ -29,9 +29,9 @@ import("core.project.config")
 function _find_vcpkgdir(sdkdir)
 
     -- init the search directories
-    local pathes = {}
+    local paths = {}
     if sdkdir then
-        table.insert(pathes, sdkdir)
+        table.insert(paths, sdkdir)
     end
     if is_host("windows") then
         -- attempt to read path info after running `vcpkg integrate install`
@@ -39,7 +39,7 @@ function _find_vcpkgdir(sdkdir)
         if os.isfile(pathfile) then
             local dir = io.readfile(pathfile):trim()
             if os.isdir(dir) then
-                table.insert(pathes, dir)
+                table.insert(paths, dir)
             end
         end
     else
@@ -47,7 +47,7 @@ function _find_vcpkgdir(sdkdir)
     end
 
     -- attempt to find vcpkg
-    local vcpkg = find_file(is_host("windows") and "vcpkg.exe" or "vcpkg", pathes)
+    local vcpkg = find_file(is_host("windows") and "vcpkg.exe" or "vcpkg", paths)
     if vcpkg then
         return path.directory(vcpkg)
     end

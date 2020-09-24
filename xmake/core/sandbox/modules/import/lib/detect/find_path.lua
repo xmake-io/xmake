@@ -53,7 +53,7 @@ end
 -- find path
 --
 -- @param name      the path name
--- @param pathes    the search pathes (e.g. dirs, pathes, winreg pathes)
+-- @param paths     the search paths (e.g. dirs, paths, winreg paths)
 -- @param opt       the options, e.g. {suffixes = {"/aa", "/bb"}}
 --
 -- @return          the path
@@ -69,14 +69,14 @@ end
 --
 -- @endcode
 --
-function sandbox_lib_detect_find_path.main(name, pathes, opt)
+function sandbox_lib_detect_find_path.main(name, paths, opt)
 
     -- init options
     opt = opt or {}
 
     -- find path
     local suffixes = table.wrap(opt.suffixes)
-    for _, _path in ipairs(table.wrap(pathes)) do
+    for _, _path in ipairs(table.wrap(paths)) do
 
         -- format path for builtin variables
         if type(_path) == "function" then

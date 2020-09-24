@@ -55,7 +55,7 @@ function _add_vsenv(toolchain, name)
         end
     end
 
-    -- get the pathes for the vs environment
+    -- get the paths for the vs environment
     local new = vsenv[name]
     if new then
         toolchain:add("runenvs", name:upper(), path.splitenv(new))

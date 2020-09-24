@@ -34,7 +34,7 @@ import("package")
 --
 function enter()
 
-    -- set search pathes of toolchains
+    -- set search paths of toolchains
     environment.enter("toolchains")
 
     -- unzip is necessary
@@ -75,6 +75,6 @@ function leave()
     -- leave the environments of git and 7z
     packagenv.leave("7z", "git")
 
-    -- restore search pathes of toolchains
+    -- restore search paths of toolchains
     environment.leave("toolchains")
 end
