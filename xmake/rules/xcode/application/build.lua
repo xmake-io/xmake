@@ -91,7 +91,7 @@ function main (target, opt)
     codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision, {deep = true})
 
     -- update files and values to the dependent file
-    dependinfo.files = {bundledir}
+    dependinfo.files = {bundledir, target:targetfile()}
     depend.save(dependinfo, dependfile)
 end
 

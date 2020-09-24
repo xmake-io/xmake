@@ -152,7 +152,7 @@ rule("xcode.framework")
         end
 
         -- update files and values to the dependent file
-        dependinfo.files = {bundledir}
+        dependinfo.files = {bundledir, target:targetfile()}
         depend.save(dependinfo, dependfile)
     end)
 
