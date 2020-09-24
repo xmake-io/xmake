@@ -33,8 +33,9 @@ function _translate_windows_bin_path(bin_path)
 end
 
 -- get configs for windows
-function _get_configs_for_windows(package, configs)
-    if package:is_arch("x64") then
+function _get_configs_for_windows(package, configs, opt)
+    local cmake_generator = opt.cmake_generator
+    if package:is_arch("x64") and (not cmake_generator or cmake_generator:find("Visual Studio", 1, true)) then
         table.insert(configs, "-A")
         table.insert(configs, "x64")
     end
@@ -48,7 +49,7 @@ function _get_configs_for_windows(package, configs)
 end
 
 -- get configs for android
-function _get_configs_for_android(package, configs)
+function _get_configs_for_android(package, configs, opt)
 
     -- https://developer.android.google.cn/ndk/guides/cmake
     local ndk = get_config("ndk")
@@ -67,7 +68,7 @@ function _get_configs_for_android(package, configs)
 end
 
 -- get configs for appleos
-function _get_configs_for_appleos(package, configs)
+function _get_configs_for_appleos(package, configs, opt)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -93,7 +94,7 @@ function _get_configs_for_appleos(package, configs)
 end
 
 -- get configs for mingw
-function _get_configs_for_mingw(package, configs)
+function _get_configs_for_mingw(package, configs, opt)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -138,7 +139,7 @@ function _get_configs_for_mingw(package, configs)
 end
 
 -- get configs for cross
-function _get_configs_for_cross(package, configs)
+function _get_configs_for_cross(package, configs, opt)
     local envs                     = {}
     local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
     local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -205,15 +206,15 @@ function _get_configs(package, configs, opt)
     configs = configs or {}
     _get_configs_for_generator(package, configs, opt)
     if package:is_plat("windows") then
-        _get_configs_for_windows(package, configs)
+        _get_configs_for_windows(package, configs, opt)
     elseif package:is_plat("android") then
-        _get_configs_for_android(package, configs)
+        _get_configs_for_android(package, configs, opt)
     elseif package:is_plat("iphoneos", "watchos") then
-        _get_configs_for_appleos(package, configs)
+        _get_configs_for_appleos(package, configs, opt)
     elseif package:is_plat("mingw") then
-        _get_configs_for_mingw(package, configs)
+        _get_configs_for_mingw(package, configs, opt)
     elseif not package:is_plat(os.subhost()) then
-        _get_configs_for_cross(package, configs)
+        _get_configs_for_cross(package, configs, opt)
     end
     local cflags = package:config("cflags")
     if cflags then
@@ -413,7 +414,7 @@ function build(package, configs, opt)
     elseif cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
             _build_for_msvc(package, configs, opt)
-        elseif cmake_generator == "Ninja" then
+        elseif cmake_generator:find("Ninja", 1, true) then
             _build_for_ninja(package, configs, opt)
         else
             raise("unknown cmake generator(%s)!", cmake_generator)
@@ -475,7 +476,7 @@ function install(package, configs, opt)
     elseif cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
             _install_for_msvc(package, configs, opt)
-        elseif cmake_generator == "Ninja" then
+        elseif cmake_generator:find("Ninja", 1, true) then
             _install_for_ninja(package, configs, opt)
         else
             raise("unknown cmake generator(%s)!", cmake_generator)
