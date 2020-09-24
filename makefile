@@ -120,6 +120,7 @@ install:
 uninstall:
 	@echo uninstalling from $(destdir) ...
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
+	@if [ -f $(xmake_core_install) ]; then rm $(xmake_core_install); fi
 	@echo ok!
 
 test:
