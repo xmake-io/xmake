@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -49,7 +49,7 @@ language("rust")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -79,7 +79,7 @@ language("rust")
         ,   "option.linkdirs"
         ,   "toolchain.linkdirs"
         }
-    ,   static = 
+    ,   static =
         {
             "target.strip"
         ,   "target.symbols"
@@ -88,8 +88,8 @@ language("rust")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"        }
                 ,   {nil, "rc",         "kv", nil,          "The Rust Compiler"                }
 
@@ -101,5 +101,5 @@ language("rust")
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"   }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"      }
                 }
-            } 
+            }
 

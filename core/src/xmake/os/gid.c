@@ -77,19 +77,19 @@ tb_int_t xm_os_gid(lua_State* lua)
                 rgidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
-        } 
+        }
         else if (lua_isnumber(lua, 1))
         {
             // os.gid(gid)
             rgidset = egidset = (tb_int_t)lua_tonumber(lua, 1);
-        } 
+        }
         else
         {
             lua_pushfstring(lua, "invalid argument type(%s) for os.gid", luaL_typename(lua, 1));
             lua_error(lua);
             return 0;
         }
-    } 
+    }
     else if (argc == 2)
     {
         // os.gid(rgid, egid)
@@ -113,7 +113,7 @@ tb_int_t xm_os_gid(lua_State* lua)
             }
             egidset = (tb_int_t)lua_tonumber(lua, 2);
         }
-    } 
+    }
     else if (argc != 0)
     {
         lua_pushstring(lua, "invalid argument count for os.gid");

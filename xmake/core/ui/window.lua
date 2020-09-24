@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -97,12 +97,12 @@ function window:title()
     return self._TITLE
 end
 
--- get shadow 
+-- get shadow
 function window:shadow()
     return self._SHADOW
 end
 
--- get border 
+-- get border
 function window:border()
     if not self._BORDER then
         self._BORDER = border:new("window.border", self:frame():bounds())
@@ -118,7 +118,7 @@ function window:on_event(e)
         if e.key_name == "Tab" then
             return self:panel():select_next()
         end
-    end   
+    end
 end
 
 -- on resize

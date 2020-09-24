@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -63,7 +63,7 @@ function main(toolchain)
         toolchain:add("mxflags", "-isysroot " .. xcode_sdkdir)
     end
 
-    -- init flags for asm 
+    -- init flags for asm
     toolchain:add("asflags", "-arch " .. arch)
     if xcode_sdkdir then
         toolchain:add("asflags", "-isysroot " .. xcode_sdkdir)

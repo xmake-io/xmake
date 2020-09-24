@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,7 @@ toolchain("mingw")
 
     -- mark as standalone toolchain
     set_kind("standalone")
-       
+
     -- check toolchain
     on_check("check")
 
@@ -38,7 +38,7 @@ toolchain("mingw")
         import("core.project.config")
 
         -- get cross
-        local cross 
+        local cross
         if toolchain:is_arch("x86_64", "x64") then
             cross = "x86_64-w64-mingw32-"
         elseif toolchain:is_arch("i386", "x86", "i686") then
@@ -51,7 +51,7 @@ toolchain("mingw")
             cross = config.get("cross") or ""
         end
 
-        -- add bin search library for loading some dependent .dll files windows 
+        -- add bin search library for loading some dependent .dll files windows
         local bindir = toolchain:bindir()
         if bindir and is_host("windows") then
             toolchain:add("runenvs", "PATH", bindir)

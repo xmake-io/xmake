@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -125,7 +125,7 @@ end
 -- clear all macros
 function _clear()
 
-    -- clear all 
+    -- clear all
     os.rm(path.join(config.directory(), "macros"))
 end
 
@@ -196,7 +196,7 @@ function _export(macrofile, macroname)
                 cprint("${color.success}export macro(%s) ok!", path.basename(macrofile))
             end
         end
-    else        
+    else
         -- export it
         os.cp(_rfile(macroname), macrofile)
 
@@ -225,7 +225,7 @@ function _end(macroname)
         local total = #cmdlines
         local index = total
         while index ~= 0 do
-            
+
             -- the command line
             local cmdline = cmdlines[index]
 
@@ -263,7 +263,7 @@ function _end(macroname)
     -- open the macro file
     local file = io.open(_wfile(macroname), "w")
 
-    -- save the macro begin 
+    -- save the macro begin
     file:print("function main(argv)")
 
     -- save the macro block
@@ -273,7 +273,7 @@ function _end(macroname)
         file:print("    os.exec(\"%s\")", (cmdline:gsub("[\\\"]", function (w) return "\\" .. w end)))
     end
 
-    -- save the macro end 
+    -- save the macro end
     file:print("end")
 
     -- exit the macro file
@@ -316,7 +316,7 @@ function _run(macroname)
 
         -- run the last command
         if lastcmd then
-            os.exec(lastcmd) 
+            os.exec(lastcmd)
         end
         return
     end
@@ -357,7 +357,7 @@ function main()
     elseif option.get("import") then
 
         _import(option.get("import"), option.get("name"))
-    
+
     -- export macro
     elseif option.get("export") then
 

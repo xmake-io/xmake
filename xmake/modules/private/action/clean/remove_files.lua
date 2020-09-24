@@ -28,9 +28,9 @@ function main(filedirs)
 
         -- remove it first
         os.tryrm(filedir)
- 
+
         -- remove all?
-        if option.get("all") then 
+        if option.get("all") then
             -- remove it if the parent directory is empty
             local parentdir = path.directory(filedir)
             while parentdir and os.isdir(parentdir) and os.emptydir(parentdir) do

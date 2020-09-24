@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -68,7 +68,7 @@ function _try_build()
     end
 
     -- try building it
-    if configfile and tool and (trybuild or utils.confirm({default = true, 
+    if configfile and tool and (trybuild or utils.confirm({default = true,
             description = "${bright}" .. path.filename(configfile) .. "${clear} found, try building it or you can run `${bright}xmake f --trybuild=${clear}` to set buildsystem"})) then
         if not trybuild then
             task.run("config", {target = targetname, trybuild = trybuild_detected})
@@ -83,7 +83,7 @@ function main()
 
     -- try building it using third-party buildsystem if xmake.lua not exists
     if not os.isfile(project.rootfile()) and _try_build() then
-        return 
+        return
     end
 
     -- post statistics before locking project
@@ -112,11 +112,11 @@ function main()
             if sourcefiles then
                 build_files(targetname, sourcefiles)
             else
-                build(targetname) 
+                build(targetname)
             end
         end,
 
-        catch 
+        catch
         {
             function (errors)
                 if errors then

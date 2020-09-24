@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -35,8 +35,8 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     local sourcekind = language.sourcekind_of(sourcefile)
 
     -- make the object for the *.o/obj? ignore it directly
-    if sourcekind == "obj" or sourcekind == "lib" then 
-        return 
+    if sourcekind == "obj" or sourcekind == "lib" then
+        return
     end
 
     -- get compile arguments
@@ -59,7 +59,7 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     -- clear first line marks
     _g.firstline = false
 end
- 
+
 -- make objects
 function _make_objects(jsonfile, target, sourcekind, sourcebatch)
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
@@ -123,7 +123,7 @@ function make(outputdir)
 
     -- close the jsonfile
     jsonfile:close()
- 
+
     -- leave project directory
     os.cd(oldir)
 end

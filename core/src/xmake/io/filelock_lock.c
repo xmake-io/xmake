@@ -46,8 +46,8 @@ tb_int_t xm_io_filelock_lock(lua_State* lua)
 
     // get option argument
     tb_bool_t is_shared = tb_false;
-    if (lua_istable(lua, 2)) 
-    { 
+    if (lua_istable(lua, 2))
+    {
         // is shared lock?
         lua_pushstring(lua, "shared");
         lua_gettable(lua, 2);
@@ -56,7 +56,7 @@ tb_int_t xm_io_filelock_lock(lua_State* lua)
     }
 
     // check lock?
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
         return 0;
 
     // get lock

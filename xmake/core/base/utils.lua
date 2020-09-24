@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -118,8 +118,8 @@ function utils._decode_errors(errors)
             if stack then
                 errors._stack = stack
             end
-            setmetatable(errors, 
-            { 
+            setmetatable(errors,
+            {
                 __tostring = function (self)
                     local result = self.errors
                     if not result then
@@ -295,7 +295,7 @@ end
 --
 -- @code
 -- if utils.confirm({description = "xmake.lua not found, try generating it", default = true}) then
---    TODO  
+--    TODO
 -- end
 -- @endcode
 --
@@ -304,7 +304,7 @@ function utils.confirm(opt)
     -- init options
     opt = opt or {}
 
-    -- get default 
+    -- get default
     local default = opt.default
     if default == nil then
         default = false

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,13 +39,13 @@ rule("utils.merge.object")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
-        -- load dependent info 
+        -- load dependent info
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile)}) then
-            return 
+            return
         end
 
         -- trace progress info

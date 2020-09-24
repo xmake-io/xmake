@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -59,7 +59,7 @@ function _find_sdk_build_toolver(sdkdir)
     return toolver_max ~= "0" and tostring(toolver_max) or nil
 end
 
--- find the android sdk 
+-- find the android sdk
 function _find_android_sdk(sdkdir, build_toolver)
 
     -- find sdk root directory
@@ -71,21 +71,21 @@ function _find_android_sdk(sdkdir, build_toolver)
     -- find the build-tools version of sdk
     build_toolver = build_toolver or _find_sdk_build_toolver(sdkdir)
 
-    -- ok?    
+    -- ok?
     return {sdkdir = sdkdir, build_toolver = build_toolver}
 end
 
 -- find android sdk directory
 --
 -- @param sdkdir    the android sdk directory
--- @param opt       the argument options, e.g. {force = true, build_toolver = "28.0.3"} 
+-- @param opt       the argument options, e.g. {force = true, build_toolver = "28.0.3"}
 --
--- @return          the sdk toolchains. e.g. {sdkdir = .., build_toolver = "28.0.3"} 
+-- @return          the sdk toolchains. e.g. {sdkdir = .., build_toolver = "28.0.3"}
 --
--- @code 
+-- @code
 --
 -- local sdk = find_android_sdk("~/Library/Android/sdk")
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ platform("macosx")
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check 
+    -- on check
     on_check(function (platform)
         import("core.project.config")
         local arch = config.get("arch")
@@ -54,8 +54,8 @@ platform("macosx")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "XCode SDK Configuration"                                                    }
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "xcode_sdkver",            "kv", "auto",       "The SDK Version for Xcode"         }
@@ -72,8 +72,8 @@ platform("macosx")
                 ,   {nil, "vcpkg",                   "kv", "auto",       "The Vcpkg Directory"               }
                 }
 
-            ,   global = 
-                {   
+            ,   global =
+                {
                     {category = "XCode SDK Configuration"                                                    }
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory"   }
                 ,   {nil, "xcode_bundle_identifier", "kv", "auto",       "The Bundle Identifier for Xcode"   }

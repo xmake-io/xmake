@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -33,14 +33,14 @@ function _patch_pkgconfig(package)
 
     -- only binary? need not pkgconfig
     if package:kind() == "binary" then
-        return 
+        return
     end
 
     -- get lib/pkgconfig/*.pc file
     local pkgconfigdir = path.join(package:installdir(), "lib", "pkgconfig")
     local pcfile = os.isdir(pkgconfigdir) and find_file("*.pc", pkgconfigdir) or nil
     if pcfile then
-        return 
+        return
     end
 
     -- trace
@@ -50,7 +50,7 @@ function _patch_pkgconfig(package)
     -- fetch package
     local fetchinfo = package:fetchdeps()
     if not fetchinfo then
-        return 
+        return
     end
 
     -- get libs
@@ -66,7 +66,7 @@ function _patch_pkgconfig(package)
         libs = libs .. " -l" .. link
     end
 
-    -- cflags 
+    -- cflags
     local cflags = ""
     for _, includedir in ipairs(fetchinfo.includedirs) do
         cflags = cflags .. "-I" .. includedir
@@ -113,10 +113,10 @@ function main(package)
     end
     if not oldir then
         os.mkdir(workdir)
-        oldir = os.cd(workdir) 
+        oldir = os.cd(workdir)
     end
 
-    -- init tipname 
+    -- init tipname
     local tipname = package:name()
     if package:version_str() then
         tipname = tipname .. "-" .. package:version_str()
@@ -135,7 +135,7 @@ function main(package)
             ,   package:script("install_after")
             }
 
-            -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+            -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
             local installed_now = false
             if package:is3rd() then
                 local script = package:script("install")
@@ -186,7 +186,7 @@ function main(package)
             -- fetch package and force to flush the cache
             local fetchinfo = package:fetch({force = true})
             if option.get("verbose") or option.get("diagnosis") then
-                print(fetchinfo)  
+                print(fetchinfo)
             end
             assert(fetchinfo, "fetch %s failed!", tipname)
 

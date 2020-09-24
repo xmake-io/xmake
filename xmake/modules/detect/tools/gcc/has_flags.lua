@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("core.language.language")
 
 -- is linker?
 function _islinker(flags, opt)
-  
+
     -- the flags is "-Wl,<arg>" or "-Xlinker <arg>"?
     local flags_str = table.concat(flags, " ")
     if flags_str:startswith("-Wl,") or flags_str:startswith("-Xlinker ") then
@@ -36,7 +36,7 @@ function _islinker(flags, opt)
     return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
--- try running 
+-- try running
 function _try_running(program, argv, opt)
     local errors = nil
     return try { function () os.runv(program, argv, opt); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
@@ -47,7 +47,7 @@ function _check_from_arglist(flags, opt, islinker)
 
     -- only for compiler
     if islinker or #flags > 1 then
-        return 
+        return
     end
 
     -- make cache key
@@ -105,7 +105,7 @@ function _check_try_running(flags, opt, islinker)
 end
 
 -- has_flags(flags)?
--- 
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|mm|mxx]"}
 --
 -- @return      true or false

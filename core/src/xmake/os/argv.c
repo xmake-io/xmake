@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -73,7 +73,7 @@ tb_int_t xm_os_argv(lua_State* lua)
                 // is argument end with ' '?
                 else if (!quote && tb_isspace(ch))
                 {
-                    // save this argument 
+                    // save this argument
                     tb_string_ltrim(&arg);
                     if (tb_string_size(&arg))
                     {
@@ -97,11 +97,11 @@ tb_int_t xm_os_argv(lua_State* lua)
             // clear skip
             skip = 0;
 
-            // next 
+            // next
             p++;
         }
-        
-        // save this argument 
+
+        // save this argument
         tb_string_ltrim(&arg);
         if (tb_string_size(&arg))
         {

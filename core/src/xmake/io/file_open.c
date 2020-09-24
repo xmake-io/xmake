@@ -57,7 +57,7 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
             break;
 
         // utf-8 with bom
-        if (size >= 3 && data[0] == 239 && data[1] == 187 && data[2] == 191) 
+        if (size >= 3 && data[0] == 239 && data[1] == 187 && data[2] == 191)
         {
             charset = TB_CHARSET_TYPE_UTF8;
             data += 3; // skip bom
@@ -66,14 +66,14 @@ static tb_size_t xm_io_file_detect_charset(tb_byte_t const** data_ptr, tb_long_t
         if (size >= 2)
         {
             // utf16be
-            if (data[0] == 254 && data[1] == 255) 
+            if (data[0] == 254 && data[1] == 255)
             {
                 charset = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
                 data += 2; // skip bom
                 break;
             }
             // utf16le
-            else if (data[0] == 255 && data[1] == 254) 
+            else if (data[0] == 255 && data[1] == 254)
             {
                 charset = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE;
                 data += 2; // skip bom
@@ -163,7 +163,7 @@ static tb_size_t xm_io_file_detect_encoding(tb_stream_ref_t stream, tb_long_t* p
     {
         tb_byte_t const* p = data;
         encoding = xm_io_file_detect_charset(&p, size);
-        *pbomoff = p - data; 
+        *pbomoff = p - data;
     }
     return encoding;
 }
@@ -232,7 +232,7 @@ tb_int_t xm_io_file_open(lua_State* lua)
         // init stream from file
         stream = stream? stream : tb_stream_init_from_file(path, mode);
         tb_assert_and_check_break(stream);
-        
+
         // is transcode?
         tb_bool_t is_transcode = encoding != TB_CHARSET_TYPE_UTF8 && encoding != XM_IO_FILE_ENCODING_BINARY;
         if (is_transcode)
@@ -245,13 +245,13 @@ tb_int_t xm_io_file_open(lua_State* lua)
 
             // use fstream as file
             file_ref = fstream;
-        } 
+        }
         else file_ref = stream;
 
         // open file stream
         if (!tb_stream_open(file_ref)) break;
 
-        // skip bom characters if exists 
+        // skip bom characters if exists
         if (bomoff > 0 && !tb_stream_seek(stream, bomoff)) break;
 
         // ok
@@ -287,7 +287,7 @@ tb_int_t xm_io_file_open(lua_State* lua)
     file->encoding   = encoding;
 
     // init the read/write line cache buffer
-    tb_buffer_init(&file->rcache); 
-    tb_buffer_init(&file->wcache); 
+    tb_buffer_init(&file->rcache);
+    tb_buffer_init(&file->wcache);
     return 1;
 }

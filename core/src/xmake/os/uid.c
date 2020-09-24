@@ -77,7 +77,7 @@ tb_int_t xm_os_uid(lua_State* lua)
                 ruidset = (tb_int_t)lua_tonumber(lua, -1);
             }
             lua_pop(lua, 1);
-        } 
+        }
         else if (lua_isnumber(lua, 1))
         {
             // os.uid(uid)
@@ -113,7 +113,7 @@ tb_int_t xm_os_uid(lua_State* lua)
             }
             euidset = (tb_int_t)lua_tonumber(lua, 2);
         }
-    } 
+    }
     else if (argc != 0)
     {
         lua_pushstring(lua, "invalid argument count for os.uid");

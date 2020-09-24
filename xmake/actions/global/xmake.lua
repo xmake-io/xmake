@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,13 +39,13 @@ task("global")
             ,   shortname = 'g'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'c', "clean",          "k" , nil       , "Clean the cached configure and configure all again."       }
                 ,   {nil, "menu",           "k" , nil       , "Configure with a menu-driven user interface."              }
                 ,   {category = "."}
                 ,   {nil, "theme",          "kv", "default" , "The theme name."
-                                                           , values = function () 
+                                                           , values = function ()
                                                                 return import("core.theme.theme.names")()
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -49,7 +49,7 @@ language("zig")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -95,7 +95,7 @@ language("zig")
         ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static = 
+    ,   static =
         {
             "target.strip"
         ,   "target.symbols"
@@ -104,8 +104,8 @@ language("zig")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"          }
                 ,   {nil, "zc",         "kv", nil,          "The Zig Compiler"                   }
 
@@ -119,5 +119,5 @@ language("zig")
                 ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"          }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"        }
                 }
-            } 
+            }
 

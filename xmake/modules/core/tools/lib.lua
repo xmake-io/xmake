@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,7 @@ function extract(self, libraryfile, objectdir)
     -- make the object directory first
     os.mkdir(objectdir)
 
-    -- list object files 
+    -- list object files
     local objectfiles = vstool.iorunv(self:program(), {"-nologo", "-list", libraryfile}, {envs = self:runenvs()})
 
     -- extrace all object files
@@ -43,7 +43,7 @@ function extract(self, libraryfile, objectdir)
             if os.isfile(outputfile) then
                 for i = 0, 10 do
                     outputfile = path.translate(format("%s\\%d_%s", objectdir, i, path.filename(objectfile)))
-                    if not os.isfile(outputfile) then 
+                    if not os.isfile(outputfile) then
                         break
                     end
                 end

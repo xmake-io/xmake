@@ -3,7 +3,7 @@ toolchain("myclang")
 
     -- mark as standalone toolchain
     set_kind("standalone")
-        
+
     -- set toolset
     set_toolset("cc", "clang")
     set_toolset("cxx", "clang", "clang++")

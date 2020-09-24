@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        xmake.lua
 --
 
--- define rule: yacc 
+-- define rule: yacc
 rule("yacc")
 
     -- set extension
@@ -65,7 +65,7 @@ rule("yacc")
         -- get object file
         local objectfile = target:objectfile(sourcefile_cx)
 
-        -- load compiler 
+        -- load compiler
         local compinst = compiler.load((extension == ".yy" and "cxx" or "cc"), {target = target})
 
         -- get compile flags
@@ -74,14 +74,14 @@ rule("yacc")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
-        -- load dependent info 
+        -- load dependent info
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
         local depvalues = {compinst:program(), compflags}
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return 
+            return
         end
 
         -- trace progress info
@@ -92,7 +92,7 @@ rule("yacc")
             os.mkdir(sourcefile_dir)
         end
 
-        -- compile yacc 
+        -- compile yacc
         os.vrunv(yacc, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
 
         -- trace

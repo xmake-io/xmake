@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --o
 -- @author      ruki
@@ -26,10 +26,10 @@ function log:file()
 
     -- disable?
     if self._ENABLE ~= nil and not self._ENABLE then
-        return 
+        return
     end
 
-    -- get the output file 
+    -- get the output file
     if self._FILE == nil then
         local outputfile = self:outputfile()
         if outputfile then
@@ -45,7 +45,7 @@ function log:file()
 
             -- ensure the directory
             if not os.isdir(dir) then
-                os.mkdir(dir) 
+                os.mkdir(dir)
             end
 
             -- open the log file

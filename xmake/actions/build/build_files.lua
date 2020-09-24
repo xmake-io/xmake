@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -57,7 +57,7 @@ function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
         local sourcekind  = sourcebatch.sourcekind
         for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
             if _match_sourcefiles(sourcefile, filepatterns) then
-                local newbatch = newbatches[rulename] 
+                local newbatch = newbatches[rulename]
                 if not newbatch then
                     newbatch             = {}
                     newbatch.sourcekind  = sourcekind
@@ -85,12 +85,12 @@ function _add_batchjobs(batchjobs, rootjob, target, filepatterns)
     end
 end
 
--- add batch jobs for the given target 
+-- add batch jobs for the given target
 function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        return 
+        return
     end
 
     -- add batch jobs for target
@@ -103,7 +103,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
     if targetjob_ref then
         batchjobs:add(targetjob_ref, rootjob)
     else
-        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns) 
+        local targetjob, targetjob_root = _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
         if targetjob and targetjob_root then
             jobrefs[target:name()] = targetjob_root
             for _, depname in ipairs(target:get("deps")) do
@@ -113,7 +113,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target,
     end
 end
 
--- get batch jobs 
+-- get batch jobs
 function _get_batchjobs(targetname, filepatterns)
 
     -- get root targets

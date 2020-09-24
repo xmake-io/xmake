@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,11 +32,11 @@ import("detect.tools.find_pkg_config")
 -- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
 --
 function version(name, opt)
-    
+
     -- attempt to add search pathes from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
-        return 
+        return
     end
 
     -- init options
@@ -71,11 +71,11 @@ end
 -- @param opt       the argument options, {configdirs = {"/xxxx/pkgconfig/"}}
 --
 function variables(name, variables, opt)
-    
+
     -- attempt to add search pathes from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
-        return 
+        return
     end
 
     -- init options
@@ -116,18 +116,18 @@ end
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {""}, includedirs = {""}, version = ""}
 --
--- @code 
+-- @code
 --
 -- local libinfo = pkg_config.libinfo("openssl")
--- 
+--
 -- @endcode
 --
 function libinfo(name, opt)
-    
+
     -- attempt to add search pathes from pkg-config
     local pkg_config = find_pkg_config()
     if not pkg_config then
-        return 
+        return
     end
 
     -- init options

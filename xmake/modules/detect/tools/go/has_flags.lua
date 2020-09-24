@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,13 +24,13 @@ import("core.language.language")
 
 -- is linker?
 function _islinker(flags, opt)
-  
+
     -- the tool kind is gcld or gcsh?
     local toolkind = opt.toolkind or ""
     return toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
--- try running 
+-- try running
 function _try_running(...)
 
     local argv = {...}
@@ -43,7 +43,7 @@ function _check_from_arglist(flags, opt, islinker)
 
     -- only for compiler
     if islinker or #flags > 1 then
-        return 
+        return
     end
 
     -- make cache key
@@ -61,12 +61,12 @@ function _check_from_arglist(flags, opt, islinker)
 
         -- attempt to get argument list from the error info (help menu)
         allflags = {}
-        try 
-        { 
+        try
+        {
             function () os.runv(opt.program, {"tool", "compile", "--help"}) end,
-            catch 
+            catch
             {
-                function (errors) 
+                function (errors)
                     local arglist = errors
                     if arglist then
                         for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
@@ -114,7 +114,7 @@ function _check_try_running(flags, opt, islinker)
 end
 
 -- has_flags(flags)?
--- 
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|mm|mxx]"}
 --
 -- @return      true or false

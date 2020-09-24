@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,7 +32,7 @@ function _instance:get(name)
     -- get it from info first
     local value = self._INFO[name]
     if value ~= nil then
-        return value 
+        return value
     end
 end
 
@@ -80,7 +80,7 @@ end
 
 -- satisfies the given semantic version(e.g. '> 1.0 < 2.0', '~1.5')?
 function _instance:satisfies(version)
-    return semver.satisfies(self:rawstr(), version) 
+    return semver.satisfies(self:rawstr(), version)
 end
 
 -- is in the given version range, [version1, version2]?

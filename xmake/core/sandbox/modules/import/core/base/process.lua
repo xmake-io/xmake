@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -58,8 +58,8 @@ end
 ---
 -- @param command   the command
 -- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
--- 
-function sandbox_core_base_process.open(command, opt) 
+--
+function sandbox_core_base_process.open(command, opt)
 
     -- check
     assert(command)
@@ -92,8 +92,8 @@ end
 -- @param filename  the command/file name
 -- @param argv      the command arguments
 -- @param opt       the arguments option, {outpath = "", errpath = "", envs = {"PATH=xxx", "XXX=yyy"}
--- 
-function sandbox_core_base_process.openv(filename, argv, opt) 
+--
+function sandbox_core_base_process.openv(filename, argv, opt)
 
     -- check
     assert(argv)

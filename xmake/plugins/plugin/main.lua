@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,7 +28,7 @@ import("actions.require.impl.environment", {rootdir = os.programdir()})
 -- install plugins
 function _install()
 
-    -- enter environment 
+    -- enter environment
     environment.enter()
 
     -- remove previous plugins if exists
@@ -38,7 +38,7 @@ function _install()
     end
 
     -- do install
-    try 
+    try
     {
         function ()
 
@@ -56,7 +56,7 @@ function _install()
             -- trace
             cprint("${bright}all plugins have been installed in %s!", plugindir)
         end,
-        catch 
+        catch
         {
             function (errors)
                 raise(errors)
@@ -64,7 +64,7 @@ function _install()
         }
     }
 
-    -- leave environment 
+    -- leave environment
     environment.leave()
 end
 

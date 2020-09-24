@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -37,9 +37,9 @@ function main (target, opt)
     local dependfile = target:dependfile(bundledir)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-        return 
+        return
     end
- 
+
     -- trace progress info
     progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
@@ -72,7 +72,7 @@ function main (target, opt)
             i = i + 1
         end
     end
-    
+
     -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
     local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
     local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")

@@ -24,7 +24,7 @@ import("core.base.hashset")
 
 -- normailize path of a dependecy
 function _normailize_dep(dep, projectdir)
-    
+
     -- tranlate dep path
     if path.is_absolute(dep) then
         dep = path.translate(dep)

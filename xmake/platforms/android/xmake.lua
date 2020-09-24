@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,7 +28,7 @@ platform("android")
     set_hosts("macosx", "linux", "windows")
 
     -- set archs, we use the latest android abi provided in android ndk now.
-    -- we will continue to support the old abi architectures for old version ndk. 
+    -- we will continue to support the old abi architectures for old version ndk.
     -- e.g. armv5te(armeabi), armv7-a(armeabi-v7a), mips, mips64, i386
     --
     -- @see https://developer.android.google.cn/ndk/guides/abis
@@ -42,7 +42,7 @@ platform("android")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- on check 
+    -- on check
     on_check(function (platform)
         import("core.project.config")
         local arch = config.get("arch")
@@ -57,8 +57,8 @@ platform("android")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Android Configuration"                                                 }
                 ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"                     }
                 ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"               }
@@ -74,8 +74,8 @@ platform("android")
                                                                 "    - stlport_static"                  }
                 }
 
-            ,   global = 
-                {   
+            ,   global =
+                {
                     {category = "Android Configuration"                                                 }
                 ,   {nil, "ndk",            "kv", nil,          "The NDK Directory"                     }
                 ,   {nil, "ndk_sdkver",     "kv", "auto",       "The SDK Version for NDK"               }

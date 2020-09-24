@@ -189,8 +189,8 @@ end
 function os._is_host(host, ...)
 
     -- no host
-    if not host then 
-        return false 
+    if not host then
+        return false
     end
 
     -- exists this host? and escape '-'
@@ -205,8 +205,8 @@ end
 function os._is_arch(arch, ...)
 
     -- no arch
-    if not arch then 
-        return false 
+    if not arch then
+        return false
     end
 
     -- exists this architecture? and escape '-'
@@ -570,7 +570,7 @@ end
 
 -- generate the temporary file path
 --
--- e.g. 
+-- e.g.
 -- os.tmpfile("key")
 -- os.tmpfile({key = "xxx", ramdisk = false})
 --
@@ -581,7 +581,7 @@ function os.tmpfile(opt_or_key)
         key = opt_or_key.key
         opt = opt_or_key
     end
-    return path.join(os.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))                                                        
+    return path.join(os.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))
 end
 
 -- exit program

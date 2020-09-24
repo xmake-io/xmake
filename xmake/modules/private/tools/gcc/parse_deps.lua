@@ -27,7 +27,7 @@ local space_placeholder = "\001"
 
 -- normailize path of a dependecy
 function _normailize_dep(dep, projectdir)
-    
+
     -- tranlate dep path
     if path.is_absolute(dep) then
         dep = path.translate(dep)
@@ -62,7 +62,7 @@ function main(depsdata)
     local line = depsdata:rtrim() -- maybe there will be an empty newline at the end. so we trim it first
     line = line:gsub("\\ ", space_placeholder)
     for _, includefile in ipairs(line:split(' ', {plain = true})) do -- it will trim all internal spaces without `{strict = true}`
-        if not includefile:endswith(":") then -- ignore "xxx.o:" prefix 
+        if not includefile:endswith(":") then -- ignore "xxx.o:" prefix
             includefile = includefile:gsub(space_placeholder, ' ')
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)

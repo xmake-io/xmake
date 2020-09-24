@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,8 +32,8 @@ function _get_configs(package, configs)
     -- add host for cross-complation
     if not configs.host and not package:is_plat(os.subhost()) then
         if package:is_plat("iphoneos") then
-            local triples = 
-            { 
+            local triples =
+            {
                 arm64  = "aarch64-apple-darwin",
                 arm64e = "aarch64-apple-darwin",
                 armv7  = "armv7-apple-darwin",
@@ -44,7 +44,7 @@ function _get_configs(package, configs)
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.arm64))
         elseif package:is_plat("android") then
             -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
-            local triples = 
+            local triples =
             {
                 ["armv5te"]     = "arm-linux-androideabi",  -- deprecated
                 ["armv7-a"]     = "arm-linux-androideabi",  -- deprecated
@@ -59,8 +59,8 @@ function _get_configs(package, configs)
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples["armeabi-v7a"]))
         elseif package:is_plat("mingw") then
-            local triples = 
-            { 
+            local triples =
+            {
                 i386   = "i686-w64-mingw32",
                 x86_64 = "x86_64-w64-mingw32"
             }

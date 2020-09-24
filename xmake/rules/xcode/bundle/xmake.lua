@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ rule("xcode.bundle")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
-        
+
         -- get bundle directory
         local targetdir = target:targetdir()
         local bundledir = path.join(targetdir, target:basename() .. ".bundle")
@@ -42,7 +42,7 @@ rule("xcode.bundle")
         target:data_set("xcode.bundle.contentsdir", contentsdir)
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
-        -- set target info for bundle 
+        -- set target info for bundle
         target:set("filename", target:basename())
 
         -- generate binary as bundle, we cannot set `-shared` or `-dynamiclib`
@@ -71,9 +71,9 @@ rule("xcode.bundle")
         local dependfile = target:dependfile(bundledir)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-            return 
+            return
         end
-     
+
         -- trace progress info
         progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 

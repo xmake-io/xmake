@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,10 +22,10 @@
 language("c++")
 
     -- set source file kinds
-    set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx"}}   
+    set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx"}}
 
     -- set source file flags
-    set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}   
+    set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}
 
     -- set target kinds
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
@@ -49,7 +49,7 @@ language("c++")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -146,7 +146,7 @@ language("c++")
         ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static = 
+    ,   static =
         {
             "target.strip"
         ,   "target.symbols"
@@ -155,8 +155,8 @@ language("c++")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"                             }
                 ,   {nil, "cc",            "kv", nil,          "The C Compiler"                                     }
                 ,   {nil, "cxx",           "kv", nil,          "The C++ Compiler"                                   }

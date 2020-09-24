@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -39,7 +39,7 @@
  * @see https://github.com/xmake-io/xmake/issues/914
  * https://github.com/LuaJIT/LuaJIT/pull/230
  *
- * @note we cannot lua_newuserdata() because we need pass this pointer to the external lua code 
+ * @note we cannot lua_newuserdata() because we need pass this pointer to the external lua code
  * in poller_wait()/event_callback, but lua_pushuserdata does not exists
  */
 static __tb_inline__ tb_void_t xm_lua_pushpointer(lua_State* lua, tb_pointer_t ptr)
@@ -78,7 +78,7 @@ static __tb_inline__ tb_pointer_t xm_lua_topointer2(lua_State* lua, tb_int_t idx
 }
 static __tb_inline__ tb_pointer_t xm_lua_topointer(lua_State* lua, tb_int_t idx)
 {
-   return xm_lua_topointer2(lua, idx, tb_null); 
+   return xm_lua_topointer2(lua, idx, tb_null);
 }
 #else
 static __tb_inline__ tb_void_t xm_lua_pushpointer(lua_State* lua, tb_pointer_t ptr)

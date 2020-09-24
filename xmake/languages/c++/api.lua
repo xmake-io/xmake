@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -85,7 +85,7 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     -- restore the current scope
     interp:scope_restore(scope)
 
-    -- add this option 
+    -- add this option
     interp:api_call("add_options", name)
 end
 
@@ -139,7 +139,7 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     -- restore the current scope
     interp:scope_restore(scope)
 
-    -- add this option 
+    -- add this option
     interp:api_call("add_options", name)
 end
 
@@ -157,7 +157,7 @@ end
 function apis()
 
     -- init apis
-    _g.values = 
+    _g.values =
     {
         -- target.set_xxx
         "target.set_config_h_prefix" -- deprecated
@@ -234,7 +234,7 @@ function apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_frameworkdirs"
     }
-    _g.pathes = 
+    _g.pathes =
     {
         -- target.set_xxx
         "target.set_headerdir"        -- TODO deprecated
@@ -262,7 +262,7 @@ function apis()
     ,   "option.add_cxxsnippet"  -- TODO deprecated
     ,   "option.add_cxxsnippets"
     }
-    _g.custom = 
+    _g.custom =
     {
         -- target.add_xxx
         {"target.add_cfunc",        _api_add_cfunc      }

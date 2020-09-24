@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -84,7 +84,7 @@ end
 
 -- put character to canvas
 function canvas:putchar(ch, n, vertical)
-    
+
     -- acs character?
     if type(ch) == "string" and #ch > 1 then
         ch = curses.acs(ch)
@@ -111,19 +111,19 @@ end
 
 -- put a string to canvas
 function canvas:putstr(str)
-    self._window:addstr(str) 
+    self._window:addstr(str)
     return self
 end
 
 -- put strings to canvas
 function canvas:putstrs(strs, startline)
-    
+
     -- draw strings
     local sy, sx = self._window:getyx()
     local ey, _ = self._window:getmaxyx()
     for idx = startline or 1, #strs do
         local _, y = self:pos()
-        self._window:addstr(strs[idx]) 
+        self._window:addstr(strs[idx])
         if y + 1 < ey and idx < #strs then
             self:move(sx, y + 1)
         else

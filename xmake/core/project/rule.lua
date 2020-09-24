@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -53,7 +53,7 @@ function rule._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
-  
+
     -- define apis
     interp:api_define(rule.apis())
 
@@ -65,10 +65,10 @@ function rule._interpreter()
 
         -- attempt to get it directly from the configure
         local result = config.get(variable)
-        if not result or type(result) ~= "string" then 
+        if not result or type(result) ~= "string" then
 
             -- init maps
-            local maps = 
+            local maps =
             {
                 host        = os.host()
             ,   tmpdir      = function () return os.tmpdir() end
@@ -85,7 +85,7 @@ function rule._interpreter()
             if type(result) == "function" then
                 result = result()
             end
-        end 
+        end
 
         -- ok?
         return result
@@ -103,7 +103,7 @@ function rule._load(filepath)
 
     -- get interpreter
     local interp = rule._interpreter()
-    assert(interp) 
+    assert(interp)
 
     -- load script
     local ok, errors = interp:load(filepath)
@@ -121,9 +121,9 @@ function rule._load(filepath)
     return results
 end
 
--- load deps 
+-- load deps
 --
--- e.g. 
+-- e.g.
 --
 -- a.deps = b
 -- b.deps = c
@@ -148,7 +148,7 @@ end
 -- get rule apis
 function rule.apis()
 
-    return 
+    return
     {
         values =
         {
@@ -266,14 +266,14 @@ function rule:script(name, generic)
         for _pattern, _script in pairs(script) do
             local hosts = {}
             local hosts_spec = false
-            _pattern = _pattern:gsub("@(.+)", function (v) 
+            _pattern = _pattern:gsub("@(.+)", function (v)
                 for _, host in ipairs(v:split(',')) do
                     hosts[host] = true
                     hosts_spec = true
                 end
-                return "" 
+                return ""
             end)
-            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])  
+            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])
             and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
                 result = _script
                 break
@@ -308,10 +308,10 @@ end
 
 -- get global rules
 function rule.rules()
- 
+
     -- return it directly if exists
     if rule._RULES then
-        return rule._RULES 
+        return rule._RULES
     end
 
     -- load rules

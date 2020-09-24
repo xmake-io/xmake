@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ toolchain("gfortran")
     -- set homepage
     set_homepage("https://fortran.com/")
     set_description("GNU Fortran Programming Language Compiler")
-        
+
     -- set toolset
     set_toolset("fc",   "$(env FC)", "gfortran")
     set_toolset("fcld", "$(env FC)", "gfortran")

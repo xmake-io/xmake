@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        xmake.lua
 --
 
--- define rule: device-link 
+-- define rule: device-link
 rule("cuda.build.devlink")
 
     -- add rule: cuda environment
@@ -78,7 +78,7 @@ rule("cuda.build.devlink")
         -- insert gpucode.o to the object files
         table.insert(target:objectfiles(), targetfile)
 
-        -- load dependent info 
+        -- load dependent info
         local dependfile = target:dependfile(targetfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
@@ -86,7 +86,7 @@ rule("cuda.build.devlink")
         local depfiles = objectfiles
         local depvalues = {linkinst:program(), linkflags}
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
-            return 
+            return
         end
 
         -- is verbose?

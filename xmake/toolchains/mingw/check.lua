@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ import("detect.sdks.find_mingw")
 function main(toolchain)
     local mingw = find_mingw(config.get("mingw"), {verbose = true, bindir = config.get("bin"), cross = config.get("cross")})
     if mingw then
-        config.set("mingw", mingw.sdkdir, {force = true, readonly = true}) 
+        config.set("mingw", mingw.sdkdir, {force = true, readonly = true})
         config.set("cross", mingw.cross, {readonly = true, force = true})
         config.set("bin", mingw.bindir, {readonly = true, force = true})
     else

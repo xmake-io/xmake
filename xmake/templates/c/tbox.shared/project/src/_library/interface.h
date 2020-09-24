@@ -12,7 +12,7 @@
 __tb_extern_c_enter__
 
 
-/*! calculate add(a, b) 
+/*! calculate add(a, b)
  *
  * @param a     the first argument
  * @param b     the second argument

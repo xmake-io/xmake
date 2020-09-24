@@ -41,7 +41,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
@@ -87,7 +87,7 @@ tb_int_t xm_io_socket_recvfrom(lua_State* lua)
         {
             tb_char_t buffer[256];
             tb_char_t const* ipstr = tb_ipaddr_ip_cstr(&ipaddr, buffer, sizeof(buffer));
-            if (ipstr) 
+            if (ipstr)
             {
                 lua_pushstring(lua, ipstr);
                 lua_pushinteger(lua, (tb_int_t)tb_ipaddr_port(&ipaddr));

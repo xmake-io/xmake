@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ platform("bsd")
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check 
+    -- on check
     on_check(function (platform)
         import("core.project.config")
         local arch = config.get("arch")
@@ -54,8 +54,8 @@ platform("bsd")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                              }
@@ -63,8 +63,8 @@ platform("bsd")
                 ,   {nil, "qt_sdkver",      "kv", "auto",       "The Qt SDK Version"                }
                 }
 
-            ,   global = 
-                {   
+            ,   global =
+                {
                     {category = "Cuda SDK Configuration"                                            }
                 ,   {nil, "cuda",           "kv", "auto",       "The Cuda SDK Directory"            }
                 ,   {category = "Qt SDK Configuration"                                              }

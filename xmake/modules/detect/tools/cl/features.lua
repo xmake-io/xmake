@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -33,12 +33,12 @@ function _get_macro_defines(snippets, extension, opt)
 
     -- get defines
     local results = {}
-    local defines = try 
+    local defines = try
     {
-        function () 
+        function ()
             os.runv(opt.program, table.join(opt.flags or {}, {"-nologo", "-Fo" .. objectfile, sourcefile, "-link", "-out:" .. binaryfile}), {envs = opt.envs})
             return os.iorunv(binaryfile, {}, {envs = opt.envs})
-        end 
+        end
     }
     if defines then
         for _, define in ipairs(defines:split("\n")) do
@@ -120,8 +120,8 @@ function check_features(opt)
     return results
 end
 
--- get features 
--- 
+-- get features
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", flags = {}}
 --
 -- @return      the features

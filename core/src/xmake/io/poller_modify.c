@@ -42,7 +42,7 @@ tb_int_t xm_io_poller_modify(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // is pointer?
-    if (!xm_lua_ispointer(lua, 2)) 
+    if (!xm_lua_ispointer(lua, 2))
     {
         lua_pushboolean(lua, tb_false);
         lua_pushfstring(lua, "invalid poller object!");

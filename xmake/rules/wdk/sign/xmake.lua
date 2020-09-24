@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,10 +22,10 @@
 --
 -- values:
 --   - wdk.sign.mode:       nosign/test/release (default: nosign)
---   - wdk.sign.store:      PrivateCertStore 
+--   - wdk.sign.store:      PrivateCertStore
 --   - wdk.sign.thumbprint: 032122545DCAA6167B1ADBE5F7FDF07AE2234AAA
 --   - wdk.sign.company:    tboox.org
---   - wdk.sign.certfile:   signcert.cer 
+--   - wdk.sign.certfile:   signcert.cer
 --   - wdk.sign.timestamp:  http://timestamp.verisign.com/scripts/timstamp.dll
 --
 rule("wdk.sign")
@@ -100,13 +100,13 @@ rule("wdk.sign")
         local dependfile = tempfile .. ".d"
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(tempfile)}) then
-            return 
+            return
         end
 
         -- get sign mode
         local signmode = target:values("wdk.sign.mode")
         if not signmode then
-            return 
+            return
         end
 
         -- trace progress info

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,27 +22,27 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find x64dbg 
+-- find x64dbg
 --
 -- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\x64dbg.exe"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local x64dbg = find_x64dbg()
 -- local x64dbg, version = find_x64dbg({version = true})
 -- local x64dbg, version = find_x64dbg({version = true, program = "c:\xxx\x64dbg.exe"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if os.host() ~= "windows" then
-        return 
+        return
     end
- 
+
     -- init options
     opt        = opt or {}
     opt.pathes = opt.pathes or function ()

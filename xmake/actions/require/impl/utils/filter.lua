@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ function _filter()
 
             -- attempt to get it directly from the configure
             local result = config.get(variable)
-            if result == nil then 
+            if result == nil then
 
                 -- init maps
                 _g.common_maps = _g.common_maps or
@@ -79,7 +79,7 @@ function _handler(package, strval)
         -- init maps
         local maps =
         {
-            version = function () 
+            version = function ()
                 if strval then
                     -- set_urls("https://sqlite.org/2018/sqlite-autoconf-$(version)000.tar.gz",
                     --          {version = function (version) return version:gsub("%.", "") end})
@@ -88,12 +88,12 @@ function _handler(package, strval)
                         return version_filter(package:version_str())
                     end
                 end
-                return package:version_str() 
+                return package:version_str()
             end
         }
 
         -- get value
-        local result = maps[variable] 
+        local result = maps[variable]
         if type(result) == "function" then
             result = result()
         end

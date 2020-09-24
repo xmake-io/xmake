@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -44,7 +44,7 @@ end
 
 -- on event
 function choicebox:on_event(e)
- 
+
     -- select config
     if e.type == event.ev_keyboard then
         if e.key_name == "Down" then
@@ -58,7 +58,7 @@ function choicebox:on_event(e)
     elseif e.type == event.ev_command and e.command == "cm_enter" then
         self:_do_select()
         return true
-    end   
+    end
 end
 
 -- load values
@@ -101,7 +101,7 @@ function choicebox:_do_select()
 
     -- get the current item
     local item = self:current()
-    
+
     -- get the current index
     local index = item:extra("index")
 

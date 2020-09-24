@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -53,8 +53,8 @@ function program:init(name, argv)
     curses.map_keyboard(true)
 
     -- init colors
-    if (curses.has_colors()) then 
-        curses.start_color() 
+    if (curses.has_colors()) then
+        curses.start_color()
     end
 
     -- disable main window cursor
@@ -103,7 +103,7 @@ function program:main_window()
     -- init main window if not exists
     local main_window = self._MAIN_WINDOW
     if not main_window then
-        
+
         -- init main window
         main_window = curses.init()
         assert(main_window, "cannot init main window!")
@@ -165,7 +165,7 @@ function program:on_event(e)
             return true
         -- refresh?
         elseif e.key_name == "Refresh" then
-            self:invalidate() 
+            self:invalidate()
             return true
         -- ctrl+c? quit program
         elseif e.key_name == "CtrlC" then
@@ -181,7 +181,7 @@ end
 
 -- put an event to view
 function program:put_event(e)
-    
+
     -- init event queue
     self._EVENT_QUEUE = self._EVENT_QUEUE or {}
 
@@ -341,7 +341,7 @@ function program:_input_key()
 
     -- get input character
     local ch = main_window:getch()
-    if not ch then 
+    if not ch then
         return
     end
 
@@ -373,17 +373,17 @@ function program:_input_key()
                 end
 
                 -- wait some time, 50ms
-                curses.napms(50) 
+                curses.napms(50)
                 t = t + 50
             end
 
             -- nothing was typed... return Esc
-            if not ch then 
-                return 27, "Esc", false 
+            if not ch then
+                return 27, "Esc", false
             end
         end
-        if ch > 96 and ch < 123 then 
-            ch = ch - 32 
+        if ch > 96 and ch < 123 then
+            ch = ch - 32
         end
     end
 

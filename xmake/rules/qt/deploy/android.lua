@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -42,7 +42,7 @@ function main(target, opt)
     local dependfile = target:dependfile(target_apk)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-        return 
+        return
     end
 
     -- trace progress info
@@ -94,7 +94,7 @@ function main(target, opt)
     end
 
     -- get the target architecture
-    local target_archs = 
+    local target_archs =
     {
         ["armv5te"]     = "armeabi"       -- deprecated
     ,   ["armv7-a"]     = "armeabi-v7a"   -- deprecated
@@ -162,7 +162,7 @@ function main(target, opt)
         settings_file:print('   "useLLVM": true,')
         if qt_sdkver and qt_sdkver:ge("5.14") then
             -- @see https://codereview.qt-project.org/c/qt-creator/qt-creator/+/287145
-            local triples = 
+            local triples =
             {
                 ["armv5te"]     = "arm-linux-androideabi"   -- deprecated
             ,   ["armv7-a"]     = "arm-linux-androideabi"   -- deprecated

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("private.tools.vstool")
 
 -- init it
 function init(self)
-   
+
     -- init ldflags
     self:set("ldflags", "-nologo", "-dynamicbase", "-nxcompat")
 
@@ -40,7 +40,7 @@ function init(self)
         -- strip
         ["-s"]                  = ""
     ,   ["-S"]                  = ""
- 
+
         -- others
     ,   ["-ftrapv"]             = ""
     ,   ["-fsanitize=address"]  = ""
@@ -51,7 +51,7 @@ end
 function get(self, name)
     local values = self._INFO[name]
     if name == "ldflags" or name == "arflags" or name == "shflags" then
-        -- switch architecture, @note does cache it in init() for generating vs201x project 
+        -- switch architecture, @note does cache it in init() for generating vs201x project
         values = table.join(values, "-machine:" .. (self:arch() or "x86"))
     end
     return values
@@ -62,8 +62,8 @@ function nf_strip(self, level)
     -- @note we explicitly strip some useless code, because `/debug` may keep them
     -- @see https://github.com/xmake-io/xmake/issues/907
     --
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "/opt:ref /opt:icf"
     ,   all   = "/opt:ref /opt:icf /ltcg" -- we enable /ltcg for optimize/smallest:/Gl
     }
@@ -72,7 +72,7 @@ end
 
 -- make the symbol flag
 function nf_symbol(self, level, target)
-    
+
     -- debug? generate *.pdb file
     local flags = nil
     local targetkind = target:get("kind")

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -77,13 +77,13 @@ function sandbox_utils.print(format, ...)
                 -- attempt to format message
                 local message = vformat(format, unpack(args))
 
-                -- trace 
+                -- trace
                 utils._print(message)
 
                 -- write to the log file
                 log:printv(message)
             end,
-            catch 
+            catch
             {
                 function (errors)
                     -- print multi-variables with raw lua action
@@ -113,7 +113,7 @@ end
 
 -- print format string, the builtin variables and colors with newline
 function sandbox_utils.cprint(format, ...)
-    
+
     -- init message
     local message = vformat(format, ...)
 
@@ -141,7 +141,7 @@ function sandbox_utils.cprintf(format, ...)
     end
 end
 
--- print the verbose information 
+-- print the verbose information
 function sandbox_utils.vprint(format, ...)
     if option.get("verbose") then
         sandbox_utils.print(format, ...)
@@ -155,7 +155,7 @@ function sandbox_utils.vprintf(format, ...)
     end
 end
 
--- print the diagnosis information 
+-- print the diagnosis information
 function sandbox_utils.dprint(format, ...)
     if option.get("diagnosis") then
         sandbox_utils.print(format, ...)
@@ -169,7 +169,7 @@ function sandbox_utils.dprintf(format, ...)
     end
 end
 
--- print the warning information 
+-- print the warning information
 function sandbox_utils.wprint(format, ...)
     utils.warning(vformat(format, ...))
 end

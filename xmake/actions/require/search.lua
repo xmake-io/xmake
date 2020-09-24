@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -30,10 +30,10 @@ function main(names)
 
     -- no names?
     if not names then
-        return 
+        return
     end
 
-    -- enter environment 
+    -- enter environment
     environment.enter()
 
     -- pull all repositories first if not exists

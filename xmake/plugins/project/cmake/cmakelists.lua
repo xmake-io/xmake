@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -40,7 +40,7 @@ function _get_cmake_minver()
     return cmake_minver
 end
 
--- get unix path 
+-- get unix path
 function _get_unix_path(filepath)
     if path.is_absolute(filepath) and filepath:startswith(os.projectdir()) then
         filepath = path.relative(filepath, os.projectdir())
@@ -223,7 +223,7 @@ end
 
 -- add target language standards
 function _add_target_language_standards(cmakelists, target)
-    local cstds = 
+    local cstds =
     {
         c89         = "90"
     ,   gnu89       = "90" -- TODO add cflags -std=gnu90 if supported
@@ -232,7 +232,7 @@ function _add_target_language_standards(cmakelists, target)
     ,   c11         = "11"
     ,   gnu11       = "11" -- TODO
     }
-    local cxxstds = 
+    local cxxstds =
     {
         cxx98       = "98"
     ,   gnuxx98     = "98" -- TODO
@@ -266,16 +266,16 @@ end
 
 -- add target warnings
 function _add_target_warnings(cmakelists, target)
-    local flags_gcc = 
-    {   
+    local flags_gcc =
+    {
         none  = "-w"
     ,   less  = "-Wall"
     ,   more  = "-Wall"
     ,   all   = "-Wall"
     ,   error = "-Werror"
     }
-    local flags_msvc = 
-    {   
+    local flags_msvc =
+    {
         none  = "-W0"
     ,   less  = "-W1"
     ,   more  = "-W3"
@@ -298,8 +298,8 @@ end
 
 -- add target optimization
 function _add_target_optimization(cmakelists, target)
-    local flags_gcc = 
-    {   
+    local flags_gcc =
+    {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -307,8 +307,8 @@ function _add_target_optimization(cmakelists, target)
     ,   smallest   = "-Os"
     ,   aggressive = "-Ofast"
     }
-    local flags_msvc = 
-    {   
+    local flags_msvc =
+    {
         none        = "$<$<CONFIG:Debug>:-Od>"
     ,   faster      = "$<$<CONFIG:Release>:-O2>"
     ,   fastest     = "$<$<CONFIG:Release>:-Ox -fp:fast>"
@@ -497,7 +497,7 @@ function make(outputdir)
 
     -- close the cmakelists
     cmakelists:close()
- 
+
     -- leave project directory
     os.cd(oldir)
 end

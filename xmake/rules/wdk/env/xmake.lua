@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -81,7 +81,7 @@ rule("wdk.env")
         end
     end)
 
--- define rule: umdf 
+-- define rule: umdf
 rule("wdk.env.umdf")
 
     -- add rules
@@ -92,7 +92,7 @@ rule("wdk.env.umdf")
         import("load").umdf(target)
     end)
 
--- define rule: kmdf 
+-- define rule: kmdf
 rule("wdk.env.kmdf")
 
     -- add rules
@@ -103,7 +103,7 @@ rule("wdk.env.kmdf")
         import("load").kmdf(target)
     end)
 
--- define rule: wdm 
+-- define rule: wdm
 rule("wdk.env.wdm")
 
     -- add rules

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -78,7 +78,7 @@ function _run_lldb(program, argv, opt)
         return false
     end
 
-    -- attempt to split name, e.g. xcrun -sdk macosx lldb 
+    -- attempt to split name, e.g. xcrun -sdk macosx lldb
     local names = lldb:split("%s")
 
     -- patch arguments
@@ -212,7 +212,7 @@ end
 -- @code
 --
 -- import("devel.debugger")
--- 
+--
 -- debugger.run("test")
 -- debugger.run("echo", {"hello xmake!"})
 --

@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -47,7 +47,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
     tb_char_t const* pattern = (tb_char_t const*)tuple[1].cstr;
     tb_assert_and_check_return_val(pattern, tb_false);
 
-    // remove ./ for path 
+    // remove ./ for path
     if (path[0] == '.' && (path[1] == '/' || path[1] == '\\'))
         path = path + 2;
 
@@ -68,7 +68,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
         lua_getfield(lua, -1, "match");
         lua_pushstring(lua, path);
         lua_pushstring(lua, pattern);
-        if (lua_pcall(lua, 2, 1, 0)) 
+        if (lua_pcall(lua, 2, 1, 0))
         {
             // trace
             tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, pattern, lua_tostring(lua, -1));
@@ -77,7 +77,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
             return tb_false;
         }
 
-        // match ok? 
+        // match ok?
         if (lua_isstring(lua, -1) && !tb_strcmp(path, lua_tostring(lua, -1)))
         {
             // exists excludes?
@@ -105,13 +105,13 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
                     // get exclude
                     lua_rawgeti(lua, 5, i + 1);
                     tb_char_t const* exclude = lua_tostring(lua, -1);
-                    if (exclude) 
+                    if (exclude)
                     {
                         // done path:match(exclude)
                         lua_getfield(lua, -3, "match");
                         lua_pushstring(lua, path);
                         lua_pushstring(lua, exclude);
-                        if (lua_pcall(lua, 2, 1, 0)) 
+                        if (lua_pcall(lua, 2, 1, 0))
                         {
                             // trace
                             tb_printf("error: call string.match(%s, %s) failed: %s!\n", path, exclude, lua_tostring(lua, -1));
@@ -157,7 +157,7 @@ static tb_bool_t xm_os_find_walk(tb_char_t const* path, tb_file_info_t const* in
         else lua_pop(lua, 1);
     }
 
-    // continue 
+    // continue
     return tb_true;
 }
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -185,10 +185,10 @@ tb_int_t xm_os_find(lua_State* lua)
     // init table
     lua_newtable(lua);
 
-    // get string package    
+    // get string package
     lua_getglobal(lua, "string");
 
-    // done os.find(root, name) 
+    // done os.find(root, name)
     tb_value_t tuple[4];
     tuple[0].ptr    = lua;
     tuple[1].cstr   = pattern;

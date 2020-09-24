@@ -1,4 +1,4 @@
-/*! calculate add(a, b) 
+/*! calculate add(a, b)
  *
  * @param a     the first argument
  * @param b     the second argument

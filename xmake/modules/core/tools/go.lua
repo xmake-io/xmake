@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("core.project.project")
 
 -- init it
 function init(self)
-    
+
     -- init arflags
     self:set("gcarflags", "grc")
 
@@ -37,13 +37,13 @@ end
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none = "-N"
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the symbol flag
@@ -51,31 +51,31 @@ function nf_symbol(self, level, target, mapkind)
 
     -- only for compiler
     if mapkind ~= "object" then
-        return 
+        return
     end
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-E"
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the strip flag
 function nf_strip(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-s"
     ,   all   = "-s"
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the includedir flag

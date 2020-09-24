@@ -23,7 +23,7 @@ inherit("gcc")
 
 -- init it
 function init(self)
-    
+
     -- init arflags
     self:set("dcarflags", "-cr")
 

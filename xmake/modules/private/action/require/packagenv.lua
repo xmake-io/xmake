@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -65,7 +65,7 @@ end
 function enter(...)
     for _, name in ipairs({...}) do
         for _, manifest_file in ipairs(os.files(path.join(core_package.installdir(), name:sub(1, 1), name, "*", "*", "manifest.txt"))) do
-            local manifest = io.load(manifest_file) 
+            local manifest = io.load(manifest_file)
             if manifest and manifest.plat == os.host() and manifest.arch == os.arch() then
                 _enter_package(name, manifest.envs, path.directory(manifest_file))
             end

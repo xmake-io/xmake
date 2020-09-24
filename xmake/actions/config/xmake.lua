@@ -106,7 +106,7 @@ task("config")
                                                             end                                                             }
                 ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
                                                         ,   values = function (complete)
-                                                                
+
                                                                 local modes = (try { function()
                                                                     return import("core.project.project").modes()
                                                                 end }) or {"debug", "release"}

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,7 +32,7 @@ local raise             = require("sandbox/modules/raise")
 local import            = require("sandbox/modules/import")
 local find_file         = import("lib.detect.find_file")
 
--- find library 
+-- find library
 --
 -- @param names     the library names
 -- @param pathes    the search pathes
@@ -40,18 +40,18 @@ local find_file         = import("lib.detect.find_file")
 --
 -- @return          {kind = "static", link = "crypto", linkdir = "/usr/local/lib", filename = "libcrypto.a"}
 --
--- @code 
+-- @code
 --
 -- local library = find_library({"crypto", "cryp*"}, {"/usr/lib", "/usr/local/lib"})
 -- local library = find_library("crypto", {"/usr/lib", "/usr/local/lib"}, {kind = "static"})
--- 
+--
 -- @endcode
 --
 function sandbox_lib_detect_find_library.main(names, pathes, opt)
 
     -- no pathes?
     if not pathes or #pathes == 0 then
-        return 
+        return
     end
 
     -- init options

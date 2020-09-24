@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("lib.detect.check_cxsnippets")
 --
 -- @param types     the types
 -- @param opt       the argument options
---                  e.g. 
+--                  e.g.
 --                  { verbose = false, target = [target|option], includes = .., configs = {defines = .., ..}}
 --
 -- @return          true or false
@@ -43,7 +43,7 @@ function main(types, opt)
     -- init types
     opt.sourcekind = "cc"
     opt.types      = types
-    
+
     -- has types?
     local name = opt.name or "has_ctypes"
     return check_cxsnippets({[name] = ""}, opt)

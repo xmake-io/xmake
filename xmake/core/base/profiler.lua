@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -59,9 +59,9 @@ function profiler:_func_report(funcinfo)
     -- get the function report
     local report = self._REPORTS_BY_TITLE[title]
     if not report then
-        
+
         -- init report
-        report = 
+        report =
         {
             title       = self:_func_title(funcinfo)
         ,   callcount   = 0
@@ -133,7 +133,7 @@ function profiler._tracing_handler(hooktype)
     if hooktype == "call" then
 
         -- is xmake function?
-        local name = funcinfo.name 
+        local name = funcinfo.name
         local source = funcinfo.short_src or 'C_FUNC'
         if name and os.isfile(source) then
 
@@ -185,7 +185,7 @@ function profiler:stop(mode)
         -- stop to hook
         debug.sethook()
 
-        -- calculate the total time 
+        -- calculate the total time
         local totaltime = self._STOPTIME - self._STARTIME
 
         -- sort reports
@@ -195,7 +195,7 @@ function profiler:stop(mode)
 
         -- show reports
         for _, report in ipairs(self._REPORTS) do
-            
+
             -- calculate percent
             local percent = (report.totaltime / totaltime) * 100
             if percent < 1 then

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ rule("xcode.framework")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
     before_load(function (target)
-        
+
         -- get framework directory
         local targetdir = target:targetdir()
         local bundledir = path.join(targetdir, target:basename() .. ".framework")
@@ -38,7 +38,7 @@ rule("xcode.framework")
         target:data_set("xcode.bundle.contentsdir", contentsdir)
         target:data_set("xcode.bundle.resourcesdir", resourcesdir)
 
-        -- set target info for framework 
+        -- set target info for framework
         if not target:get("kind") then
             target:set("kind", "shared")
         end
@@ -97,9 +97,9 @@ rule("xcode.framework")
         local dependfile = target:dependfile(bundledir)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-            return 
+            return
         end
-     
+
         -- trace progress info
         progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 

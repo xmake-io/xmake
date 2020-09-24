@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
 
--- get function name 
+-- get function name
 --
 -- sigsetjmp
 -- sigsetjmp((void*)0, 0)
@@ -33,7 +33,7 @@ import("core.language.language")
 --
 function _funcname(funcinfo)
 
-    -- parse function name 
+    -- parse function name
     local name = string.match(funcinfo, "(.+){.+}")
     if name == nil then
         local pos = funcinfo:find("%(")
@@ -113,7 +113,7 @@ end
 --
 -- @param snippets  the snippets
 -- @param opt       the argument options
---                  e.g. 
+--                  e.g.
 --                  { verbose = false, target = [target|option], sourcekind = "[cc|cxx]"
 --                  , types = {"wchar_t", "char*"}, includes = "stdio.h", funcs = {"sigsetjmp", "sigsetjmp((void*)0, 0)"}
 --                  , configs = {defines = "xx", cxflags = ""}}
@@ -146,13 +146,13 @@ function main(snippets, opt)
     -- get links
     local links = {}
     if configs and configs.links then
-        table.join2(links, configs.links) 
+        table.join2(links, configs.links)
     end
     if opt.target then
         table.join2(links, opt.target:get("links"))
     end
     if configs and configs.syslinks then
-        table.join2(links, configs.syslinks) 
+        table.join2(links, configs.syslinks)
     end
     if opt.target then
         table.join2(links, opt.target:get("syslinks"))
@@ -190,7 +190,7 @@ function main(snippets, opt)
     local errors = nil
     local ok = try
     {
-        function () 
+        function ()
             if option.get("diagnosis") then
                 cprint("${dim}> %s", compiler.compcmd(sourcefile, objectfile, opt))
             end

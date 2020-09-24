@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -50,10 +50,10 @@ tb_int_t xm_os_strerror(lua_State* lua)
         switch (syserror)
         {
         case TB_STATE_SYSERROR_NOT_PERM:
-            strerr = "Permission denied"; 
+            strerr = "Permission denied";
             break;
         case TB_STATE_SYSERROR_NOT_FILEDIR:
-            strerr = "No such file or directory"; 
+            strerr = "No such file or directory";
             break;
         default:
             break;

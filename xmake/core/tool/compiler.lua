@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -40,7 +40,7 @@ function compiler:_language()
     return self._LANGUAGE
 end
 
--- add flags from the toolchains 
+-- add flags from the toolchains
 function compiler:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
@@ -60,7 +60,7 @@ function compiler:_add_flags_from_toolchains(flags, targetkind, target)
     end
 end
 
--- add flags from the compiler 
+-- add flags from the compiler
 function compiler:_add_flags_from_compiler(flags, targetkind)
     for _, flagkind in ipairs(self:_flagkinds()) do
 
@@ -85,13 +85,13 @@ function compiler._load_tool(sourcekind, target)
 
     -- load the compiler tool from the source kind
     local result, errors = tool.load(sourcekind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
-    if not result then 
+    if not result then
         return nil, errors
     end
 
     -- done
     return result, program
-end 
+end
 
 -- load the compiler from the given source kind
 function compiler.load(sourcekind, target)
@@ -116,10 +116,10 @@ function compiler.load(sourcekind, target)
 
     -- save the compiler tool
     instance._TOOL = compiler_tool
-        
+
     -- load the compiler language from the source kind
     local result, errors = language.load_sk(sourcekind)
-    if not result then 
+    if not result then
         return nil, errors
     end
     instance._LANGUAGE = result
@@ -166,7 +166,7 @@ function compiler:build(sourcefiles, targetfile, opt)
         compflags = self:compflags(opt)
     end
 
-    -- make flags 
+    -- make flags
     local flags = compflags
     if opt.target then
         flags = table.join(flags, opt.target:linkflags())
@@ -198,7 +198,7 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
         compflags = self:compflags(opt)
     end
 
-    -- make flags 
+    -- make flags
     local flags = compflags
     if opt.target then
         flags = table.join(flags, opt.target:linkflags())
@@ -274,13 +274,13 @@ function builder:_add_flags_from_fileconfig(flags, target, sourcefile, fileconfi
         end
     end
 
-    -- add flags from the common argument option 
+    -- add flags from the common argument option
     self:_add_flags_from_argument(flags, target, fileconfig)
 end
 
 -- get the compling flags
 --
--- @param opt   the argument options (contain all the compiler attributes of target), 
+-- @param opt   the argument options (contain all the compiler attributes of target),
 --              e.g.
 --              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
@@ -300,7 +300,7 @@ function compiler:compflags(opt)
         targetkind = target:targetkind()
     end
 
-    -- add flags from the configure 
+    -- add flags from the configure
     local flags = {}
     self:_add_flags_from_config(flags)
 
@@ -321,10 +321,10 @@ function compiler:compflags(opt)
         self:_add_flags_from_argument(flags, target, configs)
     end
 
-    -- add flags from the toolchains 
+    -- add flags from the toolchains
     self:_add_flags_from_toolchains(flags, targetkind, target)
 
-    -- add flags from the compiler 
+    -- add flags from the compiler
     self:_add_flags_from_compiler(flags, targetkind)
 
     -- preprocess flags

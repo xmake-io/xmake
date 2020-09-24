@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,13 +27,13 @@ function _conan_get_buildinfo_file(name)
     return path.absolute(path.join(config.buildir() or os.tmpdir(), ".conan", name, "conanbuildinfo.xmake.lua"))
 end
 
--- get conan platform 
+-- get conan platform
 function _conan_get_plat(opt)
     local plats = {macosx = "Macos", windows = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
     return plats[opt.plat]
 end
 
--- get conan architecture 
+-- get conan architecture
 function _conan_get_arch(opt)
     local archs = {x86_64          = "x86_64",
                    x64             = "x86_64",
@@ -66,7 +66,7 @@ function main(name, opt)
     -- get the build info
     local buildinfo_file = _conan_get_buildinfo_file(name)
     if not os.isfile(buildinfo_file) then
-        return 
+        return
     end
 
     -- load build info
@@ -77,7 +77,7 @@ function main(name, opt)
     local arch = _conan_get_arch(opt)
     local mode = _conan_get_mode(opt)
     if not plat or not arch or not mode then
-        return 
+        return
     end
 
     -- get the package info of the given platform, architecture and mode
@@ -92,12 +92,12 @@ function main(name, opt)
     if found then
         for _, linkdir in ipairs(result.linkdirs) do
             if not os.isdir(linkdir) then
-                return 
+                return
             end
         end
         for _, includedir in ipairs(result.includedirs) do
             if not os.isdir(includedir) then
-                return 
+                return
             end
         end
         return result

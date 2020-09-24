@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,21 +21,21 @@
 -- imports
 import("core.project.config")
 
--- get version of the library sub-directory 
+-- get version of the library sub-directory
 function _winver_libdir(winver)
 
     -- ignore the subname with '_xxx'
     winver = (winver or ""):split('_')[1]
 
     -- make defined values
-    local vervals = 
+    local vervals =
     {
-        win81   = "winv6.3" 
-    ,   winblue = "winv6.3" 
-    ,   win8    = "win8"  
-    ,   win7    = "win7"  
+        win81   = "winv6.3"
+    ,   winblue = "winv6.3"
+    ,   win8    = "win8"
+    ,   win7    = "win7"
     }
-    return vervals[winver] 
+    return vervals[winver]
 end
 
 -- load for umdf environment

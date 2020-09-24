@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,7 +23,7 @@ import("core.base.option")
 import("net.http")
 import("devel.git")
 
--- check sha256 
+-- check sha256
 function _check_sha256(patch_hash, patch_file)
     local ok = (patch_hash == hash.sha256(patch_file))
     if not ok and is_host("windows") then
@@ -50,7 +50,7 @@ function _patch(package, patch_url, patch_hash)
 
     -- trace
     vprint("patching %s to %s-%s ..", patch_url, package:name(), package:version_str())
- 
+
     -- get the patch file
     local patch_file = path.join(os.tmpdir(), "patches", package:name(), package:version_str(), (path.filename(patch_url):gsub("%?.+$", "")))
 

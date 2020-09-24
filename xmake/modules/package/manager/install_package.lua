@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,13 +21,13 @@
 -- imports
 import("core.project.config")
 
--- install package 
+-- install package
 function _install_package(manager_name, package_name, opt)
 
     -- get managers
     if manager_name then
         dprint("installing %s from %s ..", package_name, manager_name)
-        return import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt) 
+        return import("package.manager." .. manager_name .. ".install_package", {anonymous = true})(package_name, opt)
     end
 
     -- get suitable package managers
@@ -53,13 +53,13 @@ function _install_package(manager_name, package_name, opt)
         dprint("installing %s from %s ..", package_name, manager)
 
         -- try to install it
-        local ok = try 
-        { 
-            function () 
-                import("package.manager." .. manager .. ".install_package", {anonymous = true})(package_name, opt) 
+        local ok = try
+        {
+            function ()
+                import("package.manager." .. manager .. ".install_package", {anonymous = true})(package_name, opt)
                 return true
             end,
-            catch 
+            catch
             {
                 function (errs)
                     errors = errs
@@ -70,7 +70,7 @@ function _install_package(manager_name, package_name, opt)
         -- install ok?
         if ok then
             dprint("install %s ok from %s", package_name, manager)
-            return 
+            return
         end
     end
 
@@ -106,5 +106,5 @@ function main(name, opt)
     opt.version = require_version or opt.version
 
     -- do install package
-    _install_package(manager_name, package_name, opt) 
+    _install_package(manager_name, package_name, opt)
 end

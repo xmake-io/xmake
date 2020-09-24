@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("private.tools.cl.parse_deps_json", {alias = "parse_deps_cl_json"})
 import("private.tools.rc.parse_deps", {alias = "parse_deps_rc"})
 import("private.tools.gcc.parse_deps", {alias = "parse_deps_gcc"})
 
--- load depfiles 
+-- load depfiles
 function _load_depfiles(parser, dependinfo, depfiles)
     depfiles = parser(depfiles)
     if depfiles then
@@ -36,7 +36,7 @@ function _load_depfiles(parser, dependinfo, depfiles)
     end
 end
 
--- load dependent info from the given file (.d) 
+-- load dependent info from the given file (.d)
 function load(dependfile)
 
     if os.isfile(dependfile) then
@@ -70,7 +70,7 @@ end
 -- the dependent info is changed?
 --
 -- if not depend.is_changed(dependinfo, {filemtime = os.mtime(objectfile), values = {...}}) then
---      return 
+--      return
 -- end
 --
 function is_changed(dependinfo, opt)
@@ -106,7 +106,7 @@ function is_changed(dependinfo, opt)
     end
     for idx, depvalue in ipairs(depvalues) do
         local optvalue = optvalues[idx]
-        local deptype = type(depvalue) 
+        local deptype = type(depvalue)
         local opttype = type(optvalue)
         if deptype ~= opttype then
             return true

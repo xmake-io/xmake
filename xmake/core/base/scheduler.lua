@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -62,7 +62,7 @@ function _coroutine:waitobj_set(obj)
     self._WAITOBJ = obj
 end
 
--- get the raw coroutine thread 
+-- get the raw coroutine thread
 function _coroutine:thread()
     return self._THREAD
 end
@@ -117,7 +117,7 @@ function scheduler:_timer()
     return t
 end
 
--- get poller object data for socket, pipe or process object 
+-- get poller object data for socket, pipe or process object
 function scheduler:_poller_data(obj)
     return self._POLLERDATA and self._POLLERDATA[obj] or nil
 end
@@ -130,7 +130,7 @@ end
 -- data.poller_events_save: the saved events for poller (triggered)
 --
 function scheduler:_poller_data_set(obj, data)
-    local pollerdata = self._POLLERDATA 
+    local pollerdata = self._POLLERDATA
     if not pollerdata then
         pollerdata = {}
         self._POLLERDATA = pollerdata
@@ -180,7 +180,7 @@ function scheduler:_poller_events_cb(obj, events)
             local co_waiting = pollerdata.co_waiting
             pollerdata.co_waiting = nil
             return self:_poller_resume_co(co_waiting, 1)
-        else 
+        else
             pollerdata.proc_pending = 1
         end
         return true
@@ -207,8 +207,8 @@ function scheduler:_poller_events_cb(obj, events)
         pollerdata.co_recv = nil
         pollerdata.co_send = nil
         return self:_poller_resume_co(co_recv, events)
-    else 
-    
+    else
+
         if co_recv then
             pollerdata.co_recv = nil
             local ok, errors = self:_poller_resume_co(co_recv, bit.band(events, bit.bnot(poller.EV_POLLER_SEND)))
@@ -312,7 +312,7 @@ function scheduler:co_start_named(coname, cotask, ...)
 
     -- start coroutine
     local co
-    co = _coroutine.new(coname, coroutine.create(function(...) 
+    co = _coroutine.new(coname, coroutine.create(function(...)
         self:_co_curdir_update()
         cotask(...)
         self:co_tasks()[co:thread()] = nil
@@ -373,7 +373,7 @@ end
 -- sleep some times (ms)
 function scheduler:co_sleep(ms)
 
-    -- we need not do sleep 
+    -- we need not do sleep
     if ms == 0 then
         return true
     end
@@ -390,7 +390,7 @@ function scheduler:co_sleep(ms)
     end
 
     -- register timeout task to timer
-    self:_timer():post(function (cancel) 
+    self:_timer():post(function (cancel)
         if running:is_suspended() then
             return self:co_resume(running)
         end
@@ -409,7 +409,7 @@ end
 
 -- begin coroutine group
 function scheduler:co_group_begin(name, scopefunc)
-    
+
     -- enter groups
     self._CO_GROUPS = self._CO_GROUPS or {}
     self._CO_GROUPS_PENDING = self._CO_GROUPS_PENDING or {}
@@ -432,7 +432,7 @@ function scheduler:co_group_begin(name, scopefunc)
     return true
 end
 
--- wait for finishing the given coroutine group 
+-- wait for finishing the given coroutine group
 function scheduler:co_group_wait(name, opt)
 
     -- get coroutine group
@@ -458,7 +458,7 @@ function scheduler:co_group_wait(name, opt)
 
     -- wait it
     local count
-    repeat 
+    repeat
         count = 0
         for _, co in ipairs(co_group) do
             if count < limit then
@@ -474,7 +474,7 @@ function scheduler:co_group_wait(name, opt)
             self._CO_GROUPS_WAITING[name] = {running, limit}
             self:co_suspend()
         end
-    until count >= limit 
+    until count >= limit
 
     -- remove all dead coroutines in group
     if limit == #co_group and count == limit then
@@ -504,11 +504,11 @@ function scheduler:co_group_waitobjs(name)
     return objs
 end
 
--- get the current running coroutine 
+-- get the current running coroutine
 function scheduler:co_running()
     if self._ENABLED then
         local running = coroutine.running()
-        return running and self:co_tasks()[running] or nil 
+        return running and self:co_tasks()[running] or nil
     end
 end
 
@@ -562,7 +562,7 @@ function scheduler:poller_wait(obj, events, timeout)
     -- get the previous poller object events
     local events_wait = events
     if pollerdata.poller_events_wait ~= 0 then
-        
+
         -- return the cached events directly if the waiting events exists cache
         local events_prev_wait = pollerdata.poller_events_wait
         local events_prev_save = pollerdata.poller_events_save
@@ -591,7 +591,7 @@ function scheduler:poller_wait(obj, events, timeout)
         end
         events_wait = bit.bor(events_wait, events)
 
-        -- modify poller object from poller for waiting events if the waiting events has been changed 
+        -- modify poller object from poller for waiting events if the waiting events has been changed
         if bit.band(events_prev_wait, events_wait) ~= events_wait then
 
             -- maybe wait recv/send at same time
@@ -612,7 +612,7 @@ function scheduler:poller_wait(obj, events, timeout)
     -- register timeout task to timer
     local timer_task = nil
     if timeout > 0 then
-        timer_task = self:_timer():post(function (cancel) 
+        timer_task = self:_timer():post(function (cancel)
             if not cancel and running:is_suspended() then
                 running:waitobj_set(nil)
                 return self:co_resume(running, 0)
@@ -622,11 +622,11 @@ function scheduler:poller_wait(obj, events, timeout)
     end
     running:_timer_task_set(timer_task)
 
-    -- save waiting events 
+    -- save waiting events
     pollerdata.poller_events_wait = events_wait
     pollerdata.poller_events_save = 0
 
-    -- save the current coroutine 
+    -- save the current coroutine
     if bit.band(events, poller.EV_POLLER_RECV) ~= 0 then
         pollerdata.co_recv = running
     end
@@ -683,7 +683,7 @@ function scheduler:poller_waitproc(obj, timeout)
     -- register timeout task to timer
     local timer_task = nil
     if timeout > 0 then
-        timer_task = self:_timer():post(function (cancel) 
+        timer_task = self:_timer():post(function (cancel)
             if not cancel and running:is_suspended() then
                 pollerdata.co_waiting = nil
                 running:waitobj_set(nil)
@@ -724,7 +724,7 @@ function scheduler:poller_cancel(obj)
     return true
 end
 
--- enable or disable to scheduler 
+-- enable or disable to scheduler
 function scheduler:enable(enabled)
     self._ENABLED = enabled
 end
@@ -773,7 +773,7 @@ function scheduler:runloop()
     local ok = true
     local errors = nil
     local timeout = -1
-    while self._STARTED and self:co_count() > 0 do 
+    while self._STARTED and self:co_count() > 0 do
 
         -- resume it's waiting coroutine if some coroutines are dead in group
         local resumed_count, resumed_errors = self:_co_groups_resume()

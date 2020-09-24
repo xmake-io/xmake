@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -33,7 +33,7 @@
 #define xm_io_file_is_std(file)           ((file)->type != XM_IO_FILE_TYPE_FILE)
 #define xm_io_file_is_tty(file)           (!!((file)->type & XM_IO_FILE_FLAG_TTY))
 
-// return io error 
+// return io error
 #define xm_io_return_error(lua, error)       \
     do                                            \
     {                                             \
@@ -70,7 +70,7 @@ typedef enum __xm_io_file_encoding_e
 // the file type
 typedef struct __xm_io_file_t
 {
-    union 
+    union
     {
         /* the normal file for XM_IO_FILE_TYPE_FILE
          *

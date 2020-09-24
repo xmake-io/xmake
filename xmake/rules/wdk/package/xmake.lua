@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -77,7 +77,7 @@ rule("wdk.package.cab")
             file:print("; Specify the subdirectory for the files.  ")
             file:print("; Your cab file should not have files at the root level,")
             file:print("; and each driver package must be in a separate subfolder.")
-            file:print(".Set DiskDirectoryTemplate=%s", outputdir)   
+            file:print(".Set DiskDirectoryTemplate=%s", outputdir)
             file:print(";Specify files to be included in cab file")
             local infile = target:data("wdk.sign.inf")
             if infile and os.isfile(infile) then

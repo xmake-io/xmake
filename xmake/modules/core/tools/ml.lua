@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ import("private.tools.vstool")
 -- @see https://docs.microsoft.com/en-us/cpp/assembler/masm/ml-and-ml64-command-line-reference
 --
 function init(self)
-   
+
     -- init asflags
     if self:program():find("64") then
         self:set("asflags", "-nologo")
@@ -35,7 +35,7 @@ function init(self)
     end
 
     -- init flags map
-    self:set("mapflags", 
+    self:set("mapflags",
     {
         -- symbols
         ["-g"]                      = "-Z7"
@@ -61,8 +61,8 @@ end
 function nf_warning(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none         = "-w"
     ,   less         = "-W1"
     ,   more         = "-W3"
@@ -72,7 +72,7 @@ function nf_warning(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the define flag

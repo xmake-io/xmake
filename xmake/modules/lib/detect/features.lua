@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -56,7 +56,7 @@ function main(name, opt)
     local key     = tool.program .. "_" .. (tool.version or "") .. "_" .. table.concat(table.wrap(opt.flags), ",")
     _g._RESULTS = _g._RESULTS or {}
     local results = _g._RESULTS
-    
+
     -- @note avoid detect the same program in the same time if running in the coroutine (e.g. ccache)
     local coroutine_running = scheduler.co_running()
     if coroutine_running then

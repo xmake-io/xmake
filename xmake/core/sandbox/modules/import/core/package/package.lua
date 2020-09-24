@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -41,11 +41,11 @@ function sandbox_core_package_package.searchdirs()
     return package.searchdirs()
 end
 
--- load the package from the project file 
+-- load the package from the project file
 function sandbox_core_package_package.load_from_project(packagename)
 
-    -- load package instance 
-    local instance, errors = package.load_from_project(packagename, project) 
+    -- load package instance
+    local instance, errors = package.load_from_project(packagename, project)
     if errors then
         raise(errors)
     end
@@ -54,11 +54,11 @@ function sandbox_core_package_package.load_from_project(packagename)
     return instance
 end
 
--- load the package from the system 
+-- load the package from the system
 function sandbox_core_package_package.load_from_system(packagename)
 
-    -- load package instance 
-    local instance, errors = package.load_from_system(packagename) 
+    -- load package instance
+    local instance, errors = package.load_from_system(packagename)
     if errors then
         raise(errors)
     end
@@ -71,7 +71,7 @@ end
 function sandbox_core_package_package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- load package instance
-    local instance, errors = package.load_from_repository(packagename, repo, packagedir, packagefile) 
+    local instance, errors = package.load_from_repository(packagename, repo, packagedir, packagefile)
     if not instance then
         raise(errors)
     end

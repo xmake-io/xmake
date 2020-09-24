@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -33,7 +33,7 @@ function _make_flags_from_target(target)
     return flags
 end
 
--- make flags 
+-- make flags
 function _make_flags(target)
 
     -- attempt to get flags from cache first

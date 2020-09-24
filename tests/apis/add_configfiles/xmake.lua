@@ -13,7 +13,7 @@ end
 option("foo2")
     set_default(true)
     set_description("Enable Foo2")
-    set_configvar("FOO2_ENABLE", true) 
+    set_configvar("FOO2_ENABLE", true)
     set_configvar("FOO2_STRING", "foo")
 option_end()
 

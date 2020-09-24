@@ -5,7 +5,7 @@ function _session(id)
 
     local pipefile = pipe.open("test" .. id, 'r')
     if pipefile:connect() > 0 then
-        print("%s/%d: connected", pipefile, id) 
+        print("%s/%d: connected", pipefile, id)
         local count = 0
         local result = nil
         while count < 10000 do

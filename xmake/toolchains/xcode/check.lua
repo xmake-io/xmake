@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,10 +36,10 @@ function main(toolchain)
 
     -- save target minver
     --
-    -- @note we need to differentiate the version for the system, 
+    -- @note we need to differentiate the version for the system,
     -- because the xcode toolchain of iphoneos/macosx may need to be used at the same time.
     --
-    -- e.g. 
+    -- e.g.
     --
     -- target("test")
     --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})

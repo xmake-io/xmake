@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      luzhlon
@@ -47,7 +47,7 @@ function _make_object(target, sourcefile, objectfile)
     -- clear first line marks
     _g.firstline = false
 end
- 
+
 -- make objects
 function _make_objects(target, sourcekind, sourcebatch)
     for index, objectfile in ipairs(sourcebatch.objectfiles) do
@@ -104,7 +104,7 @@ function make(outputdir)
         flagfile:write(flag, '\n')
     end
     flagfile:close()
- 
+
     -- leave project directory
     os.cd(oldir)
 end

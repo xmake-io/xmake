@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("core.language.language")
 
 -- is linker?
 function _islinker(flags, opt)
-  
+
     -- the flags is "-Wl,<arg>" or "-Xlinker <arg>"?
     local flags_str = table.concat(flags, " ")
     if flags_str:startswith("-Wl,") or flags_str:startswith("-Xlinker ") then
@@ -36,7 +36,7 @@ function _islinker(flags, opt)
     return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("-ld") or toolkind:endswith("-sh")
 end
 
--- try running 
+-- try running
 function _try_running(...)
     local argv = {...}
     local errors = nil
@@ -47,13 +47,13 @@ end
 function _check_from_arglist(flags, opt, islinker)
 
     -- check for the builtin flags
-    local builtin_flags = {["-code"] = true, 
-                           ["--gpu-code"] = true, 
-                           ["-gencode"] = true, 
-                           ["--generate-code"] = true, 
-                           ["-arch"] = true, 
-                           ["--gpu-architecture"] = true, 
-                           ["-cudart=none"] = true, 
+    local builtin_flags = {["-code"] = true,
+                           ["--gpu-code"] = true,
+                           ["-gencode"] = true,
+                           ["--generate-code"] = true,
+                           ["-arch"] = true,
+                           ["--gpu-architecture"] = true,
+                           ["-cudart=none"] = true,
                            ["--cudart=none"] = true}
     if builtin_flags[flags[1]] then
         return true
@@ -61,7 +61,7 @@ function _check_from_arglist(flags, opt, islinker)
 
     -- check for the builtin flag=value
     local cudart_flags = {none = true, shared = true, static = true}
-    local builtin_flags_pair = {["-cudart"] = cudart_flags, 
+    local builtin_flags_pair = {["-cudart"] = cudart_flags,
                                 ["--cudart"] = cudart_flags}
     if #flags > 1 and builtin_flags_pair[flags[1]] and builtin_flags_pair[flags[1]][flags[2]] then
         return true
@@ -69,7 +69,7 @@ function _check_from_arglist(flags, opt, islinker)
 
     -- check from the `--help` menu, only for linker
     if islinker or #flags > 1 then
-        return 
+        return
     end
 
     -- make cache key
@@ -133,7 +133,7 @@ function _check_try_running(flags, opt, islinker)
 end
 
 -- has_flags(flags)?
--- 
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "cu"}
 --
 -- @return      true or false

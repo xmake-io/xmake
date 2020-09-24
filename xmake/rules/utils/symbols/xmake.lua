@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,7 +28,7 @@ rule("utils.symbols.extract")
         -- need generate symbols?
         local strip = target:get("strip")
         local targetkind = target:targetkind()
-        if target:get("symbols") == "debug" and (strip == "all" or strip == "debug") 
+        if target:get("symbols") == "debug" and (strip == "all" or strip == "debug")
             and (targetkind == "binary" or targetkind == "shared") and platform.tool("strip") then -- only for strip command
             target:data_set("utils.symbols.extract", true)
             target:set("strip", "none") -- disable strip in link stage, because we need to run separate strip commands
@@ -53,7 +53,7 @@ rule("utils.symbols.extract")
         if not strip then
             return
         end
-            
+
         -- get dsymutil
         local dsymutil
         if is_plat("macosx", "iphoneos", "watchos") then
@@ -69,7 +69,7 @@ rule("utils.symbols.extract")
         local dependfile = target:dependfile(symbolfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-            return 
+            return
         end
 
         -- trace progress info
@@ -100,7 +100,7 @@ rule("utils.symbols.extract")
         -- strip it
         local strip_argv = {}
         if is_plat("macosx", "iphoneos", "watchos") then
-            -- do not support `-s`, we can only strip debug symbols 
+            -- do not support `-s`, we can only strip debug symbols
             local arch = get_config("arch")
             if arch then
                 table.insert(strip_argv, "-arch")

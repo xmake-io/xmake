@@ -42,7 +42,7 @@ tb_int_t xm_io_pipe_openpair(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get buffer size 
+    // get buffer size
     tb_size_t buffsize = (tb_size_t)luaL_checknumber(lua, 1);
 
     // init pipe
@@ -52,7 +52,7 @@ tb_int_t xm_io_pipe_openpair(lua_State* lua)
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[0]);
         xm_lua_pushpointer(lua, (tb_pointer_t)pipefile[1]);
     }
-    else 
+    else
     {
         lua_pushnil(lua);
         lua_pushnil(lua);

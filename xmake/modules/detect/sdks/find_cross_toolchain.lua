@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -42,7 +42,7 @@ function _find_bindir(sdkdir, opt)
         if toolpath then
             return path.directory(toolpath), path.filename(toolpath):sub(1, -(#toolname + 1))
         end
-        
+
         -- find tool path
         toolpath = find_file(toolname, bindirs)
         if toolpath then
@@ -59,18 +59,18 @@ end
 
 -- find cross toolchain
 --
--- @param sdkdir   the root sdk directory of cross toolchain 
--- @param opt      the argument options 
+-- @param sdkdir   the root sdk directory of cross toolchain
+-- @param opt      the argument options
 --                 e.g. {bindir = .., cross = ..}
 --
 -- @return          the toolchain e.g. {sdkdir = .., bindir = .., cross = ..}
 --
--- @code 
+-- @code
 --
 -- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e")
 -- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e", {cross = "arm-linux-androideabi-"})
 -- local toolchain = find_cross_toolchain("/xxx/android-cross-r10e", {cross = "arm-linux-androideabi-", bindir = ..})
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)

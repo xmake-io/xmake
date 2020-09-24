@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -88,7 +88,7 @@ function textarea:scroll(lines)
             self._STARTLINE = 0
         end
         if self._STARTLINE > self._LINECOUNT - self:height() then
-            self._STARTLINE = self._LINECOUNT - self:height() 
+            self._STARTLINE = self._LINECOUNT - self:height()
         end
         self:invalidate()
     end
@@ -97,7 +97,7 @@ end
 -- scroll to end
 function textarea:scroll_to_end()
     if self._LINECOUNT > self:height() then
-        self._STARTLINE = self._LINECOUNT - self:height() 
+        self._STARTLINE = self._LINECOUNT - self:height()
         self:invalidate()
     end
 end

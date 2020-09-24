@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -43,7 +43,7 @@ end
 function sandbox_core_tool_linker.linkcmd(targetkind, sourcekinds, objectfiles, targetfile, opt)
     return os.args(table.join(sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)))
 end
- 
+
 -- make arguments list for linking target file
 function sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)
 
@@ -61,7 +61,7 @@ end
 --
 -- @param targetkind    the target kind
 -- @param sourcekinds   the source kinds
--- @param opt           the argument options (contain all the linker attributes of target), 
+-- @param opt           the argument options (contain all the linker attributes of target),
 --                      e.g. {target = ..., targetkind = "static", config = {cxflags = "", defines = "", includedirs = "", ...}}
 --
 function sandbox_core_tool_linker.linkflags(targetkind, sourcekinds, opt)
@@ -105,7 +105,7 @@ function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags, opt)
 
     -- init options
     opt = opt or {}
- 
+
     -- get the linker instance
     local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
 

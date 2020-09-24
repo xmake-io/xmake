@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -195,7 +195,7 @@ function _install(sourcedir)
         end
     end
 
-    -- do install 
+    -- do install
     if option.get("verbose") then
         install_task()
     else
@@ -351,7 +351,7 @@ function main()
                     os.tryrm(sourcedir)
                     if not install_from_git then
                         os.mkdir(sourcedir)
-                        local installerfile = path.join(sourcedir, win_installer_name) 
+                        local installerfile = path.join(sourcedir, win_installer_name)
                         if url:endswith(".zip") then
                             http.download(url, installerfile .. ".zip")
                             archive.extract(installerfile .. ".zip", installerfile .. ".dir")
@@ -387,7 +387,7 @@ function main()
         end
     end
 
-    -- do download 
+    -- do download
     if option.get("verbose") then
         download_task()
     else

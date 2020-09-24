@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,7 +28,7 @@ import("core.project.config")
 
 -- find package from the unix-like system directories
 function _find_package_from_unixdirs(name, links, opt)
-      
+
     -- add default search includedirs on pc host
     local includedirs = table.wrap(opt.includedirs)
     if #includedirs == 0 then
@@ -57,7 +57,7 @@ function _find_package_from_unixdirs(name, links, opt)
         end
     end
 
-    -- find library 
+    -- find library
     local result = nil
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
@@ -97,7 +97,7 @@ function _find_package_from_xcodedirs(name, links, opt)
     -- find xcode first
     local xcode = find_xcode(config.get("xcode"), {plat = opt.plat, arch = opt.arch})
     if not xcode then
-        return 
+        return
     end
 
     -- get sdk root directory
@@ -115,7 +115,7 @@ function _find_package_from_xcodedirs(name, links, opt)
     local linkdirs    = {path.join(sdk_rootdir, "usr", "lib")}
     local includedirs = {path.join(sdk_rootdir, "usr", "include")}
 
-    -- find library 
+    -- find library
     local result = nil
     for _, link in ipairs(links) do
         if find_file("lib" .. link .. ".tbd", linkdirs) then

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -29,36 +29,36 @@ import("core.platform.platform")
 import("core.platform.environment")
 import("private.action.clean.remove_files")
 
--- do clean target 
+-- do clean target
 function _do_clean_target(target)
 
     -- is phony?
     if target:isphony() then
-        return 
+        return
     end
 
-    -- remove the target file 
-    remove_files(target:targetfile()) 
+    -- remove the target file
+    remove_files(target:targetfile())
 
-    -- remove the symbol file 
-    remove_files(target:symbolfile()) 
+    -- remove the symbol file
+    remove_files(target:symbolfile())
 
-    -- remove the c/c++ precompiled header file 
-    remove_files(target:pcoutputfile("c")) 
-    remove_files(target:pcoutputfile("cxx")) 
+    -- remove the c/c++ precompiled header file
+    remove_files(target:pcoutputfile("c"))
+    remove_files(target:pcoutputfile("cxx"))
 
     -- TODO remove the header files (deprecated)
     local _, dstheaders = target:headers()
-    remove_files(dstheaders) 
+    remove_files(dstheaders)
 
     -- remove the clean files
     remove_files(target:get("cleanfiles"))
 
     -- remove all?
-    if option.get("all") then 
+    if option.get("all") then
 
         -- TODO remove the config.h file (deprecated)
-        remove_files(target:configheader()) 
+        remove_files(target:configheader())
 
         -- remove all dependent files for each platform
         remove_files(target:dependir({root = true}))
@@ -81,12 +81,12 @@ function _do_clean_target(target)
     end
 end
 
--- on clean target 
+-- on clean target
 function _on_clean_target(target)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        return 
+        return
     end
 
     -- build target with rules
@@ -122,7 +122,7 @@ function _clean_target(target)
 
             -- has been disabled?
             if target:get("enabled") == false then
-                return 
+                return
             end
 
             -- clean rules
@@ -138,7 +138,7 @@ function _clean_target(target)
 
             -- has been disabled?
             if target:get("enabled") == false then
-                return 
+                return
             end
 
             -- clean rules
@@ -171,12 +171,12 @@ function _clean_target_and_deps(target)
 
     -- this target have been finished?
     if _g.finished[target:name()] then
-        return 
+        return
     end
 
     -- remove the target
-    _clean_target(target) 
-     
+    _clean_target(target)
+
     -- exists the dependent targets?
     for _, dep in ipairs(target:get("deps")) do
         _clean_target_and_deps(project.target(dep))
@@ -186,21 +186,21 @@ function _clean_target_and_deps(target)
     _g.finished[target:name()] = true
 end
 
--- clean target 
+-- clean target
 function _clean(targetname)
 
     -- clean the given target
     if targetname then
-        _clean_target_and_deps(project.target(targetname)) 
+        _clean_target_and_deps(project.target(targetname))
     else
         -- clean all targets
         for _, target in pairs(project.targets()) do
-            _clean_target_and_deps(target) 
+            _clean_target_and_deps(target)
         end
     end
 
     -- remove all
-    if option.get("all") then 
+    if option.get("all") then
 
         -- remove the configure directory
         remove_files(config.directory())
@@ -254,7 +254,7 @@ function main()
     local oldir = os.cd(project.directory())
 
     -- clean the current target
-    _clean(targetname) 
+    _clean(targetname)
 
     -- unlock the whole project
     project.unlock()

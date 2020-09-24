@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -116,7 +116,7 @@ function _instance:get(name)
         return value
     end
 
-    -- lazy loading platform 
+    -- lazy loading platform
     self:_load()
 
     -- get other platform info
@@ -181,7 +181,7 @@ function _instance:sdkdir()
     return config.get("sdk") or self:get("sdkdir")
 end
 
--- do check, we only check it once for all architectures 
+-- do check, we only check it once for all architectures
 function _instance:check()
     local checkok = true
     if not self._CHECKED then
@@ -199,7 +199,7 @@ function _instance:check()
     return checkok
 end
 
--- do load, @note we need load it repeatly for each architectures 
+-- do load, @note we need load it repeatly for each architectures
 function _instance:_load()
     local info = self:info()
     if not info:get("__loaded") and not info:get("__loading") then
@@ -220,7 +220,7 @@ end
 function _instance:_description(toolkind)
     local descriptions = self._DESCRIPTIONS
     if not descriptions then
-        descriptions = 
+        descriptions =
         {
             cc         = "the c compiler",
             cxx        = "the c++ compiler",
@@ -321,13 +321,13 @@ function toolchain._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define(toolchain.apis())
 
     -- define apis for language
     interp:api_define(language.apis())
-    
+
     -- save interpreter
     toolchain._INTERPRETER = interp
 
@@ -337,9 +337,9 @@ end
 
 -- get toolchain apis
 function toolchain.apis()
-    return 
+    return
     {
-        values = 
+        values =
         {
             "toolchain.set_kind"
         ,   "toolchain.set_bindir"
@@ -375,7 +375,7 @@ function toolchain.directories()
     return dirs
 end
 
--- load the given toolchain 
+-- load the given toolchain
 function toolchain.load(name, opt)
 
     -- init cache key
@@ -429,7 +429,7 @@ function toolchain.load(name, opt)
     return instance
 end
 
--- new toolchain 
+-- new toolchain
 function toolchain.new(name, info, opt)
     opt = opt or {}
     local plat = opt.plat or config.get("plat") or os.host()

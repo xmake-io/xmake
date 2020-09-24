@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -152,7 +152,7 @@ function main(url, outputfile)
 
     -- init output file
     outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
-    
+
     -- attempt to download url using curl first
     local tool = find_tool("curl", {version = true})
     if tool then

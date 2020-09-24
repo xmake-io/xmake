@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -20,11 +20,11 @@
 
 -- define toolchain
 toolchain("rust")
- 
+
     -- set homepage
     set_homepage("https://www.rust-lang.org/")
     set_description("Rust Programming Language Compiler")
-        
+
     -- set toolset
     set_toolset("rc",   "$(env RC)", "rustc")
     set_toolset("rcld", "$(env RC)", "rustc")

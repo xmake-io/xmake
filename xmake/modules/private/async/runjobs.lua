@@ -49,7 +49,7 @@ end
 --     end, root)
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
--- 
+--
 --
 function main(name, jobs, opt)
 
@@ -141,12 +141,12 @@ function main(name, jobs, opt)
             local max = math.min(index + freemax, total)
             local jobfunc = jobs_cb
             while index < max do
-                
+
                 -- uses job pool?
                 local jobname
                 if not jobs_cb then
-                    
-                    -- get job priority 
+
+                    -- get job priority
                     local job, priority
                     if job_pending then
                         job = job_pending
@@ -179,7 +179,7 @@ function main(name, jobs, opt)
                 table.insert(running_jobs_indices, index)
                 scheduler.co_start_named(name .. '/' .. jobname, function(i)
                     try
-                    { 
+                    {
                         function()
                             if jobfunc then
                                 if opt.curdir then
@@ -214,7 +214,7 @@ function main(name, jobs, opt)
                 end, index)
             end
         end)
-    
+
         -- need only one jobs exited if be same priority
         if priority_curr == priority_prev then
             scheduler.co_group_wait(group_name, {limit = 1})

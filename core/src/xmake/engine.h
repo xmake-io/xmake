@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -54,13 +54,13 @@ typedef tb_void_t (*xm_engine_lni_initalizer_cb_t)(xm_engine_ref_t engine, lua_S
  */
 xm_engine_ref_t             xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_cb_t lni_initalizer);
 
-/*! exit the engine 
+/*! exit the engine
  *
  * @param engine            the engine
  */
 tb_void_t                   xm_engine_exit(xm_engine_ref_t engine);
 
-/*! do the main entry of the engine 
+/*! do the main entry of the engine
  *
  * @param engine            the engine
  * @param argc              the argument count of the console

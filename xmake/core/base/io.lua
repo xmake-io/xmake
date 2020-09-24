@@ -43,7 +43,7 @@ function _file.new(filepath, cdata, isstdfile)
     return file
 end
 
--- get the file name 
+-- get the file name
 function _file:name()
     if not self._NAME then
         self._NAME = path.filename(self:path())
@@ -51,7 +51,7 @@ function _file:name()
     return self._NAME
 end
 
--- get the file path 
+-- get the file path
 function _file:path()
     return self._PATH
 end
@@ -392,7 +392,7 @@ function _filelock:unlock(opt)
     if self._LOCKED_NUM > 1 or (self._LOCKED_NUM > 0 and io.filelock_unlock(self:cdata())) then
         if self._LOCKED_NUM > 0 then
             self._LOCKED_NUM = self._LOCKED_NUM - 1
-        else 
+        else
             self._LOCKED_NUM = 0
         end
         return true
@@ -773,7 +773,7 @@ end
 io.stdin  = nil
 io.stdout = nil
 io.stderr = nil
-setmetatable(io, { __index = function (tbl, key)    
+setmetatable(io, { __index = function (tbl, key)
         local val = rawget(tbl, key)
         if val == nil and (key == "stdin" or key == "stdout" or key == "stderr") then
             val = io.stdfile("/dev/" .. key)

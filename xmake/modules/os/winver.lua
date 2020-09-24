@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,9 +23,9 @@
 -- reference: https://msdn.microsoft.com/en-us/library/windows/desktop/aa383745(v=vs.85).aspx
 --
 function version(name)
-    
+
     -- init values
-    _g.values = _g.values or 
+    _g.values = _g.values or
     {
         nt4      = "0x0400"
     ,   win2k    = "0x0500"
@@ -49,11 +49,11 @@ function version(name)
     return _g.values[name]
 end
 
--- get NTDDI_VERSION from name 
+-- get NTDDI_VERSION from name
 function ntddi_version(name)
-    
+
     -- init subvalues
-    _g.subvalues = _g.subvalues or 
+    _g.subvalues = _g.subvalues or
     {
         sp1    = "0100"
     ,   sp2    = "0200"
@@ -80,15 +80,15 @@ function ntddi_version(name)
     return val
 end
 
--- get _WIN32_WINNT from name 
+-- get _WIN32_WINNT from name
 function winnt_version(name)
     return version(name)
-end 
+end
 
--- get _NT_TARGET_VERSION from name 
+-- get _NT_TARGET_VERSION from name
 function target_version(name)
     return version(name)
-end 
+end
 
 -- get subsystem version from name
 function subsystem(name)
@@ -97,7 +97,7 @@ function subsystem(name)
     name = (name or ""):split('_')[1]
 
     -- make defined values
-    local defvals = 
+    local defvals =
     {
         nt4      = "4.00"
     ,   win2k    = "5.00"
@@ -107,11 +107,11 @@ function subsystem(name)
     ,   vista    = "6.00"
     ,   ws08     = "6.00"
     ,   longhorn = "6.00"
-    ,   win7     = "6.01" 
+    ,   win7     = "6.01"
     ,   win8     = "6.02"
-    ,   winblue  = "6.03"  
-    ,   win81    = "6.03" 
-    ,   win10    = "10.00" 
+    ,   winblue  = "6.03"
+    ,   win81    = "6.03"
+    ,   win10    = "10.00"
     }
     return defvals[name] or "10.00"
 end

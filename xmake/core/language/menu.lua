@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -30,7 +30,7 @@ local language      = require("language/language")
 
 -- get the option menu for action: xmake config or global
 function menu.options(action)
-    
+
     -- check
     assert(action)
 
@@ -56,14 +56,14 @@ function menu.options(action)
                 -- get the language option
                 for _, option in ipairs(options) do
 
-                    -- merge it and remove repeat 
+                    -- merge it and remove repeat
                     local name = option[2] or option[1]
                     if name then
                         if not exist[name] then
                             table.insert(results, option)
                             exist[name] = true
                         end
-                    else 
+                    else
                         table.insert(results, option)
                     end
                 end

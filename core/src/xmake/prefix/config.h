@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -54,8 +54,8 @@
  * on msys:
  * pacman -S mingw-w64-i686-gcc
  * pacman -S mingw-w64-x86_64-gcc
- * 
- * e.g. 
+ *
+ * e.g.
  * $ pacman -S mingw-w64-x86_64-gcc
  * $ which gcc
  * /mingw64/bin/gcc

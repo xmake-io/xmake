@@ -53,7 +53,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // query key-value    
+    // query key-value
     tb_bool_t   ok = tb_false;
     HKEY        key = NULL;
     HKEY        keynew = NULL;
@@ -63,7 +63,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
     {
         // copy path
         tb_size_t size = tb_strlcpy(pathbuf, path, sizeof(pathbuf));
-        if (size >= sizeof(pathbuf)) 
+        if (size >= sizeof(pathbuf))
         {
             lua_pushnil(lua);
             lua_pushfstring(lua, "too long path: %s", path);
@@ -106,7 +106,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
         else if (!tb_strcmp(pathkey, "HKEY_CURRENT_USER"))    key = HKEY_CURRENT_USER;
         else if (!tb_strcmp(pathkey, "HKEY_LOCAL_MACHINE"))   key = HKEY_LOCAL_MACHINE;
         else if (!tb_strcmp(pathkey, "HKEY_USERS"))           key = HKEY_USERS;
-        else 
+        else
         {
             lua_pushnil(lua);
             lua_pushfstring(lua, "invalid registry path: %s", path);

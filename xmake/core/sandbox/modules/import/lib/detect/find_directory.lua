@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -53,7 +53,7 @@ function sandbox_lib_detect_find_directory.main(name, pathes, opt)
 
     -- init pathes
     pathes = table.wrap(pathes)
-    
+
     -- append suffixes to pathes
     local suffixes = table.wrap(opt.suffixes)
     if #suffixes > 0 then
@@ -71,10 +71,10 @@ function sandbox_lib_detect_find_directory.main(name, pathes, opt)
 
         -- format path for builtin variables
         if type(_path) == "function" then
-            local ok, results = sandbox.load(_path) 
+            local ok, results = sandbox.load(_path)
             if ok then
                 _path = results or ""
-            else 
+            else
                 raise(results)
             end
         else

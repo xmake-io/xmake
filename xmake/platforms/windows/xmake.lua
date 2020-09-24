@@ -37,7 +37,7 @@ platform("windows")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    -- on check 
+    -- on check
     on_check(function (platform)
         import("core.project.config")
         local arch = config.get("arch")

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -69,10 +69,10 @@ function cache._instance(scopename)
     cachepath = (cachepath:gsub("^local%/", path.join(config.directory(), "cache") .. "/"))
     cachepath = (cachepath:gsub("^global%/", path.join(global.directory(), "cache") .. "/"))
 
-    -- save the cache path 
+    -- save the cache path
     instance._CACHEPATH = cachepath
 
-    -- load the cache data 
+    -- load the cache data
     local results = io.load(cachepath)
     if results then
         instance._CACHEDATA = results
@@ -104,16 +104,16 @@ end
 -- flush to cache file
 function cache:flush()
 
-    -- flush the version 
+    -- flush the version
     self._CACHEDATA.__version = xmake._VERSION_SHORT
 
     -- memory cache? ignore it directly
     if not self._CACHEPATH then
-        return 
+        return
     end
 
     -- save to file
-    local ok, errors = io.save(self._CACHEPATH, self._CACHEDATA) 
+    local ok, errors = io.save(self._CACHEPATH, self._CACHEDATA)
     if not ok then
         os.raise(errors)
     end

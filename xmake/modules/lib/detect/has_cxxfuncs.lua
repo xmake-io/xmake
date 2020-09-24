@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("lib.detect.check_cxxsnippets")
 --
 -- @param funcs     the funcs
 -- @param opt       the argument options
---                  e.g. 
+--                  e.g.
 --                  { verbose = false, target = [target|option], includes = "", configs = {linkdirs = .., links = .., defines = .., ..}}
 --
 -- funcs:
@@ -46,7 +46,7 @@ function main(funcs, opt)
     -- init options
     opt       = opt or {}
     opt.funcs = funcs
-    
+
     -- has funcs?
     local name = opt.name or "has_cxxfuncs"
     return check_cxxsnippets({[name] = ""}, opt)

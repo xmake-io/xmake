@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,13 +23,13 @@ import("lib.detect.cache")
 
 -- is linker?
 function _islinker(flags, opt)
-  
+
     -- the tool kind is ld or sh?
     local toolkind = opt.toolkind or ""
     return toolkind == "ld" or toolkind == "sh" or toolkind:endswith("ld") or toolkind:endswith("sh")
 end
 
--- try running 
+-- try running
 function _try_running(...)
 
     local argv = {...}
@@ -37,12 +37,12 @@ function _try_running(...)
     return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
--- attempt to check it from the argument list 
+-- attempt to check it from the argument list
 function _check_from_arglist(flags, opt, islinker)
 
     -- only for compiler
     if islinker or #flags > 1 then
-        return 
+        return
     end
 
     -- make cache key
@@ -99,7 +99,7 @@ function _check_try_running(flags, opt, islinker)
 end
 
 -- has_flags(flags)?
--- 
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return      true or false
@@ -109,7 +109,7 @@ function main(flags, opt)
     -- is linker?
     local islinker = _islinker(flags, opt)
 
-    -- attempt to check it from the argument list 
+    -- attempt to check it from the argument list
     if _check_from_arglist(flags, opt, islinker) then
         return true
     end

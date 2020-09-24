@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific tool governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -170,8 +170,8 @@ function tool.load(kind, opt)
     local toolchain_info = opt.toolchain_info or {}
 
     -- get platform and architecture
-    local plat = toolchain_info.plat or config.get("plat") or os.host() 
-    local arch = toolchain_info.arch or config.get("arch") or os.arch() 
+    local plat = toolchain_info.plat or config.get("plat") or os.host()
+    local arch = toolchain_info.arch or config.get("arch") or os.arch()
 
     -- init cachekey
     local cachekey = kind .. (program or "") .. plat .. arch

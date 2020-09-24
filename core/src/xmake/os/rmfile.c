@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -38,11 +38,11 @@ tb_int_t xm_os_rmfile(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the path 
+    // get the path
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
-    // done os.rmfile(path) 
+    // done os.rmfile(path)
     lua_pushboolean(lua, tb_file_remove(path));
 
     // ok

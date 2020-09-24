@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ function option._translate(menu)
                 for k, m in pairs(_submenus_or_errors) do
                     submenus_all[k] = m
                 end
-            else 
+            else
                 return false, (_submenus_or_errors or "translate option menu failed!")
             end
         else
@@ -140,7 +140,7 @@ function option.init(menu)
             end
         end
 
-        -- not found? 
+        -- not found?
         if not context.taskname or not menu[context.taskname] then
             option.show_main()
             return false, "invalid task: " .. xmake._COMMAND
@@ -455,7 +455,7 @@ end
 -- show update tips
 function option.show_update_tips()
 
-    -- show latest version 
+    -- show latest version
     local versionfile = path.join(os.tmpdir(), "latest_version")
     if os.isfile(versionfile) then
         local versioninfo = io.load(versionfile)
@@ -488,18 +488,18 @@ function option.show_logo()
 
     -- define logo
     local logo = [[
-                         _        
-    __  ___ __  __  __ _| | ______ 
+                         _
+    __  ___ __  __  __ _| | ______
     \ \/ / |  \/  |/ _  | |/ / __ \
      >  <  | \__/ | /_| |   <  ___/
-    /_/\_\_|_|  |_|\__ \|_|\_\____| 
+    /_/\_\_|_|  |_|\__ \|_|\_\____|
 
                          by ruki, tboox.org
     ]]
 
     -- make rainbow for logo
     if colors.truecolor() or colors.color256() then
-        local lines = {} 
+        local lines = {}
         local seed  = 236
         for _, line in ipairs(logo:split("\n")) do
             local i = 0
@@ -530,13 +530,13 @@ function option.show_logo()
     option.show_update_tips()
 end
 
--- show the menu 
+-- show the menu
 function option.show_menu(task)
 
     -- no task? print main menu
-    if not task then 
+    if not task then
         option.show_main()
-        return 
+        return
     end
 
     -- the menu
@@ -683,7 +683,7 @@ function option.show_main()
     end
 end
 
--- show the options menu 
+-- show the options menu
 function option.show_options(options, taskname)
 
     -- check

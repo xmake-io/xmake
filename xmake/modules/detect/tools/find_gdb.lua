@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,25 +22,25 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find gdb 
+-- find gdb
 --
 -- @param opt   the argument options, e.g. {version = true, program="/usr/bin/gdb"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local gdb = find_gdb()
 -- local gdb, version = find_gdb({version = true})
 -- local gdb, version = find_gdb({version = true, program = "/usr/bin/gdb"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- init options
     opt = opt or {}
-    
+
     -- find program
     local program = find_program(opt.program or "gdb", opt)
 

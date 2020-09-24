@@ -5,7 +5,7 @@ function main()
     local port = 9001
     local sock = socket.udp()
     sock:bind(addr, port)
-    while true do 
+    while true do
         print("%s: recv in %s:%d ..", sock, addr, port)
         local recv, data, peer_addr, peer_port = sock:recvfrom(8192, {block = true})
         print("%s: recv %d bytes from: %s:%d", sock, recv, peer_addr, peer_port)

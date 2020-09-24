@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,18 +22,18 @@
 import("lib.detect.cache")
 import("lib.detect.find_tool")
 
--- try running 
+-- try running
 function _try_running(program, argv, opt)
     local errors = nil
     return try { function () os.runv(program, argv, opt); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
--- attempt to check it from the argument list 
+-- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
 
     -- only one flag?
     if #flags > 1 then
-        return 
+        return
     end
 
     -- make cache key
@@ -52,10 +52,10 @@ function _check_from_arglist(flags, opt)
         -- get argument list
         allflags = {}
         local arglist = nil
-        try 
+        try
         {
             function () os.runv(opt.program, {"-?"}, {envs = opt.envs}) end,
-            catch 
+            catch
             {
                 function (errors) arglist = errors end
             }
@@ -116,7 +116,7 @@ function _ignore_flags(flags)
 end
 
 -- has_flags(flags)?
--- 
+--
 -- @param opt   the argument options, e.g. {toolname = "", program = "", programver = "", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]"}
 --
 -- @return      true or false
@@ -129,7 +129,7 @@ function main(flags, opt)
         return true
     end
 
-    -- attempt to check it from the argument list 
+    -- attempt to check it from the argument list
     if _check_from_arglist(flags, opt) then
         return true
     end

@@ -43,7 +43,7 @@ function _instance.new(cdata, name)
     return pipefile
 end
 
--- get the pipe name 
+-- get the pipe name
 function _instance:name()
     return self._NAME
 end
@@ -117,7 +117,7 @@ function _instance:write(data, opt)
     return write, errors
 end
 
--- read data from pipe 
+-- read data from pipe
 function _instance:read(size, opt)
 
     -- ensure opened
@@ -176,7 +176,7 @@ function _instance:read(size, opt)
     return read, data_or_errors
 end
 
--- connect pipe, only for named pipe (server-side) 
+-- connect pipe, only for named pipe (server-side)
 function _instance:connect(opt)
 
     -- ensure opened
@@ -265,7 +265,7 @@ function _instance:_readbuff()
     return readbuff
 end
 
--- clear the read buffer 
+-- clear the read buffer
 function _instance:_readbuff_clear()
     self._READBUFF = nil
 end
@@ -290,7 +290,7 @@ function _instance:__gc()
     end
 end
 
--- open a named pipe file 
+-- open a named pipe file
 --
 -- 1. named pipe (server-side):
 --

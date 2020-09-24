@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -125,7 +125,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     if excludesfile then
         os.tryrm(excludesfile)
     end
-    
+
     -- remove unused pax_global_header file after extracting .tar file
     if extension == ".tar" then
         os.tryrm(path.join(outputdir, "pax_global_header"))
@@ -286,7 +286,7 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
         os.mkdir(outputdir)
     end
 
-    -- extract to outputdir 
+    -- extract to outputdir
     table.insert(argv, "-d")
     table.insert(argv, outputdir)
 
@@ -355,7 +355,7 @@ function main(archivefile, outputdir, opt)
     ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
     ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
     }
-    
+
     -- get extension
     local extension = opt.extension or get_archive_extension(archivefile)
 

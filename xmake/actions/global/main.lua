@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -34,13 +34,13 @@ function main()
 
     -- load the global configure
     --
-    -- priority: option > option_default > config_check > global_cache 
+    -- priority: option > option_default > config_check > global_cache
     --
     if option.get("clean") then
-        global.clear() 
+        global.clear()
     end
 
-    -- override the option configure 
+    -- override the option configure
     local changed = false
     for name, value in pairs(option.options()) do
         if name ~= "verbose" then
@@ -52,7 +52,7 @@ function main()
         end
     end
 
-    -- merge the default options 
+    -- merge the default options
     for name, value in pairs(option.defaults()) do
         if name ~= "verbose" and global.get(name) == nil then
             global.set(name, value)
@@ -64,7 +64,7 @@ function main()
     if themename then
         theme.load(themename)
     end
-  
+
     -- save it
     global.save()
 

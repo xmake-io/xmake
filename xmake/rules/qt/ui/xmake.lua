@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -29,11 +29,11 @@ rule("qt.ui")
 
     -- before load
     before_load(function (target)
-        
+
         -- get uic
         local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
         assert(uic and os.isexec(uic), "uic not found!")
-        
+
         -- save uic
         target:data_set("qt.uic", uic)
     end)
@@ -62,7 +62,7 @@ rule("qt.ui")
         local dependfile = target:dependfile(headerfile_ui)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile_ui)}) then
-            return 
+            return
         end
 
         -- trace progress info
@@ -73,7 +73,7 @@ rule("qt.ui")
             os.mkdir(headerfile_dir)
         end
 
-        -- compile ui 
+        -- compile ui
         os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
 
         -- update files and values to the dependent file

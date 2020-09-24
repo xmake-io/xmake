@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -37,7 +37,7 @@ function extractor:_tool()
     return self._TOOL
 end
 
--- load the extractor 
+-- load the extractor
 function extractor.load()
 
     -- get it directly from cache dirst
@@ -48,12 +48,12 @@ function extractor.load()
     -- new instance
     local instance = table.inherit(extractor)
 
-    -- load the extractor tool 
+    -- load the extractor tool
     local result, errors = tool.load("ex")
-    if not result then 
+    if not result then
         return nil, errors
     end
-        
+
     -- save tool
     instance._TOOL = result
 

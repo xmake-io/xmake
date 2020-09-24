@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -55,8 +55,8 @@ function sandbox_try._traceback(errors)
     results = results .. "stack traceback:\n"
 
     -- make results
-    local level = 2    
-    while true do    
+    local level = 2
+    while true do
 
         -- get debug info
         local info = debug.getinfo(level, "Sln")
@@ -69,31 +69,31 @@ function sandbox_try._traceback(errors)
         -- function?
         if info.what == "C" then
             results = results .. string.format("    [C]: in function '%s'\n", info.name)
-        elseif info.name then 
-            results = results .. string.format("    [%s:%d]: in function '%s'\n", info.short_src, info.currentline, info.name)    
+        elseif info.name then
+            results = results .. string.format("    [%s:%d]: in function '%s'\n", info.short_src, info.currentline, info.name)
         elseif info.what == "main" then
-            results = results .. string.format("    [%s:%d]: in main chunk\n", info.short_src, info.currentline)    
+            results = results .. string.format("    [%s:%d]: in main chunk\n", info.short_src, info.currentline)
             break
         else
-            results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)    
+            results = results .. string.format("    [%s:%d]:\n", info.short_src, info.currentline)
         end
 
         -- next
-        level = level + 1    
-    end    
+        level = level + 1
+    end
 
     -- ok?
     return results
 end
 
--- local ok = try 
+-- local ok = try
 -- {
 --   function ()
 --      raise("errors")
 --      raise({errors = "xxx", xxx = "", yyy = ""})
 --      return true
 --   end,
---   catch 
+--   catch
 --   {
 --      function (errors)
 --          print(errors)

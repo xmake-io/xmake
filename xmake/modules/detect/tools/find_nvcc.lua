@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,17 +21,17 @@
 -- imports
 import("private.detect.find_cudatool")
 
--- find nvcc 
+-- find nvcc
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local nvcc = find_nvcc()
 -- local nvcc, version = find_nvcc({program = "nvcc", version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)

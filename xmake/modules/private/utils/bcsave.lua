@@ -54,15 +54,15 @@ function save(sourcedir, outputdir, opt)
     local override = (outputdir == sourcedir)
     for _, luafile in ipairs(os.files(pattern)) do
 
-        -- get relative lua file path 
+        -- get relative lua file path
         local relativepath = path.relative(luafile, sourcedir)
-        
+
         -- get display path
         local displaypath = opt.rootname and path.join(opt.rootname, relativepath) or relativepath
 
         -- get bitcode file path
         local bcfile = override and os.tmpfile() or path.join(outputdir, relativepath)
-        
+
         -- generate bitcode file
         -- @note we disable cache to ensure all display pathes are correct
         bcsave(luafile, bcfile, {strip = opt.strip, displaypath = displaypath, nocache = true})

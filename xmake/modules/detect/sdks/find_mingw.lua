@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -60,7 +60,7 @@ function _find_mingw(sdkdir, bindir, cross)
     -- find mingw root directory
     sdkdir = _find_mingwdir(sdkdir)
     if not sdkdir then
-        return 
+        return
     end
 
     -- select cross on macOS, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
@@ -86,16 +86,16 @@ end
 -- find mingw toolchains
 --
 -- @param sdkdir    the mingw directory
--- @param opt       the argument options 
---                  e.g. {verbose = true, force = false, bindir = .., cross = ...}  
+-- @param opt       the argument options
+--                  e.g. {verbose = true, force = false, bindir = .., cross = ...}
 --
 -- @return          the mingw toolchains. e.g. {sdkdir = .., bindir = .., cross = ..}
 --
--- @code 
+-- @code
 --
 -- local toolchain = find_mingw("/xxx/android-mingw-r10e")
 -- local toolchain = find_mingw("/xxx/android-mingw-r10e", {force = true, verbose = true})
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)

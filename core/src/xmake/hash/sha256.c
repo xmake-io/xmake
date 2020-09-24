@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -38,7 +38,7 @@ tb_int_t xm_hash_sha256(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the filename  
+    // get the filename
     tb_char_t const* filename = luaL_checkstring(lua, 1);
     tb_check_return_val(filename, 0);
 
@@ -59,7 +59,7 @@ tb_int_t xm_hash_sha256(lua_State* lua)
             while (!tb_stream_beof(stream))
             {
                 // read data
-                tb_long_t real = tb_stream_read(stream, data, sizeof(data));    
+                tb_long_t real = tb_stream_read(stream, data, sizeof(data));
 
                 // ok?
                 if (real > 0) tb_sha_spak(&sha, data, real);
@@ -93,7 +93,7 @@ tb_int_t xm_hash_sha256(lua_State* lua)
             // ok
             ok = tb_true;
         }
-    
+
         // exit stream
         tb_stream_exit(stream);
     }

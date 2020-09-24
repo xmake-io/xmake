@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -81,12 +81,12 @@ function main()
 
         search(option.get("requires"))
 
-    -- uninstall the installed packages 
+    -- uninstall the installed packages
     elseif option.get("uninstall") then
 
         uninstall(option.get("requires"))
-        
-    -- export the installed packages 
+
+    -- export the installed packages
     elseif option.get("export") then
 
         export(option.get("requires"))

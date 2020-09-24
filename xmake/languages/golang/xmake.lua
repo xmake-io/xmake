@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -49,7 +49,7 @@ language("golang")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -104,8 +104,8 @@ language("golang")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"        }
                 ,   {nil, "go",         "kv", nil,          "The Golang Compiler"              }
 

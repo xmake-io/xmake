@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -50,13 +50,13 @@ local menu =
 ,   copyright = "Copyright (C) 2015-2020 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}"
 
     -- the tasks: xmake [task]
-,   function () 
+,   function ()
         local tasks = task.tasks() or {}
         local ok, project_tasks = pcall(project.tasks)
         if ok then
             table.join2(tasks, project_tasks)
         end
-        return task.menu(tasks) 
+        return task.menu(tasks)
     end
 
 }
@@ -66,7 +66,7 @@ function main._show_help()
 
     -- show help
     if option.get("help") then
-    
+
         -- print menu
         option.show_menu(option.taskname())
 
@@ -105,7 +105,7 @@ function main._find_root(projectfile)
         local parentdir = path.directory(dir)
         if parentdir and parentdir ~= dir and parentdir ~= '.' then
             dir = parentdir
-        else 
+        else
             break
         end
     end
@@ -114,7 +114,7 @@ function main._find_root(projectfile)
     for _, dir in ipairs(dirs) do
         local file = path.join(dir, "xmake.lua")
         if os.isfile(file) then
-           return file 
+           return file
         end
     end
     return projectfile
@@ -236,7 +236,7 @@ function main.entry()
         colors.theme_set(theme_inst)
     end
 
-    -- init option 
+    -- init option
     ok, errors = option.init(menu)
     if not ok then
         return main._exit(errors)
@@ -248,7 +248,7 @@ function main.entry()
             if not privilege.store() or os.isroot() then
                 errors = [[Running xmake as root is extremely dangerous and no longer supported.
 As xmake does not drop privileges on installation you would be giving all
-build scripts full access to your system. 
+build scripts full access to your system.
 Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
                 ]]
                 return main._exit(errors)
@@ -277,7 +277,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
         return main._exit(string.format("do unknown task(%s)!", taskname))
     end
 
-    -- run task    
+    -- run task
     scheduler:co_start_named("xmake " .. taskname, function ()
         local ok, errors = taskinst:run()
         if not ok then
@@ -288,7 +288,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     if not ok then
         return main._exit(errors)
     end
-   
+
     -- stop profiling
     -- profiler:stop()
 

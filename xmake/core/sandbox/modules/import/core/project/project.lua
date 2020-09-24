@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -85,7 +85,7 @@ function sandbox_core_project.check()
 
     -- init check task
     local checked   = {}
-    local checktask = function (index) 
+    local checktask = function (index)
 
         -- get option
         local opt = options[index]
@@ -101,7 +101,7 @@ function sandbox_core_project.check()
 
             -- check this option
             if not checked[opt:name()] then
-                opt:check() 
+                opt:check()
                 checked[opt:name()] = true
             end
         end
@@ -151,7 +151,7 @@ function sandbox_core_project.filelock()
     return filelock
 end
 
--- lock the whole project 
+-- lock the whole project
 function sandbox_core_project.lock(opt)
     if sandbox_core_project.trylock(opt) then
         return true
@@ -164,12 +164,12 @@ function sandbox_core_project.lock(opt)
     end
 end
 
--- trylock the whole project 
+-- trylock the whole project
 function sandbox_core_project.trylock(opt)
     return sandbox_core_project.filelock():trylock(opt)
 end
 
--- unlock the whole project 
+-- unlock the whole project
 function sandbox_core_project.unlock()
     local ok, errors = sandbox_core_project.filelock():unlock()
     if not ok then

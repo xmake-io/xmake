@@ -41,7 +41,7 @@ tb_int_t xm_io_file_size(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // is user data?
-    if (!lua_isuserdata(lua, 1)) 
+    if (!lua_isuserdata(lua, 1))
         xm_io_return_error(lua, "get size for invalid file!");
 
     // get file

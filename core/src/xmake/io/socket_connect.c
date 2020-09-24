@@ -41,7 +41,7 @@ tb_int_t xm_io_socket_connect(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
     {
         lua_pushnumber(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
@@ -61,7 +61,7 @@ tb_int_t xm_io_socket_connect(lua_State* lua)
 
     // init address
     tb_ipaddr_t addr;
-    if (family == TB_IPADDR_FAMILY_UNIX) 
+    if (family == TB_IPADDR_FAMILY_UNIX)
     {
         tb_bool_t is_abstract = (tb_bool_t)lua_toboolean(lua, 3);
         tb_ipaddr_unix_set_cstr(&addr, address, is_abstract);

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,16 +27,16 @@ import("detect.sdks.find_vstudio")
 function _add_vsenv(toolchain, name)
 
     -- get vcvarsall
-    local vcvarsall = config.get("__vcvarsall") 
+    local vcvarsall = config.get("__vcvarsall")
     if not vcvarsall then
-        return 
+        return
     end
 
     -- get vs environment for the current arch
     local arch = toolchain:arch()
     local vsenv = vcvarsall[arch] or {}
 
-    -- switch vstudio environment if vs_sdkver has been changed 
+    -- switch vstudio environment if vs_sdkver has been changed
     local switch_vsenv = false
     local vs = config.get("vs")
     local vs_sdkver = config.get("vs_sdkver")

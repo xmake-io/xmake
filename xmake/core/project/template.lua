@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -40,7 +40,7 @@ function _instance.new(name, info, scriptdir)
     return instance
 end
 
--- get the package name 
+-- get the package name
 function _instance:name()
     return self._NAME
 end
@@ -51,7 +51,7 @@ function _instance:get(name)
     -- get it from info first
     local value = self._INFO:get(name)
     if value ~= nil then
-        return value 
+        return value
     end
 end
 
@@ -72,7 +72,7 @@ function template._interpreter()
     local interp = interpreter.new()
     assert(interp)
 
-    -- define apis 
+    -- define apis
     interp:api_define
     {
         values =
@@ -100,7 +100,7 @@ function template.languages()
     -- make list
     local list = {}
 
-    -- get the language list 
+    -- get the language list
     local languages = os.dirs(path.join(os.programdir(), "templates", "*"))
     if languages then
         for _, v in ipairs(languages) do
@@ -112,7 +112,7 @@ function template.languages()
     return list
 end
 
--- load all templates from the given language 
+-- load all templates from the given language
 function template.templates(language)
 
     -- check
@@ -120,7 +120,7 @@ function template.templates(language)
 
     -- get interpreter
     local interp = template._interpreter()
-    assert(interp) 
+    assert(interp)
 
     -- load all templates
     local templates = {}
@@ -146,7 +146,7 @@ function template.templates(language)
             local templatename = nil
             local templateinfo = nil
             for name, info in pairs(results) do
-                templatename = name 
+                templatename = name
                 templateinfo = info
                 break
             end

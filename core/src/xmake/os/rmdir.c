@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -42,14 +42,14 @@ static tb_bool_t xm_os_rmdir_empty(tb_char_t const* path, tb_file_info_t const* 
     // is emptydir?
     if (info->type == TB_FILE_TYPE_DIRECTORY || info->type == TB_FILE_TYPE_FILE)
     {
-        // not emptydir 
+        // not emptydir
         *is_emptydir = tb_false;
 
         // break
         return tb_false;
     }
 
-    // continue 
+    // continue
     return tb_true;
 }
 static tb_bool_t xm_os_rmdir_remove(tb_char_t const* path, tb_file_info_t const* info, tb_cpointer_t priv)
@@ -71,7 +71,7 @@ static tb_bool_t xm_os_rmdir_remove(tb_char_t const* path, tb_file_info_t const*
         if (is_emptydir) tb_directory_remove(path);
     }
 
-    // continue 
+    // continue
     return tb_true;
 }
 
@@ -83,7 +83,7 @@ tb_int_t xm_os_rmdir(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the path 
+    // get the path
     tb_char_t const* path = luaL_checkstring(lua, 1);
     tb_check_return_val(path, 0);
 
@@ -107,7 +107,7 @@ tb_int_t xm_os_rmdir(lua_State* lua)
     }
     else
     {
-        // done os.rmdir(path) 
+        // done os.rmdir(path)
         lua_pushboolean(lua, tb_directory_remove(path));
     }
 

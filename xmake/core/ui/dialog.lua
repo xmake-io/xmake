@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,10 +32,10 @@ local curses = require("ui/curses")
 -- define module
 local dialog = dialog or window()
 
--- update the position of all buttons 
+-- update the position of all buttons
 function dialog:_update_buttons_layout()
 
-    -- update the position of all buttons 
+    -- update the position of all buttons
     local index = 1
     local width = self:buttons():width()
     local count = self:buttons():count()
@@ -87,7 +87,7 @@ function dialog:button_add(name, text, command)
     -- insert button
     self:buttons():insert(btn)
 
-    -- update the position of all buttons 
+    -- update the position of all buttons
     self:_update_buttons_layout()
 
     -- invalidate

@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -60,7 +60,7 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     buff[n] = '\0';
 
     // wrap "" if exists escape characters and spaces?
-    if (wrap_quote && !nowrap) 
+    if (wrap_quote && !nowrap)
     {
         tb_string_chrcat(result, '\"');
         tb_size_t i = 0;
@@ -88,8 +88,8 @@ tb_int_t xm_os_args(lua_State* lua)
 
     // escape '\\' characters in global?
     tb_bool_t escape = tb_false;
-    if (lua_istable(lua, 2)) 
-    { 
+    if (lua_istable(lua, 2))
+    {
         // is escape?
         lua_pushstring(lua, "escape");
         lua_gettable(lua, 2);
@@ -99,8 +99,8 @@ tb_int_t xm_os_args(lua_State* lua)
 
     // disable to wrap quote characters in global?
     tb_bool_t nowrap = tb_false;
-    if (lua_istable(lua, 2)) 
-    { 
+    if (lua_istable(lua, 2))
+    {
         // is nowrap?
         lua_pushstring(lua, "nowrap");
         lua_gettable(lua, 2);
@@ -119,7 +119,7 @@ tb_int_t xm_os_args(lua_State* lua)
         tb_size_t n = lua_objlen(lua, 1);
         for (i = 1; i <= n; i++)
         {
-            // add space 
+            // add space
             if (i != 1) tb_string_chrcat(&result, ' ');
 
             // add argument

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -87,8 +87,8 @@ end
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -98,7 +98,7 @@ function nf_optimize(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the language flag
@@ -106,7 +106,7 @@ function nf_language(self, stdname)
 
     -- the stdc maps
     if _g.cmaps == nil then
-        _g.cmaps = 
+        _g.cmaps =
         {
             -- stdc
             ansi        = "-Xclang -ansi"
@@ -121,7 +121,7 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
-        _g.cxxmaps = 
+        _g.cxxmaps =
         {
             cxx98        = "-Xclang -std=c++98"
         ,   gnuxx98      = "-Xclang -std=gnu++98"
@@ -174,7 +174,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- has color diagnostics? enable it
-            local colors_diagnostics = _has_color_diagnostics(self) 
+            local colors_diagnostics = _has_color_diagnostics(self)
             if colors_diagnostics then
                 compflags = table.join(compflags, colors_diagnostics)
             end

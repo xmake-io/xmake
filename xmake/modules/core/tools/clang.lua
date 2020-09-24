@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,13 +32,13 @@ function init(self)
         self:add("shared.cuflags", "-fPIC")
     end
 
-    -- suppress warning 
+    -- suppress warning
     self:add("cxflags", "-Qunused-arguments")
     self:add("cuflags", "-Qunused-arguments")
     self:add("mxflags", "-Qunused-arguments")
     self:add("asflags", "-Qunused-arguments")
 
-    -- add cuda path 
+    -- add cuda path
     local cuda = get_config("cuda")
     if cuda then
         local cuda_path = "--cuda-path=" .. os.args(path.translate(cuda))
@@ -73,8 +73,8 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -82,13 +82,13 @@ function nf_optimize(self, level)
     ,   smallest   = "-Oz" -- smaller than -Os
     ,   aggressive = "-Ofast"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"

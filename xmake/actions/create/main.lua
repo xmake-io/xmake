@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("core.project.template")
 
 -- get the builtin variables
 function _get_builtinvars(tempinst, targetname)
-    return {TARGETNAME = targetname, 
+    return {TARGETNAME = targetname,
             FAQ = function() return io.readfile(path.join(os.programdir(), "scripts", "faq.lua")) end}
 end
 
@@ -43,7 +43,7 @@ function _create_project(language, templateid, targetname)
 
     -- TODO: deprecated
     -- in order to be compatible with the old version template
-    local templates_new = { quickapp_qt  = "qt.quickapp", 
+    local templates_new = { quickapp_qt  = "qt.quickapp",
                             widgetapp_qt = "qt.widgetapp",
                             console_qt   = "qt.console",
                             static_qt    = "qt.static",
@@ -58,7 +58,7 @@ function _create_project(language, templateid, targetname)
 
     -- get the given template instance
     local tempinst = nil
-    if templates then 
+    if templates then
         for _, t in ipairs(templates) do
             if t:name() == templateid then
                 tempinst = t
@@ -104,15 +104,15 @@ function _create_project(language, templateid, targetname)
         raise("template(%s): project not found!", templateid)
     end
 
-    -- get the builtin variables 
+    -- get the builtin variables
     local builtinvars = _get_builtinvars(tempinst, targetname)
 
     -- replace all variables
     for _, configfile in ipairs(tempinst:get("configfiles")) do
         local pattern = "%${(.-)}"
-        io.gsub(configfile, "(" .. pattern .. ")", function(_, variable) 
+        io.gsub(configfile, "(" .. pattern .. ")", function(_, variable)
             variable = variable:trim()
-            local value = builtinvars[variable] 
+            local value = builtinvars[variable]
             return type(value) == "function" and value() or value
         end)
     end
@@ -138,7 +138,7 @@ end
 -- main
 function main()
 
-    -- enter the original working directory, because the default directory is in the project directory 
+    -- enter the original working directory, because the default directory is in the project directory
     os.cd(os.workingdir())
 
     -- the target name

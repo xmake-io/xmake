@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -30,7 +30,7 @@ function _download(package, resource_name, resource_url, resource_hash)
 
     -- trace
     vprint("downloading resource(%s: %s) to %s-%s ..", resource_name, resource_url, package:name(), package:version_str())
- 
+
     -- get the resource file
     local resource_file = assert(package:resourcefile(resource_name), "invalid resource file!")
 

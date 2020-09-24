@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,7 +22,7 @@
 import("core.base.option")
 import("ls_remote")
 
--- get all refs from url, contains tags and branchs 
+-- get all refs from url, contains tags and branchs
 --
 -- @param url       the remote url, optional
 --
@@ -31,7 +31,7 @@ import("ls_remote")
 -- @code
 --
 -- import("devel.git")
--- 
+--
 -- local tags, branches = git.refs(url)
 --
 -- @endcode

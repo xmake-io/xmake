@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,23 +23,23 @@ import("core.project.config")
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find rc 
+-- find rc
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local rc = find_rc()
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if not is_host("windows") then
-        return 
+        return
     end
 
     -- init options
@@ -47,7 +47,7 @@ function main(opt)
     opt.check   = opt.check or "-?"
     opt.command = opt.command or "-?"
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
-    
+
     -- fix rc.exe missing issues
     --
     -- @see https://github.com/xmake-io/xmake/issues/225
@@ -60,7 +60,7 @@ function main(opt)
     local arch = opt.arch or config.arch() or os.arch()
     local vcvarsall = config.get("__vcvarsall")
     if vcvarsall then
-        local vcvars = vcvarsall[arch] 
+        local vcvars = vcvarsall[arch]
         if vcvars and vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
             local bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion, arch)
             if os.isdir(bindir) then

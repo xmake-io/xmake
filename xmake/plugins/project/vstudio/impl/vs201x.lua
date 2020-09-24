@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -62,10 +62,10 @@ function _make_targetinfo(mode, arch, target)
 
     -- save sourcebatches
     targetinfo.sourcebatches = target:sourcebatches()
-    
+
     -- save target dir
     targetinfo.targetdir = target:targetdir()
-    
+
     -- save object dir
     targetinfo.objectdir = target:objectdir()
 
@@ -137,7 +137,7 @@ function _make_targetheaders(mode, arch, target, last)
             -- init the config header path for each mode and arch
             local configheader_mode_arch = path.join(path.directory(configheader_raw), mode .. "." .. arch .. "." .. path.filename(configheader_raw))
 
-            -- init the temporary config header path 
+            -- init the temporary config header path
             local configheader_tmp = path.join(path.directory(configheader_raw), "tmp." .. path.filename(configheader_raw))
 
             -- copy the original config header first
@@ -153,7 +153,7 @@ function _make_targetheaders(mode, arch, target, last)
                 file:close()
             end
 
-            -- override the raw config header at last 
+            -- override the raw config header at last
             if last and os.isfile(configheader_tmp) then
                 os.mv(configheader_tmp, configheader_raw)
             end
@@ -210,7 +210,7 @@ function make(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
-    
+
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
 
@@ -224,7 +224,7 @@ function make(outputdir, vsinfo)
 
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
-                
+
                 -- modify config
                 config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
                 config.set("mode", mode, {readonly = true, force = true})
@@ -257,7 +257,7 @@ function make(outputdir, vsinfo)
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]
 
-                    -- save c/c++ precompiled header 
+                    -- save c/c++ precompiled header
                     _target.pcheader   = target:pcheaderfile("c")     -- header.h
                     _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
 

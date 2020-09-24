@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ task("service")
             ,   description = "Start service for remote or distributed compilation and etc. ${color.warning}(Experimental, still in development)"
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'d', "daemon", "k",  nil,       "Run service as daemon."                                      }
                 ,   {nil, "status", "k",  nil,       "Show service status if the daemon service has been started." }

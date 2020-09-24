@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ import("core.project.target")
 
 -- init it
 function init(self)
-    
+
     -- init shflags
     self:set("zcshflags", "-dynamic", "-fPIC")
 
@@ -36,12 +36,12 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         debug       = "--strip"
     ,   all         = "--strip"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the define flag
@@ -51,8 +51,8 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-O0"
     ,   fast       = "--release-safe"
     ,   aggressive = "--release-fast"
@@ -60,7 +60,7 @@ function nf_optimize(self, level)
     ,   smallest   = "--release-small"
     ,   aggressive = "--release-fast"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the link flag

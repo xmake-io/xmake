@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,23 +21,23 @@
 -- imports
 import("core.project.config")
 
--- find devenv 
+-- find devenv
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local devenv = find_devenv()
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if not is_host("windows") then
-        return 
+        return
     end
 
     -- disable to check version

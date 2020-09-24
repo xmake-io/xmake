@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -41,11 +41,11 @@ function choicedialog:init(name, bounds, title)
     self:text():text_set("Use the arrow keys to navigate this window or press the hotkey of the item you wish to select followed by the <SPACEBAR>. Press <?> for additional information about this")
 
     -- init buttons
-    self:button_add("select", "< Select >", function (v, e) 
-        self:choicebox():on_event(event.command {"cm_enter"}) 
+    self:button_add("select", "< Select >", function (v, e)
+        self:choicebox():on_event(event.command {"cm_enter"})
         self:quit()
     end)
-    self:button_add("cancel", "< Cancel >", function (v, e) 
+    self:button_add("cancel", "< Cancel >", function (v, e)
         self:quit()
     end)
     self:buttons():select(self:button("select"))
@@ -82,7 +82,7 @@ function choicedialog:on_event(e)
             return self:choicebox():on_event(e)
         end
     end
-    return boxdialog.on_event(self, e) 
+    return boxdialog.on_event(self, e)
 end
 
 -- return module

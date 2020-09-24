@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      OpportunityLiu
@@ -21,7 +21,7 @@
 -- imports
 import("checkurl")
 
-local custom_protocol = 
+local custom_protocol =
 {
     ["github:"]     = "https://github.com"
 ,   ["gitlab:"]     = "https://gitlab.com"
@@ -38,14 +38,14 @@ local custom_protocol =
 
 function main(url)
 
-    -- check 
+    -- check
     url = url:trim()
     assert(#url > 0)
 
     -- safe because all custom_protocol supports https
     local lower = url:lower()
     local n_url = url
-    if lower:startswith("http://") then 
+    if lower:startswith("http://") then
         n_url = "https" .. url:sub(#"http" + 1)
         lower = n_url:lower()
     end

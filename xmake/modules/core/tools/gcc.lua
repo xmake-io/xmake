@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -62,7 +62,7 @@ function init(self)
 
     -- for macho target
     if is_plat("macosx") or is_plat("iphoneos") then
-        self:add("mapflags", 
+        self:add("mapflags",
         {
             ["-s"] = "-Wl,-x"
         })
@@ -71,8 +71,8 @@ end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
@@ -90,7 +90,7 @@ function nf_symbol(self, level)
         local maps = _g.symbol_maps
         if not maps then
             maps =
-            {   
+            {
                 debug  = "-g"
             ,   hidden = "-fvisibility=hidden"
             }
@@ -105,8 +105,8 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"
@@ -119,8 +119,8 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-O0"
     ,   fast       = "-O1"
     ,   faster     = "-O2"
@@ -128,13 +128,13 @@ function nf_optimize(self, level)
     ,   smallest   = "-Os"
     ,   aggressive = "-Ofast"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-    local maps = 
-    {   
+    local maps =
+    {
         mmx   = "-mmmx"
     ,   sse   = "-msse"
     ,   sse2  = "-msse2"
@@ -144,7 +144,7 @@ function nf_vectorext(self, extension)
     ,   avx2  = "-mavx2"
     ,   neon  = "-mfpu=neon"
     }
-    return maps[extension] 
+    return maps[extension]
 end
 
 -- make the language flag
@@ -152,7 +152,7 @@ function nf_language(self, stdname)
 
     -- the stdc maps
     if _g.cmaps == nil then
-        _g.cmaps = 
+        _g.cmaps =
         {
             -- stdc
             ansi        = "-ansi"
@@ -167,7 +167,7 @@ function nf_language(self, stdname)
 
     -- the stdc++ maps
     if _g.cxxmaps == nil then
-        _g.cxxmaps = 
+        _g.cxxmaps =
         {
             cxx98        = "-std=c++98"
         ,   gnuxx98      = "-std=gnu++98"
@@ -288,8 +288,8 @@ function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
 
     -- add language type flags explicitly if the sourcekind is changed.
     --
-    -- because compiler maybe compile `.c` as c++. 
-    -- e.g. 
+    -- because compiler maybe compile `.c` as c++.
+    -- e.g.
     --   add_files("*.c", {sourcekind = "cxx"})
     --
     local sourcekind = fileconfig.sourcekind
@@ -419,7 +419,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
             end
 
             -- has color diagnostics? enable it
-            local colors_diagnostics = _has_color_diagnostics(self) 
+            local colors_diagnostics = _has_color_diagnostics(self)
             if colors_diagnostics then
                 compflags = table.join(compflags, colors_diagnostics)
             end

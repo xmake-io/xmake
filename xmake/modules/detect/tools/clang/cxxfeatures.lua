@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,8 +26,8 @@ function _set(feature, condition)
     _g.features[feature] = condition
 end
 
--- get features 
--- 
+-- get features
+--
 -- porting from Modules/Compiler/Clang-CXX-FeatureTests.cmake
 --
 function main()
@@ -43,7 +43,7 @@ function main()
     local clang_cxx98   = clang_minver .. " && __cplusplus >= 199711L"
 
     -- set features for __has_feature()
-    local features_of_has_feature = 
+    local features_of_has_feature =
     {
          "cxx_alias_templates"
     ,    "cxx_alignas"

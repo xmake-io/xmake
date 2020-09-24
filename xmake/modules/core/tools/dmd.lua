@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("core.project.project")
 
 -- init it
 function init(self)
-    
+
     -- init arflags
     self:set("dcarflags", "-lib")
 
@@ -38,40 +38,40 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         fast        = "-O"
     ,   faster      = "-O -release"
     ,   fastest     = "-O -release -inline -boundscheck=off"
     ,   smallest    = "-O -release -boundscheck=off"
     ,   aggressive  = "-O -release -inline -boundscheck=off"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         debug       = "-L-S"
     ,   all         = "-L-s"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-g -debug"
     }
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the warning flag
 function nf_warning(self, level)
-    local maps = 
-    {   
+    local maps =
+    {
         none        = "-d"
     ,   less        = "-w"
     ,   more        = "-w -wi"
@@ -84,12 +84,12 @@ end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-    local maps = 
-    {   
+    local maps =
+    {
         avx         = "-mcpu=avx"
     ,   avx2        = "-mcpu=avx"
     }
-    return maps[extension] 
+    return maps[extension]
 end
 
 -- make the includedir flag

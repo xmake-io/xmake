@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -350,7 +350,7 @@ function platform._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define(platform._apis())
 
@@ -361,14 +361,14 @@ function platform._interpreter()
     return interp
 end
 
--- get project 
+-- get project
 function platform._project()
     return platform._PROJECT
 end
 
 -- get platform apis
 function platform._apis()
-    return 
+    return
     {
         values =
         {
@@ -404,7 +404,7 @@ function platform.directories()
     local dirs = platform._DIRS or  {   path.join(global.directory(), "platforms")
                                     ,   path.join(os.programdir(), "platforms")
                                     }
-                                
+
     -- save directories to cache
     platform._DIRS = dirs
     return dirs
@@ -423,7 +423,7 @@ function platform.add_directories(...)
     platform._DIRS = table.unique(dirs)
 end
 
--- load the given platform 
+-- load the given platform
 function platform.load(plat, arch)
 
     -- get platform name
@@ -514,9 +514,9 @@ function platform.tool(toolkind, plat, arch)
     local program = config.get(toolkind) or config.get("__tool_" .. key)
     local toolname = config.get("__toolname_" .. key)
     local toolchain_info = config.get("__toolchain_info_" .. key)
-    if program == nil then 
+    if program == nil then
 
-        -- get the current platform 
+        -- get the current platform
         local instance, errors = platform.load(plat, arch)
         if not instance then
             os.raise(errors)
@@ -543,7 +543,7 @@ function platform.tool(toolkind, plat, arch)
     return program, toolname, toolchain_info
 end
 
--- get the given tool configuration 
+-- get the given tool configuration
 function platform.toolconfig(name, plat, arch)
     local instance, errors = platform.load(plat, arch)
     if instance then
@@ -555,10 +555,10 @@ end
 
 -- get the all platforms
 function platform.plats()
-    
+
     -- return it directly if exists
     if platform._PLATS then
-        return platform._PLATS 
+        return platform._PLATS
     end
 
     -- get all platforms
@@ -580,10 +580,10 @@ end
 
 -- get the all toolchains
 function platform.toolchains()
-    
+
     -- return it directly if exists
     if platform._TOOLCHAINS then
-        return platform._TOOLCHAINS 
+        return platform._TOOLCHAINS
     end
 
     -- get all toolchains

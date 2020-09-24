@@ -15,7 +15,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -35,18 +35,18 @@ local app = application()
 -- init app
 function app:init(argv)
 
-    -- init name 
+    -- init name
     application.init(self, "app", argv)
 
     -- init background
     self:background_set("blue")
 
-    -- get file 
+    -- get file
     local file = argv[1]
 
     -- read file content
     local content = nil
-    if file then 
+    if file then
         content = os.isfile(file) and io.readfile(file) or nil
     else
         content = "please input file path!"

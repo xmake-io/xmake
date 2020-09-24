@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -50,7 +50,7 @@ function _subprocess.new(program, proc)
     return subprocess
 end
 
--- get the process name 
+-- get the process name
 function _subprocess:name()
     if not self._NAME then
         self._NAME = path.filename(self:program())
@@ -58,7 +58,7 @@ function _subprocess:name()
     return self._NAME
 end
 
--- get the process program 
+-- get the process program
 function _subprocess:program()
     return self._PROGRAM
 end
@@ -163,12 +163,12 @@ end
 -- open a subprocess
 --
 -- @param command   the process command
--- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}}) 
+-- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
 --
 -- @return          the subprocess
 --
 function process.open(command, opt)
-    
+
     -- get stdout and pass to subprocess
     opt = opt or {}
     local stdout = opt.stdout
@@ -207,7 +207,7 @@ end
 --
 -- @param program   the program
 -- @param argv      the arguments list
--- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}}) 
+-- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
 --
 -- @return          the subprocess
 --

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,24 +22,24 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find lipo 
+-- find lipo
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local lipo = find_lipo()
--- 
+--
 -- @endcode
 --
 function main(opt)
-    
+
     -- init options
     opt       = opt or {}
     opt.check = opt.check or function (program) os.run("%s -info %s", program, os.programfile()) end
-    
+
     -- find program
     return find_program(opt.program or "lipo", opt)
 end

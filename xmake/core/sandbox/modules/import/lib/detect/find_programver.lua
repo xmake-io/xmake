@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -38,7 +38,7 @@ local cache     = require("sandbox/modules/import/lib/detect/cache")
 -- @param program   the program
 -- @param opt       the options, e.g. {command = "--version", parse = "(%d+%.?%d*%.?%d*.-)%s", verbose = true, force = true, cachekey = "xxx"}
 --                    - opt.command   the version command string or script, default: --version
---                    - opt.parse     the version parse script or lua match pattern 
+--                    - opt.parse     the version parse script or lua match pattern
 --
 -- @return          the version string
 --
@@ -62,7 +62,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = cache.load(cachekey) 
+    local cacheinfo = cache.load(cachekey)
     local result = cacheinfo[program]
     if result ~= nil and not opt.force then
         return result and result or nil
@@ -85,7 +85,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     if ok and outdata and #outdata > 0 then
         local parse = opt.parse
         if type(parse) == "function" then
-            ok, result = sandbox.load(parse, outdata) 
+            ok, result = sandbox.load(parse, outdata)
             if not ok and result and option.get("diagnosis") then
                 utils.cprint("${color.warning}checkinfo: ${clear dim}" .. result)
                 result = nil

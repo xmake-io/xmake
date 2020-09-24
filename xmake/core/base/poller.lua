@@ -40,14 +40,14 @@ poller.EV_POLLER_ONESHOT = 0x0010 -- causes the event to return only the first o
 poller.EV_POLLER_EOF     = 0x0100 -- the event flag will be marked if the connection be closed in the edge trigger
 poller.EV_POLLER_ERROR   = 0x0200 -- socket error after waiting
 
--- get poller object data 
+-- get poller object data
 function poller:_pollerdata(cdata)
     return self._POLLERDATA and self._POLLERDATA[cdata] or nil
 end
 
 -- set poller object data
 function poller:_pollerdata_set(cdata, data)
-    local pollerdata = self._POLLERDATA 
+    local pollerdata = self._POLLERDATA
     if not pollerdata then
         pollerdata = {}
         self._POLLERDATA = pollerdata
@@ -69,7 +69,7 @@ end
 function poller:insert(obj, events, udata)
 
     -- insert it
-    local ok, errors = io.poller_insert(obj:otype(), obj:cdata(), events) 
+    local ok, errors = io.poller_insert(obj:otype(), obj:cdata(), events)
     if not ok then
         return false, string.format("%s: insert events(%d) to poller failed, %s", obj, events, errors or "unknown reason")
     end
@@ -83,12 +83,12 @@ end
 function poller:modify(obj, events, udata)
 
     -- modify it
-    local ok, errors = io.poller_modify(obj:otype(), obj:cdata(), events) 
+    local ok, errors = io.poller_modify(obj:otype(), obj:cdata(), events)
     if not ok then
         return false, string.format("%s: modify events(%d) to poller failed, %s", obj, events, errors or "unknown reason")
     end
 
-    -- update poller object data 
+    -- update poller object data
     self:_pollerdata_set(obj:cdata(), {obj, udata})
     return true
 end
@@ -97,12 +97,12 @@ end
 function poller:remove(obj)
 
     -- remove it
-    local ok, errors = io.poller_remove(obj:otype(), obj:cdata()) 
+    local ok, errors = io.poller_remove(obj:otype(), obj:cdata())
     if not ok then
         return false, string.format("%s: remove events from poller failed, %s", obj, errors or "unknown reason")
     end
 
-    -- remove poller object data 
+    -- remove poller object data
     self:_pollerdata_set(obj, nil)
     return true
 end
@@ -111,7 +111,7 @@ end
 function poller:wait(timeout)
 
     -- wait it
-    local events, count = io.poller_wait(timeout or -1) 
+    local events, count = io.poller_wait(timeout or -1)
     if count < 0 then
         return -1, "wait events in poller failed!"
     end
@@ -121,7 +121,7 @@ function poller:wait(timeout)
         return -1, string.format("events(%d) != %d in poller!", #events, count)
     end
 
-    -- wrap objects with cdata 
+    -- wrap objects with cdata
     local results = {}
     if events then
         for _, v in ipairs(events) do

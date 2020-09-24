@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,7 +32,7 @@ rule("xcode.application")
 
     -- package *.app to *.ipa (iphoneos) or *.dmg (macosx)
     on_package("package")
-   
+
     -- install application
     on_install("install")
 

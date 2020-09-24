@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -47,11 +47,11 @@ end
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local strip = find_strip()
 -- local strip, version = find_strip({program = "xcrun -sdk macosx strip", version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)

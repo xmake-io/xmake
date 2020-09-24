@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -53,7 +53,7 @@ function main(toolchain)
 
     -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
     toolchain:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
-    toolchain:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir) 
+    toolchain:add("scshflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
     toolchain:add("scldflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sdkdir)
 end
 

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -62,7 +62,7 @@ function _find_cuda(sdkdir)
         return nil
     end
 
-    -- get the bin directory 
+    -- get the bin directory
     local bindir = path.join(sdkdir, "bin")
     if not os.isexec(path.join(bindir, "nvcc")) then
         return nil
@@ -91,14 +91,14 @@ end
 -- find cuda sdk toolchains
 --
 -- @param sdkdir    the cuda sdk directory
--- @param opt       the argument options 
+-- @param opt       the argument options
 --
 -- @return          the cuda sdk toolchains. e.g. {sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
--- @code 
+-- @code
 --
 -- local toolchains = find_cuda("/Developer/NVIDIA/CUDA-9.1")
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)
@@ -112,7 +112,7 @@ function main(sdkdir, opt)
     if not opt.force and cacheinfo.cuda and cacheinfo.cuda.sdkdir and os.isdir(cacheinfo.cuda.sdkdir) then
         return cacheinfo.cuda
     end
-       
+
     -- find cuda
     local cuda = _find_cuda(sdkdir or config.get("cuda") or global.get("cuda") or config.get("sdk"))
     if cuda then

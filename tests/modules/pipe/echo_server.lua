@@ -4,7 +4,7 @@ function main(name)
 
     local pipefile = pipe.open(name or "test", 'r')
     if pipefile:connect() > 0 then
-        print("%s: connected", pipefile) 
+        print("%s: connected", pipefile)
         local count = 0
         local result = nil
         while count < 10000 do

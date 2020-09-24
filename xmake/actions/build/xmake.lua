@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ task("build")
             ,   shortname = 'b'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'b', "build",      "k",  nil   , "Build target. This is default building mode and optional."     }
                 ,   {'r', "rebuild",    "k",  nil   , "Rebuild the target."                                           }
@@ -56,7 +56,7 @@ task("build")
                                                       "    - xmake --files='src/*.c' [target]",
                                                       "    - xmake --files='src/**c|excluded_file.c'",
                                                       "    - xmake --files='src/main.c" .. path.envsep() .. "src/test.c'"  }
-               
+
                 ,   {}
                 ,   {nil, "target",     "v",  nil   , "The target name. It will build all default targets if this parameter is not specified."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }

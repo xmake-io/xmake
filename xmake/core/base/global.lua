@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -45,7 +45,7 @@ function global.readonly(name)
     return global._MODES and global._MODES["__readonly_" .. name]
 end
 
--- set the given configure to the current 
+-- set the given configure to the current
 --
 -- @param name  the name
 -- @param value the value
@@ -62,7 +62,7 @@ function global.set(name, value, opt)
     -- check readonly
     assert(opt.force or not global.readonly(name), "cannot set readonly global: " .. name)
 
-    -- set it 
+    -- set it
     global._CONFIGS = global._CONFIGS or {}
     global._CONFIGS[name] = value
 
@@ -75,7 +75,7 @@ end
 
 -- get all options
 function global.options()
-         
+
     -- remove values with "auto" and private item
     local configs = {}
     for name, value in pairs(table.wrap(global._CONFIGS)) do
@@ -123,7 +123,7 @@ function global.load()
             return false, errors
         end
 
-        -- merge the configure 
+        -- merge the configure
         for name, value in pairs(results) do
             if global.get(name) == nil then
                 global.set(name, value)
@@ -144,7 +144,7 @@ function global.save()
     options.__version = xmake._VERSION_SHORT
 
     -- save it
-    return io.save(global.filepath(), options) 
+    return io.save(global.filepath(), options)
 end
 
 -- clear config

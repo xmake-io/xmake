@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -34,7 +34,7 @@ import("package")
 --
 function enter()
 
-    -- set search pathes of toolchains 
+    -- set search pathes of toolchains
     environment.enter("toolchains")
 
     -- unzip is necessary
@@ -56,7 +56,7 @@ function enter()
         table.join2(packages, package.install_packages("7z"))
     end
 
-    -- enter the environments of installed packages 
+    -- enter the environments of installed packages
     for _, instance in ipairs(packages) do
         instance:envs_enter()
     end
@@ -66,7 +66,7 @@ end
 -- leave environment
 function leave()
 
-    -- leave the environments of installed packages 
+    -- leave the environments of installed packages
     for _, instance in irpairs(_g._PACKAGES) do
         instance:envs_leave()
     end

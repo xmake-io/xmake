@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,16 +23,16 @@ import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("lib.detect.find_tool")
 
--- find link 
+-- find link
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local link = find_link()
--- 
+--
 -- @endcode
 --
 function main(opt)
@@ -66,7 +66,7 @@ function main(opt)
     end
     opt.command = opt.command or function () return verinfo end
     opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
-    
+
     -- find program
     local verinfo = nil
     local program = find_program(opt.program or "link.exe", opt)

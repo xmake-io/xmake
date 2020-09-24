@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,13 +39,13 @@ function config._load(targetname)
     local filepath = config.filepath()
     if os.isfile(filepath) then
 
-        -- load it 
+        -- load it
         local results, errors = io.load(filepath)
         if not results then
             return nil, errors
         end
 
-        -- load the target configure 
+        -- load the target configure
         if results._TARGETS then
             return table.wrap(results._TARGETS[targetname])
         end
@@ -58,7 +58,7 @@ end
 -- get the current given configure
 function config.get(name)
 
-    -- get it 
+    -- get it
     local value = nil
     if config._CONFIGS then
         value = config._CONFIGS[name]
@@ -76,7 +76,7 @@ function config.readonly(name)
     return config._MODES and config._MODES["__readonly_" .. name]
 end
 
--- set the given configure to the current 
+-- set the given configure to the current
 --
 -- @param name  the name
 -- @param value the value
@@ -93,7 +93,7 @@ function config.set(name, value, opt)
     -- check readonly
     assert(opt.force or not config.readonly(name), "cannot set readonly config: " .. name)
 
-    -- set it 
+    -- set it
     config._CONFIGS = config._CONFIGS or {}
     config._CONFIGS[name] = value
 
@@ -109,7 +109,7 @@ function config.options()
 
     -- check
     assert(config._CONFIGS)
-         
+
     -- remove values with "auto" and private item
     local configs = {}
     for name, value in pairs(config._CONFIGS) do
@@ -151,7 +151,7 @@ end
 -- get the configure directory on the current host/arch platform
 function config.directory()
     if config._DIRECTORY == nil then
-        local rootdir = os.getenv("XMAKE_CONFIGDIR") 
+        local rootdir = os.getenv("XMAKE_CONFIGDIR")
         if not rootdir and os.isdir(path.join(os.workingdir(), ".xmake")) then
             -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
             rootdir = os.workingdir()
@@ -217,7 +217,7 @@ function config.save(targetname)
     results.__version = xmake._VERSION_SHORT
 
     -- save it
-    return io.save(config.filepath(), results) 
+    return io.save(config.filepath(), results)
 end
 
 -- read value from the configure file directly

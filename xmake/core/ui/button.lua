@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -54,10 +54,10 @@ function button:on_draw(transparent)
     -- strip text string
     local str = self:text()
     if str and #str > 0 then
-        str = string.sub(str, 1, self:width()) 
+        str = string.sub(str, 1, self:width())
     end
     if not str or #str == 0 then
-        return 
+        return
     end
 
     -- get the text attribute value
@@ -77,7 +77,7 @@ function button:on_event(e)
 
     -- selected?
     if not self:state("selected") then
-        return 
+        return
     end
 
     -- enter this button?

@@ -104,8 +104,8 @@ static xm_io_file_t* xm_io_stdfile_new(lua_State* lua, tb_size_t type)
     file->encoding   = TB_CHARSET_TYPE_UTF8;
 
     // init the read/write line cache buffer
-    tb_buffer_init(&file->rcache); 
-    tb_buffer_init(&file->wcache); 
+    tb_buffer_init(&file->rcache);
+    tb_buffer_init(&file->wcache);
     return file;
 }
 

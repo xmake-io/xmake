@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ rule("xcode.storyboard")
     -- support add_files("*.storyboard")
     set_extensions(".storyboard")
 
-    -- build *.storyboard 
+    -- build *.storyboard
     on_build_file(function (target, sourcefile, opt)
 
         -- imports
@@ -47,9 +47,9 @@ rule("xcode.storyboard")
         local dependfile = target:dependfile(sourcefile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-            return 
+            return
         end
-        
+
         -- trace progress info
         progress.show(opt.progress, "${color.build.object}compiling.xcode.$(mode) %s", sourcefile)
 

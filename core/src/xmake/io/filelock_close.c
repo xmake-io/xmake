@@ -41,7 +41,7 @@ tb_int_t xm_io_filelock_close(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check lock?
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
         return 0;
 
     // get lock

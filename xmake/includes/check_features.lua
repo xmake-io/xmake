@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        check_features.lua
 --
 
--- check features and add macro definition 
+-- check features and add macro definition
 --
 -- e.g.
 --
@@ -47,7 +47,7 @@ function check_features(definition, features, opt)
     add_options(optname)
 end
 
--- check features and add macro definition to the configuration files 
+-- check features and add macro definition to the configuration files
 --
 -- e.g.
 --

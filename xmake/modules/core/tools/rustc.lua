@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -25,7 +25,7 @@ import("core.project.project")
 
 -- init it
 function init(self)
-    
+
     -- init arflags
     self:set("rcarflags", "--crate-type=lib")
 
@@ -43,8 +43,8 @@ end
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none        = "-C opt-level=0"
     ,   fast        = "-C opt-level=1"
     ,   faster      = "-C opt-level=2"
@@ -54,20 +54,20 @@ function nf_optimize(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-C debuginfo=2"
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the linkdir flag

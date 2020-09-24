@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -68,7 +68,7 @@ function label:text_set(text)
     -- set text
     text = text or ""
     local changed = self._TEXT ~= text
-    self._TEXT = text 
+    self._TEXT = text
 
     -- do action
     if changed then
@@ -94,7 +94,7 @@ function label:textattr_val()
     -- get text attribute
     local textattr = self:textattr()
     if not textattr then
-        return 
+        return
     end
 
     -- no text background? use view's background
@@ -117,7 +117,7 @@ end
 
 -- split text by width
 function label:splitext(text, width)
-    
+
     -- get width
     width = width or self:width()
 

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,15 +28,15 @@ import("package.manager.find_package")
 
 -- get the root directory of the brew packages
 function _brew_pkg_rootdir()
-    local brew_pkg_rootdir = _g.brew_pkg_rootdir 
+    local brew_pkg_rootdir = _g.brew_pkg_rootdir
     if brew_pkg_rootdir == nil then
         local brew = find_tool("brew")
         if brew then
-            brew_pkg_rootdir = try 
-            { 
-                function () 
-                    return os.iorunv(brew.program, {"--prefix"}) 
-                end 
+            brew_pkg_rootdir = try
+            {
+                function ()
+                    return os.iorunv(brew.program, {"--prefix"})
+                end
             } or "/usr/local"
         end
         if brew_pkg_rootdir then
@@ -54,7 +54,7 @@ end
 --
 function main(name, opt)
 
-    -- find the prefix directory of brew 
+    -- find the prefix directory of brew
     local brew_pkg_rootdir = _brew_pkg_rootdir()
     if not brew_pkg_rootdir then
         return
@@ -72,7 +72,7 @@ function main(name, opt)
         opt.configdirs = path.directory(pcfile)
         result = find_package("pkg_config::" .. pcname, opt)
         if not result then
-            -- attempt to get includedir variable from pkg-config/xx.pc 
+            -- attempt to get includedir variable from pkg-config/xx.pc
             local varinfo = pkg_config.variables(pcname, "includedir", opt)
             if varinfo and varinfo.includedir then
                 result = result or {}

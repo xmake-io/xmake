@@ -41,7 +41,7 @@ tb_int_t xm_io_pipe_read(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check pipe file
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid pipe file!");

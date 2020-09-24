@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -113,7 +113,7 @@ function _get_configs(artifacts_dir)
     local configs = {}
     table.insert(configs, "--prefix=" .. artifacts_dir)
 
-    -- add extra user configs 
+    -- add extra user configs
     local tryconfigs = config.get("tryconfigs")
     if tryconfigs then
         for _, opt in ipairs(cli.parse(tryconfigs)) do
@@ -124,8 +124,8 @@ function _get_configs(artifacts_dir)
     -- add host for cross-complation
     if not is_plat(os.subhost()) then
         if is_plat("iphoneos") then
-            local triples = 
-            { 
+            local triples =
+            {
                 arm64  = "aarch64-apple-darwin",
                 arm64e = "aarch64-apple-darwin",
                 armv7  = "armv7-apple-darwin",
@@ -136,7 +136,7 @@ function _get_configs(artifacts_dir)
             table.insert(configs, "--host=" .. (triples[config.arch()] or triples.arm64))
         elseif is_plat("android") then
             -- @see https://developer.android.com/ndk/guides/other_build_systems#autoconf
-            local triples = 
+            local triples =
             {
                 ["armv5te"]     = "arm-linux-androideabi",  -- deprecated
                 ["armv7-a"]     = "arm-linux-androideabi",  -- deprecated
@@ -151,8 +151,8 @@ function _get_configs(artifacts_dir)
             }
             table.insert(configs, "--host=" .. (triples[config.arch()] or triples["armeabi-v7a"]))
         elseif is_plat("mingw") then
-            local triples = 
-            { 
+            local triples =
+            {
                 i386   = "i686-w64-mingw32",
                 x86_64 = "x86_64-w64-mingw32"
             }
@@ -192,7 +192,7 @@ function build()
         os.mkdir(artifacts_dir)
     end
 
-    -- generate configure 
+    -- generate configure
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
             os.vexecv("sh", {"./autogen.sh"})

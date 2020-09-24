@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,16 +23,16 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
 -- init vc variables
-local vcvars = {"path", 
-                "lib", 
-                "libpath", 
-                "include", 
-                "DevEnvdir", 
-                "VSInstallDir", 
-                "VCInstallDir", 
-                "WindowsSdkDir", 
-                "WindowsLibPath", 
-                "WindowsSDKVersion", 
+local vcvars = {"path",
+                "lib",
+                "libpath",
+                "include",
+                "DevEnvdir",
+                "VSInstallDir",
+                "VCInstallDir",
+                "WindowsSdkDir",
+                "WindowsLibPath",
+                "WindowsSDKVersion",
                 "WindowsSdkBinPath",
                 "UniversalCRTSdkDir",
                 "UCRTVersion"}
@@ -40,13 +40,13 @@ local vcvars = {"path",
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
 
-    -- make the genvcvars.bat 
+    -- make the genvcvars.bat
     opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
     local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
-    -- fix error caused by the new vsDevCmd.bat of vs2019 
+    -- fix error caused by the new vsDevCmd.bat of vs2019
     -- @see https://github.com/xmake-io/xmake/issues/549
     if vsver and tonumber(vsver) >= 16 then
         file:print("set VSCMD_SKIP_SENDTELEMETRY=yes")
@@ -75,7 +75,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         end
     end
     if not variables.path then
-        return 
+        return
     end
 
     -- remove some empty entries
@@ -94,7 +94,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         end
     end
 
-    -- fix UCRTVersion 
+    -- fix UCRTVersion
     --
     -- @note vcvarsall.bat maybe detect error if install WDK and SDK at same time (multi-sdk version exists in include directory).
     --
@@ -143,7 +143,7 @@ function main(opt)
     end
 
     -- init vsvers
-    local vsvers = 
+    local vsvers =
     {
         ["16.0"] = "2019"
     ,   ["15.0"] = "2017"
@@ -161,7 +161,7 @@ function main(opt)
     }
 
     -- init vsenvs
-    local vsenvs = 
+    local vsenvs =
     {
         ["14.0"] = "VS140COMNTOOLS"
     ,   ["12.0"] = "VS120COMNTOOLS"
@@ -196,15 +196,15 @@ function main(opt)
             if not vsvers[VisualStudioVersion] then
                 local versions = {}
                 local count = 0
-                for k in pairs(vsvers) do 
+                for k in pairs(vsvers) do
                     table.insert(versions, tonumber(k))
-                    count = count + 1 
+                    count = count + 1
                 end
                 table.sort(versions)
                 local i = 0
                 local v = tonumber(VisualStudioVersion)
-                while ((i < count) and (versions[i + 1] <= v)) do 
-                    i = i + 1 
+                while ((i < count) and (versions[i + 1] <= v)) do
+                    i = i + 1
                 end
                 VisualStudioVersion = versions[i] or "0"
             end
@@ -230,10 +230,10 @@ function main(opt)
             return results
         end
     end
-    
-    -- find vswhere 
+
+    -- find vswhere
     local vswhere = find_tool("vswhere")
-    
+
     -- find vs2017 -> vs4.2
     local results = {}
     for version in pairs(vsvers) do
@@ -245,13 +245,13 @@ function main(opt)
         if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
             local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-version", vswhere_vrange})
-            if result then 
+            if result then
                 vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
             end
         end
 
         -- init pathes
-        local pathes = 
+        local pathes =
         {
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC", version),
             format("$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7;%s)\\VC7\\bin", version),
@@ -265,7 +265,7 @@ function main(opt)
         if vswhere_VCAuxiliaryBuildDir and os.isdir(vswhere_VCAuxiliaryBuildDir) then
             table.insert(pathes, vswhere_VCAuxiliaryBuildDir)
         end
-        
+
         -- find vs from some logical drives pathes
         for _, logical_drive in ipairs(winos.logical_drives()) do
             if os.isdir(path.join(logical_drive, "Program Files (x86)")) then

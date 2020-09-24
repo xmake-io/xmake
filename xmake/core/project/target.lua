@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -172,7 +172,7 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
 
         -- remove '(' and ')'
         local srcpathes = copiedfile:gsub("[%(%)]", "")
-        if srcpathes then 
+        if srcpathes then
 
             -- get the source pathes
             srcpathes = os.match(srcpathes)
@@ -242,7 +242,7 @@ function _instance:_visibility(opt)
     return visibility
 end
 
--- invalidate the previous cache 
+-- invalidate the previous cache
 function _instance:_invalidate(name)
     self._CACHEID = self._CACHEID + 1
     self._POLICIES = nil
@@ -254,7 +254,7 @@ end
 
 -- get the target info
 --
--- e.g. 
+-- e.g.
 --
 -- default: get private
 --  - target:get("cflags")
@@ -401,8 +401,8 @@ function _instance:values(name, sourcefile)
             if filevalues then
                 -- we use '_' to simplify setting, for example:
                 --
-                -- add_files("xxx.mof", {values = {wdk_mof_header = "xxx.h"}}) 
-                -- add_files("xxx.mof", {values = {["wdk.mof.header"] = "xxx.h"}}) 
+                -- add_files("xxx.mof", {values = {wdk_mof_header = "xxx.h"}})
+                -- add_files("xxx.mof", {values = {["wdk.mof.header"] = "xxx.h"}})
                 --
                 table.join2(values, filevalues[name] or filevalues[name:gsub("%.", "_")])
             end
@@ -412,7 +412,7 @@ function _instance:values(name, sourcefile)
     -- get values from target
     table.join2(values, self:get("values." .. name))
     if #values > 0 then
-        values = table.unwrap(values) 
+        values = table.unwrap(values)
     else
         values = nil
     end
@@ -487,7 +487,7 @@ function _instance:platform()
     return platform_inst
 end
 
--- get the cache key 
+-- get the cache key
 function _instance:cachekey()
     return string.format("%s_%d", tostring(self), self._CACHEID)
 end
@@ -562,12 +562,12 @@ function _instance:linker()
     return instance
 end
 
--- make linking command for this target 
+-- make linking command for this target
 function _instance:linkcmd(objectfiles)
     return self:linker():linkcmd(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
 end
 
--- make linking arguments for this target 
+-- make linking arguments for this target
 function _instance:linkargv(objectfiles)
     return self:linker():linkargv(objectfiles or self:objectfiles(), self:targetfile(), {target = self})
 end
@@ -614,7 +614,7 @@ end
 
 -- is phony target?
 function _instance:isphony()
-    
+
     -- get target kind
     local targetkind = self:targetkind()
 
@@ -635,17 +635,17 @@ function _instance:opts()
         return self._OPTS_ENABLED
     end
 
-    -- load options if be enabled 
+    -- load options if be enabled
     self._OPTS_ENABLED = {}
     for _, opt in ipairs(self:orderopts()) do
         self._OPTS_ENABLED[opt:name()] = opt
     end
 
-    -- get it 
+    -- get it
     return self._OPTS_ENABLED
 end
 
--- get the enabled ordered options 
+-- get the enabled ordered options
 function _instance:orderopts()
 
     -- attempt to get it from cache first
@@ -653,7 +653,7 @@ function _instance:orderopts()
         return self._ORDEROPTS_ENABLED
     end
 
-    -- load options if be enabled 
+    -- load options if be enabled
     self._ORDEROPTS_ENABLED = {}
     for _, name in ipairs(table.wrap(self:get("options"))) do
         local opt = nil
@@ -674,7 +674,7 @@ function _instance:orderopts()
         end
     end
 
-    -- get it 
+    -- get it
     return self._ORDEROPTS_ENABLED
 end
 
@@ -691,17 +691,17 @@ function _instance:pkgs()
         return self._PKGS_ENABLED
     end
 
-    -- load packages if be enabled 
+    -- load packages if be enabled
     self._PKGS_ENABLED = {}
     for _, pkg in ipairs(self:orderpkgs()) do
         self._PKGS_ENABLED[pkg:name()] = pkg
     end
 
-    -- get it 
+    -- get it
     return self._PKGS_ENABLED
 end
 
--- get the required packages 
+-- get the required packages
 function _instance:orderpkgs()
     if not self._ORDERPKGS_ENABLED then
         local packages = {}
@@ -717,7 +717,7 @@ end
 
 -- get the environments of packages
 function _instance:pkgenvs()
-    local pkgenvs = self._PKGENVS 
+    local pkgenvs = self._PKGENVS
     if not pkgenvs then
         pkgenvs = {}
         self._PKGENVS = pkgenvs
@@ -737,7 +737,7 @@ function _instance:pkgenvs()
     return pkgenvs
 end
 
--- get the config info of the given package 
+-- get the config info of the given package
 function _instance:pkgconfig(pkgname)
     local extra_packages = self:get("__extra_packages")
     if extra_packages then
@@ -846,7 +846,7 @@ function _instance:autogendir(opt)
     return autogendir
 end
 
--- get the autogen file path from the given source file path 
+-- get the autogen file path from the given source file path
 function _instance:autogenfile(sourcefile, opt)
 
     -- get relative directory in the autogen directory
@@ -864,7 +864,7 @@ function _instance:autogenfile(sourcefile, opt)
 
     -- translate path
     --
-    -- e.g. 
+    -- e.g.
     --
     -- src/xxx.c
     --      project/xmake.lua
@@ -1004,7 +1004,7 @@ function _instance:installdir()
     return installdir or nil
 end
 
--- get rules of the source file 
+-- get rules of the source file
 function _instance:filerules(sourcefile)
 
     -- add rules from file config
@@ -1012,7 +1012,7 @@ function _instance:filerules(sourcefile)
     local override = false
     local fileconfig = self:fileconfig(sourcefile)
     if fileconfig then
-        local filerules = fileconfig.rules or fileconfig.rule 
+        local filerules = fileconfig.rules or fileconfig.rule
         if filerules then
             override = filerules.override
             for _, rulename in ipairs(table.wrap(filerules)) do
@@ -1046,11 +1046,11 @@ function _instance:filerules(sourcefile)
         self._KEY2RULES = key2rules
     end
 
-    -- get target rules from the given sourcekind or extension 
+    -- get target rules from the given sourcekind or extension
     for _, r in ipairs(table.wrap(key2rules[self:sourcekind_of(sourcefile)] or key2rules[path.extension(sourcefile):lower()])) do
         table.insert(rules, r)
     end
-    return rules 
+    return rules
 end
 
 -- get the config info of the given source file
@@ -1096,12 +1096,12 @@ function _instance:fileconfig_set(sourcefile, info)
 
     -- set config info
     filesconfig[sourcefile] = info
-    
+
     -- update files config
     self._FILESCONFIG = filesconfig
 end
 
--- get the source files 
+-- get the source files
 function _instance:sourcefiles()
 
     -- cached? return it directly
@@ -1131,7 +1131,7 @@ function _instance:sourcefiles()
             deleted = true
         end
 
-        -- find source files 
+        -- find source files
         local results = os.files(file)
         if #results == 0 then
             -- attempt to find source directories if maybe compile it as directory with the custom rules
@@ -1243,12 +1243,12 @@ function _instance:headerfiles(outputdir, only_deprecated)
     -- get header files?
     local headers = self:get("headers") -- TODO deprecated
     if not only_deprecated then
-       headers = table.join(headers or {}, self:get("headerfiles")) 
+       headers = table.join(headers or {}, self:get("headerfiles"))
     end
     if not headers then return end
 
     -- get the installed header directory
-    local headerdir = outputdir 
+    local headerdir = outputdir
     if not headerdir then
         if only_deprecated then
             headerdir = self:headerdir()
@@ -1273,7 +1273,7 @@ function _instance:headerfiles(outputdir, only_deprecated)
 
         -- remove '(' and ')'
         local srcpathes = header:gsub("[%(%)]", "")
-        if srcpathes then 
+        if srcpathes then
 
             -- get the source pathes
             srcpathes = os.match(srcpathes)
@@ -1464,7 +1464,7 @@ function _instance:sourcekinds()
     self._SOURCEKINDS = sourcekinds
 
     -- ok?
-    return sourcekinds 
+    return sourcekinds
 end
 
 -- get source count
@@ -1560,14 +1560,14 @@ function _instance:script(name, generic)
         for _pattern, _script in pairs(script) do
             local hosts = {}
             local hosts_spec = false
-            _pattern = _pattern:gsub("@(.+)", function (v) 
+            _pattern = _pattern:gsub("@(.+)", function (v)
                 for _, host in ipairs(v:split(',')) do
                     hosts[host] = true
                     hosts_spec = true
                 end
-                return "" 
+                return ""
             end)
-            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])  
+            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])
             and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
                 result = _script
                 break
@@ -1641,7 +1641,7 @@ function _instance:configheader(outputdir)
     -- get config header
     local configheader = self:get("config_header") or self:get("config_h")
     if not configheader then
-        return 
+        return
     end
 
     -- mark as deprecated
@@ -1694,7 +1694,7 @@ function _instance:pcoutputfile(langkind)
     if pcoutputfile then
         return pcoutputfile
     end
-        
+
     -- get the precompiled header file in the object directory
     local pcheaderfile = self:pcheaderfile(langkind)
     if pcheaderfile then
@@ -1702,7 +1702,7 @@ function _instance:pcoutputfile(langkind)
         -- load tool instance
         local toolinstance = tool.load(language.langkinds()[langkind])
 
-        -- make precompiled output file 
+        -- make precompiled output file
         --
         -- @note gcc has not -include-pch option to set the pch file path
         --
@@ -1752,7 +1752,7 @@ function _instance:tool(toolkind)
         end
 
         -- attempt to get program from config first if no the given toolchains in target
-        if not program and not self:get("toolchains") then 
+        if not program and not self:get("toolchains") then
             program = config.get(toolkind) or config.get("__tool_" .. key)
             toolname = config.get("__toolname_" .. key)
             toolchain_info = config.get("__toolchain_info_" .. key)
@@ -1769,7 +1769,7 @@ function _instance:tool(toolkind)
                 end
             end
         end
-        
+
         -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
         if program and type(program) == "string" then
             local pos = program:find('@', 1, true)
@@ -1814,7 +1814,7 @@ function _instance:toolconfig(name)
         -- get them from all toolchains
         for _, toolchain_inst in ipairs(self:toolchains()) do
 
-            -- get xxflags 
+            -- get xxflags
             local values = toolchain_inst:get(name)
             if values then
                 toolconfig = toolconfig or {}
@@ -1847,7 +1847,7 @@ end
 -- get target apis
 function target.apis()
 
-    return 
+    return
     {
         values =
         {
@@ -1958,7 +1958,7 @@ function target.filename(targetname, targetkind, opt)
     assert(targetname and targetkind)
 
     -- make filename by format
-    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) 
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch)
     return format and (format:gsub("%$%(name%)", targetname)) or targetname
 end
 

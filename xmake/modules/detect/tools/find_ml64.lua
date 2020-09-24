@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,16 +22,16 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find ml64 
+-- find ml64
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local ml64 = find_ml64()
--- 
+--
 -- @endcode
 --
 function main(opt)
@@ -39,14 +39,14 @@ function main(opt)
     -- init options
     opt       = opt or {}
     opt.check = opt.check or function (program) os.runv(program, {}, {envs = opt.envs}) end
-    
+
     -- find program
     local program = find_program(opt.program or "ml64.exe", opt)
 
     -- find program version
     local version = nil
     if program and opt and opt.version then
-        opt.command = opt.command or function () local _, info = os.iorunv(program, {}, {envs = opt.envs}); return info end 
+        opt.command = opt.command or function () local _, info = os.iorunv(program, {}, {envs = opt.envs}); return info end
         opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
         version = find_programver(program, opt)
     end

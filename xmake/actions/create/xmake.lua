@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ task("create")
             ,   description = "Create a new project."
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'l', "language",   "kv", "c++",        "The project language"
 
@@ -60,7 +60,7 @@ task("create")
                                                                         end
                                                                     end
                                                                 end
-                                                                
+
                                                                 return accepted_lang
                                                             end                                                             }
                 ,   {'t', "template",   "kv", "console",    "Select the project template id or name of the given language.",
@@ -112,7 +112,7 @@ task("create")
                                                             end                                                             }
 
                 ,   {}
-                ,   {nil, "target",     "v",  nil,          "Create the given target."                     
+                ,   {nil, "target",     "v",  nil,          "Create the given target."
                                                           , "Uses the project name as target if not exists."                }
                 }
             }

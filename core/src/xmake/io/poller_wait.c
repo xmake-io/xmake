@@ -83,7 +83,7 @@ tb_int_t xm_io_poller_wait(lua_State* lua)
     {
         lua_pushinteger(lua, (tb_int_t)count);
         return 2;
-    } 
+    }
     else if (!count)
     {
         // timeout

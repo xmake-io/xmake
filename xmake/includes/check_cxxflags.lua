@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        check_cxxflags.lua
 --
 
--- check c++ flags and add macro definition 
+-- check c++ flags and add macro definition
 --
 -- e.g.
 --
@@ -40,7 +40,7 @@ function check_cxxflags(definition, flags, opt)
     add_options(optname)
 end
 
--- check c++ flags and add macro definition to the configuration flags 
+-- check c++ flags and add macro definition to the configuration flags
 --
 -- e.g.
 --

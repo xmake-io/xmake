@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -20,7 +20,7 @@
 
 -- define rule: swift.build
 rule("swift.build")
-    set_sourcekinds("sc")    
+    set_sourcekinds("sc")
     on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: swift
@@ -28,7 +28,7 @@ rule("swift")
 
     -- add build rules
     add_deps("swift.build")
-    
+
     -- support `add_files("src/*.o")` to merge object files to target
     add_deps("utils.merge.object")
 

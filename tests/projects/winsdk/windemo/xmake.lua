@@ -9,4 +9,4 @@ target("test")
 
     -- add files
     add_files("*.rc", "*.cpp")
- 
+

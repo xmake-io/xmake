@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -38,7 +38,7 @@ tb_int_t xm_os_cpfile(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the source and destination 
+    // get the source and destination
     tb_char_t const* src = luaL_checkstring(lua, 1);
     tb_char_t const* dst = luaL_checkstring(lua, 2);
     tb_check_return_val(src && dst, 0);

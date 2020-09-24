@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -50,10 +50,10 @@ function _instance:get(name)
     -- get if from info first
     local value = info[name]
     if value ~= nil then
-        return value 
+        return value
     end
 
-    -- load _g 
+    -- load _g
     if self._g == nil and info.load ~= nil then
 
         -- load it
@@ -66,7 +66,7 @@ function _instance:get(name)
         self._g = results
     end
 
-    -- get it from _g 
+    -- get it from _g
     return self._g[name]
 end
 
@@ -218,7 +218,7 @@ function language._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define
     {
@@ -567,7 +567,7 @@ end
 function language.extension_of(sourcekind)
 
     -- get extension
-    local extension = table.wrap(language.sourcekinds()[sourcekind])[1] 
+    local extension = table.wrap(language.sourcekinds()[sourcekind])[1]
     if not extension then
         return nil, string.format("%s is unknown source kind", sourcekind)
     end
@@ -595,7 +595,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
             for _, mixingkind in ipairs(table.wrap(instance:mixingkinds())) do
                 local targetflags = instance:targetflags()
                 for _targetkind, linkerkind in pairs(table.wrap(instance:targetkinds())) do
-                    
+
                     -- init linker info
                     linkerinfos[_targetkind] = linkerinfos[_targetkind] or {}
                     linkerinfos[_targetkind][linkerkind] = linkerinfos[_targetkind][linkerkind] or {}
@@ -625,7 +625,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
         -- match all source kinds?
         local count = 0
         for _, sourcekind in ipairs(sourcekinds) do
-            count = count + (linkerinfo.mixingkinds[sourcekind] or 0) 
+            count = count + (linkerinfo.mixingkinds[sourcekind] or 0)
         end
         if count == #sourcekinds then
             table.insert(results, linkerinfo)

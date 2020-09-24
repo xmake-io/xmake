@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -52,7 +52,7 @@ end
 -- try to remove the given file or directory
 function _tryrm(makefile, filedir)
     if is_plat("windows") then
-        -- we attempt to delete it as file first, we remove it as directory if failed 
+        -- we attempt to delete it as file first, we remove it as directory if failed
         makefile:print("\t@del /F /Q %s > NUL 2>&1 || rmdir /S /Q %s > NUL 2>&1", filedir, filedir)
     else
         makefile:print("\t@rm -rf %s", filedir)
@@ -138,8 +138,8 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
 
     -- get program
     local program_global = false
-    local program = _get_program_from_target(target, sourcekind) 
-    if not program then 
+    local program = _get_program_from_target(target, sourcekind)
+    if not program then
         program = platform.tool(sourcekind)
         program_global = true
     end
@@ -160,9 +160,9 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     end
     if p then
         if program_global then
-            command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1)) 
+            command = format("%s$(%s)%s", command:sub(1, p - 1), sourcekind:upper(), command:sub(e + 1))
         else
-            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1)) 
+            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), sourcekind:upper(), command:sub(e + 1))
         end
     end
 
@@ -189,7 +189,7 @@ function _make_object(makefile, target, sourcefile, objectfile, sourceflags)
     -- make tail
     makefile:print("")
 end
- 
+
 -- make objects
 function _make_objects(makefile, target, sourcekind, sourcebatch, sourceflags)
 
@@ -243,8 +243,8 @@ function _make_target(makefile, target, targetflags)
 
     -- get program
     local program_global = false
-    local program = _get_program_from_target(target, linkerkind) 
-    if not program then 
+    local program = _get_program_from_target(target, linkerkind)
+    if not program then
         program = platform.tool(linkerkind)
         program_global = true
     end
@@ -255,7 +255,7 @@ function _make_target(makefile, target, targetflags)
     -- replace linkflags to $(XX)
     local p, e = command:find(os.args(target:linkflags()), 1, true)
     if p then
-        command = format("%s$(%s_%sFLAGS)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+        command = format("%s$(%s_%sFLAGS)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1))
     end
 
     -- replace program to $(XX)
@@ -265,9 +265,9 @@ function _make_target(makefile, target, targetflags)
     end
     if p then
         if program_global then
-            command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+            command = format("%s$(%s)%s", command:sub(1, p - 1), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1))
         else
-            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1)) 
+            command = format("%s$(%s_%s)%s", command:sub(1, p - 1), target:name(), (linkerkind:upper():gsub('%-', '_')), command:sub(e + 1))
         end
     end
 
@@ -356,7 +356,7 @@ function _make_all(makefile)
         target:set("pcxxheader", nil)
     end
 
-    -- make variables for target 
+    -- make variables for target
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
@@ -428,18 +428,18 @@ function _clean_target(makefile, target)
     -- make body
     if not target:isphony() then
 
-        -- remove the target file 
-        _remove(makefile, target:targetfile()) 
+        -- remove the target file
+        _remove(makefile, target:targetfile())
 
-        -- remove the symbol file 
-        _remove(makefile, target:symbolfile()) 
+        -- remove the symbol file
+        _remove(makefile, target:symbolfile())
 
-        -- remove the object files 
+        -- remove the object files
         _remove(makefile, target:objectfiles())
 
         -- TODO remove the header files (deprecated)
         local _, dstheaders = target:headers()
-        _remove(makefile, dstheaders) 
+        _remove(makefile, dstheaders)
     end
 
     -- make tail
@@ -476,13 +476,13 @@ function make(outputdir)
 
     -- make all
     _make_all(makefile)
-    
+
     -- clean all
     _clean_all(makefile)
 
     -- close the makefile
     makefile:close()
- 
+
     -- leave project directory
     os.cd(oldir)
 end

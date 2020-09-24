@@ -47,11 +47,11 @@ end
 
 -- add job to the given job node
 --
--- @param job       the job 
+-- @param job       the job
 -- @param rootjob   the root job node (optional)
 --
 function jobpool:add(job, rootjob)
-    
+
     -- add job to the root job
     rootjob = rootjob or self:rootjob()
     rootjob._deps = rootjob._deps or hashset.new()
@@ -77,12 +77,12 @@ function jobpool:add(job, rootjob)
     return job
 end
 
--- pop job without deps at leaf node 
+-- pop job without deps at leaf node
 function jobpool:pop()
 
     -- no jobs?
     if self:size() == 0 then
-        return 
+        return
     end
 
     -- init leaf jobs first

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -71,10 +71,10 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get version
     --
-    -- e.g. 
-    -- 
+    -- e.g.
+    --
     -- latest
-    -- >=1.5.1 <1.6.0  
+    -- >=1.5.1 <1.6.0
     -- master || >1.4
     -- ~1.2.3
     -- ^1.1
@@ -99,9 +99,9 @@ function _parse_require(require_str, requires_extra, parentinfo)
             -- get package name
             packagename = packageinfo:sub(pos + 1)
 
-            -- get reponame 
+            -- get reponame
             reponame = packageinfo:sub(1, pos - 1)
-        else 
+        else
             packagename = packageinfo
         end
     end
@@ -137,7 +137,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         originstr        = require_str,
         reponame         = reponame,
         version          = version,
-        plat             = require_extra.plat,      -- require package in the given platform 
+        plat             = require_extra.plat,      -- require package in the given platform
         arch             = require_extra.arch,      -- require package in the given architecture
         kind             = require_extra.kind,      -- default: library, set package kind, e.g. binary, library, we can set `kind = "binary"` to only detect binary program and ignore library.
         alias            = require_extra.alias,     -- set package alias name
@@ -193,7 +193,7 @@ end
 
 -- sort package deps
 --
--- e.g. 
+-- e.g.
 --
 -- a.deps = b
 -- b.deps = c
@@ -204,7 +204,7 @@ function _sort_packagedeps(package)
     local orderdeps = {}
     for _, dep in pairs(package:deps()) do
         table.join2(orderdeps, _sort_packagedeps(dep))
-        table.insert(orderdeps, dep) 
+        table.insert(orderdeps, dep)
     end
     return orderdeps
 end
@@ -306,7 +306,7 @@ function _load_package(packagename, requireinfo, opt)
     local package = packages[packagename]
     if package then
 
-        -- satisfy required version? 
+        -- satisfy required version?
         local version_required = _select_package_version(package, requireinfo)
         if version_required and version_required ~= package:version_str() then
             raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, package:version_str(), requireinfo.version)
@@ -318,7 +318,7 @@ function _load_package(packagename, requireinfo, opt)
     if os.isfile(os.projectfile()) then
         package = _load_package_from_project(packagename)
     end
-        
+
     -- load package from repositories
     if not package then
         package = _load_package_from_repository(packagename, requireinfo.reponame)
@@ -376,7 +376,7 @@ function _load_packages(requires, opt)
     local packages = {}
     for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
-        -- load package 
+        -- load package
         local package = _load_package(requireinfo.name, requireinfo.info, opt)
 
         -- maybe package not found and optional
@@ -435,7 +435,7 @@ function _sort_packages_urls(packages)
         package:urls_set(fasturl.sort(package:urls()))
     end
 end
- 
+
 -- get package status string
 function _get_package_status_str(package)
     local status = {}
@@ -506,7 +506,7 @@ function _get_confirm(packages)
     return confirm
 end
 
--- patch some builtin dependent packages 
+-- patch some builtin dependent packages
 function _patch_packages(packages_install, packages_download)
 
     -- @NOTE use git.apply instead of patch
@@ -552,7 +552,7 @@ function _install_packages(packages_install, packages_download)
     local parallelize = true
     runjobs("install_packages", function (index)
 
-        -- fetch a new package 
+        -- fetch a new package
         local package = nil
         while package == nil and #packages_pending > 0 do
             for idx, pkg in ipairs(packages_pending) do
@@ -617,7 +617,7 @@ function _install_packages(packages_install, packages_download)
                     downloaded = action.download(package)
                     packages_downloading[index] = nil
                 end
-            
+
                 -- install this package
                 packages_installing[index] = package
                 if downloaded then
@@ -638,9 +638,9 @@ function _install_packages(packages_install, packages_download)
         packages_installing[index] = nil
         packages_downloading[index] = nil
 
-    end, {total = #packages_install, comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4, on_timer = function (running_jobs_indices) 
+    end, {total = #packages_install, comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4, on_timer = function (running_jobs_indices)
 
-        -- do not print progress info if be verbose 
+        -- do not print progress info if be verbose
         if option.get("verbose") or not show_wait then
             return
         end
@@ -732,7 +732,7 @@ function load_packages(requires, opt)
     local unique = {}
     local packages = {}
     for _, package in ipairs(_load_packages(requires, opt)) do
-        -- remove repeat packages with same the package name and version 
+        -- remove repeat packages with same the package name and version
         local key = package:name() .. (package:version_str() or "")
         if not unique[key] then
             table.insert(packages, package)
@@ -788,7 +788,7 @@ function install_packages(requires, opt)
         raise()
     end
 
-    -- patch some dependent builtin packages 
+    -- patch some dependent builtin packages
     _patch_packages(packages_install, packages_download)
 
     -- get user confirm
@@ -803,7 +803,7 @@ function install_packages(requires, opt)
             raise("packages(%s): must be installed!", table.concat(packages_must, ", "))
         else
             -- continue other actions
-            return 
+            return
         end
     end
 

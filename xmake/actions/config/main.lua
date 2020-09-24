@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,9 +32,9 @@ import("configfiles", {alias = "generate_configfiles"})
 import("configheader", {alias = "generate_configheader"})
 import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 
--- filter option 
+-- filter option
 function _option_filter(name)
-    local options = 
+    local options =
     {
         target      = true
     ,   file        = true
@@ -63,14 +63,14 @@ function _need_check(changed)
         changed = option.get("clean")
     end
 
-    -- get the current mtimes 
+    -- get the current mtimes
     local mtimes = project.mtimes()
 
-    -- get the previous mtimes 
+    -- get the previous mtimes
     local configcache = cache("local.config")
     if not changed then
         local mtimes_prev = configcache:get("mtimes")
-        if mtimes_prev then 
+        if mtimes_prev then
 
             -- check for all project files
             for file, mtime in pairs(mtimes) do
@@ -103,7 +103,7 @@ end
 -- check dependent target
 function _check_target_deps(target)
 
-    -- check 
+    -- check
     for _, depname in ipairs(target:get("deps")) do
 
         -- check dependent target name
@@ -149,14 +149,14 @@ function main()
         if autogen then
             scangen()
         else
-            os.exit() 
+            os.exit()
         end
     end
 
     -- check the working directory
     if not option.get("project") and not option.get("file") and os.isdir(os.projectdir()) then
         if path.translate(os.projectdir()) ~= path.translate(os.workingdir()) then
-            utils.warning([[You are working in the project directory(%s) and you can also 
+            utils.warning([[You are working in the project directory(%s) and you can also
 force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
@@ -189,7 +189,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
-    -- override configure from the options or cache 
+    -- override configure from the options or cache
     local options_changed = false
     local options_history = {}
     if not option.get("clean") and not autogen then
@@ -197,7 +197,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         options = options or options_history
     end
     for name, value in pairs(options) do
-            
+
         -- options is changed by argument options?
         options_changed = options_changed or options_history[name] ~= value
 
@@ -207,22 +207,22 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- merge the cached configure
     --
-    -- @note we cannot load cache config when switching platform, arch .. 
+    -- @note we cannot load cache config when switching platform, arch ..
     -- so we need known whether options have been changed
     --
     local configcache_loaded = false
     if not options_changed and not option.get("clean") and not _host_changed() then
-        configcache_loaded = config.load() 
+        configcache_loaded = config.load()
     end
 
-    -- merge the global configure 
-    for name, value in pairs(global.options()) do 
+    -- merge the global configure
+    for name, value in pairs(global.options()) do
         if config.get(name) == nil then
             config.set(name, value)
         end
     end
 
-    -- merge the default options 
+    -- merge the default options
     for name, value in pairs(option.defaults()) do
         if _option_filter(name) and config.get(name) == nil then
             config.set(name, value)
@@ -238,7 +238,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
-    -- merge the checked configure 
+    -- merge the checked configure
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
@@ -272,7 +272,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
             install_requires()
         end
 
-        -- check target and ensure to load all targets, @note we must load targets after installing required packages, 
+        -- check target and ensure to load all targets, @note we must load targets after installing required packages,
         -- otherwise has_package() will be invalid.
         _check_target(targetname)
 

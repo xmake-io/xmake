@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -89,7 +89,7 @@ static xm_charset_entry_ref_t xm_string_charset_find_by_name(tb_char_t const* na
  * implementation
  */
 
-/* convert string 
+/* convert string
  *
  * @param str       the string
  * @param ftype     the from-charset type, e.g. ascii, gb2312, gbk, ios8859, ucs2, ucs4, utf8, utf16, utf32
@@ -105,7 +105,7 @@ tb_int_t xm_string_convert(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the string and charset types 
+    // get the string and charset types
     size_t           src_size   = 0;
     tb_char_t const* src_cstr   = luaL_checklstring(lua, 1, &src_size);
     tb_char_t const* ftype_cstr = luaL_checkstring(lua, 2);

@@ -1,6 +1,6 @@
 module test
     implicit none (type, external)
-    
+
 contains
     subroutine print_hello()
         print *, "Hello World!"

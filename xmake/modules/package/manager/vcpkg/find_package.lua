@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -35,7 +35,7 @@ function main(name, opt)
     -- attempt to find the vcpkg root directory
     local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
     if not vcpkgdir then
-        return 
+        return
     end
 
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
@@ -43,9 +43,9 @@ function main(name, opt)
     name = name:gsub("%[.-%]", "")
 
     -- get arch, plat and mode
-    local arch = opt.arch 
-    local plat = opt.plat 
-    local mode = opt.mode 
+    local arch = opt.arch
+    local plat = opt.plat
+    local mode = opt.mode
     if plat == "macosx" then
         plat = "osx"
     end

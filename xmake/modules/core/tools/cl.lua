@@ -236,7 +236,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    -- @note we use os.args() to escape and wrap it, 
+    -- @note we use os.args() to escape and wrap it,
     -- because all flags will be preprocessed in `builder:_preprocess_flags`/`os.argv()`
     return "-I" .. os.args(path.translate(dir))
 end
@@ -283,8 +283,8 @@ function add_sourceflags(self, sourcefile, fileconfig, target, targetkind)
 
     -- add language type flags explicitly if the sourcekind is changed.
     --
-    -- because compiler maybe compile `.c` as c++. 
-    -- e.g. 
+    -- because compiler maybe compile `.c` as c++.
+    -- e.g.
     --   add_files("*.c", {sourcekind = "cxx"})
     --
     local sourcekind = fileconfig.sourcekind

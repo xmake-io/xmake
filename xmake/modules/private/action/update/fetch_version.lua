@@ -27,7 +27,7 @@ import("devel.git")
 import("net.fasturl")
 
 -- the official git sources for xmake
-local official_sources =  
+local official_sources =
 {
     "https://github.com/xmake-io/xmake.git",
     "https://gitlab.com/tboox/xmake.git",

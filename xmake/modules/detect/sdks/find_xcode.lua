@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -95,7 +95,7 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
     end
 
     -- find mobile provision only for iphoneos
-    local mobile_provision 
+    local mobile_provision
     if is_plat("iphoneos") then
         local mobile_provisions = codesign.mobile_provisions()
         if mobile_provisions then
@@ -120,15 +120,15 @@ end
 -- find xcode toolchain
 --
 -- @param sdkdir    the xcode directory
--- @param opt       the argument options 
---                  e.g. {verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
+-- @param opt       the argument options
+--                  e.g. {verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}
 --
 -- @return          the xcode toolchain. e.g. {bindir = .., cross = ..}
 --
--- @code 
+-- @code
 --
 -- local toolchain = find_xcode("/Applications/Xcode.app")
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)

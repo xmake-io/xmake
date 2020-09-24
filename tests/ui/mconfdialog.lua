@@ -15,7 +15,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ local demo = application()
 -- init demo
 function demo:init()
 
-    -- init name 
+    -- init name
     application.init(self, "demo")
 
     -- init background
@@ -81,7 +81,7 @@ function demo:dialog_mconf()
     if not dialog_mconf then
         dialog_mconf = mconfdialog:new("mconfdialog.main", rect{1, 1, self:width() - 1, self:height() - 1}, "menu config")
         dialog_mconf:action_set(action.ac_on_exit, function (v) self:quit() end)
-        dialog_mconf:action_set(action.ac_on_save, function (v) 
+        dialog_mconf:action_set(action.ac_on_save, function (v)
             -- TODO save configs
             dialog_mconf:quit()
         end)

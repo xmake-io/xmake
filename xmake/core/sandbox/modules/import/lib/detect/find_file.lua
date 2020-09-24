@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -32,7 +32,7 @@ local vformat   = require("sandbox/modules/vformat")
 -- find the given file path or directory
 function sandbox_lib_detect_find_file._find(filedir, name)
 
-    -- get file path 
+    -- get file path
     local filepath = nil
     if os.isfile(filedir) then
         filepath = filedir

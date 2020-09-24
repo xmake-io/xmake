@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,7 +22,7 @@
 import("lib.detect.find_path")
 import("lib.detect.find_library")
 
--- find openssl 
+-- find openssl
 --
 -- @param opt   the package options. e.g. see the options of find_package()
 --
@@ -58,7 +58,7 @@ function main(opt)
 
         -- not found?
         if #result.links ~= 2 then
-            return 
+            return
         end
 
         -- find include

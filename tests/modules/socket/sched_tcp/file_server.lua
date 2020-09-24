@@ -16,12 +16,12 @@ function _listen(addr, port, filepath)
 
     local sock = socket.bind(addr, port)
     sock:listen(100)
-    print("%s: listening %s:%d ..", sock, addr, port) 
-    while true do 
+    print("%s: listening %s:%d ..", sock, addr, port)
+    while true do
         local sock_client = sock:accept()
         if sock_client then
-            print("%s: accepted", sock_client) 
-            scheduler.co_start(_session, sock_client, filepath) 
+            print("%s: accepted", sock_client)
+            scheduler.co_start(_session, sock_client, filepath)
         end
     end
     sock:close()

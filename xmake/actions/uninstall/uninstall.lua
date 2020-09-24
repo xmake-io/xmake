@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -37,7 +37,7 @@ function _do_uninstall_target(target)
     -- get install directory
     local installdir = target:installdir()
     if not installdir then
-        return 
+        return
     end
 
     -- trace
@@ -77,12 +77,12 @@ function _on_uninstall_target(target)
     _do_uninstall_target(target)
 end
 
--- uninstall the given target 
+-- uninstall the given target
 function _uninstall_target(target)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        return 
+        return
     end
 
     -- enter project directory
@@ -141,12 +141,12 @@ function _uninstall_target_and_deps(target)
 
     -- this target have been finished?
     if _g.finished[target:name()] then
-        return 
+        return
     end
 
     -- uninstall for all dependent targets
     for _, depname in ipairs(target:get("deps")) do
-        _uninstall_target_and_deps(project.target(depname)) 
+        _uninstall_target_and_deps(project.target(depname))
     end
 
     -- uninstall target

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("private.tools.ccache")
 
 -- init it
 function init(self)
-    
+
     -- init flags map
     self:set("mapflags",
     {
@@ -61,8 +61,8 @@ end
 function nf_strip(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-Xlinker -S"
     ,   all   = "-Xlinker -s"
     }
@@ -75,8 +75,8 @@ end
 function nf_symbol(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "-g"
     }
 
@@ -88,8 +88,8 @@ end
 function nf_warning(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "-suppress-warnings"
     ,   less       = "-warn-swift3-objc-inference-minimal"
     ,   more       = "-warn-swift3-objc-inference-minimal"
@@ -99,15 +99,15 @@ function nf_warning(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none        = "-Onone"
     ,   fast        = "-O"
     ,   faster      = "-O"
@@ -124,8 +124,8 @@ end
 function nf_vectorext(self, extension)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         mmx   = "-mmmx"
     ,   sse   = "-msse"
     ,   sse2  = "-msse2"

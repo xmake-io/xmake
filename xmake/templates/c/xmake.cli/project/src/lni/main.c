@@ -7,7 +7,7 @@ static tb_int_t lni_test_hello(lua_State* lua)
 }
 static tb_void_t lni_initalizer(xm_engine_ref_t engine, lua_State* lua)
 {
-    static luaL_Reg const lni_test_funcs[] = 
+    static luaL_Reg const lni_test_funcs[] =
     {
         {"hello", lni_test_hello}
     ,   {tb_null, tb_null}

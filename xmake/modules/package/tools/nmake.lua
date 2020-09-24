@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
--- build package 
+-- build package
 function build(package, configs, opt)
 
     -- init options
@@ -52,9 +52,9 @@ function build(package, configs, opt)
     os.vrunv(nmake.program, argv, {envs = runenvs})
 end
 
--- install package 
+-- install package
 function install(package, configs)
- 
+
     -- pass configurations
     local argv = {"install"}
     if option.get("verbose") then
@@ -75,4 +75,4 @@ function install(package, configs)
     local runenvs = toolchain.load("msvc"):runenvs()
     local nmake = find_tool("nmake", {envs = runenvs})
     os.vrunv(nmake.program, argv, {envs = runenvs})
-end 
+end

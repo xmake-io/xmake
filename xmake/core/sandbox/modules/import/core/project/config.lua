@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -66,12 +66,12 @@ function sandbox_core_project_config.directory()
     return dir
 end
 
--- get the given configuration from the current 
+-- get the given configuration from the current
 function sandbox_core_project_config.get(name)
     return config.get(name)
 end
 
--- set the given configuration to the current 
+-- set the given configuration to the current
 --
 -- @param name  the name
 -- @param value the value

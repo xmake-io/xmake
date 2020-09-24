@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -47,7 +47,7 @@ function filter.new()
 end
 
 -- filter the shell command
--- 
+--
 -- e.g.
 --
 -- print("$(shell echo hello xmake)")
@@ -74,12 +74,12 @@ function filter.shell(cmd)
     end
 
     -- return the shell result
-    return outdata 
+    return outdata
 end
 
 -- filter the environment variables
 function filter.env(name)
-    return os.getenv(name) 
+    return os.getenv(name)
 end
 
 -- filter the winreg path
@@ -87,11 +87,11 @@ function filter.reg(path)
 
     -- must be windows
     if os.host() ~= "windows" then
-        return 
+        return
     end
 
     -- query registry value
-    return (winos.registry_query(path)) 
+    return (winos.registry_query(path))
 end
 
 -- set handlers
@@ -129,7 +129,7 @@ function filter:get(variable)
     local varmode   = variable:split(':')
     local mode      = varmode[2]
     variable        = varmode[1]
-   
+
     -- handler it
     local result = nil
     for name, handler in pairs(self._HANDLERS) do
@@ -155,7 +155,7 @@ end
 
 -- filter the builtin variables: "hello $(variable)" for string
 --
--- e.g.  
+-- e.g.
 --
 -- print("$(host)")
 -- print("$(env PATH)")
@@ -171,8 +171,8 @@ function filter:handle(value)
     value = value:gsub("%%([%$%(%)%%])", function (ch) return escape_table1[ch] end)
 
     -- filter the builtin variables
-    return (value:gsub("%$%((.-)%)", function (variable) 
-        
+    return (value:gsub("%$%((.-)%)", function (variable)
+
         -- escape "%$", "%(", "%)", "%%" to "$", "(", ")", "%"
         variable = variable:gsub("[\001\002\003\004]", function (ch) return escape_table2[ch] end)
 

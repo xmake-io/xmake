@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ task("macro")
             ,   shortname = 'm'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'b', "begin",      "k",  nil,  "Start to record macro."
                                                 ,   "e.g."
@@ -57,13 +57,13 @@ task("macro")
                 ,   {'d', "delete",     "k",  nil,  "Delete the given macro."                       }
                 ,   {'c', "clear",      "k",  nil,  "Clear the all macros."                         }
                 ,   {}
-                ,   {nil, "import",     "kv", nil,  "Import the given macro file or directory."                   
+                ,   {nil, "import",     "kv", nil,  "Import the given macro file or directory."
                                                 ,   "e.g."
                                                 ,   "    xmake macro --import=/xxx/macro.lua test"
                                                 ,   "    xmake macro --import=/xxx/macrodir"        }
                 ,   {nil, "export",     "kv", nil,  "Export the given macro to file or directory."
                                                 ,   "e.g."
-                                                ,   "    xmake macro --export=/xxx/macro.lua test"  
+                                                ,   "    xmake macro --export=/xxx/macro.lua test"
                                                 ,   "    xmake macro --export=/xxx/macrodir"        }
                 ,   {}
                 ,   {nil, "name",       "v",  ".",  "Set the macro name."

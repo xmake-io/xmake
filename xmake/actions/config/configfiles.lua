@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -71,7 +71,7 @@ function _get_builtinvars_target(target)
     local version, version_build = target:version()
     if version then
         builtinvars.VERSION = version
-        try {function () 
+        try {function ()
             local v = semver.new(version)
             if v then
                 builtinvars.VERSION_MAJOR = v:major()
@@ -88,9 +88,9 @@ end
 
 -- get the global builtin variables
 function _get_builtinvars_global()
-    local builtinvars = _g.builtinvars_global 
+    local builtinvars = _g.builtinvars_global
     if builtinvars == nil then
-        builtinvars = 
+        builtinvars =
         {
             arch  = config.get("arch") or os.arch()
         ,   plat  = config.get("plat") or os.host()
@@ -166,7 +166,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 end
             end
         end
-        -- get the global builtin variables 
+        -- get the global builtin variables
         for name, value in pairs(_get_builtinvars_global()) do
             if variables[name] == nil then
                 variables[name] = value
@@ -175,7 +175,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 
         -- replace all variables
         local pattern = fileinfo.pattern or "%${(.-)}"
-        io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable) 
+        io.gsub(dstfile_tmp, "(" .. pattern .. ")", function(_, variable)
 
             -- get variable name
             variable = variable:trim()
@@ -199,7 +199,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             end
 
             -- get variable value
-            local value = variables[variable] 
+            local value = variables[variable]
             if isdefine then
                 if value == nil then
                     value = ("/* #undef %s */"):format(variable)
@@ -260,7 +260,7 @@ function main()
     for dstfile, srcinfo in pairs(configfiles) do
         _generate_configfile(srcinfo.srcfile, dstfile, srcinfo.fileinfo, srcinfo.targets)
     end
- 
+
     -- leave project directory
     os.cd(oldir)
 end

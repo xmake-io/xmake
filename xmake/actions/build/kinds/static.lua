@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,7 @@ import("core.project.depend")
 import("private.utils.progress")
 import("object", {alias = "add_batchjobs_for_object"})
 
--- do link target 
+-- do link target
 function _do_link_target(target, opt)
 
     -- load linker instance
@@ -36,7 +36,7 @@ function _do_link_target(target, opt)
     -- get link flags
     local linkflags = linkinst:linkflags({target = target})
 
-    -- load dependent info 
+    -- load dependent info
     local dependfile = target:dependfile()
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
@@ -57,7 +57,7 @@ function _do_link_target(target, opt)
     local depfiles = target:objectfiles()
     local depvalues = {linkinst:program(), linkflags}
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
-        return 
+        return
     end
 
     -- TODO make headers (deprecated)

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,25 +22,25 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find vsjitdebugger 
+-- find vsjitdebugger
 --
 -- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\vsjitdebugger.exe"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local vsjitdebugger = find_vsjitdebugger()
 -- local vsjitdebugger, version = find_vsjitdebugger({version = true})
 -- local vsjitdebugger, version = find_vsjitdebugger({version = true, program = "c:\xxx\vsjitdebugger.exe"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if not is_host("windows") then
-        return 
+        return
     end
 
     -- init options

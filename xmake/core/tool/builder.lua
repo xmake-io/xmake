@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -108,7 +108,7 @@ end
 
 -- inherit flags (only for public/interface) from target deps
 --
--- e.g. 
+-- e.g.
 -- add_cflags("", {public = true})
 -- add_cflags("", {interface = true})
 --
@@ -126,7 +126,7 @@ function builder:_inherit_flags_from_targetdeps(flags, target)
     end
 end
 
--- add flags from the flagkind 
+-- add flags from the flagkind
 function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
     local targetflags = target:get(flagkind, opt)
     local extraconf   = target:extraconf(flagkind)
@@ -145,7 +145,7 @@ function builder:_add_flags_from_flagkind(flags, target, flagkind, opt)
     end
 end
 
--- add flags from the configure 
+-- add flags from the configure
 function builder:_add_flags_from_config(flags)
     for _, flagkind in ipairs(self:_flagkinds()) do
         local values = config.get(flagkind)
@@ -155,28 +155,28 @@ function builder:_add_flags_from_config(flags)
     end
 end
 
--- add flags from the option 
+-- add flags from the option
 function builder:_add_flags_from_option(flags, opt)
     for _, flagkind in ipairs(self:_flagkinds()) do
         self:_add_flags_from_flagkind(flags, opt, flagkind)
     end
 end
 
--- add flags from the package 
+-- add flags from the package
 function builder:_add_flags_from_package(flags, pkg, target)
     for _, flagkind in ipairs(self:_flagkinds()) do
         table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
     end
 end
 
--- add flags from the target 
+-- add flags from the target
 function builder:_add_flags_from_target(flags, target)
 
     -- no target?
     if not target then
         return
     end
- 
+
     -- init cache
     self._TARGETFLAGS = self._TARGETFLAGS or {}
     local cache = self._TARGETFLAGS
@@ -185,12 +185,12 @@ function builder:_add_flags_from_target(flags, target)
     local key = target:cachekey()
     local targetflags = cache[key]
     if not targetflags then
-    
+
         -- add flags from language
         targetflags = {}
         self:_add_flags_from_language(targetflags, target)
 
-        -- add flags for the target 
+        -- add flags for the target
         if target:type() == "target" then
 
             -- add flags from options
@@ -207,7 +207,7 @@ function builder:_add_flags_from_target(flags, target)
             self:_inherit_flags_from_targetdeps(targetflags, target)
         end
 
-        -- add the target flags 
+        -- add the target flags
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
@@ -220,7 +220,7 @@ function builder:_add_flags_from_target(flags, target)
     table.join2(flags, targetflags)
 end
 
--- add flags from the argument option 
+-- add flags from the argument option
 function builder:_add_flags_from_argument(flags, target, args)
 
     -- add flags from the flag kinds (cxflags, ..)
@@ -236,7 +236,7 @@ function builder:_add_flags_from_argument(flags, target, args)
         end
     end
 
-    -- add flags (named) from the language 
+    -- add flags (named) from the language
     if target then
         local key = target:type()
         self:_add_flags_from_language(flags, target, {[key] = function (name) return args[name] end})
@@ -245,7 +245,7 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 end
 
--- add flags from the language 
+-- add flags from the language
 function builder:_add_flags_from_language(flags, target, getters)
 
     -- init getters
@@ -270,7 +270,7 @@ function builder:_add_flags_from_language(flags, target, getters)
                                 return platform.toolconfig(name)
                             end
                         end
-    ,   target      =   function (name) 
+    ,   target      =   function (name)
 
                             -- only for target
                             local results = {}
@@ -312,7 +312,7 @@ function builder:_add_flags_from_language(flags, target, getters)
         local getter = getters[flagscope]
         if getter then
 
-            -- get api name of tool 
+            -- get api name of tool
             --
             -- ignore "nf_" and "_if_ok"
             --
@@ -330,8 +330,8 @@ function builder:_add_flags_from_language(flags, target, getters)
             -- map name flag to real flag
             local mapper = self:_tool()["nf_" .. apiname]
             if mapper then
-                
-                -- add the flags 
+
+                -- add the flags
                 for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
 
                     -- map and check flag
@@ -365,7 +365,7 @@ function builder:_preprocess_flags(flags)
     end
 
     -- get it
-    return results 
+    return results
 end
 
 -- get tool name
@@ -403,7 +403,7 @@ function builder:has_flags(flags, flagkind)
     return self:_tool():has_flags(flags, flagkind)
 end
 
--- get the format of the given target kind 
+-- get the format of the given target kind
 function builder:format(targetkind)
     local formats = self:get("formats")
     if formats then

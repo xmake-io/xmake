@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -76,12 +76,12 @@ function main(hosts, opt)
                 -- find time
                 local timeval = "65535"
                 if data then
-                    timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535" 
+                    timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535"
                 end
                 if timeval == "65535" then
                     local nmap = find_nmap()
                     if nmap then
-                        data = try { function() return os.iorun("%s -T5 --max-retries 1 -p 80 --max-rtt-timeout 1 %s", nmap, host) end }  
+                        data = try { function() return os.iorun("%s -T5 --max-retries 1 -p 80 --max-rtt-timeout 1 %s", nmap, host) end }
                         if data then
                             local timeval_s = data:match("in ([%d%.]-) seconds")
                             if timeval_s then

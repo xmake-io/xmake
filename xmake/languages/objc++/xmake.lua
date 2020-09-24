@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -49,7 +49,7 @@ language("objc++")
     on_check_main("check_main")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -143,7 +143,7 @@ language("objc++")
         ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static = 
+    ,   static =
         {
             "target.strip"
         ,   "target.symbols"
@@ -152,8 +152,8 @@ language("objc++")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"                             }
                 ,   {nil, "mm",            "kv", nil,          "The Objc Compiler"                                  }
                 ,   {nil, "mxx",           "kv", nil,          "The Objc++ Compiler"                                }

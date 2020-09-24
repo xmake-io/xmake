@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 
--- package library 
+-- package library
 function _package_library(target)
 
     -- the output directory
@@ -37,12 +37,12 @@ function _package_library(target)
     local targetname = target:name()
 
     -- copy the library file to the output directory
-    os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile()))) 
+    os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile())))
 
     -- copy the symbol file to the output directory
     local symbolfile = target:symbolfile()
     if os.isfile(symbolfile) then
-        os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile))) 
+        os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile)))
     end
 
     -- copy *.lib for shared/windows (*.dll) target
@@ -58,7 +58,7 @@ function _package_library(target)
     -- copy the config.h to the output directory (deprecated)
     local configheader = target:configheader()
     if configheader then
-        os.vcp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader))) 
+        os.vcp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader)))
     end
 
     -- copy headers
@@ -74,7 +74,7 @@ function _package_library(target)
         end
     end
 
-    -- make xmake.lua 
+    -- make xmake.lua
     local file = io.open(format("%s/%s.pkg/xmake.lua", outputdir, targetname), "w")
     if file then
         file:print("option(\"%s\")", targetname)
@@ -91,18 +91,18 @@ function _package_library(target)
     end
 end
 
--- do package target 
+-- do package target
 function _do_package_target(target)
 
     -- is phony target?
     if target:isphony() then
-        return 
+        return
     end
 
     -- get kind
     local kind = target:targetkind()
 
-    -- get script 
+    -- get script
     local scripts =
     {
         binary = function (target) end
@@ -114,15 +114,15 @@ function _do_package_target(target)
     assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
 
     -- package it
-    scripts[kind](target) 
+    scripts[kind](target)
 end
 
--- package target 
+-- package target
 function _on_package_target(target)
 
     -- has been disabled?
     if target:get("enabled") == false then
-        return 
+        return
     end
 
     -- build target with rules
@@ -140,7 +140,7 @@ function _on_package_target(target)
     _do_package_target(target)
 end
 
--- package the given target 
+-- package the given target
 function _package(target)
 
     -- enter project directory
@@ -199,12 +199,12 @@ function _package_target_and_deps(target)
 
     -- this target have been finished?
     if _g.finished[target:name()] then
-        return 
+        return
     end
 
     -- package for all dependent targets
     for _, depname in ipairs(target:get("deps")) do
-        _package_target_and_deps(project.target(depname)) 
+        _package_target_and_deps(project.target(depname))
     end
 
     -- package target
@@ -217,12 +217,12 @@ end
 -- main
 function main()
 
-    -- --archs? deprecated 
+    -- --archs? deprecated
     if option.get("archs") then
 
         -- load config
         config.load()
-            
+
         -- deprecated
         raise("please run \"xmake m package %s\" instead of \"xmake p --archs=%s\"", config.get("plat"), option.get("archs"))
     end

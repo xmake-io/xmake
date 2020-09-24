@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -178,7 +178,7 @@ function _get_configs_for_generator(package, configs, opt)
     local cmake_generator = opt.cmake_generator
     if cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
-            local vsvers = 
+            local vsvers =
             {
                 ["2019"] = "16",
                 ["2017"] = "15",
@@ -381,7 +381,7 @@ function build(package, configs, opt)
     --
     -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    -- 
+    --
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
     -- exists $CMAKE_GENERATOR? use it
@@ -403,11 +403,11 @@ function build(package, configs, opt)
     end
     table.insert(argv, '..')
 
-    -- do configure 
+    -- do configure
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build
-    local cmake_generator = opt.cmake_generator 
+    local cmake_generator = opt.cmake_generator
     if opt.cmake_build then
         _build_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then
@@ -443,7 +443,7 @@ function install(package, configs, opt)
     --
     -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    -- 
+    --
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
     -- exists $CMAKE_GENERATOR? use it
@@ -469,7 +469,7 @@ function install(package, configs, opt)
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
 
     -- do build and install
-    local cmake_generator = opt.cmake_generator 
+    local cmake_generator = opt.cmake_generator
     if opt.cmake_build then
         _install_for_cmakebuild(package, configs, opt)
     elseif cmake_generator then

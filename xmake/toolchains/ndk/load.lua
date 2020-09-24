@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ import("core.project.config")
 -- load ndk toolchain
 --
 -- some extra configuration for target
--- e.g. 
+-- e.g.
 --   set_values("ndk.arm_mode", "arm") -- or thumb
 --
 function main(toolchain)
@@ -71,7 +71,7 @@ function main(toolchain)
     if isllvm then
 
         -- add target
-        local targets = 
+        local targets =
         {
             ["armv5te"]     = "armv5te-none-linux-androideabi"  -- deprecated
         ,   ["armeabi"]     = "armv5te-none-linux-androideabi"  -- removed in ndk r17
@@ -89,7 +89,7 @@ function main(toolchain)
         toolchain:add("asflags", "-target " .. targets[arch])
         toolchain:add("ldflags", "-target " .. targets[arch])
         toolchain:add("shflags", "-target " .. targets[arch])
-        
+
         -- add gcc toolchain
         local gcc_toolchain = config.get("gcc_toolchain")
         if gcc_toolchain then
@@ -112,7 +112,7 @@ function main(toolchain)
         toolchain:add("shflags", "-march=" .. march)
     end
 
-    -- init cxflags for the target kind: binary 
+    -- init cxflags for the target kind: binary
     toolchain:add("binary.cxflags", "-fPIE", "-pie")
 
     -- add flags for the sdk directory of ndk
@@ -122,7 +122,7 @@ function main(toolchain)
     if ndk and ndk_sdkver then
 
         -- the sysroot archs
-        local sysroot_archs = 
+        local sysroot_archs =
         {
             ["armv5te"]     = "arch-arm"    -- deprecated
         ,   ["armv7-a"]     = "arch-arm"    -- deprecated
@@ -141,24 +141,24 @@ function main(toolchain)
         --
         -- @see https://android.googlesource.com/platform/ndk/+/master/docs/UnifiedHeaders.md
         --
-        -- Before NDK r14, we had a set of libc headers for each API version. 
+        -- Before NDK r14, we had a set of libc headers for each API version.
         -- In many cases these headers were incorrect. Many exposed APIs that didn‘t exist, and others didn’t expose APIs that did.
-        -- 
-        -- In NDK r14 (as an opt in feature) we unified these into a single set of headers, called unified headers. 
-        -- This single header path is used for every platform level. API level guards are handled with #ifdef. 
+        --
+        -- In NDK r14 (as an opt in feature) we unified these into a single set of headers, called unified headers.
+        -- This single header path is used for every platform level. API level guards are handled with #ifdef.
         -- These headers can be found in prebuilts/ndk/headers.
         --
-        -- Unified headers are built directly from the Android platform, so they are up to date and correct (or at the very least, 
+        -- Unified headers are built directly from the Android platform, so they are up to date and correct (or at the very least,
         -- any bugs in the NDK headers will also be a bug in the platform headers, which means we're much more likely to find them).
         --
         -- In r15 unified headers are used by default. In r16, the old headers have been removed.
         --
-        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver)) 
+        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
         local ndk_sysroot_be_r14 = path.join(ndk, "sysroot")
         if os.isdir(ndk_sysroot_be_r14) then
 
             -- the triples
-            local triples = 
+            local triples =
             {
                 ["armv5te"]     = "arm-linux-androideabi"   -- deprecated
             ,   ["armv7-a"]     = "arm-linux-androideabi"   -- deprecated
@@ -201,7 +201,7 @@ function main(toolchain)
         -- get gnu c++ stl sdk directory
         local cxxstl_sdkdir_gnustl = nil
         if config.get("ndk_toolchains_ver") then
-            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver"))) 
+            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver")))
         end
 
         -- get stlport c++ sdk directory
@@ -234,7 +234,7 @@ function main(toolchain)
         if config.get("ndk_stdcxx") and cxxstl_sdkdir and os.isdir(cxxstl_sdkdir) then
 
             -- the toolchains archs
-            local toolchains_archs = 
+            local toolchains_archs =
             {
                 ["armv5te"]     = "armeabi"         -- deprecated
             ,   ["armv7-a"]     = "armeabi-v7a"     -- deprecated
@@ -331,7 +331,7 @@ function main(toolchain)
     toolchain:add("target.on_shflags", target_on_xxflags)
 
     -- init targets for rust
-    local targets_rust = 
+    local targets_rust =
     {
         ["armv5te"]     = "arm-linux-androideabi" -- deprecated
     ,   ["armv7-a"]     = "arm-linux-androideabi" -- deprecated

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -60,7 +60,7 @@ function application:exit()
     log:flush()
 end
 
--- get menubar 
+-- get menubar
 function application:menubar()
     if not self._MENUBAR then
         self._MENUBAR = menubar:new("menubar", rect{0, 0, self:width(), 1})
@@ -97,7 +97,7 @@ function application:on_resize()
     program.on_resize(self)
 end
 
--- run application 
+-- run application
 function application:run(...)
 
     -- init runner

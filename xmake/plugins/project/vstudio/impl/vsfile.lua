@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -95,7 +95,7 @@ end
 
 -- open file
 function open(filepath, mode)
- 
+
     -- open it
     local file = io.open(filepath, mode)
 
@@ -110,7 +110,7 @@ function open(filepath, mode)
     file.writef       = _writef_impl
 
     -- add enter and leave interfaces
-    file.enter  = _enter 
+    file.enter  = _enter
     file.leave  = _leave
 
     -- init indent

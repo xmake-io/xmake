@@ -69,7 +69,7 @@ function sandbox_core_base_socket_instance.wait(sock, events, timeout)
     return events
 end
 
--- bind socket 
+-- bind socket
 function sandbox_core_base_socket_instance.bind(sock, addr, port)
     local ok, errors = sock:_bind(addr, port)
     if not ok and errors then
@@ -78,7 +78,7 @@ function sandbox_core_base_socket_instance.bind(sock, addr, port)
     return ok
 end
 
--- listen socket 
+-- listen socket
 function sandbox_core_base_socket_instance.listen(sock, backlog)
     local ok, errors = sock:_listen(backlog)
     if not ok and errors then
@@ -87,7 +87,7 @@ function sandbox_core_base_socket_instance.listen(sock, backlog)
     return ok
 end
 
--- accept socket 
+-- accept socket
 function sandbox_core_base_socket_instance.accept(sock, opt)
     local client_sock, errors = sock:_accept(opt)
     if not client_sock and errors then
@@ -96,7 +96,7 @@ function sandbox_core_base_socket_instance.accept(sock, opt)
     return client_sock and _socket_wrap(client_sock) or nil
 end
 
--- connect socket 
+-- connect socket
 function sandbox_core_base_socket_instance.connect(sock, addr, port, opt)
     local ok, errors = sock:_connect(addr, port, opt)
     if ok < 0 and errors then
@@ -105,7 +105,7 @@ function sandbox_core_base_socket_instance.connect(sock, addr, port, opt)
     return ok
 end
 
--- send data to socket 
+-- send data to socket
 function sandbox_core_base_socket_instance.send(sock, data, opt)
     local real, errors = sock:_send(data, opt)
     if real < 0 and errors then
@@ -114,7 +114,7 @@ function sandbox_core_base_socket_instance.send(sock, data, opt)
     return real
 end
 
--- send file to socket 
+-- send file to socket
 function sandbox_core_base_socket_instance.sendfile(sock, file, opt)
     local real, errors = sock:_sendfile(file, opt)
     if real < 0 and errors then
@@ -123,7 +123,7 @@ function sandbox_core_base_socket_instance.sendfile(sock, file, opt)
     return real
 end
 
--- recv data from socket 
+-- recv data from socket
 function sandbox_core_base_socket_instance.recv(sock, size, opt)
     local real, data_or_errors = sock:_recv(size, opt)
     if real < 0 and data_or_errors then
@@ -132,7 +132,7 @@ function sandbox_core_base_socket_instance.recv(sock, size, opt)
     return real, data_or_errors
 end
 
--- send udp data to peer 
+-- send udp data to peer
 function sandbox_core_base_socket_instance.sendto(sock, data, addr, port, opt)
     local real, errors = sock:_sendto(data, addr, port, opt)
     if real < 0 and errors then
@@ -141,7 +141,7 @@ function sandbox_core_base_socket_instance.sendto(sock, data, addr, port, opt)
     return real
 end
 
--- recv udp data from peer 
+-- recv udp data from peer
 function sandbox_core_base_socket_instance.recvfrom(sock, size, opt)
     local real, data_or_errors, addr, port = sock:_recvfrom(size, opt)
     if real < 0 and data_or_errors then

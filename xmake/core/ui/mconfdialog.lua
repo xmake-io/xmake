@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -42,7 +42,7 @@ function mconfdialog:init(name, bounds, title)
     boxdialog.init(self, name, bounds, title)
 
     -- init text
-    self:text():text_set([[Arrow keys navigate the menu. <Enter> selects submenus ---> (or empty submenus ----). 
+    self:text():text_set([[Arrow keys navigate the menu. <Enter> selects submenus ---> (or empty submenus ----).
 Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for Help, </> for Search. Legend: [*] built-in  [ ] excluded
 ]])
 
@@ -50,7 +50,7 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
     self:button_add("select", "< Select >", function (v, e) self:menuconf():on_event(event.command {"cm_enter"}) end)
     self:button_add("back", "< Back >", function (v, e) self:menuconf():on_event(event.command {"cm_back"}) end)
     self:button_add("exit", "< Exit >", function (v, e) self:quit() end)
-    self:button_add("help", "< Help >", function (v, e) self:show_help() end) 
+    self:button_add("help", "< Help >", function (v, e) self:show_help() end)
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
     self:buttons():select(self:button("select"))
 
@@ -144,7 +144,7 @@ function mconfdialog:inputdialog()
         dialog_input:background_set(self:frame():background())
         dialog_input:frame():background_set("cyan")
         dialog_input:textedit():option_set("multiline", false)
-        dialog_input:button_add("ok", "< Ok >", function (v) 
+        dialog_input:button_add("ok", "< Ok >", function (v)
             local config = dialog_input:extra("config")
             if config.kind == "string" then
                 config.value = dialog_input:textedit():text()
@@ -154,9 +154,9 @@ function mconfdialog:inputdialog()
                     config.value = value
                 end
             end
-            dialog_input:quit() 
+            dialog_input:quit()
         end)
-        dialog_input:button_add("cancel", "< Cancel >", function (v) 
+        dialog_input:button_add("cancel", "< Cancel >", function (v)
             dialog_input:quit()
         end)
         dialog_input:button_select("ok")
@@ -185,7 +185,7 @@ function mconfdialog:searchdialog()
         dialog_search:frame():background_set("cyan")
         dialog_search:textedit():option_set("multiline", false)
         dialog_search:text():text_set("Enter (sub)string or lua pattern string to search for configuration")
-        dialog_search:button_add("ok", "< Ok >", function (v) 
+        dialog_search:button_add("ok", "< Ok >", function (v)
             local configs = self:search(self:configs(), dialog_search:textedit():text())
             local results = "Search('" .. dialog_search:textedit():text() .. "') results:"
             for _, config in ipairs(configs) do
@@ -205,9 +205,9 @@ function mconfdialog:searchdialog()
                 results = results .. "\n"
             end
             self:show_result(results)
-            dialog_search:quit() 
+            dialog_search:quit()
         end)
-        dialog_search:button_add("cancel", "< Cancel >", function (v) 
+        dialog_search:button_add("cancel", "< Cancel >", function (v)
             dialog_search:quit()
         end)
         dialog_search:button_select("ok")
@@ -237,7 +237,7 @@ function mconfdialog:show_help()
 
         -- get the current config item
         local item = self:menuconf():current()
-        
+
         -- get the current config
         local config = item:extra("config")
 
@@ -307,7 +307,7 @@ function mconfdialog:on_event(e)
             return true
         end
     end
-    return boxdialog.on_event(self, e) 
+    return boxdialog.on_event(self, e)
 end
 
 -- on resize

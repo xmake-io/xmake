@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -20,7 +20,7 @@
 
 -- define rule: asm.build
 rule("asm.build")
-    set_sourcekinds("as")    
+    set_sourcekinds("as")
     on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: asm
@@ -35,6 +35,6 @@ rule("asm")
     -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
     add_deps("utils.merge.object", "utils.merge.archive")
 
-    -- we attempt to extract symbols to the independent file and 
+    -- we attempt to extract symbols to the independent file and
     -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
     add_deps("utils.symbols.extract")

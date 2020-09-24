@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        xmake.lua
 --
 
--- define rule: protobuf.cpp 
+-- define rule: protobuf.cpp
 rule("protobuf.cpp")
 
     -- set extension
@@ -30,7 +30,7 @@ rule("protobuf.cpp")
     end)
 
 
--- define rule: protobuf.c 
+-- define rule: protobuf.c
 rule("protobuf.c")
 
     -- set extension

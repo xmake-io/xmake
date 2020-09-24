@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -71,7 +71,7 @@ function main(target, opt)
     local dependfile = target:dependfile(target_app)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-        return 
+        return
     end
 
     -- trace progress info
@@ -84,7 +84,7 @@ function main(target, opt)
     local macdeployqt = path.join(qt.bindir, "macdeployqt")
     assert(os.isexec(macdeployqt), "macdeployqt not found!")
 
-    -- generate target app 
+    -- generate target app
     local target_contents = path.join(target_app, "Contents")
     os.tryrm(target_app)
     os.cp(target:targetfile(), path.join(target_contents, "MacOS", target:basename()))

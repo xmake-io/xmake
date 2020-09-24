@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -56,14 +56,14 @@ end
 -- find vcpkg directory
 --
 -- @param sdkdir    the vcpkg directory
--- @param opt       the argument options, e.g. {verbose = true, force = false} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false}
 --
 -- @return          the vcpkg directory
 --
--- @code 
+-- @code
 --
 -- local vcpkgdir = find_vcpkgdir()
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)
@@ -77,7 +77,7 @@ function main(sdkdir, opt)
     if not opt.force and cacheinfo.vcpkg ~= nil then
         return cacheinfo.vcpkg
     end
-       
+
     -- find vcpkg
     local vcpkg = _find_vcpkgdir(sdkdir or config.get("vcpkg") or global.get("vcpkg"))
     if vcpkg then

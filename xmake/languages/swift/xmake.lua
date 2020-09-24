@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -46,7 +46,7 @@ language("swift")
     on_load("load")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -138,7 +138,7 @@ language("swift")
         ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static = 
+    ,   static =
         {
             "target.strip"
         ,   "target.symbols"
@@ -147,7 +147,7 @@ language("swift")
 
     -- set menu
     set_menu {
-                config = 
+                config =
                 {
                     {category = "Cross Complation Configuration/Compiler Configuration"                              }
                 ,   { nil, "sc",            "kv", nil,          "The Swift Compiler"                                 }
@@ -164,7 +164,7 @@ language("swift")
                 ,   { nil, "frameworks",    "kv", nil,          "The Frameworks"                                     }
                 ,   { nil, "frameworkdirs", "kv", nil,          "The Frameworks Search Directories"                  }
                 }
-            } 
+            }
 
 
 

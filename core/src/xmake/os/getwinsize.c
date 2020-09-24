@@ -41,7 +41,7 @@
  * implementation
  */
 
-// get console window size 
+// get console window size
 tb_int_t xm_os_getwinsize(lua_State* lua)
 {
     // check

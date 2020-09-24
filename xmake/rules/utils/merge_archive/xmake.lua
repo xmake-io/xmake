@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -44,7 +44,7 @@ rule("utils.merge.archive")
             -- get object directory of the archive file
             local objectdir = target:objectfile(sourcefile_lib) .. ".dir"
 
-            -- load dependent info 
+            -- load dependent info
             local dependfile = target:dependfile(objectdir)
             local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
@@ -52,13 +52,13 @@ rule("utils.merge.archive")
             if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectdir)}) then
                 local objectfiles = os.files(path.join(objectdir, "**" .. project_target.filename("", "object")))
                 table.join2(target:objectfiles(), objectfiles)
-                return 
+                return
             end
 
             -- trace progress info
             progress.show(opt.progress, "${color.build.object}inserting.$(mode) %s", sourcefile_lib)
 
-            -- extract the archive library 
+            -- extract the archive library
             os.tryrm(objectdir)
             extractor.extract(sourcefile_lib, objectdir)
 

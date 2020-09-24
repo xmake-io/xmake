@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        check_cxxincludes.lua
 --
 
--- check include c++ files and add macro definition 
+-- check include c++ files and add macro definition
 --
 -- e.g.
 --
@@ -35,7 +35,7 @@ function check_cxxincludes(definition, includes, opt)
     add_options(optname)
 end
 
--- check include c++ files and add macro definition to the configuration files 
+-- check include c++ files and add macro definition to the configuration files
 --
 -- e.g.
 --

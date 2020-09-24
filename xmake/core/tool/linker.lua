@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ local tool      = require("tool/tool")
 local builder   = require("tool/builder")
 local compiler  = require("tool/compiler")
 
--- add flags from the toolchains 
+-- add flags from the toolchains
 function linker:_add_flags_from_toolchains(flags, targetkind, target)
 
     -- attempt to add special lanugage flags first for target kind, e.g. binary.go.gcldflags, static.dcarflags
@@ -57,7 +57,7 @@ function linker:_add_flags_from_toolchains(flags, targetkind, target)
     end
 end
 
--- add flags from the linker 
+-- add flags from the linker
 function linker:_add_flags_from_linker(flags)
 
     -- add flags
@@ -92,7 +92,7 @@ function linker._load_tool(targetkind, sourcekinds, target)
 
         -- load the linker tool from the linker kind (with cache)
         linkertool, errors = tool.load(_linkerinfo.linkerkind, {program = program, toolname = toolname, toolchain_info = toolchain_info})
-        if linkertool then 
+        if linkertool then
             linkerinfo = _linkerinfo
             linkerinfo.program = program
             break
@@ -149,15 +149,15 @@ function linker.load(targetkind, sourcekinds, target)
 
     -- save linker tool
     instance._TOOL = linkertool
- 
-    -- load the name flags of archiver 
+
+    -- load the name flags of archiver
     local nameflags = {}
     local nameflags_exists = {}
     for _, sourcekind in ipairs(sourcekinds) do
 
-        -- load language 
+        -- load language
         local result, errors = language.load_sk(sourcekind)
-        if not result then 
+        if not result then
             return nil, errors
         end
 
@@ -217,7 +217,7 @@ end
 
 -- get the link flags
 --
--- @param opt   the argument options (contain all the linker attributes of target), 
+-- @param opt   the argument options (contain all the linker attributes of target),
 --              e.g. {target = ..., targetkind = "static", configs = {ldflags = "", links = "", linkdirs = "", ...}}
 --
 function linker:linkflags(opt)
@@ -234,7 +234,7 @@ function linker:linkflags(opt)
         targetkind = target:targetkind()
     end
 
-    -- add flags from the configure 
+    -- add flags from the configure
     local flags = {}
     self:_add_flags_from_config(flags)
 
@@ -250,7 +250,7 @@ function linker:linkflags(opt)
     -- add flags from the toolchains
     self:_add_flags_from_toolchains(flags, targetkind, target)
 
-    -- add flags from the linker 
+    -- add flags from the linker
     self:_add_flags_from_linker(flags)
 
     -- preprocess flags

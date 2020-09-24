@@ -15,7 +15,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ local demo = application()
 -- init demo
 function demo:init()
 
-    -- init name 
+    -- init name
     application.init(self, "demo")
 
     -- init background
@@ -98,9 +98,9 @@ function demo:dialog_input()
         dialog_input:frame():background_set("cyan")
         dialog_input:text():text_set("please input text:"):textattr_set("red")
         dialog_input:button_add("no", "< No >", function (v) dialog_input:show(false) end)
-        dialog_input:button_add("yes", "< Yes >", function (v) 
+        dialog_input:button_add("yes", "< Yes >", function (v)
                                                       self:dialog_main():text():text_set(dialog_input:textedit():text())
-                                                      dialog_input:show(false) 
+                                                      dialog_input:show(false)
                                                   end)
         dialog_input:show(false)
         self._DIALOG_INPUT = dialog_input
@@ -122,7 +122,7 @@ function demo:dialog_tips()
     return dialog_tips
 end
 
--- on resize  
+-- on resize
 function demo:on_resize()
     self:dialog_main():bounds_set(rect {1, 1, self:width() - 1, self:height() - 1})
     self:dialog_help():bounds_set(rect {1, 1, self:width() - 1, self:height() - 1})

@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -19,7 +19,7 @@
  *
  */
 
-/* Runs interactive commands, read-eval-print (REPL) 
+/* Runs interactive commands, read-eval-print (REPL)
  *
  * Major portions taken verbatim or adapted from LuaJIT frontend and the Lua interpreter.
  * Copyright (C) 2005-2015 Mike Pall. See Copyright Notice in luajit.h
@@ -95,8 +95,8 @@ static tb_int_t xm_sandbox_traceback(lua_State *lua)
 static tb_int_t xm_sandbox_docall(lua_State* lua, tb_int_t narg, tb_int_t clear)
 {
     /* get error function index
-     * 
-     * stack: arg1(sandbox_scope) scriptfunc(top) -> ... 
+     *
+     * stack: arg1(sandbox_scope) scriptfunc(top) -> ...
      */
     tb_int_t errfunc = lua_gettop(lua) - narg;
 
@@ -250,8 +250,8 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
     {
         /* repeat until gets a complete line
          *
-         * stack: arg1(sandbox_scope) scriptbuffer(top) -> ... 
-         * after: arg1(sandbox_scope) scriptbuffer scriptfunc(top) -> ... 
+         * stack: arg1(sandbox_scope) scriptbuffer(top) -> ...
+         * after: arg1(sandbox_scope) scriptbuffer scriptfunc(top) -> ...
          */
         status = luaL_loadbuffer(lua, lua_tostring(lua, -1), lua_strlen(lua, -1), "=stdin");
 
@@ -271,7 +271,7 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
 
         /* add a new line
          *
-         * stack: arg1 scriptbuffer scriptfunc scriptbuffer "\n"(top) -> ... 
+         * stack: arg1 scriptbuffer scriptfunc scriptbuffer "\n"(top) -> ...
          */
         lua_pushliteral(lua, "\n");
 
@@ -279,9 +279,9 @@ static tb_int_t xm_sandbox_loadline(lua_State* lua, tb_int_t top)
         lua_insert(lua, -2);
 
         /* join them
-         *          
-         * stack: arg1 scriptbuffer scriptfunc scriptbuffer scriptbuffer "\n"(top) -> ... 
-         * after: arg1 scriptbuffer scriptfunc scriptbuffer+"\n"(top) -> ... 
+         *
+         * stack: arg1 scriptbuffer scriptfunc scriptbuffer scriptbuffer "\n"(top) -> ...
+         * after: arg1 scriptbuffer scriptfunc scriptbuffer+"\n"(top) -> ...
          */
         lua_concat(lua, 3);
     }
@@ -316,14 +316,14 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
         {
             /* bind sandbox
              *
-             * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ... 
+             * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ...
              */
             lua_pushvalue(lua, 1);
             lua_setfenv(lua, -2);
 
             /* run script
              *
-             * stack: arg1(top) scriptfunc -> ... 
+             * stack: arg1(top) scriptfunc -> ...
              */
             status = xm_sandbox_docall(lua, 0, 0);
         }
@@ -340,8 +340,8 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
 
             /* dump results
              *
-             * stack: arg1(sandbox_scope) [results] -> ... 
-             * after: arg1(sandbox_scope) $interactive_dump [results] -> ... 
+             * stack: arg1(sandbox_scope) [results] -> ...
+             * after: arg1(sandbox_scope) $interactive_dump [results] -> ...
              */
             lua_getfield(lua, 1, "$interactive_dump"); // load $interactive_dump() from sandbox_scope
             lua_insert(lua, -(count + 1));

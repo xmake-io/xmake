@@ -92,7 +92,7 @@ function _instance:rawfd()
     return result, errors
 end
 
--- bind socket 
+-- bind socket
 function _instance:bind(addr, port)
 
     -- ensure opened
@@ -122,7 +122,7 @@ function _instance:bind_unix(addr, opt)
     if self:family() ~= socket.UNIX then
         return -1, string.format("%s: must be unix socket!", self)
     end
- 
+
     -- bind it
     opt = opt or {}
     local ok, errors = io.socket_bind(self:cdata(), addr, opt.is_abstract, self:family())
@@ -132,7 +132,7 @@ function _instance:bind_unix(addr, opt)
     return ok, errors
 end
 
--- listen socket 
+-- listen socket
 function _instance:listen(backlog)
 
     -- ensure opened
@@ -149,7 +149,7 @@ function _instance:listen(backlog)
     return ok, errors
 end
 
--- accept socket 
+-- accept socket
 function _instance:accept(opt)
 
     -- ensure opened
@@ -178,7 +178,7 @@ function _instance:accept(opt)
     return sock, errors
 end
 
--- connect socket 
+-- connect socket
 function _instance:connect(addr, port, opt)
 
     -- ensure opened
@@ -235,7 +235,7 @@ function _instance:connect_unix(addr, opt)
     return ok, errors
 end
 
--- send data to socket 
+-- send data to socket
 function _instance:send(data, opt)
 
     -- ensure opened
@@ -298,7 +298,7 @@ function _instance:send(data, opt)
     return send, errors
 end
 
--- send file to socket 
+-- send file to socket
 function _instance:sendfile(file, opt)
 
     -- ensure the socket opened
@@ -360,7 +360,7 @@ function _instance:sendfile(file, opt)
     return send, errors
 end
 
--- recv data from socket 
+-- recv data from socket
 function _instance:recv(size, opt)
 
     -- ensure opened
@@ -423,7 +423,7 @@ function _instance:recv(size, opt)
     return recv, data_or_errors
 end
 
--- send udp data to peer 
+-- send udp data to peer
 function _instance:sendto(data, addr, port, opt)
 
     -- ensure opened
@@ -476,7 +476,7 @@ function _instance:sendto(data, addr, port, opt)
     return send, errors
 end
 
--- recv udp data from peer 
+-- recv udp data from peer
 function _instance:recvfrom(size, opt)
 
     -- ensure opened
@@ -595,7 +595,7 @@ function _instance:_recvbuff()
     return recvbuff
 end
 
--- clear the recv buffer 
+-- clear the recv buffer
 function _instance:_recvbuff_clear()
     self._RECVBUFF = nil
 end

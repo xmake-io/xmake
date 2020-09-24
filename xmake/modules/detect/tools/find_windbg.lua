@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,27 +22,27 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find windbg 
+-- find windbg
 --
 -- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\windbg.exe"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local windbg = find_windbg()
 -- local windbg, version = find_windbg({version = true})
 -- local windbg, version = find_windbg({version = true, program = "c:\xxx\windbg.exe"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if os.host() ~= "windows" then
-        return 
+        return
     end
-    
+
     -- init options
     opt        = opt or {}
     opt.pathes = opt.pathes or function ()

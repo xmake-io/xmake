@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -60,7 +60,7 @@ function view:init(name, bounds)
     state.block_cursor   = false     -- block cursor
     state.selected       = false     -- is selected?
     state.focused        = false     -- is focused?
-    state.redraw         = true      -- need redraw 
+    state.redraw         = true      -- need redraw
     state.on_refresh     = true      -- need refresh
     state.on_resize      = true      -- need resize
     self._STATE          = state
@@ -112,7 +112,7 @@ end
 -- set window bounds
 function view:bounds_set(bounds)
     if bounds and self:bounds() ~= bounds then
-        self._BOUNDS = bounds() 
+        self._BOUNDS = bounds()
         self:invalidate(true)
     end
 end
@@ -142,7 +142,7 @@ function view:parent_set(parent)
     self._PARENT = parent
 end
 
--- get the application 
+-- get the application
 function view:application()
     if not self._APPLICATION then
         local app = self
@@ -236,13 +236,13 @@ function view:on_resize()
 
     -- clear mark
     self:state_set("resize", false)
-    
+
     -- do action
     self:action_on(action.ac_on_resized)
 end
 
 -- show view?
--- 
+--
 -- .e.g
 -- v:show(false)
 -- v:show(true, {focused = true})
@@ -269,7 +269,7 @@ function view:invalidate(bounds)
 end
 
 -- on event (abstract)
--- 
+--
 -- @return true: done and break dispatching, false/nil: continous to dispatch to other views
 --
 function view:on_event(e)
@@ -326,7 +326,7 @@ function view:option_set(name, enable)
     -- state is not changed?
     enable = enable or false
     if self:option(name) == enable then
-        return 
+        return
     end
 
     -- set option
@@ -482,7 +482,7 @@ function view:_mark_refresh()
         self:state_set("refresh", true)
     end
 
-    -- need refresh it's parent view 
+    -- need refresh it's parent view
     if self:parent() then
         self:parent():_mark_refresh()
     end

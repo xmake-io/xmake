@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -46,11 +46,11 @@ function cmdargv(program, argv)
     -- uses ccache?
     local ccache = _ccache()
     if ccache then
-            
+
         -- parse the filename and arguments, e.g. "xcrun -sdk macosx clang"
         if not os.isexec(program) then
             argv = table.join(program:split("%s"), argv)
-        else 
+        else
             table.insert(argv, 1, program)
         end
         return ccache.program, argv

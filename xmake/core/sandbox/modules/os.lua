@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -119,7 +119,7 @@ function sandbox_os.vcp(srcpath, dstpath, opt)
         utils.cprint("${dim}> copy %s to %s", srcpath, dstpath)
     end
     return sandbox_os.cp(srcpath, dstpath, opt)
-end 
+end
 
 -- move file or directory with the verbose info
 function sandbox_os.vmv(srcpath, dstpath)
@@ -128,7 +128,7 @@ function sandbox_os.vmv(srcpath, dstpath)
         utils.cprint("${dim}> move %s to %s", srcpath, dstpath)
     end
     return sandbox_os.mv(srcpath, dstpath)
-end 
+end
 
 -- remove file or directory with the verbose info
 function sandbox_os.vrm(filepath)
@@ -137,7 +137,7 @@ function sandbox_os.vrm(filepath)
         utils.cprint("${dim}> remove %s", filepath)
     end
     return sandbox_os.rm(filepath)
-end 
+end
 
 -- link file or directory with the verbose info
 function sandbox_os.vln(srcpath, dstpath)
@@ -146,7 +146,7 @@ function sandbox_os.vln(srcpath, dstpath)
         utils.cprint("${dim}> link %s to %s", srcpath, dstpath)
     end
     return sandbox_os.ln(srcpath, dstpath)
-end 
+end
 
 -- try to copy file or directory
 function sandbox_os.trycp(srcpath, dstpath)
@@ -187,7 +187,7 @@ end
 
 -- create directories
 function sandbox_os.mkdir(dir)
-    assert(dir) 
+    assert(dir)
     local ok, errors = os.mkdir(vformat(dir))
     if not ok then
         os.raise(errors)
@@ -220,7 +220,7 @@ end
 
 -- get the script directory
 function sandbox_os.scriptdir()
-  
+
     -- get the current sandbox instance
     local instance = sandbox.instance()
     assert(instance)
@@ -268,7 +268,7 @@ function sandbox_os.vrun(cmd, ...)
     end
 
     -- run it
-    (option.get("verbose") and sandbox_os.exec or sandbox_os.run)(cmd, ...)  
+    (option.get("verbose") and sandbox_os.exec or sandbox_os.run)(cmd, ...)
 end
 
 -- quietly run command with arguments list and echo verbose info if [-v|--verbose] option is enabled
@@ -329,7 +329,7 @@ function sandbox_os.iorunv(program, argv, opt)
     return outdata, errdata
 end
 
--- execute command 
+-- execute command
 function sandbox_os.exec(cmd, ...)
 
     -- make command
@@ -355,7 +355,7 @@ function sandbox_os.execv(program, argv, opt)
 
     -- flush io buffer first for fixing redirect io output order
     --
-    -- e.g. 
+    -- e.g.
     --
     -- xmake run > /tmp/a
     --   print("xxx1")
@@ -364,7 +364,7 @@ function sandbox_os.execv(program, argv, opt)
     -- cat /tmp/a
     --   xxx2
     --   xxx1
-    -- 
+    --
     io.flush()
 
     -- run it
@@ -400,7 +400,7 @@ function sandbox_os.vexec(cmd, ...)
     end
 
     -- run it
-    sandbox_os.exec(cmd, ...)  
+    sandbox_os.exec(cmd, ...)
 end
 
 -- execute command with arguments list and echo verbose info if [-v|--verbose] option is enabled

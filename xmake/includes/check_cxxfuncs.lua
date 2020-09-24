@@ -11,14 +11,14 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
 -- @file        check_cxxfuncs.lua
 --
 
--- check c++ funcs and add macro definition 
+-- check c++ funcs and add macro definition
 --
 -- the function syntax
 --  - sigsetjmp
@@ -59,7 +59,7 @@ function check_cxxfuncs(definition, funcs, opt)
     add_options(optname)
 end
 
--- check c++ funcs and add macro definition to the configuration files 
+-- check c++ funcs and add macro definition to the configuration files
 --
 -- e.g.
 --

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,7 +21,7 @@
 -- imports
 import("core.sandbox.module")
 
--- find tool name from the given program 
+-- find tool name from the given program
 function _find(program)
 
     -- attempt to find it directly first
@@ -68,7 +68,7 @@ end
 
 -- find tool name
 --
--- e.g. 
+-- e.g.
 -- "xcrun -sdk macosx clang":   clang
 -- "/usr/bin/arm-linux-gcc":    gcc
 -- "link.exe -lib":             link
@@ -93,7 +93,7 @@ function main(program)
 
     -- find the tool name
     toolname = _find(program)
-    
+
     -- save result to cache
     toolnames[program] = ifelse(toolname, toolname, false)
     _g._TOOLNAMES = toolnames

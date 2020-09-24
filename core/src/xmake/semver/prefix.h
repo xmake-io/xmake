@@ -36,7 +36,7 @@ __tb_extern_c_enter__
  * interfaces
  */
 
-/* push struct semver 
+/* push struct semver
  *
  * @param lua       the lua context
  * @param semver    the semver struct

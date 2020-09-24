@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -50,7 +50,7 @@ function sandbox_lib_detect_find_program._check(program, opt)
 
     -- do not attempt to run program? check it fastly
     if opt.norun then
-        return os.isfile(program) 
+        return os.isfile(program)
     end
 
     -- no check script? attempt to run it directly
@@ -122,7 +122,7 @@ end
 -- find program from the xmake packages
 function sandbox_lib_detect_find_program._find_from_packages(name, opt)
 
-    -- get the manifest file of package, e.g. ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt 
+    -- get the manifest file of package, e.g. ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
     local manifest_file = path.join(package.installdir(), name:sub(1, 1), name, opt.version, opt.buildhash, "manifest.txt")
     if not os.isfile(manifest_file) then
         return
@@ -204,7 +204,7 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
         end
     end
 
-    -- attempt to find it directly in current environment 
+    -- attempt to find it directly in current environment
     --
     -- @note must be detected at the end, because full path is more accurate
     --
@@ -218,7 +218,7 @@ end
 -- @param name      the program name
 -- @param opt       the options, e.g. {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
 --                    - opt.pathes    the program pathes (e.g. dirs, pathes, winreg pathes, script pathes)
---                    - opt.check     the check script or command 
+--                    - opt.check     the check script or command
 --                    - opt.norun     do not attempt to run program to check program fastly
 --
 -- @return          the program name or path

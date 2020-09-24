@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -54,7 +54,7 @@ function _from(instance)
     end
 end
 
--- get package info 
+-- get package info
 function _info(instance)
     local info = instance:version_str() and instance:version_str() or "no version"
     info = info .. _from(instance)
@@ -69,10 +69,10 @@ function main(requires_raw)
     local requires_extra = nil
     local requires, requires_extra = get_requires(requires_raw)
     if not requires or #requires == 0 then
-        return 
+        return
     end
 
-    -- enter environment 
+    -- enter environment
     environment.enter()
 
     -- pull all repositories first if not exists

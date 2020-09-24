@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,17 +22,17 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find sudo 
+-- find sudo
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local sudo = find_sudo()
 -- local sudo, version = find_sudo({version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)
@@ -41,7 +41,7 @@ function main(opt)
     opt         = opt or {}
     opt.check   = opt.check or "-h"
     opt.command = opt.command or "-V"
-    
+
     -- find program
     local program = find_program(opt.program or "sudo", opt)
 

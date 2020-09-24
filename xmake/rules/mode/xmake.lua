@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -24,7 +24,7 @@ rule("mode.debug")
 
         -- is debug mode now? xmake f -m debug
         if is_mode("debug") then
- 
+
             -- enable the debug symbols
             if not target:get("symbols") then
                 target:set("symbols", "debug")
@@ -43,7 +43,7 @@ rule("mode.release")
 
         -- is release mode now? xmake f -m release
         if is_mode("release") then
- 
+
             -- set the symbols visibility: hidden
             if not target:get("symbols") and target:targetkind() ~= "shared" then
                 target:set("symbols", "hidden")
@@ -71,7 +71,7 @@ rule("mode.releasedbg")
 
         -- is releasedbg mode now? xmake f -m releasedbg
         if is_mode("releasedbg") then
- 
+
             -- set the symbols visibility: debug
             if not target:get("symbols") then
                 target:set("symbols", "debug")
@@ -99,7 +99,7 @@ rule("mode.minsizerel")
 
         -- is minsizerel mode now? xmake f -m minsizerel
         if is_mode("minsizerel") then
- 
+
             -- set the symbols visibility: hidden
             if not target:get("symbols") then
                 target:set("symbols", "hidden")
@@ -123,7 +123,7 @@ rule("mode.profile")
 
         -- is profile mode now? xmake f -m profile
         if is_mode("profile") then
- 
+
             -- set the symbols visibility: debug
             if not target:get("symbols") then
                 target:set("symbols", "debug")
@@ -138,7 +138,7 @@ rule("mode.profile")
                 end
             end
 
-            -- enable gprof 
+            -- enable gprof
             target:add("cxflags", "-pg")
             target:add("mxflags", "-pg")
             target:add("ldflags", "-pg")
@@ -151,7 +151,7 @@ rule("mode.coverage")
 
         -- is coverage mode now? xmake f -m coverage
         if is_mode("coverage") then
- 
+
             -- enable the debug symbols
             if not target:get("symbols") then
                 target:set("symbols", "debug")
@@ -343,7 +343,7 @@ rule("mode.check")
 
         -- is check mode now? xmake f -m check
         if is_mode("check") then
- 
+
             -- enable the debug symbols
             if not target:get("symbols") then
                 target:set("symbols", "debug")

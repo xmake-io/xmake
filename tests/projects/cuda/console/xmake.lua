@@ -11,4 +11,4 @@ target("cuda_console")
     -- generate PTX code from the highest SM architecture to guarantee forward-compatibility
     add_cugencodes("compute_75")
 
-    
+

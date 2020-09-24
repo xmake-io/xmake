@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,25 +22,25 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find ollydbg 
+-- find ollydbg
 --
 -- @param opt   the argument options, e.g. {version = true, program = "c:\xxx\ollydbg.exe"}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local ollydbg = find_ollydbg()
 -- local ollydbg, version = find_ollydbg({version = true})
 -- local ollydbg, version = find_ollydbg({version = true, program = "c:\xxx\ollydbg.exe"})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- not on windows?
     if os.host() ~= "windows" then
-        return 
+        return
     end
 
     -- init options

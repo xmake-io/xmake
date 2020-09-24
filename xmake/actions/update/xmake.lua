@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ task("update")
             ,   description = "Update and uninstall the xmake program."
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {nil, "uninstall",   "k",   nil,    "Uninstall the current xmake program."                     }
                 ,   {                                                                                              }
@@ -45,9 +45,9 @@ task("update")
                 ,   {nil, "xmakever",    "v",   nil,    "The given xmake version, or a git source (and branch). ",
                                                         "e.g.",
                                                         "    from official source: ",
-                                                        "        latest, ~2.2.3, dev, master", 
-                                                        "    from custom source:", 
-                                                        "        https://github.com/xmake-io/xmake", 
+                                                        "        latest, ~2.2.3, dev, master",
+                                                        "    from custom source:",
+                                                        "        https://github.com/xmake-io/xmake",
                                                         "        github:xmake-io/xmake#~2.2.3",
                                                         "        git://github.com/xmake-io/xmake.git#master",
                                                         values = function (complete)

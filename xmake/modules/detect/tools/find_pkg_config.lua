@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,24 +22,24 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find pkg_config 
+-- find pkg_config
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local pkg_config = find_pkg_config()
 -- local pkg_config, version = find_pkg_config({version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)
 
     -- init options
     opt = opt or {}
-    
+
     -- find program
     local program = find_program(opt.program or "pkg-config", opt)
 

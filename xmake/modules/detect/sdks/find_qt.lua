@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -41,7 +41,7 @@ function _find_sdkdir(sdkdir, sdkver)
         if vs then
             table.insert(subdirs, path.join(sdkver or "*", is_arch("x64") and "msvc" .. vs .. "_64" or "msvc" .. vs .. "_32", "bin"))
             table.insert(subdirs, path.join(sdkver or "*", "msvc" .. vs, "bin"))
-        end 
+        end
         table.insert(subdirs, path.join(sdkver or "*", is_arch("x64") and "msvc*_64" or "msvc*_32", "bin"))
         table.insert(subdirs, path.join(sdkver or "*", "msvc*", "bin"))
     elseif is_plat("mingw") then
@@ -76,8 +76,8 @@ function _find_sdkdir(sdkdir, sdkver)
     end
     if is_host("windows") then
 
-        -- add pathes from registry 
-        local regs = 
+        -- add pathes from registry
+        local regs =
         {
             "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.c\\shell\\Open\\Command",
             "HKEY_CLASSES_ROOT\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command",
@@ -85,7 +85,7 @@ function _find_sdkdir(sdkdir, sdkver)
             "HKEY_CURRENT_USER\\SOFTWARE\\Classes\\Applications\\QtProject.QtCreator.cpp\\shell\\Open\\Command"
         }
         for _, reg in ipairs(regs) do
-            table.insert(pathes, function () 
+            table.insert(pathes, function ()
                 local value = val("reg " .. reg)
                 if value then
                     local p = value:find("\\Tools\\QtCreator", 1, true)
@@ -122,7 +122,7 @@ function _find_qmake(sdkdir, sdkver)
     -- find qt directory
     sdkdir = _find_sdkdir(sdkdir, sdkver)
 
-    -- get the bin directory 
+    -- get the bin directory
     local qmake = find_tool("qmake", {pathes = sdkdir and path.join(sdkdir, "bin")})
     if qmake then
         return qmake.program
@@ -137,7 +137,7 @@ function _get_qtenvs(qmake)
         local results = try {function () return os.iorunv(qmake, {"-query"}) end}
         if results then
             for _, qtenv in ipairs(results:split('\n', {plain = true})) do
-                local kv = qtenv:split(':', {plain = true, limit = 2}) -- @note set limit = 2 for supporting value with win-style path, e.g. `key:C:\xxx` 
+                local kv = qtenv:split(':', {plain = true, limit = 2}) -- @note set limit = 2 for supporting value with win-style path, e.g. `key:C:\xxx`
                 if #kv == 2 then
                     envs[kv[1]] = kv[2]:trim()
                 end
@@ -178,14 +178,14 @@ end
 -- find qt sdk toolchains
 --
 -- @param sdkdir    the qt sdk directory
--- @param opt       the argument options, e.g. {verbose = true, force = false, version = "5.9.1"} 
+-- @param opt       the argument options, e.g. {verbose = true, force = false, version = "5.9.1"}
 --
 -- @return          the qt sdk toolchains. e.g. {sdkver = ..., sdkdir = ..., bindir = .., linkdirs = ..., includedirs = ..., .. }
 --
--- @code 
+-- @code
 --
 -- local toolchains = find_qt("~/Qt")
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)
@@ -199,7 +199,7 @@ function main(sdkdir, opt)
     if not opt.force and cacheinfo.qt and cacheinfo.qt.sdkdir and os.isdir(cacheinfo.qt.sdkdir) then
         return cacheinfo.qt
     end
-       
+
     -- find qt
     local qt = _find_qt(sdkdir or config.get("qt") or global.get("qt") or config.get("sdk"), opt.version or config.get("qt_sdkver"))
     if qt then

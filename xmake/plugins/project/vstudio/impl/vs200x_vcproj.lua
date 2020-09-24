@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -206,7 +206,7 @@ function _make_VCLinkerTool(vcprojfile, vsinfo, target, vcprojdir)
         vcprojfile:enter("<Tool")
             vcprojfile:print("Name=\"VCLinkerTool\"")
         vcprojfile:leave("/>")
-        return 
+        return
     end
 
     -- generate debug infomation?
@@ -248,7 +248,7 @@ function _make_configurations(vcprojfile, vsinfo, target, vcprojdir)
     ,   shared = 2
     ,   static = 4
     }
- 
+
     -- save compiler flags
     local compflags=nil
     for _, sourcebatch in pairs(target:sourcebatches()) do
@@ -524,7 +524,7 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
 
     -- enter files
     vcprojfile:enter("<Files>")
-        local sourcebatches = target:sourcebatches()        
+        local sourcebatches = target:sourcebatches()
         -- c/cxx files
         vcprojfile:enter("<Filter Name=\"Source Files\">")
             for _, sourcebatch in pairs(sourcebatches) do
@@ -532,7 +532,7 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
                 if sourcekind ~= "mrc" then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
+                        _make_cxfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir)
                     end
                 end
             end
@@ -547,7 +547,7 @@ function _make_files(vcprojfile, vsinfo, target, vcprojdir)
                 if sourcekind == "mrc" then
                     local objectfiles = sourcebatch.objectfiles
                     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                        _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir) 
+                        _make_rcfile(vcprojfile, vsinfo, target, sourcefile, objectfiles[idx], vcprojdir)
                     end
                 end
             end

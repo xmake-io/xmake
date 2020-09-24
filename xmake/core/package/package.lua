@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific package governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -52,7 +52,7 @@ function _instance.new(name, info, scriptdir)
     return instance
 end
 
--- get the package name 
+-- get the package name
 function _instance:name()
     return self._NAME
 end
@@ -63,7 +63,7 @@ function _instance:get(name)
     -- get it from info first
     local value = self._INFO:get(name)
     if value ~= nil then
-        return value 
+        return value
     end
 end
 
@@ -143,11 +143,11 @@ function _instance:is_arch(...)
     end
 end
 
--- get the package alias  
+-- get the package alias
 function _instance:alias()
     local requireinfo = self:requireinfo()
     if requireinfo then
-        return requireinfo.alias 
+        return requireinfo.alias
     end
 end
 
@@ -264,12 +264,12 @@ function _instance:filelock()
         if not filelock then
             os.raise("cannot create filelock for package(%s)!", package:name())
         end
-        self._FILELOCK = filelock 
+        self._FILELOCK = filelock
     end
     return filelock
 end
 
--- lock the whole package 
+-- lock the whole package
 function _instance:lock(opt)
     if self:filelock():trylock(opt) then
         return true
@@ -282,7 +282,7 @@ function _instance:lock(opt)
     end
 end
 
--- unlock the whole package 
+-- unlock the whole package
 function _instance:unlock()
     local ok, errors = self:filelock():unlock()
     if not ok then
@@ -511,7 +511,7 @@ function _instance:build_envs(lazy_loading)
                 return value
             end
             return rawget(tbl, key)
-        end}) 
+        end})
 
         -- save build environments
         self._BUILD_ENVS = build_envs
@@ -560,7 +560,7 @@ end
 -- get versions
 function _instance:versions()
 
-    -- make versions 
+    -- make versions
     if self._VERSIONS == nil then
 
         -- get versions
@@ -581,12 +581,12 @@ function _instance:versions()
     return self._VERSIONS
 end
 
--- get the version  
+-- get the version
 function _instance:version()
     return self._VERSION
 end
 
--- get the version string 
+-- get the version string
 function _instance:version_str()
     if self:is3rd() then
         local requireinfo = self:requireinfo()
@@ -597,12 +597,12 @@ function _instance:version_str()
     return self._VERSION_STR
 end
 
--- get branch version 
+-- get branch version
 function _instance:branch()
     return self._BRANCH
 end
 
--- get tag version 
+-- get tag version
 function _instance:tag()
     return self._TAG
 end
@@ -633,12 +633,12 @@ function _instance:version_set(version, source)
     self._VERSION_STR = version
 end
 
--- get the require info 
+-- get the require info
 function _instance:requireinfo()
-    return self._REQUIREINFO 
+    return self._REQUIREINFO
 end
 
--- set the require info 
+-- set the require info
 function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
@@ -678,10 +678,10 @@ end
 -- get the build hash
 function _instance:buildhash()
     if self._BUILDHASH == nil then
-        local str = self:plat() .. self:arch() 
+        local str = self:plat() .. self:arch()
         local configs = self:configs()
         if configs then
-            -- since luajit v2.1, the key order of the table is random and undefined. 
+            -- since luajit v2.1, the key order of the table is random and undefined.
             -- We cannot directly deserialize the table, so the result may be different each time
             local configs_order = {}
             for k, v in pairs(table.wrap(configs)) do
@@ -729,7 +729,7 @@ function _instance:parallelize()
     return self:get("parallelize") ~= false
 end
 
--- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable 
+-- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
 -- we need install and find package by third-party package manager directly
 --
 function _instance:is3rd()
@@ -768,14 +768,14 @@ function _instance:script(name, generic)
         for _pattern, _script in pairs(script) do
             local hosts = {}
             local hosts_spec = false
-            _pattern = _pattern:gsub("@(.+)", function (v) 
+            _pattern = _pattern:gsub("@(.+)", function (v)
                 for _, host in ipairs(v:split(',')) do
                     hosts[host] = true
                     hosts_spec = true
                 end
-                return "" 
+                return ""
             end)
-            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])  
+            if not _pattern:startswith("__") and (not hosts_spec or hosts[os.host() .. '|' .. os.arch()] or hosts[os.host()])
             and (_pattern:trim() == "" or (plat .. '|' .. arch):find('^' .. _pattern .. '$') or plat:find('^' .. _pattern .. '$')) then
                 result = _script
                 break
@@ -803,7 +803,7 @@ function _instance:script(name, generic)
     return result
 end
 
--- fetch the local package info 
+-- fetch the local package info
 --
 -- @param opt   the fetch option, e.g. {force = true, system = false}
 --
@@ -820,7 +820,7 @@ function _instance:fetch(opt)
         return fetchinfo
     end
 
-    -- fetch the require version 
+    -- fetch the require version
     local require_ver = opt.version or self:requireinfo().version
     if not self:is3rd() and not require_ver:find('.', 1, true) then
         -- strip branch version only system package
@@ -841,7 +841,7 @@ function _instance:fetch(opt)
     fetchinfo = nil
     local isSys = nil
     if self:kind() == "binary" then
-    
+
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
 
@@ -851,7 +851,7 @@ function _instance:fetch(opt)
                                                       cachekey = "fetch_package_xmake",
                                                       buildhash = self:buildhash(),
                                                       norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
-                                                      force = opt.force}) 
+                                                      force = opt.force})
             if fetchinfo then
                 isSys = self._isSys
             end
@@ -862,7 +862,7 @@ function _instance:fetch(opt)
             fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
                                                       force = opt.force})
             if fetchinfo then
-                isSys = true 
+                isSys = true
             end
         end
     else
@@ -876,7 +876,7 @@ function _instance:fetch(opt)
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
                                                                       pkgconfigs = self:configs(),
-                                                                      force = opt.force}) 
+                                                                      force = opt.force})
             if fetchinfo then
                 isSys = self._isSys
             end
@@ -884,14 +884,14 @@ function _instance:fetch(opt)
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_package(self:name(), {force = opt.force, 
-                                                         version = require_ver, 
+            fetchinfo = self._find_package(self:name(), {force = opt.force,
+                                                         version = require_ver,
                                                          mode = self:mode(),
                                                          pkgconfigs = self:configs(),
                                                          buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
                                                          cachekey = "fetch_package_system",
                                                          system = true})
-            if fetchinfo then 
+            if fetchinfo then
                 isSys = true
             end
         end
@@ -899,7 +899,7 @@ function _instance:fetch(opt)
 
     -- save to cache
     self._FETCHINFO = fetchinfo
-                
+
     -- mark as system package?
     if isSys ~= nil then
         self._isSys = isSys
@@ -985,7 +985,7 @@ function _instance:resources()
     return resources and resources or nil
 end
 
--- get the the given resource 
+-- get the the given resource
 function _instance:resource(name)
     local resources = self:resources()
     return resources and resources[name] or nil
@@ -1106,13 +1106,13 @@ function package._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define(package.apis())
 
     -- define apis for language
     interp:api_define(language.apis())
-    
+
     -- save interpreter
     package._INTERPRETER = interp
 
@@ -1123,7 +1123,7 @@ end
 -- get package apis
 function package.apis()
 
-    return 
+    return
     {
         values =
         {
@@ -1154,18 +1154,18 @@ function package.apis()
         ,   "package.after_install"
         ,   "package.after_test"
         }
-    ,   keyvalues = 
+    ,   keyvalues =
         {
             -- package.add_xxx
             "package.add_patches"
         ,   "package.add_resources"
         }
-    ,   dictionary = 
+    ,   dictionary =
         {
             -- package.add_xxx
             "package.add_versions"
         }
-    ,   custom = 
+    ,   custom =
         {
             -- is_xxx
             { "is_host", package._api_is_host }
@@ -1340,7 +1340,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
         break
     end
 
-    -- check this package 
+    -- check this package
     if not packageinfo then
         return nil, string.format("%s: the package %s not found!", scriptpath, packagename)
     end
@@ -1357,6 +1357,6 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     -- ok
     return instance
 end
-     
+
 -- return module
 return package

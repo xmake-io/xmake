@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -106,7 +106,7 @@ function deprecated_project._api_set_modes(interp, ...)
     assert(apifunc)
 
     -- register api
-    interp:api_register_builtin("set_modes", function (...) 
+    interp:api_register_builtin("set_modes", function (...)
 
                                             -- deprecated
                                             deprecated.add("add_rules(\"mode.debug\", \"mode.release\")", "set_modes(\"debug\", \"release\")")
@@ -124,11 +124,11 @@ function deprecated_project._api_option_add_cxsnippet(interp, apiname)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("option", apiname, function (...) 
+    interp:_api_within_scope_set("option", apiname, function (...)
 
                                             -- deprecated
                                             deprecated.add(apiname .. "s(...)", apiname .. "(...)")
-                                          
+
                                             -- dispatch it
                                             apifunc(...)
                                         end)
@@ -142,7 +142,7 @@ function deprecated_project._api_target_add_headers(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "add_headers", function (value, ...) 
+    interp:_api_within_scope_set("target", "add_headers", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_headerfiles(%s)", "add_headers(%s)", tostring(value))
@@ -160,7 +160,7 @@ function deprecated_project._api_target_add_headerdirs(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "add_headerdirs", function (value, ...) 
+    interp:_api_within_scope_set("target", "add_headerdirs", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_includedirs(%s, {public|interface = true})", "add_headerdirs(%s)", tostring(value))
@@ -178,7 +178,7 @@ function deprecated_project._api_target_add_defines_h(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "add_defines_h", function (value, ...) 
+    interp:_api_within_scope_set("target", "add_defines_h", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_configfiles() and set_configvar(%s)", "add_defines_h(%s)", tostring(value))
@@ -196,7 +196,7 @@ function deprecated_project._api_option_add_defines_h(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("option", "add_defines_h", function (value, ...) 
+    interp:_api_within_scope_set("option", "add_defines_h", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_configfiles() and set_configvar(%s)", "add_defines_h(%s)", tostring(value))
@@ -214,7 +214,7 @@ function deprecated_project._api_target_set_config_header(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "set_config_header", function (value, ...) 
+    interp:_api_within_scope_set("target", "set_config_header", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_configfiles(%s.in)", "set_config_header(%s)", tostring(value))
@@ -232,11 +232,11 @@ function deprecated_project._api_target_set_headerdir(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "set_headerdir", function (value, ...) 
+    interp:_api_within_scope_set("target", "set_headerdir", function (value, ...)
 
                                             -- deprecated
                                             deprecated.add(false, "set_headerdir(%s)", tostring(value))
-                                          
+
                                             -- dispatch it
                                             apifunc(value, ...)
                                         end)
@@ -250,11 +250,11 @@ function deprecated_project._api_target_set_tools(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "set_tools", function (key, value, ...) 
+    interp:_api_within_scope_set("target", "set_tools", function (key, value, ...)
 
                                             -- deprecated
                                             deprecated.add("set_toolset(%s, %s)", "set_tools(%s, %s)", tostring(key), tostring(value))
-                                          
+
                                             -- dispatch it
                                             apifunc(key, value, ...)
                                         end)
@@ -268,11 +268,11 @@ function deprecated_project._api_target_set_toolchain(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "set_toolchain", function (key, value, ...) 
+    interp:_api_within_scope_set("target", "set_toolchain", function (key, value, ...)
 
                                             -- deprecated
                                             deprecated.add("set_toolset(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
-                                          
+
                                             -- dispatch it
                                             apifunc(key, value, ...)
                                         end)
@@ -286,11 +286,11 @@ function deprecated_project._api_target_add_tools(interp)
     assert(apifunc)
 
     -- register api
-    interp:_api_within_scope_set("target", "add_tools", function (key, value, ...) 
+    interp:_api_within_scope_set("target", "add_tools", function (key, value, ...)
 
                                             -- deprecated
                                             deprecated.add("add_tools(%s, %s)", "set_toolchain(%s, %s)", tostring(key), tostring(value))
-                                          
+
                                             -- dispatch it
                                             apifunc(key, value, ...)
                                         end)

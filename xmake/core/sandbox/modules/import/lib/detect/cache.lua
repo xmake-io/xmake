@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -34,7 +34,7 @@ local raise     = require("sandbox/modules/raise")
 
 -- get detect cache instance
 function sandbox_lib_detect_cache._instance()
-    
+
     -- get it
     local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(os.isfile(project.rootfile()) and "local.detect" or "memory.detect")
     sandbox_lib_detect_cache._INSTANCE = detectcache
@@ -47,11 +47,11 @@ end
 --
 function sandbox_lib_detect_cache.load(name)
 
-    -- get detect cache 
+    -- get detect cache
     local detectcache = sandbox_lib_detect_cache._instance()
- 
+
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get(name) 
+    local cacheinfo = detectcache:get(name)
     if cacheinfo == nil then
         cacheinfo = {}
         detectcache:set(name, cacheinfo)
@@ -68,7 +68,7 @@ end
 --
 function sandbox_lib_detect_cache.save(name, info)
 
-    -- get detect cache 
+    -- get detect cache
     local detectcache = sandbox_lib_detect_cache._instance()
 
     -- save cache info
@@ -82,7 +82,7 @@ end
 --
 function sandbox_lib_detect_cache.clear(name)
 
-    -- get detect cache 
+    -- get detect cache
     local detectcache = sandbox_lib_detect_cache._instance()
 
     -- clear cache info

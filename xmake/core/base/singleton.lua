@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -23,7 +23,7 @@ local singleton = singleton or {}
 
 -- get a singleton instance and create it if not exists
 --
--- e.g. 
+-- e.g.
 --
 -- function get_xxx()
 --      return {xxx = 1}
@@ -31,7 +31,7 @@ local singleton = singleton or {}
 -- local instance = singleton.get("key", get_xxx)
 --
 -- Or
--- 
+--
 -- function get_xxx()
 --
 --     -- get instance
@@ -50,7 +50,7 @@ function singleton.get(key, init)
     -- get key
     key = tostring(key)
 
-    -- get all instances 
+    -- get all instances
     local instances = singleton.instances()
 
     -- get singleton instance

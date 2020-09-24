@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -70,7 +70,7 @@ function main(name, opt)
     os.mkdir(cachedir)
     os.vrunv(go.program, {"get", "-u", name}, {envs = {GOPATH = cachedir, GOOS = goos, GOARCH = goarch}, curdir = cachedir})
 
-    -- install go package 
+    -- install go package
     local installdir = _go_get_installdir(name, opt)
     local pkgdir = path.join(cachedir, "pkg", goos .. "_" .. goarch)
     os.tryrm(installdir)

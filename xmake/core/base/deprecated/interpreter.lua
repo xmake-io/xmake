@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -48,7 +48,7 @@ function deprecated_interpreter:api_register_set_scope(...)
             deprecated.add("%s(\"%s\")", "set_%s(\"%s\")", scope_kind, scope_name)
         end
 
-        -- check 
+        -- check
         if not scope_for_kind[scope_name] then
             utils.error("set_%s(\"%s\") failed, %s not found!", scope_kind, scope_name, scope_name)
             os.raise("please uses add_%s(\"%s\") first!", scope_kind, scope_name)
@@ -87,7 +87,7 @@ function deprecated_interpreter:api_register_add_scope(...)
             deprecated.add("%s(\"%s\")", "add_%s(\"%s\")", scope_kind, scope_name)
         end
 
-        -- check 
+        -- check
         if scope_for_kind[scope_name] then
             utils.error("add_%s(\"%s\") failed, %s have been defined!", scope_kind, scope_name, scope_name)
             os.raise("please uses set_%s(\"%s\")!", scope_kind, scope_name)

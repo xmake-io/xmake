@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -53,14 +53,14 @@ function _instance:get(name)
     -- load info
     local info = self:load()
 
-    -- get if from info 
+    -- get if from info
     local value = info and info[name] or nil
     if value ~= nil then
-        return value 
+        return value
     end
 end
 
--- get the repository name 
+-- get the repository name
 function _instance:name()
     return self._NAME
 end
@@ -147,10 +147,10 @@ function repository._interpreter()
     -- init interpreter
     local interp = interpreter.new()
     assert(interp)
- 
+
     -- define apis
     interp:api_define(repository.apis())
-    
+
     -- save interpreter
     repository._INTERPRETER = interp
 
@@ -161,7 +161,7 @@ end
 -- get repository apis
 function repository.apis()
 
-    return 
+    return
     {
         values =
         {
@@ -182,7 +182,7 @@ function repository.directory(is_global)
     end
 end
 
--- load the repository 
+-- load the repository
 function repository.load(name, url, branch, is_global)
 
     -- check url
@@ -211,7 +211,7 @@ function repository.load(name, url, branch, is_global)
     -- ok
     return instance
 end
-     
+
 -- get repository url from the given name
 function repository.get(name, is_global)
 
@@ -253,7 +253,7 @@ end
 function repository.remove(name, is_global)
 
     -- get repositories
-    local repositories = repository.repositories(is_global) or {} 
+    local repositories = repository.repositories(is_global) or {}
     if not repositories[name] then
         return false, string.format("repository(%s): not found!", name)
     end

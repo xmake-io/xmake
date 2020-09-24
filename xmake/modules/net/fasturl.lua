@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -63,20 +63,20 @@ function sort(urls)
     -- ping hosts
     local pinghosts = table.unique(_g._PINGHOSTS or {})
     if pinghosts and #pinghosts > 0 then
- 
+
         -- ping them and test speed, enable cache by default
         local pinginfo = ping(pinghosts)
-        
+
         -- merge to ping info
-        _g._PINGINFO = table.join(_g._PINGINFO or {}, pinginfo) 
+        _g._PINGINFO = table.join(_g._PINGINFO or {}, pinginfo)
     end
 
     -- sort urls by the ping info
     local pinginfo = _g._PINGINFO or {}
-    table.sort(urls, function(a, b) 
+    table.sort(urls, function(a, b)
         a = pinginfo[_parse_host(a) or ""] or 65536
         b = pinginfo[_parse_host(b) or ""] or 65536
-        return a < b 
+        return a < b
     end)
 
     -- clear hosts

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -28,7 +28,7 @@ local emoji = require("base/emoji")
 --
 -- from https://github.com/hoelzro/ansicolors
 --
-colors._keys8 = 
+colors._keys8 =
 {
     -- attributes
     reset       = 0
@@ -41,7 +41,7 @@ colors._keys8 =
 ,   reverse     = 7
 ,   hidden      = 8
 
-    -- foreground 
+    -- foreground
 ,   black       = 30
 ,   red         = 31
 ,   green       = 32
@@ -51,7 +51,7 @@ colors._keys8 =
 ,   cyan        = 36
 ,   white       = 37
 
-    -- background 
+    -- background
 ,   onblack     = 40
 ,   onred       = 41
 ,   ongreen     = 42
@@ -66,7 +66,7 @@ colors._keys8 =
 --
 -- from https://github.com/hoelzro/ansicolors
 --
-colors._keys256 = 
+colors._keys256 =
 {
     -- attributes
     reset       = 0
@@ -79,7 +79,7 @@ colors._keys256 =
 ,   reverse     = 7
 ,   hidden      = 8
 
-    -- foreground 
+    -- foreground
 ,   black       = "38;5;0"
 ,   red         = "38;5;1"
 ,   green       = "38;5;2"
@@ -89,7 +89,7 @@ colors._keys256 =
 ,   cyan        = "38;5;6"
 ,   white       = "38;5;7"
 
-    -- background 
+    -- background
 ,   onblack     = "48;5;0"
 ,   onred       = "48;5;1"
 ,   ongreen     = "48;5;2"
@@ -104,7 +104,7 @@ colors._keys256 =
 --
 -- from https://github.com/hoelzro/ansicolors
 --
-colors._keys24 = 
+colors._keys24 =
 {
     -- attributes
     reset       = 0
@@ -117,7 +117,7 @@ colors._keys24 =
 ,   reverse     = 7
 ,   hidden      = 8
 
-    -- foreground 
+    -- foreground
 ,   black       = "38;2;0;0;0"
 ,   red         = "38;2;255;0;0"
 ,   green       = "38;2;0;255;0"
@@ -127,7 +127,7 @@ colors._keys24 =
 ,   cyan        = "38;2;0;255;255"
 ,   white       = "38;2;255;255;255"
 
-    -- background 
+    -- background
 ,   onblack     = "48;2;0;0;0"
 ,   onred       = "48;2;255;0;0"
 ,   ongreen     = "48;2;0;255;0"
@@ -188,17 +188,17 @@ end
 
 -- support 24bits true color
 --
--- There's no reliable way, and ncurses/terminfo's maintainer expressed he has no intent on introducing support. 
+-- There's no reliable way, and ncurses/terminfo's maintainer expressed he has no intent on introducing support.
 -- S-Lang author added a check for $COLORTERM containing either "truecolor" or "24bit" (case sensitive).
--- In turn, VTE, Konsole and iTerm2 set this variable to "truecolor" (it's been there in VTE for a while, 
+-- In turn, VTE, Konsole and iTerm2 set this variable to "truecolor" (it's been there in VTE for a while,
 -- it's relatively new and maybe still git-only in Konsole and iTerm2).
 --
--- This is obviously not a reliable method, and is not forwarded via sudo, ssh etc. However, whenever it errs, 
--- it errs on the safe side: does not advertise support whereas it's actually supported. 
+-- This is obviously not a reliable method, and is not forwarded via sudo, ssh etc. However, whenever it errs,
+-- it errs on the safe side: does not advertise support whereas it's actually supported.
 -- App developers can freely choose to check for this same variable, or introduce their own method
--- (e.g. an option in their config file), whichever matches better the overall design of the given app. 
--- Checking $COLORTERM is recommended though, since that would lead to a more unique desktop experience 
--- where the user has to set one variable only and it takes effect across all the apps, rather than something 
+-- (e.g. an option in their config file), whichever matches better the overall design of the given app.
+-- Checking $COLORTERM is recommended though, since that would lead to a more unique desktop experience
+-- where the user has to set one variable only and it takes effect across all the apps, rather than something
 -- separately for each app.
 --
 function colors.truecolor()
@@ -223,7 +223,7 @@ end
 -- @param index     the index of characters
 -- @param seed      the seed, 0-255, default: random
 -- @param freq      the frequency, default: 0.1
--- @param spread    the spread, default: 3.0 
+-- @param spread    the spread, default: 3.0
 --
 --
 function colors.rainbow24(index, seed, freq, spread)
@@ -248,7 +248,7 @@ end
 -- @param index     the index of characters
 -- @param seed      the seed, 0-255, default: random
 -- @param freq      the frequency, default: 0.1
--- @param spread    the spread, default: 3.0 
+-- @param spread    the spread, default: 3.0
 --
 --
 function colors.rainbow256(index, seed, freq, spread)
@@ -418,7 +418,7 @@ function colors.translate(str, opt)
         -- make result
         local result = ""
         if #color_buffer > 0 and not nocolors then
-            result = result .. colors._ESC:format(table.concat(color_buffer, ";")) 
+            result = result .. colors._ESC:format(table.concat(color_buffer, ";"))
         end
         if #text_buffer > 0 then
             result = result .. table.concat(text_buffer, " ")

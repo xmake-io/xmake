@@ -41,7 +41,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
@@ -92,7 +92,7 @@ tb_int_t xm_io_socket_sendto(lua_State* lua)
         return 2;
     }
 
-    // get address family 
+    // get address family
     tb_size_t family = (tb_size_t)luaL_checknumber(lua, 5);
 
     // init ip address

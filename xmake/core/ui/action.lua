@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -37,8 +37,8 @@ function action:register(tag, ...)
 end
 
 -- register action enums
-action:register("ac_max", 
-                "ac_on_text_changed", 
+action:register("ac_max",
+                "ac_on_text_changed",
                 "ac_on_selected",
                 "ac_on_resized",
                 "ac_on_enter",

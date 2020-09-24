@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ local options =
 -- package all
 --
 -- e.g.
--- xmake m package 
+-- xmake m package
 -- xmake m package -f "-m debug"
 -- xmake m package -p linux
 -- xmake m package -p iphoneos -f "-m debug --xxx ..." -o /tmp/xxx
@@ -94,9 +94,9 @@ function main(argv)
                 -- make lipo arguments
                 local lipoargs = nil
                 for _, arch in ipairs(archs) do
-                    local archfile = format("%s/%s.pkg/%s/%s/lib/%s/%s", outputdir, target:name(), plat, arch:trim(), mode, path.filename(target:targetfile())) 
+                    local archfile = format("%s/%s.pkg/%s/%s/lib/%s/%s", outputdir, target:name(), plat, arch:trim(), mode, path.filename(target:targetfile()))
                     if os.isfile(archfile) then
-                        lipoargs = format("%s -arch %s %s", lipoargs or "", arch, archfile) 
+                        lipoargs = format("%s -arch %s %s", lipoargs or "", arch, archfile)
                     end
                 end
                 if lipoargs then

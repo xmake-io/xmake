@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -74,7 +74,7 @@ function buildenvs(package)
     return envs
 end
 
--- build package 
+-- build package
 function build(package, configs, opt)
 
     -- init options
@@ -105,9 +105,9 @@ function build(package, configs, opt)
     end
 end
 
--- install package 
+-- install package
 function install(package, configs)
- 
+
     -- pass configurations
     local argv = {"install"}
     if option.get("verbose") then
@@ -130,4 +130,4 @@ function install(package, configs)
     else
         os.vrunv("make", argv)
     end
-end 
+end

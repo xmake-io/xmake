@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -35,14 +35,14 @@ rule("wdk.tracewpp")
 
         -- get arch
         local arch = assert(config.arch(), "arch not found!")
-        
+
         -- get tracewpp
         local tracewpp = path.join(wdk.bindir, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
         if not os.isexec(tracewpp) then
             tracewpp = path.join(wdk.bindir, wdk.sdkver, arch, is_host("windows") and "tracewpp.exe" or "tracewpp")
         end
         assert(os.isexec(tracewpp), "tracewpp not found!")
-        
+
         -- save tracewpp
         target:data_set("wdk.tracewpp", tracewpp)
 
@@ -90,7 +90,7 @@ rule("wdk.tracewpp")
         local dependfile = target:dependfile(targetfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile), values = args}) then
-            return 
+            return
         end
 
         -- trace progress info

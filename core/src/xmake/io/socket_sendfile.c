@@ -41,7 +41,7 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // check socket
-    if (!xm_lua_ispointer(lua, 1)) 
+    if (!xm_lua_ispointer(lua, 1))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid socket!");
@@ -49,7 +49,7 @@ tb_int_t xm_io_socket_sendfile(lua_State* lua)
     }
 
     // check file
-    if (!lua_isuserdata(lua, 2)) 
+    if (!lua_isuserdata(lua, 2))
     {
         lua_pushinteger(lua, -1);
         lua_pushliteral(lua, "invalid file!");

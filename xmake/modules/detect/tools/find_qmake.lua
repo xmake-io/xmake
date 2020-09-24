@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,17 +22,17 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find qmake 
+-- find qmake
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local qmake = find_qmake()
 -- local qmake, version = find_qmake({version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)

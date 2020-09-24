@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,14 +22,14 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- update submodule 
+-- update submodule
 --
 -- @param opt       the argument options, e.g. repodir, init, remote, force, checkout, merge, rebase, recursive, reference, pathes
 --
 -- @code
 --
 -- import("devel.git.submodule")
--- 
+--
 -- submodule.update("master", {repodir = "/tmp/xmake", init = true, remote = true})
 -- submodule.update("v1.0.1", {repodir = "/tmp/xmake", recursive = true, reference = "xxx", pathes = "xxx"})
 --

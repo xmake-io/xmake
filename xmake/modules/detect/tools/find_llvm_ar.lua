@@ -42,11 +42,11 @@ function main(opt)
     opt = opt or {}
     opt.check = opt.check or "-version"
     opt.command = opt.command or "-version"
-    
+
     -- find program
     local program = find_program(opt.program or "llvm-ar", opt)
 
-    -- find program version 
+    -- find program version
     local version = nil
     if program and opt.version then
         version = find_programver(program, opt)

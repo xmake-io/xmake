@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,17 +22,17 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find codesign 
+-- find codesign
 --
 -- @param opt  the arguments, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local codesign = find_codesign()
 -- local codesign, version = find_codesign({version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)
@@ -47,7 +47,7 @@ function main(opt)
     opt.check = function (program)
         os.runv(program, {"-d", "/bin/echo"})
     end
-    
+
     -- find program
     return find_program(opt.program or "codesign", opt)
 end

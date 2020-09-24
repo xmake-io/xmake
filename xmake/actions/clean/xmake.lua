@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,10 +39,10 @@ task("clean")
             ,   shortname = 'c'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'a', "all",        "k",  nil   , "Clean all auto-generated files by xmake."                      }
-                
+
                 ,   {}
                 ,   {nil, "target",     "v",  nil   , "The target name. It will clean all default targets if this parameter is not specified."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }

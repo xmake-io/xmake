@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -44,19 +44,19 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- get depend file
     local dependfile = target:dependfile(targetfile)
 
-    -- load compiler 
+    -- load compiler
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
     local compflags = compinst:compflags({target = target})
 
-    -- load dependent info 
+    -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-    
+
     -- need build this object?
     local depvalues = {compinst:program(), compflags}
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(targetfile), values = depvalues}) then
-        return 
+        return
     end
 
     -- trace progress into
@@ -75,7 +75,7 @@ function build_sourcefiles(target, sourcebatch, opt)
     -- flush io buffer to update progress info
     io.flush()
 
-    -- compile it 
+    -- compile it
     dependinfo.files = {}
     assert(compinst:build(sourcefiles, targetfile, {target = target, dependinfo = dependinfo, compflags = compflags}))
 

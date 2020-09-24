@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ function _checkout(package, url, sourcedir, url_alias)
 
     -- use previous source directory if exists
     local packagedir = path.join(sourcedir, package:name())
-    if os.isdir(packagedir) and 
+    if os.isdir(packagedir) and
         not (option.get("force") and package:branch()) then -- we need disable cache if we force to clone from the given branch
 
         -- clean the previous build files
@@ -44,7 +44,7 @@ function _checkout(package, url, sourcedir, url_alias)
         -- reset the previous modified files
         git.reset({repodir = packagedir, hard = true})
         tty.erase_line_to_start().cr()
-        return 
+        return
     end
 
     -- we can use local package from the search directories directly if network is too slow
@@ -52,7 +52,7 @@ function _checkout(package, url, sourcedir, url_alias)
     if localdir and os.isdir(localdir) then
         git.clean({repodir = localdir, force = true})
         tty.erase_line_to_start().cr()
-        return 
+        return
     end
 
     -- remove temporary directory
@@ -62,7 +62,7 @@ function _checkout(package, url, sourcedir, url_alias)
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     if package:branch() then
 
-        -- only shadow clone this branch 
+        -- only shadow clone this branch
         git.clone(url, {depth = 1, recursive = true, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
@@ -74,7 +74,7 @@ function _checkout(package, url, sourcedir, url_alias)
         -- attempt to checkout the given version
         git.checkout(package:revision(url_alias) or package:tag(), {repodir = packagedir})
     end
- 
+
     -- move to source directory
     os.rm(sourcedir)
     os.mv(sourcedir .. ".tmp", sourcedir)
@@ -163,7 +163,7 @@ function _urls(package)
         end
     end
     if package:gitref() then
-        return table.join(urls[1], urls[2]) 
+        return table.join(urls[1], urls[2])
     else
         return table.join(urls[2], urls[1])
     end
@@ -207,7 +207,7 @@ function main(package)
         {
             function ()
 
-                -- download package 
+                -- download package
                 local sourcedir = "source"
                 if git.checkurl(url) then
                     _checkout(package, url, sourcedir, url_alias)
@@ -218,7 +218,7 @@ function main(package)
                 -- ok
                 return true
             end,
-            catch 
+            catch
             {
                 function (errors)
 

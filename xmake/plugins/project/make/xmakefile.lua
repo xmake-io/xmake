@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -136,17 +136,17 @@ function make(outputdir)
 
     -- make rebuild
     _make_rebuild(makefile)
-    
+
     -- make install
     _make_install(makefile)
- 
+
     -- make uninstall
     _make_uninstall(makefile)
- 
+
     -- make package
     _make_package(makefile)
-    
-    -- make clean 
+
+    -- make clean
     _make_clean(makefile)
 
     -- make run
@@ -157,10 +157,10 @@ function make(outputdir)
 
     -- make config
     _make_config(makefile)
-    
+
     -- close the makefile
     makefile:close()
- 
+
     -- leave project directory
     os.cd(oldir)
 end

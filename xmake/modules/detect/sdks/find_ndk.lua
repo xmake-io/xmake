@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -101,11 +101,11 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     -- find ndk root directory
     sdkdir = _find_ndkdir(sdkdir)
     if not sdkdir then
-        return 
+        return
     end
 
     -- get cross
-    local crosses = 
+    local crosses =
     {
         ["armv5te"]     = "arm-linux-androideabi-" -- deprecated
     ,   ["armv7-a"]     = "arm-linux-androideabi-" -- deprecated
@@ -121,7 +121,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     local cross = crosses[arch]
 
     -- get gcc toolchain sub-directory
-    local gcc_toolchain_subdirs = 
+    local gcc_toolchain_subdirs =
     {
         ["armv5te"]     = "arm-linux-androideabi-*"
     ,   ["armv7-a"]     = "arm-linux-androideabi-*"
@@ -142,7 +142,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
         bindir = find_directory("bin", path.join(sdkdir, "toolchains", gcc_toolchain_subdir, "prebuilt", "*"))
     end
     if not bindir then
-        return 
+        return
     end
 
     -- find the sdk version
@@ -170,23 +170,23 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
         end
     end
 
-    -- ok?    
+    -- ok?
     return {ndkver = ndkver, sdkdir = sdkdir, bindir = bindir, cross = cross, sdkver = sdkver, gcc_toolchain = gcc_toolchain, toolchains_ver = toolchains_ver}
 end
 
 -- find ndk toolchains
 --
 -- @param sdkdir    the ndk directory
--- @param opt       the argument options 
---                  e.g. {arch = "[armeabi|armeabi-v7a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}  
+-- @param opt       the argument options
+--                  e.g. {arch = "[armeabi|armeabi-v7a|arm64-v8a]", verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}
 --
 -- @return          the ndk toolchains. e.g. {bindir = .., cross = ..}
 --
--- @code 
+-- @code
 --
 -- local toolchain = find_ndk("/xxx/android-ndk-r10e")
 -- local toolchain = find_ndk("/xxx/android-ndk-r10e", {arch = "arm64-v8a"})
--- 
+--
 -- @endcode
 --
 function main(sdkdir, opt)
@@ -203,7 +203,7 @@ function main(sdkdir, opt)
 
     -- get arch
     local arch = opt.arch or config.get("arch") or "armv7-a"
-       
+
     -- find ndk
     local ndk = _find_ndk(sdkdir or config.get("ndk") or global.get("ndk"), arch, opt.sdkver or config.get("ndk_sdkver"), opt.toolchains_ver or config.get("ndk_toolchains_ver"))
     if ndk and ndk.sdkdir then

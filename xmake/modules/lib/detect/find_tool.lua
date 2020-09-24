@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -26,7 +26,7 @@ import("lib.detect.find_toolname")
 -- find tool from modules
 function _find_from_modules(name, opt)
 
-    -- attempt to import "detect.tools.find_xxx" 
+    -- attempt to import "detect.tools.find_xxx"
     local find_tool = import("detect.tools.find_" .. name, {try = true})
     if find_tool then
         local program, version, toolname = find_tool(opt)
@@ -39,7 +39,7 @@ end
 -- find tool
 --
 -- @param name      the tool name
--- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"}, 
+-- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"},
 --                                     check = function (tool) os.run("%s -h", tool) end, version = true
 --                                     force = true, cachekey = "xxx", envs = {PATH = "xxx"}}
 --
@@ -80,7 +80,7 @@ function main(name, opt)
     -- find program
     local program = find_program(opt.program, opt)
     if not program then
-        return 
+        return
     end
 
     -- find tool version

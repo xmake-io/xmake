@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -21,15 +21,15 @@
 -- define theme
 theme("plain")
 
-    -- the success status 
+    -- the success status
     set_text("success", "$ok")
     set_color("success", "")
 
-    -- the failure status 
+    -- the failure status
     set_text("failure", "$failed")
     set_color("failure", "")
 
-    -- the nothing status 
+    -- the nothing status
     set_text("nothing", "$no")
     set_color("nothing", "")
 

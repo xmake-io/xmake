@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -29,11 +29,11 @@ rule("qt.moc")
 
     -- before load
     before_load(function (target)
-        
+
         -- get moc
         local moc = path.join(target:data("qt").bindir, is_host("windows") and "moc.exe" or "moc")
         assert(moc and os.isexec(moc), "moc not found!")
-        
+
         -- save moc
         target:data_set("qt.moc", moc)
     end)
@@ -65,7 +65,7 @@ rule("qt.moc")
         -- get object file
         local objectfile = target:objectfile(sourcefile_moc)
 
-        -- load compiler 
+        -- load compiler
         local compinst = compiler.load("cxx", {target = target})
 
         -- get compile flags
@@ -74,14 +74,14 @@ rule("qt.moc")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
-        -- load dependent info 
+        -- load dependent info
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
         -- need build this object?
         local depvalues = {compinst:program(), compflags}
         if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return 
+            return
         end
 
         -- trace progress info
@@ -90,7 +90,7 @@ rule("qt.moc")
         -- generate c++ source file for moc
         moc.generate(target, sourcefile, sourcefile_moc)
 
-        -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750 
+        -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750
         dependinfo.files = {}
         local mocdata = io.readfile(sourcefile)
         if mocdata and mocdata:find("Q_PRIVATE_SLOT") or sourcefile_moc:endswith(".moc") then

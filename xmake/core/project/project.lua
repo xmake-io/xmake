@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -165,7 +165,7 @@ function project._load(force, disable_filter)
     local interp = project.interpreter()
 
     -- load script
-    local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data) 
+    local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data)
             local xmakerc_file = project.rcfile()
             if xmakerc_file and os.isfile(xmakerc_file) then
                 local rcdata = io.readfile(xmakerc_file)
@@ -179,14 +179,14 @@ function project._load(force, disable_filter)
         return false, (errors or "load project file failed!")
     end
 
-    -- load the root info of the project 
-    local rootinfo, errors = project._load_scope("root", true, not disable_filter) 
+    -- load the root info of the project
+    local rootinfo, errors = project._load_scope("root", true, not disable_filter)
     if not rootinfo then
         return false, errors
     end
 
     -- load the root info of the target
-    local rootinfo_target, errors = project._load_scope("root.target", true, not disable_filter) 
+    local rootinfo_target, errors = project._load_scope("root.target", true, not disable_filter)
     if not rootinfo_target then
         return false, errors
     end
@@ -207,7 +207,7 @@ end
 
 -- load deps for instance: e.g. option, target and rule
 --
--- e.g. 
+-- e.g.
 --
 -- a.deps = b
 -- b.deps = c
@@ -223,7 +223,7 @@ function project._load_deps(instance, instances, deps, orderdeps)
             project._load_deps(depinst, instances, deps, orderdeps)
             if not deps[dep] then
                 deps[dep] = depinst
-                table.insert(orderdeps, depinst) 
+                table.insert(orderdeps, depinst)
             end
         end
     end
@@ -244,7 +244,7 @@ function project._load_scope(scope_kind, remove_repeat, enable_filter)
     -- load scope
     local results, errors = interp:make(scope_kind, remove_repeat, enable_filter)
     if not results then
-        return nil, errors 
+        return nil, errors
     end
 
     -- leave the project directory
@@ -257,7 +257,7 @@ end
 
 -- load tasks
 function project._load_tasks()
- 
+
     -- the project file is not found?
     if not os.isfile(project.rootfile()) then
         return {}, nil
@@ -297,7 +297,7 @@ function project._load_rules()
     if not ok then
         return nil, errors
     end
- 
+
     -- load the rules from the the project file
     local results, errors = project._load_scope("rule", true, true)
     if not results then
@@ -328,7 +328,7 @@ function project._load_toolchains()
     if not ok then
         return nil, errors
     end
- 
+
     -- load the toolchain from the the project file
     local results, errors = project._load_scope("toolchain", true, true)
     if not results then
@@ -343,7 +343,7 @@ function project._load_toolchains()
     return toolchains
 end
 
--- load targets 
+-- load targets
 function project._load_targets()
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
@@ -378,7 +378,7 @@ function project._load_targets()
 
         -- load rules from target and language
         --
-        -- e.g. 
+        -- e.g.
         --
         -- a.deps = b
         -- b.deps = c
@@ -409,7 +409,7 @@ function project._load_targets()
                     local name = deprule:name()
                     if not t._RULES[name] then
                         t._RULES[name] = deprule
-                        table.insert(t._ORDERULES, deprule) 
+                        table.insert(t._ORDERULES, deprule)
                     end
                 end
                 table.insert(t._ORDERULES, r)
@@ -531,7 +531,7 @@ function project._load_options(disable_filter)
 
         -- init an option instance
         local instance = option.new(optionname, optioninfo)
-      
+
         -- save it
         options[optionname] = instance
 
@@ -560,7 +560,7 @@ function project._load_requires()
 
     -- parse requires
     local requires = {}
-    local requires_str, requires_extra = project.requires_str() 
+    local requires_str, requires_extra = project.requires_str()
     requires_extra = requires_extra or {}
     for _, requirestr in ipairs(table.wrap(requires_str)) do
 
@@ -574,7 +574,7 @@ function project._load_requires()
             alias = extrainfo.alias
         end
 
-        -- load it from cache first (@note will discard scripts in extrainfo) 
+        -- load it from cache first (@note will discard scripts in extrainfo)
         local instance = requireinfo.load(alias or packagename)
         if not instance then
 
@@ -586,7 +586,7 @@ function project._load_requires()
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- move scripts of extrainfo  (e.g. on_load ..) 
+        -- move scripts of extrainfo  (e.g. on_load ..)
         if extrainfo then
             for k, v in pairs(extrainfo) do
                 if type(v) == "function" then
@@ -616,7 +616,7 @@ function project._load_packages()
     if not ok then
         return nil, errors
     end
- 
+
     -- load packages
     return project._load_scope("package", true, false)
 end
@@ -636,7 +636,7 @@ function project.apis()
         ,   "add_requires"
         ,   "add_repositories"
         }
-    ,   pathes = 
+    ,   pathes =
         {
             -- add_xxx
             "add_packagedirs"
@@ -645,7 +645,7 @@ function project.apis()
         {
             "set_config"
         }
-    ,   custom = 
+    ,   custom =
         {
             -- is_xxx
             {"is_os",                   project._api_is_os            }
@@ -725,10 +725,10 @@ function project.interpreter()
 
         -- attempt to get it directly from the configure
         local result = config.get(variable)
-        if not result or type(result) ~= "string" then 
+        if not result or type(result) ~= "string" then
 
             -- init maps
-            local maps = 
+            local maps =
             {
                 os          = platform.os()
             ,   host        = os.host()
@@ -810,7 +810,7 @@ function project.filelock()
     local filelock = project._FILELOCK
     if filelock == nil then
         filelock, errors = io.openlock(path.join(config.directory(), "project.lock"))
-        project._FILELOCK = filelock 
+        project._FILELOCK = filelock
     end
     return filelock, errors
 end
@@ -926,7 +926,7 @@ function project.requires()
     return project._REQUIRES
 end
 
--- get string requires 
+-- get string requires
 function project.requires_str()
     if not project._REQUIRES_STR then
 
@@ -1095,7 +1095,7 @@ function project.menu()
 
                     -- define menu option
                     local menu_options = {nil, longname, "kv", default, descriptions}
-                        
+
                     -- handle set_description("xx", "xx")
                     if type(descriptions) == "table" then
                         for i, description in ipairs(descriptions) do

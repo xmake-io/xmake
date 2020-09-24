@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -102,7 +102,7 @@ function _instance:_api_set_values(name, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -141,7 +141,7 @@ function _instance:_api_add_values(name, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -172,7 +172,7 @@ function _instance:_api_set_keyvalues(name, key, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -209,7 +209,7 @@ function _instance:_api_add_keyvalues(name, key, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -292,7 +292,7 @@ function _instance:_api_set_pathes(name, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -332,7 +332,7 @@ function _instance:_api_add_pathes(name, ...)
     -- get extra config
     local values = {...}
     local extra_config = values[#values]
-    if table.is_dictionary(extra_config) then 
+    if table.is_dictionary(extra_config) then
         table.remove(values)
     else
         extra_config = nil
@@ -512,7 +512,7 @@ end
 
 -- get the extra configuration
 --
--- e.g. 
+-- e.g.
 --
 -- add_includedirs("inc", {public = true})
 --

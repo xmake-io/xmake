@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -35,21 +35,21 @@ function _do_build_file(target, sourcefile, opt)
     local dependfile = opt.dependfile
     local sourcekind = opt.sourcekind
 
-    -- load compiler 
+    -- load compiler
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
     local compflags = compinst:compflags({target = target, sourcefile = sourcefile, configs = opt.configs})
 
-    -- load dependent info 
+    -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-    
+
     -- need build this object?
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
     local depvalues = {compinst:program(), compflags}
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
-        return 
+        return
     end
 
     -- is verbose?
@@ -69,7 +69,7 @@ function _do_build_file(target, sourcefile, opt)
         print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags, rawargs = true}))
     end
 
-    -- compile it 
+    -- compile it
     dependinfo.files = {}
     if not option.get("dry-run") then
         assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))

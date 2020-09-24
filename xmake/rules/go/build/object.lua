@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -55,19 +55,19 @@ function main(target, sourcebatch, opt)
     -- add object file
     table.insert(target:objectfiles(), objectfile)
 
-    -- load compiler 
+    -- load compiler
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
     local compflags = compinst:compflags({target = target})
 
-    -- load dependent info 
+    -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-    
+
     -- need build this object?
     local depvalues = {compinst:program(), compflags}
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-        return 
+        return
     end
 
     -- trace progress info
@@ -85,7 +85,7 @@ function main(target, sourcebatch, opt)
         print(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
     end
 
-    -- compile it 
+    -- compile it
     dependinfo.files = {}
     assert(compinst:compile(sourcefiles, objectfile, {dependinfo = dependinfo, compflags = compflags}))
 

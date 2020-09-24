@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -27,7 +27,7 @@ toolchain("gnu-rm")
 
     -- mark as standalone toolchain
     set_kind("standalone")
-       
+
     -- check toolchain
     on_check("check")
 
@@ -65,7 +65,7 @@ toolchain("gnu-rm")
             end
         end
 
-        -- add bin search library for loading some dependent .dll files windows 
+        -- add bin search library for loading some dependent .dll files windows
         local bindir = toolchain:bindir()
         if bindir and is_host("windows") then
             toolchain:add("runenvs", "PATH", bindir)

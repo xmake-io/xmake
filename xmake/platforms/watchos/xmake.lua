@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -36,7 +36,7 @@ platform("watchos")
     set_formats("shared", "lib$(name).dylib")
     set_formats("symbol", "$(name).dSYM")
 
-    -- on check 
+    -- on check
     on_check(function (platform)
         import("core.project.config")
         local arch = config.get("arch")
@@ -51,8 +51,8 @@ platform("watchos")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "XCode SDK Configuration"                                                  }
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory" }
                 ,   {nil, "xcode_sdkver",            "kv", "auto",       "The SDK Version for Xcode"       }
@@ -62,8 +62,8 @@ platform("watchos")
                 ,   {nil, "target_minver",  "kv", "auto",                "The Target Minimal Version"      }
                 }
 
-            ,   global = 
-                {   
+            ,   global =
+                {
                     {category = "XCode SDK Configuration"                                                  }
                 ,   {nil, "xcode",                   "kv", "auto",       "The Xcode Application Directory" }
                 ,   {nil, "xcode_bundle_identifier", "kv", "auto",       "The Bundle Identifier for Xcode" }

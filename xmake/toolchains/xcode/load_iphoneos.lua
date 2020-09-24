@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -33,7 +33,7 @@ function main(toolchain)
 
     -- init target minimal version
     local target_minver = config.get("target_minver_iphoneos")
-    if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then 
+    if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "i386") then
         target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
     end
     local target_minver_flags = (simulator and "-mios-simulator-version-min=" or "-miphoneos-version-min=") .. target_minver

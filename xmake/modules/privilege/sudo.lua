@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -83,7 +83,7 @@ function _lua(runner, luafile, luaargv)
             table.insert(argv, "--" .. name)
         end
     end
-                  
+
     -- run it with administrator permission
     _sudov(runner, "xmake", table.join(argv, luafile, luaargv))
 end
@@ -123,7 +123,7 @@ function iorunv(program, argv, opt)
     return _sudov(os.iorunv, program, argv, opt)
 end
 
--- sudo execute command 
+-- sudo execute command
 function exec(cmd, ...)
     return _sudo(os.exec, cmd, ...)
 end
@@ -148,7 +148,7 @@ function iorunl(luafile, luaargv)
     return _lua(os.iorunv, luafile, luaargv)
 end
 
--- sudo execute lua script 
+-- sudo execute lua script
 function execl(luafile, luaargv)
     return _lua(os.execv, luafile, luaargv)
 end

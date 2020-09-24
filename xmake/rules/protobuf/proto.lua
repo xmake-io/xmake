@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -42,7 +42,7 @@ function main(target, sourcekind, sourcefile_proto, opt)
     -- find protoc-c
     local protoc_c = target:data("protobuf.protoc-c")
     if not protoc_c and sourcekind == "cc" then
-        protoc_c = find_tool("protoc-c") or protoc 
+        protoc_c = find_tool("protoc-c") or protoc
         if protoc_c and protoc_c.program then
             target:data_set("protobuf.protoc-c", protoc_c.program)
         end
@@ -68,7 +68,7 @@ function main(target, sourcekind, sourcefile_proto, opt)
     -- get object file
     local objectfile = target:objectfile(sourcefile_cx)
 
-    -- load compiler 
+    -- load compiler
     local compinst = compiler.load(sourcekind, {target = target})
 
     -- get compile flags
@@ -81,14 +81,14 @@ function main(target, sourcekind, sourcefile_proto, opt)
     -- add objectfile
     table.insert(target:objectfiles(), objectfile)
 
-    -- load dependent info 
+    -- load dependent info
     local dependfile = target:dependfile(objectfile)
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
     -- need build this object?
     local depvalues = {compinst:program(), compflags}
     if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-        return 
+        return
     end
 
     -- trace progress info

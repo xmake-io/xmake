@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -192,8 +192,8 @@ function panel:select(v)
 
     -- get the current selected view
     local current = self:current()
-    if v == current then 
-        return 
+    if v == current then
+        return
     end
 
     -- undo the previous selected view
@@ -228,7 +228,7 @@ function panel:select_next(start, reset)
 
     -- is empty?
     if self:empty() then
-        return 
+        return
     end
 
     -- reset?
@@ -254,7 +254,7 @@ function panel:select_prev(start)
 
     -- is empty?
     if self:empty() then
-        return 
+        return
     end
 
     -- reset?
@@ -277,10 +277,10 @@ end
 
 -- on event
 function panel:on_event(e)
- 
+
     -- select view?
     if e.type == event.ev_keyboard then
-        -- @note we also use '-' to switch them on termux without right/left and 
+        -- @note we also use '-' to switch them on termux without right/left and
         -- we cannot use tab, because we still need swith views on windows. e.g. inputdialog
         -- @see https://github.com/tboox/ltui/issues/11
         if e.key_name == "Right" or e.key_name == "-" then
@@ -288,7 +288,7 @@ function panel:on_event(e)
         elseif e.key_name == "Left" then
             return self:select_prev()
         end
-    end   
+    end
 end
 
 -- set state
@@ -300,7 +300,7 @@ function panel:state_set(name, enable)
     return self
 end
 
--- draw panel 
+-- draw panel
 function panel:on_draw(transparent)
 
     -- redraw panel?
@@ -322,7 +322,7 @@ function panel:on_draw(transparent)
     end
 end
 
--- resize panel 
+-- resize panel
 function panel:on_resize()
 
     -- resize panel
@@ -342,7 +342,7 @@ function panel:on_refresh()
 
     -- need not refresh? do not refresh it
     if not self:state("refresh") or not self:state("visible") then
-        return 
+        return
     end
 
     -- refresh all child views
@@ -368,17 +368,17 @@ end
 -- tostring(panel, level)
 function panel:_tostring(level)
     local str = ""
-    if self.views then  
+    if self.views then
         str = str .. string.format("<%s %s>", self:name(), tostring(self:bounds()))
         if not self:empty() then
             str = str .. "\n"
         end
-        for v in self:views() do  
+        for v in self:views() do
             for l = 1, level do
                 str = str .. "    "
             end
             str = str .. panel._tostring(v, level + 1) .. "\n"
-        end  
+        end
     else
         str = tostring(self)
     end

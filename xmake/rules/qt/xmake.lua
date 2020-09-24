@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -88,7 +88,7 @@ rule("qt.widgetapp")
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
-    -- deploy application 
+    -- deploy application
     after_build("android", "deploy.android")
     after_build("macosx", "deploy.macosx")
 
@@ -116,7 +116,7 @@ rule("qt.widgetapp_static")
         import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
-    -- deploy application 
+    -- deploy application
     after_build("android", "deploy.android")
     after_build("macosx", "deploy.macosx")
 
@@ -136,7 +136,7 @@ rule("qt.quickapp")
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}})
     end)
 
-    -- deploy application 
+    -- deploy application
     after_build("android", "deploy.android")
     after_build("macosx", "deploy.macosx")
 
@@ -164,7 +164,7 @@ rule("qt.quickapp_static")
         import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}})
     end)
 
-    -- deploy application 
+    -- deploy application
     after_build("android", "deploy.android")
     after_build("macosx", "deploy.macosx")
 

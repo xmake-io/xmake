@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -22,17 +22,17 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find brew 
+-- find brew
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
 -- @return      program, version
 --
--- @code 
+-- @code
 --
 -- local brew = find_brew()
 -- local brew, version = find_brew({version = true})
--- 
+--
 -- @endcode
 --
 function main(opt)
@@ -43,7 +43,7 @@ function main(opt)
     -- we do not attempt to run brew and only find the brew program path
     -- because the `brew --version` and `brew help` commands are too slow. (~1.5s)
     opt.norun = true
-    
+
     -- find program
     local program = find_program(opt.program or "brew", opt)
 

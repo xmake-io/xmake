@@ -15,7 +15,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      EnoroF, ruki
@@ -28,9 +28,9 @@ import("vsfile")
 
 -- make header
 function _make_header(filtersfile, vsinfo)
-    
+
     -- the versions
-    local versions = 
+    local versions =
     {
         vs2010 = '10.0'
     ,   vs2012 = '11.0'
@@ -67,7 +67,7 @@ end
 
 -- make filters
 function _make_filters(filtersfile, vsinfo, target, vcxprojdir)
-    
+
     -- add filters
     filtersfile:enter("<ItemGroup>")
         local exists = {}
@@ -88,7 +88,7 @@ end
 
 -- make sources
 function _make_sources(filtersfile, vsinfo, target, vcxprojdir)
-    
+
     -- and sources
     filtersfile:enter("<ItemGroup>")
         for _, sourcefile in ipairs(target.sourcefiles) do
@@ -114,7 +114,7 @@ end
 
 -- make headers
 function _make_headers(filtersfile, vsinfo, target, vcxprojdir)
-    
+
     -- and headers
     filtersfile:enter("<ItemGroup>")
         for _, headerfile in ipairs(target.headerfiles) do

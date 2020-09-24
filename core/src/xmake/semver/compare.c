@@ -50,7 +50,7 @@ tb_int_t xm_semver_compare(lua_State* lua)
 
     // try to parse version1 string
     semver_t semver1 = {0};
-    if (semver_tryn(&semver1, version1_str, tb_strlen(version1_str))) 
+    if (semver_tryn(&semver1, version1_str, tb_strlen(version1_str)))
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "unable to parse semver '%s'", version1_str);
@@ -60,14 +60,14 @@ tb_int_t xm_semver_compare(lua_State* lua)
 
     // try to parse version2 string
     semver_t semver2 = {0};
-    if (semver_tryn(&semver2, version2_str, tb_strlen(version2_str))) 
+    if (semver_tryn(&semver2, version2_str, tb_strlen(version2_str)))
     {
         lua_pushnil(lua);
         lua_pushfstring(lua, "unable to parse semver '%s'", version2_str);
         return 2;
     }
 
-    // do compare 
+    // do compare
     lua_pushinteger(lua, semver_pcmp(&semver1, &semver2));
 
     // end

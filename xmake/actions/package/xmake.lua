@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -39,7 +39,7 @@ task("package")
             ,   shortname = 'p'
 
                 -- options
-            ,   options = 
+            ,   options =
                 {
                     {'o', "outputdir",  "kv", nil   , "Set the output directory."                                     }
                 ,   {'a', "all",        "k",  nil   , "Package all targets."                                          }
@@ -47,7 +47,7 @@ task("package")
                 ,   {nil, "target",     "v",  nil   , "The target name. It will package all default targets if this parameter is not specified."
                                                     , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
                 }
-            } 
+            }
 
 
 

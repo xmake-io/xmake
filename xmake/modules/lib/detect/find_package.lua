@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -29,21 +29,21 @@ import("package.manager.find_package")
 -- @param name  the package name
 --              e.g. zlib 1.12.x (try all), xmake::zlib 1.12.x, brew::zlib, brew::pcre/libpcre16, vcpkg::zlib, conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options
---              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x", 
+--              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x",
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"
 --                     pkgconfigs = {..}}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}}
 --
--- @code 
+-- @code
 --
 -- local package = find_package("openssl")
 -- local package = find_package("openssl", {version = "1.0.*"})
 -- local package = find_package("openssl", {plat = "iphoneos"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
--- 
+--
 -- @endcode
 --
 function main(name, opt)
@@ -67,7 +67,7 @@ function main(name, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = cache.load(key) 
+    local cacheinfo = cache.load(key)
     local result = cacheinfo[name]
     if result ~= nil and not opt.force then
         return result and result or nil

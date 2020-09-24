@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -30,14 +30,14 @@ end
 function strip(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         debug = "S"
     ,   all   = "S"
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the link arguments list
@@ -96,7 +96,7 @@ function extract(self, libraryfile, objectdir)
             raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)
         end
         repeats[objectfile] = true
-    end                                                          
+    end
 
     -- leave the object directory
     os.cd(oldir)

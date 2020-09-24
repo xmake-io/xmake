@@ -279,13 +279,13 @@ function _has_flags_mmd_mf(self)
     return has_mmd_mf
 end
 
--- support `-MM -o depfile.d`? 
+-- support `-MM -o depfile.d`?
 function _has_flags_mm(self)
     local has_mm = _g._HAS_MM
-    if not has_mmd_mf and has_mm == nil then 
-        has_mm = self:has_flags("-MM", "cuflags", { flagskey = "-MM" }) or false 
+    if not has_mmd_mf and has_mm == nil then
+        has_mm = self:has_flags("-MM", "cuflags", { flagskey = "-MM" }) or false
         _g._HAS_MM = has_mm
-    end 
+    end
     return has_mm
 end
 
@@ -312,7 +312,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if _has_flags_mmd_mf(self) then
                     compflags = table.join(compflags, "-MMD", "-MF", depfile)
                 elseif _has_flags_mm(self) then
-                    -- since -MD is not supported, run nvcc twice 
+                    -- since -MD is not supported, run nvcc twice
                     os.runv(compargv(self, sourcefile, depfile, table.join(flags, "-MM")))
                 end
             end

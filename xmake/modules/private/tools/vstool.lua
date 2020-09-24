@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -132,7 +132,7 @@ function iorunv(program, argv, opt)
                 errors = string.format("vstool.iorunv(%s), %s", cmd, syserrors and syserrors or "unknown reason")
             end
         end
-        
+
         -- raise errors
         os.raise({errors = errors, stderr = errdata, stdout = outdata})
     end

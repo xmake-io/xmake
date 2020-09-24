@@ -11,7 +11,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * 
+ *
  * Copyright (C) 2015-2020, TBOOX Open Source Group.
  *
  * @author      ruki
@@ -35,8 +35,8 @@
  * implementation
  */
 
-/* p = process.open(command, 
- * {outpath = "", errpath = "", outfile = "", errfile = "", outpipe = "", errpipe = "", envs = {"PATH=xxx", "XXX=yyy"}}) 
+/* p = process.open(command,
+ * {outpath = "", errpath = "", outfile = "", errfile = "", outpipe = "", errpipe = "", envs = {"PATH=xxx", "XXX=yyy"}})
  */
 tb_int_t xm_process_open(lua_State* lua)
 {
@@ -60,8 +60,8 @@ tb_int_t xm_process_open(lua_State* lua)
     xm_io_file_t*      errfile = tb_null;
     tb_pipe_file_ref_t outpipe = tb_null;
     tb_pipe_file_ref_t errpipe = tb_null;
-    if (lua_istable(lua, 2)) 
-    { 
+    if (lua_istable(lua, 2))
+    {
         // is detached?
         lua_pushstring(lua, "detach");
         lua_gettable(lua, 2);
@@ -143,7 +143,7 @@ tb_int_t xm_process_open(lua_State* lua)
                 if (lua_isstring(lua, -1))
                 {
                     // add this environment value
-                    if (envn + 1 < tb_arrayn(envs)) 
+                    if (envn + 1 < tb_arrayn(envs))
                         envs[envn++] = lua_tostring(lua, -1);
                     else
                     {

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -81,10 +81,10 @@ rule("wdk.static")
 
     -- after load
     after_load(function (target)
-        
+
         -- set kind
         target:set("kind", "static")
-        
+
         -- for kernel driver
         if target:rule("wdk.env.kmdf") or target:rule("wdk.env.wdm") then
             -- compile as kernel driver
@@ -100,10 +100,10 @@ rule("wdk.shared")
 
     -- after load
     after_load(function (target)
- 
+
         -- set kind
         target:set("kind", "shared")
-        
+
         -- add links
         target:add("links", "kernel32", "user32", "gdi32", "winspool", "comdlg32")
         target:add("links", "advapi32", "shell32", "ole32", "oleaut32", "uuid", "odbc32", "odbccp32", "setupapi")

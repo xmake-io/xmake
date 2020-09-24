@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -42,7 +42,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     local modulefiles = {}
     for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local modulefile = sourcebatch.objectfiles[idx]
-        local objectfile = target:objectfile(sourcefile) 
+        local objectfile = target:objectfile(sourcefile)
         sourcebatch.sourcefiles[idx] = modulefile
         sourcebatch.objectfiles[idx] = objectfile
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
@@ -71,7 +71,7 @@ function _build_modulefiles_gcc(target, sourcebatch, opt)
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile) 
+        local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
         local modulefile = objectfile .. ".pcm"
 
@@ -101,7 +101,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile) 
+        local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
         local modulefile = objectfile .. ".pcm"
 

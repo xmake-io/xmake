@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -69,8 +69,8 @@ end
 function nf_warning(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = "--less-pedantic"
     ,   less       = "--less-pedantic"
     ,   error      = "-Werror"
@@ -84,8 +84,8 @@ end
 function nf_optimize(self, level)
 
     -- the maps
-    local maps = 
-    {   
+    local maps =
+    {
         none       = ""
     ,   fast       = "--opt-code-speed"
     ,   faster     = "--opt-code-speed"
@@ -95,7 +95,7 @@ function nf_optimize(self, level)
     }
 
     -- make it
-    return maps[level] 
+    return maps[level]
 end
 
 -- make the language flag
@@ -103,7 +103,7 @@ function nf_language(self, stdname)
 
     -- the stdc maps
     if _g.cmaps == nil then
-        _g.cmaps = 
+        _g.cmaps =
         {
             -- stdc
             ansi        = "--std-c89"

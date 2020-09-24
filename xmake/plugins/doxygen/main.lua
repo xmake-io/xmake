@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -57,7 +57,7 @@ function main()
 
     -- set the output directory
     --
-    -- OUTPUT_DIRECTORY = 
+    -- OUTPUT_DIRECTORY =
     --
     local outputdir = option.get("outputdir") or config.get("buildir") or "build"
     if outputdir then
@@ -71,7 +71,7 @@ function main()
 
     -- set the project version
     --
-    -- PROJECT_NUMBER = 
+    -- PROJECT_NUMBER =
     --
     local version = project.version()
     if version then
@@ -80,7 +80,7 @@ function main()
 
     -- set the project name
     --
-    -- PROJECT_NAME = 
+    -- PROJECT_NAME =
     --
     local name = project.name()
     if name then

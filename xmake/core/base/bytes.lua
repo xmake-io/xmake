@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -205,7 +205,7 @@ function _instance:slice(start, last)
     return bytes(self, start, last)
 end
 
--- copy bytes 
+-- copy bytes
 function _instance:copy(src)
     if self:readonly() then
         os.raise("%s: cannot be modified!", self)
@@ -302,7 +302,7 @@ function _instance:dump()
                 line = line .. " "
                 padding = padding - 1
             end
-                
+
             -- dump characters
             line = line .. "${color.dump.string}"
             for i = 0, left - 1 do
@@ -321,7 +321,7 @@ function _instance:dump()
             -- next line
             p = p + left
 
-        else 
+        else
             break
         end
     end
@@ -393,8 +393,8 @@ end
 --
 function _instance:__index(key)
     if type(key) == "number" then
-        if key < 1 or key > self:size() then 
-            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size()) 
+        if key < 1 or key > self:size() then
+            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size())
         end
         return self._CDATA[key - 1]
     elseif type(key) == "table" then
@@ -414,8 +414,8 @@ function _instance:__newindex(key, value)
         os.raise("%s: cannot modify value at index[%s]!", self, key)
     end
     if type(key) == "number" then
-        if key < 1 or key > self:size() then 
-            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size()) 
+        if key < 1 or key > self:size() then
+            os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size())
         end
         self._CDATA[key - 1] = value
         return

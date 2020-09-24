@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -40,7 +40,7 @@ language("msrc")
     on_load("load")
 
     -- set name flags
-    set_nameflags 
+    set_nameflags
     {
         object =
         {
@@ -60,8 +60,8 @@ language("msrc")
 
     -- set menu
     set_menu {
-                config = 
-                {   
+                config =
+                {
                     {category = "Cross Complation Configuration/Compiler Configuration"       }
                 ,   {nil, "mrc",        "kv", nil,          "The Microsoft Resource Compiler" }
 
@@ -71,5 +71,5 @@ language("msrc")
                 ,   {category = "Cross Complation Configuration/Builti Flags Configuration"   }
                 ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"  }
                 }
-            } 
+            }
 

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -77,7 +77,7 @@ function _find_package_with_builtin_rule(package_name, opt)
     return result, found_manager_name
 end
 
--- find package 
+-- find package
 function _find_package(manager_name, package_name, opt)
 
     -- find package from the given package manager
@@ -89,7 +89,7 @@ function _find_package(manager_name, package_name, opt)
 
         -- find it
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
-    else 
+    else
 
         -- find package from the given custom "detect.packages.find_xxx" script
         local builtin = false
@@ -114,7 +114,7 @@ function _find_package(manager_name, package_name, opt)
 
     -- found?
     if result then
-    
+
         -- remove repeat
         result.linkdirs    = table.unique(result.linkdirs)
         result.includedirs = table.unique(result.includedirs)
@@ -129,14 +129,14 @@ end
 -- @param name  the package name
 --              e.g. zlib 1.12.x (try all), xmake::zlib 1.12.x, brew::zlib, brew::pcre/libpcre16, vcpkg::zlib, conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options
---              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x", 
+--              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x",
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true}
 --
 -- @return      {links = {"ssl", "crypto", "z"}, linkdirs = {"/usr/local/lib"}, includedirs = {"/usr/local/include"}},
 --              manager_name, package_name
 --
--- @code 
+-- @code
 --
 -- local package = find_package("openssl")
 -- local package = find_package("openssl", {version = "1.0.*"})
@@ -144,7 +144,7 @@ end
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
 -- local package, manager_name, package_name = find_package("openssl")
--- 
+--
 -- @endcode
 --
 

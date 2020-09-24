@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -33,7 +33,7 @@ local import        = require("sandbox/modules/import")
 -- enter the toolchains environment
 function environment._enter_toolchains()
 
-    -- get the current platform 
+    -- get the current platform
     local platform, errors = platform_core.load()
     if not platform then
         return false, errors

@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -37,7 +37,7 @@ local app = application()
 -- init app
 function app:init()
 
-    -- init name 
+    -- init name
     application.init(self, "app.config")
 
     -- init background
@@ -54,11 +54,11 @@ end
 function app:mconfdialog()
     if not self._MCONFDIALOG then
         local mconfdialog = mconfdialog:new("app.config.mconfdialog", rect {1, 1, self:width() - 1, self:height() - 1}, "menu config")
-        mconfdialog:action_set(action.ac_on_exit, function (v) 
-            self:quit() 
+        mconfdialog:action_set(action.ac_on_exit, function (v)
+            self:quit()
             os.exit()
         end)
-        mconfdialog:action_set(action.ac_on_save, function (v) 
+        mconfdialog:action_set(action.ac_on_save, function (v)
             self:save()
             self:quit()
         end)
@@ -75,13 +75,13 @@ end
 
 -- filter option
 function app:_filter_option(name)
-    local options = 
+    local options =
     {
         file        = true
     ,   root        = true
     ,   yes         = true
     ,   quiet       = true
-    ,   confirm     = true  
+    ,   confirm     = true
     ,   project     = true
     ,   verbose     = true
     ,   diagnosis   = true
@@ -90,15 +90,15 @@ function app:_filter_option(name)
     ,   clean       = true
     ,   menu        = true
     }
-    return not options[name] 
+    return not options[name]
 end
 
 -- get or make menu by category
 function app:_menu_by_category(root, configs, menus, category)
 
-    -- is root? 
+    -- is root?
     if category == "." or category == "" then
-        return 
+        return
     end
 
     -- attempt to get menu first
@@ -123,7 +123,7 @@ end
 -- make configs by category
 function app:_make_configs_by_category(root, options_by_category, cache, get_option_info)
 
-    -- make configs category 
+    -- make configs category
     --
     -- root category: "."
     -- category path: "a", "a/b", "a/b/c" ...
@@ -154,7 +154,7 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
                 if value ~= nil and info.kind == "choice" and info.values then
                     for idx, val in ipairs(info.values) do
                         if value == val then
-                            value = idx 
+                            value = idx
                             break
                         end
                     end
@@ -191,10 +191,10 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
     return configs
 end
 
--- get global configs 
+-- get global configs
 function app:_global_configs(cache)
-    
-    -- get configs from the cache first 
+
+    -- get configs from the cache first
     local configs = self._GLOBAL_CONFIGS
     if configs then
         return configs
@@ -218,7 +218,7 @@ function app:_global_configs(cache)
     end
 
     -- make configs by category
-    self._GLOBAL_CONFIGS = self:_make_configs_by_category("Global Configuration", options_by_category, cache, function (opt) 
+    self._GLOBAL_CONFIGS = self:_make_configs_by_category("Global Configuration", options_by_category, cache, function (opt)
 
         -- get default
         local default = opt[4]
@@ -226,7 +226,7 @@ function app:_global_configs(cache)
         -- get kind
         local kind = (opt[3] == "k" or type(default) == "boolean") and "boolean" or "string"
 
-        -- choice option? 
+        -- choice option?
         local values = opt.values
         if values then
             if type(values) == "function" then
@@ -234,7 +234,7 @@ function app:_global_configs(cache)
             end
             for idx, value in ipairs(values) do
                 if default == value then
-                    default = idx 
+                    default = idx
                     break
                 end
             end
@@ -246,7 +246,7 @@ function app:_global_configs(cache)
         -- get description
         local description = {}
         for i = 5, 64 do
-            local desc = opt[i] 
+            local desc = opt[i]
             if type(desc) == "function" then
                 desc = desc()
             end
@@ -303,7 +303,7 @@ end
 
 -- save configs to options
 function app:save()
-    self:_save_configs(self:_global_configs())    
+    self:_save_configs(self:_global_configs())
 end
 
 -- main entry

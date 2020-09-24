@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -88,8 +88,8 @@ function _conan_install_xmake_generator(conan)
     if not os.isdir(xmake_generator_localdir) then
 
         -- sort main urls
-        local mainurls = {"https://github.com/xmake-io/conan-xmake_generator.git", 
-                          "https://gitlab.com/tboox/conan-xmake_generator.git", 
+        local mainurls = {"https://github.com/xmake-io/conan-xmake_generator.git",
+                          "https://gitlab.com/tboox/conan-xmake_generator.git",
                           "https://gitee.com/tboox/conan-xmake_generator.git"}
         fasturl.add(mainurls)
         mainurls = fasturl.sort(mainurls)
@@ -108,9 +108,9 @@ function _conan_install_xmake_generator(conan)
     end
 end
 
--- get configurations 
+-- get configurations
 function configurations()
-    return 
+    return
     {
         build          = {description = "use it to choose if you want to build from sources.", default = "missing", values = {"all", "never", "missing", "outdated"}},
         remote         = {description = "Set the conan remote server."},
@@ -123,7 +123,7 @@ end
 
 -- install package
 --
--- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable 
+-- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = ,
 --                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
 --                                  settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}
@@ -220,7 +220,7 @@ function main(name, opt)
         end
     elseif opt.plat == "iphoneos" then
         local target_minver = config.get("target_minver_iphoneos")
-        if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then 
+        if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then
             target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
         end
         if target_minver then

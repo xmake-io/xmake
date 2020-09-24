@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -44,7 +44,7 @@ end
 
 -- on event
 function menuconf:on_event(e)
- 
+
     -- select config
     local back = false
     if e.type == event.ev_keyboard then
@@ -71,7 +71,7 @@ function menuconf:on_event(e)
         elseif e.command == "cm_back" then
             back = true
         end
-    end  
+    end
 
     -- back?
     if back then
@@ -135,19 +135,19 @@ function menuconf:_do_select()
 
     -- get the current item
     local item = self:current()
-    
+
     -- get the current config
     local config = item:extra("config")
 
-    -- clear new state    
+    -- clear new state
     config.new = false
 
     -- do action: on selected
     if self:action_on(action.ac_on_selected, config) then
-        return 
+        return
     end
 
-    -- select the boolean config 
+    -- select the boolean config
     if config.kind == "boolean" then
         config.value = not config.value
     -- show sub-menu configs
@@ -163,14 +163,14 @@ function menuconf:_do_include(enabled)
 
     -- get the current item
     local item = self:current()
-    
+
     -- get the current config
     local config = item:extra("config")
 
-    -- clear new state    
+    -- clear new state
     config.new = false
 
-    -- select the boolean config 
+    -- select the boolean config
     if config.kind == "boolean" then
         config.value = enabled
     end
@@ -200,7 +200,7 @@ end
 -- menu config
 --  - {name = "...", kind = "menu", description = "menu config item", configs = {...}}
 --
-local config = config or object{new = true, 
+local config = config or object{new = true,
                                 __index = function (tbl, key)
                                     if key == "value" then
                                         local val = rawget(tbl, "_value")
@@ -222,7 +222,7 @@ local config = config or object{new = true,
                                             v:text_set(tostring(tbl))
                                         end
                                     end
-                                end} 
+                                end}
 
 -- the prompt info
 function config:prompt()
@@ -243,12 +243,12 @@ function config:__tostring()
 
     -- get value
     local value = self.value
-    
+
     -- update text
     if self.kind == "boolean" or (not self.kind and type(value) == "boolean") then -- boolean config?
         text = (value and "[*] " or "[ ] ") .. text
     elseif self.kind == "number" or (not self.kind and type(value) == "number") then -- number config?
-        text = "    " .. text .. " (" .. tostring(value or 0) .. ")" 
+        text = "    " .. text .. " (" .. tostring(value or 0) .. ")"
     elseif self.kind == "string" or (not self.kind and type(value) == "string") then -- string config?
         text = "    " .. text .. " (" .. tostring(value or "") .. ")"
     elseif self.kind == "choice" then -- choice config?

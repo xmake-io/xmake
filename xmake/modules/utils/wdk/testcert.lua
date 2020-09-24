@@ -11,7 +11,7 @@
 -- WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 -- See the License for the specific language governing permissions and
 -- limitations under the License.
--- 
+--
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
@@ -55,9 +55,9 @@ function _install(wdk)
     local signtool = _get_tool(wdk, "signtool")
 
     -- check test certificate first
-    local ok = try 
+    local ok = try
     {
-        function () 
+        function ()
             local tmpfile = os.tmpfile(os.programfile())
             if not os.isfile(tmpfile) then
                 os.cp(os.programfile(), tmpfile)
@@ -67,7 +67,7 @@ function _install(wdk)
         end
     }
     if ok then
-        return 
+        return
     end
 
     -- get makecert
@@ -88,7 +88,7 @@ function _install(wdk)
     os.vrunv(makecert, {"-r", "-pe", "-ss", "PrivateCertStore", "-n", "CN=" .. company, testcer})
 
     -- register this test certificate
-    try 
+    try
     {
         function ()
             os.vrunv(certmgr, {"/add", testcer, "/s", "/r", "localMachine", "root"})
