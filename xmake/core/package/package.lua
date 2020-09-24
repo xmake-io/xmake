@@ -681,7 +681,18 @@ function _instance:buildhash()
         local str = self:plat() .. self:arch() 
         local configs = self:configs()
         if configs then
-            str = str .. string.serialize(configs, true)
+            -- since luajit v2.1, the key order of the table is random and undefined. 
+            -- We cannot directly deserialize the table, so the result may be different each time
+            local configs_order = {}
+            for k, v in pairs(table.wrap(configs)) do
+                table.insert(configs_order, k .. "=" .. tostring(v))
+            end
+            table.sort(configs_order)
+
+            -- We need to be compatible with the hash value string for the previous luajit version
+            local configs_str = string.serialize(configs_order, true)
+            configs_str = configs_str:gsub("\"", "")
+            str = str .. configs_str
         end
         self._BUILDHASH = hash.uuid4(str):gsub('-', ''):lower()
     end
