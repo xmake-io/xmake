@@ -27,10 +27,12 @@ rule("qt._wasm_app")
         if pluginsdir then
             local targetdir = target:targetdir()
             local htmlfile = path.join(targetdir, target:basename() .. ".html")
-            os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
-            io.gsub(htmlfile, "@APPNAME@", target:name())
-            os.vcp(path.join(pluginsdir, "platforms/qtloader.js"), targetdir)
-            os.vcp(path.join(pluginsdir, "platforms/qtlogo.svg"), targetdir)
+            if os.isfile(path.join(pluginsdir, "platforms/wasm_shell.html")) then
+                os.vcp(path.join(pluginsdir, "platforms/wasm_shell.html"), htmlfile)
+                io.gsub(htmlfile, "@APPNAME@", target:name())
+                os.vcp(path.join(pluginsdir, "platforms/qtloader.js"), targetdir)
+                os.vcp(path.join(pluginsdir, "platforms/qtlogo.svg"), targetdir)
+            end
         end
     end)
 
