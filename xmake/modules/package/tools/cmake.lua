@@ -425,7 +425,7 @@ function build(package, configs, opt)
     elseif cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
             _build_for_msvc(package, configs, opt)
-        elseif cmake_generator:find("Ninja", 1, true) then
+        elseif cmake_generator == "Ninja" then
             _build_for_ninja(package, configs, opt)
         elseif cmake_generator:find("Makefiles", 1, true) then
             _build_for_make(package, configs, opt)
@@ -483,7 +483,7 @@ function install(package, configs, opt)
     elseif cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
             _install_for_msvc(package, configs, opt)
-        elseif cmake_generator:find("Ninja", 1, true) then
+        elseif cmake_generator == "Ninja" then
             _install_for_ninja(package, configs, opt)
         elseif cmake_generator:find("Makefiles", 1, true) then
             _install_for_make(package, configs, opt)
