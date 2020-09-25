@@ -9,7 +9,7 @@
 Name:       xmake
 Version:    2.3.7
 Release:    1%{?dist}
-Summary:    A cross-platform build utility based on Lua 
+Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
 License:    Apache-2.0
 URL:        https://xmake.io
@@ -22,16 +22,16 @@ Source4:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
 BuildRequires:  readline-devel
- 
+
 %description
-It is a lightweight cross-platform build utility based on Lua. 
-It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt, 
-the configuration syntax is more concise and intuitive. 
-It is very friendly to novices and can quickly get started in a short time. 
+It is a lightweight cross-platform build utility based on Lua.
+It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt,
+the configuration syntax is more concise and intuitive.
+It is very friendly to novices and can quickly get started in a short time.
 Let users focus more on actual project development.
 
-It can compile the project directly like Make/Ninja, or 
-generate project files like CMake/Meson, and it also has a built-in package management 
+It can compile the project directly like Make/Ninja, or
+generate project files like CMake/Meson, and it also has a built-in package management
 system to help users solve the integrated use of C/C++ dependent libraries.
 
 %prep
@@ -55,12 +55,12 @@ ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_branch} core/src/lua-cjson/lua-c
 
 %build
 make build
- 
+
 %install
 mkdir -p %{buildroot}%{_bindir}
-mkdir -p %{buildroot}%{_datadir} 
+mkdir -p %{buildroot}%{_datadir}
 cp -r xmake %{buildroot}%{_datadir}/%{name}
-cp core/src/demo/demo.b %{buildroot}%{_bindir}/%{name} 
+cp core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
 chmod 755 %{buildroot}%{_bindir}/%{name}
 cp README.md %{buildroot}%{_datadir}
 cp LICENSE.md %{buildroot}%{_datadir}
@@ -76,7 +76,7 @@ rm -rf %{buildroot}
 %{_datadir}/%{name}
 %doc %{_datadir}/README.md
 %license %{_datadir}/LICENSE.md
- 
+
 %changelog
 * Mon Sep 14 2020 Ruki Wang <waruqi@gmail.com> - 2.3.7-1
 - Initial Commit
