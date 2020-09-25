@@ -29,6 +29,17 @@ jobs:
         with:
           xmake-version: local#../xmake-source
 
+        # build artifacts
+      - name: artifact
+        run: |
+          dnf install ncurses-devel readline-devel
+          rpmbuild -ba ./scripts/rpmbuild/SPECS/xmake.spec
+        # upload artifacts
+      - uses: actions/upload-artifact@v2
+        with:
+          name: xmake-latest.fc32.src.rpm
+          path: ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm
+
         # tests
       - name: tests
         env:

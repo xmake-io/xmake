@@ -24,7 +24,8 @@ BuildRequires:  ncurses-devel
 BuildRequires:  readline-devel
 
 %description
-It is a lightweight cross-platform build utility based on Lua.
+xmake is a lightweight cross-platform build utility based on Lua.
+
 It uses xmake.lua to maintain project builds. Compared with makefile/CMakeLists.txt,
 the configuration syntax is more concise and intuitive.
 It is very friendly to novices and can quickly get started in a short time.
