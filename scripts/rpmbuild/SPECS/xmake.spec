@@ -1,4 +1,4 @@
-%define     xmake_branch        dev
+%define     xmake_branch        master
 %define     tbox_branch         dev
 %define     sv_branch           xmake-core
 %define     lua_cjson_branch    xmake-core
