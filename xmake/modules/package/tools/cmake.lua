@@ -172,6 +172,23 @@ function _get_configs_for_cross(package, configs, opt)
     end
 end
 
+-- get cmake generator for msvc
+function _get_cmake_generator_for_msvc()
+    local vsvers =
+    {
+        ["2019"] = "16",
+        ["2017"] = "15",
+        ["2015"] = "14",
+        ["2013"] = "12",
+        ["2012"] = "11",
+        ["2010"] = "10",
+        ["2008"] = "9"
+    }
+    local vs = config.get("vs")
+    assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
+    return "Visual Studio " .. vsvers[vs] .. " " .. vs
+end
+
 -- get configs for cmake generator
 function _get_configs_for_generator(package, configs, opt)
     opt     = opt or {}
@@ -179,25 +196,19 @@ function _get_configs_for_generator(package, configs, opt)
     local cmake_generator = opt.cmake_generator
     if cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
-            local vsvers =
-            {
-                ["2019"] = "16",
-                ["2017"] = "15",
-                ["2015"] = "14",
-                ["2013"] = "12",
-                ["2012"] = "11",
-                ["2010"] = "10",
-                ["2008"] = "9"
-            }
-            local vs = config.get("vs")
-            assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
-            cmake_generator = "Visual Studio " .. vsvers[vs] .. " " .. vs
+            cmake_generator = _get_cmake_generator_for_msvc()
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
     elseif package:is_plat("mingw") and is_host("windows") then
         table.insert(configs, "-G")
         table.insert(configs, "MSYS Makefiles")
+    elseif package:is_plat("windows") then
+        table.insert(configs, "-G")
+        table.insert(configs, _get_cmake_generator_for_msvc())
+    else
+        table.insert(configs, "-G")
+        table.insert(configs, "Unix Makefiles")
     end
 end
 
@@ -416,6 +427,8 @@ function build(package, configs, opt)
             _build_for_msvc(package, configs, opt)
         elseif cmake_generator:find("Ninja", 1, true) then
             _build_for_ninja(package, configs, opt)
+        elseif cmake_generator:find("Makefiles", 1, true) then
+            _build_for_make(package, configs, opt)
         else
             raise("unknown cmake generator(%s)!", cmake_generator)
         end
@@ -447,12 +460,6 @@ function install(package, configs, opt)
     --
     local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
 
-    -- exists $CMAKE_GENERATOR? use it
-    local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
-    if not opt.cmake_generator and cmake_generator_env then
-        opt.cmake_generator = cmake_generator_env
-    end
-
     -- pass configurations
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
@@ -478,6 +485,8 @@ function install(package, configs, opt)
             _install_for_msvc(package, configs, opt)
         elseif cmake_generator:find("Ninja", 1, true) then
             _install_for_ninja(package, configs, opt)
+        elseif cmake_generator:find("Makefiles", 1, true) then
+            _install_for_make(package, configs, opt)
         else
             raise("unknown cmake generator(%s)!", cmake_generator)
         end
