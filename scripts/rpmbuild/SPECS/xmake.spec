@@ -11,7 +11,7 @@ Version:    2.3.7
 Release:    1%{?dist}
 Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
-License:    Apache-2.0
+License:    ASL 2.0
 URL:        https://xmake.io
 Source0:    https://github.com/xmake-io/xmake/archive/%{xmake_branch}.tar.gz#/xmake-%{xmake_branch}.tar.gz
 Source1:    https://github.com/tboox/tbox/archive/%{tbox_branch}.tar.gz#/tbox-%{tbox_branch}.tar.gz
@@ -55,22 +55,20 @@ ln -s `pwd`/../xmake-core-luajit-%{luajit_branch} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_branch} core/src/lua-cjson/lua-cjson
 
 %build
-make build
+%set_build_flags
+%make_build
 
 %install
 mkdir -p %{buildroot}%{_bindir}
 mkdir -p %{buildroot}%{_datadir}
-cp -r xmake %{buildroot}%{_datadir}/%{name}
-cp core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
+cp -p -r xmake %{buildroot}%{_datadir}/%{name}
+cp -p core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
 chmod 755 %{buildroot}%{_bindir}/%{name}
-cp README.md %{buildroot}%{_datadir}
-cp LICENSE.md %{buildroot}%{_datadir}
+cp -p README.md %{buildroot}%{_datadir}
+cp -p LICENSE.md %{buildroot}%{_datadir}
 
 %check
 XMAKE_ROOT=y %{buildroot}%{_bindir}/%{name} --version
-
-%clean
-rm -rf %{buildroot}
 
 %files
 %{_bindir}/%{name}

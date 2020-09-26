@@ -86,11 +86,6 @@ else
 xmake_core_install  :=$(destdir)/bin/xmake
 endif
 
-tip:
-	@echo 'Usage: '
-	@echo '    $ make build'
-	@echo '    $ sudo make install [PREFIX=/usr/local] [DESTDIR=/xxx]'
-
 build:
 	@echo compiling xmake-core ...
 	@if [ -f core/.config.mak ]; then rm core/.config.mak; fi
@@ -127,4 +122,4 @@ test:
 	@xmake lua --verbose tests/run.lua $(name)
 	@echo ok!
 
-.PHONY: tip build install uninstall
+.PHONY: build install uninstall
