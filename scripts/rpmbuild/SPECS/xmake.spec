@@ -1,8 +1,8 @@
-%define     xmake_branch        master
-%define     tbox_branch         dev
-%define     sv_branch           xmake-core
-%define     lua_cjson_branch    xmake-core
-%define     luajit_branch       2.1-xmake
+%define     xmake_revision       b1c358e57b442610f481cf8c834ae46c90b99645
+%define     tbox_revision        f4970bcd0fcc05b09742452a4b3b3d2d1055569d
+%define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
+%define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
+%define     luajit_revision      53c72a3350f3ad96c1d93638d61ec78c91b7f4f1
 %define     _binaries_in_noarch_packages_terminate_build   0
 %undefine   _disable_source_fetch
 
@@ -13,11 +13,11 @@ Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
 License:    ASL 2.0
 URL:        https://xmake.io
-Source0:    https://github.com/xmake-io/xmake/archive/%{xmake_branch}.tar.gz#/xmake-%{xmake_branch}.tar.gz
-Source1:    https://github.com/tboox/tbox/archive/%{tbox_branch}.tar.gz#/tbox-%{tbox_branch}.tar.gz
-Source2:    https://github.com/xmake-io/xmake-core-luajit/archive/v%{luajit_branch}.tar.gz#/xmake-core-luajit-%{luajit_branch}.tar.gz
-Source3:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_branch}.tar.gz#/xmake-core-sv-%{sv_branch}.tar.gz
-Source4:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_branch}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_branch}.tar.gz
+Source0:    https://github.com/xmake-io/xmake/archive/%{xmake_revision}.tar.gz#/xmake-%{xmake_revision}.tar.gz
+Source1:    https://github.com/tboox/tbox/archive/%{tbox_revision}.tar.gz#/tbox-%{tbox_revision}.tar.gz
+Source2:    https://github.com/xmake-io/xmake-core-luajit/archive/v%{luajit_revision}.tar.gz#/xmake-core-luajit-%{luajit_revision}.tar.gz
+Source3:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_revision}.tar.gz#/xmake-core-sv-%{sv_revision}.tar.gz
+Source4:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_revision}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_revision}.tar.gz
 
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
@@ -36,23 +36,23 @@ generate project files like CMake/Meson, and it also has a built-in package mana
 system to help users solve the integrated use of C/C++ dependent libraries.
 
 %prep
-%setup -q -T -b 1 -n tbox-%{tbox_branch}
+%setup -q -T -b 1 -n tbox-%{tbox_revision}
 cd ..
-%setup -q -T -b 2 -n xmake-core-luajit-%{luajit_branch}
+%setup -q -T -b 2 -n xmake-core-luajit-%{luajit_revision}
 cd ..
-%setup -q -T -b 3 -n xmake-core-sv-%{sv_branch}
+%setup -q -T -b 3 -n xmake-core-sv-%{sv_revision}
 cd ..
-%setup -q -T -b 4 -n xmake-core-lua-cjson-%{lua_cjson_branch}
+%setup -q -T -b 4 -n xmake-core-lua-cjson-%{lua_cjson_revision}
 cd ..
-%setup -q -T -b 0 -n xmake-%{xmake_branch}
+%setup -q -T -b 0 -n xmake-%{xmake_revision}
 rm -rf core/src/sv/sv
 rm -rf core/src/tbox/tbox
 rm -rf core/src/luajit/luajit
 rm -rf core/src/lua-cjson/lua-cjson
 ln -s `pwd`/../tbox-dev core/src/tbox/tbox
-ln -s `pwd`/../xmake-core-sv-%{sv_branch} core/src/sv/sv
-ln -s `pwd`/../xmake-core-luajit-%{luajit_branch} core/src/luajit/luajit
-ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_branch} core/src/lua-cjson/lua-cjson
+ln -s `pwd`/../xmake-core-sv-%{sv_revision} core/src/sv/sv
+ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
+ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
 
 %build
 %set_build_flags
