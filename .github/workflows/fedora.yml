@@ -36,6 +36,7 @@ jobs:
         run: |
           dnf -y install ncurses-devel readline-devel
           rpmbuild -ba ./scripts/rpmbuild/SPECS/xmake.spec
+          cp ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm ./scripts/xmake-latest.fc32.src.rpm
         # upload artifacts
       - uses: actions/upload-artifact@v2
         with:
@@ -44,7 +45,7 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.fc32.src.rpm
-          path: ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm
+          path: ./scripts/xmake-latest.fc32.src.rpm
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.fc32.noarch.rpm
@@ -58,7 +59,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm
+          asset_path: ./scripts/xmake-latest.fc32.src.rpm
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.fc32.src.rpm
           asset_content_type: application/zip
 
