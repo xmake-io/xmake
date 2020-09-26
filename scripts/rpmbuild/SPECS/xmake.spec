@@ -67,7 +67,7 @@ cp README.md %{buildroot}%{_datadir}
 cp LICENSE.md %{buildroot}%{_datadir}
 
 %check
-%{buildroot}%{_bindir}/%{name} --version
+XMAKE_ROOT=y %{buildroot}%{_bindir}/%{name} --version
 
 %clean
 rm -rf %{buildroot}
