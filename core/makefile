@@ -38,20 +38,20 @@ endif
 all : .null
 	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo make $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) || cat $(TMP_DIR)/$(PRO_NAME).out
+	+@$(MAKE) --no-print-directory -C $(SRC_DIR) || cat $(TMP_DIR)/$(PRO_NAME).out
 
 # make rebuild
 rebuild : .null
-	@$(MAKE) c
-	@$(MAKE)
-	@$(MAKE) i
+	+@$(MAKE) c
+	+@$(MAKE)
+	+@$(MAKE) i
 
 # make install
 install : .null
 	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo install $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) install
+	+@$(MAKE) --no-print-directory -C $(SRC_DIR)
+	+@$(MAKE) --no-print-directory -C $(SRC_DIR) install
 
 # make lipo
 lipo : .null
@@ -61,7 +61,7 @@ lipo : .null
 clean : .null
 	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo clean $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) clean
+	+@$(MAKE) --no-print-directory -C $(SRC_DIR) clean
 
 # make update
 update : .null
