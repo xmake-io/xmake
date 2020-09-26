@@ -28,6 +28,8 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
+      - uses: olegtarasov/get-tag@v2
+        id: tagName
 
         # build artifacts
       - name: artifact
@@ -47,6 +49,30 @@ jobs:
         with:
           name: xmake-latest.fc32.noarch.rpm
           path: ~/rpmbuild/RPMS/noarch/xmake-*.fc32.noarch.rpm
+
+        # publish release
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.fc32.src.rpm
+          asset_content_type: application/zip
+
+        # publish release
+      - name: publish
+        if: github.event.action == 'published'
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./scripts/rpmbuild/SPECS/xmake.spec
+          asset_name: xmake-${{ steps.tagName.outputs.tag }}.fc32.spec
+          asset_content_type: application/zip
 
         # tests
       - name: tests
