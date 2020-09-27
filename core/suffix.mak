@@ -173,7 +173,7 @@ $(1)_CXFLAGS 	:= $(CXFLAGS) $(addprefix $(CXFLAGS-I), $(INC_DIRS)) $(addprefix $
 $(1)_MFLAGS 	:= $(MFLAGS) $($(1)_MFLAGS) $($(1)_MFLAGS-y)
 $(1)_MMFLAGS 	:= $(MMFLAGS) $($(1)_MMFLAGS) $($(1)_MMFLAGS-y)
 $(1)_MXFLAGS 	:= $(MXFLAGS) $(addprefix $(MXFLAGS-I), $(INC_DIRS)) $(addprefix $(MXFLAGS-I), $($(1)_INC_DIRS)) $($(1)_MXFLAGS) $($(1)_MXFLAGS-y)
-$(1)_LDFLAGS 	:= $(LDFLAGS) $(addprefix $(LDFLAGS-L), $(LIB_DIRS)) $(addprefix $(LDFLAGS-L), $($(1)_LIB_DIRS)) $($(1)_LDFLAGS) $($(1)_LDFLAGS-y) $(addsuffix $(LDFLAGS-f), $(addprefix $(LDFLAGS-l), $($(1)_LIBS))) 
+$(1)_LDFLAGS 	:= $(LDFLAGS) $(addprefix $(LDFLAGS-L), $(LIB_DIRS)) $(addprefix $(LDFLAGS-L), $($(1)_LIB_DIRS)) $($(1)_LDFLAGS) $($(1)_LDFLAGS-y) $(addsuffix $(LDFLAGS-f), $(addprefix $(LDFLAGS-l), $($(1)_LIBS)))
 $(1)_ASFLAGS 	:= $(ASFLAGS) $(addprefix $(ASFLAGS-I), $(INC_DIRS)) $(addprefix $(ASFLAGS-I), $($(1)_INC_DIRS)) $($(1)_ASFLAGS) $($(1)_ASFLAGS-y)
 $(1)_ARFLAGS 	:= $(ARFLAGS) $($(1)_ARFLAGS-y)
 $(1)_SHFLAGS 	:= $(SHFLAGS) $(addprefix $(LDFLAGS-L), $(LIB_DIRS)) $(addprefix $(LDFLAGS-L), $($(1)_LIB_DIRS)) $($(1)_SHFLAGS) $($(1)_SHFLAGS-y) $(addsuffix $(LDFLAGS-f), $(addprefix $(LDFLAGS-l), $($(1)_LIBS)))
@@ -184,14 +184,14 @@ $(foreach name, $(NAMES), $(eval $(call MAKE_FLAGS,$(name))))
 define MAKE_FLAGS_NATIVE
 $(1)_CXFLAGS 	+= -Fd"$(CUR_DIR_NATIVE)/$(1)$(DTYPE).pdb"
 $(1)_LDFLAGS 	+= -pdb:"$(CUR_DIR_NATIVE)/$(1)$(DTYPE).pdb"
-$(1)_ARFLAGS 	+= -pdb:"$(CUR_DIR_NATIVE)/$(1)$(DTYPE).pdb" 
+$(1)_ARFLAGS 	+= -pdb:"$(CUR_DIR_NATIVE)/$(1)$(DTYPE).pdb"
 $(1)_SHFLAGS 	+= -pdb:"$(CUR_DIR_NATIVE)/$(1)$(DTYPE).pdb"
 endef
 ifeq ($(PLAT),msvc)
 $(foreach name, $(NAMES), $(eval $(call MAKE_FLAGS_NATIVE,$(name))))
 endif
 
-# make objects and source files 
+# make objects and source files
 define MAKE_OBJS_AND_SRCS_FILES
 $(1)_OBJS 		:= $(addsuffix $(OBJ_SUFFIX), $($(1)_FILES))
 $(1)_SRCS 		:= $(addsuffix .c, $($(1)_C_FILES)) $(addsuffix .cc, $($(1)_CC_FILES)) $(addsuffix .cpp, $($(1)_CPP_FILES)) $(addsuffix .m, $($(1)_M_FILES)) $(addsuffix .mm, $($(1)_MM_FILES)) $(addsuffix $(ASM_SUFFIX), $($(1)_ASM_FILES))
@@ -286,13 +286,13 @@ endef
 define MAKE_ALL_SUB_PROS
 SUB_PROS_$(1)_all: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_all)
 	@echo make $(1)
-	@$(MAKE) --no-print-directory -C $(1) 
+	+@$(MAKE) --no-print-directory -C $(1)
 endef
 
 define MAKE_ALL_DEP_PROS
 DEP_PROS_$(1)_all:
 	@echo make $(1)
-	@$(MAKE) --no-print-directory -C $(1) 
+	+@$(MAKE) --no-print-directory -C $(1)
 endef
 
 all: \
@@ -323,7 +323,7 @@ $(foreach name, $(NAMES), $(eval $(call EXPAND_INSTALL_FILES,$(name))))
 
 # append native install files
 define EXPAND_INSTALL_FILES_NATIVE
-$(1)_$($(1)_TYPE)_FILES += $(CUR_DIR)/$(1)$(DTYPE).pdb 
+$(1)_$($(1)_TYPE)_FILES += $(CUR_DIR)/$(1)$(DTYPE).pdb
 endef
 ifeq ($(PLAT),msvc)
 $(foreach name, $(NAMES), $(eval $(call EXPAND_INSTALL_FILES_NATIVE,$(name))))
@@ -390,7 +390,7 @@ $(CFG_FILE)_install:
 	-@$(MKDIR) $($(CFG_FILE)_DIRS_)
 	-@$(CP) $(CFG_FILE) $($(CFG_FILE)_DIRS_)
 
-# make install 
+# make install
 define MAKE_INSTALL
 $(foreach file, $($(1)_INC_FILES), $(eval $(call MAKE_INSTALL_INC_FILES,$(file))))
 $(foreach file, $($(1)_LIB_FILES), $(eval $(call MAKE_INSTALL_LIB_FILES,$(file))))
@@ -435,13 +435,13 @@ endef
 define MAKE_CLEAN_SUB_PROS
 SUB_PROS_$(1)_clean: $(foreach pro, $(DEP_PROS), DEP_PROS_$(pro)_clean)
 	@echo clean $(1)
-	@$(MAKE) --no-print-directory -C $(1) clean
+	+@$(MAKE) --no-print-directory -C $(1) clean
 endef
 
 define MAKE_CLEAN_DEP_PROS
 DEP_PROS_$(1)_clean:
 	@echo clean $(1)
-	@$(MAKE) --no-print-directory -C $(1) clean
+	+@$(MAKE) --no-print-directory -C $(1) clean
 endef
 
 clean: \
@@ -453,7 +453,7 @@ $(foreach pro, $(SUB_PROS), $(eval $(call MAKE_CLEAN_SUB_PROS,$(pro))))
 $(foreach pro, $(DEP_PROS), $(eval $(call MAKE_CLEAN_DEP_PROS,$(pro))))
 
 # ######################################################################################
-# make update 
+# make update
 # #
 
 define MAKE_UPDATE_SUB_PROS
