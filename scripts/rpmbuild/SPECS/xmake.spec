@@ -49,7 +49,7 @@ rm -rf core/src/sv/sv
 rm -rf core/src/tbox/tbox
 rm -rf core/src/luajit/luajit
 rm -rf core/src/lua-cjson/lua-cjson
-ln -s `pwd`/../tbox-dev core/src/tbox/tbox
+ln -s `pwd`/../tbox-%{tbox_revision} core/src/tbox/tbox
 ln -s `pwd`/../xmake-core-sv-%{sv_revision} core/src/sv/sv
 ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
