@@ -34,6 +34,7 @@ jobs:
         # build artifacts
       - name: artifact
         run: |
+          export XMAKE_ROOT=y
           dnf -y install ncurses-devel readline-devel
           rpmbuild -ba ./scripts/rpmbuild/SPECS/xmake.spec
           cp ~/rpmbuild/SRPMS/xmake-*.fc32.src.rpm ./scripts/xmake-latest.fc32.src.rpm
