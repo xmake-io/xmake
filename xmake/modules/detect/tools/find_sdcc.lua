@@ -50,7 +50,7 @@ function main(opt)
         table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\SDCC)\\bin")
     end
     if #paths > 0 then
-        opt.pathes = paths
+        opt.paths = paths
     end
 
     -- find program

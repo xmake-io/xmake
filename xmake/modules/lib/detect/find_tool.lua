@@ -39,7 +39,7 @@ end
 -- find tool
 --
 -- @param name      the tool name
--- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", pathes = {"/usr/bin"},
+-- @param opt       the options, e.g. {program = "xcrun -sdk macosx clang", paths = {"/usr/bin"},
 --                                     check = function (tool) os.run("%s -h", tool) end, version = true
 --                                     force = true, cachekey = "xxx", envs = {PATH = "xxx"}}
 --
@@ -49,11 +49,11 @@ end
 --
 -- local tool = find_tool("clang")
 -- local tool = find_tool("clang", {program = "xcrun -sdk macosx clang"})
--- local tool = find_tool("clang", {pathes = {"/usr/bin", "/usr/local/bin"}})
+-- local tool = find_tool("clang", {paths = {"/usr/bin", "/usr/local/bin"}})
 -- local tool = find_tool("clang", {check = "--help"}) -- simple check command: ccache --help
 -- local tool = find_tool("clang", {check = function (tool) os.run("%s -h", tool) end})
--- local tool = find_tool("clang", {pathes = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
--- local tool = find_tool("clang", {pathes = {"$(env PATH)", function () return "/usr/bin"end}})
+-- local tool = find_tool("clang", {paths = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
+-- local tool = find_tool("clang", {paths = {"$(env PATH)", function () return "/usr/bin"end}})
 -- local tool = find_tool("ccache", {version = true})
 --
 -- @endcode

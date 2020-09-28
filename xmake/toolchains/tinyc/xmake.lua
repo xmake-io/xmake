@@ -49,7 +49,7 @@ toolchain("tinyc")
                 sdkdir = winenv_tccsdk
             end
         end
-        if find_tool("tcc", {pathes = config.get("bin") or sdkdir}) then
+        if find_tool("tcc", {paths = config.get("bin") or sdkdir}) then
             config.set("__tcc_sdkdir", sdkdir)
             return true
         end

@@ -64,8 +64,8 @@ function main(opt)
         if vcvars and vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
             local bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion, arch)
             if os.isdir(bindir) then
-                opt.pathes = opt.pathes or {}
-                table.insert(opt.pathes, bindir)
+                opt.paths = opt.paths or {}
+                table.insert(opt.paths, bindir)
             end
         end
     end

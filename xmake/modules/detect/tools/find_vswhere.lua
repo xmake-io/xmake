@@ -49,7 +49,7 @@ function main(opt)
     -- find program
     opt.check   = opt.check or "-?"
     opt.command = opt.command or "-?"
-    opt.pathes = opt.pathes or
+    opt.paths   = opt.paths or
     {
         "$(env ProgramFiles%(x86%))\\Microsoft Visual Studio\\Installer",
         "$(env ProgramFiles)\\Microsoft Visual Studio\\Installer"

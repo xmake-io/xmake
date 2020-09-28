@@ -45,7 +45,7 @@ function main(opt)
 
     -- init options
     opt        = opt or {}
-    opt.pathes = opt.pathes or function ()
+    opt.paths = opt.paths or function ()
         for _, reg in ipairs({"HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger", "HKEY_LOCAL_MACHINE\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger"}) do
             return (val("reg " .. reg) or ""):match("\"(.-)\"")
         end

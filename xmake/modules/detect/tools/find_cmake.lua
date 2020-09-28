@@ -40,7 +40,7 @@ function main(opt)
     -- init options
     opt = opt or {}
     if is_host("windows") then
-        opt.pathes = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
+        opt.paths = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
     end
 
     -- find program

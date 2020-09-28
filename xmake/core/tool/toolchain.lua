@@ -155,9 +155,9 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-    local toolpathes = self:get("toolset." .. toolkind)
-    if toolpathes then
-        for _, toolpath in ipairs(table.wrap(toolpathes)) do
+    local toolpaths = self:get("toolset." .. toolkind)
+    if toolpaths then
+        for _, toolpath in ipairs(table.wrap(toolpaths)) do
             local program, toolname = self:_checktool(toolkind, toolpath)
             if program then
                 return program, toolname
@@ -290,7 +290,7 @@ function _instance:_checktool(toolkind, toolpath)
 
     -- find tool program
     local program, toolname
-    local tool = find_tool(toolpath, {program = toolpath, pathes = self:bindir(), envs = self:get("runenvs")})
+    local tool = find_tool(toolpath, {program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = tool.name

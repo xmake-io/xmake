@@ -40,11 +40,11 @@ function main(opt)
     -- init options
     opt = opt or {}
     if is_host("windows") then
-        opt.pathes = opt.pathes or {}
-        table.insert(opt.pathes, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7\\InstallPath;ExecutablePath)")
-        table.insert(opt.pathes, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7-32\\InstallPath;ExecutablePath)")
-        table.insert(opt.pathes, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6\\InstallPath;ExecutablePath)")
-        table.insert(opt.pathes, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6-32\\InstallPath;ExecutablePath)")
+        opt.paths = opt.paths or {}
+        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7\\InstallPath;ExecutablePath)")
+        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7-32\\InstallPath;ExecutablePath)")
+        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6\\InstallPath;ExecutablePath)")
+        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6-32\\InstallPath;ExecutablePath)")
     end
 
     -- find program

@@ -24,14 +24,14 @@ import("lib.detect.find_tool")
 
 -- update submodule
 --
--- @param opt       the argument options, e.g. repodir, init, remote, force, checkout, merge, rebase, recursive, reference, pathes
+-- @param opt       the argument options, e.g. repodir, init, remote, force, checkout, merge, rebase, recursive, reference, paths
 --
 -- @code
 --
 -- import("devel.git.submodule")
 --
 -- submodule.update("master", {repodir = "/tmp/xmake", init = true, remote = true})
--- submodule.update("v1.0.1", {repodir = "/tmp/xmake", recursive = true, reference = "xxx", pathes = "xxx"})
+-- submodule.update("v1.0.1", {repodir = "/tmp/xmake", recursive = true, reference = "xxx", paths = "xxx"})
 --
 -- @endcode
 --
@@ -54,8 +54,8 @@ function main(opt)
         table.insert(argv, "--reference")
         table.insert(argv, opt.reference)
     end
-    if opt.pathes then
-        table.join2(argv, opt.pathes)
+    if opt.paths or opt.pathes then
+        table.join2(argv, opt.paths or opt.pathes)
     end
 
     -- enter repository directory

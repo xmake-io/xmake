@@ -74,12 +74,12 @@ function sandbox_lib_detect_find_program._check(program, opt)
     return ok
 end
 
--- find program from the given pathes
-function sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
+-- find program from the given paths
+function sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
 
     -- attempt to check it from the given directories
     if not path.is_absolute(name) then
-        for _, _path in ipairs(table.wrap(pathes)) do
+        for _, _path in ipairs(table.wrap(paths)) do
 
             -- format path for builtin variables
             if type(_path) == "function" then
@@ -131,27 +131,27 @@ function sandbox_lib_detect_find_program._find_from_packages(name, opt)
     -- get install directory of this package
     local installdir = path.directory(manifest_file)
 
-    -- init pathes
-    local pathes = {}
+    -- init paths
+    local paths = {}
     local manifest = io.load(manifest_file)
     if manifest and manifest.envs then
         local pathenvs = manifest.envs.PATH
         if pathenvs then
             for _, pathenv in ipairs(pathenvs) do
-                table.insert(pathes, path.join(installdir, pathenv))
+                table.insert(paths, path.join(installdir, pathenv))
             end
         end
     end
 
     -- find it
-    return sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
+    return sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
 end
 
 -- find program
-function sandbox_lib_detect_find_program._find(name, pathes, opt)
+function sandbox_lib_detect_find_program._find(name, paths, opt)
 
     -- attempt to find it from the given directories
-    local program_path = sandbox_lib_detect_find_program._find_from_pathes(name, pathes, opt)
+    local program_path = sandbox_lib_detect_find_program._find_from_paths(name, paths, opt)
     if program_path then
         return program_path
     end
@@ -192,13 +192,13 @@ function sandbox_lib_detect_find_program._find(name, pathes, opt)
     end
 
     -- attempt to find it from the some default system directories
-    local syspathes = {}
+    local syspaths = {}
     if os.host() ~= "windows" then
-        table.insert(syspathes, "/usr/local/bin")
-        table.insert(syspathes, "/usr/bin")
+        table.insert(syspaths, "/usr/local/bin")
+        table.insert(syspaths, "/usr/bin")
     end
-    if #syspathes > 0 then
-        program_path = sandbox_lib_detect_find_program._find_from_pathes(name, syspathes, opt)
+    if #syspaths > 0 then
+        program_path = sandbox_lib_detect_find_program._find_from_paths(name, syspaths, opt)
         if program_path then
             return program_path
         end
@@ -216,8 +216,8 @@ end
 -- find program
 --
 -- @param name      the program name
--- @param opt       the options, e.g. {pathes = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
---                    - opt.pathes    the program pathes (e.g. dirs, pathes, winreg pathes, script pathes)
+-- @param opt       the options, e.g. {paths = {"/usr/bin"}, check = function (program) os.run("%s -h", program) end, verbose = true, force = true, cachekey = "xxx"}
+--                    - opt.paths     the program paths (e.g. dirs, paths, winreg paths, script paths)
 --                    - opt.check     the check script or command
 --                    - opt.norun     do not attempt to run program to check program fastly
 --
@@ -226,11 +226,11 @@ end
 -- @code
 --
 -- local program = find_program("ccache")
--- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}})
--- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}, check = "--help"}) -- simple check command: ccache --help
--- local program = find_program("ccache", {pathes = {"/usr/bin", "/usr/local/bin"}, check = function (program) os.run("%s -h", program) end})
--- local program = find_program("ccache", {pathes = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
--- local program = find_program("ccache", {pathes = {"$(env PATH)", function () return "/usr/local/bin" end}})
+-- local program = find_program("ccache", {paths = {"/usr/bin", "/usr/local/bin"}})
+-- local program = find_program("ccache", {paths = {"/usr/bin", "/usr/local/bin"}, check = "--help"}) -- simple check command: ccache --help
+-- local program = find_program("ccache", {paths = {"/usr/bin", "/usr/local/bin"}, check = function (program) os.run("%s -h", program) end})
+-- local program = find_program("ccache", {paths = {"$(env PATH)", "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger)"}})
+-- local program = find_program("ccache", {paths = {"$(env PATH)", function () return "/usr/local/bin" end}})
 -- local program = find_program("ccache", {envs = {PATH = "xxx"}})
 --
 -- @endcode
@@ -261,20 +261,21 @@ function sandbox_lib_detect_find_program.main(name, opt)
         return result and result or nil
     end
 
-    -- get pathes from the opt.envs.PATH
+    -- get paths from the opt.envs.PATH
+    -- @note the wrong `pathes` word will be discarded, but the interface parameters will still be compatible
     local envs = opt.envs
-    local pathes = opt.pathes
+    local paths = opt.paths or opt.pathes
     if envs and (envs.PATH or envs.path) then
         local pathenv = envs.PATH or envs.path
         if type(pathenv) == "string" then
             pathenv = path.splitenv(pathenv)
         end
-        pathes = table.join(table.wrap(opt.pathes), pathenv)
+        paths = table.join(table.wrap(opt.paths or opt.pathes), pathenv)
     end
 
     -- find executable program
     checking = coroutine_running and name or nil
-    result = sandbox_lib_detect_find_program._find(name, pathes, opt)
+    result = sandbox_lib_detect_find_program._find(name, paths, opt)
     checking = nil
 
     -- cache result

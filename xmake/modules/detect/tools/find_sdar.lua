@@ -40,17 +40,17 @@ function main(opt)
     opt         = opt or {}
     opt.command = opt.command or "--version"
 
-    -- add search pathes
-    local pathes = {}
+    -- add search paths
+    local paths = {}
     local bindir = get_config("bin")
     if bindir and os.isdir(bindir) then
-        table.insert(pathes, bindir)
+        table.insert(paths, bindir)
     end
     if is_host("windows") then
-        table.insert(pathes, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\SDCC)\\bin")
+        table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\SDCC)\\bin")
     end
-    if #pathes > 0 then
-        opt.pathes = pathes
+    if #paths > 0 then
+        opt.paths = paths
     end
 
     -- find program

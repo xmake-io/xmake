@@ -39,8 +39,8 @@ function main(opt)
         -- init bits
         local bits = (opt.arch == "x64" and "64" or "32")
 
-        -- init search pathes
-        local pathes = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL %(" .. bits .. "-bit%)_is1;Inno Setup: App Path)",
+        -- init search paths
+        local paths = {"$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\OpenSSL %(" .. bits .. "-bit%)_is1;Inno Setup: App Path)",
                         "$(env PROGRAMFILES)/OpenSSL",
                         "$(env PROGRAMFILES)/OpenSSL-Win" .. bits,
                         "C:/OpenSSL",
@@ -49,7 +49,7 @@ function main(opt)
         -- find library
         local result = {links = {}, linkdirs = {}, includedirs = {}}
         for _, name in ipairs({"libssl", "libcrypto"}) do
-            local linkinfo = find_library(name, pathes, {suffixes = "lib"})
+            local linkinfo = find_library(name, paths, {suffixes = "lib"})
             if linkinfo then
                 table.insert(result.links, linkinfo.link)
                 table.insert(result.linkdirs, linkinfo.linkdir)
@@ -62,7 +62,7 @@ function main(opt)
         end
 
         -- find include
-        table.insert(result.includedirs, find_path("openssl/ssl.h", pathes, {suffixes = "include"}))
+        table.insert(result.includedirs, find_path("openssl/ssl.h", paths, {suffixes = "include"}))
 
         -- ok
         return result
