@@ -340,6 +340,7 @@ function _install_files_for_cmake(package)
     -- e.g. set(_IMPORT_PREFIX "/Users/ruki/.xmake/cache/packages/2009/x/xxx/master/source/xxx/build_C8AA35F0/install")
     --
     for _, cmakefile in ipairs(os.files("install/lib/cmake/*/*.cmake")) do
+        vprint("patching %s ..", cmakefile)
         local prefixdir_old = path.absolute("install")
         local prefixdir_new = package:installdir()
         io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
