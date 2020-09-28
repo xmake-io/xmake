@@ -95,3 +95,14 @@ function test_lastof(t)
     t:are_equal(("/home/file.txt"):lastof('/home', true), 1)
     t:are_equal(("/home/file.txt"):lastof('[/\\]home'), 1)
 end
+
+function test_replace(t)
+    t:are_equal(("123xyz456xyz789xyz"):replace("123", "000"), "000xyz456xyz789xyz")
+    t:are_equal(("123xyz456xyz789xyz"):replace("xyz", "000"), "123000456000789000")
+    t:are_equal(("123xyz456xyz789xyz"):replace("123", "000", {plain = true}), "000xyz456xyz789xyz")
+    t:are_equal(("123xyz456xyz789xyz"):replace("xyz", "000", {plain = true}), "123000456000789000")
+    t:are_equal(("123$xyz456xyz789xyz"):replace("123$", "000"), "123$xyz456xyz789xyz")
+    t:are_equal(("123xyz$456xyz$789xyz$"):replace("xyz$", "000"), "123xyz$456xyz$789xyz$")
+    t:are_equal(("123$xyz456xyz789xyz"):replace("123$", "000", {plain = true}), "000xyz456xyz789xyz")
+    t:are_equal(("123xyz$456xyz$789xyz$"):replace("xyz$", "000", {plain = true}), "123000456000789000")
+end

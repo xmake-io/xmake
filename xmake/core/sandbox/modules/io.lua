@@ -173,8 +173,23 @@ function sandbox_io.gsub(filepath, pattern, replace, opt)
     if not data then
         raise(errors)
     end
+    return data, count
+end
 
-    -- ok
+-- replace text of the given file and return replaced data
+function sandbox_io.replace(filepath, pattern, replace, opt)
+
+    -- check
+    assert(filepath)
+
+    -- format it first
+    filepath = vformat(filepath)
+
+    -- replace all
+    local data, count, errors = io.replace(filepath, pattern, replace, opt)
+    if not data then
+        raise(errors)
+    end
     return data, count
 end
 

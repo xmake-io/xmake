@@ -332,6 +332,22 @@ function _install_for_msvc(package, configs, opt)
     end
 end
 
+-- install files for cmake
+function _install_files_for_cmake(package)
+
+    -- patch _IMPORT_PREFIX to the real path
+    --
+    -- e.g. set(_IMPORT_PREFIX "/Users/ruki/.xmake/cache/packages/2009/x/xxx/master/source/xxx/build_C8AA35F0/install")
+    --
+    for _, cmakefile in ipairs(os.files("install/lib/cmake/*/*.cmake")) do
+        local prefixdir_old = path.absolute("install")
+        local prefixdir_new = package:installdir()
+        io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
+    end
+    os.trycp("install/lib", package:installdir())
+    os.trycp("install/include", package:installdir())
+end
+
 -- do install for make
 function _install_for_make(package, configs, opt)
     local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
@@ -351,8 +367,7 @@ function _install_for_make(package, configs, opt)
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
     end
-    os.trycp("install/lib", package:installdir())
-    os.trycp("install/include", package:installdir())
+    _install_files_for_cmake(package)
 end
 
 -- do install for ninja
@@ -366,16 +381,14 @@ function _install_for_ninja(package, configs, opt)
     table.insert(argv, "-j")
     table.insert(argv, njob)
     os.vrunv(ninja.program, argv)
-    os.trycp("install/lib", package:installdir())
-    os.trycp("install/include", package:installdir())
+    _install_files_for_cmake(package)
 end
 
 -- do install for cmake/build
 function _install_for_cmakebuild(package, configs, opt)
     os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
     os.vrunv("cmake", {"--install", os.curdir()})
-    os.trycp("install/lib", package:installdir())
-    os.trycp("install/include", package:installdir())
+    _install_files_for_cmake(package)
 end
 
 -- build package

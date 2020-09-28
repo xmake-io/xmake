@@ -678,8 +678,33 @@ function io.gsub(filepath, pattern, replace, opt)
         local ok, errors = io.writefile(filepath, data, opt)
         if not ok then return nil, 0, errors end
     end
+    return data, count
+end
 
-    -- ok
+-- replace text of the given file and return replaced data
+function io.replace(filepath, pattern, replace, opt)
+
+    -- init option
+    opt = opt or {}
+
+    -- read all data from file
+    local data, errors = io.readfile(filepath, opt)
+    if not data then return nil, 0, errors end
+
+    -- replace it
+    local count = 0
+    if type(data) == "string" then
+        data, count = data:replace(pattern, replace, opt)
+    else
+        return nil, 0, string.format("data is not string!")
+    end
+
+    -- replace ok?
+    if count ~= 0 then
+        -- write all data to file
+        local ok, errors = io.writefile(filepath, data, opt)
+        if not ok then return nil, 0, errors end
+    end
     return data, count
 end
 

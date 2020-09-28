@@ -137,6 +137,21 @@ function string:decode()
     return (self:gsub("%%(%x%x)", function (w) return string.char(tonumber(w, 16)) end))
 end
 
+-- replace text
+function string:replace(old, new, opt)
+    if opt and opt.plain then
+        local b, e = self:find(old, 1, true)
+        if b == nil then
+            return self, 0
+        else
+            local str, count = self:sub(e + 1):replace(old, new, opt)
+            return (self:sub(1, b - 1) .. new .. str), count + 1
+        end
+    else
+        return self:gsub(old, new)
+    end
+end
+
 -- try to format
 function string.tryformat(format, ...)
 
