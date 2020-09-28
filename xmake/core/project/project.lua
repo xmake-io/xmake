@@ -636,7 +636,7 @@ function project.apis()
         ,   "add_requires"
         ,   "add_repositories"
         }
-    ,   pathes =
+    ,   paths =
         {
             -- add_xxx
             "add_packagedirs"

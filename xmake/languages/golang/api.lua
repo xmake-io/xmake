@@ -43,7 +43,7 @@ function apis()
     ,   "toolchain.add_ldflags"
     ,   "toolchain.add_arflags"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.add_xxx
         "target.add_linkdirs"

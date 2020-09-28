@@ -280,8 +280,8 @@ function _instance:_api_add_dictionary(name, dict_or_key, value)
     end
 end
 
--- set the api pathes to the scope info
-function _instance:_api_set_pathes(name, ...)
+-- set the api paths to the scope info
+function _instance:_api_set_paths(name, ...)
 
     -- get the scope info
     local scope = self._INFO
@@ -301,27 +301,27 @@ function _instance:_api_set_pathes(name, ...)
     -- expand values
     values = table.join(unpack(values))
 
-    -- translate pathes
-    local pathes = interp:_api_translate_pathes(values, "set_" .. name, 5)
+    -- translate paths
+    local paths = interp:_api_translate_paths(values, "set_" .. name, 5)
 
     -- save values
-    scope[name] = self:_api_handle(pathes)
+    scope[name] = self:_api_handle(paths)
 
     -- save extra config
     if extra_config then
         scope["__extra_" .. name] = scope["__extra_" .. name] or {}
         local extrascope = scope["__extra_" .. name]
-        for _, value in ipairs(pathes) do
+        for _, value in ipairs(paths) do
             extrascope[value] = extra_config
         end
     end
 
     -- save api source info, e.g. call api() in sourcefile:linenumber
-    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
+    self:_api_save_sourceinfo_to_scope(scope, name, paths)
 end
 
--- add the api pathes to the scope info
-function _instance:_api_add_pathes(name, ...)
+-- add the api paths to the scope info
+function _instance:_api_add_paths(name, ...)
 
     -- get the scope info
     local scope = self._INFO
@@ -341,27 +341,27 @@ function _instance:_api_add_pathes(name, ...)
     -- expand values
     values = table.join(unpack(values))
 
-    -- translate pathes
-    local pathes = interp:_api_translate_pathes(values, "add_" .. name, 5)
+    -- translate paths
+    local paths = interp:_api_translate_paths(values, "add_" .. name, 5)
 
     -- save values
-    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes))
+    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), paths))
 
     -- save extra config
     if extra_config then
         scope["__extra_" .. name] = scope["__extra_" .. name] or {}
         local extrascope = scope["__extra_" .. name]
-        for _, value in ipairs(pathes) do
+        for _, value in ipairs(paths) do
             extrascope[value] = extra_config
         end
     end
 
     -- save api source info, e.g. call api() in sourcefile:linenumber
-    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
+    self:_api_save_sourceinfo_to_scope(scope, name, paths)
 end
 
--- remove the api pathes to the scope info
-function _instance:_api_del_pathes(name, ...)
+-- remove the api paths to the scope info
+function _instance:_api_del_paths(name, ...)
 
     -- get the scope info
     local scope = self._INFO
@@ -372,20 +372,20 @@ function _instance:_api_del_pathes(name, ...)
     -- expand values
     values = table.join(...)
 
-    -- translate pathes
-    local pathes = interp:_api_translate_pathes(values, "del_" .. name, 5)
+    -- translate paths
+    local paths = interp:_api_translate_paths(values, "del_" .. name, 5)
 
-    -- mark these pathes as deleted
-    local pathes_deleted = {}
-    for _, pathname in ipairs(pathes) do
-        table.insert(pathes_deleted, "__del_" .. pathname)
+    -- mark these paths as deleted
+    local paths_deleted = {}
+    for _, pathname in ipairs(paths) do
+        table.insert(paths_deleted, "__del_" .. pathname)
     end
 
     -- save values
-    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), pathes_deleted))
+    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), paths_deleted))
 
     -- save api source info, e.g. call api() in sourcefile:linenumber
-    self:_api_save_sourceinfo_to_scope(scope, name, pathes)
+    self:_api_save_sourceinfo_to_scope(scope, name, paths)
 end
 
 -- get the scope kind

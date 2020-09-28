@@ -367,7 +367,7 @@ function _instance:manifest_save()
     -- save variables
     local vars = {}
     local apis = language.apis()
-    for _, apiname in ipairs(table.join(apis.values, apis.pathes)) do
+    for _, apiname in ipairs(table.join(apis.values, apis.paths)) do
         if apiname:startswith("package.add_") or apiname:startswith("package.set_")  then
             local name = apiname:sub(13)
             local value = self:get(name)

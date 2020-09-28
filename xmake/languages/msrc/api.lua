@@ -31,7 +31,7 @@ function apis()
         -- toolchain.add_xxx
     ,   "toolchain.add_mrcflags"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.add_xxx
         "target.add_includedirs"

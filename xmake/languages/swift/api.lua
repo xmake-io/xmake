@@ -52,7 +52,7 @@ function apis()
     ,   "toolchain.add_frameworks"
     ,   "toolchain.add_rpathdirs"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.add_xxx
         "target.add_linkdirs"

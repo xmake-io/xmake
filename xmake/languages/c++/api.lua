@@ -215,7 +215,7 @@ function apis()
     ,   "package.add_frameworks"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
-    ,   "package.add_includedirs" --@note we need not uses pathes for package, see https://github.com/xmake-io/xmake/issues/717
+    ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
     ,   "package.add_frameworkdirs"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
@@ -234,7 +234,7 @@ function apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_frameworkdirs"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.set_xxx
         "target.set_headerdir"        -- TODO deprecated

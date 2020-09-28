@@ -54,8 +54,8 @@ function main(opt)
         table.insert(argv, "--reference")
         table.insert(argv, opt.reference)
     end
-    if opt.paths or opt.pathes then
-        table.join2(argv, opt.paths or opt.pathes)
+    if opt.paths then
+        table.join2(argv, opt.paths)
     end
 
     -- enter repository directory

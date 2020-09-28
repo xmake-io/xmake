@@ -69,7 +69,7 @@ function apis()
     ,   "toolchain.add_linkdirs"
     ,   "toolchain.add_includedirs"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.add_xxx
         "target.add_headers"    -- TODO deprecated

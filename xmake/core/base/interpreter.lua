@@ -353,8 +353,8 @@ function interpreter:_api_register_xxx_script(scope_kind, action, ...)
     self:_api_register_xxx_values(scope_kind, action, implementation, ...)
 end
 
--- translate api pathes
-function interpreter:_api_translate_pathes(values, apiname, infolevel)
+-- translate api paths
+function interpreter:_api_translate_paths(values, apiname, infolevel)
     local results = {}
     for _, p in ipairs(values) do
         if type(p) ~= "string" or #p == 0 then
@@ -1261,8 +1261,8 @@ function interpreter:api_register_add_dictionary(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "add", implementation, ...)
 end
 
--- register api for set_pathes
-function interpreter:api_register_set_pathes(scope_kind, ...)
+-- register api for set_paths
+function interpreter:api_register_set_paths(scope_kind, ...)
 
     -- check
     assert(self)
@@ -1279,31 +1279,31 @@ function interpreter:api_register_set_pathes(scope_kind, ...)
             extra_config = nil
         end
 
-        -- translate pathes
-        local pathes = self:_api_translate_pathes(values, "set_" .. name)
+        -- translate paths
+        local paths = self:_api_translate_paths(values, "set_" .. name)
 
         -- save values
-        scope[name] = pathes
+        scope[name] = paths
 
         -- save extra config
         if extra_config then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
             local extrascope = scope["__extra_" .. name]
-            for _, value in ipairs(pathes) do
+            for _, value in ipairs(paths) do
                 extrascope[value] = extra_config
             end
         end
 
         -- save api source info, e.g. call api() in sourcefile:linenumber
-        self:_save_sourceinfo_to_scope(scope, name, pathes)
+        self:_save_sourceinfo_to_scope(scope, name, paths)
     end
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
--- register api for del_pathes
-function interpreter:api_register_del_pathes(scope_kind, ...)
+-- register api for del_paths
+function interpreter:api_register_del_paths(scope_kind, ...)
 
     -- check
     assert(self)
@@ -1311,29 +1311,29 @@ function interpreter:api_register_del_pathes(scope_kind, ...)
     -- define implementation
     local implementation = function (self, scope, name, ...)
 
-        -- translate pathes
+        -- translate paths
         local values = {...}
-        local pathes = self:_api_translate_pathes(values, "del_" .. name)
+        local paths = self:_api_translate_paths(values, "del_" .. name)
 
-        -- mark these pathes as deleted
-        local pathes_deleted = {}
-        for _, pathname in ipairs(pathes) do
-            table.insert(pathes_deleted, "__del_" .. pathname)
+        -- mark these paths as deleted
+        local paths_deleted = {}
+        for _, pathname in ipairs(paths) do
+            table.insert(paths_deleted, "__del_" .. pathname)
         end
 
         -- save values
-        scope[name] = table.join2(scope[name] or {}, pathes_deleted)
+        scope[name] = table.join2(scope[name] or {}, paths_deleted)
 
         -- save api source info, e.g. call api() in sourcefile:linenumber
-        self:_save_sourceinfo_to_scope(scope, name, pathes)
+        self:_save_sourceinfo_to_scope(scope, name, paths)
     end
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "del", implementation, ...)
 end
 
--- register api for add_pathes
-function interpreter:api_register_add_pathes(scope_kind, ...)
+-- register api for add_paths
+function interpreter:api_register_add_paths(scope_kind, ...)
 
     -- check
     assert(self)
@@ -1350,23 +1350,23 @@ function interpreter:api_register_add_pathes(scope_kind, ...)
             extra_config = nil
         end
 
-        -- translate pathes
-        local pathes = self:_api_translate_pathes(values, "add_" .. name)
+        -- translate paths
+        local paths = self:_api_translate_paths(values, "add_" .. name)
 
         -- save values
-        scope[name] = table.join2(scope[name] or {}, pathes)
+        scope[name] = table.join2(scope[name] or {}, paths)
 
         -- save extra config
         if extra_config then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
             local extrascope = scope["__extra_" .. name]
-            for _, value in ipairs(pathes) do
+            for _, value in ipairs(paths) do
                 extrascope[value] = extra_config
             end
         end
 
         -- save api source info, e.g. call api() in sourcefile:linenumber
-        self:_save_sourceinfo_to_scope(scope, name, pathes)
+        self:_save_sourceinfo_to_scope(scope, name, paths)
     end
 
     -- register implementation
@@ -1397,7 +1397,7 @@ end
 --          -- is_xxx
 --      ,   {"is_os", function (interp, ...) end}
 --      }
---  ,   pathes =
+--  ,   paths =
 --      {
 --          -- target.add_xxx
 --          "target.add_linkdirs"
@@ -1524,27 +1524,27 @@ function interpreter:api_builtin_includes(...)
     local scopes = self._PRIVATE._SCOPES
     assert(scopes)
 
-    -- get all subpathes
-    local subpathes = table.join(...)
+    -- get all subpaths
+    local subpaths = table.join(...)
 
     -- find all files
-    local subpathes_matched = {}
-    for _, subpath in ipairs(subpathes) do
+    local subpaths_matched = {}
+    for _, subpath in ipairs(subpaths) do
         -- find the given files from the project directory
         local files = os.match(subpath, not subpath:endswith(".lua"))
         if files and #files > 0 then
-            table.join2(subpathes_matched, files)
+            table.join2(subpaths_matched, files)
         elseif not path.is_absolute(subpath) then
             -- attempt to find files from programdir/includes/*.lua
             files = os.files(path.join(os.programdir(), "includes", subpath))
             if files and #files > 0 then
-                table.join2(subpathes_matched, files)
+                table.join2(subpaths_matched, files)
             end
         end
     end
 
     -- includes all files
-    for _, subpath in ipairs(subpathes_matched) do
+    for _, subpath in ipairs(subpaths_matched) do
         if subpath and type(subpath) == "string" then
 
             -- the file path

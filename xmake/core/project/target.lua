@@ -158,7 +158,7 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_" .. filetype))
 
-    -- get the source pathes and destinate pathes
+    -- get the source paths and destinate paths
     local srcfiles = {}
     local dstfiles = {}
     local fileinfos = {}
@@ -171,15 +171,15 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
         end
 
         -- remove '(' and ')'
-        local srcpathes = copiedfile:gsub("[%(%)]", "")
-        if srcpathes then
+        local srcpaths = copiedfile:gsub("[%(%)]", "")
+        if srcpaths then
 
-            -- get the source pathes
-            srcpathes = os.match(srcpathes)
-            if srcpathes and #srcpathes > 0 then
+            -- get the source paths
+            srcpaths = os.match(srcpaths)
+            if srcpaths and #srcpaths > 0 then
 
                 -- add the source copied files
-                table.join2(srcfiles, srcpathes)
+                table.join2(srcfiles, srcpaths)
 
                 -- the copied directory exists?
                 if outputdir then
@@ -191,7 +191,7 @@ function _instance:_copiedfiles(filetype, outputdir, pathfilter)
                     local prefixdir = fileinfo.prefixdir
 
                     -- add the destinate copied files
-                    for _, srcpath in ipairs(srcpathes) do
+                    for _, srcpath in ipairs(srcpaths) do
 
                         -- get the destinate directory
                         local dstdir = outputdir
@@ -1260,7 +1260,7 @@ function _instance:headerfiles(outputdir, only_deprecated)
     -- get the extra information
     local extrainfo = table.wrap(self:get("__extra_headerfiles"))
 
-    -- get the source pathes and destinate pathes
+    -- get the source paths and destinate paths
     local srcheaders = {}
     local dstheaders = {}
     for _, header in ipairs(table.wrap(headers)) do
@@ -1272,15 +1272,15 @@ function _instance:headerfiles(outputdir, only_deprecated)
         end
 
         -- remove '(' and ')'
-        local srcpathes = header:gsub("[%(%)]", "")
-        if srcpathes then
+        local srcpaths = header:gsub("[%(%)]", "")
+        if srcpaths then
 
-            -- get the source pathes
-            srcpathes = os.match(srcpathes)
-            if srcpathes then
+            -- get the source paths
+            srcpaths = os.match(srcpaths)
+            if srcpaths then
 
                 -- add the source headers
-                table.join2(srcheaders, srcpathes)
+                table.join2(srcheaders, srcpaths)
 
                 -- get the destinate directories if the install directory exists
                 if headerdir then
@@ -1289,7 +1289,7 @@ function _instance:headerfiles(outputdir, only_deprecated)
                     local prefixdir = (extrainfo[header] or {}).prefixdir
 
                     -- add the destinate headers
-                    for _, srcpath in ipairs(srcpathes) do
+                    for _, srcpath in ipairs(srcpaths) do
 
                         -- get the destinate directory
                         local dstdir = headerdir
@@ -1890,7 +1890,7 @@ function target.apis()
         ,   "target.add_values"
         ,   "target.add_runenvs"
         }
-    ,   pathes =
+    ,   paths =
         {
             -- target.set_xxx
             "target.set_targetdir"

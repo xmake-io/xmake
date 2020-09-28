@@ -56,7 +56,7 @@ function main(name)
     if packages then
         cprint("    ${color.dump.string}packages${clear}: %s", table.concat(table.wrap(packages), ", "))
     end
-    for _, apiname in ipairs(table.join(language.apis().values, language.apis().pathes)) do
+    for _, apiname in ipairs(table.join(language.apis().values, language.apis().paths)) do
         if apiname:startswith("target.") then
             local valuename = apiname:split('.add_', {plain = true})[2]
             if valuename then

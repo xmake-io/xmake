@@ -81,7 +81,7 @@ function apis()
     ,   "toolchain.add_includedirs"
     ,   "toolchain.add_frameworkdirs"
     }
-    _g.pathes =
+    _g.paths =
     {
         -- target.set_xxx
         "target.set_headerdir"      -- TODO deprecated
