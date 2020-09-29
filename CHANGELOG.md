@@ -11,6 +11,7 @@
 ### Change
 
 * [#958](https://github.com/xmake-io/xmake/issues/958): Improve mingw platform to support llvm-mingw toolchain
+* Improve `add_requires("zlib~xxx")` to support for installing multi-packages at same time
 
 ### Bugs fixed
 
@@ -839,6 +840,7 @@
 ### 改进
 
 * [#958](https://github.com/xmake-io/xmake/issues/958): 改进mingw平台，增加对 llvm-mingw 工具链的支持，以及 arm64/arm 架构的支持
+* 增加 `add_requires("zlib~xxx")` 模式使得能够支持同时安装带有多种配置的同一个包，作为独立包存在
 
 ### Bugs修复
 

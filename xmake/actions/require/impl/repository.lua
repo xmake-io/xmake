@@ -54,6 +54,11 @@ end
 -- get package directory from repositories
 function packagedir(packagename, reponame)
 
+    -- strip trailng ~tag, e.g. zlib~debug
+    if packagename:find('~', 1, true) then
+        packagename = packagename:gsub("~.+$", "")
+    end
+
     -- get it from cache it
     local packagedirs = _g._PACKAGEDIRS or {}
     local foundir = packagedirs[packagename]
@@ -99,8 +104,6 @@ function searchdirs(name)
             end
         end
     end
-
-    -- ok?
     return packageinfos
 end
 

@@ -38,15 +38,34 @@ import("repository")
 --
 -- parse require string
 --
--- add_requires("zlib")
--- add_requires("tbox >=1.5.1", "zlib >=1.2.11")
--- add_requires("zlib master")
--- add_requires("xmake-repo@tbox >=1.5.1")
--- add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
--- add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
--- add_requires("xmake::xmake-repo@tbox >=1.5.1")
--- add_requires("conan::OpenSSL/1.0.2n@conan/stable")
--- add_requires("brew::pcre2/libpcre2-8 10.x", {alias = "pcre2"})
+-- basic
+-- - add_requires("zlib")
+--
+-- semver
+-- - add_requires("tbox >=1.5.1", "zlib >=1.2.11")
+--
+-- git branch/tag
+-- - add_requires("zlib master")
+--
+-- with the given repository
+-- - add_requires("xmake-repo@tbox >=1.5.1")
+--
+-- with the given configs
+-- - add_requires("aaa_bbb_ccc >=1.5.1 <1.6.0", {optional = true, alias = "mypkg", debug = true})
+-- - add_requires("tbox", {config = {coroutine = true, abc = "xxx"}})
+--
+-- with namespace and the 3rd package manager
+-- - add_requires("xmake::xmake-repo@tbox >=1.5.1")
+-- - add_requires("vcpkg::ffmpeg")
+-- - add_requires("conan::OpenSSL/1.0.2n@conan/stable")
+-- - add_requires("conan::openssl/1.1.1g") -- new
+-- - add_requires("brew::pcre2/libpcre2-8 10.x", {alias = "pcre2"})
+--
+-- clone as a standalone package with the different configs
+-- we can install and use these three packages at the same time.
+-- - add_requires("zlib")
+-- - add_requires("zlib~debug", {debug = true})
+-- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
 -- {system = nil/true/false}:
 --   nil: get local or system packages
@@ -169,11 +188,8 @@ end
 
 -- load package package from repositories
 function _load_package_from_repository(packagename, reponame)
-
-    -- get package directory from the given package name
     local packagedir, repo = repository.packagedir(packagename, reponame)
     if packagedir then
-        -- load it
         return core_package.load_from_repository(packagename, repo, packagedir)
     end
 end
@@ -359,8 +375,6 @@ function _load_package(packagename, requireinfo, opt)
     -- save this package package to cache
     packages[packagename] = package
     _g._PACKAGES = packages
-
-    -- ok
     return package
 end
 
@@ -710,19 +724,11 @@ end
 
 -- load requires
 function load_requires(requires, requires_extra, parentinfo)
-
-    -- parse requires
     local requireinfos = {}
     for _, require_str in ipairs(requires) do
-
-        -- parse require info
         local packagename, requireinfo = _parse_require(require_str, requires_extra, parentinfo)
-
-        -- save this required package
         table.insert(requireinfos, {name = packagename, info = requireinfo})
     end
-
-    -- ok
     return requireinfos
 end
 

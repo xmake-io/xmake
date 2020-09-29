@@ -1279,18 +1279,21 @@ function package.load_from_project(packagename, project)
         return nil, errors
     end
 
+    -- strip trailng ~tag, e.g. zlib~debug
+    local realname = packagename
+    if realname:find('~', 1, true) then
+        realname = realname:gsub("~.+$", "")
+    end
+
     -- not found?
-    if not packages[packagename] then
+    local packageinfo = packages[realname]
+    if not packageinfo then
         return
     end
 
     -- new an instance
-    local instance = _instance.new(packagename, packages[packagename])
-
-    -- save instance to the cache
+    local instance = _instance.new(packagename, packageinfo)
     package._PACKAGES[packagename] = instance
-
-    -- ok
     return instance
 end
 
@@ -1334,8 +1337,9 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- get the package info
     local packageinfo = nil
-    for name, info in pairs(results) do
-        packagename = name -- use the real package name in package() definition
+    for _, info in pairs(results) do
+        -- @note we cannot use the name of package(), because we need support `xxx~tag` for add_requires("zlib~xxx")
+        -- so we use `xxx~tag` as the real package
         packageinfo = info
         break
     end
@@ -1353,8 +1357,6 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
 
     -- save instance to the cache
     package._PACKAGES[packagename] = instance
-
-    -- ok
     return instance
 end
 
