@@ -22,47 +22,7 @@
 import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
-
--- install files
-function _install_files(target)
-
-    local srcfiles, dstfiles = target:installfiles()
-    if srcfiles and dstfiles then
-        local i = 1
-        for _, srcfile in ipairs(srcfiles) do
-            local dstfile = dstfiles[i]
-            if dstfile then
-                os.vcp(srcfile, dstfile)
-            end
-            i = i + 1
-        end
-    end
-end
-
--- do install target
-function _do_install_target(target)
-
-    -- get install directory
-    local installdir = target:installdir()
-    if not installdir then
-        return
-    end
-
-    -- trace
-    print("installing to %s ..", installdir)
-
-    -- call script
-    if not target:isphony() then
-        local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
-        local script = import("install." .. install_style, {anonymous = true})["install_" .. target:targetkind()]
-        if script then
-            script(target)
-        end
-    end
-
-    -- install other files
-    _install_files(target)
-end
+import("action.install", {alias = "_do_install_target"})
 
 -- on install target
 function _on_install_target(target)

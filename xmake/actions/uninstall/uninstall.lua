@@ -22,39 +22,7 @@
 import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
-
--- uninstall files
-function _uninstall_files(target)
-    local _, dstfiles = target:installfiles()
-    for _, dstfile in ipairs(dstfiles) do
-        os.vrm(dstfile)
-    end
-end
-
--- do uninstall target
-function _do_uninstall_target(target)
-
-    -- get install directory
-    local installdir = target:installdir()
-    if not installdir then
-        return
-    end
-
-    -- trace
-    print("uninstalling from %s ..", installdir)
-
-    -- call script
-    if not target:isphony() then
-        local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
-        local script = import("uninstall." .. install_style, {anonymous = true})["uninstall_" .. target:targetkind()]
-        if script then
-            script(target)
-        end
-    end
-
-    -- uninstall the other files
-    _uninstall_files(target)
-end
+import("action.uninstall", {alias = "_do_uninstall_target"})
 
 -- on uninstall target
 function _on_uninstall_target(target)
