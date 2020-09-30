@@ -55,6 +55,6 @@ function install_shared(target)
 end
 
 -- install static library
-function install_shared(target)
+function install_static(target)
     _install_library(target)
 end
