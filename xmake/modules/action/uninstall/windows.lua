@@ -19,8 +19,8 @@
 --
 
 -- uninstall headers
-function _uninstall_headers(target)
-    local includedir = path.join(target:installdir(), "include")
+function _uninstall_headers(target, opt)
+    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     local _, dstheaders = target:headerfiles(includedir)
     for _, dstheader in ipairs(dstheaders) do
         os.vrm(dstheader)
@@ -52,10 +52,10 @@ function _uninstall_shared_for_packages(target, outputdir)
 end
 
 -- uninstall binary
-function uninstall_binary(target)
+function uninstall_binary(target, opt)
 
     -- remove the target file
-    local binarydir = path.join(target:installdir(), "bin")
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
 
     -- remove the dependent shared/windows (*.dll) target
@@ -71,32 +71,32 @@ function uninstall_binary(target)
 end
 
 -- uninstall shared library
-function uninstall_shared(target)
+function uninstall_shared(target, opt)
 
     -- remove the target file
-    local binarydir = path.join(target:installdir(), "bin")
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.vrm(path.join(librarydir, path.basename(targetfile) .. ".lib"))
 
     -- remove headers from the include directory
-    _uninstall_headers(target)
+    _uninstall_headers(target, opt)
 
     -- uninstall shared libraries for packages
     _uninstall_shared_for_packages(target, binarydir)
 end
 
 -- uninstall static library
-function uninstall_static(target)
+function uninstall_static(target, opt)
 
     -- remove the target file
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.vrm(path.join(librarydir, path.filename(target:targetfile())))
 
     -- remove headers from the include directory
-    _uninstall_headers(target)
+    _uninstall_headers(target, opt)
 end

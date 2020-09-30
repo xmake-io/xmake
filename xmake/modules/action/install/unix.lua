@@ -19,15 +19,15 @@
 --
 
 -- install library
-function _install_library(target)
+function _install_library(target, opt)
 
     -- install libraries
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
 
     -- install headers
-    local includedir = path.join(target:installdir(), "include")
+    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     os.mkdir(includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir)
     if srcheaders and dstheaders then
@@ -43,18 +43,18 @@ function _install_library(target)
 end
 
 -- install binary
-function install_binary(target)
-    local binarydir = path.join(target:installdir(), "bin")
+function install_binary(target, opt)
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
 end
 
 -- install shared library
-function install_shared(target)
-    _install_library(target)
+function install_shared(target, opt)
+    _install_library(target, opt)
 end
 
 -- install static library
-function install_static(target)
-    _install_library(target)
+function install_static(target, opt)
+    _install_library(target, opt)
 end

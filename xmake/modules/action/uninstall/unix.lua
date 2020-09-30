@@ -19,14 +19,14 @@
 --
 
 -- uninstall library
-function _uninstall_library(target)
+function _uninstall_library(target, opt)
 
     -- remove the target file
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.vrm(path.join(librarydir, path.filename(target:targetfile())))
 
     -- remove headers from the include directory
-    local includedir = path.join(target:installdir(), "include")
+    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     local _, dstheaders = target:headerfiles(includedir)
     for _, dstheader in ipairs(dstheaders) do
         os.vrm(dstheader)
@@ -34,17 +34,17 @@ function _uninstall_library(target)
 end
 
 -- uninstall binary
-function uninstall_binary(target)
-    local binarydir = path.join(target:installdir(), "bin")
+function uninstall_binary(target, opt)
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
 end
 
 -- uninstall shared library
-function uninstall_shared(target)
-    _uninstall_library(target)
+function uninstall_shared(target, opt)
+    _uninstall_library(target, opt)
 end
 
 -- uninstall static library
-function uninstall_static(target)
-    _uninstall_library(target)
+function uninstall_static(target, opt)
+    _uninstall_library(target, opt)
 end

@@ -27,7 +27,7 @@ function _uninstall_files(target)
 end
 
 -- the builtin uninstall main entry
-function main(target)
+function main(target, opt)
 
     -- get install directory
     local installdir = target:installdir()
@@ -43,7 +43,7 @@ function main(target)
         local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
         local script = import(install_style, {anonymous = true})["uninstall_" .. target:targetkind()]
         if script then
-            script(target)
+            script(target, opt)
         end
     end
 

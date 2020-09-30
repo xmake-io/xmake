@@ -30,7 +30,8 @@ import("private.utils.progress")
 import("lib.detect.cache", {alias = "detectcache"})
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
-import("action")
+import("actions.install", {alias = "action_install"})
+import("actions.download", {alias = "action_download"})
 import("devel.git")
 import("net.fasturl")
 import("repository")
@@ -628,14 +629,14 @@ function _install_packages(packages_install, packages_download)
                 local downloaded = true
                 if packages_download[tostring(package)] then
                     packages_downloading[index] = package
-                    downloaded = action.download(package)
+                    downloaded = action_download(package)
                     packages_downloading[index] = nil
                 end
 
                 -- install this package
                 packages_installing[index] = package
                 if downloaded then
-                    action.install(package)
+                    action_install(package)
                 end
                 packages_installing[index] = nil
 

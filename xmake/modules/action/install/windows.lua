@@ -22,8 +22,8 @@
 import("lib.detect.find_file")
 
 -- install headers
-function _install_headers(target)
-    local includedir = path.join(target:installdir(), "include")
+function _install_headers(target, opt)
+    local includedir = path.join(target:installdir(), opt and opt.includedir or "include")
     os.mkdir(includedir)
     local srcheaders, dstheaders = target:headerfiles(includedir)
     if srcheaders and dstheaders then
@@ -66,10 +66,10 @@ function _install_shared_for_packages(target, outputdir)
 end
 
 -- install binary
-function install_binary(target)
+function install_binary(target, opt)
 
     -- install binary
-    local binarydir = path.join(target:installdir(), "bin")
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
 
@@ -89,17 +89,17 @@ function install_binary(target)
 end
 
 -- install shared library
-function install_shared(target)
+function install_shared(target, opt)
 
     -- install dll library to the binary directory
-    local binarydir = path.join(target:installdir(), "bin")
+    local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
 
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
     if os.isfile(targetfile_lib) then
         os.mkdir(librarydir)
@@ -110,17 +110,17 @@ function install_shared(target)
     _install_shared_for_packages(target, binarydir)
 
     -- install headers
-    _install_headers(target)
+    _install_headers(target, opt)
 end
 
 -- install static library
-function install_static(target)
+function install_static(target, opt)
 
     -- install library
-    local librarydir = path.join(target:installdir(), "lib")
+    local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
 
     -- install headers
-    _install_headers(target)
+    _install_headers(target, opt)
 end
