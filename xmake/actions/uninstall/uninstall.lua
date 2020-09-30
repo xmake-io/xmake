@@ -22,7 +22,7 @@
 import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
-import("action.uninstall", {alias = "_do_uninstall_target"})
+import("target.action.uninstall", {alias = "_do_uninstall_target"})
 
 -- on uninstall target
 function _on_uninstall_target(target)

@@ -28,7 +28,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
 import("private.action.clean.remove_files")
-import("action.clean", {alias = "_do_clean_target"})
+import("target.action.clean", {alias = "_do_clean_target"})
 
 -- on clean target
 function _on_clean_target(target)

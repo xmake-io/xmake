@@ -22,7 +22,7 @@
 import("core.base.task")
 import("core.project.rule")
 import("core.project.project")
-import("action.install", {alias = "_do_install_target"})
+import("target.action.install", {alias = "_do_install_target"})
 
 -- on install target
 function _on_install_target(target)
