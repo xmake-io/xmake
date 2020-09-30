@@ -28,66 +28,10 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.platform.environment")
 import("private.action.clean.remove_files")
-
--- do clean target
-function _do_clean_target(target)
-
-    -- is phony?
-    if target:isphony() then
-        return
-    end
-
-    -- remove the target file
-    remove_files(target:targetfile())
-
-    -- remove the symbol file
-    remove_files(target:symbolfile())
-
-    -- remove the c/c++ precompiled header file
-    remove_files(target:pcoutputfile("c"))
-    remove_files(target:pcoutputfile("cxx"))
-
-    -- TODO remove the header files (deprecated)
-    local _, dstheaders = target:headers()
-    remove_files(dstheaders)
-
-    -- remove the clean files
-    remove_files(target:get("cleanfiles"))
-
-    -- remove all?
-    if option.get("all") then
-
-        -- TODO remove the config.h file (deprecated)
-        remove_files(target:configheader())
-
-        -- remove all dependent files for each platform
-        remove_files(target:dependir({root = true}))
-
-        -- remove all object files for each platform
-        remove_files(target:objectdir({root = true}))
-
-        -- remove all autogen files for each platform
-        remove_files(target:autogendir({root = true}))
-    else
-
-        -- remove dependent files for the current platform
-        remove_files(target:dependir())
-
-        -- remove object files for the current platform
-        remove_files(target:objectdir())
-
-        -- remove autogen files for the current platform
-        remove_files(target:autogendir())
-    end
-end
+import("action.clean", {alias = "_do_clean_target"})
 
 -- on clean target
 function _on_clean_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return
-    end
 
     -- build target with rules
     local done = false
@@ -107,6 +51,11 @@ end
 -- clean the given target files
 function _clean_target(target)
 
+    -- has been disabled?
+    if target:get("enabled") == false then
+        return
+    end
+
     -- enter the environments of the target packages
     local oldenvs = {}
     for name, values in pairs(target:pkgenvs()) do
@@ -119,13 +68,6 @@ function _clean_target(target)
     {
         target:script("clean_before")
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- clean rules
             for _, r in ipairs(target:orderules()) do
                 local before_clean = r:script("clean_before")
                 if before_clean then
@@ -135,13 +77,6 @@ function _clean_target(target)
         end
     ,   target:script("clean", _on_clean_target)
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- clean rules
             for _, r in ipairs(target:orderules()) do
                 local after_clean = r:script("clean_after")
                 if after_clean then
@@ -199,10 +134,8 @@ function _clean(targetname)
         end
     end
 
-    -- remove all
+    -- remove the configure directory if remove all
     if option.get("all") then
-
-        -- remove the configure directory
         remove_files(config.directory())
     end
 end
