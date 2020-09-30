@@ -72,9 +72,10 @@ jobs:
         run: |
           # build installer
           (New-Item ./winenv/bin -ItemType Directory).FullName
-          Invoke-WebRequest "https://github.com/xmake-mirror/gnuwin32-unzip/releases/download/5.51.1/unzip-5.51-1-bin.zip" -UseBasicParsing -OutFile .\unzip.zip
-          Expand-Archive ./unzip.zip -DestinationPath ./unzip
-          Copy-Item ./unzip/bin/unzip.exe ./winenv/bin
+          Invoke-WebRequest "https://github.com/xmake-mirror/7zip/releases/download/19.00/7z19.00-${{ matrix.arch }}.zip" -UseBasicParsing -OutFile .\7zip.zip
+          Expand-Archive ./7zip.zip -DestinationPath ./7zip
+          Copy-Item ./7zip/bin/7z.exe ./winenv/bin
+          Copy-Item ./7zip/bin/7z.dll ./winenv/bin
           Invoke-WebRequest "https://github.com/xmake-io/xmake-win64env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
           Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win64env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
           Copy-Item ./curl.exe ./winenv/bin
