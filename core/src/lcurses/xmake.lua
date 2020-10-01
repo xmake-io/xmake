@@ -22,6 +22,7 @@ target("lcurses")
     -- add options
     if is_plat("windows") then
         add_options("pdcurses")
+        set_languages("c89")
     else
         add_options("curses")
     end

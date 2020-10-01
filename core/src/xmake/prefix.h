@@ -25,6 +25,13 @@
  * includes
  */
 #include "prefix/prefix.h"
+#include "luaconf.h"
+#if defined(TB_CONFIG_OS_WINDOWS) && defined(__cplusplus)
+#   undef LUA_API
+#   undef LUALIB_API
+#   define LUA_API extern "C"
+#   define LUALIB_API	LUA_API
+#endif
 #include "luajit.h"
 #include "lualib.h"
 #include "lauxlib.h"

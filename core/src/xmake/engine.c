@@ -221,7 +221,9 @@ tb_int_t xm_semver_select(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
+__tb_extern_c_enter__
 tb_int_t xm_curses_register(lua_State* lua);
+__tb_extern_c_leave__
 #endif
 
 // open cjson
