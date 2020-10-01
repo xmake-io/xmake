@@ -2,7 +2,7 @@
 %define     tbox_revision        f4970bcd0fcc05b09742452a4b3b3d2d1055569d
 %define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
-%define     luajit_revision      53c72a3350f3ad96c1d93638d61ec78c91b7f4f1
+%define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
 %define     _binaries_in_noarch_packages_terminate_build   0
 %undefine   _disable_source_fetch
 
