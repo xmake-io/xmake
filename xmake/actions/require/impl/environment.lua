@@ -37,9 +37,9 @@ function enter()
     -- set search paths of toolchains
     environment.enter("toolchains")
 
-    -- unzip is necessary
-    if not find_tool("unzip") then
-        raise("unzip not found! we need install it first")
+    -- unzip or 7zip is necessary
+    if not find_tool("unzip") and not find_tool("7z") then
+        raise("unzip or 7zip not found! we need install it first")
     end
 
     -- enter the environments of git and 7z
