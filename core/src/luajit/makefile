@@ -125,7 +125,13 @@ luajit_CXFLAGS 			+= -Wno-error=unused-function
 ifeq ($(BUILD_ARCH),arm)
 luajit_CXFLAGS 			+= -DLUAJIT_USE_SYSMALLOC
 endif
-										
+
+# fix call math.sin/log crash for fedora/i386/lj_vm.S with `LDFLAGS = -specs=/usr/lib/rpm/redhat/redhat-hardened-ld` in xmake.spec/%set_build_flags
+ifeq ($(BUILD_ARCH),i386)
+luajit_ASFLAGS 			+= -fPIC
+luajit_CXFLAGS 			+= -fPIC
+endif
+
 # suffix
 include $(PRO_DIR)/suffix.mak
 
