@@ -104,6 +104,9 @@ function _find_package_from_repo(name, opt)
         end
     end
     if opt.plat == "windows" then
+        for _, file in ipairs(os.files(path.join(installdir, "lib", "*.dll"))) do
+            table.insert(libfiles, file)
+        end
         for _, file in ipairs(os.files(path.join(installdir, "bin", "*.dll"))) do
             table.insert(libfiles, file)
         end
