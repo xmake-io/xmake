@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("private.tools.cl.parse_deps", {alias = "parse_deps_cl"})
 import("private.tools.cl.parse_deps_json", {alias = "parse_deps_cl_json"})
 import("private.tools.rc.parse_deps", {alias = "parse_deps_rc"})
@@ -130,4 +131,57 @@ function is_changed(dependinfo, opt)
             end
         end
     end
+end
+
+-- on changed for the dependent files and values
+--
+-- e.g.
+--
+-- depend.on_changed(function (dependinfo)
+--     -- do some thing
+--     -- ..
+--
+--     -- maybe need update dependent files
+--     dependinfo.files = {""}
+--
+--     -- return new dependinfo (optional)
+--     return {files = {}, ..}
+--
+-- end, {dependfile = "/xx/xx",
+--       values = {compinst:program(), compflags},
+--       files = {sourcefile, ...}})
+--
+function on_changed(callback, opt)
+
+    -- get files
+    opt = opt or {}
+    assert(opt.files, "depend.on_changed(): please set files list!")
+
+    -- get dependfile
+    local dependfile = opt.dependfile
+    if not dependfile then
+        dependfile = os.tmpfile(table.concat(table.wrap(opt.files), ""))
+    end
+
+    -- load dependent info
+    local dependinfo = option.get("rebuild") and {} or (load(dependfile) or {})
+
+    -- need build this object?
+    -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
+    -- @see https://github.com/xmake-io/xmake/issues/748
+    if not is_changed(dependinfo, {lastmtime = opt.lastmtime or os.mtime(dependfile), values = opt.values}) then
+        return
+    end
+
+    -- do callback if changed and maybe files and values will be updated
+    dependinfo = callback() or {}
+
+    -- update files and values to the dependent file
+    dependinfo.files = dependinfo.files or {}
+    table.join2(dependinfo.files, opt.files)
+    if opt.values then
+        dependinfo.values = dependinfo.values or {}
+        table.join2(dependinfo.values, opt.values)
+    end
+    save(dependinfo, dependfile)
 end
