@@ -55,7 +55,7 @@ ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
 
 %build
-%set_build_flags
+%?set_build_flags
 %make_build
 
 %install
