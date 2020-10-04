@@ -62,8 +62,8 @@ target("luajit")
 
     -- fix call math.sin/log crash for fedora/i386/lj_vm.S with `LDFLAGS = -specs=/usr/lib/rpm/redhat/redhat-hardened-ld` in xmake.spec/%set_build_flags
     if is_plat("linux") and is_arch("i386") then
-        add_asflags("-fPIC")
-        add_ldflags("-fPIC")
+        add_asflags("-fPIE")
+        add_ldflags("-fPIE")
     end
 
     -- enable lua5.2 compat, @see http://luajit.org/extensions.html

@@ -128,8 +128,8 @@ endif
 
 # fix call math.sin/log crash for fedora/i386/lj_vm.S with `LDFLAGS = -specs=/usr/lib/rpm/redhat/redhat-hardened-ld` in xmake.spec/%set_build_flags
 ifeq ($(BUILD_ARCH),i386)
-luajit_ASFLAGS 			+= -fPIC
-luajit_CXFLAGS 			+= -fPIC
+luajit_ASFLAGS 			+= -fPIE
+luajit_CXFLAGS 			+= -fPIE
 endif
 
 # suffix
