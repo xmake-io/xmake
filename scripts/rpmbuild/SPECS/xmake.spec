@@ -55,7 +55,12 @@ ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
 
 %build
-%?set_build_flags
+%if 0%{?suse_version} && 0%{?suse_version} < 1550
+export CFLAGS="%{optflags}"
+export CXXFLAGS="%{optflags}"
+%else
+%set_build_flags
+%endif
 %make_build
 
 %install
