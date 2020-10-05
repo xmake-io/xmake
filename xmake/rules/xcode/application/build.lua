@@ -33,65 +33,59 @@ function main (target, opt)
     local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
     local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
-    -- need re-compile it?
-    local dependfile = target:dependfile(bundledir)
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-        return
-    end
+    -- do build if changed
+    depend.on_changed(function ()
 
-    -- trace progress info
-    progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+        -- trace progress info
+        progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
-    -- copy target file
-    local binarydir = contentsdir
-    if is_plat("macosx") then
-        binarydir = path.join(contentsdir, "MacOS")
-    end
-    os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
-
-    -- copy dependent dynamic libraries, TODO copy frameworks
-    for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" then
-            os.vcp(dep:targetfile(), binarydir)
+        -- copy target file
+        local binarydir = contentsdir
+        if is_plat("macosx") then
+            binarydir = path.join(contentsdir, "MacOS")
         end
-    end
+        os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
 
-    -- copy PkgInfo to the contents directory
-    os.vcp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
-
-    -- copy resource files to the resources directory
-    local srcfiles, dstfiles = target:installfiles(resourcesdir)
-    if srcfiles and dstfiles then
-        local i = 1
-        for _, srcfile in ipairs(srcfiles) do
-            local dstfile = dstfiles[i]
-            if dstfile then
-                os.vcp(srcfile, dstfile)
-            end
-            i = i + 1
-        end
-    end
-
-    -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
-    local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
-    local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")
-    if mobile_provision and is_plat("iphoneos") then
-        os.tryrm(mobile_provision_embedded)
-        local provisions = codesign.mobile_provisions()
-        if provisions then
-            local mobile_provision_data = provisions[mobile_provision]
-            if mobile_provision_data then
-                io.writefile(mobile_provision_embedded, mobile_provision_data)
+        -- copy dependent dynamic libraries, TODO copy frameworks
+        for _, dep in ipairs(target:orderdeps()) do
+            if dep:targetkind() == "shared" then
+                os.vcp(dep:targetfile(), binarydir)
             end
         end
-    end
 
-    -- do codesign
-    codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision, {deep = true})
+        -- copy PkgInfo to the contents directory
+        os.vcp(path.join(os.programdir(), "scripts", "PkgInfo"), resourcesdir)
 
-    -- update files and values to the dependent file
-    dependinfo.files = {bundledir, target:targetfile()}
-    depend.save(dependinfo, dependfile)
+        -- copy resource files to the resources directory
+        local srcfiles, dstfiles = target:installfiles(resourcesdir)
+        if srcfiles and dstfiles then
+            local i = 1
+            for _, srcfile in ipairs(srcfiles) do
+                local dstfile = dstfiles[i]
+                if dstfile then
+                    os.vcp(srcfile, dstfile)
+                end
+                i = i + 1
+            end
+        end
+
+        -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
+        local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
+        local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")
+        if mobile_provision and is_plat("iphoneos") then
+            os.tryrm(mobile_provision_embedded)
+            local provisions = codesign.mobile_provisions()
+            if provisions then
+                local mobile_provision_data = provisions[mobile_provision]
+                if mobile_provision_data then
+                    io.writefile(mobile_provision_embedded, mobile_provision_data)
+                end
+            end
+        end
+
+        -- do codesign
+        codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"), mobile_provision, {deep = true})
+
+    end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
 end
 
