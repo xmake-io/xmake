@@ -104,41 +104,27 @@ function _install_target(target)
     os.cd(oldir)
 end
 
--- install the given target and deps
-function _install_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return
+-- install the given targets
+function _install_targets(targets)
+    for _, target in ipairs(targets) do
+        _install_target(target)
     end
-
-    -- install for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _install_target_and_deps(project.target(depname))
-    end
-
-    -- install target
-    _install_target(target)
-
-    -- finished
-    _g.finished[target:name()] = true
 end
 
 -- install targets
 function main(targetname)
 
-    -- init finished states
-    _g.finished = {}
-
     -- install the given target?
     if targetname and not targetname:startswith("__") then
-        _install_target_and_deps(project.target(targetname))
+        local target = project.target(targetname)
+        _install_targets(target:orderdeps())
+        _install_target(target)
     else
         -- install default or all targets
-        for _, target in pairs(project.targets()) do
+        for _, target in ipairs(project.ordertargets()) do
             local default = target:get("default")
             if default == nil or default == true or targetname == "__all" then
-                _install_target_and_deps(target)
+                _install_target(target)
             end
         end
     end

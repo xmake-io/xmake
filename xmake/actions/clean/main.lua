@@ -166,9 +166,6 @@ function main()
     -- config it first
     task.run("config", {target = targetname, require = false, verbose = false})
 
-    -- init finished states
-    _g.finished = {}
-
     -- enter project directory
     local oldir = os.cd(project.directory())
 

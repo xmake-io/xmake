@@ -104,39 +104,23 @@ function _uninstall_target(target)
     os.cd(oldir)
 end
 
--- uninstall the given target and deps
-function _uninstall_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return
+-- uninstall the given targets
+function _uninstall_targets(targets)
+    for _, target in ipairs(targets) do
+        _uninstall_target(target)
     end
-
-    -- uninstall for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _uninstall_target_and_deps(project.target(depname))
-    end
-
-    -- uninstall target
-    _uninstall_target(target)
-
-    -- finished
-    _g.finished[target:name()] = true
 end
 
 -- uninstall
 function main(targetname)
 
-    -- init finished states
-    _g.finished = {}
-
-    -- uninstall given target?
-    if targetname then
-        _uninstall_target_and_deps(project.target(targetname))
+    -- uninstall the given target?
+    if targetname and not targetname:startswith("__") then
+        local target = project.target(targetname)
+        _uninstall_targets(target:orderdeps())
+        _uninstall_target(target)
     else
         -- uninstall all targets
-        for _, target in pairs(project.targets()) do
-            _uninstall_target_and_deps(target)
-        end
+        _uninstall_targets(project.ordertargets())
     end
 end

@@ -141,7 +141,7 @@ function _on_package_target(target)
 end
 
 -- package the given target
-function _package(target)
+function _package_target(target)
 
     -- enter project directory
     local oldir = os.cd(project.directory())
@@ -194,24 +194,11 @@ function _package(target)
     os.cd(oldir)
 end
 
--- package the given target and deps
-function _package_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return
+-- package the given targets
+function _package_targets(targets)
+    for _, target in ipairs(targets) do
+        _package_target(target)
     end
-
-    -- package for all dependent targets
-    for _, depname in ipairs(target:get("deps")) do
-        _package_target_and_deps(project.target(depname))
-    end
-
-    -- package target
-    _package(target)
-
-    -- finished
-    _g.finished[target:name()] = true
 end
 
 -- main
@@ -236,18 +223,17 @@ function main()
     -- build it first
     task.run("build", {target = targetname, all = option.get("all")})
 
-    -- init finished states
-    _g.finished = {}
-
     -- package the given target?
     if targetname then
-        _package_target_and_deps(project.target(targetname))
+        local target = project.target(targetname)
+        _package_targets(target:orderdeps())
+        _package_target(target)
     else
         -- package default or all targets
-        for _, target in pairs(project.targets()) do
+        for _, target in ipairs(project.ordertargets()) do
             local default = target:get("default")
             if default == nil or default == true or option.get("all") then
-                _package_target_and_deps(target)
+                _package_target(target)
             end
         end
     end
