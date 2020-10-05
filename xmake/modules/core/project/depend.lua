@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.project")
 import("private.tools.cl.parse_deps", {alias = "parse_deps_cl"})
 import("private.tools.cl.parse_deps_json", {alias = "parse_deps_cl_json"})
 import("private.tools.rc.parse_deps", {alias = "parse_deps_rc"})
@@ -160,7 +161,7 @@ function on_changed(callback, opt)
     -- get dependfile
     local dependfile = opt.dependfile
     if not dependfile then
-        dependfile = os.tmpfile(table.concat(table.wrap(opt.files), ""))
+        dependfile = project.tmpfile(table.concat(table.wrap(opt.files), ""))
     end
 
     -- load dependent info

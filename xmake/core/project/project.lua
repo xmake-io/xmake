@@ -1111,9 +1111,41 @@ function project.menu()
             end
         end
     end
-
-    -- ok?
     return menu
+end
+
+-- get the temporary directory of project
+function project.tmpdir(opt)
+
+    local tmpdir = project._TMPDIR
+    if not tmpdir then
+        if os.isdir(config.directory()) then
+            local tmpdir_root = path.join(config.directory(), "tmp")
+            tmpdir = path.join(tmpdir_root, os.date("%y%m%d"))
+            if not os.isdir(tmpdir) then
+                os.mkdir(tmpdir)
+            end
+        else
+            tmpdir = os.tmpdir()
+        end
+    end
+    return tmpdir
+end
+
+-- generate the temporary file path of project
+--
+-- e.g.
+-- project.tmpfile("key")
+-- project.tmpfile({key = "xxx"})
+--
+function project.tmpfile(opt_or_key)
+    local opt
+    local key = opt_or_key
+    if type(key) == "table" then
+        key = opt_or_key.key
+        opt = opt_or_key
+    end
+    return path.join(project.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))
 end
 
 -- return module: project

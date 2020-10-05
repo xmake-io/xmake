@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("core.base.process")
 import("core.project.config")
+import("core.project.project")
 import("core.package.package")
 import("core.platform.platform")
 import("core.platform.environment")
@@ -69,6 +70,18 @@ function main()
         if os.isdir(tmpdir) then
             print("cleanup %s ..", tmpdir)
             os.tryrm(tmpdir)
+        end
+    end
+
+    -- clean up the temporary files of project at last 30 days, @see project.tmpdir()
+    if os.isfile(os.projectfile()) then
+        local parentdir = path.directory(project.tmpdir())
+        for day = 1, 30 do
+            local tmpdir = path.join(parentdir, os.date("%y%m%d", os.time() - day * 24 * 3600))
+            if os.isdir(tmpdir) then
+                print("cleanup %s ..", tmpdir)
+                os.tryrm(tmpdir)
+            end
         end
     end
 
