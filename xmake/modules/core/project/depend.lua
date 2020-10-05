@@ -138,7 +138,7 @@ end
 --
 -- e.g.
 --
--- depend.on_changed(function (dependinfo)
+-- depend.on_changed(function ()
 --     -- do some thing
 --     -- ..
 --

@@ -67,42 +67,36 @@ rule("xcode.bundle")
         local contentsdir = path.absolute(target:data("xcode.bundle.contentsdir"))
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
 
-        -- need re-generate it?
-        local dependfile = target:dependfile(bundledir)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile)}) then
-            return
-        end
+        -- do build if changed
+        depend.on_changed(function ()
 
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
+            -- trace progress info
+            progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
-        -- copy target file
-        if is_plat("macosx") then
-            os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
-        else
-            os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))
-        end
-
-        -- copy resource files
-        local srcfiles, dstfiles = target:installfiles(resourcesdir)
-        if srcfiles and dstfiles then
-            local i = 1
-            for _, srcfile in ipairs(srcfiles) do
-                local dstfile = dstfiles[i]
-                if dstfile then
-                    os.vcp(srcfile, dstfile)
-                end
-                i = i + 1
+            -- copy target file
+            if is_plat("macosx") then
+                os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
+            else
+                os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))
             end
-        end
 
-        -- do codesign
-        codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+            -- copy resource files
+            local srcfiles, dstfiles = target:installfiles(resourcesdir)
+            if srcfiles and dstfiles then
+                local i = 1
+                for _, srcfile in ipairs(srcfiles) do
+                    local dstfile = dstfiles[i]
+                    if dstfile then
+                        os.vcp(srcfile, dstfile)
+                    end
+                    i = i + 1
+                end
+            end
 
-        -- update files and values to the dependent file
-        dependinfo.files = {bundledir, target:targetfile()}
-        depend.save(dependinfo, dependfile)
+            -- do codesign
+            codesign(bundledir, target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity"))
+
+        end, {dependfile = target:dependfile(bundledir), files = {bundledir, target:targetfile()}})
     end)
 
     on_install(function (target)
