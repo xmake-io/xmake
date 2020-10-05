@@ -42,7 +42,16 @@ platform("mingw")
         import("core.project.config")
         local arch = config.get("arch")
         if not arch then
-            config.set("arch", "x86_64")
+            local mingw_chost = nil
+            if is_subhost("msys") then
+                mingw_chost = os.getenv("MINGW_CHOST")
+            end
+            if mingw_chost == "i686-w64-mingw32" then
+                arch = "i386"
+            else
+                arch = "x86_64"
+            end
+            config.set("arch", arch)
             cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
         end
     end)
