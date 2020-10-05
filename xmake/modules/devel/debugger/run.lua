@@ -109,6 +109,7 @@ function _run_windbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
+    opt.detach = true
     os.execv(windbg, argv, opt)
     return true
 end
@@ -145,6 +146,7 @@ function _run_x64dbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
+    opt.detach = true
     os.execv(x64dbg, argv, opt)
     return true
 end
@@ -163,6 +165,7 @@ function _run_ollydbg(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
+    opt.detach = true
     os.execv(ollydbg, argv, opt)
     return true
 end
@@ -181,6 +184,7 @@ function _run_vsjitdebugger(program, argv, opt)
     table.insert(argv, 1, program)
 
     -- run it
+    opt.detach = true
     os.execv(vsjitdebugger, argv, opt)
     return true
 end
@@ -200,6 +204,7 @@ function _run_devenv(program, argv, opt)
     table.insert(argv, 2, program)
 
     -- run it
+    opt.detach = true
     os.execv(devenv, argv, opt)
     return true
 end
@@ -238,7 +243,8 @@ function main(program, argv, opt)
         table.insert(debuggers, 1, {"devenv",           _run_devenv})
     end
 
-    -- get debugger from the configure
+    -- get debugger from configuration
+    opt = opt or {}
     local debugger = config.get("debugger")
     if debugger then
 
