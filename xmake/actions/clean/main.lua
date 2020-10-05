@@ -101,24 +101,11 @@ function _clean_target(target)
     end
 end
 
--- clean the given target and all dependent targets
-function _clean_target_and_deps(target)
-
-    -- this target have been finished?
-    if _g.finished[target:name()] then
-        return
+-- clean the given targets
+function _clean_targets(targets)
+    for _, target in ipairs(targets) do
+        _clean_target(target)
     end
-
-    -- remove the target
-    _clean_target(target)
-
-    -- exists the dependent targets?
-    for _, dep in ipairs(target:get("deps")) do
-        _clean_target_and_deps(project.target(dep))
-    end
-
-    -- finished
-    _g.finished[target:name()] = true
 end
 
 -- clean target
@@ -126,12 +113,11 @@ function _clean(targetname)
 
     -- clean the given target
     if targetname then
-        _clean_target_and_deps(project.target(targetname))
+        local target = project.target(targetname)
+        _clean_targets(target:orderdeps())
+        _clean_target(target)
     else
-        -- clean all targets
-        for _, target in pairs(project.targets()) do
-            _clean_target_and_deps(target)
-        end
+        _clean_targets(project.ordertargets())
     end
 
     -- remove the configure directory if remove all
