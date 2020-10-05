@@ -445,9 +445,16 @@ function project._load_targets()
         end
     end
 
+    -- sort targets for all deps
+    local targetrefs = {}
+    local ordertargets = {}
+    for _, t in pairs(targets) do
+        project._sort_targets(targets, ordertargets, targetrefs, t)
+    end
+
     -- do load for each target
     local ok = false
-    for _, t in pairs(targets) do
+    for _, t in ipairs(ordertargets) do
         ok, errors = t:_load()
         if not ok then
             break
@@ -456,11 +463,9 @@ function project._load_targets()
 
     -- do load failed?
     if not ok then
-        return nil, errors
+        return nil, nil, errors
     end
-
-    -- ok
-    return targets
+    return targets, ordertargets
 end
 
 -- load options
@@ -619,6 +624,20 @@ function project._load_packages()
 
     -- load packages
     return project._load_scope("package", true, false)
+end
+
+-- sort targets for all deps
+function project._sort_targets(targets, ordertargets, targetrefs, target)
+    for _, depname in ipairs(table.wrap(target:get("deps"))) do
+        local targetinst = targets[depname]
+        if targetinst then
+            project._sort_targets(targets, ordertargets, targetrefs, targetinst)
+        end
+    end
+    if not targetrefs[target:name()] then
+        targetrefs[target:name()] = true
+        table.insert(ordertargets, target)
+    end
 end
 
 -- get project apis
@@ -872,20 +891,26 @@ function project.target(name)
     return project.targets()[name]
 end
 
--- get the current configure for targets
+-- get targets
 function project.targets()
-
-    -- load targets
     if not project._TARGETS then
-        local targets, errors = project._load_targets()
-        if not targets then
+        local targets, ordertargets, errors = project._load_targets()
+        if not targets or not ordertargets then
             os.raise(errors)
         end
         project._TARGETS = targets
+        project._ORDERTARGETS = ordertargets
     end
-
-    -- ok
     return project._TARGETS
+end
+
+-- get order targets
+function project.ordertargets()
+    if not project._ORDERTARGETS then
+        -- ensure _ORDERTARGETS to be initialized
+        project.targets()
+    end
+    return project._ORDERTARGETS
 end
 
 -- get the given option

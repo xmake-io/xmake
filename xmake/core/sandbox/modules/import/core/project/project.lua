@@ -43,6 +43,7 @@ sandbox_core_project.toolchain    = project.toolchain
 sandbox_core_project.toolchains   = project.toolchains
 sandbox_core_project.target       = project.target
 sandbox_core_project.targets      = project.targets
+sandbox_core_project.ordertargets = project.ordertargets
 sandbox_core_project.option       = project.option
 sandbox_core_project.options      = project.options
 sandbox_core_project.rootfile     = project.rootfile

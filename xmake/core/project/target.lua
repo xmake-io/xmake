@@ -84,7 +84,7 @@ end
 
 -- load rules
 function _instance:_load_rules(suffix)
-    for _, r in pairs(self:orderules()) do
+    for _, r in ipairs(self:orderules()) do
         local ok, errors = self:_load_rule(r, suffix)
         if not ok then
             return false, errors
