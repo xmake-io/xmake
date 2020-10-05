@@ -241,7 +241,11 @@ end
 
 -- get revision(commit, tag, branch) of the url_alias@version_str, only for git url
 function _instance:revision(url_alias)
-    return self:sourcehash(url_alias)
+    local revision = self:sourcehash(url_alias)
+    if revision and #revision <= 40 then
+        -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
+        return revision
+    end
 end
 
 -- get the package kind, binary or nil(library)
