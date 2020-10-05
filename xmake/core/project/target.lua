@@ -1197,7 +1197,11 @@ function _instance:objectfiles()
     -- get object files from source batches
     local objectfiles = {}
     local batchcount = 0
-    for _, sourcebatch in pairs(self:sourcebatches()) do
+    local sourcebatches = self:sourcebatches()
+    local orderkeys = table.keys(sourcebatches)
+    table.sort(orderkeys) -- @note we need guarantee the order of objectfiles for depend.is_changed() and etc.
+    for _, k in ipairs(orderkeys) do
+        local sourcebatch = sourcebatches[k]
         table.join2(objectfiles, sourcebatch.objectfiles)
         batchcount = batchcount + 1
     end
@@ -1223,8 +1227,6 @@ function _instance:objectfiles()
 
     -- cache it
     self._OBJECTFILES = objectfiles
-
-    -- ok?
     return objectfiles
 end
 

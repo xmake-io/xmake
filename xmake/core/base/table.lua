@@ -261,13 +261,8 @@ end
 -- remove repeat from the given array
 function table.unique(array, barrier)
 
-    -- remove repeat for array
     if table.is_array(array) then
-
-        -- not only one?
         if table.getn(array) ~= 1 then
-
-            -- done
             local exists = {}
             local unique = {}
             for _, v in ipairs(array) do
@@ -284,13 +279,9 @@ function table.unique(array, barrier)
                     table.insert(unique, v)
                 end
             end
-
-            -- update it
             array = unique
         end
     end
-
-    -- ok
     return array
 end
 
