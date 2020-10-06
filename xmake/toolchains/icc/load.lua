@@ -22,6 +22,26 @@
 import("core.base.option")
 import("core.project.config")
 
+-- add the given icl environment
+function _add_iclenv(toolchain, name)
+
+    -- get iclvarsall
+    local iclvarsall = config.get("__iclvarsall")
+    if not iclvarsall then
+        return
+    end
+
+    -- get icl environment for the current arch
+    local arch = toolchain:arch()
+    local iclenv = iclvarsall[arch] or {}
+
+    -- get the paths for the icl environment
+    local env = iclenv[name]
+    if env then
+        toolchain:add("runenvs", name:upper(), path.splitenv(env))
+    end
+end
+
 -- load intel on windows
 function _load_intel_on_windows(toolchain)
 
@@ -49,6 +69,12 @@ function _load_intel_on_windows(toolchain)
         toolchain:set("toolset", "strip", "strip")
         toolchain:set("toolset", "as", "icc")
     end
+
+    -- add icl environments
+    _add_iclenv(toolchain, "PATH")
+    _add_iclenv(toolchain, "LIB")
+    _add_iclenv(toolchain, "INCLUDE")
+    _add_iclenv(toolchain, "LIBPATH")
 end
 
 -- load intel on linux

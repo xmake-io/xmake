@@ -38,15 +38,19 @@ import("lib.detect.find_programver")
 function main(opt)
 
     -- init options
-    opt = opt or {}
+    opt         = opt or {}
+    opt.check   = opt.check or function (program) os.runv(program, {"/help"}, {envs = opt.envs}) end
 
     -- find program
-    local program = find_program(opt.program or "icl", opt)
+    local program = find_program(opt.program or "icl.exe", opt)
 
     -- find program version
     local version = nil
-    if program and opt.version then
-        version = find_programver(program, opt)
+    if program and opt and opt.version then
+        opt.command = opt.command or function () local _, info = os.iorunv(program, {"/help"}, {envs = opt.envs}); return info end
+        opt.parse   = opt.parse or function (output) return output:match("Version (%d+%.?%d*%.?%d*.-)%s") end
+        version     = find_programver(program, opt)
     end
     return program, version
 end
+

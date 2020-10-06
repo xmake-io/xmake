@@ -26,6 +26,34 @@ import("lib.detect.find_tool")
 
 -- check intel on windows
 function _check_intel_on_windows(toolchain)
+
+    -- have been checked?
+    if config.get("__iclvarsall") then
+        return true
+    end
+
+    -- find intel
+    local intel = find_intel()
+    if intel and intel.iclvars then
+        local iclvarsall = intel.iclvars
+        local iclenv = iclvarsall[toolchain:arch()]
+        if iclenv and iclenv.PATH and iclenv.INCLUDE and iclenv.LIB then
+
+            -- save iclvars
+            config.set("__iclvarsall", iclvarsall)
+
+            -- check compiler
+            local program = nil
+            local tool = find_tool("icl.exe", {force = true, envs = iclenv, version = true})
+            if tool then
+                program = tool.program
+            end
+            if program then
+                cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+                return true
+            end
+        end
+    end
 end
 
 -- check intel on linux
