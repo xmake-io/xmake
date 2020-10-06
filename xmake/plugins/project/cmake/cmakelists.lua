@@ -50,11 +50,17 @@ end
 
 -- get configs from target
 function _get_configs_from_target(target, name)
-    local values = table.wrap(target:get(name))
+    local values = {}
+    if name:find("flags", 1, true) then
+        table.join2(values, target:toolconfig(name))
+    end
+    table.join2(values, target:get(name))
     table.join2(values, target:get_from_opts(name))
     table.join2(values, target:get_from_pkgs(name))
     table.join2(values, target:get_from_deps(name, {interface = true}))
-    table.join2(values, target:toolconfig(name))
+    if not name:find("flags", 1, true) then -- for includedirs, links ..
+        table.join2(values, target:toolconfig(name))
+    end
     return table.unique(values)
 end
 

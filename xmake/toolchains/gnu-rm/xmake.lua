@@ -74,6 +74,5 @@ toolchain("gnu-rm")
         -- add basic flags
         toolchain:add("ldflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
         toolchain:add("shflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
-        toolchain:add("ldflags", "-Wl,--start-group", "-lc", "-lm", "-Wl,--end-group", {force = true})
-        toolchain:add("shflags", "-Wl,--start-group", "-lc", "-lm", "-Wl,--end-group", {force = true})
+        toolchain:add("syslinks", "c", "m")
     end)

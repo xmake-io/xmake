@@ -251,58 +251,49 @@ function main(toolchain)
 
             -- add c++ stl include and link directories
             if toolchains_arch then
-                toolchain:add("ldflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
-                toolchain:add("shflags", format("-L%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
+                toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
-                toolchain:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                toolchain:add("includedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    toolchain:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("includedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
                 local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
                 local before_r13 = path.join(abi_path, "libcxxabi")
                 local after_r13 = path.join(abi_path, "include")
                 if os.isdir(before_r13) then
-                    toolchain:add("cxxflags", "-I" .. before_r13)
+                    toolchain:add("includedirs", before_r13)
                 elseif os.isdir(after_r13) then
-                    toolchain:add("cxxflags", "-I" .. after_r13)
+                    toolchain:add("includedirs", after_r13)
                 end
             elseif ndk_cxxstl:startswith("gnustl") then
-                toolchain:add("cxxflags", format("-I%s/include", cxxstl_sdkdir))
+                toolchain:add("includedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    toolchain:add("cxxflags", format("-I%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("includedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
             elseif ndk_cxxstl:startswith("stlport") then
-                toolchain:add("cxxflags", format("-I%s/stlport", cxxstl_sdkdir))
+                toolchain:add("includedirs", format("%s/stlport", cxxstl_sdkdir))
             end
 
             -- add c++ stl links
             if ndk_cxxstl == "c++_static" or ndk_cxxstl == "llvmstl_static" then
-                toolchain:add("ldflags", "-lc++_static", "-lc++abi")
-                toolchain:add("shflags", "-lc++_static", "-lc++abi")
+                toolchain:add("syslinks", "c++_static", "c++abi")
                 if arm32 then
-                    toolchain:add("ldflags", "-lunwind", "-latomic")
-                    toolchain:add("shflags", "-lunwind", "-latomic")
+                    toolchain:add("syslinks", "unwind", "atomic")
                 end
             elseif ndk_cxxstl == "c++_shared" or ndk_cxxstl == "llvmstl_shared" then
-                toolchain:add("ldflags", "-lc++_shared", "-lc++abi")
-                toolchain:add("shflags", "-lc++_shared", "-lc++abi")
+                toolchain:add("syslinks", "c++_shared", "c++abi")
                 if arm32 then
-                    toolchain:add("ldflags", "-lunwind", "-latomic")
-                    toolchain:add("shflags", "-lunwind", "-latomic")
+                    toolchain:add("syslinks", "unwind", "atomic")
                 end
             elseif ndk_cxxstl == "gnustl_static" then
-                toolchain:add("ldflags", "-lgnustl_static")
-                toolchain:add("shflags", "-lgnustl_static")
+                toolchain:add("syslinks", "gnustl_static")
             elseif ndk_cxxstl == "gnustl_shared" then
-                toolchain:add("ldflags", "-lgnustl_shared")
-                toolchain:add("shflags", "-lgnustl_shared")
+                toolchain:add("syslinks", "gnustl_shared")
             elseif ndk_cxxstl == "stlport_static" then
-                toolchain:add("ldflags", "-lstlport_static")
-                toolchain:add("shflags", "-lstlport_static")
+                toolchain:add("syslinks", "stlport_static")
             elseif ndk_cxxstl == "stlport_shared" then
-                toolchain:add("ldflags", "-lstlport_shared")
-                toolchain:add("shflags", "-lstlport_shared")
+                toolchain:add("syslinks", "stlport_shared")
             end
 
             -- fix 'ld: error: cannot find -lc++' for clang++.exe on r20/windows
@@ -344,8 +335,14 @@ function main(toolchain)
     if targets_rust[arch] then
         toolchain:add("rcflags", "--target=" .. targets_rust[arch])
     end
-    toolchain:add("rcshflags", "-C link-args=\"" .. (table.concat(toolchain:get("shflags"), " "):gsub("%-march=.-%s", "") .. "\""))
-    toolchain:add("rcldflags", "-C link-args=\"" .. (table.concat(toolchain:get("ldflags"), " "):gsub("%-march=.-%s", "") .. "\""))
+    local rcshflags = table.copy(toolchain:get("shflags"))
+    local rcldflags = table.copy(toolchain:get("ldflags"))
+    for _, link in ipairs(toolchain:get("syslinks")) do
+        table.insert(rcshflags, "-l" .. link)
+        table.insert(rcldflags, "-l" .. link)
+    end
+    toolchain:add("rcshflags", "-C link-args=\"" .. (table.concat(rcshflags, " "):gsub("%-march=.-%s", "") .. "\""))
+    toolchain:add("rcldflags", "-C link-args=\"" .. (table.concat(rcldflags, " "):gsub("%-march=.-%s", "") .. "\""))
     local sh = toolchain:tool("sh") -- @note we cannot use `config.get("sh")`, because we need check sh first
     if sh then
         toolchain:add("rcshflags", "-C linker=" .. sh)

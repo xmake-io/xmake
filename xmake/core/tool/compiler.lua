@@ -300,14 +300,24 @@ function compiler:compflags(opt)
         targetkind = target:targetkind()
     end
 
-    -- add flags from the configure
+    -- add flags from compiler/toolchains
+    --
+    -- we need to add toolchain flags at the beginning to allow users to override them.
+    -- but includedirs/links/syslinks/linkdirs will still be placed last, they are in the order defined in languages/xmake.lua
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/978
+    --
     local flags = {}
+    self:_add_flags_from_compiler(flags, targetkind)
+    self:_add_flags_from_toolchains(flags, targetkind, target)
+
+    -- add flags from user configuration
     self:_add_flags_from_config(flags)
 
-    -- add flags for the target
+    -- add flags from target
     self:_add_flags_from_target(flags, target)
 
-    -- add flags for the source file
+    -- add flags from source file configuration
     if opt.sourcefile and target and target.fileconfig then
         local fileconfig = target:fileconfig(opt.sourcefile)
         if fileconfig then
@@ -315,17 +325,11 @@ function compiler:compflags(opt)
         end
     end
 
-    -- add flags for the argument
+    -- add flags from argument
     local configs = opt.configs or opt.config
     if configs then
         self:_add_flags_from_argument(flags, target, configs)
     end
-
-    -- add flags from the toolchains
-    self:_add_flags_from_toolchains(flags, targetkind, target)
-
-    -- add flags from the compiler
-    self:_add_flags_from_compiler(flags, targetkind)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)
