@@ -76,6 +76,11 @@ function _load_iclvars(iclvars_bat, arch, opt)
         end
     end
 
+    -- fix bin path for ia32
+    if variables.path and arch == "ia32" then
+        variables.path = variables.path:gsub("windows\\bin\\intel64;", "windows\\bin\\intel64_ia32;")
+    end
+
     -- convert path/lib/include to PATH/LIB/INCLUDE
     variables.PATH    = variables.path
     variables.LIB     = variables.lib
