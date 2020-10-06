@@ -1,4 +1,4 @@
---!A cross-platform build utility based on Lua
+--!A cross-toolchain build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
@@ -15,21 +15,30 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        check.lua
 --
 
--- define toolchain
-toolchain("icc")
+-- imports
+import("core.base.option")
+import("core.project.config")
+import("detect.sdks.find_intel")
+import("lib.detect.find_tool")
 
-    -- set homepage
-    set_homepage("https://software.intel.com/content/www/us/en/develop/tools/compilers/c-compilers.html")
-    set_description("Intel C/C++ Compiler")
+-- check intel on windows
+function _check_intel_on_windows(toolchain)
+end
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
+-- check intel on linux
+function _check_intel_on_linux(toolchain)
+    return find_tool("icc")
+end
 
-    -- check toolchain
-    on_check("check")
+-- main entry
+function main(toolchain)
+    if is_host("windows") then
+        return _check_intel_on_windows(toolchain)
+    else
+        return _check_intel_on_linux(toolchain)
+    end
+end
 
-    -- on load
-    on_load("load")
