@@ -36,23 +36,16 @@ function _do_link_target(target, opt)
     -- get link flags
     local linkflags = linkinst:linkflags({target = target})
 
-    -- expand object files with *.o/obj
-    local objectfiles = {}
-    for _, objectfile in ipairs(target:objectfiles()) do
-        if objectfile:find("*", 1, true) then
-            local matchfiles = os.match(objectfile)
-            if matchfiles then
-                table.join2(objectfiles, matchfiles)
-            end
-        else
-            table.insert(objectfiles, objectfile)
-        end
-    end
+    -- get object files
+    local objectfiles = target:objectfiles()
 
     -- need build this target?
-    local depfiles = target:objectfiles()
-    for _, dep in pairs(target:deps()) do
+    local depfiles = objectfiles
+    for _, dep in ipairs(target:orderdeps()) do
         if dep:targetkind() == "static" then
+            if depfiles == objectfiles then
+                depfiles = table.copy(objectfiles)
+            end
             table.insert(depfiles, dep:targetfile())
         end
     end
