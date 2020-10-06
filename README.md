@@ -198,6 +198,7 @@ envs          Environment variables toolchain
 fasm          Flat Assembler
 tinyc         Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
+icc           Intel C/C++ Compiler
 ```
 
 ## Supported Languages
