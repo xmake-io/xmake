@@ -239,9 +239,13 @@ function builder:_add_flags_from_argument(flags, target, args)
     -- add flags (named) from the language
     if target then
         local key = target:type()
-        self:_add_flags_from_language(flags, target, {[key] = function (name) return args[name] end})
+        self:_add_flags_from_language(flags, target, {
+            [key] = function (name) return args[name] end,
+            toolchain = function (name) return platform.toolconfig(name) end})
     else
-        self:_add_flags_from_language(flags, nil, {target = function (name) return args[name] end})
+        self:_add_flags_from_language(flags, nil, {
+            target = function (name) return args[name] end,
+            toolchain = function (name) return platform.toolconfig(name) end})
     end
 end
 
