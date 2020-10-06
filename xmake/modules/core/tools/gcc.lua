@@ -117,6 +117,19 @@ function nf_warning(self, level)
     return maps[level]
 end
 
+-- make the fp-model flag
+function nf_fpmodel(self, level)
+    local maps =
+    {
+        precise    = "" --default
+    ,   fast       = "-ffast-math"
+    ,   strict     = {"-frounding-math", "-ftrapping-math"}
+    ,   except     = "-ftrapping-math"
+    ,   noexcept   = "-fno-trapping-math"
+    }
+    return maps[level]
+end
+
 -- make the optimize flag
 function nf_optimize(self, level)
     local maps =

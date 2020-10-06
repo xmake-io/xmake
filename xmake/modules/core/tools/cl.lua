@@ -113,6 +113,19 @@ function nf_symbol(self, level, target)
     return flags
 end
 
+-- make the fp-model flag
+function nf_fpmodel(self, level)
+    local maps =
+    {
+        precise    = "-fp:precise" -- default
+    ,   fast       = "-fp:fast"
+    ,   strict     = "-fp:strict"
+    ,   except     = "-fp:except"
+    ,   noexcept   = "-fp:except-"
+    }
+    return maps[level]
+end
+
 -- make the warning flag
 function nf_warning(self, level)
 

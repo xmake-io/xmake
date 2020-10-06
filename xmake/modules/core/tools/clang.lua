@@ -71,6 +71,31 @@ function init(self)
 
 end
 
+-- make the fp-model flag
+function nf_fpmodel(self, level)
+    local maps
+    if self:has_flags("-ffp-model=fast") then
+        maps =
+        {
+            precise    = "-ffp-model=precise"
+        ,   fast       = "-ffp-model=fast"
+        ,   strict     = "-ffp-model=strict"
+        ,   except     = "-ftrapping-math"
+        ,   noexcept   = "-fno-trapping-math"
+        }
+    else
+        maps =
+        {
+            precise    = "" -- default
+        ,   fast       = "-ffast-math"
+        ,   strict     = {"-frounding-math", "-ftrapping-math"}
+        ,   except     = "-ftrapping-math"
+        ,   noexcept   = "-fno-trapping-math"
+        }
+    end
+    return maps[level]
+end
+
 -- make the optimize flag
 function nf_optimize(self, level)
     local maps =

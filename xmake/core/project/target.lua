@@ -1867,6 +1867,7 @@ function target.apis()
         ,   "target.set_filename"
         ,   "target.set_basename"
         ,   "target.set_warnings"
+        ,   "target.set_fpmodels"
         ,   "target.set_optimize"
         ,   "target.set_languages"
         ,   "target.set_toolchains"
