@@ -36,14 +36,10 @@ function _do_link_target(target, opt)
     -- get link flags
     local linkflags = linkinst:linkflags({target = target})
 
-    -- load dependent info
-    local dependfile = target:dependfile()
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
     -- expand object files with *.o/obj
     local objectfiles = {}
     for _, objectfile in ipairs(target:objectfiles()) do
-        if objectfile:find("%*") then
+        if objectfile:find("*", 1, true) then
             local matchfiles = os.match(objectfile)
             if matchfiles then
                 table.join2(objectfiles, matchfiles)
@@ -61,47 +57,42 @@ function _do_link_target(target, opt)
         end
     end
     local depvalues = {linkinst:program(), linkflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles}) then
-        return
-    end
+    depend.on_changed(function ()
 
-    -- TODO make headers (deprecated)
-    local srcheaders, dstheaders = target:headers()
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.cp(srcheader, dstheader)
+        -- TODO make headers (deprecated)
+        local srcheaders, dstheaders = target:headers()
+        if srcheaders and dstheaders then
+            local i = 1
+            for _, srcheader in ipairs(srcheaders) do
+                local dstheader = dstheaders[i]
+                if dstheader then
+                    os.cp(srcheader, dstheader)
+                end
+                i = i + 1
             end
-            i = i + 1
         end
-    end
 
-    -- the target file
-    local targetfile = target:targetfile()
+        -- the target file
+        local targetfile = target:targetfile()
 
-    -- is verbose?
-    local verbose = option.get("verbose")
+        -- is verbose?
+        local verbose = option.get("verbose")
 
-    -- trace progress info
-    progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
+        -- trace progress info
+        progress.show(opt.progress, "${color.build.target}linking.$(mode) %s", path.filename(targetfile))
 
-    -- trace verbose info
-    if verbose then
-        -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
-        print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
-    end
+        -- trace verbose info
+        if verbose then
+            -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
+            print(linkinst:linkcmd(objectfiles, targetfile, {linkflags = linkflags, rawargs = true}))
+        end
 
-    -- link it
-    if not option.get("dry-run") then
-        assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
-    end
+        -- link it
+        if not option.get("dry-run") then
+            assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
+        end
 
-    -- update files and values to the dependent file
-    dependinfo.files  = depfiles
-    dependinfo.values = depvalues
-    depend.save(dependinfo, dependfile)
+    end, {dependfile = target:dependfile(), values = depvalues, files = depfiles})
 end
 
 -- on link the given target
