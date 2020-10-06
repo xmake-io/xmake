@@ -37,14 +37,29 @@ toolchain("icc")
     on_load(function (toolchain)
 
         -- set toolset
-        toolchain:set("toolset", "cc", "icc")
-        toolchain:set("toolset", "cxx", "icc", "icpc")
-        toolchain:set("toolset", "ld", "g++", "icc") -- TODO g++/clang++ as linker, i++? icpc? ..
-        toolchain:set("toolset", "sh", "g++", "icc")
-        toolchain:set("toolset", "ar", "ar")
-        toolchain:set("toolset", "ex", "ar")
-        toolchain:set("toolset", "strip", "strip")
-        toolchain:set("toolset", "as", "icc")
+        if toolchain:is_plat("windows") then
+            toolchain:set("toolset", "cc", "icl.exe")
+            toolchain:set("toolset", "cxx", "icl.exe")
+            toolchain:set("toolset", "mrc", "rc.exe")
+            if toolchain:is_arch("x64") then
+                toolchain:set("toolset", "as",  "ml64.exe")
+            else
+                toolchain:set("toolset", "as",  "ml.exe")
+            end
+            toolchain:set("toolset", "ld",  "link.exe")
+            toolchain:set("toolset", "sh",  "link.exe")
+            toolchain:set("toolset", "ar",  "link.exe")
+            toolchain:set("toolset", "ex",  "lib.exe")
+        else
+            toolchain:set("toolset", "cc", "icc")
+            toolchain:set("toolset", "cxx", "icpc", "icc")
+            toolchain:set("toolset", "ld", "icpc", "icc")
+            toolchain:set("toolset", "sh", "icpc", "icc")
+            toolchain:set("toolset", "ar", "ar")
+            toolchain:set("toolset", "ex", "ar")
+            toolchain:set("toolset", "strip", "strip")
+            toolchain:set("toolset", "as", "icc")
+        end
 
         -- add march flags
         local march
