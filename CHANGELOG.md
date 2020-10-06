@@ -7,11 +7,13 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
 * [#956](https://github.com/xmake-io/xmake/issues/956): Add wasm platform and support Qt/Wasm SDK
 * Upgrade luajit vm and support for runing on mips64 device
+* [#972](https://github.com/xmake-io/xmake/issues/972): Add `depend.on_changed()` api to simplify adding dependent files
 
 ### Change
 
 * [#958](https://github.com/xmake-io/xmake/issues/958): Improve mingw platform to support llvm-mingw toolchain
 * Improve `add_requires("zlib~xxx")` to support for installing multi-packages at same time
+* [#977](https://github.com/xmake-io/xmake/issues/977): Improve find_mingw for windows
 
 ### Bugs fixed
 
@@ -836,11 +838,13 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955): 添加 Zig 空工程模板
 * [#956](https://github.com/xmake-io/xmake/issues/956): 添加 Wasm 编译平台，并且支持 Qt/Wasm SDK
 * 升级luajit到v2.1最新分支版本，并且支持mips64上运行xmake
+* [#972](https://github.com/xmake-io/xmake/issues/972): 添加`depend.on_changed()`去简化依赖文件的处理
 
 ### 改进
 
 * [#958](https://github.com/xmake-io/xmake/issues/958): 改进mingw平台，增加对 llvm-mingw 工具链的支持，以及 arm64/arm 架构的支持
 * 增加 `add_requires("zlib~xxx")` 模式使得能够支持同时安装带有多种配置的同一个包，作为独立包存在
+* [#977](https://github.com/xmake-io/xmake/issues/977): 改进 find_mingw 在 windows 上的探测
 
 ### Bugs修复
 
