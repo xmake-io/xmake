@@ -92,7 +92,7 @@ function _do_link_target(target, opt)
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(), values = depvalues, files = depfiles})
+    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles})
 end
 
 -- on link the given target
