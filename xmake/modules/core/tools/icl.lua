@@ -21,11 +21,3 @@
 -- inherit cl
 inherit("cl")
 
--- init it
-function init(self)
-
-end
-
--- TODO
--- inherit cl.lua and override some interfaces in cl.lua
--- ...

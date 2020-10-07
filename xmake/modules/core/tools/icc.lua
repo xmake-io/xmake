@@ -26,6 +26,15 @@ function init(self)
     _super.init(self)
 end
 
--- TODO
--- inherit gcc.lua and override some interfaces in gcc.lua
--- ...
+-- make the fp-model flag
+function nf_fpmodel(self, level)
+    local maps =
+    {
+        precise    = "-fp-model=precise"
+    ,   fast       = "-fp-model=fast"  --default
+    ,   strict     = "-fp-model=strict"
+    ,   except     = "-fp-model=except"
+    ,   noexcept   = "-fp-model=no-except"
+    }
+    return maps[level]
+end

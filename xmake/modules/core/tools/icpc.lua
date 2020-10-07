@@ -18,11 +18,6 @@
 -- @file        icpc.lua
 --
 
--- inherit gcc
-inherit("gcc")
-
--- init it
-function init(self)
-    _super.init(self)
-end
+-- inherit icc
+inherit("icc")
 
