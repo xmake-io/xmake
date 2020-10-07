@@ -19,27 +19,21 @@
 --
 
 -- imports
-import("core.tool.compiler")
 import("lib.detect.find_program")
 
 -- check
 function _check(program)
 
-    -- make an stub source file
-    local libraryfile   = os.tmpfile() .. ".a"
-    local objectfile    = os.tmpfile() .. ".o"
-    local sourcefile    = os.tmpfile() .. ".c"
-    io.writefile(sourcefile, "int test(void)\n{return 0;}")
-
-    -- compile it
-    compiler.compile(sourcefile, objectfile)
+    -- make a stub object file
+    local libraryfile = os.tmpfile() .. ".a"
+    local objectfile  = os.tmpfile() .. ".o"
+    io.writefile(objectfile, "")
 
     -- archive it
     os.runv(program, {"-cr", libraryfile, objectfile})
 
     -- remove files
     os.rm(objectfile)
-    os.rm(sourcefile)
     os.rm(libraryfile)
 end
 
