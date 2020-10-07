@@ -21,35 +21,35 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("detect.sdks.find_iccenv")
+import("detect.sdks.find_ifortenv")
 import("lib.detect.find_tool")
 
 -- check intel on windows
 function _check_intel_on_windows(toolchain)
 
     -- have been checked?
-    if config.get("__iclvarsall") then
+    if config.get("__ifortvarsall") then
         return true
     end
 
-    -- find intel c/c++ compiler environment
-    local iccenv = find_iccenv()
-    if iccenv and iccenv.iclvars then
-        local iclvarsall = iccenv.iclvars
-        local iclenv = iclvarsall[toolchain:arch()]
-        if iclenv and iclenv.PATH and iclenv.INCLUDE and iclenv.LIB then
+    -- find intel fortran compiler environment
+    local ifortenv = find_ifortenv()
+    if ifortenv and ifortenv.ifortvars then
+        local ifortvarsall = ifortenv.ifortvars
+        local ifortenv = ifortvarsall[toolchain:arch()]
+        if ifortenv and ifortenv.PATH and ifortenv.INCLUDE and ifortenv.LIB then
 
-            -- save iclvars
-            config.set("__iclvarsall", iclvarsall)
+            -- save ifortvars
+            config.set("__ifortvarsall", ifortvarsall)
 
             -- check compiler
             local program = nil
-            local tool = find_tool("icl.exe", {force = true, envs = iclenv, version = true})
+            local tool = find_tool("ifort.exe", {force = true, envs = ifortenv, version = true})
             if tool then
                 program = tool.program
             end
             if program then
-                cprint("checking for Intel C/C++ Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+                cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 return true
             end
         end
@@ -58,7 +58,7 @@ end
 
 -- check intel on linux
 function _check_intel_on_linux(toolchain)
-    return find_tool("icc")
+    return find_tool("ifort")
 end
 
 -- main entry
@@ -69,4 +69,5 @@ function main(toolchain)
         return _check_intel_on_linux(toolchain)
     end
 end
+
 

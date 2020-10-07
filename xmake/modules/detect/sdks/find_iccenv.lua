@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_intel.lua
+-- @file        find_iccenv.lua
 --
 
 -- imports
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
--- init vc variables
+-- init icl variables
 local iclvars = {"path",
                  "lib",
                  "libpath",
@@ -93,7 +93,7 @@ function _load_iclvars(iclvars_bat, arch, opt)
     return variables
 end
 
--- find intel envirnoment on windows
+-- find intel c/c++ envirnoment on windows
 function _find_intel_on_windows(opt)
 
     -- init options
@@ -113,7 +113,7 @@ function _find_intel_on_windows(opt)
      end
 end
 
--- find intel envirnoment on linux
+-- find intel c/c++ envirnoment on linux
 function _find_intel_on_linux(opt)
 
     -- attempt to find the sdk directory
@@ -125,7 +125,7 @@ function _find_intel_on_linux(opt)
     end
 end
 
--- find intel environment
+-- find intel c/c++ environment
 function main(opt)
     if is_host("windows") then
         return _find_intel_on_windows(opt)

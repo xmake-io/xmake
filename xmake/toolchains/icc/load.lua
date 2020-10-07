@@ -99,7 +99,6 @@ function _load_intel_on_linux(toolchain)
     end
     if march then
         toolchain:add("cxflags", march)
-        toolchain:add("mxflags", march)
         toolchain:add("asflags", march)
         toolchain:add("ldflags", march)
         toolchain:add("shflags", march)
