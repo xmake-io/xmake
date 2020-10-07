@@ -188,10 +188,12 @@ function nf_language(self, stdname)
         _g.cmaps =
         {
             -- stdc
-            c99   = "-TP" -- compile as c++ files because msvc only support c89
+            c99   = "-TP" -- compile as c++ files because older msvc only support c89
         ,   gnu99 = "-TP"
-        ,   c11   = "-TP"
-        ,   gnu11 = "-TP"
+        ,   c11   = {"-std:c11", "-TP"}
+        ,   gnu11 = {"-std:c11", "-TP"}
+        ,   c17   = {"-std:c17", "-TP"}
+        ,   gnu17 = {"-std:c17", "-TP"}
         }
     end
 
@@ -207,10 +209,10 @@ function nf_language(self, stdname)
         ,   gnuxx17     = "-std:c++17"
         ,   cxx1z       = "-std:c++17"
         ,   gnuxx1z     = "-std:c++17"
-        ,   cxx20       = "-std:c++latest"
-        ,   gnuxx20     = "-std:c++latest"
-        ,   cxx2a       = "-std:c++latest"
-        ,   gnuxx2a     = "-std:c++latest"
+        ,   cxx20       = {"-std:c++20", "-std:c++latest"}
+        ,   gnuxx20     = {"-std:c++20", "-std:c++latest"}
+        ,   cxx2a       = {"-std:c++20", "-std:c++latest"}
+        ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -226,15 +228,14 @@ function nf_language(self, stdname)
     end
 
     -- map it
-    local flag = maps[stdname]
-
-    -- not support it?
-    if flag and flag:find("std:c++", 1, true) and not self:has_flags(flag, "cxflags") then
-        return
+    local flags = maps[stdname]
+    if flags then
+        for _, flag in ipairs(table.wrap(flags)) do
+            if self:has_flags(flag, "cxflags") then
+                return flag
+            end
+        end
     end
-
-    -- ok
-    return flag
 end
 
 -- make the define flag
