@@ -21,9 +21,16 @@
 if is_host("windows") then
 
     -- imports
-    import("core.project.config")
-    import("private.tools.vstool")
     inherit("cl")
+    inherit("link")
+    import("private.tools.vstool")
+
+    -- init it
+    function init(self)
+        self:set("fcflags", "-nologo")
+        self:set("fcldflags", "-nologo", "-dynamicbase", "-nxcompat")
+        self:set("fcshflags", "-nologo")
+    end
 
     -- get the property
     function get(self, name)
@@ -35,38 +42,10 @@ if is_host("windows") then
         return values
     end
 
-    -- make the strip flag
-    function nf_strip(self, level)
-        -- @note we explicitly strip some useless code, because `/debug` may keep them
-        -- @see https://github.com/xmake-io/xmake/issues/907
-        --
-        local maps =
-        {
-            debug = "/opt:ref /opt:icf"
-        ,   all   = "/opt:ref /opt:icf /ltcg" -- we enable /ltcg for optimize/smallest:/Gl
-        }
-        return maps[level]
-    end
-
-    -- make the link flag
-    function nf_link(self, lib)
-        return lib .. ".lib"
-    end
-
-    -- make the syslink flag
-    function nf_syslink(self, lib)
-        return nf_link(self, lib)
-    end
-
-    -- make the linkdir flag
-    function nf_linkdir(self, dir)
-        return "-libpath:" .. os.args(path.translate(dir))
-    end
-
     -- make the link arguments list
     function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
         opt = opt or {}
-        local argv = table.join(flags, "-out:" .. targetfile, objectfiles)
+        local argv = table.join("-o", targetfile, objectfiles, "/link", flags)
         if not opt.rawargs then
             argv = winos.cmdargv(argv)
         end

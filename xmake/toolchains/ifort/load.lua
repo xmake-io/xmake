@@ -46,23 +46,17 @@ end
 function _load_intel_on_windows(toolchain)
 
     -- set toolset
-    if toolchain:is_plat("windows") then
-        toolchain:set("toolset", "fc", "ifort.exe")
-        toolchain:set("toolset", "mrc", "rc.exe")
-        if toolchain:is_arch("x64") then
-            toolchain:set("toolset", "as",  "ml64.exe")
-        else
-            toolchain:set("toolset", "as",  "ml.exe")
-        end
-        toolchain:set("toolset", "fcld",  "ifort.exe")
-        toolchain:set("toolset", "fcsh",  "ifort.exe")
-        toolchain:set("toolset", "ar",  "link.exe")
-        toolchain:set("toolset", "ex",  "lib.exe")
+    toolchain:set("toolset", "fc", "ifort.exe")
+    toolchain:set("toolset", "mrc", "rc.exe")
+    if toolchain:is_arch("x64") then
+        toolchain:set("toolset", "as",  "ml64.exe")
     else
-        toolchain:set("toolset", "fc", "ifort")
-        toolchain:set("toolset", "fcld", "ifort")
-        toolchain:set("toolset", "fcsh", "ifort")
+        toolchain:set("toolset", "as",  "ml.exe")
     end
+    toolchain:set("toolset", "fcld",  "ifort.exe")
+    toolchain:set("toolset", "fcsh",  "ifort.exe")
+    toolchain:set("toolset", "fcar",  "link.exe")
+    toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add ifort environments
     _add_ifortenv(toolchain, "PATH")

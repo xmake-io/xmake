@@ -21,10 +21,12 @@
 -- define rule: fortran.build.modules
 rule("fortran.build.modules")
     before_build(function (target)
-        local modulesdir = target:values("fortran.moduledir") or path.join(target:objectdir(), ".modules")
-        os.mkdir(modulesdir)
-        target:add("fcflags", "-J" .. modulesdir)
-        target:add("includedirs", modulesdir, {public = true})
+        if not is_host("windows") then
+            local modulesdir = target:values("fortran.moduledir") or path.join(target:objectdir(), ".modules")
+            os.mkdir(modulesdir)
+            target:add("fcflags", "-J" .. modulesdir)
+            target:add("includedirs", modulesdir, {public = true})
+        end
     end)
 
 -- define rule: fortran.build
