@@ -49,7 +49,7 @@ function _find_mingwdir(sdkdir)
             local pathenv = os.getenv("PATH")
             if pathenv then
                 for _, p in ipairs(path.splitenv(pathenv)) do
-                    if p:find("mingw[%w%-%_%+]+[\\/]bin") and path.filename(p) == "bin" and os.isdir(p) then
+                    if p:find(string.ipattern("mingw[%w%-%_%+]*[\\/]bin")) and path.filename(p) == "bin" and os.isdir(p) then
                         sdkdir = path.directory(p)
                         break
                     end
