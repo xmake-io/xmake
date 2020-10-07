@@ -199,6 +199,7 @@ fasm          Flat Assembler
 tinyc         Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
+ifort         Intel Fortran Compiler
 ```
 
 ## Supported Languages
