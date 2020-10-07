@@ -55,7 +55,7 @@ function _load_intel_on_windows(toolchain)
     end
     toolchain:set("toolset", "fcld",  "ifort.exe")
     toolchain:set("toolset", "fcsh",  "ifort.exe")
-    toolchain:set("toolset", "fcar",  "link.exe")
+    toolchain:set("toolset", "ar",  "link.exe")
     toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add ifort environments
@@ -72,6 +72,7 @@ function _load_intel_on_linux(toolchain)
     toolchain:set("toolset", "fc", "ifort")
     toolchain:set("toolset", "fcld", "ifort")
     toolchain:set("toolset", "fcsh", "ifort")
+    toolchain:set("toolset", "ar", "ar")
 
     -- add march flags
     local march

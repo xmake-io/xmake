@@ -49,10 +49,8 @@ if is_host("windows") then
         if not opt.rawargs then
             argv = winos.cmdargv(argv)
         end
-        -- @note we cannot put -lib/-dll to @args.txt
-        if targetkind == "static" then
-            table.insert(argv, 1, "-lib")
-        elseif targetkind == "shared" then
+        -- @note we cannot put -dll to @args.txt
+        if targetkind == "shared" then
             table.insert(argv, 1, "-dll")
         end
         return self:program(), argv
