@@ -44,7 +44,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- init argv
     local argv = {}
-    if is_host("windows") then
+    if is_subhost("windows") then
         -- force "x:\\xx" as local file
         table.insert(argv, "--force-local")
     end
