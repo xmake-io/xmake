@@ -76,6 +76,14 @@ event:register("cm_max", "cm_quit", "cm_exit", "cm_enter")
 --
 event.keyboard = object {_init = { "key_code", "key_name", "key_meta" }, type = event.ev_keyboard}
 
+-- define mouse event
+--
+-- btn_name = button number and event type
+-- btn_code = mouse event code
+-- x, y = coordinates
+--
+event.mouse = object {_init = { "btn_code", "x", "y", "btn_name" }, type = event.ev_mouse}
+
 -- define command event
 event.command = object {_init = { "command", "extra" }, type = event.ev_command}
 

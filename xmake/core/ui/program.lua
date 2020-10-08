@@ -44,6 +44,11 @@ function program:init(name, argv)
     -- disable newline
     curses.nl(false)
 
+    -- init mouse support
+    if curses.KEY_MOUSE then
+        curses.mousemask(curses.ALL_MOUSE_EVENTS)
+    end
+
     -- to filter characters being output to the screen
     -- this will filter all characters where a chtype or chstr is used
     curses.map_output(true)
@@ -135,6 +140,11 @@ function program:event()
     -- get input key
     local key_code, key_name, key_meta = self:_input_key()
     if key_code then
+        if curses.KEY_MOUSE and key_code == curses.KEY_MOUSE then
+            local code, x, y = curses.getmouse()
+            local name = self:_mouse_map()[code]
+            return event.mouse{code, x, y, name}
+        end
         return event.keyboard{key_code, key_name, key_meta}
     end
 end
@@ -331,6 +341,21 @@ function program:_key_map()
         }
     end
     return self._KEYMAP
+end
+
+-- get mouse map
+function program:_mouse_map()
+    if not self._MOUSEMAP then
+        -- must be defined dynamically since it depends
+        -- on curses implementation
+        self._MOUSEMAP = {}
+        for n, v in pairs(curses) do
+            if (n:match('MOUSE') and n ~= 'KEY_MOUSE') or n:match('BUTTON') then
+                self._MOUSEMAP[v] = n
+            end
+        end
+    end
+    return self._MOUSEMAP
 end
 
 -- get input key

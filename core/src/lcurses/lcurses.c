@@ -598,7 +598,12 @@ static void register_curses_constants(lua_State *L)
     CC(KEY_CANCEL)      CC(KEY_CLOSE)       CC(KEY_COMMAND)
     CC(KEY_COPY)        CC(KEY_CREATE)      CC(KEY_END)
     CC(KEY_EXIT)        CC(KEY_FIND)        CC(KEY_HELP)
-    CC(KEY_MARK)        CC(KEY_MESSAGE)     CC(KEY_MOUSE)
+    CC(KEY_MARK)        CC(KEY_MESSAGE)
+#ifndef XCURSES
+#ifndef NOMOUSE
+    CC(KEY_MOUSE)
+#endif
+#endif
     CC(KEY_MOVE)        CC(KEY_NEXT)        CC(KEY_OPEN)
     CC(KEY_OPTIONS)     CC(KEY_PREVIOUS)    CC(KEY_REDO)
     CC(KEY_REFERENCE)   CC(KEY_REFRESH)     CC(KEY_REPLACE)
@@ -621,6 +626,28 @@ static void register_curses_constants(lua_State *L)
     CC2(KEY_F6, KEY_F(6))   CC2(KEY_F7, KEY_F(7))   CC2(KEY_F8, KEY_F(8))
     CC2(KEY_F9, KEY_F(9))   CC2(KEY_F10, KEY_F(10)) CC2(KEY_F11, KEY_F(11))
     CC2(KEY_F12, KEY_F(12))
+#ifndef XCURSES
+#ifndef NOMOUSE
+    /* Mouse Constants */
+    CC(BUTTON1_RELEASED); CC(BUTTON1_PRESSED); CC(BUTTON1_CLICKED);
+    CC(BUTTON1_DOUBLE_CLICKED); CC(BUTTON1_TRIPLE_CLICKED);
+    CC(BUTTON2_RELEASED); CC(BUTTON2_PRESSED); CC(BUTTON2_CLICKED);
+    CC(BUTTON2_DOUBLE_CLICKED); CC(BUTTON2_TRIPLE_CLICKED);
+    CC(BUTTON3_RELEASED); CC(BUTTON3_PRESSED); CC(BUTTON3_CLICKED);
+    CC(BUTTON3_DOUBLE_CLICKED); CC(BUTTON3_TRIPLE_CLICKED);
+    CC(BUTTON4_RELEASED); CC(BUTTON4_PRESSED); CC(BUTTON4_CLICKED);
+    CC(BUTTON4_DOUBLE_CLICKED); CC(BUTTON4_TRIPLE_CLICKED);
+    CC(BUTTON_CTRL); CC(BUTTON_SHIFT); CC(BUTTON_ALT);
+    CC(REPORT_MOUSE_POSITION); CC(ALL_MOUSE_EVENTS);
+#if NCURSES_MOUSE_VERSION > 1
+    CC(BUTTON5_RELEASED); CC(BUTTON5_PRESSED); CC(BUTTON5_CLICKED);
+    CC(BUTTON5_DOUBLE_CLICKED); CC(BUTTON5_TRIPLE_CLICKED);
+#else
+    CC(BUTTON1_RESERVED_EVENT); CC(BUTTON2_RESERVED_EVENT);
+    CC(BUTTON3_RESERVED_EVENT); CC(BUTTON4_RESERVED_EVENT);
+#endif
+#endif
+#endif
 }
 
 /*
@@ -704,6 +731,69 @@ static int lc_stdscr(lua_State *L)
 
 LC_NUMBER2(COLS, COLS)
 LC_NUMBER2(LINES, LINES)
+
+/*
+** =======================================================
+** mouse
+** =======================================================
+*/
+#ifndef XCURSES
+#ifndef NOMOUSE
+static int
+lc_ungetmouse(lua_State *L)
+{
+    MEVENT e;
+    e.bstate = luaL_checklong(L, 1);
+    e.x = luaL_checkint(L, 2);
+    e.y = luaL_checkint(L, 3);
+    e.z = luaL_checkint(L, 4);
+    e.id = luaL_checkint(L, 5);
+
+    lua_pushboolean(L, !(!ungetmouse(&e)));
+    return 1;
+}
+
+static int
+lc_getmouse(lua_State *L)
+{
+    MEVENT e;
+    if (getmouse(&e) == OK)
+    {
+        lua_pushinteger(L, e.bstate);
+        lua_pushinteger(L, e.x);
+        lua_pushinteger(L, e.y);
+        lua_pushinteger(L, e.z);
+        lua_pushinteger(L, e.id);
+        return 5;
+    }
+
+    lua_pushnil(L);
+    return 1;
+}
+
+static int
+lc_mousemask(lua_State *L)
+{
+    mmask_t m = luaL_checkint(L, 1);
+    mmask_t om;
+    m = mousemask(m, &om);
+    lua_pushinteger(L, m);
+    lua_pushinteger(L, om);
+    return 2;
+}
+
+static int
+lc_mouseinterval(lua_State *L)
+{
+    if (!lua_gettop(L))
+        lua_pushinteger(L, mouseinterval(-1));
+    else
+        lua_pushinteger(L, mouseinterval(luaL_checkint(L, 1)));
+    return 1;
+}
+
+#endif
+#endif
 
 /*
 ** =======================================================
@@ -2280,6 +2370,15 @@ static const luaL_Reg curseslib[] =
 
     /* outopts */
     { "nl",             lc_nl           },
+
+#ifndef XCURSES
+#ifndef NOMOUSE
+    { "mousemask",      lc_mousemask    },
+    { "mouseinterval",  lc_mouseinterval},
+    { "getmouse",       lc_getmouse     },
+    { "ungetmouse",     lc_ungetmouse   },
+#endif
+#endif
 
     /* slk */
     ECF(slk_init)
