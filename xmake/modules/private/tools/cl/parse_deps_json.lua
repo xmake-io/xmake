@@ -37,17 +37,18 @@ function main(depsdata)
 
     -- translate it
     local results = hashset.new()
+    local projectdir = os.projectdir():lower() -- we need generate lower string, because json values are all lower
     for _, includefile in ipairs(includes) do
 
-        -- get the relative
-        includefile = path.relative(includefile, project.directory())
-        includefile = path.absolute(includefile)
+        -- get the absolute path
+        if not path.is_absolute(includefile) then
+            includefile = path.absolute(includefile, projectdir):lower()
+        end
 
         -- save it if belong to the project
-        if includefile:startswith(os.projectdir()) then
-
+        if includefile:startswith(projectdir) then
             -- insert it and filter repeat
-            includefile = path.relative(includefile, project.directory())
+            includefile = path.relative(includefile, projectdir)
             results:insert(includefile)
         end
     end
