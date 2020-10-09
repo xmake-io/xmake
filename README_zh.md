@@ -411,6 +411,12 @@ $ ./gradlew app:assembleDebug
 > Task :app:assembleDebug
 ```
 
+## 官方课程
+
+xmake 官方也推出了一些入门课程，带你一步步快速上手 xmake，课程列表如下：
+
+* [Xmake 带你轻松构建 C/C++ 项目](https://xmake.io/#/zh-cn/about/course)
+
 ## 技术支持
 
 我们也提供付费的技术支持来为帮助用户快速解决相关问题，具体详情请点击下面的图片链接：
