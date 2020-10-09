@@ -22,12 +22,29 @@
 import("core.base.option")
 import("core.project.config")
 
+-- translate path
+function _translate_path(package, p)
+    if p and is_host("windows") and package:is_plat("mingw") then
+        p = p:gsub("\\", "/")
+    end
+    return p
+end
+
+-- translate windows bin path
+function _translate_windows_bin_path(bin_path)
+    if bin_path then
+        local argv = os.argv(bin_path)
+        argv[1] = argv[1]:gsub("\\", "/") .. ".exe"
+        return os.args(argv)
+    end
+end
+
 -- get configs
 function _get_configs(package, configs)
 
     -- add prefix
     local configs = configs or {}
-    table.insert(configs, "--prefix=" .. package:installdir())
+    table.insert(configs, "--prefix=" .. _translate_path(package, package:installdir()))
 
     -- add host for cross-complation
     if not configs.host and not package:is_plat(os.subhost()) then
@@ -113,10 +130,19 @@ function buildenvs(package)
             local ld = envs.LD
             if ld then
                 if ld:endswith("x86_64-w64-mingw32-g++") then
-                    envs.LD = path.join(path.directory(ld), "x86_64-w64-mingw32-ld")
+                    envs.LD = path.join(path.directory(ld), is_host("windows") and "ld" or "x86_64-w64-mingw32-ld")
                 elseif ld:endswith("i686-w64-mingw32-g++") then
-                    envs.LD = path.join(path.directory(ld), "i686-w64-mingw32-ld")
+                    envs.LD = path.join(path.directory(ld), is_host("windows") and "ld" or "i686-w64-mingw32-ld")
                 end
+            end
+            if is_host("windows") then
+                envs.CC       = _translate_windows_bin_path(envs.CC)
+                envs.AS       = _translate_windows_bin_path(envs.AS)
+                envs.AR       = _translate_windows_bin_path(envs.AR)
+                envs.LD       = _translate_windows_bin_path(envs.LD)
+                envs.LDSHARED = _translate_windows_bin_path(envs.LDSHARED)
+                envs.CPP      = _translate_windows_bin_path(envs.CPP)
+                envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
         end
     end
