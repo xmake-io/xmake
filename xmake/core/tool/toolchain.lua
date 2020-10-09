@@ -224,6 +224,7 @@ function _instance:_description(toolkind)
         {
             cc         = "the c compiler",
             cxx        = "the c++ compiler",
+            cpp        = "the c/c++ preprocessor",
             ld         = "the linker",
             sh         = "the shared library linker",
             ar         = "the static library archiver",
