@@ -67,7 +67,7 @@ toolchain("mingw")
             toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
         end
         toolchain:add("toolset", "cc", cross .. "gcc")
-        toolchain:add("toolset", "cxx", cross .. "gcc", cross .. "g++")
+        toolchain:add("toolset", "cxx", cross .. "g++", cross .. "gcc")
         toolchain:add("toolset", "cpp", cross .. "gcc -E")
         toolchain:add("toolset", "as", cross .. "gcc")
         toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc")
@@ -81,7 +81,7 @@ toolchain("mingw")
             -- we use bin/gcc.exe if cross not found
             -- @see https://github.com/xmake-io/xmake/issues/977#issuecomment-704863677
             toolchain:add("toolset", "cc", path.join(bindir, "gcc"))
-            toolchain:add("toolset", "cxx", path.join(bindir, "gcc"), path.join(bindir, "g++"))
+            toolchain:add("toolset", "cxx", path.join(bindir, "g++"), path.join(bindir, "gcc"))
             toolchain:add("toolset", "cpp", path.join(bindir, "gcc -E"))
             toolchain:add("toolset", "as", path.join(bindir, "gcc"))
             toolchain:add("toolset", "ld", path.join(bindir, "g++"), path.join(bindir, "gcc"))
