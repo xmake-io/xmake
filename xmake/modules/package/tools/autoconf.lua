@@ -153,7 +153,7 @@ function configure(package, configs, opt)
     end
 
     -- pass configurations
-    local argv = {}
+    local argv = {"./configure"}
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if value ~= "" then
@@ -166,7 +166,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("./configure", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("sh", argv, {envs = opt.envs or buildenvs(package)})
 end
 
 -- install package

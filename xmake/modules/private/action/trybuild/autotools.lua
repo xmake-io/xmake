@@ -204,7 +204,7 @@ function build()
     -- do configure
     local configfile = find_file("[mM]akefile", os.curdir())
     if not configfile or os.mtime(config.filepath()) > os.mtime(configfile) then
-        os.vexecv("./configure", _get_configs(artifacts_dir), {envs = _get_buildenvs()})
+        os.vexecv("sh", table.join("./configure", _get_configs(artifacts_dir)), {envs = _get_buildenvs()})
     end
 
     -- do build
