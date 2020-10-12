@@ -233,7 +233,7 @@ ifort         Intel Fortran Compiler
 
 ## 更多例子
 
-Debug和Release模式：
+#### Debug 和 Release模式
 
 ```lua
 add_rules("mode.debug", "mode.release")
@@ -246,7 +246,7 @@ target("console")
     end
 ```
 
-自定义脚本:
+#### 自定义脚本
 
 ```lua
 target("test")
@@ -257,6 +257,8 @@ target("test")
         os.exec("echo %s", target:targetfile())
     end)
 ```
+
+#### 依赖包自动集成
 
 下载和使用在[xmake-repo](https://github.com/xmake-io/xmake-repo)和第三方包仓库的依赖包：
 
@@ -269,7 +271,7 @@ target("test")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
 ```
 
-Qt QuickApp应用程序:
+#### Qt QuickApp 应用程序
 
 ```lua
 target("test")
@@ -278,7 +280,7 @@ target("test")
     add_files("src/qml.qrc")
 ```
 
-Cuda程序:
+#### Cuda 程序
 
 ```lua
 target("test")
@@ -288,7 +290,7 @@ target("test")
     add_cugencodes("compute_35")
 ```
 
-WDK/UMDF驱动程序:
+#### WDK/UMDF 驱动程序
 
 ```lua
 target("echo")
@@ -304,7 +306,7 @@ target("app")
 
 更多WDK驱动程序例子(umdf/kmdf/wdm)，见：[WDK工程例子](https://xmake.io/#/zh-cn/guide/project_examples?id=wdk%e9%a9%b1%e5%8a%a8%e7%a8%8b%e5%ba%8f)
 
-iOS/MacOS应用程序:
+#### iOS/MacOS 应用程序
 
 ```lua
 target("test")
@@ -313,13 +315,24 @@ target("test")
     add_files("src/Info.plist")
 ```
 
-Framework和Bundle程序（iOS/MacOS）:
+#### Framework 和 Bundle 程序（iOS/MacOS）
 
 ```lua
 target("test")
     add_rules("xcode.framework") -- 或者 xcode.bundle
     add_files("src/*.m")
     add_files("src/Info.plist")
+```
+
+#### OpenMP 程序
+
+```lua
+add_requires("libomp", {optional = true})
+target("loop")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    add_rules("c++.openmp")
+    add_packages("libomp")
 ```
 
 ## 插件

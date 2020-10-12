@@ -231,7 +231,7 @@ ifort         Intel Fortran Compiler
 
 ## More Examples
 
-Debug and release modes:
+#### Debug and release modes
 
 ```lua
 add_rules("mode.debug", "mode.release")
@@ -244,7 +244,7 @@ target("console")
     end
 ```
 
-Custom scripts:
+#### Custom scripts
 
 ```lua
 target("test")
@@ -255,6 +255,8 @@ target("test")
         os.exec("echo %s", target:targetfile())
     end)
 ```
+
+#### Automatic integration of dependent packages
 
 Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo) or third-party repositories:
 
@@ -267,7 +269,7 @@ target("test")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
 ```
 
-Qt QuickApp Program:
+#### Qt QuickApp Program
 
 ```lua
 target("test")
@@ -276,7 +278,7 @@ target("test")
     add_files("src/qml.qrc")
 ```
 
-Cuda Program:
+#### Cuda Program
 
 ```lua
 target("test")
@@ -286,7 +288,7 @@ target("test")
     add_cugencodes("compute_35")
 ```
 
-WDK/UMDF Driver Program:
+#### WDK/UMDF Driver Program
 
 ```lua
 target("echo")
@@ -302,7 +304,7 @@ target("app")
 
 More wdk driver program examples (umdf/kmdf/wdm), please see [WDK Program Examples](https://xmake.io/#/guide/project_examples?id=wdk-driver-program)
 
-iOS/MacOS Application:
+#### iOS/MacOS Application
 
 ```lua
 target("test")
@@ -311,13 +313,24 @@ target("test")
     add_files("src/Info.plist")
 ```
 
-Framework and Bundle Program (iOS/MacOS):
+#### Framework and Bundle Program (iOS/MacOS)
 
 ```lua
 target("test")
     add_rules("xcode.framework") -- or xcode.bundle
     add_files("src/*.m")
     add_files("src/Info.plist")
+```
+
+#### OpenMP Program
+
+```lua
+add_requires("libomp", {optional = true})
+target("loop")
+    set_kind("binary")
+    add_files("src/*.cpp")
+    add_rules("c++.openmp")
+    add_packages("libomp")
 ```
 
 ## Plugins
