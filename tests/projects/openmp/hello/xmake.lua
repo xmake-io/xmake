@@ -1,0 +1,6 @@
+add_requires("libomp", {optional = true})
+target("hello")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_rules("c.openmp")
+    add_packages("libomp")

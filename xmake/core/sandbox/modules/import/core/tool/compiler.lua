@@ -32,14 +32,10 @@ local sandbox  = require("sandbox/sandbox")
 
 -- load the compiler from the given source kind
 function sandbox_core_tool_compiler.load(sourcekind, opt)
-
-    -- get the compiler instance
     local instance, errors = compiler.load(sourcekind, opt and opt.target or nil)
     if not instance then
         raise(errors)
     end
-
-    -- ok
     return instance
 end
 
@@ -164,6 +160,23 @@ function sandbox_core_tool_compiler.build(sourcefiles, targetfile, opt)
     if not ok then
         raise(errors)
     end
+end
+
+-- get the current compiler name of given language kind
+--
+-- @param langkind      the language kind, e.g. c, cxx, mm, mxx, swift, go, rust, d, as
+--
+-- @return              the compiler name
+--
+function sandbox_core_tool_compiler.name(langkind, opt)
+
+    -- get sourcekind from the language kind
+    local sourcekind = language.langkinds()[langkind]
+    assert(sourcekind, "unknown language kind: " .. langkind)
+
+    -- get the compiler instance
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
+    return instance:name()
 end
 
 -- get all compiler features
