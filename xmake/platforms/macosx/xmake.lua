@@ -28,7 +28,7 @@ platform("macosx")
     set_hosts("macosx")
 
     -- set archs
-    set_archs("i386", "x86_64")
+    set_archs("i386", "x86_64", "arm64")
 
     -- set formats
     set_formats("static", "lib$(name).a")
