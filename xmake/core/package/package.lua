@@ -1134,6 +1134,7 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
+        ,   "package.set_license"
         ,   "package.set_homepage"
         ,   "package.set_description"
         ,   "package.set_parallelize"
