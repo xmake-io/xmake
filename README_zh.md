@@ -64,6 +64,12 @@ xmake 是一个基于 Lua 的轻量级跨平台构建工具，使用 xmake.lua �
 
 ![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
 
+## 课程
+
+xmake 官方也推出了一些入门课程，带你一步步快速上手 xmake，课程列表如下：
+
+* [Xmake 带你轻松构建 C/C++ 项目](https://xmake.io/#/zh-cn/about/course)
+
 ## 安装
 
 #### 使用curl
@@ -423,12 +429,6 @@ $ ./gradlew app:assembleDebug
 > Task :nativelib:assemble
 > Task :app:assembleDebug
 ```
-
-## 官方课程
-
-xmake 官方也推出了一些入门课程，带你一步步快速上手 xmake，课程列表如下：
-
-* [Xmake 带你轻松构建 C/C++ 项目](https://xmake.io/#/zh-cn/about/course)
 
 ## 技术支持
 
