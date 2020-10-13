@@ -73,6 +73,10 @@ function buildenvs(package)
         if os.isdir(pkgconfig) then
             table.insert(PKG_CONFIG_PATH, pkgconfig)
         end
+        pkgconfig = path.join(dep:installdir(), "share", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
+        end
         local aclocal = path.join(dep:installdir(), "share", "aclocal")
         if os.isdir(aclocal) then
             table.insert(ACLOCAL_PATH, aclocal)
