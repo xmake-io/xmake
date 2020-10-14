@@ -50,7 +50,7 @@ tb_int_t xm_io_filelock_open(lua_State* lua)
     tb_long_t tryn = 2;
     tb_filelock_ref_t lock = tb_null;
     while (!lock && tryn-- > 0)
-        lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RO : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
+        lock = tb_filelock_init_from_path(path, tb_file_info(path, tb_null)? TB_FILE_MODE_RW : TB_FILE_MODE_RW | TB_FILE_MODE_CREAT);
     if (lock) xm_lua_pushpointer(lua, (tb_pointer_t)lock);
     else lua_pushnil(lua);
     return 1;
