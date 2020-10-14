@@ -1045,6 +1045,40 @@ function _instance:has_cxxfuncs(funcs, opt)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
 
+-- has the given c includes?
+--
+-- @param includes  the includes
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cincludes(includes, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
+    opt = opt or {}
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
+end
+
+-- has the given c++ includes?
+--
+-- @param includes  the includes
+-- @param opt       the argument options, e.g. { defines = ""}
+--
+-- @return          true or false
+--
+function _instance:has_cxxincludes(includes, opt)
+    if self:plat() ~= config.get("plat") then
+        -- TODO
+        return true
+    end
+    opt = opt or {}
+    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
+end
+
 -- check the given c snippets?
 --
 -- @param snippets  the snippets
