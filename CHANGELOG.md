@@ -24,6 +24,7 @@
 ### Bugs fixed
 
 * [#951](https://github.com/xmake-io/xmake/issues/951): Fix emcc support for windows
+* [#992](https://github.com/xmake-io/xmake/issues/992): Fix filelock bug
 
 ## v2.3.7
 
@@ -861,6 +862,7 @@
 ### Bugs修复
 
 * [#951](https://github.com/xmake-io/xmake/issues/951): 修复 emcc (WebAssembly) 工具链在windows上的支持
+* [#992](https://github.com/xmake-io/xmake/issues/992): 修复文件锁偶尔打开失败问题
 
 ## v2.3.7
 
