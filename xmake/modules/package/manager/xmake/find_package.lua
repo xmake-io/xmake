@@ -62,10 +62,12 @@ function _find_package_from_repo(name, opt)
     for _, includedir in ipairs(vars.includedirs) do
         table.insert(includedirs, path.join(installdir, includedir))
     end
-    if #includedirs == 0 then
+    if #includedirs == 0 and os.isdir(path.join(installdir, "include")) then
         table.insert(includedirs, path.join(installdir, "include"))
     end
-    result.includedirs = table.unique(includedirs)
+    if #includedirs > 0 then
+        result.includedirs = table.unique(includedirs)
+    end
 
     -- get links and link directories
     local links = {}
