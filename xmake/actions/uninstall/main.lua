@@ -87,6 +87,9 @@ function main()
                     cprint("${color.success}uninstall ok!")
                     ok = true
                 end
+                if not ok and os.syserror() == os.SYSERR_NOT_PERM then
+                    wprint("please pass the --admin parameter to `xmake uninstall` to request administrator permissions!")
+                end
                 assert(ok, "uninstall failed, %s", errors or "unknown reason")
             end
         }
