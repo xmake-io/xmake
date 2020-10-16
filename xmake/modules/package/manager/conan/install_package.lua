@@ -167,7 +167,7 @@ function main(name, opt)
     end
 
     -- set platform
-    local plats = {macosx = "Macos", windows = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
+    local plats = {macosx = "Macos", windows = "Windows", mingw = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
     table.insert(argv, "-s")
     local plat = plats[opt.plat]
     if plat then

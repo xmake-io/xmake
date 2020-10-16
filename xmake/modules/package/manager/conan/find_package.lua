@@ -29,7 +29,7 @@ end
 
 -- get conan platform
 function _conan_get_plat(opt)
-    local plats = {macosx = "Macos", windows = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
+    local plats = {macosx = "Macos", windows = "Windows", mingw = "Windows", linux = "Linux", cross = "Linux", iphoneos = "iOS", android = "Android"}
     return plats[opt.plat]
 end
 
