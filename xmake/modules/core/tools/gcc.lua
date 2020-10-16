@@ -175,6 +175,8 @@ function nf_language(self, stdname)
         ,   gnu99       = "-std=gnu99"
         ,   c11         = "-std=c11"
         ,   gnu11       = "-std=gnu11"
+        ,   c17         = "-std=c17"
+        ,   gnu17       = "-std=gnu17"
         }
     end
 
