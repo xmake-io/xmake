@@ -35,6 +35,10 @@ function main(name, opt)
 
     -- get library info
     local libinfo = pkg_config.libinfo(name, opt)
+    if not libinfo and name:startswith("lib") then
+        -- libxxx? attempt to find xxx without `lib` prefix
+        libinfo = pkg_config.libinfo(name:sub(4), opt)
+    end
     if not libinfo then
         return
     end
