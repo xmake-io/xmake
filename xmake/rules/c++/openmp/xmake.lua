@@ -21,7 +21,7 @@
 -- define rule: c.openmp
 rule("c.openmp")
     on_load(function (target)
-        import("load")(target, "c")
+        import("load")(target, "cc")
     end)
 
 -- define rule: c++.openmp

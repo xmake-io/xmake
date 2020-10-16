@@ -554,11 +554,7 @@ function _instance:linker()
     if not instance then
         os.raise(errors)
     end
-
-    -- cache it
     self._LINKER = instance
-
-    -- get it
     return instance
 end
 

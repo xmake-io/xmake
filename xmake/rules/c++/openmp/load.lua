@@ -18,13 +18,10 @@
 -- @file        load.lua
 --
 
--- imports
-import("core.tool.compiler")
-
 -- main entry
-function main(target, langkind)
-    local compiler_name = compiler.name(langkind)
-    local flag_name     = langkind .. "flags"
+function main(target, sourcekind)
+    local _, compiler_name = target:tool(sourcekind)
+    local flag_name        = sourcekind == "cxx" and "cxxflags" or "cflags"
     if compiler_name == "cl" then
         target:add(flag_name, "/openmp")
     elseif compiler_name == "clang" or compiler_name == "clangxx" then
