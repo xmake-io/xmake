@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.8
+
 ### New features
 
 * [#955](https://github.com/xmake-io/xmake/issues/955): Add zig project templates
@@ -839,6 +841,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.8
 
 ### 新特性
 

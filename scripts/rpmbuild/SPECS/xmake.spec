@@ -1,4 +1,4 @@
-%define     xmake_revision       dfdfbb9a2397e0bc7183f579bf43cfa803efddfc
+%define     xmake_revision       bfc315b68cb1ba2cd2a4ee069fd8a265de4f522d
 %define     tbox_revision        f4970bcd0fcc05b09742452a4b3b3d2d1055569d
 %define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
@@ -7,7 +7,7 @@
 %undefine   _disable_source_fetch
 
 Name:       xmake
-Version:    2.3.7
+Version:    2.3.8
 Release:    1%{?dist}
 Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
@@ -82,6 +82,9 @@ cp -p LICENSE.md %{buildroot}%{_datadir}
 %license %{_datadir}/LICENSE.md
 
 %changelog
+* Sun Oct 18 2020 Ruki Wang <waruqi@gmail.com> - 2.3.8-1
+- v2.3.8 released
+
 * Mon Sep 14 2020 Ruki Wang <waruqi@gmail.com> - 2.3.7-1
 - Initial Commit
 
