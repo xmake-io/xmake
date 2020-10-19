@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#997](https://github.com/xmake-io/xmake/issues/997): Support to set std lanuages for `xmake project -k cmake`
+
 ## v2.3.8
 
 ### New features
@@ -841,6 +845,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#997](https://github.com/xmake-io/xmake/issues/997): `xmake project -k cmake` 插件增加对 `set_languages` 的支持
 
 ## v2.3.8
 

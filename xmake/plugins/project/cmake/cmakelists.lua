@@ -302,6 +302,30 @@ function _add_target_warnings(cmakelists, target)
     end
 end
 
+-- add target languages
+function _add_target_languages(cmakelists, target)
+    local features =
+    {
+        c89   = "c_std_90"
+    ,   c99   = "c_std_99"
+    ,   c11   = "c_std_11"
+    ,   cxx98 = "cxx_std_98"
+    ,   cxx11 = "cxx_std_11"
+    ,   cxx14 = "cxx_std_14"
+    ,   cxx17 = "cxx_std_17"
+    ,   cxx20 = "cxx_std_20"
+    }
+    local languages = target:get("languages")
+    if languages then
+        for _, lang in ipairs(languages) do
+            local feature = features[lang] or (features[lang:replace("++", "xx")])
+            if feature then
+                cmakelists:print("target_compile_features(%s PRIVATE %s)", target:name(), feature)
+            end
+        end
+    end
+end
+
 -- add target optimization
 function _add_target_optimization(cmakelists, target)
     local flags_gcc =
@@ -457,6 +481,9 @@ function _add_target(cmakelists, target)
 
     -- add target warnings
     _add_target_warnings(cmakelists, target)
+
+    -- add target languages
+    _add_target_languages(cmakelists, target)
 
     -- add target optimization
     _add_target_optimization(cmakelists, target)
