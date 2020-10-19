@@ -52,11 +52,16 @@ function main(name, opt)
     local triplet = arch .. "-" .. plat
     if opt.plat == "windows" and opt.shared ~= true then
         triplet = triplet .. "-static"
-        assert(not opt.vs_runtime or opt.vs_runtime:startswith("MT"), "only support static libraries with /MT[d] for vcpkg!")
+        if opt.vs_runtime and opt.vs_runtime:startswith("MD") then
+            triplet = triplet .. "-md"
+        end
     end
 
     -- init argv
     local argv = {"install", name .. ":" .. triplet}
+    if option.get("diagnosis") then
+        table.insert(argv, "--debug")
+    end
 
     -- install package
     os.vrunv(path.join(vcpkgdir, "vcpkg"), argv)

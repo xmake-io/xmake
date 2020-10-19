@@ -64,7 +64,9 @@ function main(name, opt)
     local pkgconfigs = opt.pkgconfigs
     if plat == "windows" and pkgconfigs and pkgconfigs.shared ~= true then
         triplet = triplet .. "-static"
-        assert(not pkgconfigs.vs_runtime or pkgconfigs.vs_runtime:startswith("MT"), "only support static libraries with /MT[d] for vcpkg!")
+        if pkgconfigs.vs_runtime and pkgconfigs.vs_runtime:startswith("MD") then
+            triplet = triplet .. "-md"
+        end
     end
     local infofile = find_file(format("%s_*_%s.list", name, triplet), infodir)
 
