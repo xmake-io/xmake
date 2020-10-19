@@ -42,8 +42,16 @@ function _find_vcpkgdir(sdkdir)
                 table.insert(paths, dir)
             end
         end
-    else
-        -- TODO
+    end
+
+    -- attempt to find it from the $PATH
+    local pathenv = os.getenv("PATH")
+    if pathenv then
+        for _, p in ipairs(path.splitenv(pathenv)) do
+            if p:find(string.ipattern("[\\/]vcpkg")) and os.isdir(p) then
+                table.insert(paths, p)
+            end
+        end
     end
 
     -- attempt to find vcpkg
