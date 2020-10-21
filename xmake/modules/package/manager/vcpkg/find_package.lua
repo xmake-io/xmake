@@ -76,6 +76,9 @@ function main(name, opt)
     if info then
         for _, line in ipairs(info:split('\n')) do
             line = line:trim()
+            if plat == "windows" then
+                line = line:lower()
+            end
 
             -- get includedirs
             if line:endswith("/include/") then
@@ -116,6 +119,16 @@ function main(name, opt)
         result.version = infoname:match(name .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
         if not result.version then
             result.version = infoname:match(name .. "_(%d+%.?%d*%.-)_" .. arch)
+        end
+    end
+
+    -- remove repeat
+    if result then
+        if result.linkdirs then
+            result.linkdirs = table.unique(result.linkdirs)
+        end
+        if result.includedirs then
+            result.includedirs = table.unique(result.includedirs)
         end
     end
     return result
