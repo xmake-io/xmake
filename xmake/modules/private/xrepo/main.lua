@@ -19,20 +19,11 @@
 --
 
 -- imports
+import("core.base.text")
 import("core.base.option")
 
--- main menu options
-local _main_options =
-{
-    {},
-    {'h', "help",      "k",  nil, "Print this help message and exit." },
-    {},
-    {nil, "action",    "v",  nil, "The sub-command name."    },
-    {nil, "options",   "vs", nil, "The sub-command options." }
-}
-
--- show help menu of main program
-function _main_show_help()
+-- show banner of main program
+function _show_banner()
 
     -- show title
     cprint("${bright}xRepo %s/xmake, A cross-platform C/C++ package manager based on Xmake.", xmake.version())
@@ -51,12 +42,65 @@ function _main_show_help()
                          by ruki, xmake.io
     ]]
     option.show_logo(logo, {seed = 680, bright = true})
+end
 
-    -- show usage
-    cprint("${bright}Usage: $${clear cyan}xrepo [action] [options]")
+-- get main menu options
+function _menu_options()
 
-    -- show options
-    option.show_options(_main_options)
+    -- main menu options
+    local options =
+    {
+        {},
+        {'h', "help",      "k",  nil, "Print this help message and exit." },
+        {},
+        {nil, "action",    "v",  nil, "The sub-command name."    },
+        {nil, "options",   "vs", nil, "The sub-command options." }
+    }
+
+    -- show menu in narrow mode?
+    local function menu_isnarrow()
+        local width = os.getwinsize().width
+        return width > 0 and width < 60
+    end
+
+    -- show all actions
+    local function show_actions()
+        print("")
+        cprint("${bright}Actions:")
+
+        -- make action content
+        local tablecontent = {}
+        local narrow = menu_isnarrow()
+        for _, scriptfile in ipairs(os.files(path.join(os.scriptdir(), "action", "*.lua"))) do
+            local action_name = path.basename(scriptfile)
+            local action = import("private.xrepo.action." .. action_name, {anonymous = true})
+            local _, _, description = action.menu_options()
+            local taskline = string.format(narrow and "  %s" or "    %s", action_name)
+            table.insert(tablecontent, {taskline, description})
+        end
+
+        -- set table styles
+        tablecontent.style = {"${color.menu.main.task.name}"}
+        tablecontent.width = {nil, "auto"}
+        tablecontent.sep = narrow and "  " or "    "
+
+        -- print table
+        io.write(text.table(tablecontent))
+    end
+
+    -- show options of main program
+    local function show_options()
+
+        -- show usage
+        cprint("${bright}Usage: $${clear cyan}xrepo [action] [options]")
+
+        -- show actions
+        show_actions()
+
+        -- show options
+        option.show_options(options)
+    end
+    return options, show_options
 end
 
 -- parse options
@@ -64,33 +108,60 @@ function _parse_options(...)
 
     -- get action and arguments
     local argv = table.pack(...)
-    local action = nil
+    local action_name = nil
     if #argv > 0 and not argv[1]:startswith('-') then
-        action = argv[1]
+        action_name = argv[1]
         argv = table.slice(argv, 2)
     end
 
-    -- parse argument options
-    local opt, errors = option.raw_parse(argv, _main_options)
-    if opt then
-        opt.action = action
+    -- get menu
+    local action, options, show_options
+    if action_name then
+        action = assert(import("private.xrepo.action." .. action_name, {anonymous = true, try = true}), "xrepo: action %s not found!", action_name)
+        options, show_options = action.menu_options()
+    else
+        options, show_options = _menu_options()
     end
-    return opt, errors
+
+    -- parse argument options
+    local menu = nil
+    local options, errors = option.raw_parse(argv, options)
+    if options then
+        menu             = {}
+        menu.options     = options
+        menu.action      = action
+        menu.action_name = action_name
+        menu.show_help   = function ()
+            _show_banner()
+            show_options()
+        end
+    end
+    return menu, errors
 end
 
 -- main entry
 function main(...)
 
     -- parse argument options
-    local mainopt, errors = _parse_options(...)
-    if not mainopt then
-        _main_show_help() -- TODO
+    local menu, errors = _parse_options(...)
+    if not menu then
+        _show_help()
         raise(errors)
     end
 
     -- help?
-    if mainopt.help or not mainopt.action then
-        _main_show_help()
+    local options = menu.options
+    if not options or options.help or not menu.action_name then
+        if menu.show_help then
+            menu.show_help()
+        else
+            _show_help()
+        end
         return
+    end
+
+    -- do action
+    if menu.action then
+        menu.action(menu)
     end
 end
