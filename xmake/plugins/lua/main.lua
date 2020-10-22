@@ -65,6 +65,17 @@ function _run_commanad(command, args)
     return _run_script(tmpfile, args)
 end
 
+function _is_callable(func)
+    if type(func) == "function" then
+        return true
+    elseif type(func) == "table" then
+        local meta = debug.getmetatable(func)
+        if meta and meta.__call then
+            return true
+        end
+    end
+end
+
 function _run_script(script, args)
 
     local func
@@ -108,7 +119,7 @@ function _run_script(script, args)
     _print_vlog(script_type or "script", script_name or "", args)
 
     -- dump func() result
-    if type(func) == "function" or (type(func) == "table" and func.main and type(func.main) == "function") then
+    if _is_callable(func) then
         local result = table.pack(func(table.unpack(args, 1, args.n)))
         if printresult and result and result.n ~= 0 then
             utils.dump(unpack(result, 1, result.n))
