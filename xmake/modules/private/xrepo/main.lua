@@ -35,7 +35,7 @@ local _main_options =
 function _main_show_help()
 
     -- show title
-    cprint("${bright}xRepo %s, A cross-platform C/C++ package manager based on Xmake.", xmake.version())
+    cprint("${bright}xRepo %s/xmake, A cross-platform C/C++ package manager based on Xmake.", xmake.version())
 
     -- show copyright
     cprint("Copyright (C) 2015-present Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}")
@@ -44,9 +44,9 @@ function _main_show_help()
     -- show logo
     local logo = [[
     __  ___ ___  ______ ____  _____
-    \ \/ / |  _ \| ____|  _ \|  _  |
+    \ \/ / |  _ \| ____|  _ \/  _  |
      >  <  | |_) |  _| | |_) | |_| |
-    /_/\_\_| \___|_____|_|   |_____|
+    /_/\_\_| \___|_____|_|   |____/
 
                          by ruki, xmake.io
     ]]
