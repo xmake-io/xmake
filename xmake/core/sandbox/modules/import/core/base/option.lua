@@ -57,8 +57,8 @@ function sandbox_core_base_option.defaults()
 end
 
 -- show logo
-function sandbox_core_base_option.show_logo(logo)
-    option.show_logo(logo)
+function sandbox_core_base_option.show_logo(logo, opt)
+    option.show_logo(logo, opt)
 end
 
 -- show options

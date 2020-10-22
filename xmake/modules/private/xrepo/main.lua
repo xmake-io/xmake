@@ -50,7 +50,7 @@ function _main_show_help()
 
                          by ruki, xmake.io
     ]]
-    option.show_logo(logo)
+    option.show_logo(logo, {seed = 680, bright = true})
 
     -- show usage
     cprint("${bright}Usage: $${clear cyan}xrepo [action] [options]")
@@ -59,18 +59,37 @@ function _main_show_help()
     option.show_options(_main_options)
 end
 
+-- parse options
+function _parse_options(...)
+
+    -- get action and arguments
+    local argv = table.pack(...)
+    local action = nil
+    if #argv > 0 and not argv[1]:startswith('-') then
+        action = argv[1]
+        argv = table.slice(argv, 2)
+    end
+
+    -- parse argument options
+    local opt, errors = option.raw_parse(argv, _main_options)
+    if opt then
+        opt.action = action
+    end
+    return opt, errors
+end
+
 -- main entry
 function main(...)
 
     -- parse argument options
-    local mainopt, errors = option.raw_parse(table.pack(...), _main_options)
+    local mainopt, errors = _parse_options(...)
     if not mainopt then
-        _main_show_help()
+        _main_show_help() -- TODO
         raise(errors)
     end
 
     -- help?
-    if mainopt.help then
+    if mainopt.help or not mainopt.action then
         _main_show_help()
         return
     end

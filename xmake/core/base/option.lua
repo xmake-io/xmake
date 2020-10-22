@@ -484,7 +484,7 @@ function option.show_update_tips()
 end
 
 -- show logo
-function option.show_logo(logo)
+function option.show_logo(logo, opt)
 
     -- define logo
     logo = logo or [[
@@ -498,15 +498,16 @@ function option.show_logo(logo)
     ]]
 
     -- make rainbow for logo
+    opt = opt or {}
     if colors.truecolor() or colors.color256() then
         local lines = {}
-        local seed  = 236
+        local seed  = opt.seed or 236
         for _, line in ipairs(logo:split("\n")) do
             local i = 0
             local line2 = ""
             line:gsub(".", function (c)
                 local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
-                line2 = string.format("%s${%s}%s", line2, code, c)
+                line2 = string.format("%s${%s %s}%s", line2, opt.bright and "bright" or "", code, c)
                 i = i + 1
             end)
             table.insert(lines, line2)
