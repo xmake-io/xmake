@@ -22,8 +22,8 @@
 import("core.base.text")
 import("core.base.option")
 
--- show banner of main program
-function _show_banner()
+-- show version
+function _show_version()
 
     -- show title
     cprint("${bright}xRepo %s/xmake, A cross-platform C/C++ package manager based on Xmake.", xmake.version())
@@ -48,14 +48,7 @@ end
 function _menu_options()
 
     -- main menu options
-    local options =
-    {
-        {},
-        {'h', "help",      "k",  nil, "Print this help message and exit." },
-        {},
-        {nil, "action",    "v",  nil, "The sub-command name."    },
-        {nil, "options",   "vs", nil, "The sub-command options." }
-    }
+    local options = {}
 
     -- show menu in narrow mode?
     local function menu_isnarrow()
@@ -123,18 +116,31 @@ function _parse_options(...)
         options, show_options = _menu_options()
     end
 
+    -- insert common options
+    local common_options =
+    {
+        {},
+        {'v', "verbose",   "k", nil, "Print lots of verbose information for users."},
+        {'D', "diagnosis", "k", nil, "Print lots of diagnosis information."},
+        {nil, "version",   "k", nil, "Print the version number and exit."},
+        {'h', "help",      "k", nil, "Print this help message and exit."},
+        {}
+    }
+    for _, opt in ipairs(common_options) do
+        table.insert(options, 1, opt)
+    end
+
     -- parse argument options
-    local menu = nil
-    local options, errors = option.raw_parse(argv, options)
-    if options then
-        menu             = {}
-        menu.options     = options
-        menu.action      = action
-        menu.action_name = action_name
-        menu.show_help   = function ()
-            _show_banner()
-            show_options()
-        end
+    local menu = {}
+    local results, errors = option.raw_parse(argv, options)
+    if results then
+        menu.options = results
+    end
+    menu.action      = action
+    menu.action_name = action_name
+    menu.show_help   = function ()
+        _show_version()
+        show_options()
     end
     return menu, errors
 end
@@ -144,24 +150,31 @@ function main(...)
 
     -- parse argument options
     local menu, errors = _parse_options(...)
-    if not menu then
-        _show_help()
+    if errors then
+        menu.show_help()
         raise(errors)
     end
 
-    -- help?
+    -- show help?
     local options = menu.options
-    if not options or options.help or not menu.action_name then
-        if menu.show_help then
-            menu.show_help()
-        else
-            _show_help()
-        end
-        return
+    if not options or options.help then
+        return menu.show_help()
     end
+
+    -- show version?
+    if options.version then
+        return _show_version()
+    end
+
+    -- init option
+    option.save()
+    option.set("verbose", options.verbose)
+    option.set("diagnosis", options.diagnosis)
 
     -- do action
     if menu.action then
         menu.action(menu)
+    else
+        menu.show_help()
     end
 end

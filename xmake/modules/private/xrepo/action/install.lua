@@ -30,9 +30,6 @@ function menu_options()
     -- menu options
     local options =
     {
-        {},
-        {'h', "help",      "k",  nil, "Print this help message and exit." },
-        {},
         {nil, "action",    "v",  nil, "The sub-command name."    },
         {nil, "options",   "vs", nil, "The sub-command options." }
     }
