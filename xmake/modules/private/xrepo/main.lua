@@ -37,5 +37,4 @@ function main(...)
                                            , ""
                                            , "Usage: xrepo [action] [options]")
 
-    print("sss")
 end

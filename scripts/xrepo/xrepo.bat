@@ -1,0 +1,1 @@
+xmake lua private.xrepo %*
