@@ -47,7 +47,7 @@ local menu =
     title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on Lua${clear}"
 
     -- copyright
-,   copyright = "Copyright (C) 2015-2020 Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}"
+,   copyright = "Copyright (C) 2015-present Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}"
 
     -- the tasks: xmake [task]
 ,   function ()

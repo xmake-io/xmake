@@ -56,6 +56,16 @@ function sandbox_core_base_option.defaults()
     return option.defaults() or {}
 end
 
+-- show logo
+function sandbox_core_base_option.show_logo(logo)
+    option.show_logo(logo)
+end
+
+-- show options
+function sandbox_core_base_option.show_options(options)
+    option.show_options(options)
+end
+
 -- parse arguments with the given options
 function sandbox_core_base_option.raw_parse(argv, options, opt)
 

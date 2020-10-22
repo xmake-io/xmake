@@ -484,17 +484,17 @@ function option.show_update_tips()
 end
 
 -- show logo
-function option.show_logo()
+function option.show_logo(logo)
 
     -- define logo
-    local logo = [[
+    logo = logo or [[
                          _
     __  ___ __  __  __ _| | ______
     \ \/ / |  \/  |/ _  | |/ / __ \
      >  <  | \__/ | /_| |   <  ___/
     /_/\_\_|_|  |_|\__ \|_|\_\____|
 
-                         by ruki, tboox.org
+                         by ruki, xmake.io
     ]]
 
     -- make rainbow for logo
