@@ -23,6 +23,8 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
+import("core.tool.linker")
+import("core.tool.compiler")
 import("impl.package")
 import("impl.repository")
 import("impl.utils.get_requires")
@@ -62,12 +64,8 @@ function main(requires_raw)
         local flags = {}
         if fetchmodes:has("cflags") then
             for _, fetchinfo in ipairs(fetchinfos) do
-                for _, includedir in ipairs(fetchinfo.includedirs) do
-                    table.insert(flags, "-I" .. os.args(includedir))
-                end
-                for _, define in ipairs(fetchinfo.defines) do
-                    table.insert(flags, "-D" .. define)
-                end
+                table.join2(flags, compiler.map_flags("cxx", "define", fetchinfo.defines))
+                table.join2(flags, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
                 for _, cflag in ipairs(fetchinfo.cflags) do
                     table.insert(flags, cflag)
                 end
@@ -81,12 +79,8 @@ function main(requires_raw)
         end
         if fetchmodes:has("ldflags") then
             for _, fetchinfo in ipairs(fetchinfos) do
-                for _, linkdir in ipairs(fetchinfo.linkdirs) do
-                    table.insert(flags, "-L" .. os.args(linkdir))
-                end
-                for _, link in ipairs(fetchinfo.links) do
-                    table.insert(flags, "-l" .. link)
-                end
+                table.join2(flags, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
+                table.join2(flags, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
                 for _, ldflag in ipairs(fetchinfo.ldflags) do
                     table.insert(flags, ldflags)
                 end

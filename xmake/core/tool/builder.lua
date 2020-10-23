@@ -407,6 +407,24 @@ function builder:has_flags(flags, flagkind)
     return self:_tool():has_flags(flags, flagkind)
 end
 
+-- map flags from name and values, e.g. linkdirs, links, defines
+function builder:map_flags(name, values, opt)
+    local flags  = {}
+    local mapper = self:_tool()["nf_" .. name]
+    if mapper then
+        opt = opt or {}
+        for _, value in ipairs(table.wrap(values)) do
+            local flag = mapper(self:_tool(), value, opt.target, opt.targetkind)
+            if flag and flag ~= "" and (not opt.check or self:has_flags(flag)) then
+                table.join2(flags, flag)
+            end
+        end
+    end
+    if #flags > 0 then
+        return flags
+    end
+end
+
 -- get the format of the given target kind
 function builder:format(targetkind)
     local formats = self:get("formats")

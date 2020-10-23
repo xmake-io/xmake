@@ -113,5 +113,26 @@ function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags, opt)
     return instance:has_flags(flags)
 end
 
+-- map flags from name and values
+--
+-- @param targetkind    the target kind
+-- @param sourcekinds   the source kinds
+-- @param values        the values
+-- @param opt           the options
+--
+-- @return              flags or nil
+--
+function sandbox_core_tool_linker.map_flags(targetkind, sourcekinds, name, values, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get the linker instance
+    local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
+
+    -- map flags
+    return instance:map_flags(name, values, opt)
+end
+
 -- return module
 return sandbox_core_tool_linker

@@ -289,7 +289,7 @@ end
 --
 -- @param langkind      the language kind, e.g. c, cxx, mm, mxx, swift, go, rust, d, as
 -- @param flags         the flags
--- @param options       the options
+-- @param opt           the options
 --
 -- @return              the supported flags or nil
 --
@@ -307,6 +307,31 @@ function sandbox_core_tool_compiler.has_flags(langkind, flags, opt)
 
     -- has flags?
     return instance:has_flags(flags)
+end
+
+-- map flags from name and values
+--
+-- @param langkind      the language kind, e.g. c, cxx, mm, mxx, swift, go, rust, d, as
+-- @param name          the name, e.g. includedirs, defines, links
+-- @param values        the values
+-- @param opt           the options
+--
+-- @return              flags or nil
+--
+function sandbox_core_tool_compiler.map_flags(langkind, name, values, opt)
+
+    -- init options
+    opt = opt or {}
+
+    -- get sourcekind from the language kind
+    local sourcekind = language.langkinds()[langkind]
+    assert(sourcekind, "unknown language kind: " .. langkind)
+
+    -- get the compiler instance
+    local instance = sandbox_core_tool_compiler.load(sourcekind, opt)
+
+    -- map flags
+    return instance:map_flags(name, values, opt)
 end
 
 -- return module
