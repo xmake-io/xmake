@@ -27,6 +27,7 @@ import("core.platform.platform")
 import("list")
 import("scan")
 import("info")
+import("fetch")
 import("clean")
 import("search")
 import("export")
@@ -95,6 +96,11 @@ function main()
     elseif option.get("info") then
 
         info(option.get("requires"))
+
+    -- fetch the library info of the given package
+    elseif option.get("fetch") then
+
+        fetch(option.get("requires"))
 
     -- list all package dependencies in project
     elseif option.get("list") then
