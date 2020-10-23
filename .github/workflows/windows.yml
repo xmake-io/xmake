@@ -54,6 +54,7 @@ jobs:
       - name: tests
         run: |
           Copy-Item ./core/build/xmake.exe ./xmake
+          Copy-Item ./scripts/xrepo.bat ./xmake
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
           xmake show
