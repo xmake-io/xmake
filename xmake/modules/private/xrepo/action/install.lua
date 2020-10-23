@@ -30,8 +30,14 @@ function menu_options()
     -- menu options
     local options =
     {
-        {nil, "action",    "v",  nil, "The sub-command name."    },
-        {nil, "options",   "vs", nil, "The sub-command options." }
+        {'k', "kind",       "kv", nil, "Enable static/shared library.",
+                                       values = {"static", "shared"}         },
+        {'p', "plat",       "kv", nil, "Set the given platform."             },
+        {'a', "arch",       "kv", nil, "Set the given architecture."         },
+        {'m', "mode",       "kv", nil, "Set the given mode.",
+                                       values = {"release", "debug"}         },
+        {},
+        {nil, "shallow",    "k",  nil, "Does not install dependent packages."}
     }
 
     -- show menu options
@@ -45,7 +51,7 @@ function menu_options()
         print(description)
 
         -- show options
-        option.show_options(options)
+        option.show_options(options, "install")
     end
     return options, show_options, description
 end

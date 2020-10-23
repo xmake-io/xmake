@@ -62,8 +62,8 @@ function sandbox_core_base_option.show_logo(logo, opt)
 end
 
 -- show options
-function sandbox_core_base_option.show_options(options)
-    option.show_options(options)
+function sandbox_core_base_option.show_options(options, taskname)
+    option.show_options(options, taskname)
 end
 
 -- parse arguments with the given options

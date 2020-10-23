@@ -91,7 +91,7 @@ function _menu_options()
         show_actions()
 
         -- show options
-        option.show_options(options)
+        option.show_options(options, "main")
     end
     return options, show_options
 end
@@ -119,18 +119,17 @@ function _parse_options(...)
     -- insert common options
     local common_options =
     {
-        {},
-        {'q', "quiet",     "k", nil, "Quiet operation."},
-        {'y', "yes",       "k", nil, "Input yes by default if need user confirm."},
-        {nil, "root",      "k", nil, "Allow to run xrepo as root."},
+        {'q', "quiet",     "k", nil, "Quiet operation."                            },
+        {'y', "yes",       "k", nil, "Input yes by default if need user confirm."  },
+        {nil, "root",      "k", nil, "Allow to run xrepo as root."                 },
         {},
         {'v', "verbose",   "k", nil, "Print lots of verbose information for users."},
-        {'D', "diagnosis", "k", nil, "Print lots of diagnosis information."},
-        {nil, "version",   "k", nil, "Print the version number and exit."},
-        {'h', "help",      "k", nil, "Print this help message and exit."},
-        {}
+        {'D', "diagnosis", "k", nil, "Print lots of diagnosis information."        },
+        {nil, "version",   "k", nil, "Print the version number and exit."          },
+        {'h', "help",      "k", nil, "Print this help message and exit."           },
+        {category = action and "action" or nil},
     }
-    for _, opt in ipairs(common_options) do
+    for _, opt in irpairs(common_options) do
         table.insert(options, 1, opt)
     end
 
