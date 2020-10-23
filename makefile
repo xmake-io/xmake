@@ -85,13 +85,7 @@ xmake_core_install  :=$(destdir)/bin/xmake.exe
 else
 xmake_core_install  :=$(destdir)/bin/xmake
 endif
-ifdef iswin
-xrepo_name 			:=xrepo.bat
-xrepo_bin_install   :=$(destdir)/bin/xrepo.bat
-else
-xrepo_name 			:=xrepo.sh
 xrepo_bin_install   :=$(destdir)/bin/xrepo
-endif
 
 build:
 	@echo compiling xmake-core ...
@@ -115,7 +109,7 @@ install:
 	@cp $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
 	@# install the xrepo bin file
-	@cp ./scripts/$(xrepo_name) $(xrepo_bin_install)
+	@echo "#!/usr/bin/env sh\n$(xmake_core_install) lua private.xrepo \""'$$@"' > $(xrepo_bin_install)
 	@chmod 777 $(xrepo_bin_install)
 	@# remove xmake.out
 	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi

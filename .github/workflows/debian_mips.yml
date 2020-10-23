@@ -28,4 +28,4 @@ jobs:
             source ~/.xmake/profile &&
             export XMAKE_ROOT=y &&
             export XMAKE_TMPDIR=/tmp &&
-            xmake lua -v -D tests/run.lua"
+            xmake lua -v -D tests/run.lua && xrepo --version"

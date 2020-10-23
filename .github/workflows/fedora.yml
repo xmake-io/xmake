@@ -82,4 +82,5 @@ jobs:
           XMAKE_ROOT: y
         run: |
           xmake lua -v -D tests/run.lua
+          xrepo --version
 

@@ -30,6 +30,7 @@ jobs:
       - name: tests
         run: |
           xmake lua -v -D tests/run.lua
+          xrepo --version
 
         # build artifacts
       - name: artifact

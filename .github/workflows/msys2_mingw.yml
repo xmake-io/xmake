@@ -44,3 +44,4 @@ jobs:
         run: |
           cd /C/_
           xmake lua -v -D tests/run.lua
+          xrepo --version
