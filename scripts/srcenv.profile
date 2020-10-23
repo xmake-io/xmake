@@ -5,7 +5,7 @@ if [ -f `pwd`/core/build/xmake ]; then
 else
     alias xmake=`pwd`/core/src/demo/demo.b
 fi
-alias xrepo=`pwd`/scripts/xrepo
+alias xrepo=`pwd`/scripts/xrepo.sh
 xmake --version
 xmake l xmake.programdir
 xmake l xmake.programfile

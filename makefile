@@ -87,10 +87,11 @@ xmake_core_install  :=$(destdir)/bin/xmake
 endif
 ifdef iswin
 xrepo_name 			:=xrepo.bat
+xrepo_bin_install   :=$(destdir)/bin/xrepo.bat
 else
-xrepo_name 			:=xrepo
+xrepo_name 			:=xrepo.sh
+xrepo_bin_install   :=$(destdir)/bin/xrepo
 endif
-xrepo_bin_install   :=$(destdir)/bin/$(xrepo_name)
 
 build:
 	@echo compiling xmake-core ...
