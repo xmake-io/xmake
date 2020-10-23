@@ -84,5 +84,8 @@ function main(toolchain)
     _add_vsenv(toolchain, "LIB")
     _add_vsenv(toolchain, "INCLUDE")
     _add_vsenv(toolchain, "LIBPATH")
+
+    -- add some default flags
+    toolchain:add("cxxflags", "/EHsc")
 end
 

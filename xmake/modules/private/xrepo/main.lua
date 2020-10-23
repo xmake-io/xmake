@@ -120,6 +120,10 @@ function _parse_options(...)
     local common_options =
     {
         {},
+        {'q', "quiet",     "k", nil, "Quiet operation."},
+        {'y', "yes",       "k", nil, "Input yes by default if need user confirm."},
+        {nil, "root",      "k", nil, "Allow to run xrepo as root."},
+        {},
         {'v', "verbose",   "k", nil, "Print lots of verbose information for users."},
         {'D', "diagnosis", "k", nil, "Print lots of diagnosis information."},
         {nil, "version",   "k", nil, "Print the version number and exit."},
@@ -168,8 +172,9 @@ function main(...)
 
     -- init option
     option.save()
-    option.set("verbose", options.verbose)
-    option.set("diagnosis", options.diagnosis)
+    for k, v in pairs(options) do
+        option.set(k, v)
+    end
 
     -- do action
     if menu.action then
