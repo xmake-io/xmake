@@ -507,7 +507,7 @@ function option.show_logo(logo, opt)
             local line2 = ""
             line:gsub(".", function (c)
                 local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
-                line2 = string.format("%s${%s %s}%s", line2, opt.bright and "bright" or "", code, c)
+                line2 = string.format("%s${bright %s}%s", line2, code, c)
                 i = i + 1
             end)
             table.insert(lines, line2)

@@ -41,7 +41,7 @@ function _show_version()
 
                          by ruki, xmake.io
     ]]
-    option.show_logo(logo, {seed = 680, bright = true})
+    option.show_logo(logo, {seed = 680})
 end
 
 -- get main menu options
