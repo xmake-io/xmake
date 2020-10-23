@@ -36,8 +36,15 @@ function menu_options()
         {'a', "arch",       "kv", nil, "Set the given architecture."         },
         {'m', "mode",       "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
+        {nil, "configs",    "kv", nil, "Set the given extra package configs.",
+                                       ".e.g",
+                                       "    - xrepo install --configs=\"vs_runtime=MD\" zlib",
+                                       "    - xrepo install --configs=\"regex=true,thread=true\" boost"},
         {},
-        {nil, "shallow",    "k",  nil, "Does not install dependent packages."}
+        {'f', "force",      "k",  nil, "Force to reinstall all package dependencies."},
+        {nil, "shallow",    "k",  nil, "Does not install dependent packages."},
+        {},
+        {nil, "packages",   "vs", nil, "The packages list."                  }
     }
 
     -- show menu options
@@ -56,7 +63,108 @@ function menu_options()
     return options, show_options, description
 end
 
+-- install packages
+function _install_packages(packages)
+
+    -- enter working project directory
+    local workdir = path.join(os.tmpdir(), "xrepo", "install")
+    if not os.isdir(workdir) then
+        os.mkdir(workdir)
+        os.cd(workdir)
+        os.vrunv("xmake", {"create", "-P", "."})
+    else
+        os.cd(workdir)
+    end
+
+    -- disable xmake-stats
+    os.setenv("XMAKE_STATS", "false")
+
+    -- do configure first
+    local config_argv = {"f", "-c"}
+    if option.get("verbose") then
+        table.insert(config_argv, "-v")
+    end
+    if option.get("diagnosis") then
+        table.insert(config_argv, "-D")
+    end
+    if option.get("plat") then
+        table.insert(config_argv, "-p")
+        table.insert(config_argv, option.get("plat"))
+    end
+    if option.get("arch") then
+        table.insert(config_argv, "-a")
+        table.insert(config_argv, option.get("arch"))
+    end
+    local mode  = option.get("mode")
+    if mode then
+        table.insert(config_argv, "-m")
+        table.insert(config_argv, mode)
+    end
+    local kind  = option.get("kind")
+    if kind then
+        table.insert(config_argv, "-k")
+        table.insert(config_argv, kind)
+    end
+    if option.get("ndk") then
+        table.insert(config_argv, "--ndk=" .. option.get("ndk"))
+    end
+    if option.get("mingw") then
+        table.insert(config_argv, "--mingw=" .. option.get("mingw"))
+    end
+    os.vrunv("xmake", config_argv)
+
+    -- do install
+    local require_argv = {"require"}
+    if option.get("yes") then
+        table.insert(require_argv, "-y")
+    end
+    if option.get("verbose") then
+        table.insert(require_argv, "-v")
+    end
+    if option.get("diagnosis") then
+        table.insert(require_argv, "-D")
+    end
+    if option.get("force") then
+        table.insert(require_argv, "--force")
+    end
+    if option.get("shallow") then
+        table.insert(require_argv, "--shallow")
+    end
+    local extra = nil
+    if mode == "debug" then
+        extra = extra or {}
+        extra.debug = true
+    end
+    if kind == "shared" then
+        extra = extra or {}
+        extra.configs = extra.configs or {}
+        extra.configs.shared = true
+    end
+    local configs = option.get("configs")
+    if configs then
+        extra = extra or {}
+        extra.configs = extra.configs or {}
+        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
+        if extra_configs then
+            table.join2(extra.configs, extra_configs)
+        else
+            raise(errors)
+        end
+    end
+    if extra then
+        local extra_str = string.serialize(extra, {indent = false, strip = true})
+        table.insert(require_argv, "--extra=" .. extra_str)
+    end
+    table.join2(require_argv, packages)
+    os.vexecv("xmake", require_argv)
+end
+
 -- main entry
 function main(menu)
-    menu.show_help()
+    local packages = option.get("packages")
+    if packages then
+        _install_packages(packages)
+    else
+        raise("please specify the package to be installed.")
+    end
 end
