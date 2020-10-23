@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        install.lua
+-- @file        remove.lua
 --
 
 -- imports
@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "Install the given packages."
+    local description = "Remove the given packages."
 
     -- menu options
     local options =
@@ -38,39 +38,36 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {nil, "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo install --configs=\"vs_runtime=MD\" zlib",
-                                       "    - xrepo install --configs=\"regex=true,thread=true\" boost"},
-        {},
-        {'f', "force",      "k",  nil, "Force to reinstall all package dependencies."},
-        {nil, "shallow",    "k",  nil, "Does not install dependent packages."},
+                                       "    - xrepo remove --configs=\"vs_runtime=MD\" zlib",
+                                       "    - xrepo remove --configs=\"regex=true,thread=true\" boost"},
         {},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
-                                       "    - xrepo install zlib boost",
-                                       "    - xrepo install -p iphoneos -a arm64 \"zlib >=1.2.0\"",
-                                       "    - xrepo install -p android [--ndk=/xxx] -m debug \"pcre2 10.x\"",
-                                       "    - xrepo install -p mingw [--mingw=/xxx] -k shared zlib",
-                                       "    - xrepo install conan::zlib/1.2.11 vcpkg::zlib"}
+                                       "    - xrepo remove zlib boost",
+                                       "    - xrepo remove -p iphoneos -a arm64 \"zlib >=1.2.0\"",
+                                       "    - xrepo remove -p android -m debug \"pcre2 10.x\"",
+                                       "    - xrepo remove -p mingw -k shared zlib",
+                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib"}
     }
 
     -- show menu options
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo install [options] packages")
+        cprint("${bright}Usage: $${clear cyan}xrepo remove [options] packages")
 
         -- show description
         print("")
         print(description)
 
         -- show options
-        option.show_options(options, "install")
+        option.show_options(options, "remove")
     end
     return options, show_options, description
 end
 
--- install packages
-function _install_packages(packages)
+-- remove packages
+function _remove_packages(packages)
 
     -- enter working project directory
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
@@ -81,9 +78,6 @@ function _install_packages(packages)
     else
         os.cd(workdir)
     end
-
-    -- disable xmake-stats
-    os.setenv("XMAKE_STATS", "false")
 
     -- do configure first
     local config_argv = {"f", "-c"}
@@ -111,16 +105,10 @@ function _install_packages(packages)
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
-    if option.get("ndk") then
-        table.insert(config_argv, "--ndk=" .. option.get("ndk"))
-    end
-    if option.get("mingw") then
-        table.insert(config_argv, "--mingw=" .. option.get("mingw"))
-    end
     os.vrunv("xmake", config_argv)
 
-    -- do install
-    local require_argv = {"require"}
+    -- do remove
+    local require_argv = {"require", "--uninstall"}
     if option.get("yes") then
         table.insert(require_argv, "-y")
     end
@@ -129,12 +117,6 @@ function _install_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
-    end
-    if option.get("force") then
-        table.insert(require_argv, "--force")
-    end
-    if option.get("shallow") then
-        table.insert(require_argv, "--shallow")
     end
     local extra = nil
     if mode == "debug" then
@@ -169,8 +151,8 @@ end
 function main(menu)
     local packages = option.get("packages")
     if packages then
-        _install_packages(packages)
+        _remove_packages(packages)
     else
-        raise("please specify the package to be installed.")
+        raise("please specify the package to be removed.")
     end
 end
