@@ -41,6 +41,10 @@ function menu_options()
                                        "    - xrepo fetch --configs=\"vs_runtime=MD\" zlib",
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
         {},
+        {nil, "deps",       "k",  nil, "Fetch packages with dependencies."   },
+        {nil, "cflags",     "k",  nil, "Fetch cflags of the given packages." },
+        {nil, "ldflags",    "k",  nil, "Fetch ldflags of the given packages."},
+        {},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo fetch zlib boost",
@@ -117,6 +121,19 @@ function _fetch_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    local fetchmodes = {}
+    if option.get("deps") then
+        table.insert(fetchmodes, "deps")
+    end
+    if option.get("cflags") then
+        table.insert(fetchmodes, "cflags")
+    end
+    if option.get("ldflags") then
+        table.insert(fetchmodes, "ldflags")
+    end
+    if #fetchmodes > 0 then
+        table.insert(require_argv, "--fetch_modes=" .. table.concat(fetchmodes, ','))
     end
     local extra = nil
     if mode == "debug" then
