@@ -27,7 +27,7 @@ import("core.language.language")
 function _get_macro_defines(snippets, extension, opt)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "gcc_features" .. extension)
+    local sourcefile = os.tmpfile() .. extension
     io.writefile(sourcefile, table.concat(table.wrap(snippets), "\n"))
 
     -- get defines

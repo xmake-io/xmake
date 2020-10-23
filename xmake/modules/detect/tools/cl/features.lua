@@ -26,7 +26,7 @@ import("cxxfeatures")
 function _get_macro_defines(snippets, extension, opt)
 
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "cl_features" .. extension)
+    local sourcefile = os.tmpfile() .. extension
     local objectfile = sourcefile .. ".obj"
     local binaryfile = sourcefile .. ".exe"
     io.writefile(sourcefile, "#include <stdio.h>\n\nint main(int argc, char** argv)\n{\n" .. table.concat(table.wrap(snippets), "\n") .. "\nreturn 0;\n}\n")
