@@ -85,6 +85,12 @@ xmake_core_install  :=$(destdir)/bin/xmake.exe
 else
 xmake_core_install  :=$(destdir)/bin/xmake
 endif
+ifdef iswin
+xrepo_name 			:=xrepo.bat
+else
+xrepo_name 			:=xrepo
+endif
+xrepo_bin_install   :=$(destdir)/bin/$(xrepo_name)
 
 build:
 	@echo compiling xmake-core ...
@@ -107,6 +113,9 @@ install:
 	@# install the xmake core file
 	@cp $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
+	@# install the xrepo bin file
+	@cp ./scripts/$(xrepo_name) $(xrepo_bin_install)
+	@chmod 777 $(xrepo_bin_install)
 	@# remove xmake.out
 	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi
 	@# ok
@@ -116,6 +125,7 @@ uninstall:
 	@echo uninstalling from $(destdir) ...
 	@if [ -d $(xmake_dir_install) ]; then rm -rf $(xmake_dir_install); fi
 	@if [ -f $(xmake_core_install) ]; then rm $(xmake_core_install); fi
+	@if [ -f $(xrepo_bin_install) ]; then rm $(xrepo_bin_install); fi
 	@echo ok!
 
 test:
