@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* Add new [xrepo](https://github.com/xmake-io/xrepo) command to manage C/C++ packages
+
 ### Change
 
 * [#997](https://github.com/xmake-io/xmake/issues/997): Support to set std lanuages for `xmake project -k cmake`
@@ -847,6 +851,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* 添加新的 [xrepo](https://github.com/xmake-io/xrepo) 命令去管理安装 C/C++ 包
 
 ### 改进
 
