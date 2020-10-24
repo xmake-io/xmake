@@ -62,7 +62,7 @@ function main(requires_raw)
     -- show results
     if #fetchinfos > 0 then
         local flags = {}
-        if fetchmodes:has("cflags") then
+        if fetchmodes and fetchmodes:has("cflags") then
             for _, fetchinfo in ipairs(fetchinfos) do
                 table.join2(flags, compiler.map_flags("cxx", "define", fetchinfo.defines))
                 table.join2(flags, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
@@ -77,7 +77,7 @@ function main(requires_raw)
                 end
             end
         end
-        if fetchmodes:has("ldflags") then
+        if fetchmodes and fetchmodes:has("ldflags") then
             for _, fetchinfo in ipairs(fetchinfos) do
                 table.join2(flags, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
                 table.join2(flags, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
