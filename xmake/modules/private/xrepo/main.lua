@@ -61,11 +61,24 @@ function _menu_options()
         print("")
         cprint("${bright}Actions:")
 
+        -- get action names
+        local repo_actions = {}
+        local package_actions = {}
+        for _, scriptfile in ipairs(os.files(path.join(os.scriptdir(), "action", "*.lua"))) do
+            local action_name = path.basename(scriptfile)
+            if action_name:endswith("-repo") then
+                table.insert(repo_actions, action_name)
+            else
+                table.insert(package_actions, action_name)
+            end
+        end
+        table.sort(repo_actions)
+        table.sort(package_actions)
+
         -- make action content
         local tablecontent = {}
         local narrow = menu_isnarrow()
-        for _, scriptfile in ipairs(os.files(path.join(os.scriptdir(), "action", "*.lua"))) do
-            local action_name = path.basename(scriptfile)
+        for _, action_name in ipairs(table.join(package_actions, repo_actions)) do
             local action = import("private.xrepo.action." .. action_name, {anonymous = true})
             local _, _, description = action.menu_options()
             local taskline = string.format(narrow and "  %s" or "    %s", action_name)
