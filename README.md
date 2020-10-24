@@ -269,6 +269,8 @@ target("test")
     add_packages("tbox", "libuv", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8", "openssl")
 ```
 
+In addition, we can also use the [xrepo](https://github.com/xmake-io/xrepo) command to quickly install dependent packages.
+
 #### Qt QuickApp Program
 
 ```lua
