@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        rm-repo.lua
+-- @file        clean.lua
 --
 
 -- imports
@@ -25,33 +25,36 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "Remove the given remote repository."
+    local description = "Clear all package caches and remove all not-referenced packages."
 
     -- menu options
     local options =
     {
-        {nil, "all",  "k", nil, "Remove all added repositories."},
-        {nil, "name", "v", nil, "The repository name."}
+        {nil, "packages",   "vs", nil, "The packages list (support lua pattern).",
+                                       "e.g.",
+                                       "    - xrepo clean",
+                                       "    - xrepo clean zlib",
+                                       "    - xrepo clean zlib bo*"}
     }
 
     -- show menu options
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo rm-repo [options] [name]")
+        cprint("${bright}Usage: $${clear cyan}xrepo clean [options] [packages]")
 
         -- show description
         print("")
         print(description)
 
         -- show options
-        option.show_options(options, "rm-repo")
+        option.show_options(options, "clean")
     end
     return options, show_options, description
 end
 
--- remove repository
-function remove_repository(name)
+-- clean packages
+function _clean_packages(packages)
 
     -- enter working project directory
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
@@ -63,50 +66,34 @@ function remove_repository(name)
         os.cd(workdir)
     end
 
-    -- remove it
-    local repo_argv = {"repo", "--remove", "--global"}
+    -- do configure first
+    local config_argv = {"f", "-c"}
     if option.get("verbose") then
-        table.insert(repo_argv, "-v")
+        table.insert(config_argv, "-v")
     end
     if option.get("diagnosis") then
-        table.insert(repo_argv, "-D")
+        table.insert(config_argv, "-D")
     end
-    table.insert(repo_argv, name)
-    os.vexecv("xmake", repo_argv)
-end
+    os.vrunv("xmake", config_argv)
 
--- clear repository
-function clear_repository()
-
-    -- enter working project directory
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
-    if not os.isdir(workdir) then
-        os.mkdir(workdir)
-        os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
-    else
-        os.cd(workdir)
+    -- do clean
+    local require_argv = {"require", "--clean"}
+    if option.get("yes") then
+        table.insert(require_argv, "-y")
     end
-
-    -- clear all
-    local repo_argv = {"repo", "--clear", "--global"}
     if option.get("verbose") then
-        table.insert(repo_argv, "-v")
+        table.insert(require_argv, "-v")
     end
     if option.get("diagnosis") then
-        table.insert(repo_argv, "-D")
+        table.insert(require_argv, "-D")
     end
-    os.vexecv("xmake", repo_argv)
+    if packages then
+        table.join2(require_argv, packages)
+    end
+    os.vexecv("xmake", require_argv)
 end
 
 -- main entry
 function main()
-    local name = option.get("name")
-    if name then
-        remove_repository(name)
-    elseif option.get("all") then
-        clear_repository()
-    else
-        raise("please specify the repository name to be removed.")
-    end
+    _clean_packages(option.get("packages"))
 end

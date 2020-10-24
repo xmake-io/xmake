@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "fetch library information of the given installed packages."
+    local description = "Fetch library information of the given installed packages."
 
     -- menu options
     local options =

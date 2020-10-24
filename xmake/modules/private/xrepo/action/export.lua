@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "export the given packages."
+    local description = "Export the given packages."
 
     -- menu options
     local options =

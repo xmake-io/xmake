@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "search the given packages."
+    local description = "Search the given packages."
 
     -- menu options
     local options =

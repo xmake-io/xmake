@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "update all local repositories from remote."
+    local description = "Update all local repositories from remote."
 
     -- menu options
     local options = {}
