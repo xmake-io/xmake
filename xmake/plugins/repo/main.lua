@@ -164,7 +164,7 @@ function _list()
 
     -- list all repositories
     local count = 0
-    for _, position in ipairs({"local", "global"}) do
+    for _, position in ipairs(option.get("global") and "global" or {"local", "global"}) do
 
         -- trace
         print("%s repositories:", position)
