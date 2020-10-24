@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        rm-repo.lua
+-- @file        update-repo.lua
 --
 
 -- imports
@@ -25,33 +25,29 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "remove the given remote repository."
+    local description = "update all local repositories from remote."
 
     -- menu options
-    local options =
-    {
-        {nil, "all",  "k", nil, "Remove all added repositories."},
-        {nil, "name", "v", nil, "The repository name."}
-    }
+    local options = {}
 
     -- show menu options
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo rm-repo [options] [name]")
+        cprint("${bright}Usage: $${clear cyan}xrepo update-repo [options]")
 
         -- show description
         print("")
         print(description)
 
         -- show options
-        option.show_options(options, "rm-repo")
+        option.show_options(options, "update-repo")
     end
     return options, show_options, description
 end
 
--- remove repository
-function remove_repository(name)
+-- update repository
+function update_repository()
 
     -- enter working project directory
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
@@ -63,33 +59,8 @@ function remove_repository(name)
         os.cd(workdir)
     end
 
-    -- remove it
-    local repo_argv = {"repo", "--remove", "--global"}
-    if option.get("verbose") then
-        table.insert(repo_argv, "-v")
-    end
-    if option.get("diagnosis") then
-        table.insert(repo_argv, "-D")
-    end
-    table.insert(repo_argv, name)
-    os.vexecv("xmake", repo_argv)
-end
-
--- clear repository
-function clear_repository()
-
-    -- enter working project directory
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
-    if not os.isdir(workdir) then
-        os.mkdir(workdir)
-        os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
-    else
-        os.cd(workdir)
-    end
-
-    -- clear all
-    local repo_argv = {"repo", "--clear", "--global"}
+    -- update it
+    local repo_argv = {"repo", "--update"}
     if option.get("verbose") then
         table.insert(repo_argv, "-v")
     end
@@ -101,12 +72,5 @@ end
 
 -- main entry
 function main(menu)
-    local name = option.get("name")
-    if name then
-        remove_repository(name)
-    elseif option.get("all") then
-        clear_repository()
-    else
-        raise("please specify the repository name to be removed.")
-    end
+    update_repository()
 end

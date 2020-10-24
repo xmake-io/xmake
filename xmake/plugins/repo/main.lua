@@ -160,11 +160,11 @@ function _clear(is_global)
 end
 
 -- list all repositories
-function _list()
+function _list(is_global)
 
     -- list all repositories
     local count = 0
-    for _, position in ipairs(option.get("global") and "global" or {"local", "global"}) do
+    for _, position in ipairs(is_global and "global" or {"local", "global"}) do
 
         -- trace
         print("%s repositories:", position)
@@ -237,7 +237,7 @@ function main()
     -- list all repositories
     elseif option.get("list") then
 
-        _list()
+        _list(option.get("global"))
 
     -- show repo directory
     else

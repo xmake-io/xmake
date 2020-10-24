@@ -72,5 +72,5 @@ end
 
 -- main entry
 function main(menu)
-    list_repository(name)
+    list_repository()
 end
