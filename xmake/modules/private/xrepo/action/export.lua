@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        remove.lua
+-- @file        export.lua
 --
 
 -- imports
@@ -25,7 +25,7 @@ import("core.base.option")
 function menu_options()
 
     -- description
-    local description = "Remove the given packages."
+    local description = "export the given packages."
 
     -- menu options
     local options =
@@ -38,38 +38,40 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {nil, "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo remove --configs=\"vs_runtime=MD\" zlib",
-                                       "    - xrepo remove --configs=\"regex=true,thread=true\" boost"},
+                                       "    - xrepo export --configs=\"vs_runtime=MD\" zlib",
+                                       "    - xrepo export --configs=\"regex=true,thread=true\" boost"},
         {},
+        {'o', "outputdir",  "kv", "packages","Set the exported packages directory."},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
-                                       "    - xrepo remove zlib boost",
-                                       "    - xrepo remove -p iphoneos -a arm64 \"zlib >=1.2.0\"",
-                                       "    - xrepo remove -p android -m debug \"pcre2 10.x\"",
-                                       "    - xrepo remove -p mingw -k shared zlib",
-                                       "    - xrepo remove conan::zlib/1.2.11 vcpkg::zlib"}
+                                       "    - xrepo export zlib boost",
+                                       "    - xrepo export -p iphoneos -a arm64 \"zlib >=1.2.0\"",
+                                       "    - xrepo export -p android -m debug \"pcre2 10.x\"",
+                                       "    - xrepo export -p mingw -k shared zlib",
+                                       "    - xrepo export conan::zlib/1.2.11 vcpkg::zlib"}
     }
 
     -- show menu options
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo remove [options] packages")
+        cprint("${bright}Usage: $${clear cyan}xrepo export [options] packages")
 
         -- show description
         print("")
         print(description)
 
         -- show options
-        option.show_options(options, "remove")
+        option.show_options(options, "export")
     end
     return options, show_options, description
 end
 
--- remove packages
-function _remove_packages(packages)
+-- export packages
+function _export_packages(packages)
 
     -- enter working project directory
+    local oldir = os.curdir()
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -107,8 +109,8 @@ function _remove_packages(packages)
     end
     os.vrunv("xmake", config_argv)
 
-    -- do remove
-    local require_argv = {"require", "--uninstall"}
+    -- do export
+    local require_argv = {"require", "--export"}
     if option.get("yes") then
         table.insert(require_argv, "-y")
     end
@@ -117,6 +119,13 @@ function _remove_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    local outputdir = option.get("outputdir")
+    if outputdir and not path.is_absolute(outputdir) then
+        outputdir = path.absolute(outputdir, oldir)
+    end
+    if outputdir then
+        table.insert(require_argv, "--exportdir=" .. outputdir)
     end
     local extra = nil
     if mode == "debug" then
@@ -151,8 +160,8 @@ end
 function main(menu)
     local packages = option.get("packages")
     if packages then
-        _remove_packages(packages)
+        _export_packages(packages)
     else
-        raise("please specify the packages to be removed.")
+        raise("please specify the packages to be exported.")
     end
 end

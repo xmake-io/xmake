@@ -174,6 +174,6 @@ function main(menu)
     if packages then
         _install_packages(packages)
     else
-        raise("please specify the package to be installed.")
+        raise("please specify the packages to be installed.")
     end
 end

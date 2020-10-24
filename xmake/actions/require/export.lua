@@ -45,12 +45,15 @@ function main(requires_raw)
     end
 
     -- export packages
-    local packages = package.export_packages(requires, {requires_extra = requires_extra, exportdir = option.get("exportdir")})
+    local exportdir = option.get("exportdir")
+    local packages  = package.export_packages(requires, {requires_extra = requires_extra, exportdir = exportdir})
     for _, instance in ipairs(packages) do
         print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
         print("local packages not found!")
+    else
+        print("output: %s", exportdir)
     end
 
     -- leave environment

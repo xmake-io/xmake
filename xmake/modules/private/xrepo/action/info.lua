@@ -82,6 +82,6 @@ function main(menu)
     if packages then
         _info_packages(packages)
     else
-        raise("please specify the package to be viewed.")
+        raise("please specify the packages to be viewed.")
     end
 end
