@@ -100,7 +100,7 @@ function clear_repository()
 end
 
 -- main entry
-function main(menu)
+function main()
     local name = option.get("name")
     if name then
         remove_repository(name)

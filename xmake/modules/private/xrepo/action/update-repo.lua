@@ -71,6 +71,6 @@ function update_repository()
 end
 
 -- main entry
-function main(menu)
+function main()
     update_repository()
 end

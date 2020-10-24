@@ -165,7 +165,7 @@ function _fetch_packages(packages)
 end
 
 -- main entry
-function main(menu)
+function main()
     local packages = option.get("packages")
     if packages then
         _fetch_packages(packages)

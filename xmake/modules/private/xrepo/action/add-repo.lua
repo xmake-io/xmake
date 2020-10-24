@@ -81,7 +81,7 @@ function _add_repository(name, url, branch)
 end
 
 -- main entry
-function main(menu)
+function main()
     local name = option.get("name")
     local url  = option.get("url")
     if name and url then

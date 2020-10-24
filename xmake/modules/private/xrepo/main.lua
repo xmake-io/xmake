@@ -177,7 +177,7 @@ function main(...)
 
     -- do action
     if menu.action then
-        menu.action(menu)
+        menu.action()
     else
         menu.show_help()
     end

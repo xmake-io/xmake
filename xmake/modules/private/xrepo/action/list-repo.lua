@@ -71,6 +71,6 @@ function list_repository()
 end
 
 -- main entry
-function main(menu)
+function main()
     list_repository()
 end

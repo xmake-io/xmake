@@ -169,7 +169,7 @@ function _install_packages(packages)
 end
 
 -- main entry
-function main(menu)
+function main()
     local packages = option.get("packages")
     if packages then
         _install_packages(packages)
