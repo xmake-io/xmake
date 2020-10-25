@@ -127,19 +127,16 @@ function _export_packages(packages)
     if outputdir then
         table.insert(require_argv, "--exportdir=" .. outputdir)
     end
-    local extra = nil
+    local extra = {system = false}
     if mode == "debug" then
-        extra = extra or {}
         extra.debug = true
     end
     if kind == "shared" then
-        extra = extra or {}
         extra.configs = extra.configs or {}
         extra.configs.shared = true
     end
     local configs = option.get("configs")
     if configs then
-        extra = extra or {}
         extra.configs = extra.configs or {}
         local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
         if extra_configs then

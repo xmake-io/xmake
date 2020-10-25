@@ -47,7 +47,7 @@ function main(requires_raw)
 
     -- fetch all packages
     local fetchinfos = {}
-    for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+    for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = true})) do
         local fetchinfo
         if fetchmodes and fetchmodes:has("deps") then
             fetchinfo = instance:fetchdeps()

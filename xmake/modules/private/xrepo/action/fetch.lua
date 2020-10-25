@@ -36,6 +36,7 @@ function menu_options()
         {'a', "arch",       "kv", nil, "Set the given architecture."         },
         {'m', "mode",       "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
+        {nil, "system",     "k",  nil, "Attempt to fetch system packages."   },
         {nil, "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo fetch --configs=\"vs_runtime=MD\" zlib",
@@ -135,19 +136,16 @@ function _fetch_packages(packages)
     if #fetchmodes > 0 then
         table.insert(require_argv, "--fetch_modes=" .. table.concat(fetchmodes, ','))
     end
-    local extra = nil
+    local extra = {system = option.get("system") and true or false}
     if mode == "debug" then
-        extra = extra or {}
         extra.debug = true
     end
     if kind == "shared" then
-        extra = extra or {}
         extra.configs = extra.configs or {}
         extra.configs.shared = true
     end
     local configs = option.get("configs")
     if configs then
-        extra = extra or {}
         extra.configs = extra.configs or {}
         local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
         if extra_configs then

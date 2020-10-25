@@ -908,8 +908,6 @@ function _instance:fetch(opt)
     if isSys ~= nil then
         self._isSys = isSys
     end
-
-    -- ok
     return fetchinfo
 end
 
