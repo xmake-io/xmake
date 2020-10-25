@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.config")
 
 -- get menu options
 function menu_options()
@@ -108,6 +109,9 @@ function _enter_project()
         table.insert(config_argv, kind)
     end
     os.vrunv("xmake", config_argv)
+
+    -- load config
+    config.load()
 end
 
 -- get package environments

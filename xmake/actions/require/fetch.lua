@@ -47,13 +47,9 @@ function main(requires_raw)
 
     -- fetch all packages
     local fetchinfos = {}
-    for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = true})) do
-        local fetchinfo
-        if fetchmodes and fetchmodes:has("deps") then
-            fetchinfo = instance:fetchdeps()
-        else
-            fetchinfo = instance:fetch()
-        end
+    local nodeps = not (fetchmodes and fetchmodes:has("deps"))
+    for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra, nodeps = nodeps})) do
+        local fetchinfo = instance:fetch()
         if fetchinfo then
             table.insert(fetchinfos, fetchinfo)
         end
