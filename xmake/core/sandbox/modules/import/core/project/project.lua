@@ -61,6 +61,7 @@ sandbox_core_project.requires_str = project.requires_str
 sandbox_core_project.policy       = project.policy
 sandbox_core_project.tmpdir       = project.tmpdir
 sandbox_core_project.tmpfile      = project.tmpfile
+sandbox_core_project.is_loaded    = project.is_loaded
 
 -- load project
 function sandbox_core_project.load()

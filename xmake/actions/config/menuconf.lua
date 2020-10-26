@@ -337,6 +337,11 @@ function app:_save_configs(configs)
     end
 end
 
+-- configs have been changed?
+function app:_configs_changed()
+    return self._CONFIGS_CHANGED
+end
+
 -- load configs from options
 function app:load(cache)
 
@@ -365,9 +370,11 @@ end
 function app:save()
     self:_save_configs(self:_basic_configs())
     self:_save_configs(self:_project_configs())
+    self._CONFIGS_CHANGED = true
 end
 
 -- main entry
 function main(...)
     app:run(...)
+    return app:_configs_changed()
 end

@@ -346,6 +346,11 @@ end
 -- load targets
 function project._load_targets()
 
+    -- mark targets have been loaded even if it may fail to load.
+    -- because once loaded, there will be some cached state, such as options,
+    -- so if we load it a second time, there will be some hidden state inconsistencies.
+    project._TARGETS_LOADED = true
+
     -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.requires()
     local ok, errors = project._load(true)
@@ -884,6 +889,11 @@ function project.clear()
     -- clear targets and options
     project._TARGETS = nil
     project._OPTIONS = nil
+end
+
+-- project has been loaded?
+function project.is_loaded()
+    return project._TARGETS_LOADED
 end
 
 -- get the given target

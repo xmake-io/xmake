@@ -106,15 +106,12 @@ task("config")
                                                             end                                                             }
                 ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
                                                         ,   values = function (complete)
-
-                                                                local modes = (try { function()
-                                                                    return import("core.project.project").modes()
-                                                                end }) or {"debug", "release"}
-                                                                table.sort(modes)
-                                                                if not complete then
-                                                                    table.insert(modes, "... (custom)")
+                                                                if complete then
+                                                                    local modes = (try { function()
+                                                                        return import("core.project.project").modes()
+                                                                    end }) or {"debug", "release"}
+                                                                    return modes
                                                                 end
-                                                                return modes
                                                             end                                                             }
                 ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
                                                         ,   values = {"static", "shared", "binary"}                         }

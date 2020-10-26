@@ -123,6 +123,7 @@ end
 -- check target
 function _check_target(targetname)
     assert(targetname)
+    assert(not project.is_loaded(), "project and targets may have been loaded early!")
     if targetname == "all" then
         for _, target in pairs(project.targets()) do
             _check_target_deps(target)
@@ -165,8 +166,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     project.lock()
 
     -- enter menu config
+    local options_changed = false
     if option.get("menu") then
-        menuconf_show()
+        options_changed = menuconf_show()
     end
 
     -- the target name
@@ -190,7 +192,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- override configure from the options or cache
-    local options_changed = false
     local options_history = {}
     if not option.get("clean") and not autogen then
         options_history = configcache:get("options") or {}
