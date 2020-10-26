@@ -36,7 +36,6 @@ function menu_options()
         {'a', "arch",       "kv", nil, "Set the given architecture."         },
         {'m', "mode",       "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
-        {nil, "system",     "k",  nil, "Attempt to fetch system packages."   },
         {nil, "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo fetch --configs=\"vs_runtime=MD\" zlib",
@@ -52,7 +51,10 @@ function menu_options()
                                        "    - xrepo fetch -p iphoneos -a arm64 \"zlib >=1.2.0\"",
                                        "    - xrepo fetch -p android -m debug \"pcre2 10.x\"",
                                        "    - xrepo fetch -p mingw -k shared zlib",
-                                       "    - xrepo fetch conan::zlib/1.2.11 vcpkg::zlib"}
+                                       "    - xrepo fetch conan::zlib/1.2.11 vcpkg::zlib",
+                                       "    - xrepo fetch brew::zlib",
+                                       "    - xrepo fetch system::zlib (from pkgconfig, brew, /usr/lib ..)",
+                                       "    - xrepo fetch pkgconfig::zlib"}
     }
 
     -- show menu options
@@ -136,7 +138,7 @@ function _fetch_packages(packages)
     if #fetchmodes > 0 then
         table.insert(require_argv, "--fetch_modes=" .. table.concat(fetchmodes, ','))
     end
-    local extra = {system = option.get("system") and true or false}
+    local extra = {system = false}
     if mode == "debug" then
         extra.debug = true
     end
