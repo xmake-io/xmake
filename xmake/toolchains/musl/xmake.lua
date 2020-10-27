@@ -70,4 +70,7 @@ toolchain("musl")
         if bindir and is_host("windows") then
             toolchain:add("runenvs", "PATH", bindir)
         end
+
+        -- add flags for arch
+        -- TODO
     end)
