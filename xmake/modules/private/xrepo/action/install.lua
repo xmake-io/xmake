@@ -43,6 +43,7 @@ function menu_options()
         {},
         {nil, "ndk",        "kv", nil, "Set the android NDK directory."      },
         {nil, "sdk",        "kv", nil, "Set the SDK directory of cross toolchain." },
+        {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
         {nil, "mingw",      "kv", nil, "Set the MingW SDK directory."        },
         {},
         {'f', "force",      "k",  nil, "Force to reinstall all package dependencies."},
@@ -123,6 +124,9 @@ function _install_packages(packages)
     end
     if option.get("mingw") then
         table.insert(config_argv, "--mingw=" .. option.get("mingw"))
+    end
+    if option.get("toolchain") then
+        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
     end
     os.vrunv("xmake", config_argv)
 
