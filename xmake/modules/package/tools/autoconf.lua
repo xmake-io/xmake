@@ -82,8 +82,6 @@ function _get_configs(package, configs)
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
-        else
-            raise("autoconf: unknown platform(%s)!", package:plat())
         end
     end
     return configs
