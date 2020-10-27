@@ -110,7 +110,10 @@ function build(package, configs, opt)
 end
 
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
+
+    -- init options
+    opt = opt or {}
 
     -- pass configurations
     local argv = {"install"}
@@ -130,8 +133,8 @@ function install(package, configs)
 
     -- do install
     if is_host("bsd") then
-        os.vrunv("gmake", argv)
+        os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
     else
-        os.vrunv("make", argv)
+        os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
     end
 end
