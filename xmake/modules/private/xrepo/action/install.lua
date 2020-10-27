@@ -42,6 +42,7 @@ function menu_options()
                                        "    - xrepo install --configs=\"regex=true,thread=true\" boost"},
         {},
         {nil, "ndk",        "kv", nil, "Set the android NDK directory."      },
+        {nil, "sdk",        "kv", nil, "Set the SDK directory of cross toolchain." },
         {nil, "mingw",      "kv", nil, "Set the MingW SDK directory."        },
         {},
         {'f', "force",      "k",  nil, "Force to reinstall all package dependencies."},
@@ -116,6 +117,9 @@ function _install_packages(packages)
     end
     if option.get("ndk") then
         table.insert(config_argv, "--ndk=" .. option.get("ndk"))
+    end
+    if option.get("sdk") then
+        table.insert(config_argv, "--sdk=" .. option.get("sdk"))
     end
     if option.get("mingw") then
         table.insert(config_argv, "--mingw=" .. option.get("mingw"))
