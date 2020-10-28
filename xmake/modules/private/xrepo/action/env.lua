@@ -38,17 +38,21 @@ function menu_options()
         {'a', "arch",       "kv", nil, "Set the given architecture."         },
         {'m', "mode",       "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
+        {nil, "show",       "k",  nil, "Only show environment information."  },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo env -f \"vs_runtime=MD\" zlib cmake ..",
                                        "    - xrepo env -f \"regex=true,thread=true\" \"zlib,boost\" cmake .."},
+        {'b', "packages",   "kv", nil, "Set the packages to be bound",
+                                       "e.g.",
+                                       "    - xrepo env -b \"python 3.x\" python",
+                                       "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
         {},
-        {nil, "packages",   "v", nil,  "Set the packages to be bound"        },
-        {nil, "program",    "v", nil,  "Set the program name to be run",
+        {nil, "program",    "v",  nil, "Set the program name to be run",
                                        "e.g.",
                                        "    - xrepo env",
-                                       "    - xrepo env \"python 3.x\" python",
-                                       "    - xrepo env -p android \"zlib,luajit 2.x\" luajit xx.lua"},
+                                       "    - xrepo env python",
+                                       "    - xrepo env -p android luajit xx.lua"},
         {nil, "arguments",  "vs", nil, "Set the program arguments to be run"}
     }
 
@@ -201,7 +205,7 @@ end
 -- get package environments
 function _package_getenvs()
     local envs = os.getenvs()
-    local packages = option.get("packages")
+    local packages = option.get("packages") or option.get("program")
     if packages then
         _enter_project()
         packages = packages:split(',', {plain = true})
@@ -217,7 +221,7 @@ end
 function main()
     local envs = _package_getenvs()
     local program = option.get("program")
-    if program then
+    if program and not option.get("show") then
         if envs and envs.PATH then
             os.setenv("PATH", envs.PATH)
         end
