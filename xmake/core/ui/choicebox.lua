@@ -99,6 +99,18 @@ end
 -- do select the current config
 function choicebox:_do_select()
 
+    -- clear selected text
+    for v in self:views() do
+        local text = v:text()
+        if text and text:startswith("(X) ") then
+            local i = v:extra("index")
+            if i then
+                local t = self._VALUES[i]
+                v:text_set("( ) " .. tostring(t))
+            end
+        end
+    end
+
     -- get the current item
     local item = self:current()
 
