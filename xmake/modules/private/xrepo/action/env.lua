@@ -159,6 +159,11 @@ end
 -- add package environments
 function _package_addenvs(envs, instance)
 
+    -- only for xmake::package
+    if instance:isSys() then
+        return
+    end
+
     -- add run envs, e.g. PATH, LD_LIBRARY_PATH, ..
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
@@ -189,6 +194,7 @@ function _package_addenvs(envs, instance)
         if os.isdir(aclocal) then
             _package_addenv(envs, "ACLOCAL_PATH", aclocal)
         end
+        _package_addenv(envs, "CMAKE_PREFIX_PATH", installdir)
     end
 end
 
