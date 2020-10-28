@@ -200,6 +200,7 @@ tinyc         Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
+musl          The musl-based cross-compilation toolchains
 ```
 
 ## Supported Languages
@@ -215,6 +216,23 @@ ifort         Intel Fortran Compiler
 * Fortran
 * Cuda
 * Zig (Experimental)
+
+## Support Features
+
+* Simple project configuration syntax
+* Direct build support, without relying on any third-party back-end make tools
+* Support cross platform
+* Support cross compilation
+* Multi-task parallel compilation support
+* C++20 Module-TS support
+* Support cross-platform C/C++ dependency packages
+* Support self-built distributed and third-party package repositories
+* Support multi-language mixed compilation
+* Flexible lua scripts, rich extension modules
+* Support for generating vsproj/cmake/makefile/compile_commands files
+* REPL interactive execution support
+* Incremental compilation support, automatic analysis of header dependency files
+* Fast switching toolchains
 
 ## Supported Projects
 

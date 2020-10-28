@@ -209,6 +209,7 @@ tinyc         Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
+musl          The musl-based cross-compilation toolchains
 ```
 
 ## 支持语言
@@ -223,6 +224,23 @@ ifort         Intel Fortran Compiler
 * Fortran
 * Cuda
 * Zig (Experimental)
+
+## 支持特性
+
+* 简洁的配置语法
+* 直接构建支持，不依赖任何第三方后端 make 工具
+* 跨平台支持，不同平台可方便快速地切换
+* 交叉编译支持，智能分析交叉工具链信息
+* 多任务并行编译支持
+* C++20 Module-TS 支持
+* 支持跨平台的 C/C++ 依赖包快速集成
+* 自建分布式包仓库，第三方包仓库支持
+* 多语言混合编译支持
+* 灵活的 lua 脚本，丰富的扩展模块，可实现高度定制化
+* 丰富的插件支持，内置 vs/cmake/makefile/compile_commands 等生成插件
+* REPL 交互式执行支持
+* 增量编译支持，头文件依赖自动分析
+* 工具链的快速切换、定制化支持
 
 ## 工程类型
 

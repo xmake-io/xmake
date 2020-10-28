@@ -23,7 +23,7 @@ toolchain("musl")
 
     -- set homepage
     set_homepage("https://musl.cc/")
-    set_description("Static cross- and native- musl-based toolchains")
+    set_description("The musl-based cross-compilation toolchains")
 
     -- mark as standalone toolchain
     set_kind("standalone")

@@ -5,6 +5,8 @@
 ### New features
 
 * Add new [xrepo](https://github.com/xmake-io/xrepo) command to manage C/C++ packages
+* Support for installing packages of cross-compilation
+* Add musl.cc toolchains
 
 ### Change
 
@@ -855,6 +857,8 @@
 ### 新特性
 
 * 添加新的 [xrepo](https://github.com/xmake-io/xrepo) 命令去管理安装 C/C++ 包
+* 支持安装交叉编译的依赖包
+* 新增musl.cc上的工具链支持
 
 ### 改进
 
