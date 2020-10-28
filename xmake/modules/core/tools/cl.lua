@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import("core.base.glboal")
+import("core.base.global")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
