@@ -1,7 +1,5 @@
-#!/usr/bin/env sh
-SCRIPT=$(readlink -f "$0")
-BASEDIR=$(dirname "$SCRIPT")
-echo $BASEDIR
+#!/usr/bin/env bash
+BASEDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [ -f "$BASEDIR/xmake" ]; then
     $BASEDIR/xmake lua private.xrepo "$@"
 else
