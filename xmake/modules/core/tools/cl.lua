@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.glboal")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
@@ -426,7 +427,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             function (ok, outdata, errdata)
 
                 -- show warnings?
-                if ok and (option.get("diagnosis") or option.get("warning")) then
+                if ok and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
                     local output = outdata or ""
                     if #output:trim() == 0 then
                         output = errdata or ""

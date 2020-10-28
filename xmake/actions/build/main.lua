@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.global")
 import("core.base.task")
 import("core.project.config")
 import("core.project.project")

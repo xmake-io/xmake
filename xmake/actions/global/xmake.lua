@@ -49,6 +49,8 @@ task("global")
                                                                 return import("core.theme.theme.names")()
                                                             end}
                 ,   {nil, "debugger",       "kv", "auto"    , "The debugger program path."                                }
+                ,   {category = "Build Configuration"}
+                ,   {nil, "build_warning",  "kv",  nil      , "Enable the warnings output by default when building."      }
 
                     -- network configuration
                 ,   {category = "Network Configuration"}

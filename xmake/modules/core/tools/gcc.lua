@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.colors")
+import("core.base.global")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -477,7 +478,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         {
             function (ok, outdata, errdata)
                 -- show warnings?
-                if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
+                if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
                         local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
