@@ -1,4 +1,4 @@
-%define     xmake_revision       f181def21a641c64962520745dd69d31c14d8f8f
+%define     xmake_revision       d4d0a9196b05fca232b17f2a567256fe4a4c275d
 %define     tbox_revision        f4970bcd0fcc05b09742452a4b3b3d2d1055569d
 %define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
@@ -71,8 +71,7 @@ cp -p core/src/demo/demo.b %{buildroot}%{_bindir}/%{name}
 chmod 755 %{buildroot}%{_bindir}/%{name}
 cp -p README.md %{buildroot}%{_datadir}
 cp -p LICENSE.md %{buildroot}%{_datadir}
-echo '#!/usr/bin/env sh' > %{buildroot}%{_bindir}/xrepo
-echo "%{buildroot}%{_bindir}/%{name}"' lua private.xrepo "$$@"' >> %{buildroot}%{_bindir}/xrepo
+cp -p scripts/xrepo.sh %{buildroot}%{_bindir}/xrepo
 chmod 777 %{buildroot}%{_bindir}/xrepo
 
 %check
