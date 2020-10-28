@@ -194,6 +194,9 @@ function main()
     local envs = _package_getenvs()
     local program = option.get("program")
     if program then
+        if envs and envs.PATH then
+            os.setenv("PATH", envs.PATH)
+        end
         os.execv(program, option.get("arguments"), {envs = envs})
     else
         print(envs)
