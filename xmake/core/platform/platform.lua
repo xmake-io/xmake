@@ -89,7 +89,7 @@ end
 
 -- get the platform os
 function _instance:os()
-    return self._INFO:get("os")
+    return self._INFO:get("os") or config.get("target_os")
 end
 
 -- get the platform menu
@@ -605,7 +605,7 @@ end
 
 -- get the platform os
 function platform.os(plat, arch)
-    return platform.get("os", plat, arch)
+    return platform.get("os", plat, arch) or config.get("target_os")
 end
 
 -- get the platform archs

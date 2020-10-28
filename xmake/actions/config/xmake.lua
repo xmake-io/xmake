@@ -44,7 +44,7 @@ task("config")
                     {'c', "clean",      "k",    nil     ,   "Clean the cached configure and configure all again."           }
                 ,   {nil, "menu",       "k",    nil     ,   "Configure project with a menu-driven user interface."          }
                 ,   {category = "."}
-                ,   {'p', "plat",       "kv", "$(subhost)" , "Compile for the given platform."
+                ,   {'p', "plat",       "kv", "$(subhost)", "Compile for the given platform."
                                                         ,   values = function (complete, opt)
 
                                                                 -- imports
@@ -115,7 +115,7 @@ task("config")
                                                             end                                                             }
                 ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
                                                         ,   values = {"static", "shared", "binary"}                         }
-                ,   {nil, "host",       "kv", "$(host)" ,   "The Current Host Environment."                                 }
+                ,   {nil, "host",       "kv", "$(host)" ,   "Set the current host environment."                             }
 
                     -- package configuration
                 ,   {category = "Package Configuration"}
@@ -142,19 +142,20 @@ task("config")
                     end
 
                 ,   {category = "Cross Complation Configuration"}
-                ,   {nil, "cross",      "kv", nil,          "The Cross Toolchains Prefix"
+                ,   {nil, "cross",      "kv", nil,          "Set cross toolchains prefix"
                                                           , "e.g."
                                                           , "    - i386-mingw32-"
                                                           , "    - arm-linux-androideabi-"                                  }
-                ,   {nil, "bin",        "kv", nil,          "The Cross Toolchains Bin Directory"
+                ,   {nil, "target_os",  "kv", "linux",      "Set target os only for cross-complation"                       }
+                ,   {nil, "bin",        "kv", nil,          "Set cross toolchains bin directory"
                                                           , "e.g."
                                                           , "    - sdk/bin (/arm-linux-gcc ..)"                             }
-                ,   {nil, "sdk",        "kv", nil,          "The Cross SDK Directory"
+                ,   {nil, "sdk",        "kv", nil,          "Set cross SDK directory"
                                                           , "e.g."
                                                           , "    - sdk/bin"
                                                           , "    - sdk/lib"
                                                           , "    - sdk/include"                                             }
-                ,   {nil, "toolchain",  "kv", nil,          "The Toolchain Name"
+                ,   {nil, "toolchain",  "kv", nil,          "Set toolchain name"
                                                           , "e.g. "
                                                           , "    - xmake f --toolchain=clang"
                                                           , "    - xmake f --toolchain=[cross|llvm|sdcc ..] --sdk=/xxx"
@@ -187,7 +188,7 @@ task("config")
                     end
 
                 ,   {category = "Other Configuration"}
-                ,   {nil, "debugger",   "kv", "auto"    , "The Debugger"                                                    }
+                ,   {nil, "debugger",   "kv", "auto"    , "Set debugger"                                                    }
                 ,   {nil, "ccache",     "kv", true      , "Enable or disable the c/c++ compiler cache."                     }
                 ,   {nil, "trybuild",   "kv",   nil     ,   "Enable try-build mode and set the third-party buildsystem tool.",
                                                             "e.g.",
@@ -199,7 +200,7 @@ task("config")
                 ,   {nil, "tryconfigs", "kv",   nil     ,   "Set the extra configurations of the third-party buildsystem for the try-build mode.",
                                                             "e.g.",
                                                             "    - xmake f --trybuild=autotools --tryconfigs='--enable-shared=no'"}
-                ,   {'o', "buildir",    "kv", "build"   , "Set the build directory."                                        }
+                ,   {'o', "buildir",    "kv", "build"   , "Set build directory."                                            }
 
                 ,   {}
                 ,   {nil, "target",     "v" , nil       , "Configure for the given target."

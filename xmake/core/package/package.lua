@@ -113,6 +113,15 @@ function _instance:arch()
     return config.get("arch") or os.arch()
 end
 
+-- get the target os
+function _instance:os()
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.os then
+        return requireinfo.os
+    end
+    return platform.os()
+end
+
 -- get the build mode
 function _instance:mode()
     return self:debug() and "debug" or "release"
@@ -138,6 +147,16 @@ function _instance:is_arch(...)
     local arch = self:arch()
     for _, v in ipairs(table.join(...)) do
         if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
+-- the current platform is belong to the given target os?
+function _instance:is_os(...)
+    local os = self:os()
+    for _, v in ipairs(table.join(...)) do
+        if v and os == v then
             return true
         end
     end
