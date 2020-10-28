@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("actions.require.impl.package", {rootdir = os.programdir()})
 
 -- get menu options
 function menu_options()
@@ -39,17 +40,15 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {nil, "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo env --configs=\"vs_runtime=MD\" --packages=zlib",
-                                       "    - xrepo env --configs=\"regex=true,thread=true\" --packages=boost"},
+                                       "    - xrepo env --configs=\"vs_runtime=MD\" zlib cmake ..",
+                                       "    - xrepo env --configs=\"regex=true,thread=true\" \"zlib,boost\" cmake .."},
         {},
-        {nil, "packages",   "kv", nil, "Set the packages list.",
-                                       "e.g.",
-                                       "    - xrepo env --packages=\"zlib,luajit 2.1x\""},
+        {nil, "packages",   "v", nil,  "Set the packages to be bound"        },
         {nil, "program",    "v", nil,  "Set the program name to be run",
                                        "e.g.",
                                        "    - xrepo env",
-                                       "    - xrepo env --packages=\"python 3.x\" python",
-                                       "    - xrepo env -p android --packages=\"zlib,luajit 2.1x\" cmake .."},
+                                       "    - xrepo env \"python 3.x\" python",
+                                       "    - xrepo env -p android \"zlib,luajit 2.x\" luajit xx.lua"},
         {nil, "arguments",  "vs", nil, "Set the program arguments to be run"}
     }
 
@@ -57,7 +56,7 @@ function menu_options()
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo env [options] [program] [arguments]")
+        cprint("${bright}Usage: $${clear cyan}xrepo env [options] [packages] [program] [arguments]")
 
         -- show description
         print("")
@@ -67,6 +66,35 @@ function menu_options()
         option.show_options(options, "env")
     end
     return options, show_options, description
+end
+
+-- get requires
+function _get_requires(packages)
+    local requires = packages
+    local requires_extra = {}
+    local extra = {system = false}
+    if option.get("mode") == "debug" then
+        extra.debug = true
+    end
+    if option.get("kind") == "shared" then
+        extra.configs = extra.configs or {}
+        extra.configs.shared = true
+    end
+    local configs = option.get("configs")
+    if configs then
+        extra.system  = false
+        extra.configs = extra.configs or {}
+        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
+        if extra_configs then
+            table.join2(extra.configs, extra_configs)
+        else
+            raise(errors)
+        end
+    end
+    for _, require_str in ipairs(requires) do
+        requires_extra[require_str] = extra
+    end
+    return requires, requires_extra
 end
 
 -- enter project
@@ -114,20 +142,56 @@ function _enter_project()
     config.load()
 end
 
+-- add values to environment variable
+function _package_addenv(envs, name, ...)
+    local values = {...}
+    if #values > 0 then
+        local oldenv = envs[name]
+        local appendenv = path.joinenv(values)
+        if oldenv == "" or oldenv == nil then
+            envs[name] = appendenv
+        else
+            envs[name] = appendenv .. path.envsep() .. oldenv
+        end
+    end
+end
+
+-- add package environments
+function _package_addenvs(envs, instance)
+    local installdir = instance:installdir()
+    for name, values in pairs(instance:envs()) do
+        if name == "PATH" or name == "LD_LIBRARY_PATH" then
+            for _, value in ipairs(values) do
+                if path.is_absolute(value) then
+                    _package_addenv(envs, name, value)
+                else
+                    _package_addenv(envs, name, path.join(installdir, value))
+                end
+            end
+        else
+            _package_addenv(envs, name, unpack(table.wrap(values)))
+        end
+    end
+end
+
 -- get package environments
-function _package_envs()
+function _package_getenvs()
     local envs = os.getenvs()
     local packages = option.get("packages")
     if packages then
         _enter_project()
-        -- TODO
+        packages = packages:split(',', {plain = true})
+        local requires, requires_extra = _get_requires(packages)
+        for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+            _package_addenvs(envs, instance)
+        end
     end
     return envs
 end
 
 -- main entry
 function main()
-    local envs = _package_envs()
+    local envs = _package_getenvs()
     local program = option.get("program")
     if program then
         os.execv(program, option.get("arguments"), {envs = envs})
