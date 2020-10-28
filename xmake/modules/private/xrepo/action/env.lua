@@ -158,6 +158,8 @@ end
 
 -- add package environments
 function _package_addenvs(envs, instance)
+
+    -- add run envs, e.g. PATH, LD_LIBRARY_PATH, ..
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
         if name == "PATH" or name == "LD_LIBRARY_PATH" then
@@ -172,6 +174,22 @@ function _package_addenvs(envs, instance)
             _package_addenv(envs, name, unpack(table.wrap(values)))
         end
     end
+
+    -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH ..
+    if instance:kind() ~= "binary" then
+        local pkgconfig = path.join(installdir, "lib", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            _package_addenv(envs, "PKG_CONFIG_PATH", pkgconfig)
+        end
+        pkgconfig = path.join(installdir, "share", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            _package_addenv(envs, "PKG_CONFIG_PATH", pkgconfig)
+        end
+        local aclocal = path.join(installdir, "share", "aclocal")
+        if os.isdir(aclocal) then
+            _package_addenv(envs, "ACLOCAL_PATH", aclocal)
+        end
+    end
 end
 
 -- get package environments
@@ -182,7 +200,7 @@ function _package_getenvs()
         _enter_project()
         packages = packages:split(',', {plain = true})
         local requires, requires_extra = _get_requires(packages)
-        for _, instance in irpairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+        for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
     end
