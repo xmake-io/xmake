@@ -65,6 +65,16 @@ function _search_packages(packages)
         os.cd(workdir)
     end
 
+    -- do configure first
+    local config_argv = {"f", "-c"}
+    if option.get("verbose") then
+        table.insert(config_argv, "-v")
+    end
+    if option.get("diagnosis") then
+        table.insert(config_argv, "-D")
+    end
+    os.vrunv("xmake", config_argv)
+
     -- do search
     local require_argv = {"require", "--search"}
     if option.get("verbose") then
