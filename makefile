@@ -106,11 +106,10 @@ install:
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
 	@# install the xmake core file
-	@cp $(xmake_core) $(xmake_core_install)
+	@cp -p $(xmake_core) $(xmake_core_install)
 	@chmod 777 $(xmake_core_install)
 	@# install the xrepo bin file
-	@echo '#!/usr/bin/env sh' > $(xrepo_bin_install)
-	@echo '$(xmake_core_install) lua private.xrepo "$$@"' >> $(xrepo_bin_install)
+	@cp -p scripts/xrepo.sh > $(xrepo_bin_install)
 	@chmod 777 $(xrepo_bin_install)
 	@# remove xmake.out
 	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi
