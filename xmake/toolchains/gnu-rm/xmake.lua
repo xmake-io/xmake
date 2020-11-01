@@ -28,20 +28,11 @@ toolchain("gnu-rm")
     -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- check toolchain
-    on_check(function (toolchain)
-        return import("toolchains.cross.check", {rootdir = os.programdir()})(toolchain)
-    end)
-
     -- on load
     on_load(function (toolchain)
 
-        -- imports
-        import("core.project.config")
-        import("toolchains.cross.load", {rootdir = os.programdir()})
-
         -- load basic configuration of cross toolchain
-        load(toolchain)
+        toolchain:load_cross_toolchain()
 
         -- add basic flags
         toolchain:add("ldflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})

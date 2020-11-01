@@ -27,8 +27,3 @@ toolchain("cross")
     -- mark as standalone toolchain
     set_kind("standalone")
 
-    -- check toolchain
-    on_check("check")
-
-    -- load toolchain
-    on_load("load")
