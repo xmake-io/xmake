@@ -26,8 +26,8 @@ import("detect.sdks.find_cross_toolchain")
 function main(toolchain)
 
     -- is cross?
-    local sdkdir = config.get("sdk")
-    local bindir = config.get("bin")
+    local sdkdir = toolchain:sdkdir()
+    local bindir = toolchain:bindir()
     local cross  = config.get("cross")
     if not sdkdir and not bindir and not cross then
         return
@@ -38,7 +38,7 @@ function main(toolchain)
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        config.set("sdkdir", cross_toolchain.sdkdir, {readonly = true, force = true}) -- only for toolchain
+        config.set("sdk", cross_toolchain.sdkdir, {readonly = true, force = true})
     else
         raise("cross toolchain not found!")
     end
