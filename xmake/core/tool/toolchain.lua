@@ -208,11 +208,21 @@ function _instance:check()
     return checkok
 end
 
+-- check cross toolchain
+function _instance:check_cross_toolchain()
+    return sandbox_module.import("toolchains.cross.check", {rootdir = os.programdir(), anonymous = true})(self)
+end
+
+-- load cross toolchain
+function _instance:load_cross_toolchain()
+    return sandbox_module.import("toolchains.cross.load", {rootdir = os.programdir(), anonymous = true})(self)
+end
+
 -- on check (builtin)
 function _instance:_on_check()
     local on_check = self:info():get("check")
     if not on_check and (self:cross() or self:sdkdir()) then
-        on_check = sandbox_module.import("toolchains.cross.check", {rootdir = os.programdir(), anonymous = true})
+        on_check = self.check_cross_toolchain
     end
     return on_check
 end
@@ -221,7 +231,7 @@ end
 function _instance:_on_load()
     local on_load = self:info():get("load")
     if not on_load and (self:cross() or self:sdkdir()) then
-        on_load = sandbox_module.import("toolchains.cross.load", {rootdir = os.programdir(), anonymous = true})
+        on_load = self.load_cross_toolchain
     end
     return on_load
 end
