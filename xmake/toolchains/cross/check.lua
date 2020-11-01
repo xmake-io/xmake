@@ -28,7 +28,7 @@ function main(toolchain)
     -- is cross?
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
-    local cross  = config.get("cross")
+    local cross  = toolchain:cross()
     if not sdkdir and not bindir and not cross then
         return
     end

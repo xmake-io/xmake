@@ -28,7 +28,7 @@ function main(toolchain)
     import("core.project.config")
 
     -- get cross prefix
-    local cross = config.get("cross") or ""
+    local cross = toolchain:cross() or ""
 
     -- set toolset
     toolchain:set("toolset", "cc", cross .. "gcc", cross .. "clang")

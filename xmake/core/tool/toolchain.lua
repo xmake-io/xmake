@@ -171,6 +171,11 @@ function _instance:script(name)
     return self:info():get(name)
 end
 
+-- get the cross
+function _instance:cross()
+    return config.get("cross") or self:get("cross")
+end
+
 -- get the bin directory
 function _instance:bindir()
     return config.get("bin") or self:get("bindir")
@@ -343,6 +348,7 @@ function toolchain.apis()
         values =
         {
             "toolchain.set_kind"
+        ,   "toolchain.set_cross"
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         ,   "toolchain.set_archs"
