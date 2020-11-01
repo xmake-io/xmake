@@ -29,7 +29,7 @@ toolchain("gnu-rm")
     set_kind("standalone")
 
     -- check toolchain
-    on_check("check")
+    on_check("private.detect.find_cross_toolchain")
 
     -- on load
     on_load(function (toolchain)

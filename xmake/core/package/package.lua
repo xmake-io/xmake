@@ -582,14 +582,9 @@ end
 
 -- get versions
 function _instance:versions()
-
-    -- make versions
     if self._VERSIONS == nil then
-
-        -- get versions
         local versions = {}
         for version, _ in pairs(table.wrap(self:get("versions"))) do
-
             -- remove the url alias prefix if exists
             local pos = version:find(':', 1, true)
             if pos then
@@ -597,8 +592,6 @@ function _instance:versions()
             end
             table.insert(versions, version)
         end
-
-        -- remove repeat
         self._VERSIONS = table.unique(versions)
     end
     return self._VERSIONS

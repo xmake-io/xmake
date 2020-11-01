@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        check.lua
+-- @file        find_cross_toolchain.lua
 --
 
 -- imports
@@ -38,9 +38,10 @@ function main(toolchain)
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        config.set("sdkdir", cross_toolchain.sdkdir, {readonly = true, force = true})
+        config.set("sdkdir", cross_toolchain.sdkdir, {readonly = true, force = true}) -- only for toolchain
     else
         raise("cross toolchain not found!")
     end
     return cross_toolchain
 end
+

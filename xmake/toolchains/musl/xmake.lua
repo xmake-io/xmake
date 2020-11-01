@@ -29,7 +29,7 @@ toolchain("musl")
     set_kind("standalone")
 
     -- check toolchain
-    on_check("check")
+    on_check("private.detect.find_cross_toolchain")
 
     -- on load
     on_load(function (toolchain)
@@ -41,12 +41,12 @@ toolchain("musl")
         local cross = config.get("cross") or ""
 
         -- set toolset
-        toolchain:set("toolset", "cc", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolset", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
-        toolchain:set("toolset", "cpp", cross .. "gcc -E", cross .. "clang -E")
-        toolchain:set("toolset", "as", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+        toolchain:set("toolset", "cc", cross .. "gcc")
+        toolchain:set("toolset", "cxx", cross .. "gcc")
+        toolchain:set("toolset", "cpp", cross .. "gcc -E")
+        toolchain:set("toolset", "as", cross .. "gcc")
+        toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc")
+        toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc")
         toolchain:set("toolset", "ar", cross .. "ar")
         toolchain:set("toolset", "ex", cross .. "ar")
         toolchain:set("toolset", "ranlib", cross .. "ranlib")
@@ -72,5 +72,10 @@ toolchain("musl")
         end
 
         -- add flags for arch
-        -- TODO
+        if toolchain:is_arch("arm") then
+            toolchain:add("cxflags", "-march=armv7-a", "-msoft-float", {force = true})
+            toolchain:add("ldflags", "-march=armv7-a", "-msoft-float", {force = true})
+        end
+        toolchain:add("ldflags", "--static", {force = true})
+        toolchain:add("syslinks", "gcc", "c")
     end)
