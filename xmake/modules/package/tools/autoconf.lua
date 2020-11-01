@@ -82,6 +82,15 @@ function _get_configs(package, configs)
                 x86_64 = "x86_64-w64-mingw32"
             }
             table.insert(configs, "--host=" .. (triples[package:arch()] or triples.i386))
+        elseif package:is_plat("cross") then
+            local host = package:arch()
+            if package:is_arch("arm64") then
+                host = "aarch64"
+            elseif package:is_arch("arm.*") then
+                host = "arm"
+            end
+            host = host .. "-" .. package:os()
+            table.insert(configs, "--host=" .. host)
         end
     end
     return configs
@@ -109,6 +118,7 @@ function buildenvs(package)
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
         envs.CC        = package:build_getenv("cc")
+        envs.CXX       = package:build_getenv("cxx")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")
         envs.LD        = package:build_getenv("ld")
