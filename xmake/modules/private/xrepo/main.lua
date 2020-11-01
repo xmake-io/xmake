@@ -188,6 +188,9 @@ function main(...)
         option.set(k, v)
     end
 
+    -- tell xmake that xrepo is currently being used
+    os.setenv("XREPO_WORKING", "y")
+
     -- do action
     if menu.action then
         menu.action()

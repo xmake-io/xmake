@@ -126,7 +126,11 @@ function _check_missing_packages(packages)
 
     -- raise tips
     if #packages_missing > 0 then
-        raise("The packages(%s) not found!", table.concat(packages_missing, ", "))
+        local cmd = "xmake repo -u"
+        if os.getenv("XREPO_WORKING") then
+            cmd = "xrepo update-repo"
+        end
+        raise("The packages(%s) not found, please run `%s` first!", table.concat(packages_missing, ", "), cmd)
     end
 
     -- save the optional missing packages
