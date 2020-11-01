@@ -29,47 +29,19 @@ toolchain("gnu-rm")
     set_kind("standalone")
 
     -- check toolchain
-    on_check("private.detect.find_cross_toolchain")
+    on_check(function (toolchain)
+        return import("toolchains.cross.check", {rootdir = os.programdir()})(toolchain)
+    end)
 
     -- on load
     on_load(function (toolchain)
 
         -- imports
         import("core.project.config")
+        import("toolchains.cross.load", {rootdir = os.programdir()})
 
-        -- get cross prefix
-        local cross = config.get("cross") or ""
-
-        -- set toolset
-        toolchain:set("toolset", "cc", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolset", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
-        toolchain:set("toolset", "cpp", cross .. "gcc -E", cross .. "clang -E")
-        toolchain:set("toolset", "as", cross .. "gcc", cross .. "clang")
-        toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-        toolchain:set("toolset", "ar", cross .. "ar")
-        toolchain:set("toolset", "ex", cross .. "ar")
-        toolchain:set("toolset", "ranlib", cross .. "ranlib")
-        toolchain:set("toolset", "strip", cross .. "strip")
-
-        -- init linkdirs and includedirs
-        local sdkdir = toolchain:sdkdir()
-        if sdkdir then
-            local includedir = path.join(sdkdir, "include")
-            if os.isdir(includedir) then
-                toolchain:add("includedirs", includedir)
-            end
-            local linkdir = path.join(sdkdir, "lib")
-            if os.isdir(linkdir) then
-                toolchain:add("linkdirs", linkdir)
-            end
-        end
-
-        -- add bin search library for loading some dependent .dll files windows
-        local bindir = toolchain:bindir()
-        if bindir and is_host("windows") then
-            toolchain:add("runenvs", "PATH", bindir)
-        end
+        -- load basic configuration of cross toolchain
+        load(toolchain)
 
         -- add basic flags
         toolchain:add("ldflags", "--specs=nosys.specs", "--specs=nano.specs", {force = true})
