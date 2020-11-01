@@ -173,24 +173,28 @@ end
 
 -- get the cross
 function _instance:cross()
-    return config.get("cross") or self:get("cross")
+    return config.get("cross") or self:info():get("cross")
 end
 
 -- get the bin directory
 function _instance:bindir()
-    return config.get("bin") or self:get("bindir")
+    local bindir = config.get("bin") or self:info():get("bindir")
+    if self:cross() and os.isdir(path.join(self:sdkdir(), "bin")) then
+        bindir = path.join(self:sdkdir(), "bin")
+    end
+    return bindir
 end
 
 -- get the sdk directory
 function _instance:sdkdir()
-    return config.get("sdk") or self:get("sdkdir")
+    return config.get("sdk") or self:info():get("sdkdir")
 end
 
 -- do check, we only check it once for all architectures
 function _instance:check()
     local checkok = true
     if not self._CHECKED then
-        local on_check = self:info():get("check")
+        local on_check = self:_on_check()
         if on_check then
             local ok, results_or_errors = sandbox.load(on_check, self)
             if ok then
@@ -204,11 +208,29 @@ function _instance:check()
     return checkok
 end
 
+-- on check (builtin)
+function _instance:_on_check()
+    local on_check = self:info():get("check")
+    if not on_check and (self:cross() or self:sdkdir()) then
+        on_check = sandbox_module.import("toolchains.cross.check", {rootdir = os.programdir(), anonymous = true})
+    end
+    return on_check
+end
+
+-- on load (builtin)
+function _instance:_on_load()
+    local on_load = self:info():get("load")
+    if not on_load and (self:cross() or self:sdkdir()) then
+        on_load = sandbox_module.import("toolchains.cross.load", {rootdir = os.programdir(), anonymous = true})
+    end
+    return on_load
+end
+
 -- do load, @note we need load it repeatly for each architectures
 function _instance:_load()
     local info = self:info()
     if not info:get("__loaded") and not info:get("__loading") then
-        local on_load = info:get("load")
+        local on_load = self:_on_load()
         if on_load then
             info:set("__loading", true)
             local ok, errors = sandbox.load(on_load, self)
