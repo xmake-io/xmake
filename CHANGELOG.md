@@ -13,6 +13,7 @@
 * [#997](https://github.com/xmake-io/xmake/issues/997): Support to set std lanuages for `xmake project -k cmake`
 * [#998](https://github.com/xmake-io/xmake/issues/998): Support to install vcpkg packages with windows-static-md
 * [#996](https://github.com/xmake-io/xmake/issues/996): Improve to find vcpkg directory
+* [#1008](https://github.com/xmake-io/xmake/issues/1008): Improve cross toolchains
 
 ## v2.3.8
 
@@ -865,6 +866,7 @@
 * [#997](https://github.com/xmake-io/xmake/issues/997): `xmake project -k cmake` 插件增加对 `set_languages` 的支持
 * [#998](https://github.com/xmake-io/xmake/issues/998): 支持安装 windows-static-md 类型的 vcpkg 包
 * [#996](https://github.com/xmake-io/xmake/issues/996): 改进 vcpkg 目录查找
+* [#1008](https://github.com/xmake-io/xmake/issues/1008): 改进交叉编译工具链
 
 ## v2.3.8
 
