@@ -118,7 +118,6 @@ function buildenvs(package)
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
         envs.CC        = package:build_getenv("cc")
-        envs.CXX       = package:build_getenv("cxx")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")
         envs.LD        = package:build_getenv("ld")
@@ -152,6 +151,9 @@ function buildenvs(package)
                 envs.CPP      = _translate_windows_bin_path(envs.CPP)
                 envs.RANLIB   = _translate_windows_bin_path(envs.RANLIB)
             end
+        elseif package:is_plat("cross") then
+            -- only for cross-toolchain
+            envs.CXX = package:build_getenv("cxx")
         end
     end
     local ACLOCAL_PATH = {}
