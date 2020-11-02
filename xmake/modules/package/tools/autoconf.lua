@@ -97,7 +97,8 @@ function _get_configs(package, configs)
 end
 
 -- get the build environments
-function buildenvs(package)
+function buildenvs(package, opt)
+    opt = opt or {}
     local envs = {}
     if package:is_plat(os.subhost()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
@@ -110,6 +111,11 @@ function buildenvs(package)
             table.insert(asflags,  "-m32")
             table.insert(ldflags,  "-m32")
         end
+        table.join2(cflags,   opt.cflags)
+        table.join2(cflags,   opt.cxflags)
+        table.join2(cxxflags, opt.cxxflags)
+        table.join2(cxxflags, opt.cxflags)
+        table.join2(asflags,  opt.asflags)
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(asflags, ' ')
@@ -117,6 +123,12 @@ function buildenvs(package)
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+        local asflags  = table.wrap(package:build_getenv("asflags"))
+        table.join2(cflags,   opt.cflags)
+        table.join2(cflags,   opt.cxflags)
+        table.join2(cxxflags, opt.cxxflags)
+        table.join2(cxxflags, opt.cxflags)
+        table.join2(asflags,  opt.asflags)
         envs.CC        = package:build_getenv("cc")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")
@@ -126,7 +138,7 @@ function buildenvs(package)
         envs.RANLIB    = package:build_getenv("ranlib")
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+        envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
         envs.LDFLAGS   = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
         envs.SHFLAGS   = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
@@ -206,7 +218,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("sh", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("sh", argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- install package
