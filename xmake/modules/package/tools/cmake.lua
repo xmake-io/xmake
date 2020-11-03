@@ -333,7 +333,7 @@ function _install_for_msvc(package, configs, opt)
 end
 
 -- install files for cmake
-function _install_files_for_cmake(package)
+function _install_files_for_cmake(package, opt)
 
     -- patch _IMPORT_PREFIX to the real path
     --
@@ -344,6 +344,9 @@ function _install_files_for_cmake(package)
         local prefixdir_old = path.absolute("install")
         local prefixdir_new = package:installdir()
         io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
+    end
+    if (opt and opt.binary) or package:kind() == "binary" then
+        os.trycp("install/bin", package:installdir())
     end
     os.trycp("install/lib", package:installdir())
     os.trycp("install/include", package:installdir())
@@ -368,7 +371,7 @@ function _install_for_make(package, configs, opt)
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
     end
-    _install_files_for_cmake(package)
+    _install_files_for_cmake(package, opt)
 end
 
 -- do install for ninja
@@ -382,14 +385,14 @@ function _install_for_ninja(package, configs, opt)
     table.insert(argv, "-j")
     table.insert(argv, njob)
     os.vrunv(ninja.program, argv)
-    _install_files_for_cmake(package)
+    _install_files_for_cmake(package, opt)
 end
 
 -- do install for cmake/build
 function _install_for_cmakebuild(package, configs, opt)
     os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
     os.vrunv("cmake", {"--install", os.curdir()})
-    _install_files_for_cmake(package)
+    _install_files_for_cmake(package, opt)
 end
 
 -- build package
