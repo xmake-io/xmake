@@ -36,7 +36,7 @@ function menu_options()
         {'a', "arch",       "kv", nil, "Set the given architecture."         },
         {'m', "mode",       "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
-        {nil, "configs",    "kv", nil, "Set the given extra package configs.",
+        {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo fetch --configs=\"vs_runtime=MD\" zlib",
                                        "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
