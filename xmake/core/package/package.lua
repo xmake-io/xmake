@@ -870,8 +870,8 @@ function _instance:fetch(opt)
                                                       force = opt.force})
 
             -- may be toolset, not single tool
-            if not fetchinfo and os.isfile(self:manifest_file()) then
-                fetchinfo = {name = self:name(), version = self:version_str(), bindir = self:installdir("bin")}
+            if not fetchinfo then
+                fetchinfo = self:manifest_load()
             end
             if fetchinfo then
                 isSys = self._isSys

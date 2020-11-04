@@ -88,7 +88,5 @@ function main(name, opt)
     if program and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return {name = toolname, program = program, version = version}
 end
