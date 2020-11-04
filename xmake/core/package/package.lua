@@ -868,6 +868,11 @@ function _instance:fetch(opt)
                                                       buildhash = self:buildhash(),
                                                       norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
                                                       force = opt.force})
+
+            -- may be toolset, not single tool
+            if not fetchinfo and os.isfile(self:manifest_file()) then
+                fetchinfo = {name = self:name(), version = self:version_str(), bindir = self:installdir("bin")}
+            end
             if fetchinfo then
                 isSys = self._isSys
             end
