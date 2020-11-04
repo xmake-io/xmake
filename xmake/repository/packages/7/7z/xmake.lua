@@ -31,7 +31,7 @@ package("7z")
         os.cp("bin", package:installdir())
     end)
 
-    on_install("@windows", function (package)
+    on_install("@windows", "@msys", "@cygwin", function (package)
         os.cp("*", package:installdir("bin"))
     end)
 
