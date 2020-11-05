@@ -102,6 +102,12 @@ function main(requires_raw)
             cprint("      -> ${magenta}version${clear}: %s", version)
         end
 
+        -- show license
+        local license = instance:get("license")
+        if license then
+            cprint("      -> ${magenta}license${clear}: %s", license)
+        end
+
         -- show urls
         local urls = instance:urls()
         if urls and #urls > 0 then
