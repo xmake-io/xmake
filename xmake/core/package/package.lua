@@ -729,6 +729,16 @@ function _instance:optional()
     return requireinfo and requireinfo.optional or false
 end
 
+-- verify sha256sum and versions?
+function _instance:verify()
+    local requireinfo = self:requireinfo()
+    local verify = requireinfo and requireinfo.verify
+    if verify == nil then
+        verify = true
+    end
+    return verify
+end
+
 -- is debug package?
 function _instance:debug()
     return self:config("debug")

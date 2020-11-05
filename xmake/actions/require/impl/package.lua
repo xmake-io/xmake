@@ -167,7 +167,8 @@ function _parse_require(require_str, requires_extra, parentinfo)
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
-        optional         = parentinfo.optional or require_extra.optional -- default: false, inherit parentinfo.optional
+        optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
+        verify           = require_extra.verify     -- default: true, we can set false to ignore sha256sum and select any version
     }
 
     -- save this required item to cache
@@ -257,15 +258,17 @@ function _select_package_version(package, requireinfo)
         local source = nil
         local version = nil
         local require_version = requireinfo.version
-        if #package:versions() > 0 and (require_version == "latest" or require_version:find('.', 1, true)) then -- select version?
+        local require_verify  = requireinfo.verify
+        if (not package:get("versions") or require_verify == false) and semver.is_valid(require_version) then
+            -- no version list in package() or need not verify sha256sum? try selecting this version directly
+            -- @see https://github.com/xmake-io/xmake/issues/930
+            -- https://github.com/xmake-io/xmake/issues/1009
+            version = require_version
+            source = "versions"
+        elseif #package:versions() > 0 and (require_version == "latest" or require_version:find('.', 1, true)) then -- select version?
             version, source = semver.select(require_version, package:versions())
         elseif has_giturl then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
-        elseif not package:get("versions") and semver.is_valid(require_version) then
-            -- no version list in package()? try this version directly
-            -- @see https://github.com/xmake-io/xmake/issues/930
-            version = require_version
-            source = "versions"
         else
             raise("package(%s %s): not found!", package:name(), require_version)
         end
