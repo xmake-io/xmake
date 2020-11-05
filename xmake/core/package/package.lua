@@ -422,7 +422,7 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
-        if self:kind() == "binary" then
+        if self:kind() == "binary" or (self:is_plat("windows", "mingw") and self:config("shared")) then
             envs.PATH = {"bin"}
         end
         -- add LD_LIBRARY_PATH to load *.so directory
