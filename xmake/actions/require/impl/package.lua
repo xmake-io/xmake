@@ -872,8 +872,10 @@ function export_packages(requires, opt)
         name = name .. "_" .. instance:buildhash()
 
         -- export this package
-        os.cp(instance:installdir(), path.join(exportdir, name))
-        table.insert(packages, instance)
+        if instance:fetch() then
+            os.cp(instance:installdir(), path.join(exportdir, name))
+            table.insert(packages, instance)
+        end
     end
     return packages
 end

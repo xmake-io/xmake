@@ -50,7 +50,16 @@ function main(requires_raw)
         print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
-        print("local packages not found!")
+        cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
+        if os.getenv("XREPO_WORKING") then
+            print("please attempt to remove them with `-f/--configs=` option, e.g.")
+            print("    - xrepo remove -f \"name=value, ...\" package")
+            print("    - xrepo remove -m debug -k shared -f \"name=value, ...\" package")
+        else
+            print("please attempt to uninstall them with `--extra=` option, e.g.")
+            print("    - xmake require --uninstall --extra=\"{configs={...}}\" package")
+            print("    - xmake require --uninstall --extra=\"{debug=true,configs={shared=true}}\" package")
+        end
     end
 
     -- leave environment

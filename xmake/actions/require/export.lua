@@ -51,7 +51,16 @@ function main(requires_raw)
         print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
-        print("local packages not found!")
+        cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
+        if os.getenv("XREPO_WORKING") then
+            print("please attempt to export them with `-f/--configs=` option, e.g.")
+            print("    - xrepo export -f \"name=value, ...\" package")
+            print("    - xrepo export -m debug -k shared -f \"name=value, ...\" package")
+        else
+            print("please attempt to export them with `--extra=` option, e.g.")
+            print("    - xmake require --export --extra=\"{configs={...}}\" package")
+            print("    - xmake require --export --extra=\"{debug=true,configs={shared=true}}\" package")
+        end
     else
         print("output: %s", exportdir)
     end
