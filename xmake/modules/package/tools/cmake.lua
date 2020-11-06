@@ -323,12 +323,13 @@ function _install_for_msvc(package, configs, opt)
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
+        os.trycp("install/bin", package:installdir())
         os.trycp("install/lib", package:installdir()) -- perhaps only headers library
         os.trycp("install/include", package:installdir())
     else
-        os.cp("**.lib", package:installdir("lib"))
-        os.cp("**.dll", package:installdir("lib"))
-        os.cp("**.exp", package:installdir("lib"))
+        os.trycp("**.dll", package:installdir("bin"))
+        os.trycp("**.lib", package:installdir("lib"))
+        os.trycp("**.exp", package:installdir("lib"))
     end
 end
 
@@ -345,9 +346,7 @@ function _install_files_for_cmake(package, opt)
         local prefixdir_new = package:installdir()
         io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
     end
-    if (opt and opt.binary) or package:kind() == "binary" then
-        os.trycp("install/bin", package:installdir())
-    end
+    os.trycp("install/bin", package:installdir())
     os.trycp("install/lib", package:installdir())
     os.trycp("install/include", package:installdir())
 end
