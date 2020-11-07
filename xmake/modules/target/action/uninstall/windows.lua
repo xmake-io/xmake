@@ -41,9 +41,7 @@ function _uninstall_shared_for_packages(target, outputdir)
     _g.uninstalled_packages = _g.uninstalled_packages or {}
     for _, pkg in ipairs(target:orderpkgs()) do
         if not _g.uninstalled_packages[pkg:name()] then
-            local extrainfo = pkg:extrainfo() or {}
-            local has_shared = extrainfo.configs and extrainfo.configs.shared
-            if has_shared and pkg:enabled() and pkg:get("libfiles") then
+            if pkg:enabled() and pkg:get("libfiles") then
                 _uninstall_shared_for_package(target, pkg, outputdir)
             end
             _g.uninstalled_packages[pkg:name()] = true

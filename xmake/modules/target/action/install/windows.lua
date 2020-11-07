@@ -55,9 +55,7 @@ function _install_shared_for_packages(target, outputdir)
     _g.installed_packages = _g.installed_packages or {}
     for _, pkg in ipairs(target:orderpkgs()) do
         if not _g.installed_packages[pkg:name()] then
-            local extrainfo = pkg:extrainfo() or {}
-            local has_shared = extrainfo.configs and extrainfo.configs.shared
-            if has_shared and pkg:enabled() and pkg:get("libfiles") then
+            if pkg:enabled() and pkg:get("libfiles") then
                 _install_shared_for_package(target, pkg, outputdir)
             end
             _g.installed_packages[pkg:name()] = true

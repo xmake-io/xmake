@@ -28,6 +28,30 @@ import("impl.repository")
 import("impl.environment")
 import("impl.utils.get_requires")
 
+-- register required package environments
+function _register_required_package_envs(instance, envs)
+    for name, values in pairs(instance:envs()) do
+        if name == "PATH" or name == "LD_LIBRARY_PATH" then
+            for _, value in ipairs(values) do
+                envs[name] = envs[name] or {}
+                if path.is_absolute(value) then
+                    table.insert(envs[name], value)
+                else
+                    table.insert(envs[name], path.join(instance:installdir(), value))
+                end
+            end
+        else
+            envs[name] = envs[name] or {}
+            table.join2(envs[name], values)
+        end
+    end
+end
+
+-- register required package info
+function _register_required_package_info(instance, requireinfo)
+    requireinfo:add((instance:fetch()))
+end
+
 -- register the required local package
 function _register_required_package(instance, requireinfo)
 
@@ -38,39 +62,22 @@ function _register_required_package(instance, requireinfo)
         -- clear require info first
         requireinfo:clear()
 
-        -- add include and links info
-        requireinfo:add(instance:fetch())
+        -- add include, links and envs for all dependent packages
+        local envs = {}
+        _register_required_package_info(instance, requireinfo)
+        _register_required_package_envs(instance, envs)
         local orderdeps = instance:orderdeps()
         if orderdeps then
             local total = #orderdeps
             for idx, _ in ipairs(orderdeps) do
                 local dep = orderdeps[total + 1 - idx]
                 if dep then
-                    requireinfo:add((dep:fetch()))
+                    _register_required_package_info(dep, requireinfo)
+                    _register_required_package_envs(dep, envs)
                 end
             end
         end
-
-        -- add environments
-        local envs = {}
-        local hasenvs = false
-        local installdir = instance:installdir()
-        for name, values in pairs(instance:envs()) do
-            if name == "PATH" or name == "LD_LIBRARY_PATH" then
-                for _, value in ipairs(values) do
-                    envs[name] = envs[name] or {}
-                    if path.is_absolute(value) then
-                        table.insert(envs[name], value)
-                    else
-                        table.insert(envs[name], path.join(installdir, value))
-                    end
-                end
-            else
-                envs[name] = values
-            end
-            hasenvs = true
-        end
-        if hasenvs then
+        if #table.keys(envs) > 0 then
             requireinfo:add({envs = envs})
         end
 
