@@ -30,26 +30,39 @@ function menu_options()
     -- menu options
     local options =
     {
-        {'k', "kind",       "kv", nil, "Enable static/shared library.",
+        {'k', "kind",          "kv", nil, "Enable static/shared library.",
                                        values = {"static", "shared"}         },
-        {'p', "plat",       "kv", nil, "Set the given platform."             },
-        {'a', "arch",       "kv", nil, "Set the given architecture."         },
-        {'m', "mode",       "kv", nil, "Set the given mode.",
+        {'p', "plat",          "kv", nil, "Set the given platform."             },
+        {'a', "arch",          "kv", nil, "Set the given architecture."         },
+        {'m', "mode",          "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
-        {'f', "configs",    "kv", nil, "Set the given extra package configs.",
+        {'f', "configs",       "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo install -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
+        {category = "Visual Studio SDK Configuration"                        },
+        {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
+                                        , "  e.g. --vs=2017"                 },
+        {nil, "vs_toolset",    "kv", nil, "The Microsoft Visual Studio Toolset Version"
+                                        , "  e.g. --vs_toolset=14.0"         },
+        {nil, "vs_sdkver",     "kv", nil, "The Windows SDK Version of Visual Studio"
+                                        , "  e.g. --vs_sdkver=10.0.15063.0"  },
+        {category = "Android NDK Configuration"                              },
+        {nil, "ndk",           "kv", nil, "Set the android NDK directory."   },
+        {category = "Cross Compilation Configuration"                        },
+        {nil, "sdk",           "kv", nil, "Set the SDK directory of cross toolchain." },
+        {nil, "toolchain",     "kv", nil, "Set the toolchain name."          },
+        {category = "MingW Configuration"                                    },
+        {nil, "mingw",         "kv", nil, "Set the MingW SDK directory."     },
+        {category = "XCode SDK Configuration"                                },
+        {nil, "xcode",         "kv", nil, "The Xcode Application Directory"  },
+        {nil, "xcode_sdkver",  "kv", nil, "The SDK Version for Xcode"        },
+        {nil, "target_minver", "kv", nil, "The Target Minimal Version"       },
+        {category = "Other Configuration"                                    },
+        {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
+        {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
         {},
-        {nil, "ndk",        "kv", nil, "Set the android NDK directory."      },
-        {nil, "sdk",        "kv", nil, "Set the SDK directory of cross toolchain." },
-        {nil, "toolchain",  "kv", nil, "Set the toolchain name."             },
-        {nil, "mingw",      "kv", nil, "Set the MingW SDK directory."        },
-        {},
-        {nil, "force",      "k",  nil, "Force to reinstall all package dependencies."},
-        {nil, "shallow",    "k",  nil, "Does not install dependent packages."},
-        {},
-        {nil, "packages",   "vs", nil, "The packages list.",
+        {nil, "packages",      "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo install zlib boost",
                                        "    - xrepo install -p iphoneos -a arm64 \"zlib >=1.2.0\"",
@@ -116,17 +129,40 @@ function _install_packages(packages)
         table.insert(config_argv, "-k")
         table.insert(config_argv, kind)
     end
+    -- for android
     if option.get("ndk") then
         table.insert(config_argv, "--ndk=" .. option.get("ndk"))
     end
+    -- for cross toolchain
     if option.get("sdk") then
         table.insert(config_argv, "--sdk=" .. option.get("sdk"))
     end
+    if option.get("toolchain") then
+        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
+    end
+    -- for mingw
     if option.get("mingw") then
         table.insert(config_argv, "--mingw=" .. option.get("mingw"))
     end
-    if option.get("toolchain") then
-        table.insert(config_argv, "--toolchain=" .. option.get("toolchain"))
+    -- for vs
+    if option.get("vs") then
+        table.insert(config_argv, "--vs=" .. option.get("vs"))
+    end
+    if option.get("vs_toolset") then
+        table.insert(config_argv, "--vs_toolset=" .. option.get("vs_toolset"))
+    end
+    if option.get("vs_sdkver") then
+        table.insert(config_argv, "--vs_sdkver=" .. option.get("vs_sdkver"))
+    end
+    -- for xcode
+    if option.get("xcode") then
+        table.insert(config_argv, "--xcode=" .. option.get("xcode"))
+    end
+    if option.get("xcode_sdkver") then
+        table.insert(config_argv, "--xcode_sdkver=" .. option.get("xcode_sdkver"))
+    end
+    if option.get("target_minver") then
+        table.insert(config_argv, "--target_minver=" .. option.get("target_minver"))
     end
     os.vrunv("xmake", config_argv)
 
