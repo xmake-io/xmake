@@ -184,8 +184,6 @@ function sandbox.new(script, filter, rootdir)
 
     -- save script
     self._PRIVATE._SCRIPT = script
-
-    -- ok
     return self
 end
 
@@ -277,41 +275,25 @@ function sandbox:module()
             module[k] = v
         end
     end
-
-    -- save module
     self._PRIVATE._MODULE = module
-
-    -- ok
     return module
 end
 
 -- get script from the given sandbox
 function sandbox:script()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get it
     return self._PRIVATE._SCRIPT
 end
 
 -- get filter from the given sandbox
 function sandbox:filter()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get it
     return self._PRIVATE._FILTER
 end
 
 -- get root directory from the given sandbox
 function sandbox:rootdir()
-
-    -- check
     assert(self and self._PRIVATE)
-
-    -- get it
     return self._PRIVATE._ROOTDIR
 end
 

@@ -48,7 +48,7 @@ function _instance.new(name, info, scriptdir)
     local instance = table.inherit(_instance)
     instance._NAME = name
     instance._INFO = info
-    instance._SCRIPTDIR = scriptdir
+    instance._SCRIPTDIR = scriptdir and path.absolute(scriptdir)
     return instance
 end
 

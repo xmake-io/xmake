@@ -723,6 +723,9 @@ function interpreter:load(file, opt)
     -- clear first
     self:_clear()
 
+    -- translate to absolute file path for scriptdir/rootdir
+    file = path.absolute(file)
+
     -- init the current file
     self._PRIVATE._CURFILE = file
     self._PRIVATE._SCRIPT_FILES = {file}
@@ -784,11 +787,7 @@ end
 
 -- get script directory
 function interpreter:scriptdir()
-
-    -- check
     assert(self and self._PRIVATE and self._PRIVATE._CURFILE)
-
-    -- get it
     return path.directory(self._PRIVATE._CURFILE)
 end
 
