@@ -56,7 +56,9 @@
 # endif
 #endif /* USE_FILEEXTD */
 
-#define USE_DYNFILEID // we need enable it for supporting xp
+#if _WIN32_WINNT >= 0x0600
+# define USE_DYNFILEID // we need enable it for supporting xp
+#endif
 #ifdef USE_DYNFILEID
 typedef BOOL (WINAPI *pfnGetFileInformationByHandleEx)(
         HANDLE                      hFile,
@@ -104,9 +106,9 @@ static void setup_fileid_api(void)
 /* Check if the fd handle is a cygwin/msys's pty. */
 int is_cygpty(HANDLE h)
 {
-#ifdef STUB_IMPL
+#if defined(STUB_IMPL)
     return 0;
-#else
+#elif _WIN32_WINNT >= 0x0600
     int size = sizeof(FILE_NAME_INFO) + sizeof(WCHAR) * (MAX_PATH - 1);
     FILE_NAME_INFO *nameinfo;
     WCHAR *p = NULL;
@@ -159,6 +161,8 @@ int is_cygpty(HANDLE h)
     }
     free(nameinfo);
     return (p != NULL);
+#else
+    return 0;
 #endif
 }
 
