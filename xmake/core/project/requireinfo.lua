@@ -122,6 +122,16 @@ function requireinfo:license()
     return self:get("license")
 end
 
+-- has static libraries?
+function requireinfo:has_static()
+    return self:get("static")
+end
+
+-- has shared libraries?
+function requireinfo:has_shared()
+    return self:get("shared")
+end
+
 -- get the require string
 function requireinfo:requirestr()
     return self:get("__requirestr")

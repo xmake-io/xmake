@@ -128,6 +128,12 @@ function _find_package_from_repo(name, opt)
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
+            if libinfo.kind == "shared" then
+                result.shared = true
+            end
+            if libinfo.kind == "static" then
+                result.static = true
+            end
             result.links    = table.join(result.links or {}, libinfo.link)
             result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
             result.libfiles = table.join(result.libfiles or {}, path.join(libinfo.linkdir, libinfo.filename))

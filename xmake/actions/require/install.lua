@@ -63,8 +63,10 @@ function _register_required_package_libs(instance, requireinfo, is_deps)
                 --
                 fetchinfo.license = nil
 
-                -- we need only root package version
+                -- we need only some infos for root package
                 fetchinfo.version = nil
+                fetchinfo.static  = nil
+                fetchinfo.shared  = nil
             end
             requireinfo:add(fetchinfo)
         end

@@ -18,9 +18,23 @@
 -- @file        check_licenses.lua
 --
 
+-- imports
+import("core.base.license")
+
 -- check licenses
-function _check_licenses_for_package(target_name, target_license, package_name, package_licenses)
-    -- TODO
+function _check_licenses_for_package(target, package)
+    local target_license  = target:license()
+    local package_license = package:license()
+    local package_kind    = package:has_shared() and "shared"
+    local ok, errors = license.compatible(target_license, package_license, {library_kind = package_kind})
+    if not ok then
+        errors = errors or "you can use set_license()/set_policy() to modify/disable license"
+        if target_license then
+            wprint("license(%s) of target(%s) is not compatible with license(%s) of package(%s)\n%s!", target_license, target:name(), package_license, package:name(), errors)
+        else
+            wprint("target(%s) maybe is not compatible with license(%s) of package(%s), \n%s!", target:name(), package_license, package:name(), errors)
+        end
+    end
 end
 
 -- check licenses for all dependent packages
@@ -28,15 +42,16 @@ end
 -- @see https://github.com/xmake-io/xmake/issues/1016
 --
 function _check_licenses_for_packages(target)
-    local target_license = target:get("license")
-    if target_license then
-        for _, pkg in ipairs(target:orderpkgs()) do
-            _check_licenses_for_package(target:name(), target_license, pkg:name(), pkg:get("license"))
+    for _, pkg in ipairs(target:orderpkgs()) do
+        if pkg:license() then
+            _check_licenses_for_package(target, pkg)
         end
     end
 end
 
 -- main entry
 function main(target)
-    _check_licenses_for_packages(target)
+    if target:policy("check.target_package_licenses") then
+        _check_licenses_for_packages(target)
+    end
 end

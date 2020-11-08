@@ -514,6 +514,11 @@ function _instance:version()
     return version, version_build
 end
 
+-- get the target license
+function _instance:license()
+    return self:get("license")
+end
+
 -- get the target policy
 function _instance:policy(name)
     local policies = self._POLICIES
