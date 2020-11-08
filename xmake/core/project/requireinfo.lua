@@ -109,22 +109,17 @@ function requireinfo:version()
 
     -- get version
     local version = nil
-    local verstr = self:get("__version")
+    local verstr = self:get("version")
     if verstr then
         version = semver.new(verstr)
     end
-
-    -- save to cache
     self._VERSION = version or false
-
-    -- done
     return version
 end
 
--- set the package version
-function requireinfo:version_set(version)
-    self._VERSION = nil
-    self:set("__version", version)
+-- get the package license
+function requireinfo:license()
+    return self:get("license")
 end
 
 -- get the require string
@@ -202,8 +197,6 @@ function requireinfo.load(name)
     local instance = table.inherit(requireinfo)
     instance._INFO = info
     instance._NAME = name
-
-    -- ok
     return instance
 end
 

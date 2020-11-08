@@ -29,6 +29,7 @@ import("impl.environment")
 import("impl.utils.get_requires")
 
 -- register required package environments
+-- envs: bin path for *.dll, program ..
 function _register_required_package_envs(instance, envs)
     for name, values in pairs(instance:envs()) do
         if name == "PATH" or name == "LD_LIBRARY_PATH" then
@@ -47,9 +48,27 @@ function _register_required_package_envs(instance, envs)
     end
 end
 
--- register required package info
-function _register_required_package_info(instance, requireinfo)
-    requireinfo:add((instance:fetch()))
+-- register required package libraries
+-- libs: includedirs, links, linkdirs ...
+function _register_required_package_libs(instance, requireinfo, is_deps)
+    if instance:kind() ~= "binary" then
+        local fetchinfo = instance:fetch()
+        if fetchinfo then
+            fetchinfo.name    = nil
+            if is_deps then
+                -- we need only reserve license for root package
+                --
+                -- @note the license compatibility between the root package and
+                -- its dependent packages is guaranteed by the root package itself
+                --
+                fetchinfo.license = nil
+
+                -- we need only root package version
+                fetchinfo.version = nil
+            end
+            requireinfo:add(fetchinfo)
+        end
+    end
 end
 
 -- register the required local package
@@ -62,9 +81,9 @@ function _register_required_package(instance, requireinfo)
         -- clear require info first
         requireinfo:clear()
 
-        -- add include, links and envs for all dependent packages
+        -- add packages info with all dependencies
         local envs = {}
-        _register_required_package_info(instance, requireinfo)
+        _register_required_package_libs(instance, requireinfo)
         _register_required_package_envs(instance, envs)
         local orderdeps = instance:orderdeps()
         if orderdeps then
@@ -72,7 +91,7 @@ function _register_required_package(instance, requireinfo)
             for idx, _ in ipairs(orderdeps) do
                 local dep = orderdeps[total + 1 - idx]
                 if dep then
-                    _register_required_package_info(dep, requireinfo)
+                    _register_required_package_libs(dep, requireinfo, true)
                     _register_required_package_envs(dep, envs)
                 end
             end
@@ -80,9 +99,6 @@ function _register_required_package(instance, requireinfo)
         if #table.keys(envs) > 0 then
             requireinfo:add({envs = envs})
         end
-
-        -- save this package version
-        requireinfo:version_set(instance:version_str())
 
         -- enable this require info
         requireinfo:enable(true)

@@ -60,3 +60,6 @@ rule("c++")
 
     -- check targets
     add_deps("utils.check.targets")
+
+    -- check licenses
+    add_deps("utils.check.licenses")
