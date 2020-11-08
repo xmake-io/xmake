@@ -128,8 +128,8 @@ function _find_package_from_repo(name, opt)
     for _, link in ipairs(links) do
         local libinfo = find_library(link, linkdirs)
         if libinfo then
-            result.links     = table.join(result.links or {}, libinfo.link)
-            result.linkdirs  = table.join(result.linkdirs or {}, libinfo.linkdir)
+            result.links    = table.join(result.links or {}, libinfo.link)
+            result.linkdirs = table.join(result.linkdirs or {}, libinfo.linkdir)
             result.libfiles = table.join(result.libfiles or {}, path.join(libinfo.linkdir, libinfo.filename))
         end
     end
@@ -158,8 +158,9 @@ function _find_package_from_repo(name, opt)
         end
     end
 
-    -- get version
+    -- get version and license
     result.version = manifest.version or path.filename(path.directory(path.directory(manifest_file)))
+    result.license = manifest.license
     return result
 end
 

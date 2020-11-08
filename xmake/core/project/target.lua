@@ -1856,6 +1856,7 @@ function target.apis()
         ,   "target.set_strip"
         ,   "target.set_rules"
         ,   "target.set_version"
+        ,   "target.set_license"
         ,   "target.set_enabled"
         ,   "target.set_default"
         ,   "target.set_options"

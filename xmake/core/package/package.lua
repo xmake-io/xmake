@@ -82,6 +82,11 @@ function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
 end
 
+-- get the package license
+function _instance:license()
+    return self:get("license")
+end
+
 -- get the package description
 function _instance:description()
     return self:get("description")
@@ -378,6 +383,7 @@ function _instance:manifest_save()
     -- make manifest
     local manifest       = {}
     manifest.name        = self:name()
+    manifest.license     = self:license()
     manifest.description = self:description()
     manifest.version     = self:version_str()
     manifest.kind        = self:kind()
