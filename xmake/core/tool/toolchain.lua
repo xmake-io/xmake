@@ -179,7 +179,7 @@ end
 -- get the bin directory
 function _instance:bindir()
     local bindir = config.get("bin") or self:info():get("bindir")
-    if self:cross() and self:sdkdir() and os.isdir(path.join(self:sdkdir(), "bin")) then
+    if not bindir and self:cross() and self:sdkdir() and os.isdir(path.join(self:sdkdir(), "bin")) then
         bindir = path.join(self:sdkdir(), "bin")
     end
     return bindir
