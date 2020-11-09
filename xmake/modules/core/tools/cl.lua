@@ -256,6 +256,11 @@ function nf_includedir(self, dir)
     return "-I" .. os.args(path.translate(dir))
 end
 
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return nf_includedir(self, dir)
+end
+
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
 

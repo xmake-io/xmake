@@ -83,6 +83,11 @@ function nf_includedir(self, dir)
     return "-I " .. os.args(dir)
 end
 
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return nf_includedir(self, dir)
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     return "-L " .. os.args(dir)

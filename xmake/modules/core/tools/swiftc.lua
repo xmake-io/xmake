@@ -140,11 +140,6 @@ function nf_vectorext(self, extension)
     return maps[extension]
 end
 
--- make the includedir flag
-function nf_includedir(self, dir)
-    return "-Xcc -I" .. os.args(dir)
-end
-
 -- make the define flag
 function nf_define(self, macro)
     return "-Xcc -D" .. macro

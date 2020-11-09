@@ -234,6 +234,11 @@ function nf_includedir(self, dir)
     return "-I" .. os.args(path.translate(dir))
 end
 
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return "-isystem " .. os.args(path.translate(dir))
+end
+
 -- make the link flag
 function nf_link(self, lib)
     return "-l" .. lib

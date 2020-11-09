@@ -73,6 +73,11 @@ function nf_includedir(self, dir)
     return "-I" .. os.args(dir)
 end
 
+-- make the sysincludedir flag
+function nf_sysincludedir(self, dir)
+    return nf_includedir(self, dir)
+end
+
 -- make the compile arguments list
 function _compargv1(self, sourcefile, objectfile, flags)
     return self:program(), table.join(flags, "-o", objectfile, sourcefile)
