@@ -47,11 +47,6 @@ function main(toolchain)
     if xcode_sdkdir then
         toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
         toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
-    else
-        toolchain:add("includedirs", "/usr/local/include")
-        toolchain:add("includedirs", "/usr/include")
-        toolchain:add("linkdirs", "/usr/local/lib")
-        toolchain:add("linkdirs", "/usr/lib")
     end
     toolchain:add("ldflags", "-stdlib=libc++")
     toolchain:add("syslinks", "z")

@@ -103,18 +103,6 @@ function _load_intel_on_linux(toolchain)
         toolchain:add("ldflags", march)
         toolchain:add("shflags", march)
     end
-
-    -- add includedirs and linkdirs
-    for _, includedir in ipairs({"/usr/local/include", "/usr/include"}) do
-        if os.isdir(includedir) then
-            toolchain:add("includedirs", includedir)
-        end
-    end
-    for _, linkdir in ipairs({"/usr/local/lib", "/usr/lib"}) do
-        if os.isdir(linkdir) then
-            toolchain:add("linkdirs", linkdir)
-        end
-    end
 end
 
 -- main entry
