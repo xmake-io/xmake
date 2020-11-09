@@ -60,6 +60,8 @@ language("fortran")
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
         ,   "toolchain.includedirs"
+        ,   "target.sysincludedirs"
+        ,   "toolchain.sysincludedirs"
         }
     ,   binary =
         {

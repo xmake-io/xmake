@@ -47,10 +47,8 @@ function apis()
     {
         -- target.add_xxx
         "target.add_linkdirs"
-    ,   "target.add_includedirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
-    ,   "option.add_includedirs"
     }
 
     -- ok

@@ -216,6 +216,7 @@ function apis()
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
     ,   "package.add_includedirs" --@note we need not uses paths for package, see https://github.com/xmake-io/xmake/issues/717
+    ,   "package.add_sysincludedirs"
     ,   "package.add_frameworkdirs"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
@@ -232,6 +233,7 @@ function apis()
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
     ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_sysincludedirs"
     ,   "toolchain.add_frameworkdirs"
     }
     _g.paths =
@@ -248,10 +250,12 @@ function apis()
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
     ,   "option.add_frameworkdirs"
     }
     _g.dictionary =

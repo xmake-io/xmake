@@ -79,6 +79,7 @@ function apis()
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
     ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_sysincludedirs"
     ,   "toolchain.add_frameworkdirs"
     }
     _g.paths =
@@ -95,10 +96,12 @@ function apis()
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
     ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
     ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
     ,   "option.add_frameworkdirs"
     }
 

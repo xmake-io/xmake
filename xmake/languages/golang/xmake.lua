@@ -65,6 +65,9 @@ language("golang")
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
+        ,   "target.sysincludedirs"
+        ,   "option.sysincludedirs"
+        ,   "toolchain.sysincludedirs"
         }
     ,   binary =
         {

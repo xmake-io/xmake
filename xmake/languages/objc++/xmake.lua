@@ -85,6 +85,9 @@ language("objc++")
         ,   "toolchain.undefines"
         ,   "toolchain.frameworkdirs"
         ,   "toolchain.frameworks"
+        ,   "target.sysincludedirs"
+        ,   "option.sysincludedirs"
+        ,   "toolchain.sysincludedirs"
         }
     ,   binary =
         {

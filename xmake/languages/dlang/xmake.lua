@@ -61,6 +61,9 @@ language("dlang")
         ,   "target.includedirs"
         ,   "option.includedirs"
         ,   "toolchain.includedirs"
+        ,   "target.sysincludedirs"
+        ,   "option.sysincludedirs"
+        ,   "toolchain.sysincludedirs"
         }
     ,   binary =
         {

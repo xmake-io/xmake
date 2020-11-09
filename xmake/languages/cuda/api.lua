@@ -66,9 +66,10 @@ function apis()
         -- target.add_xxx
         "target.add_linkdirs"
     ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
-    ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
     }
 
     -- ok

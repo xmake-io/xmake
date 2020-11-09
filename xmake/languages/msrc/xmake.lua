@@ -55,6 +55,8 @@ language("msrc")
         ,   "toolchain.includedirs"
         ,   "toolchain.defines"
         ,   "toolchain.undefines"
+        ,   "target.sysincludedirs"
+        ,   "toolchain.sysincludedirs"
         }
     }
 
