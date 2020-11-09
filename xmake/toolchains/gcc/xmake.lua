@@ -30,7 +30,7 @@ toolchain("gcc")
 
     -- set toolset
     set_toolset("cc", "gcc")
-    set_toolset("cxx", "gcc", "g++")
+    set_toolset("cxx", "g++", "gcc")
     set_toolset("ld", "g++", "gcc")
     set_toolset("sh", "g++", "gcc")
     set_toolset("ar", "ar")

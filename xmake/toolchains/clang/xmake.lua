@@ -30,7 +30,7 @@ toolchain("clang")
 
     -- set toolset
     set_toolset("cc", "clang")
-    set_toolset("cxx", "clang", "clang++")
+    set_toolset("cxx", "clang++", "clang")
     set_toolset("ld", "clang++", "clang")
     set_toolset("sh", "clang++", "clang")
     set_toolset("ar", "ar")
