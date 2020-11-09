@@ -42,19 +42,6 @@ function main(toolchain)
     toolchain:set("toolset", "ranlib", cross .. "ranlib")
     toolchain:set("toolset", "strip", cross .. "strip")
 
-    -- init linkdirs and includedirs
-    local sdkdir = toolchain:sdkdir()
-    if sdkdir then
-        local includedir = path.join(sdkdir, "include")
-        if os.isdir(includedir) then
-            toolchain:add("includedirs", includedir)
-        end
-        local linkdir = path.join(sdkdir, "lib")
-        if os.isdir(linkdir) then
-            toolchain:add("linkdirs", linkdir)
-        end
-    end
-
     -- add bin search library for loading some dependent .dll files windows
     local bindir = toolchain:bindir()
     if bindir and is_host("windows") then
