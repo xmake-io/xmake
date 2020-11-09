@@ -30,6 +30,9 @@ winenv/
 /core/**/*.o
 /core/**/*.b
 /core/**/*.a
+/core/**/*.obj
+/core/**/*.lib
+/core/**/*.exe
 
 # for fortran
 /tests/**/*.mod

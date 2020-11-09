@@ -124,6 +124,9 @@ endif
 ifeq ($(PLAT),msys)
 	iswin = yes
 endif
+ifeq ($(PLAT),mingw)
+	iswin = yes
+endif
 ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif

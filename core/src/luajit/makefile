@@ -87,6 +87,9 @@ endif
 ifeq ($(PLAT),msys)
 	iswin = yes
 endif
+ifeq ($(PLAT),mingw)
+	iswin = yes
+endif
 ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
@@ -127,9 +130,11 @@ luajit_CXFLAGS 			+= -DLUAJIT_USE_SYSMALLOC
 endif
 
 # fix call math.sin/log crash for fedora/i386/lj_vm.S with `LDFLAGS = -specs=/usr/lib/rpm/redhat/redhat-hardened-ld` in xmake.spec/%set_build_flags
+ifndef iswin
 ifeq ($(BUILD_ARCH),i386)
 luajit_ASFLAGS 			+= -fPIE
 luajit_CXFLAGS 			+= -fPIE
+endif
 endif
 
 # suffix
