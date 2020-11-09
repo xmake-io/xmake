@@ -62,18 +62,4 @@ toolchain("clang")
             toolchain:add("ldflags", march)
             toolchain:add("shflags", march)
         end
-
-        -- add includedirs and linkdirs
-        if not toolchain:is_plat("windows") and os.isdir("/usr") then
-            for _, includedir in ipairs({"/usr/local/include", "/usr/include"}) do
-                if os.isdir(includedir) then
-                    toolchain:add("includedirs", includedir)
-                end
-            end
-            for _, linkdir in ipairs({"/usr/local/lib", "/usr/lib"}) do
-                if os.isdir(linkdir) then
-                    toolchain:add("linkdirs", linkdir)
-                end
-            end
-        end
     end)
