@@ -30,6 +30,7 @@ import("package.manager.find_package")
 --              e.g. zlib 1.12.x (try all), xmake::zlib 1.12.x, brew::zlib, brew::pcre/libpcre16, vcpkg::zlib, conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options
 --              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x",
+--                     external = true, -- we use sysincludedirs instead of includedirs as results
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"
 --                     pkgconfigs = {..}}
@@ -65,6 +66,9 @@ function main(name, opt)
     if opt.mode then
         key = key .. "_" .. opt.mode
     end
+    if opt.isystem then
+        key = key .. "_isystem"
+    end
 
     -- attempt to get result from cache first
     local cacheinfo = cache.load(key)
@@ -76,6 +80,12 @@ function main(name, opt)
     -- find package
     local found_manager_name, package_name
     result, found_manager_name, package_name = find_package(name, opt)
+
+    -- use isystem?
+    if result and result.includedirs and opt.external then
+        result.sysincludedirs = result.includedirs
+        result.includedirs = nil
+    end
 
     -- cache result
     cacheinfo[name] = result and result or false

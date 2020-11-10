@@ -869,6 +869,12 @@ function _instance:fetch(opt)
         system = nil
     end
 
+    -- use sysincludedirs/-isystem instead of -I?
+    local external = self:requireinfo().external
+    if external == nil then
+        external = true
+    end
+
     -- fetch binary tool?
     fetchinfo = nil
     local isSys = nil
@@ -913,6 +919,7 @@ function _instance:fetch(opt)
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
                                                                       pkgconfigs = self:configs(),
+                                                                      external = external,
                                                                       force = opt.force})
             if fetchinfo then
                 isSys = self._isSys
@@ -927,6 +934,7 @@ function _instance:fetch(opt)
                                                          pkgconfigs = self:configs(),
                                                          buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
                                                          cachekey = "fetch_package_system",
+                                                         external = external,
                                                          system = true})
             if fetchinfo then
                 isSys = true

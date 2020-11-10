@@ -62,6 +62,7 @@ function main(requires_raw)
             for _, fetchinfo in ipairs(fetchinfos) do
                 table.join2(flags, compiler.map_flags("cxx", "define", fetchinfo.defines))
                 table.join2(flags, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
+                table.join2(flags, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
                 for _, cflag in ipairs(fetchinfo.cflags) do
                     table.insert(flags, cflag)
                 end
@@ -77,6 +78,7 @@ function main(requires_raw)
             for _, fetchinfo in ipairs(fetchinfos) do
                 table.join2(flags, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
                 table.join2(flags, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
+                table.join2(flags, linker.map_flags("binary", {"cxx"}, "syslink", fetchinfo.syslinks))
                 for _, ldflag in ipairs(fetchinfo.ldflags) do
                     table.insert(flags, ldflags)
                 end

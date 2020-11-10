@@ -168,7 +168,8 @@ function _parse_require(require_str, requires_extra, parentinfo)
         configs          = require_build_configs,   -- the required building configurations
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
-        verify           = require_extra.verify     -- default: true, we can set false to ignore sha256sum and select any version
+        verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
+        external         = require_extra.external   -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
     }
 
     -- save this required item to cache
