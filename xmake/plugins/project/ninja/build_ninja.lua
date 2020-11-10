@@ -26,6 +26,7 @@ import("core.language.language")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
+import("lib.detect.find_toolname")
 
 -- add header
 function _add_header(ninjafile)
@@ -107,8 +108,12 @@ function _add_rules_for_compiler(ninjafile)
     }
     for sourcekind, _ in pairs(language.sourcekinds()) do
         local program, toolname = platform.tool(sourcekind)
-        if program and toolname then
-            local add_rule = add_compiler_rules[toolname]
+        if program then
+            local add_rule = add_compiler_rules[toolname or find_toolname(program)]
+            -- support of unknown compiler (xmake f --cc=gcc@my-cc)
+            if not add_rule and toolname then
+                add_rule = add_compiler_rules[find_toolname(toolname)]
+            end
             if add_rule then
                 add_rule(ninjafile, sourcekind, program)
             end
@@ -164,8 +169,12 @@ function _add_rules_for_linker(ninjafile)
     }
     for _, linkerkind in ipairs(table.unique(linkerkinds)) do
         local program, toolname = platform.tool(linkerkind)
-        if program and toolname then
-            local add_rule = add_linker_rules[toolname]
+        if program then
+            local add_rule = add_linker_rules[toolname or find_toolname(program)]
+            -- support of unknown linker (xmake f --ld=gcc@my-ld)
+            if not add_rule and toolname then
+                add_rule = add_linker_rules[find_toolname(toolname)]
+            end
             if add_rule then
                 add_rule(ninjafile, linkerkind, program)
             end
