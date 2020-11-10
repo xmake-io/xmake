@@ -94,7 +94,7 @@ function nf_warning(self, level)
         none       = "-w"
     ,   less       = "-Wall"
     ,   more       = "-Wall"
-    ,   all        = "-Wextra -Wall"
+    ,   all        = "-Wall"
     ,   everything = "-Wextra -Wall"
     ,   error      = "-Werror"
     }
