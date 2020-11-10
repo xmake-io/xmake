@@ -258,7 +258,19 @@ end
 
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
-    return nf_includedir(self, dir)
+    local has_external_includedir = _g._HAS_EXTERNAL_INCLUDEDIR
+    if has_external_includedir == nil then
+        if self:has_flags({"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir"}) then
+            has_external_includedir = true
+        end
+        has_external_includedir = has_external_includedir or false
+        _g._HAS_EXTERNAL_INCLUDEDIR = has_external_includedir
+    end
+    if has_external_includedir then
+        return {"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}
+    else
+        return nf_includedir(self, dir)
+    end
 end
 
 -- make the c precompiled header flag
@@ -341,7 +353,7 @@ function _has_source_dependencies(self)
     local has_source_dependencies = _g._HAS_SOURCE_DEPENDENCIES
     if has_source_dependencies == nil then
         local source_dependencies_jsonfile = os.tmpfile() .. ".json"
-        if self:has_flags("/sourceDependencies " .. source_dependencies_jsonfile, "cl_sourceDependencies") and os.isfile(source_dependencies_jsonfile) then
+        if self:has_flags("/sourceDependencies " .. source_dependencies_jsonfile, "cxflags", {flagskey = "cl_sourceDependencies"}) and os.isfile(source_dependencies_jsonfile) then
             has_source_dependencies = true
         end
         has_source_dependencies = has_source_dependencies or false

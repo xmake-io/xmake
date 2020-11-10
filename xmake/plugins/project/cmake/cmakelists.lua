@@ -182,6 +182,26 @@ function _add_target_include_directories(cmakelists, target)
     end
 end
 
+-- add target system include directories
+function _add_target_sysinclude_directories(cmakelists, target)
+    local includedirs = _get_configs_from_target(target, "sysincludedirs")
+    if #includedirs > 0 then
+        cmakelists:print("target_include_directories(%s SYSTEM PRIVATE", target:name())
+        for _, includedir in ipairs(includedirs) do
+            cmakelists:print("    " .. _get_unix_path(includedir))
+        end
+        cmakelists:print(")")
+    end
+    local includedirs_interface = target:get("sysincludedirs", {interface = true})
+    if includedirs_interface then
+        cmakelists:print("target_include_directories(%s SYSTEM INTERFACE", target:name())
+        for _, headerdir in ipairs(includedirs_interface) do
+            cmakelists:print("    " .. _get_unix_path(headerdir))
+        end
+        cmakelists:print(")")
+    end
+end
+
 -- add target compile definitions
 function _add_target_compile_definitions(cmakelists, target)
     local defines = _get_configs_from_target(target, "defines")
@@ -469,6 +489,9 @@ function _add_target(cmakelists, target)
 
     -- add target include directories
     _add_target_include_directories(cmakelists, target)
+
+    -- add target system include directories
+    _add_target_sysinclude_directories(cmakelists, target)
 
     -- add target compile definitions
     _add_target_compile_definitions(cmakelists, target)
