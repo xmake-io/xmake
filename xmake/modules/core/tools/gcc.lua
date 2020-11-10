@@ -114,6 +114,7 @@ function nf_warning(self, level)
     ,   all        = "-Wall"
     ,   everything = "-Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
+    ,   extra      = "-Wextra"
     }
     return maps[level]
 end

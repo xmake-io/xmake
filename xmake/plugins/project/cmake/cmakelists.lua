@@ -279,6 +279,7 @@ function _add_target_warnings(cmakelists, target)
     ,   more  = "-Wall"
     ,   all   = "-Wall"
     ,   error = "-Werror"
+    ,   extra = "-Wextra"
     }
     local flags_msvc =
     {
@@ -287,6 +288,7 @@ function _add_target_warnings(cmakelists, target)
     ,   more  = "-W3"
     ,   all   = "-W3" -- = "-Wall" will enable too more warnings
     ,   error = "-WX"
+    ,   extra = "-W4"
     }
     local warnings = target:get("warnings")
     if warnings then

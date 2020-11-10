@@ -110,6 +110,7 @@ function nf_warning(self, level)
     ,   all        = "-W3" -- = "-Wall" will enable too more warnings
     ,   everything = "-Wall"
     ,   error      = "-WX"
+    ,   extra      = "-W4"
     }
 
     -- for gcc & clang on linux, may be work for other gnu compatible compilers such as icc
@@ -125,6 +126,7 @@ function nf_warning(self, level)
     ,   all        = "-Wall"
     ,   everything = "-Weverything -Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
+    ,   extra      = "-Wextra"
     }
 
     -- get warning for nvcc
