@@ -136,7 +136,7 @@ function nf_warning(self, level)
         none       = "-W0"
     ,   less       = "-W1"
     ,   more       = "-W3"
-    ,   all        = "-W4" -- = "-Wall" will enable too more warnings
+    ,   all        = "-W3" -- = "-Wall" will enable too more warnings
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
