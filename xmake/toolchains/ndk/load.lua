@@ -254,25 +254,25 @@ function main(toolchain)
                 toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
-                toolchain:add("includedirs", format("%s/include", cxxstl_sdkdir))
+                toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    toolchain:add("includedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
                 local abi_path = path.join(ndk, "sources", "cxx-stl", "llvm-libc++abi")
                 local before_r13 = path.join(abi_path, "libcxxabi")
                 local after_r13 = path.join(abi_path, "include")
                 if os.isdir(before_r13) then
-                    toolchain:add("includedirs", before_r13)
+                    toolchain:add("sysincludedirs", before_r13)
                 elseif os.isdir(after_r13) then
-                    toolchain:add("includedirs", after_r13)
+                    toolchain:add("sysincludedirs", after_r13)
                 end
             elseif ndk_cxxstl:startswith("gnustl") then
-                toolchain:add("includedirs", format("%s/include", cxxstl_sdkdir))
+                toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
-                    toolchain:add("includedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
+                    toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
             elseif ndk_cxxstl:startswith("stlport") then
-                toolchain:add("includedirs", format("%s/stlport", cxxstl_sdkdir))
+                toolchain:add("sysincludedirs", format("%s/stlport", cxxstl_sdkdir))
             end
 
             -- add c++ stl links

@@ -53,19 +53,6 @@ toolchain("sdcc")
     -- on load
     on_load(function (toolchain)
 
-        -- init linkdirs and includedirs
-        local sdkdir = toolchain:sdkdir()
-        if sdkdir then
-            local includedir = path.join(sdkdir, "include")
-            if os.isdir(includedir) then
-                toolchain:add("includedirs", includedir)
-            end
-            local linkdir = path.join(sdkdir, "lib")
-            if os.isdir(linkdir) then
-                toolchain:add("linkdirs", linkdir)
-            end
-        end
-
         -- add port flags for arch
         local arch = toolchain:arch()
         if arch then

@@ -76,17 +76,17 @@ toolchain("tinyc")
             toolchain:add("shflags", march)
         end
 
-        -- init linkdirs and includedirs
+        -- init linkdirs and sysincludedirs
         local sdkdir = config.get("__tcc_sdkdir") or toolchain:sdkdir()
         if sdkdir then
             local includedir = path.join(sdkdir, "include")
             if os.isdir(includedir) then
-                toolchain:add("includedirs", includedir)
+                toolchain:add("sysincludedirs", includedir)
             end
             local winenv_tcc_winapi = path.join(os.programdir(), "winenv", "tcc", "winapi", "include")
             if is_host("windows") and os.isdir(winenv_tcc_winapi) then
-                toolchain:add("includedirs", winenv_tcc_winapi)
-                toolchain:add("includedirs", path.join(winenv_tcc_winapi, "winapi"))
+                toolchain:add("sysincludedirs", winenv_tcc_winapi)
+                toolchain:add("sysincludedirs", path.join(winenv_tcc_winapi, "winapi"))
             end
             local linkdir = path.join(sdkdir, "lib")
             if os.isdir(linkdir) then
