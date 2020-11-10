@@ -277,7 +277,7 @@ function _add_target_warnings(cmakelists, target)
         none  = "-w"
     ,   less  = "-Wall"
     ,   more  = "-Wall"
-    ,   all   = "-Wall"
+    ,   all   = "-Wall -Wextra"
     ,   error = "-Werror"
     }
     local flags_msvc =
