@@ -94,6 +94,9 @@ build:
 	+@$(MAKE) -C core --no-print-directory c
 	+@$(MAKE) -C core --no-print-directory
 
+clean:
+	+@$(MAKE) -C core --no-print-directory c
+
 install:
 	@echo installing to $(destdir) ...
 	@echo plat: $(PLAT)
