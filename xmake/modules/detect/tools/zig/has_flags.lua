@@ -60,7 +60,7 @@ function _check_from_arglist(flags, opt, islinker)
 
         -- get argument list
         allflags = {}
-        local arglist = os.iorunv(opt.program, {"--help"})
+        local arglist = os.iorunv(opt.program, {"build-obj", "--help"})
         if arglist then
             for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
                 allflags[arg] = true
@@ -81,13 +81,12 @@ function _check_try_running(flags, opt, islinker)
 
     -- make an stub source file
     local sourcefile = path.join(os.tmpdir(), "detect", "zig_has_flags.zig")
-    local objectdir = path.join(os.tmpdir(), "detect", "zig_has_flags")
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, "pub fn main() !void {}")
     end
 
     -- init argv
-    local argv = table.join(flags, "--output-dir", objectdir, sourcefile)
+    local argv = table.join(flags, "-femit-bin=" .. os.tmpfile(), sourcefile)
     if islinker then
         table.insert(argv, 1, "build-exe")
     else

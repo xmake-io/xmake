@@ -53,12 +53,12 @@ end
 function nf_optimize(self, level)
     local maps =
     {
-        none       = "-O0"
-    ,   fast       = "--release-safe"
-    ,   aggressive = "--release-fast"
-    ,   fastest    = "--release-fast"
-    ,   smallest   = "--release-small"
-    ,   aggressive = "--release-fast"
+        none       = "-O Debug"
+    ,   fast       = "-O ReleaseSafe"
+    ,   aggressive = "-O ReleaseFast"
+    ,   fastest    = "-O ReleaseFast"
+    ,   smallest   = "-O ReleaseSmall"
+    ,   aggressive = "-O ReleaseFast"
     }
     return maps[level]
 end
@@ -111,12 +111,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     else
         raise("unknown target kind(%s)!", targetkind)
     end
-    local name = targetkind == "binary" and path.basename(targetfile) or target.linkname(path.filename(targetfile))
-    table.join2(argv, flags, "--output-dir", path.directory(targetfile), "--name", name)
-    for _, objectfile in ipairs(objectfiles) do
-        table.insert(argv, "--object")
-        table.insert(argv, objectfile)
-    end
+    table.join2(argv, flags, "-femit-bin=" .. targetfile, objectfiles)
     return self:program(), argv
 end
 
@@ -132,7 +127,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("build-obj", flags, "--output-dir", path.directory(objectfile), "--name", path.basename(objectfile), sourcefile)
+    return self:program(), table.join("build-obj", flags, "-femit-bin=" .. objectfile, sourcefile)
 end
 
 -- compile the source file

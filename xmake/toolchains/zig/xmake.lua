@@ -25,14 +25,17 @@ toolchain("zig")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
-    -- set toolset
-    set_toolset("zc",   "$(env ZC)", "zig")
-    set_toolset("zcar", "$(env ZC)", "zig")
-    set_toolset("zcld", "$(env ZC)", "zig")
-    set_toolset("zcsh", "$(env ZC)", "zig")
-
     -- on load
     on_load(function (toolchain)
+
+        -- set toolset
+        local zig = get_config("zc") or "zig"
+        toolchain:set("toolset", "zc",   "$(env ZC)", zig)
+        toolchain:set("toolset", "zcar", "$(env ZC)", zig)
+        toolchain:set("toolset", "zcld", "$(env ZC)", zig)
+        toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
+
+        -- init flags
         local march
         if toolchain:is_plat("macosx") then
             -- FIXME
