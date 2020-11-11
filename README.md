@@ -159,8 +159,8 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ### Supported package repositories
 
-* Official Package Repository [xmake-repo](https://github.com/xmake-io/xmake-repo)
-* Official Package Manager [Xrepo](https://github.com/xmake-io/xrepo)
+* Official package repository [xmake-repo](https://github.com/xmake-io/xmake-repo)
+* Official package manager [Xrepo](https://github.com/xmake-io/xrepo)
 * User-built repositories
 * Conan (conan::openssl/1.1.1g)
 * Vcpkg (vcpkg:ffmpeg)
