@@ -78,8 +78,8 @@ function nf_warning(self, level)
     ,   less       = "-W1"
     ,   more       = "-W3"
     ,   all        = "-Wall"
-    ,   extra      = "-Wunsupported"
-    ,   everything = "-Wall -Wunsupported -Wwrite-strings"
+    ,   allextra   = "-Wall -Wunsupported -Wwrite-strings -Wimplicit-function-declaration"
+    ,   everything = "-Wall -Wunsupported -Wwrite-strings -Wimplicit-function-declaration"
     ,   error      = "-Werror"
     }
     return maps[level]

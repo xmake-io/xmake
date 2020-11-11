@@ -124,9 +124,9 @@ function nf_warning(self, level)
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall"
+    ,   allextra   = "-Wall -Wextra"
     ,   everything = "-Weverything -Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
-    ,   extra      = "-Wextra"
     }
 
     -- get warning for nvcc
