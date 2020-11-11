@@ -112,6 +112,7 @@ function nf_warning(self, level)
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall"
+    ,   allextra   = "-Wall -Wextra"
     ,   everything = "-Wall -Wextra -Weffc++"
     ,   error      = "-Werror"
     }
