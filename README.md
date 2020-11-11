@@ -167,6 +167,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
 * Pacman on archlinux/msys2 (pacman::libcurl)
 * Clib (clib::clibs/bytes@0.0.4)
+* Dub (dub::log 0.4.3)
 
 ## Supported platforms
 
