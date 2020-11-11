@@ -274,21 +274,21 @@ end
 function _add_target_warnings(cmakelists, target)
     local flags_gcc =
     {
-        none  = "-w"
-    ,   less  = "-Wall"
-    ,   more  = "-Wall"
-    ,   all   = "-Wall"
-    ,   error = "-Werror"
-    ,   extra = "-Wextra"
+        none     = "-w"
+    ,   less     = "-Wall"
+    ,   more     = "-Wall"
+    ,   all      = "-Wall"
+    ,   allextra = "-Wall -Wextra"
+    ,   error    = "-Werror"
     }
     local flags_msvc =
     {
-        none  = "-W0"
-    ,   less  = "-W1"
-    ,   more  = "-W3"
-    ,   all   = "-W3" -- = "-Wall" will enable too more warnings
-    ,   error = "-WX"
-    ,   extra = "-W4"
+        none     = "-W0"
+    ,   less     = "-W1"
+    ,   more     = "-W3"
+    ,   all      = "-W3" -- = "-Wall" will enable too more warnings
+    ,   allextra = "-W4"
+    ,   error    = "-WX"
     }
     local warnings = target:get("warnings")
     if warnings then
