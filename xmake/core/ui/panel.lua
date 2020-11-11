@@ -250,7 +250,7 @@ function panel:select_next(start, reset)
 end
 
 -- select the previous view
-function panel:select_prev(start)
+function panel:select_prev(start, reset)
 
     -- is empty?
     if self:empty() then
