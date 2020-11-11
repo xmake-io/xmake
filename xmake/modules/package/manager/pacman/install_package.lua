@@ -41,6 +41,11 @@ function main(name, opt)
         raise("pacman not found!")
     end
 
+    -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
+    if opt.plat == "mingw" then
+        name = (opt.arch == "x86_64" and "mingw-w64-x86_64-" or "mingw-w64-i686-") .. name
+    end
+
     -- init argv
     local argv = {"-Sy", "--noconfirm", "--needed", "--disable-download-timeout", opt.pacman or name}
     if opt.verbose or option.get("verbose") then

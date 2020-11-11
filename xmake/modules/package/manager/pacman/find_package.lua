@@ -39,6 +39,11 @@ function main(name, opt)
         return
     end
 
+    -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
+    if opt.plat == "mingw" then
+        name = (opt.arch == "x86_64" and "mingw-w64-x86_64-" or "mingw-w64-i686-") .. name
+    end
+
     -- get package files list
     local list = try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
     if not list then
