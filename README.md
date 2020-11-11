@@ -161,7 +161,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 * Official package repository [xmake-repo](https://github.com/xmake-io/xmake-repo) (tbox >1.6.1)
 * Official package manager [Xrepo](https://github.com/xmake-io/xrepo)
-* User-built repositories
+* [User-built repositories](https://xmake.io/#/package/remote_package?id=using-self-built-private-package-repository)
 * Conan (conan::openssl/1.1.1g)
 * Vcpkg (vcpkg:ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)

@@ -170,7 +170,7 @@ $ xmake f --menu
 
 * 官方自建仓库 [xmake-repo](https://github.com/xmake-io/xmake-repo) (tbox >1.6.1)
 * 官方包管理器 [Xrepo](https://github.com/xmake-io/xrepo)
-* 用户自建仓库
+* [用户自建仓库](https://xmake.io/#/zh-cn/package/remote_package?id=%e4%bd%bf%e7%94%a8%e8%87%aa%e5%bb%ba%e7%a7%81%e6%9c%89%e5%8c%85%e4%bb%93%e5%ba%93)
 * Conan (conan::openssl/1.1.1g)
 * Vcpkg (vcpkg:ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
