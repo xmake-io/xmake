@@ -159,7 +159,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 ### Supported package repositories
 
-* Official package repository [xmake-repo](https://github.com/xmake-io/xmake-repo)
+* Official package repository [xmake-repo](https://github.com/xmake-io/xmake-repo) (tbox >1.6.1)
 * Official package manager [Xrepo](https://github.com/xmake-io/xrepo)
 * User-built repositories
 * Conan (conan::openssl/1.1.1g)
