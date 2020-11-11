@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.project.config")
+import("lib.detect.find_tool")
 
 -- find package with the builtin rule
 --
@@ -54,6 +55,11 @@ function _find_package_with_builtin_rule(package_name, opt)
 
         -- only support the current sub-host platform and sub-architecture, e.g. linux, macosx, or msys (subsystem)
         if opt.plat == os.subhost() and opt.arch == os.subarch() then
+
+            -- find it from pacman
+            if is_subhost("linux", "msys") and find_tool("pacman") then
+                table.insert(managers, "pacman")
+            end
 
             -- find it from pkg-config
             table.insert(managers, "pkg_config")
