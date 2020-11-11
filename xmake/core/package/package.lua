@@ -870,7 +870,12 @@ function _instance:fetch(opt)
     end
 
     -- use sysincludedirs/-isystem instead of -I?
-    local external = self:requireinfo().external
+    local external
+    if opt.external ~= nil then
+        external = opt.external
+    else
+        external = self:requireinfo().external
+    end
     if external == nil then
         external = true
     end

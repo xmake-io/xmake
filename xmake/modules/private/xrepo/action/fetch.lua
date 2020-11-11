@@ -44,6 +44,7 @@ function menu_options()
         {nil, "deps",       "k",  nil, "Fetch packages with dependencies."   },
         {nil, "cflags",     "k",  nil, "Fetch cflags of the given packages." },
         {nil, "ldflags",    "k",  nil, "Fetch ldflags of the given packages."},
+        {'e', "external",   "k",  nil, "Show cflags as external packages with -isystem."},
         {},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
@@ -134,6 +135,9 @@ function _fetch_packages(packages)
     end
     if option.get("ldflags") then
         table.insert(fetchmodes, "ldflags")
+    end
+    if option.get("external") then
+        table.insert(fetchmodes, "external")
     end
     if #fetchmodes > 0 then
         table.insert(require_argv, "--fetch_modes=" .. table.concat(fetchmodes, ','))

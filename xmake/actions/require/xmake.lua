@@ -63,6 +63,7 @@ task("require")
                                                          "    $ xmake require --fetch tbox"                                    }
                 ,   {nil, "fetch_modes","kv", nil,      "Set the modes of fetching packages.",
                                                          "e.g.",
+                                                         "    $ xmake require --fetch --fetch_modes=cflags,external tbox",
                                                          "    $ xmake require --fetch --fetch_modes=deps,cflags,ldflags tbox"  }
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories.",
                                                          "e.g.",
