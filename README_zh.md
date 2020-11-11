@@ -166,6 +166,17 @@ $ xmake f --menu
 
 <img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
 
+### 支持的包管理仓库
+
+* 官方自建仓库 [xmake-repo](https://github.com/xmake-io/xmake-repo) (tbox >1.6.1)
+* 官方包管理器 [Xrepo](https://github.com/xmake-io/xrepo)
+* 用户自建仓库
+* Conan (conan::openssl/1.1.1g)
+* Vcpkg (vcpkg:ffmpeg)
+* Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
+* Pacman on archlinux/msys2 (pacman::libcurl)
+* Clib (clib::clibs/bytes@0.0.4)
+
 ## 支持平台
 
 * Windows (x86, x64)

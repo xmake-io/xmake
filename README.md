@@ -157,6 +157,17 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 
 <img src="https://xmake.io/assets/img/index/package_arch.png" width="650px" />
 
+### Supported package repositories
+
+* Official Package Repository [xmake-repo](https://github.com/xmake-io/xmake-repo)
+* Official Package Manager [Xrepo](https://github.com/xmake-io/xrepo)
+* User-built repositories
+* Conan (conan::openssl/1.1.1g)
+* Vcpkg (vcpkg:ffmpeg)
+* Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
+* Pacman on archlinux/msys2 (pacman::libcurl)
+* Clib (clib::clibs/bytes@0.0.4)
+
 ## Supported platforms
 
 * Windows (x86, x64)
