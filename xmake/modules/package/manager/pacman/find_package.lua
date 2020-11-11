@@ -54,6 +54,7 @@ function main(name, opt)
     local pkgconfig_dir = nil
     local pkgconfig_name = nil
     local linkdirs = {}
+    local has_includes = false
     for _, line in ipairs(list:split('\n', {plain = true})) do
         line = line:trim():split('%s+')[2]
         if not pkgconfig_dir and line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
@@ -62,6 +63,8 @@ function main(name, opt)
         end
         if line:endswith(".so") or line:endswith(".a") or line:endswith(".lib") then
             table.insert(linkdirs, path.directory(line))
+        elseif line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
+            has_includes = true
         end
     end
 
@@ -69,7 +72,12 @@ function main(name, opt)
     local result = nil
     if pkgconfig_dir then
         linkdirs = table.unique(linkdirs)
+        includedirs = table.unique(includedirs)
         result = find_package_from_pkgconfig(pkgconfig_name or name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
+        if not result and has_includes then
+            -- header only and hidden /usr/include? we need only return empty {}
+            result = {}
+        end
     end
     return result
 end
