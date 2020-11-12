@@ -33,10 +33,12 @@ function main(opt)
     -- init options
     opt       = opt or {}
     opt.check = opt.check or function (program)
-        if os.host() == "windows" then
-            os.run("%s -n 1 127.0.0.1", program)
+        if is_host("windows") then
+            os.run("%s -n 1 -w 500 127.0.0.1", program)
+        elseif is_host("macosx") then
+            os.run("%s -c 1 -t 1 127.0.0.1", program)
         else
-            os.run("%s -c 1 127.0.0.1", program)
+            os.run("%s -c 1 -W 1 127.0.0.1", program)
         end
     end
 
