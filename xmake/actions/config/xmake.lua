@@ -146,7 +146,7 @@ task("config")
                                                           , "e.g."
                                                           , "    - i386-mingw32-"
                                                           , "    - arm-linux-androideabi-"                                  }
-                ,   {nil, "target_os",  "kv", "linux",      "Set target os only for cross-complation"                       }
+                ,   {nil, "target_os",  "kv", nil,          "Set target os only for cross-complation"                       }
                 ,   {nil, "bin",        "kv", nil,          "Set cross toolchains bin directory"
                                                           , "e.g."
                                                           , "    - sdk/bin (/arm-linux-gcc ..)"                             }
