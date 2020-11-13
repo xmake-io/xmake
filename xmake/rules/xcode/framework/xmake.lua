@@ -160,10 +160,12 @@ rule("xcode.framework")
     on_install(function (target)
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))
         local installdir = target:installdir()
-        if not os.isdir(installdir) then
-            os.mkdir(installdir)
+        if installdir then
+            if not os.isdir(installdir) then
+                os.mkdir(installdir)
+            end
+            os.vcp(bundledir, installdir)
         end
-        os.vcp(bundledir, installdir)
     end)
 
     on_uninstall(function (target)
