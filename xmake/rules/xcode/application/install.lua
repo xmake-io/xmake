@@ -40,6 +40,16 @@ function _install_for_ios(target)
     install_ipa(ipafile)
 end
 
+-- install for ios simulator
+function _install_for_ios_simulator(target)
+
+    -- get app directory
+    local appdir = target:data("xcode.bundle.rootdir")
+
+    -- do install
+    os.vrunv("xcrun", {"simctl", "install", "booted", appdir})
+end
+
 -- install for macosx
 function _install_for_macosx(target)
 
@@ -53,7 +63,11 @@ end
 -- main entry
 function main (target)
     if is_plat("iphoneos") then
-        _install_for_ios(target)
+        if is_arch("x86_64", "i386") then
+            _install_for_ios_simulator(target)
+        else
+            _install_for_ios(target)
+        end
     elseif is_plat("macosx") then
         _install_for_macosx(target)
     end
