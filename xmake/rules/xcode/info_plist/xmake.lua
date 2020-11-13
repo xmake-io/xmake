@@ -56,7 +56,7 @@ rule("xcode.info_plist")
         {
             DEVELOPMENT_LANGUAGE = "en",
             EXECUTABLE_NAME = target:basename(),
-            PRODUCT_BUNDLE_IDENTIFIER = target:values("xcode.bundle_identifier") or get_config("xcode_bundle_identifier") or "org.tboox." .. target:name(),
+            PRODUCT_BUNDLE_IDENTIFIER = target:values("xcode.bundle_identifier") or get_config("xcode_bundle_identifier") or "io.xmake." .. target:name(),
             PRODUCT_NAME = target:name(),
             PRODUCT_DISPLAY_NAME = target:name(),
             CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
