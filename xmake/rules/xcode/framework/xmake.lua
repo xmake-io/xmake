@@ -137,9 +137,10 @@ rule("xcode.framework")
             os.tryrm("Headers")
             os.tryrm("Resources")
             os.tryrm(target_filename)
+            os.tryrm("Info.plist")
             os.ln("Versions/Current/Headers", "Headers")
             os.ln("Versions/Current/Resources", "Resources")
-            if target:is_plat("iphoneos", "watchos") then
+            if target:is_plat("iphoneos", "watchos") and os.isfile("Versions/Current/Resources/Info.plist") then
                 os.ln("Versions/Current/Resources/Info.plist", "Info.plist")
             end
             os.ln(path.join("Versions/Current", target_filename), target_filename)
