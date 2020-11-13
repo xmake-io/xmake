@@ -54,4 +54,15 @@ function main (target)
 
     -- register clean files for `xmake clean`
     target:add("cleanfiles", bundledir)
+
+    -- depend xcode.framework? we need disable `build.across_targets_in_parallel` policy
+    local across_targets_in_parallel
+    for _, dep in ipairs(target:orderdeps()) do
+        if dep:rule("xcode.framework") then
+            across_targets_in_parallel = false
+        end
+    end
+    if across_targets_in_parallel ~= nil then
+        target:set("policy", "build.across_targets_in_parallel", across_targets_in_parallel)
+    end
 end
