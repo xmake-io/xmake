@@ -30,17 +30,21 @@ function main(toolchain)
     -- get cross prefix
     local cross = toolchain:cross() or ""
 
-    -- set toolset
-    toolchain:set("toolset", "cc", cross .. "gcc", cross .. "clang")
-    toolchain:set("toolset", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
-    toolchain:set("toolset", "cpp", cross .. "gcc -E", cross .. "clang -E")
-    toolchain:set("toolset", "as", cross .. "gcc", cross .. "clang")
-    toolchain:set("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-    toolchain:set("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
-    toolchain:set("toolset", "ar", cross .. "ar")
-    toolchain:set("toolset", "ex", cross .. "ar")
-    toolchain:set("toolset", "ranlib", cross .. "ranlib")
-    toolchain:set("toolset", "strip", cross .. "strip")
+    -- add toolset
+    --
+    -- @note we use add/toolset for cross toolchain, because user maybe use set_toolset to modify them
+    -- @see https://github.com/xmake-io/xmake/issues/1024
+    --
+    toolchain:add("toolset", "cc", cross .. "gcc", cross .. "clang")
+    toolchain:add("toolset", "cxx", cross .. "gcc", cross .. "clang", cross .. "g++", cross .. "clang++")
+    toolchain:add("toolset", "cpp", cross .. "gcc -E", cross .. "clang -E")
+    toolchain:add("toolset", "as", cross .. "gcc", cross .. "clang")
+    toolchain:add("toolset", "ld", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+    toolchain:add("toolset", "sh", cross .. "g++", cross .. "gcc", cross .. "clang++", cross .. "clang")
+    toolchain:add("toolset", "ar", cross .. "ar")
+    toolchain:add("toolset", "ex", cross .. "ar")
+    toolchain:add("toolset", "ranlib", cross .. "ranlib")
+    toolchain:add("toolset", "strip", cross .. "strip")
 
     -- add bin search library for loading some dependent .dll files windows
     local bindir = toolchain:bindir()

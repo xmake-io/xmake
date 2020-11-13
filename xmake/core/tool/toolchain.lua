@@ -155,6 +155,8 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
+    -- ensure to do load for initializing toolset first
+    self:_load()
     local toolpaths = self:get("toolset." .. toolkind)
     if toolpaths then
         for _, toolpath in ipairs(table.wrap(toolpaths)) do
