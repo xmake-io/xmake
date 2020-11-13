@@ -152,7 +152,7 @@ function main (programdir, codesign_identity, mobile_provision, opt)
 
     -- get entitlements for mobile
     local entitlements
-    if mobile_provision then
+    if codesign_identity and mobile_provision then
         local provisions = mobile_provisions()
         if provisions then
             mobile_provision = provisions[mobile_provision]
