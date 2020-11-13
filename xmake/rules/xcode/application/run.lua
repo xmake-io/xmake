@@ -65,25 +65,23 @@ function _run_on_simulator(target, opt)
     assert(list, "simulator devices not found!")
 
     -- find the booted devices
-    local devices = {}
+    local name, deviceid
     for _, line in ipairs(list:split('\n', {plain = true})) do
         if line:find("(Booted)", 1, true) then
             line = line:trim()
-            local name, deviceid = line:match("(.-)%s+%(([%w%-]+)%)")
+            name, deviceid = line:match("(.-)%s+%(([%w%-]+)%)")
             if name and deviceid then
-                devices[name] = deviceid
+                break
             end
         end
     end
+    assert(name and deviceid, "booted simulator devices not found!")
 
     -- do launch on first simulator device
     local bundle_identifier = target:values("xcode.bundle_identifier") or get_config("xcode_bundle_identifier") or "io.xmake." .. target:name()
     if bundle_identifier then
-        for name, deviceid in pairs(devices) do
-            print("running %s application on %s (%s) ..", target:name(), name, deviceid)
-            os.execv("xcrun", {"simctl", "launch", "--console", deviceid, bundle_identifier})
-            break
-        end
+        print("running %s application on %s (%s) ..", target:name(), name, deviceid)
+        os.execv("xcrun", {"simctl", "launch", "--console", deviceid, bundle_identifier})
     end
 end
 
