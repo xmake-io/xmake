@@ -434,9 +434,6 @@ end
 
 -- link file or directory to the new symfile
 function os.ln(srcpath, dstpath)
-    if os.host() == "windows" then
-        return false, string.format("symlink is not supported!")
-    end
     if not os.link(srcpath, dstpath) then
         return false, string.format("cannot link %s to %s, %s", srcpath, dstpath, os.strerror())
     end
