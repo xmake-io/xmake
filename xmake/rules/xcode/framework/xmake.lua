@@ -139,6 +139,9 @@ rule("xcode.framework")
             os.tryrm(target_filename)
             os.ln("Versions/Current/Headers", "Headers")
             os.ln("Versions/Current/Resources", "Resources")
+            if target:is_plat("iphoneos", "watchos") then
+                os.ln("Versions/Current/Resources/Info.plist", "Info.plist")
+            end
             os.ln(path.join("Versions/Current", target_filename), target_filename)
             os.cd(oldir)
 
