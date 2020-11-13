@@ -18,6 +18,7 @@
 * [#998](https://github.com/xmake-io/xmake/issues/998): Support to install vcpkg packages with windows-static-md
 * [#996](https://github.com/xmake-io/xmake/issues/996): Improve to find vcpkg directory
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): Improve cross toolchains
+* [#1030](https://github.com/xmake-io/xmake/issues/1030): Improve xcode.framework and xcode.application rules
 
 ## v2.3.8
 
@@ -875,6 +876,7 @@
 * [#998](https://github.com/xmake-io/xmake/issues/998): 支持安装 windows-static-md 类型的 vcpkg 包
 * [#996](https://github.com/xmake-io/xmake/issues/996): 改进 vcpkg 目录查找
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): 改进交叉编译工具链
+* [#1030](https://github.com/xmake-io/xmake/issues/1030): 改进 xcode.framework and xcode.application 规则
 
 ## v2.3.8
 
