@@ -44,11 +44,14 @@ function _do_build_file(target, sourcefile, opt)
     -- load dependent info
     local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
 
+    -- dry run?
+    local dryrun = option.get("dry-run")
+
     -- need build this object?
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
     local depvalues = {compinst:program(), compflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
+    if not dryrun and not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
         return
     end
 
@@ -68,17 +71,17 @@ function _do_build_file(target, sourcefile, opt)
         -- show the full link command with raw arguments, it will expand @xxx.args for msvc/link on windows
         print(compinst:compcmd(sourcefile, objectfile, {compflags = compflags, rawargs = true}))
     end
+    if not dryrun then
 
-    -- compile it
-    dependinfo.files = {}
-    if not option.get("dry-run") then
+        -- do compile
+        dependinfo.files = {}
         assert(compinst:compile(sourcefile, objectfile, {dependinfo = dependinfo, compflags = compflags}))
-    end
 
-    -- update files and values to the dependent file
-    dependinfo.values = depvalues
-    table.join2(dependinfo.files, sourcefile, target:pcoutputfile("cxx") or {}, target:pcoutputfile("c"))
-    depend.save(dependinfo, dependfile)
+        -- update files and values to the dependent file
+        dependinfo.values = depvalues
+        table.join2(dependinfo.files, sourcefile, target:pcoutputfile("cxx") or {}, target:pcoutputfile("c"))
+        depend.save(dependinfo, dependfile)
+    end
 end
 
 -- build object

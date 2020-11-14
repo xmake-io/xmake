@@ -49,22 +49,24 @@ function _do_link_target(target, opt)
             table.insert(depfiles, dep:targetfile())
         end
     end
+    local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
 
         -- TODO make headers (deprecated)
-        local srcheaders, dstheaders = target:headers()
-        if srcheaders and dstheaders then
-            local i = 1
-            for _, srcheader in ipairs(srcheaders) do
-                local dstheader = dstheaders[i]
-                if dstheader then
-                    os.cp(srcheader, dstheader)
+        if not dryrun then
+            local srcheaders, dstheaders = target:headers()
+            if srcheaders and dstheaders then
+                local i = 1
+                for _, srcheader in ipairs(srcheaders) do
+                    local dstheader = dstheaders[i]
+                    if dstheader then
+                        os.cp(srcheader, dstheader)
+                    end
+                    i = i + 1
                 end
-                i = i + 1
             end
         end
-
 
         -- the target file
         local targetfile = target:targetfile()
@@ -82,11 +84,11 @@ function _do_link_target(target, opt)
         end
 
         -- link it
-        if not option.get("dry-run") then
+        if not dryrun then
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles})
+    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles, always_changed = dryrun})
 end
 
 -- on link the given target

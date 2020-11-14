@@ -49,6 +49,7 @@ function _do_link_target(target, opt)
             table.insert(depfiles, dep:targetfile())
         end
     end
+    local dryrun = option.get("dry-run")
     local depvalues = {linkinst:program(), linkflags}
     depend.on_changed(function ()
 
@@ -68,11 +69,11 @@ function _do_link_target(target, opt)
         end
 
         -- link it
-        if not option.get("dry-run") then
+        if not dryrun then
             assert(linkinst:link(objectfiles, targetfile, {linkflags = linkflags}))
         end
 
-    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles})
+    end, {dependfile = target:dependfile(), lastmtime = os.mtime(target:targetfile()), values = depvalues, files = depfiles, always_changed = dryrun})
 end
 
 -- on link the given target

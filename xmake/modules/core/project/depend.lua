@@ -150,12 +150,20 @@ end
 --
 -- end, {dependfile = "/xx/xx",
 --       values = {compinst:program(), compflags},
---       files = {sourcefile, ...}})
+--       files = {sourcefile, ...},
+--       always_changed = false})
 --
 function on_changed(callback, opt)
 
-    -- get files
+    -- init option
     opt = opt or {}
+
+    -- always changed? we only do callback directly
+    if opt.always_changed then
+        return callback()
+    end
+
+    -- get files
     assert(opt.files, "depend.on_changed(): please set files list!")
 
     -- get dependfile

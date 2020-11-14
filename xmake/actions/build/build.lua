@@ -139,7 +139,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
         end
 
         -- clean target if rebuild
-        if option.get("rebuild") then
+        if option.get("rebuild") and not option.get("dry-run") then
             _clean_target(target)
         end
 
