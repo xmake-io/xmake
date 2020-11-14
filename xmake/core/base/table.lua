@@ -309,6 +309,13 @@ function table.keys(tab)
     return keyset, n
 end
 
+-- get order keys of a table
+function table.orderkeys(tab)
+    local keys = table.keys(tab)
+    table.sort(keys)
+    return keys
+end
+
 -- get values of a table
 function table.values(tab)
 
