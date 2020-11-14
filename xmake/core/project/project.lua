@@ -760,7 +760,7 @@ function project.interpreter()
             ,   prefix      = "$(prefix)"
             ,   tmpdir      = function () return os.tmpdir() end
             ,   curdir      = function () return os.curdir() end
-            ,   scriptdir   = function () return sandbox_os.scriptdir() end
+            ,   scriptdir   = function () return interp:scriptdir() end
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
