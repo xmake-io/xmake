@@ -252,14 +252,16 @@ function mconfdialog:show_help()
         if config.kind then
             text = text .. "\ntype: " .. config.kind
         end
-        if config.default then
-            text = text .. "\ndefault: " .. tostring(config.default)
-        end
         if config.kind == "choice" then
+            if config.default and config.values[config.default] then
+                text = text .. "\ndefault: " .. config.values[config.default]
+            end
             text = text .. "\nvalues: "
             for _, value in ipairs(config.values) do
                 text = text .. "\n    - " .. value
             end
+        elseif config.default then
+            text = text .. "\ndefault: " .. tostring(config.default)
         end
         if config.path then
             text = text .. "\npath: " .. config.path
