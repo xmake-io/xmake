@@ -107,13 +107,13 @@ rule("qt.widgetapp_static")
     after_load(function (target)
         local plugins = {}
         local frameworks = {"QtGui", "QtWidgets", "QtCore"}
-        if is_plat("macosx") then
+        if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
             table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
-        elseif is_plat("windows") then
-            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwindows"}}
+        elseif target:is_plat("windows") then
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {is_mode("debug") and "qwindowsd" or "qwindows"}}
             table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
-        elseif is_plat("wasm") then
+        elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
         end
@@ -159,13 +159,13 @@ rule("qt.quickapp_static")
     after_load(function (target)
         local plugins = {}
         local frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}
-        if is_plat("macosx") then
+        if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
             table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
-        elseif is_plat("windows") then
-            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwindows"}}
+        elseif target:is_plat("windows") then
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {is_mode("debug") and "qwindowsd" or "qwindows"}}
             table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
-        elseif is_plat("wasm") then
+        elseif target:is_plat("wasm") then
             plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
             table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
         end
