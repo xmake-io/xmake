@@ -997,12 +997,23 @@ function _instance:patches()
         local patchinfos = self:get("patches")
         if patchinfos then
             local version_str = self:version_str()
-            patchinfos = patchinfos[version_str]
-            if patchinfos then
+            local patchinfo = patchinfos[version_str]
+            if patchinfo then
                 patches = {}
-                patchinfos = table.wrap(patchinfos)
-                for idx = 1, #patchinfos, 2 do
-                    table.insert(patches , {url = patchinfos[idx], sha256 = patchinfos[idx + 1]})
+                patchinfo = table.wrap(patchinfo)
+                for idx = 1, #patchinfo, 2 do
+                    table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1]})
+                end
+            else
+                -- match semver, e.g add_patches(">=1.0.0", url, sha256)
+                for range, patchinfo in pairs(patchinfos) do
+                    if semver.satisfies(version_str, range) then
+                        patches = patches or {}
+                        patchinfo = table.wrap(patchinfo)
+                        for idx = 1, #patchinfo, 2 do
+                            table.insert(patches , {url = patchinfo[idx], sha256 = patchinfo[idx + 1]})
+                        end
+                    end
                 end
             end
         end
