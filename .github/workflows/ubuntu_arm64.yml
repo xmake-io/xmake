@@ -1,4 +1,4 @@
-name: Ubuntu (Arm)
+name: Ubuntu (Arm64)
 
 on:
   pull_request:
@@ -17,7 +17,7 @@ jobs:
       - run: |
           docker run --rm --privileged multiarch/qemu-user-static:register --reset
 
-      - uses: docker://multiarch/ubuntu-core:armhf-bionic
+      - uses: docker://multiarch/ubuntu-core:arm64-bionic
         with:
           args: >
             bash -c

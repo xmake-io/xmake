@@ -1,4 +1,4 @@
-name: Debian (Mips)
+name: Debian (Mips64)
 
 on:
   pull_request:
