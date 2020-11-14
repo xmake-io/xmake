@@ -133,9 +133,12 @@ function app:_make_configs_by_category(root, options_by_category, cache, get_opt
     --
     local menus = {}
     local configs = {}
-    for category, options in pairs(options_by_category) do
+    local categories = table.keys(options_by_category)
+    table.sort(categories)
+    for _, category in ipairs(categories) do
 
         -- get or make menu by category
+        local options  = options_by_category[category]
         local menu = self:_menu_by_category(root, configs, menus, category)
 
         -- get sub-configs
@@ -210,7 +213,10 @@ function app:_basic_configs(cache)
     local category = "."
     local options = menu and menu.options or {}
     local options_by_category = {}
-    for _, opt in pairs(options) do
+    local keys = table.keys(options)
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        local opt = options[key]
         local name = opt[2] or opt[1]
         if name and self:_filter_option(name) then
             options_by_category[category] = options_by_category[category] or {}
@@ -280,7 +286,10 @@ function app:_project_configs(cache)
     -- merge options by category
     local options = project.options()
     local options_by_category = {}
-    for _, opt in pairs(options) do
+    local keys = table.keys(options)
+    table.sort(keys)
+    for _, key in ipairs(keys) do
+        local opt = options[key]
         if opt:get("showmenu") then
             local category = "."
             if opt:get("category") then category = table.unwrap(opt:get("category")) end
