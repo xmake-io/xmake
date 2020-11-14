@@ -35,9 +35,13 @@ end
 -- get configs for windows
 function _get_configs_for_windows(package, configs, opt)
     local cmake_generator = opt.cmake_generator
-    if package:is_arch("x64") and (not cmake_generator or cmake_generator:find("Visual Studio", 1, true)) then
+    if not cmake_generator or cmake_generator:find("Visual Studio", 1, true) then
         table.insert(configs, "-A")
-        table.insert(configs, "x64")
+        if package:is_arch("x86", "i386") then
+            table.insert(configs, "Win32")
+        else
+            table.insert(configs, "x64")
+        end
     end
     local vs_runtime = package:config("vs_runtime")
     if vs_runtime then
