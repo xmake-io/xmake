@@ -106,14 +106,18 @@ rule("qt.widgetapp_static")
 
     after_load(function (target)
         local plugins = {}
+        local frameworks = {"QtGui", "QtWidgets", "QtCore"}
         if is_plat("macosx") then
-            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "cups"}}
+            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
+            table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
         elseif is_plat("windows") then
-            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "qwindows"}}
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwindows"}}
+            table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
         elseif is_plat("wasm") then
-            plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5EventDispatcherSupport", "Qt5FontDatabaseSupport", "Qt5EglSupport", "qwasm"}}
+            plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
+            table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
         end
-        import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
+        import("load")(target, {gui = true, plugins = plugins, frameworks = frameworks})
     end)
 
     -- deploy application
@@ -154,14 +158,18 @@ rule("qt.quickapp_static")
 
     after_load(function (target)
         local plugins = {}
+        local frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}
         if is_plat("macosx") then
-            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "cups"}}
+            plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
+            table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
         elseif is_plat("windows") then
-            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5PrintSupport", "Qt5PlatformSupport", "Qt5Widgets", "qwindows"}}
+            plugins.QWindowsIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwindows"}}
+            table.join2(frameworks, "QtPrintSupport", "QtPlatformSupport", "QtWidgets")
         elseif is_plat("wasm") then
-            plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"Qt5EventDispatcherSupport", "Qt5FontDatabaseSupport", "Qt5EglSupport", "qwasm"}}
+            plugins.QWasmIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qwasm"}}
+            table.join2(frameworks, "QtEventDispatcherSupport", "QtFontDatabaseSupport", "QtEglSupport")
         end
-        import("load")(target, {gui = true, plugins = plugins, frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}})
+        import("load")(target, {gui = true, plugins = plugins, frameworks = frameworks})
     end)
 
     -- deploy application

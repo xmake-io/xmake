@@ -27,7 +27,7 @@
 -- target("test")
 --     add_rules("qt.quickapp")
 --     add_files("src/*.c")
---     qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg", "Qt5Svg"}})
+--     qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg"}})
 -- @endcode
 --
 function qt_add_static_plugins(plugin, opt)

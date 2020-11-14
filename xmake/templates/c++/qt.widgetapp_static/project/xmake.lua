@@ -12,6 +12,7 @@ target("${TARGETNAME}")
     add_files("src/mainwindow.h")
 
     -- add plugin: QSvgPlugin (optional)
-    qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg", "Qt5Svg"}})
+    add_frameworks("QtSvg")
+    qt_add_static_plugins("QSvgPlugin", {linkdirs = "plugins/imageformats", links = {"qsvg"}})
 
 ${FAQ}
