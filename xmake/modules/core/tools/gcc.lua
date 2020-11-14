@@ -53,7 +53,7 @@ function init(self)
         ["-W1"] = "-Wall"
     ,   ["-W2"] = "-Wall"
     ,   ["-W3"] = "-Wall"
-    ,   ["-W4"] = "-Wextra"
+    ,   ["-W4"] = "-Wall -Wextra"
     ,   ["-Weverything"] = "-Wall -Wextra -Weffc++"
 
          -- strip
