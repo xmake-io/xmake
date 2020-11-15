@@ -1,7 +1,7 @@
 <div align="center">
   <a href="https://xmake.io">
     <img width="160" heigth="160" src="https://tboox.org/static/img/xmake/logo256c.png">
-  </a>  
+  </a>
 
   <h1>xmake</h1>
 
@@ -292,7 +292,7 @@ Download and use packages in [xmake-repo](https://github.com/xmake-io/xmake-repo
 
 ```lua
 add_requires("tbox >1.6.1", "libuv master", "vcpkg::ffmpeg", "brew::pcre2/libpcre2-8")
-add_requires("conan::openssl/1.1.1g", {alias = "openssl", optional = true, debug = true}) 
+add_requires("conan::openssl/1.1.1g", {alias = "openssl", optional = true, debug = true})
 target("test")
     set_kind("binary")
     add_files("src/*.c")
@@ -325,7 +325,7 @@ target("test")
 ```lua
 target("echo")
     add_rules("wdk.driver", "wdk.env.umdf")
-    add_files("driver/*.c") 
+    add_files("driver/*.c")
     add_files("driver/*.inx")
     add_includedirs("exe")
 
@@ -386,10 +386,10 @@ $ xmake l lib.detect.find_tool gcc
 $ xmake l
 > print("hello xmake!")
 > {1, 2, 3}
-< { 
+< {
     1,
     2,
-    3 
+    3
   }
 ```
 
