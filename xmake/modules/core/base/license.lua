@@ -26,12 +26,16 @@ import("core.base.hashset")
 function _licenses()
     local licenses = _g.licenses
     if not licenses then
-        licenses = hashset.from({"Apache-2.0",
+        licenses = hashset.from({"Apache-1.1", "Apache-2.0",
                                  "MIT",
+                                 "Zlib",
                                  "Public Domain",
                                  "LGPL-2.0", "LGPL-2.1", "LGPL-3.0",
                                  "GPL-2.0", "GPL-3.0", "GPL-3.0",
-                                 "BSD-2-Clause", "BSD-3-Clause"})
+                                 "BSD-2-Clause", "BSD-3-Clause",
+                                 "BSL-1.0",
+                                 "libpng-2.0",
+                                 "Python-2.0"})
         _g.licenses = licenses
     end
     return licenses
