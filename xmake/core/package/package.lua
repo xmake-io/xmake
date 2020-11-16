@@ -1029,13 +1029,25 @@ function _instance:resources()
         local resourceinfos = self:get("resources")
         if resourceinfos then
             local version_str = self:version_str()
-            resourceinfos = resourceinfos[version_str]
-            if resourceinfos then
+            local resourceinfo = resourceinfos[version_str]
+            if resourceinfo then
                 resources = {}
-                resourceinfos = table.wrap(resourceinfos)
-                for idx = 1, #resourceinfos, 3 do
-                    local name = resourceinfos[idx]
-                    resources[name] = {url = resourceinfos[idx + 1], sha256 = resourceinfos[idx + 2]}
+                resourceinfo = table.wrap(resourceinfo)
+                for idx = 1, #resourceinfo, 3 do
+                    local name = resourceinfo[idx]
+                    resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
+                end
+            else
+                -- match semver, e.g add_resources(">=1.0.0", name, url, sha256)
+                for range, resourceinfo in pairs(resourceinfos) do
+                    if semver.satisfies(version_str, range) then
+                        resources = resources or {}
+                        resourceinfo = table.wrap(resourceinfo)
+                        for idx = 1, #resourceinfo, 3 do
+                            local name = resourceinfo[idx]
+                            resources[name] = {url = resourceinfo[idx + 1], sha256 = resourceinfo[idx + 2]}
+                        end
+                    end
                 end
             end
         end
