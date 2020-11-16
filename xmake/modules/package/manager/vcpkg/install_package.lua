@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import("detect.sdks.find_vcpkgdir")
+import("lib.detect.find_tool")
 
 -- install package
 --
@@ -31,9 +31,9 @@ import("detect.sdks.find_vcpkgdir")
 --
 function main(name, opt)
 
-    -- attempt to find the vcpkg root directory
-    local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
-    if not vcpkgdir then
+    -- attempt to find vcpkg
+    local vcpkg = find_tool("vcpkg")
+    if not vcpkg then
         raise("vcpkg not found!")
     end
 
@@ -64,5 +64,5 @@ function main(name, opt)
     end
 
     -- install package
-    os.vrunv(path.join(vcpkgdir, "vcpkg"), argv)
+    os.vrunv(vcpkg.program, argv)
 end

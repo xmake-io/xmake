@@ -21,19 +21,52 @@
 -- imports
 import("lib.detect.find_file")
 import("lib.detect.find_library")
-import("detect.sdks.find_vcpkgdir")
+import("lib.detect.find_tool")
 import("core.project.config")
 import("core.project.target")
 
--- find package from the brew package manager
+-- find vcpkg root directory
+function _find_vcpkgdir()
+    local vcpkgdir = _g.vcpkgdir
+    if vcpkgdir == nil then
+        local vcpkg = find_tool("vcpkg")
+        if vcpkg then
+            local dir = path.directory(vcpkg.program)
+            if os.isdir(path.join(dir, "installed")) then
+                vcpkgdir = dir
+            elseif is_host("macosx", "linux") then
+                local brew = find_tool("brew")
+                if brew then
+                    dir = try
+                    {
+                        function ()
+                            return os.iorunv(brew.program, {"--prefix", "vcpkg"})
+                        end
+                    }
+                end
+                if dir then
+                    dir = path.join(dir:trim(), "libexec")
+                    if os.isdir(path.join(dir, "installed")) then
+                        vcpkgdir = dir
+                    end
+                end
+
+            end
+        end
+        _g.vcpkgdir = vcpkgdir or false
+    end
+    return vcpkgdir or nil
+end
+
+-- find package from the vcpkg package manager
 --
 -- @param name  the package name, e.g. zlib, pcre
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
 --
 function main(name, opt)
 
-    -- attempt to find the vcpkg root directory
-    local vcpkgdir = find_vcpkgdir(opt.vcpkgdir)
+    -- attempt to find vcpkg directory
+    local vcpkgdir = _find_vcpkgdir()
     if not vcpkgdir then
         return
     end

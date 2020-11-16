@@ -15,14 +15,16 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_zip.lua
+-- @file        find_vcpkg.lua
 --
 
 -- imports
+import("lib.detect.find_file")
 import("lib.detect.find_program")
-import("lib.detect.find_programver")
+import("core.base.global")
+import("core.project.config")
 
--- find zip
+-- find vcpkg
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,8 +32,8 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local zip = find_zip()
--- local zip, version = find_zip({version = true})
+-- local vcpkg = find_vcpkg()
+-- local vcpkg, version = find_vcpkg({version = true})
 --
 -- @endcode
 --
@@ -39,11 +41,33 @@ function main(opt)
 
     -- init options
     opt         = opt or {}
-    opt.check   = opt.check or "-v"
-    opt.command = opt.command or "-v"
+    opt.check   = opt.check or "version"
+    opt.command = opt.command or "version"
+
+    -- init the search directories
+    local paths = {}
+    local vcpkg = config.get("vcpkg") or global.get("vcpkg")
+    if vcpkg then
+        if os.isfile(vcpkg) then
+            vcpkg = path.directory(vcpkg)
+        end
+        table.insert(paths, vcpkg)
+    end
+    if is_host("windows") then
+        -- attempt to read path info after running `vcpkg integrate install`
+        local pathfile = "~/../Local/vcpkg/vcpkg.path.txt"
+        if os.isfile(pathfile) then
+            local dir = io.readfile(pathfile):trim()
+            if os.isdir(dir) then
+                table.insert(paths, dir)
+            end
+        end
+    end
 
     -- find program
-    local program = find_program(opt.program or "zip", opt)
+    opt.paths = paths
+    opt.envs  = {PATH = os.getenv("PATH")}
+    local program = find_program(opt.program or "version", opt)
 
     -- find program version
     local version = nil
