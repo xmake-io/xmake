@@ -97,10 +97,14 @@ function searchdirs(name)
     local packageinfos = {}
     for _, repo in ipairs(repositories()) do
         for _, file in ipairs(os.files(path.join(repo:directory(), "packages", "*", string.ipattern("*" .. name .. "*"), "xmake.lua"))) do
-            local packagename = path.basename(path.directory(file))
-            if not unique[packagename] then
-                table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
-                unique[packagename] = true
+            local dir = path.directory(file)
+            local subdirname = path.basename(path.directory(dir))
+            if #subdirname == 1 then -- ignore l/luajit/port/xmake.lua
+                local packagename = path.basename(dir)
+                if not unique[packagename] then
+                    table.insert(packageinfos, {name = packagename, repo = repo, packagedir = path.directory(file)})
+                    unique[packagename] = true
+                end
             end
         end
     end
