@@ -748,11 +748,18 @@ end
 function interpreter:make(scope_kind, remove_repeat, enable_filter)
 
     -- get the results with the given scope
+    self._PENDING = true
     local ok, results = xpcall(interpreter._make, interpreter._traceback, self, scope_kind, remove_repeat, enable_filter)
+    self._PENDING = false
     if not ok then
         return nil, results
     end
     return results
+end
+
+-- is pending?
+function interpreter:pending()
+    return self._PENDING
 end
 
 -- get all loaded script files (xmake.lua)

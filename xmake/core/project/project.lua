@@ -757,10 +757,9 @@ function project.interpreter()
                 os          = platform.os()
             ,   host        = os.host()
             ,   subhost     = os.subhost()
-            ,   prefix      = "$(prefix)"
             ,   tmpdir      = function () return os.tmpdir() end
             ,   curdir      = function () return os.curdir() end
-            ,   scriptdir   = function () return interp:scriptdir() end
+            ,   scriptdir   = function () return interp:pending() and interp:scriptdir() or sandbox_os.scriptdir() end
             ,   globaldir   = global.directory()
             ,   configdir   = config.directory()
             ,   projectdir  = project.directory()
