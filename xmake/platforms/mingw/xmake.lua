@@ -25,10 +25,10 @@ platform("mingw")
     set_os("windows")
 
     -- set hosts
-    set_hosts("macosx", "linux", "windows")
+    set_hosts("macosx", "linux", "windows", "bsd")
 
-    -- set archs
-    set_archs("i386", "x86_64")
+    -- set archs, arm/arm64 only for llvm-mingw
+    set_archs("i386", "x86_64", "arm", "arm64")
 
     -- set formats
     set_formats("static", "$(name).lib")

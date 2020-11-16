@@ -25,7 +25,7 @@ platform("wasm")
     set_os("web")
 
     -- set hosts
-    set_hosts("macosx", "linux", "windows")
+    set_hosts("macosx", "linux", "windows", "bsd")
 
     -- set archs
     set_archs("wasm32")

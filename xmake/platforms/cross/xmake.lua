@@ -22,7 +22,7 @@
 platform("cross")
 
     -- set hosts
-    set_hosts("macosx", "linux", "windows")
+    set_hosts("macosx", "linux", "windows", "bsd")
 
     -- set archs
     set_archs("i386", "x86_64", "arm", "arm64", "mips", "mips64", "riscv", "riscv64", "s390x", "ppc", "ppc64", "sh4")
