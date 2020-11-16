@@ -199,7 +199,7 @@ function main(target, opt)
                 -- add includedirs
                 if is_plat("macosx") then
                     local frameworkdir = path.join(qt.libdir, framework .. ".framework")
-                    if os.isdir(frameworkdir) then
+                    if os.isdir(frameworkdir) and not framework:endswith("Support") then
                         target:add("includedirs", path.join(frameworkdir, "Headers"))
                         useframeworks = true
                     else
@@ -217,7 +217,9 @@ function main(target, opt)
     -- remove private frameworks
     local local_frameworks = {}
     for _, framework in ipairs(target:get("frameworks")) do
-        if not framework:lower():endswith("private") then
+        if target:is_plat("macosx") and framework:endswith("Support") then
+            -- we need handle Qt*Support as plain links, e.g. QtPlatformSupport
+        elseif not framework:lower():endswith("private") then
             table.insert(local_frameworks, framework)
         end
     end
