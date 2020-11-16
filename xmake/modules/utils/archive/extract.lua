@@ -94,7 +94,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
 
     -- extract to *.tar file first
     local outputdir_old = nil
-    if extension:startswith(".tar.") then
+    if extension:startswith(".tar.") or extension == ".tgz" then
         outputdir_old = outputdir
         outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
     end
