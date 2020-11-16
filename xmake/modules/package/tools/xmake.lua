@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.package.repository")
 
 -- get configs
 function _get_configs(package, configs)
@@ -71,6 +72,11 @@ end
 
 -- install package
 function install(package, configs)
+
+    -- pass local repositories
+    for _, repo in ipairs(repository.repositories()) do
+        os.vrunv("xmake", {"repo", "--add", repo:name(), repo:url(), repo:branch()})
+    end
 
     -- inherit builtin configs
     local argv = _init_argv("f", "-y", "-c")
