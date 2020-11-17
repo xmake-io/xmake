@@ -1078,6 +1078,19 @@ function _instance:resourcedir(name)
     end
 end
 
+-- generate building configs for has_xxx/check_xxx
+function _instance:_generate_build_configs(configs)
+    configs = table.join(self:fetchdeps(), configs)
+    if self:is_plat("windows") then
+        local ld = self:build_getenv("ld")
+        local vs_runtime = self:config("vs_runtime")
+        if ld and path.basename(ld:lower()) == "link" and vs_runtime and vs_runtime == "MT" then
+            configs.ldflags = "-nodefaultlib:msvcrt.lib"
+        end
+    end
+    return configs
+end
+
 -- has the given c funcs?
 --
 -- @param funcs     the funcs
@@ -1091,7 +1104,7 @@ function _instance:has_cfuncs(funcs, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
 end
 
@@ -1108,7 +1121,7 @@ function _instance:has_cxxfuncs(funcs, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
 
@@ -1125,7 +1138,7 @@ function _instance:has_ctypes(types, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_ctypes", {anonymous = true})(types, opt)
 end
 
@@ -1142,7 +1155,7 @@ function _instance:has_cxxtypes(types, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxtypes", {anonymous = true})(types, opt)
 end
 
@@ -1159,7 +1172,7 @@ function _instance:has_cincludes(includes, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
 end
 
@@ -1176,7 +1189,7 @@ function _instance:has_cxxincludes(includes, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
 end
 
@@ -1193,7 +1206,7 @@ function _instance:check_csnippets(snippets, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
 end
 
@@ -1210,7 +1223,7 @@ function _instance:check_cxxsnippets(snippets, opt)
         return true
     end
     opt = opt or {}
-    opt.configs = table.join(self:fetchdeps(), opt.configs)
+    opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end
 
