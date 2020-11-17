@@ -33,6 +33,12 @@ function init(self)
     -- init cxflags
     self:set("cxflags", "-nologo")
 
+    -- we need show full file path to goto error position if xmake is called in vstudio
+    -- https://github.com/xmake-io/xmake/issues/1049
+    if os.getenv("XMAKE_IN_VSTUDIO") then
+        self:add("cxflags", "-FC")
+    end
+
     -- init flags map
     self:set("mapflags",
     {

@@ -70,6 +70,7 @@
       set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('/\'.ToCharArray()))
       set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('/\'.ToCharArray()))
       set XMAKE_SKIP_HISTORY=1
+      set XMAKE_IN_VSTUDIO=1
     </_XmakeEnv>
     <_XmakeEnv Condition="$(XmakeDiagnosis)">
       $(_XmakeEnv)
