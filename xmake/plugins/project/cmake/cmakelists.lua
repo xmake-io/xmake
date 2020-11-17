@@ -183,10 +183,13 @@ function _add_target_include_directories(cmakelists, target)
 end
 
 -- add target system include directories
+-- we disable system/external includes first, because cmake doesn’t seem to be able to support msvc /external:I
+-- https://github.com/xmake-io/xmake/issues/1050
 function _add_target_sysinclude_directories(cmakelists, target)
     local includedirs = _get_configs_from_target(target, "sysincludedirs")
     if #includedirs > 0 then
-        cmakelists:print("target_include_directories(%s SYSTEM PRIVATE", target:name())
+        -- TODO should be `SYSTEM PRIVATE`
+        cmakelists:print("target_include_directories(%s PRIVATE", target:name())
         for _, includedir in ipairs(includedirs) do
             cmakelists:print("    " .. _get_unix_path(includedir))
         end
@@ -194,7 +197,7 @@ function _add_target_sysinclude_directories(cmakelists, target)
     end
     local includedirs_interface = target:get("sysincludedirs", {interface = true})
     if includedirs_interface then
-        cmakelists:print("target_include_directories(%s SYSTEM INTERFACE", target:name())
+        cmakelists:print("target_include_directories(%s INTERFACE", target:name())
         for _, headerdir in ipairs(includedirs_interface) do
             cmakelists:print("    " .. _get_unix_path(headerdir))
         end

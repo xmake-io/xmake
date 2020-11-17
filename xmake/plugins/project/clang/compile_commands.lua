@@ -28,6 +28,25 @@ function _escape_path(p)
     return os.args(p, {escape = true, nowrap = true})
 end
 
+-- translate external/system include flags, because some tools (vscode) do not support them yet.
+-- https://github.com/xmake-io/xmake/issues/1050
+function _translate_arguments(arguments)
+    local args = {}
+    for _, arg in ipairs(arguments) do
+        if arg:find("-isystem", 1, true) then
+            arg = arg:replace("-isystem", "-I")
+        elseif arg:find("[%-/]external:I") then
+            arg = arg:gsub("[%-/]external:I", "-I")
+        elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
+            arg = nil
+        end
+        if arg then
+            table.insert(args, arg)
+        end
+    end
+    return args
+end
+
 -- make the object
 function _make_object(jsonfile, target, sourcefile, objectfile)
 
@@ -41,6 +60,9 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
 
     -- get compile arguments
     local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+
+    -- translate some unsupported arguments
+    arguments = _translate_arguments(arguments)
 
     -- escape '"', '\'
     local arguments_escape = {}
