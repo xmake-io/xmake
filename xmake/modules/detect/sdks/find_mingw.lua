@@ -82,13 +82,13 @@ function _find_mingw(sdkdir, bindir, cross)
     -- select cross on macOS, e.g x86_64-w64-mingw32- or i686-w64-mingw32-
     if not cross then
         if is_arch("i386", "x86", "i686") then
-            cross = "i686-*-"
+            cross = "i686-w64-mingw32-"
         elseif is_arch("arm64", "aarch64") then
-            cross = "aarch64-*-" -- for llvm-mingw
+            cross = "aarch64-w64-mingw32-" -- for llvm-mingw
         elseif is_arch("arm.*") then
-            cross = "armv7-*-"   -- for llvm-mingw
+            cross = "armv7-w64-mingw32-"   -- for llvm-mingw
         else
-            cross = "x86_64-*-"
+            cross = "x86_64-w64-mingw32-"
         end
     end
 
