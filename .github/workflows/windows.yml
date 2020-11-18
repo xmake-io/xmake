@@ -66,9 +66,9 @@ jobs:
       - name: set release arch name
         run: |
           if ("${{ matrix.arch }}" -eq "x64"){
-            echo "::set-env name=RELEASE_NAME::win64"
+            echo "RELEASE_NAME=win64" >> $GITHUB_ENV
           } else {
-            echo "::set-env name=RELEASE_NAME::win32"
+            echo "RELEASE_NAME=win32" >> $GITHUB_ENV
           }
       - name: artifact
         run: |
