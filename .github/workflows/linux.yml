@@ -20,7 +20,7 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
-      - uses: mihails-strasuns/setup-dlang@v0.5.0
+      - uses: dlang-community/setup-dlang@v1
         with:
           compiler: dmd-latest
       - uses: olegtarasov/get-tag@v2
