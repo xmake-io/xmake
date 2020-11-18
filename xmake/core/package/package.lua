@@ -481,8 +481,16 @@ end
 
 -- leave the package environments
 function _instance:envs_leave()
-    if self._OLDENVS then
-        for name, values in pairs(self._OLDENVS) do
+    local oldenvs = self._OLDENVS
+    if oldenvs then
+        -- remove new added values
+        for name, _ in pairs(self:envs()) do
+            if not oldenvs[name] then
+                os.setenv(name, nil)
+            end
+        end
+        -- restore old values
+        for name, values in pairs(oldenvs) do
             os.setenv(name, values)
         end
         self._OLDENVS = nil

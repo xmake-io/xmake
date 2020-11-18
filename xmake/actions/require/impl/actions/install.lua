@@ -181,6 +181,9 @@ function main(package)
             end
 
             -- enter the package environments
+            for _, dep in ipairs(package:orderdeps()) do
+                dep:envs_enter()
+            end
             package:envs_enter()
 
             -- fetch package and force to flush the cache
@@ -202,6 +205,9 @@ function main(package)
 
             -- leave the package environments
             package:envs_leave()
+            for _, dep in irpairs(package:orderdeps()) do
+                dep:envs_leave()
+            end
 
             -- trace
             tty.erase_line_to_start().cr()
