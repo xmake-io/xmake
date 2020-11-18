@@ -130,6 +130,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     if extension == ".tar" then
         os.tryrm(path.join(outputdir, "pax_global_header"))
         os.tryrm(path.join(outputdir, "PaxHeaders.*"))
+        os.tryrm(path.join(outputdir, "@PaxHeader"))
     end
 
     -- continue to extract *.tar file
