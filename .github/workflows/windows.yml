@@ -65,10 +65,10 @@ jobs:
         # build artifacts
       - name: set release arch name
         run: |
-          if ("${{ matrix.arch }}" -eq "x64"){
-            echo "RELEASE_NAME=win64" >> $GITHUB_ENV
+          if ("${{ matrix.arch }}" -eq "x64") {
+            Write-Output "RELEASE_NAME=win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } else {
-            echo "RELEASE_NAME=win32" >> $GITHUB_ENV
+            Write-Output "RELEASE_NAME=win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           }
       - name: artifact
         run: |
