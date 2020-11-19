@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.base.hashset")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
@@ -88,14 +89,23 @@ function init(self)
     })
 end
 
--- make the symbol flag
-function nf_symbol(self, level, target)
-
-    -- debug? generate *.pdb file
+-- make the symbol flags
+function nf_symbols(self, levels, target)
     local flags = nil
-    if level == "debug" then
+    local values = hashset.from(levels)
+    if values:has("debug") then
+        flags = {}
+        if values:has("edit") then
+            table.insert(flags, "-ZI")
+        elseif values:has("embed") then
+            table.insert(flags, "-Z7")
+        else
+            table.insert(flags, "-Zi")
+        end
+
+        -- generate *.pdb file
         local symbolfile = nil
-        if target and target.symbolfile then
+        if target and target.symbolfile and not values:has("embed") then
             symbolfile = target:symbolfile()
         end
         if symbolfile then
@@ -107,16 +117,13 @@ function nf_symbol(self, level, target)
             end
 
             -- check and add symbol output file
-            flags = "-Zi -Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
-            if self:has_flags({"-Zi", "-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-Zi -FS -Fd" }) then
-                flags = "-FS " .. flags
+            local pdbflags = "-Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
+            if self:has_flags({"-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-FS -Fd" }) then
+                pdbflags = {"-FS", pdbflags}
             end
-        else
-            flags = "-Zi"
+            table.join2(flags, pdbflags)
         end
     end
-
-    -- none
     return flags
 end
 

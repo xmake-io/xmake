@@ -318,7 +318,7 @@ function builder:_add_flags_from_language(flags, target, getters)
 
             -- get api name of tool
             --
-            -- ignore "nf_" and "_if_ok"
+            -- ignore "nf_" and "_if_ok" (deprecated)
             --
             -- e.g.
             --
@@ -326,22 +326,34 @@ function builder:_add_flags_from_language(flags, target, getters)
             -- defines_if_ok => define
             -- ...
             --
-            local apiname = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
+            local apiname  = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
+
+            -- use multiple values mapper if be defined in tool module
+            local multival = false
             if apiname:endswith("s") then
-                apiname = apiname:sub(1, #apiname - 1)
+                if self:_tool()["nf_" .. apiname] then
+                    multival = true
+                else
+                    apiname = apiname:sub(1, #apiname - 1)
+                end
             end
 
-            -- map name flag to real flag
+            -- map named flags to real flags
             local mapper = self:_tool()["nf_" .. apiname]
             if mapper then
-
-                -- add the flags
-                for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
-
-                    -- map and check flag
-                    local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
-                    if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                        table.join2(flags, flag)
+                if multival then
+                    local results = mapper(self:_tool(), table.wrap(getter(flagname)), target, self:_targetkind())
+                    for _, flag in ipairs(table.wrap(results)) do
+                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
+                            table.join2(flags, flag)
+                        end
+                    end
+                else
+                    for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
+                        local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
+                        if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
+                            table.join2(flags, flag)
+                        end
                     end
                 end
             end
