@@ -263,6 +263,7 @@ function buildenvs(package)
             if fetchinfo then
                 table.join2(CMAKE_LIBRARY_PATH, fetchinfo.linkdirs)
                 table.join2(CMAKE_INCLUDE_PATH, fetchinfo.includedirs)
+                table.join2(CMAKE_INCLUDE_PATH, fetchinfo.sysincludedirs)
             end
         else
             table.join2(CMAKE_PREFIX_PATH, dep:installdir())
