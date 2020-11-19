@@ -30,10 +30,14 @@ function _licenses()
                                  "MIT",
                                  "Zlib",
                                  "Public Domain",
+                                 "LLVM",
+                                 "AFL-3.0",
+                                 "AGPL-3.0",
                                  "LGPL-2.0", "LGPL-2.1", "LGPL-3.0",
-                                 "GPL-2.0", "GPL-3.0", "GPL-3.0",
+                                 "GPL-2.0", "GPL-3.0",
                                  "BSD-2-Clause", "BSD-3-Clause",
                                  "BSL-1.0",
+                                 "MPL-2.0",
                                  "libpng-2.0",
                                  "Python-2.0"})
         _g.licenses = licenses
