@@ -19,6 +19,7 @@
 * [#996](https://github.com/xmake-io/xmake/issues/996): Improve to find vcpkg directory
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): Improve cross toolchains
 * [#1030](https://github.com/xmake-io/xmake/issues/1030): Improve xcode.framework and xcode.application rules
+* [#1051](https://github.com/xmake-io/xmake/issues/1051): Add `edit` and `embed` to `set_symbols()` only for msvc
 
 ## v2.3.8
 
@@ -877,6 +878,7 @@
 * [#996](https://github.com/xmake-io/xmake/issues/996): 改进 vcpkg 目录查找
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): 改进交叉编译工具链
 * [#1030](https://github.com/xmake-io/xmake/issues/1030): 改进 xcode.framework and xcode.application 规则
+* [#1051](https://github.com/xmake-io/xmake/issues/1051): 为 msvc 编译器添加 `edit` 和 `embed` 调试信息格式类型到 `set_symbols()`
 
 ## v2.3.8
 
