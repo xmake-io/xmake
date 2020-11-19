@@ -329,6 +329,7 @@ function _install_for_msvc(package, configs, opt)
         os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
         os.trycp("install/bin", package:installdir())
         os.trycp("install/lib", package:installdir()) -- perhaps only headers library
+        os.trycp("install/share", package:installdir())
         os.trycp("install/include", package:installdir())
     else
         os.trycp("**.dll", package:installdir("bin"))
@@ -352,6 +353,7 @@ function _install_files_for_cmake(package, opt)
     end
     os.trycp("install/bin", package:installdir())
     os.trycp("install/lib", package:installdir())
+    os.trycp("install/share", package:installdir())
     os.trycp("install/include", package:installdir())
 end
 
