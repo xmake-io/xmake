@@ -160,6 +160,9 @@ function main(requires_raw)
         local fetchinfo = instance:fetch()
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
+                if type(info) ~= "table" then
+                    info = tostring(info)
+                end
                 cprint("          -> ${magenta}%s${clear}: %s", name, table.concat(table.wrap(info), " "))
             end
         end
