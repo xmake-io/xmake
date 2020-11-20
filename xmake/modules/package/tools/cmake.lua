@@ -32,6 +32,49 @@ function _translate_windows_bin_path(bin_path)
     end
 end
 
+-- get cflags
+function _get_cflags(package, opt)
+    opt = opt or {}
+    local result = {}
+    if opt.cross then
+        table.join2(result, package:build_getenv("cflags"))
+        table.join2(result, package:build_getenv("cxflags"))
+    end
+    table.join2(result, package:config("cflags"))
+    table.join2(result, package:config("cxflags"))
+    if #result > 0 then
+        return table.concat(result, ' ')
+    end
+end
+
+-- get cxxflags
+function _get_cxxflags(package, opt)
+    opt = opt or {}
+    local result = {}
+    if opt.cross then
+        table.join2(result, package:build_getenv("cxxflags"))
+        table.join2(result, package:build_getenv("cxflags"))
+    end
+    table.join2(result, package:config("cxxflags"))
+    table.join2(result, package:config("cxflags"))
+    if #result > 0 then
+        return table.concat(result, ' ')
+    end
+end
+
+-- get asflags
+function _get_asflags(package, opt)
+    opt = opt or {}
+    local result = {}
+    if opt.cross then
+        table.join2(result, package:build_getenv("asflags"))
+    end
+    table.join2(result, package:config("asflags"))
+    if #result > 0 then
+        return table.concat(result, ' ')
+    end
+end
+
 -- get configs for windows
 function _get_configs_for_windows(package, configs, opt)
     local cmake_generator = opt.cmake_generator
@@ -49,6 +92,18 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
         table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
         table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
+    end
+    local cflags = _get_cflags(package, opt)
+    if cflags then
+        table.insert(configs, "-DCMAKE_C_FLAGS=" .. cflags)
+    end
+    local cxxflags = _get_cxxflags(package, opt)
+    if cxxflags then
+        table.insert(configs, "-DCMAKE_CXX_FLAGS=" .. cxxflags)
+    end
+    local asflags = _get_asflags(package, opt)
+    if asflags then
+        table.insert(configs, "-DCMAKE_ASM_FLAGS=" .. asflags)
     end
 end
 
@@ -69,16 +124,26 @@ function _get_configs_for_android(package, configs, opt)
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
         end
     end
+    local cflags = _get_cflags(package, opt)
+    if cflags then
+        table.insert(configs, "-DCMAKE_C_FLAGS=" .. cflags)
+    end
+    local cxxflags = _get_cxxflags(package, opt)
+    if cxxflags then
+        table.insert(configs, "-DCMAKE_CXX_FLAGS=" .. cxxflags)
+    end
+    local asflags = _get_asflags(package, opt)
+    if asflags then
+        table.insert(configs, "-DCMAKE_ASM_FLAGS=" .. asflags)
+    end
 end
 
 -- get configs for appleos
 function _get_configs_for_appleos(package, configs, opt)
     local envs                     = {}
-    local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-    local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
-    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
-    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
-    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
@@ -100,8 +165,6 @@ end
 -- get configs for mingw
 function _get_configs_for_mingw(package, configs, opt)
     local envs                     = {}
-    local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-    local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
     if is_host("windows") then
         envs.CMAKE_C_COMPILER      = _translate_windows_bin_path(package:build_getenv("cc"))
@@ -120,9 +183,9 @@ function _get_configs_for_mingw(package, configs, opt)
         envs.CMAKE_RANLIB          = package:build_getenv("ranlib")
         envs.CMAKE_RC_COMPILER     = package:build_getenv("mrc")
     end
-    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
-    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
-    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
@@ -145,8 +208,6 @@ end
 -- get configs for cross
 function _get_configs_for_cross(package, configs, opt)
     local envs                     = {}
-    local cflags                   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
-    local cxxflags                 = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
     local sdkdir                   = package:build_getenv("sdk")
     envs.CMAKE_C_COMPILER          = package:build_getenv("cc")
     envs.CMAKE_CXX_COMPILER        = package:build_getenv("cxx")
@@ -154,9 +215,9 @@ function _get_configs_for_cross(package, configs, opt)
     envs.CMAKE_AR                  = package:build_getenv("ar")
     envs.CMAKE_LINKER              = package:build_getenv("ld")
     envs.CMAKE_RANLIB              = package:build_getenv("ranlib")
-    envs.CMAKE_C_FLAGS             = table.concat(cflags, ' ')
-    envs.CMAKE_CXX_FLAGS           = table.concat(cxxflags, ' ')
-    envs.CMAKE_ASM_FLAGS           = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
+    envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
+    envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
+    envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
     envs.CMAKE_SHARED_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
@@ -230,23 +291,6 @@ function _get_configs(package, configs, opt)
         _get_configs_for_mingw(package, configs, opt)
     elseif not package:is_plat(os.subhost()) then
         _get_configs_for_cross(package, configs, opt)
-    end
-    local cflags = package:config("cflags")
-    if cflags then
-        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cflags .. '"')
-    end
-    local cxflags = package:config("cxflags")
-    if cxflags then
-        table.insert(configs, '-DCMAKE_C_FLAGS="' .. cxflags .. '"')
-        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxflags .. '"')
-    end
-    local cxxflags = package:config("cxxflags")
-    if cxxflags then
-        table.insert(configs, '-DCMAKE_CXX_FLAGS="' .. cxxflags .. '"')
-    end
-    local asflags = package:config("asflags")
-    if asflags then
-        table.insert(configs, '-DCMAKE_ASM_FLAGS="' .. asflags .. '"')
     end
     return configs
 end
