@@ -140,7 +140,9 @@ end
 
 -- get configs for appleos
 function _get_configs_for_appleos(package, configs, opt)
+    opt = opt or {}
     local envs                     = {}
+    opt.cross                      = true
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
@@ -164,6 +166,7 @@ end
 
 -- get configs for mingw
 function _get_configs_for_mingw(package, configs, opt)
+    opt = opt or {}
     local envs                     = {}
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
     if is_host("windows") then
@@ -183,6 +186,7 @@ function _get_configs_for_mingw(package, configs, opt)
         envs.CMAKE_RANLIB          = package:build_getenv("ranlib")
         envs.CMAKE_RC_COMPILER     = package:build_getenv("mrc")
     end
+    opt.cross                      = true
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
@@ -207,8 +211,10 @@ end
 
 -- get configs for cross
 function _get_configs_for_cross(package, configs, opt)
+    opt = opt or {}
     local envs                     = {}
     local sdkdir                   = package:build_getenv("sdk")
+    opt.cross                      = true
     envs.CMAKE_C_COMPILER          = package:build_getenv("cc")
     envs.CMAKE_CXX_COMPILER        = package:build_getenv("cxx")
     envs.CMAKE_ASM_COMPILER        = package:build_getenv("as")
