@@ -11,6 +11,7 @@
 * [#1016](https://github.com/xmake-io/xmake/issues/1016): Add license checking for target/packages
 * [#1017](https://github.com/xmake-io/xmake/issues/1017): Support external/system include directories `add_sysincludedirs` for package and toolchains
 * [#1020](https://github.com/xmake-io/xmake/issues/1020): Support to find and install pacman package on archlinux and msys2
+* Support mouse for `xmake f --menu`
 
 ### Change
 
@@ -870,6 +871,7 @@
 * [#1016](https://github.com/xmake-io/xmake/issues/1016): 针对依赖包增加license兼容性检测
 * [#1017](https://github.com/xmake-io/xmake/issues/1017): 支持外部/系统头文件支持 `add_sysincludedirs`，依赖包默认使用`-isystem`
 * [#1020](https://github.com/xmake-io/xmake/issues/1020): 支持在 archlinux 和 msys2 上查找安装 pacman 包
+* 改进 `xmake f --menu` 菜单配置，支持鼠标操作
 
 ### 改进
 

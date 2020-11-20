@@ -64,6 +64,24 @@ function boxdialog:init(name, bounds, title)
         self:text():bounds().ey = self._TEXT_EY
         self:box():bounds_set(rect{0, self._TEXT_EY, v:width(), v:height() - 1})
     end)
+
+    -- on click for frame
+    self:frame():action_set(action.ac_on_clicked, function (v, x, y)
+
+        -- get relative coordinates
+        x, y  = x - v:bounds().sx, y - v:bounds().sy
+        local panel, box = v:parent():panel(), v:parent():box()
+        local px, py  = x - panel:bounds().sx, y - panel:bounds().sy
+
+        -- if coordinates don't match any view try box
+        if panel:option("mouseable") then
+            if panel:action_on(action.ac_on_clicked, x, y) then
+                return true
+            elseif box:option("mouseable") and not box:option("selectable") and box:bounds():contains(px, py) then
+                return box:action_on(action.ac_on_clicked, px, py)
+            end
+        end
+    end)
 end
 
 -- get box

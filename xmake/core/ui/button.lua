@@ -41,8 +41,13 @@ function button:init(name, bounds, text, on_action)
     -- show cursor
     self:cursor_show(true)
 
-    -- init action
+    -- init actions
+    self:option_set("mouseable", true)
     self:action_set(action.ac_on_enter, on_action)
+    self:action_set(action.ac_on_clicked, function (v)
+        v:action_on(action.ac_on_enter)
+        return true
+    end)
 end
 
 -- draw button

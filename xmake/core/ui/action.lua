@@ -40,6 +40,7 @@ end
 action:register("ac_max",
                 "ac_on_text_changed",
                 "ac_on_selected",
+                "ac_on_clicked",
                 "ac_on_resized",
                 "ac_on_enter",
                 "ac_on_load",

@@ -118,7 +118,12 @@ end
 function menuconf:_do_insert(config)
 
     -- init a config item view
-    local item = button:new("menuconf.config." .. self:count(), rect:new(0, self:count(), self:width(), 1), tostring(config))
+    local item = button:new("menuconf.config." .. self:count(),
+                rect:new(0, self:count(), self:width(), 1),
+                tostring(config),
+                function (v, e)
+                    self:_do_select()
+                end)
 
     -- attach this config
     item:extra_set("config", config)

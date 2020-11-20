@@ -25,6 +25,7 @@ local rect   = require("ui/rect")
 local event  = require("ui/event")
 local point  = require("ui/point")
 local curses = require("ui/curses")
+local action = require("ui/action")
 local dlist  = require("base/dlist")
 
 -- define module
@@ -47,6 +48,32 @@ function panel:init(name, bounds)
 
     -- init views cache
     self._VIEWS_CACHE = {}
+
+    -- on click action
+    self:option_set("mouseable", true)
+    self:action_set(action.ac_on_clicked, function (v, x, y)
+
+        -- get relative coordinates
+        x, y = x - v:bounds().sx, y - v:bounds().sy
+
+        -- try focused first
+        local current = v:current()
+        if current and current:option("mouseable") and current:bounds():contains(x, y) then
+            return current:action_on(action.ac_on_clicked, x, y)
+        end
+
+        local p = v:last()
+        while p do
+            if p:option('selectable') and p:bounds():contains(x, y) then
+                if p:option("mouseable") then
+                    v:select(p)
+                    return p:action_on(action.ac_on_clicked, x, y)
+                end
+                return true
+            end
+            p = v:prev(p)
+        end
+    end)
 end
 
 -- get all child views
@@ -67,6 +94,11 @@ end
 -- get the first view
 function panel:first()
     return self._VIEWS:first()
+end
+
+-- get the last view
+function panel:last()
+    return self._VIEWS:last()
 end
 
 -- get the next view

@@ -87,7 +87,12 @@ function choicebox:_do_insert(value, index, selected)
     local text = (selected and "(X) " or "( ) ") .. tostring(value)
 
     -- init a value item view
-    local item = button:new("choicebox.value." .. self:count(), rect:new(0, self:count(), self:width(), 1), text)
+    local item = button:new("choicebox.value." .. self:count(),
+                    rect:new(0, self:count(), self:width(), 1),
+                    text,
+                    function (v, e)
+                        self:_do_select()
+                    end)
 
     -- attach this index
     item:extra_set("index", index)

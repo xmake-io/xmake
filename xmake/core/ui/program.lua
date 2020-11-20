@@ -25,6 +25,7 @@ local point  = require("ui/point")
 local panel  = require("ui/panel")
 local event  = require("ui/event")
 local curses = require("ui/curses")
+local action = require("ui/action")
 
 -- define module
 local program = program or panel()
@@ -45,7 +46,8 @@ function program:init(name, argv)
     curses.nl(false)
 
     -- init mouse support
-    if curses.KEY_MOUSE then
+    if curses.has_mouse() then
+        -- curses.ALL_MOUSE_EVENTS may be set to mask unused events
         curses.mousemask(curses.ALL_MOUSE_EVENTS)
     end
 
@@ -186,6 +188,11 @@ function program:on_event(e)
     elseif event.is_command(e, "cm_exit") then
         self:quit()
         return true
+    -- mouse events
+    elseif e.type == event.ev_mouse and curses.has_mouse() and self:option("mouseable") then
+        if e.btn_name == "BUTTON1_CLICKED" or e.btn_name == "BUTTON1_DOUBLE_CLICKED" then
+            self:action_on(action.ac_on_clicked, e.x, e.y)
+        end
     end
 end
 

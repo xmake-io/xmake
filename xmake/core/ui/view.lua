@@ -68,6 +68,7 @@ function view:init(name, bounds)
     -- init options
     local options        = object()
     options.selectable   = false     -- true if window can be selected
+    options.mouseable    = false     -- false by default
     self._OPTIONS        = options
 
     -- init attributes
