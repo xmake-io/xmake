@@ -313,6 +313,7 @@ end
 
 -- do build for ninja
 function _build_for_ninja(package, configs, opt)
+    opt = opt or {}
     local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local ninja = assert(find_tool("ninja"), "ninja not found!")
     local argv = {"-C", os.curdir()}
@@ -321,7 +322,7 @@ function _build_for_ninja(package, configs, opt)
     end
     table.insert(argv, "-j")
     table.insert(argv, njob)
-    os.vrunv(ninja.program, argv)
+    os.vrunv(ninja.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- do build for cmake/build
@@ -392,6 +393,7 @@ end
 
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
+    opt = opt or {}
     local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local ninja = assert(find_tool("ninja"), "ninja not found!")
     local argv = {"install", "-C", os.curdir()}
@@ -400,12 +402,13 @@ function _install_for_ninja(package, configs, opt)
     end
     table.insert(argv, "-j")
     table.insert(argv, njob)
-    os.vrunv(ninja.program, argv)
+    os.vrunv(ninja.program, argv, {envs = opt.envs or buildenvs(package, opt)})
     _install_files_for_cmake(package, opt)
 end
 
 -- do install for cmake/build
 function _install_for_cmakebuild(package, configs, opt)
+    opt = opt or {}
     os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
     os.vrunv("cmake", {"--install", os.curdir()})
     _install_files_for_cmake(package, opt)
