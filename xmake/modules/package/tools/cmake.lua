@@ -252,8 +252,18 @@ function _get_configs(package, configs, opt)
 end
 
 -- get build environments
-function buildenvs(package)
-    local envs               = {}
+function buildenvs(package, opt)
+
+    -- use ninja generator for windows platform? we need bind msvc environments manually
+    -- @see https://github.com/xmake-io/xmake/issues/1057
+    opt = opt or {}
+    local envs = {}
+    local cmake_generator = opt.cmake_generator
+    if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
+        table.join2(envs, toolchain.load("msvc"):runenvs())
+    end
+
+    -- add environments for cmake/find_packages
     local CMAKE_LIBRARY_PATH = {}
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
@@ -439,7 +449,7 @@ function build(package, configs, opt)
     table.insert(argv, '..')
 
     -- do configure
-    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build
     local cmake_generator = opt.cmake_generator
@@ -497,7 +507,7 @@ function install(package, configs, opt)
     table.insert(argv, '..')
 
     -- generate build file
-    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package)})
+    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build and install
     local cmake_generator = opt.cmake_generator
