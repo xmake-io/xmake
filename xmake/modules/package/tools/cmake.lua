@@ -181,7 +181,7 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
         table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
     end
-    _get_configs_for_generic(package, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for android
@@ -201,7 +201,7 @@ function _get_configs_for_android(package, configs, opt)
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
         end
     end
-    _get_configs_for_generic(package, opt)
+    _get_configs_for_generic(package, configs, opt)
 end
 
 -- get configs for appleos
