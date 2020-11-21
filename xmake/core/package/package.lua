@@ -434,6 +434,9 @@ function _instance:envs()
         -- add LD_LIBRARY_PATH to load *.so directory
         if os.host() ~= "windows" and self:is_plat(os.host()) and self:is_arch(os.arch()) then
             envs.LD_LIBRARY_PATH = {"lib"}
+            if os.host() == "macosx" then
+                envs.DYLD_LIBRARY_PATH = {"lib"}
+            end
         end
         self._ENVS = envs
     end
@@ -465,7 +468,7 @@ function _instance:envs_enter()
     local installdir = self:installdir()
     for name, values in pairs(self:envs()) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
-        if name == "PATH" or name == "LD_LIBRARY_PATH" then
+        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
                     os.addenv(name, value)

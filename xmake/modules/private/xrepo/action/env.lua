@@ -171,7 +171,7 @@ function _package_addenvs(envs, instance)
     -- add run envs, e.g. PATH, LD_LIBRARY_PATH, ..
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
-        if name == "PATH" or name == "LD_LIBRARY_PATH" then
+        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
                     _package_addenv(envs, name, value)

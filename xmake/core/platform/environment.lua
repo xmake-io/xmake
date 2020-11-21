@@ -60,10 +60,13 @@ end
 
 -- enter the running environment
 function environment._enter_run()
-    local oldenvs            = {}
-    oldenvs.PATH             = os.getenv("PATH")
-    oldenvs.LD_LIBRARY_PATH  = os.getenv("LD_LIBRARY_PATH")
-    environment._OLDENVS_RUN = oldenvs
+    local oldenvs               = {}
+    oldenvs.PATH                = os.getenv("PATH")
+    oldenvs.LD_LIBRARY_PATH     = os.getenv("LD_LIBRARY_PATH")
+    if os.host() == "macosx" then
+        oldenvs.DYLD_LIBRARY_PATH   = os.getenv("DYLD_LIBRARY_PATH")
+    end
+    environment._OLDENVS_RUN    = oldenvs
     return true
 end
 

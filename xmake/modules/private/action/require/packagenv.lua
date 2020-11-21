@@ -35,7 +35,7 @@ function _enter_package(package_name, envs, installdir)
     -- add the new environments
     for name, values in pairs(envs) do
         oldenvs[name] = oldenvs[name] or os.getenv(name)
-        if name == "PATH" or name == "LD_LIBRARY_PATH" then
+        if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
                     os.addenv(name, value)
