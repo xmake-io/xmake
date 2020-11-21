@@ -859,7 +859,7 @@ function _instance:fetch(opt)
 
     -- attempt to get it from cache
     local fetchinfo = self._FETCHINFO
-    if not opt.force and fetchinfo then
+    if not opt.force and opt.external == nil and fetchinfo then
         return fetchinfo
     end
 

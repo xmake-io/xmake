@@ -42,7 +42,7 @@ function _get_cflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.includedirs))
+                table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.defines))
                 table.join2(result, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
                 table.join2(result, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
             end

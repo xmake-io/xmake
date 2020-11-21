@@ -66,8 +66,8 @@ function main(name, opt)
     if opt.mode then
         key = key .. "_" .. opt.mode
     end
-    if opt.isystem then
-        key = key .. "_isystem"
+    if opt.external then
+        key = key .. "_external"
     end
 
     -- attempt to get result from cache first
