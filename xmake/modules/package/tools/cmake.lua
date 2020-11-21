@@ -34,16 +34,34 @@ function _translate_windows_bin_path(bin_path)
     end
 end
 
--- get includedirs
-function _get_cxflags_from_includedirs(package, opt)
+-- get cflags from package deps
+function _get_cflags_from_packagedeps(package, opt)
     local result = {}
     for _, depname in ipairs(opt.packagedeps) do
         local dep = package:dep(depname)
         if dep then
             local fetchinfo = dep:fetch()
             if fetchinfo then
+                table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.includedirs))
                 table.join2(result, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
                 table.join2(result, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
+            end
+        end
+    end
+    return result
+end
+
+-- get ldflags from package deps
+function _get_ldflags_from_packagedeps(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch()
+            if fetchinfo then
+                table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
+                table.join2(result, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
+                table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", fetchinfo.syslinks))
             end
         end
     end
@@ -60,7 +78,7 @@ function _get_cflags(package, opt)
     end
     table.join2(result, package:config("cflags"))
     table.join2(result, package:config("cxflags"))
-    table.join2(result, _get_cxflags_from_includedirs(package, opt))
+    table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -76,7 +94,7 @@ function _get_cxxflags(package, opt)
     end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
-    table.join2(result, _get_cxflags_from_includedirs(package, opt))
+    table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -102,6 +120,7 @@ function _get_ldflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("ldflags"))
     end
+    table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -114,6 +133,7 @@ function _get_shflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("shflags"))
     end
+    table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
