@@ -848,7 +848,7 @@ end
 
 -- fetch the local package info
 --
--- @param opt   the fetch option, e.g. {force = true, system = false}
+-- @param opt   the fetch option, e.g. {force = true, external = false}
 --
 -- @return {packageinfo}, fetchfrom (e.g. xmake/system)
 --
