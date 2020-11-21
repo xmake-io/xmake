@@ -22,6 +22,8 @@
 import("core.base.option")
 import("core.tool.toolchain")
 import("core.project.config")
+import("core.tool.linker")
+import("core.tool.compiler")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 
@@ -30,6 +32,22 @@ function _translate_windows_bin_path(bin_path)
     if bin_path then
         return bin_path:gsub("\\", "/") .. ".exe"
     end
+end
+
+-- get includedirs
+function _get_cxflags_from_includedirs(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch()
+            if fetchinfo then
+                table.join2(result, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
+                table.join2(result, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
+            end
+        end
+    end
+    return result
 end
 
 -- get cflags
@@ -42,6 +60,7 @@ function _get_cflags(package, opt)
     end
     table.join2(result, package:config("cflags"))
     table.join2(result, package:config("cxflags"))
+    table.join2(result, _get_cxflags_from_includedirs(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -57,6 +76,7 @@ function _get_cxxflags(package, opt)
     end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
+    table.join2(result, _get_cxflags_from_includedirs(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -243,6 +263,22 @@ function _get_configs_for_cross(package, configs, opt)
     end
 end
 
+-- get configs for generic
+function _get_configs_for_generic(package, configs, opt)
+    local cflags = _get_cflags(package, opt)
+    if cflags then
+        table.insert(configs, "-DCMAKE_C_FLAGS=" .. cflags)
+    end
+    local cxxflags = _get_cxxflags(package, opt)
+    if cxxflags then
+        table.insert(configs, "-DCMAKE_CXX_FLAGS=" .. cxxflags)
+    end
+    local asflags = _get_asflags(package, opt)
+    if asflags then
+        table.insert(configs, "-DCMAKE_ASM_FLAGS=" .. asflags)
+    end
+end
+
 -- get cmake generator for msvc
 function _get_cmake_generator_for_msvc()
     local vsvers =
@@ -297,6 +333,8 @@ function _get_configs(package, configs, opt)
         _get_configs_for_mingw(package, configs, opt)
     elseif not package:is_plat(os.subhost()) then
         _get_configs_for_cross(package, configs, opt)
+    else
+        _get_configs_for_generic(package, configs, opt)
     end
     return configs
 end
