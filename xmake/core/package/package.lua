@@ -102,7 +102,7 @@ function _instance:plat()
     if requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return config.get("plat") or os.host()
+    return self:get("plat") or config.get("plat") or os.host()
 end
 
 -- get the architecture of package
@@ -115,7 +115,7 @@ function _instance:arch()
     if requireinfo and requireinfo.arch then
         return requireinfo.arch
     end
-    return config.get("arch") or os.arch()
+    return self:get("arch") or config.get("arch") or os.arch()
 end
 
 -- get the target os
@@ -1293,6 +1293,8 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
+        ,   "package.set_plat"
+        ,   "package.set_arch"
         ,   "package.set_license"
         ,   "package.set_homepage"
         ,   "package.set_description"
