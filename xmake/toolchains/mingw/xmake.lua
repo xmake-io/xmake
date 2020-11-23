@@ -64,7 +64,6 @@ toolchain("mingw")
             toolchain:add("toolset", "ex", path.join(bindir, "ar"))
             toolchain:add("toolset", "strip", path.join(bindir, "strip"))
             toolchain:add("toolset", "ranlib", path.join(bindir, "ranlib"))
-            toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
         end
         toolchain:add("toolset", "cc", cross .. "gcc")
         toolchain:add("toolset", "cxx", cross .. "g++", cross .. "gcc")
@@ -86,6 +85,7 @@ toolchain("mingw")
             toolchain:add("toolset", "as", path.join(bindir, "gcc"))
             toolchain:add("toolset", "ld", path.join(bindir, "g++"), path.join(bindir, "gcc"))
             toolchain:add("toolset", "sh", path.join(bindir, "g++"), path.join(bindir, "gcc"))
+            toolchain:add("toolset", "mrc", path.join(bindir, "windres"))
         end
 
         -- init flags for architecture
