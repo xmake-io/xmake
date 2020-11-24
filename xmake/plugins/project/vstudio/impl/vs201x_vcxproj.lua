@@ -555,11 +555,6 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
                     key = function (info) return os.args(info.flags) end
                 ,   value = function (key) return key .. " %%(AdditionalOptions)" end
                 }
-            ,   ObjectFileName =
-                {
-                    key = function (info) return path.relative(path.absolute(info.objectfile), vcxprojdir) end
-                ,   value = function (key) return key end
-                }
             }
 
             -- make items
@@ -663,7 +658,6 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
             if pcheader and language.sourcekind_of(sourcefile) ~= (target.pcxxheader and "cxx" or "cc") then
                 vcxprojfile:print("<PrecompiledHeader>NotUsing</PrecompiledHeader>")
             end
-            vcxprojfile:print("<ObjectFileName>%s</ObjectFileName>", objectfile)
             vcxprojfile:print("<AdditionalOptions>%s %%(AdditionalOptions)</AdditionalOptions>", os.args(info.flags))
         end
 
