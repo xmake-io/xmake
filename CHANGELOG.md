@@ -21,6 +21,7 @@
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): Improve cross toolchains
 * [#1030](https://github.com/xmake-io/xmake/issues/1030): Improve xcode.framework and xcode.application rules
 * [#1051](https://github.com/xmake-io/xmake/issues/1051): Add `edit` and `embed` to `set_symbols()` only for msvc
+* [#1062](https://github.com/xmake-io/xmake/issues/1062): Improve `xmake project -k vs` plugin.
 
 ## v2.3.8
 
@@ -881,6 +882,7 @@
 * [#1008](https://github.com/xmake-io/xmake/issues/1008): 改进交叉编译工具链
 * [#1030](https://github.com/xmake-io/xmake/issues/1030): 改进 xcode.framework and xcode.application 规则
 * [#1051](https://github.com/xmake-io/xmake/issues/1051): 为 msvc 编译器添加 `edit` 和 `embed` 调试信息格式类型到 `set_symbols()`
+* [#1062](https://github.com/xmake-io/xmake/issues/1062): 改进 `xmake project -k vs` 插件
 
 ## v2.3.8
 
