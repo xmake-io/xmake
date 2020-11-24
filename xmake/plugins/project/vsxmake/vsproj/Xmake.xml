@@ -27,7 +27,7 @@
       Switch="diagnosis" />
     <BoolProperty
       Name="XmakeWarning"
-      DisplayName="Print warings"
+      DisplayName="Print warnings"
       Category="Common"
       Description="Enable the warnings output for build tasks."
       Switch="warning" />
