@@ -313,6 +313,14 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<RuntimeLibrary%s>MultiThreaded</RuntimeLibrary>", condition)
     end
 
+    -- handle multi processor compilation
+    if flagstr:find("[%-/]Gm-") or not flagstr:find("[%-/]Gm") then
+        vcxprojfile:print("<MinimalRebuild%s>false</MinimalRebuild>", condition)
+        if flagstr:find("[%-/]MP") then
+            vcxprojfile:print("<MultiProcessorCompilation%s>true</MultiProcessorCompilation>", condition)
+        end
+    end
+
     -- make AdditionalIncludeDirectories
     if flagstr:find("[%-/]I") then
         local dirs = {}
@@ -331,7 +339,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D"}
+    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
