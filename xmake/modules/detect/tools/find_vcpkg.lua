@@ -67,7 +67,7 @@ function main(opt)
     -- find program
     opt.paths = paths
     opt.envs  = {PATH = os.getenv("PATH")}
-    local program = find_program(opt.program or "version", opt)
+    local program = find_program(opt.program or "vcpkg", opt)
 
     -- find program version
     local version = nil
