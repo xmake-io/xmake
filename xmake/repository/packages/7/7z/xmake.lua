@@ -4,7 +4,7 @@ package("7z")
     set_homepage("https://www.7-zip.org/")
     set_description("A file archiver with a high compression ratio.")
 
-    if os.host() == "windows" then
+    if is_host("windows") then
         if os.arch() == "x64" then
             set_urls("https://github.com/xmake-mirror/7zip/releases/download/$(version)/7z$(version)-x64.zip",
                      "https://gitlab.com/xmake-mirror/7zip-releases/raw/master/7z$(version)-x64.zip")
@@ -25,13 +25,15 @@ package("7z")
         add_versions("github:16.02", "1cb98f266f8f6109d99d35473dfc8db71a9933b1dea58a89833650858e504b52")
         add_versions("gitlab:16.02", "93c6a14efb6dc9ee2fbb8c8fd4b5f319537c98182f8810f3b25cfa6363d9905b")
     end
+    set_plat(os.host())
+    set_arch(os.arch())
 
-    on_install("@macosx", "@linux", function (package)
+    on_install("macosx", "linux", function (package)
         os.vrun("make 7z")
         os.cp("bin", package:installdir())
     end)
 
-    on_install("@windows", "@msys", "@cygwin", function (package)
+    on_install("windows", function (package)
         os.cp("*", package:installdir("bin"))
     end)
 

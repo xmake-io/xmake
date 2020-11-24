@@ -4,7 +4,7 @@ package("git")
     set_homepage("https://git-scm.com/")
     set_description("A free and open source distributed version control system")
 
-    if os.host() == "windows" then
+    if is_host("windows") then
         if os.arch() == "x64" then
             add_urls("https://github.com/git-for-windows/git/releases/download/v$(version).windows.1/MinGit-$(version)-64-bit.zip",
                      "https://gitlab.com/xmake-mirror/git-for-windows-releases/raw/master/MinGit-$(version)-64-bit.zip")
@@ -23,17 +23,19 @@ package("git")
             end
         end
     end
+    set_plat(os.host())
+    set_arch(os.arch())
 
-    on_load("@windows", "@msys", "@cygwin", function (package)
+    on_load("windows", function (package)
         package:addenv("PATH", path.join("share", "MinGit", "mingw32", "bin"))
         package:addenv("PATH", path.join("share", "MinGit", "cmd"))
     end)
 
-    on_install("@macosx", "@linux", function (package)
+    on_install("macosx", "linux", function (package)
         import("package.manager.install_package")("git")
     end)
 
-    on_install("@windows", "@msys", "@cygwin", function (package)
+    on_install("windows", function (package)
         os.cp("*", package:installdir("share/MinGit"))
     end)
 
