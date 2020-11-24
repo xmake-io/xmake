@@ -1702,15 +1702,19 @@ function _instance:pcoutputfile(langkind)
     local pcheaderfile = self:pcheaderfile(langkind)
     if pcheaderfile then
 
-        -- load tool instance
-        local toolinstance = tool.load(language.langkinds()[langkind])
+        -- is gcc?
+        local is_gcc = false
+        local _, toolname = self:tool(langkind == "c" and "cc" or "cxx")
+        if toolname and (toolname == "gcc" or toolname == "gxx") then
+            is_gcc = true
+        end
 
         -- make precompiled output file
         --
         -- @note gcc has not -include-pch option to set the pch file path
         --
         pcoutputfile = self:objectfile(pcheaderfile)
-        pcoutputfile = path.join(path.directory(pcoutputfile), path.basename(pcoutputfile) .. (toolinstance and toolinstance:name() == "gcc" and ".gch" or ".pch"))
+        pcoutputfile = path.join(path.directory(pcoutputfile), path.basename(pcoutputfile) .. (is_gcc and ".gch" or ".pch"))
 
         -- save to cache
         self._PCOUTPUTFILES[langkind] = pcoutputfile
