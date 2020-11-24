@@ -39,7 +39,7 @@ function _get_user_agent()
             if osver then
                 os_user_agent = ("Intel Mac OS X " .. (osver or "")):trim()
             end
-        elseif is_host("linux", "msys", "cygwin") then
+        elseif is_subhost("linux", "msys", "cygwin") then
             local osver = try { function () return os.iorun("uname -r") end }
             if osver then
                 os_user_agent = (os_user_agent .. " " .. (osver or "")):trim()
