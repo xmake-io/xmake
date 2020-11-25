@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.3.9
+
 ### New features
 
 * Add new [xrepo](https://github.com/xmake-io/xrepo) command to manage C/C++ packages
@@ -862,6 +864,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.3.9
 
 ### 新特性
 
