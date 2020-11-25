@@ -292,8 +292,8 @@ function _check_package_configurations(package)
     for name, value in pairs(package:configs()) do
         local conf = configs_defined[name]
         if conf then
-            local config_type = conf.type or "string"
-            if type(value) ~= config_type then
+            local config_type = conf.type
+            if config_type ~= nil and type(value) ~= config_type then
                 raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
             end
             if conf.values then
