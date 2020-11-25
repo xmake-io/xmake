@@ -28,7 +28,7 @@ jobs:
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
-      - uses: olegtarasov/get-tag@v2
+      - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
         # tests
