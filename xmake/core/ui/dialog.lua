@@ -63,6 +63,9 @@ function dialog:init(name, bounds, title)
         self:buttons():bounds_set(rect:new(0, v:height() - 1, v:width(), 1))
         self:_update_buttons_layout()
     end)
+
+    -- mark as block mouse
+    self:option_set("blockmouse", true)
 end
 
 -- get buttons

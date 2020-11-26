@@ -58,7 +58,7 @@ function panel:init(name, bounds)
 
         -- try focused first
         local current = v:current()
-        if current and current:option("mouseable") and current:bounds():contains(x, y) then
+        if current and current:option("mouseable") and (current:option("blockmouse") or current:bounds():contains(x, y)) then
             return current:action_on(action.ac_on_clicked, x, y)
         end
 
