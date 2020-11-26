@@ -30,13 +30,16 @@ install: build
 	mkdir -p $(prefix)/bin
 	mkdir -p $(prefix)/share
 	cp -r $(CURDIR)/xmake $(prefix)/share
-	cp $(CURDIR)/core/src/demo/demo.b $(prefix)/bin/xmake 
+	cp -p $(CURDIR)/core/src/demo/demo.b $(prefix)/bin/xmake
 	chmod 755 $(prefix)/bin/xmake
+	cp -p $(CURDIR)/scripts/xrepo.sh $(prefix)/bin/xrepo
+	chmod 755 $(prefix)/bin/xrepo
 
 distclean: clean
 
 uninstall:
 	if [ -f /usr/bin/xmake ]; then rm /usr/bin/xmake; fi
+	if [ -f /usr/bin/xrepo ]; then rm /usr/bin/xrepo; fi
 	if [ -d /usr/share/xmake ]; then rm -rf /usr/share/xmake; fi
 
 binary-indep: build install
