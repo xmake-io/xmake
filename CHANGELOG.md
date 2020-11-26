@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
+
 ## v2.3.9
 
 ### New features
@@ -864,6 +868,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#1072](https://github.com/xmake-io/xmake/issues/1072): 修复并改进 cl 编译器头文件依赖信息
 
 ## v2.3.9
 
