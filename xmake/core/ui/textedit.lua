@@ -26,7 +26,7 @@ local event     = require("ui/event")
 local border    = require("ui/border")
 local curses    = require("ui/curses")
 local textarea  = require("ui/textarea")
-local action    = require("ltui/action")
+local action    = require("ui/action")
 
 -- define module
 local textedit = textedit or textarea()
