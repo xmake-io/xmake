@@ -22,37 +22,44 @@
 import("core.project.project")
 import("core.base.hashset")
 
--- contain: "Note: including file: "?
+-- probe include note prefix from cl
+function _probe_include_note_from_cl()
+    -- TODO
+end
+
+-- get include notes prefix, e.g. "Note: including file: "
 --
 -- @note we cannot get better solution to distinguish between `includes` and `error infos`
 --
+function _get_include_notes()
+    local notes = _g.notes
+    if not notes then
+        notes = {}
+        local note = _probe_include_note_from_cl()
+        if note then
+            table.insert(notes, note)
+        end
+        table.join2(notes, {
+            "Note: including file: ", -- en
+            "注意: 包含文件: ", -- zh
+            "Remarque : inclusion du fichier : ", -- fr
+            "メモ: インクルード ファイル: " -- jp
+        })
+        _g.notes = notes
+    end
+    return notes
+end
+
+-- main entry
 function main(line)
 
-    -- init notes
-    --
-    -- TODO zh-tw, zh-hk, jp, ...
-    --
-    _g.notes = _g.notes or
-    {
-        "Note: including file: " -- en
-    ,   "注意: 包含文件: " -- zh
-    ,   "Remarque : inclusion du fichier : " -- fr
-    ,   "メモ: インクルード ファイル: " -- jp
-    }
-
     -- contain notes?
-    for idx, note in ipairs(_g.notes) do
-
-        -- dump line bytes
-        --[[
-        print(line)
-        line:gsub(".", function (ch) print(string.byte(ch)) end)
-        --]]
-
+    local notes = _get_include_notes()
+    for idx, note in ipairs(notes) do
         if line:startswith(note) then
             -- optimization: move this note to head
             if idx ~= 1 then
-                table.insert(_g.notes, 1, note)
+                table.insert(notes, 1, note)
             end
             return line:sub(#note):trim()
         end
