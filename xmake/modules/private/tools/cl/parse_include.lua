@@ -34,8 +34,10 @@ function main(line)
     --
     _g.notes = _g.notes or
     {
-        "Note: including file: "
-    ,   "注意: 包含文件: "
+        "Note: including file: " -- en
+    ,   "注意: 包含文件: " -- zh
+    ,   "Remarque : inclusion du fichier : " -- fr
+    ,   "メモ: インクルード ファイル: " -- jp
     }
 
     -- contain notes?
