@@ -21,10 +21,49 @@
 -- imports
 import("core.project.project")
 import("core.base.hashset")
+import("core.tool.toolchain")
+import("lib.detect.cache")
+import("lib.detect.find_tool")
+import("private.tools.vstool")
 
 -- probe include note prefix from cl
 function _probe_include_note_from_cl()
-    -- TODO
+    local key = "note_include"
+    local cacheinfo = cache.load("cldeps.parse_include")
+    local note = cacheinfo[key]
+    if not note then
+        local cl = find_tool("cl")
+        if cl then
+            local projectdir = os.tmpfile() .. ".cldeps"
+            local sourcefile = path.join(projectdir, "main.c")
+            local headerfile = path.join(projectdir, "foo.h")
+            local objectfile = sourcefile .. ".obj"
+            local outdata = try { function()
+                local runenvs = toolchain.load("msvc"):runenvs()
+                local argv = {"-nologo", "-showIncludes", "-c", "-Fo" .. objectfile, sourcefile}
+                io.writefile(headerfile, "\n")
+                io.writefile(sourcefile, [[
+                    #include "foo.h"
+                    int main (int argc, char** argv) {
+                        return 0;
+                    }
+                ]])
+                return vstool.iorunv(cl.program, argv, {envs = runenvs, curdir = projectdir})
+            end}
+            if outdata then
+                for _, line in ipairs(outdata:split('\n', {plain = true})) do
+                    note = line:match("^(.-:.-: )")
+                    if note then
+                        break
+                    end
+                end
+            end
+            os.tryrm(projectdir)
+        end
+        cacheinfo[key] = note
+        cache.save("cldeps.parse_include", cacheinfo)
+    end
+    return note
 end
 
 -- get include notes prefix, e.g. "Note: including file: "
@@ -52,8 +91,6 @@ end
 
 -- main entry
 function main(line)
-
-    -- contain notes?
     local notes = _get_include_notes()
     for idx, note in ipairs(notes) do
         if line:startswith(note) then
