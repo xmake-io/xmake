@@ -29,7 +29,7 @@ import("lib.detect.find_tool")
 --
 -- @param name      the tool name
 -- @param flags     the flags
--- @param opt       the argument options, e.g. { verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]", flagskey = "custom key" }
+-- @param opt       the argument options, e.g. {force = true, verbose = false, program = "", sysflags = {}, flagkind = "cxflag", toolkind = "[cc|cxx|ld|ar|sh|gc|rc|dc|mm|mxx]", flagskey = "custom key" }
 --
 -- @return          true or false
 --
@@ -37,6 +37,7 @@ import("lib.detect.find_tool")
 -- local ok = has_flags("clang", "-g")
 -- local ok = has_flags("clang", {"-g", "-O0"}, {program = "xcrun -sdk macosx clang"})
 -- local ok = has_flags("clang", "-g", {toolkind = "cxx"})
+-- local ok = has_flags("clang", "-g", {on_check = function (ok, errors) return ok, errors end})
 -- @endcode
 --
 function main(name, flags, opt)
@@ -85,7 +86,7 @@ function main(name, flags, opt)
     -- attempt to get result from cache first
     local cacheinfo = cache.load("lib.detect.has_flags")
     local result = cacheinfo[key]
-    if result ~= nil then
+    if result ~= nil and not opt.force then
         return result
     end
 
@@ -115,6 +116,9 @@ function main(name, flags, opt)
     else
         result = try { function () os.runv(tool.program, checkflags, {envs = opt.envs}); return true end, catch { function (errs) errors = errs end }}
     end
+    if opt.on_check then
+        result, errors = opt.on_check(result, errors)
+    end
     _g._checking = nil
     result = result or false
 
@@ -134,8 +138,6 @@ function main(name, flags, opt)
     -- save result to cache
     cacheinfo[key] = result
     cache.save("lib.detect.has_flags", cacheinfo)
-
-    -- ok?
     return result
 end
 

@@ -367,7 +367,14 @@ function _has_source_dependencies(self)
     local has_source_dependencies = _g._HAS_SOURCE_DEPENDENCIES
     if has_source_dependencies == nil then
         local source_dependencies_jsonfile = os.tmpfile() .. ".json"
-        if self:has_flags("/sourceDependencies " .. source_dependencies_jsonfile, "cxflags", {flagskey = "cl_sourceDependencies"}) and os.isfile(source_dependencies_jsonfile) then
+        if self:has_flags("/sourceDependencies " .. source_dependencies_jsonfile, "cxflags", {flagskey = "cl_sourceDependencies",
+                on_check = function (ok, errors)
+                    -- even if cl does not support /sourceDependencies, it will not interrupt compilation
+                    if ok and not os.isfile(source_dependencies_jsonfile) then
+                        ok = false
+                    end
+                    return ok, errors
+                end}) then
             has_source_dependencies = true
         end
         has_source_dependencies = has_source_dependencies or false
