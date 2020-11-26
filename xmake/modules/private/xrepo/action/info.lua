@@ -30,6 +30,17 @@ function menu_options()
     -- menu options
     local options =
     {
+        {'k', "kind",       "kv", nil, "Enable static/shared library.",
+                                       values = {"static", "shared"}         },
+        {'p', "plat",       "kv", nil, "Set the given platform."             },
+        {'a', "arch",       "kv", nil, "Set the given architecture."         },
+        {'m', "mode",       "kv", nil, "Set the given mode.",
+                                       values = {"release", "debug"}         },
+        {'f', "configs",    "kv", nil, "Set the given extra package configs.",
+                                       "e.g.",
+                                       "    - xrepo fetch --configs=\"vs_runtime=MD\" zlib",
+                                       "    - xrepo fetch --configs=\"regex=true,thread=true\" boost"},
+        {},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo info zlib boost"}
@@ -72,6 +83,24 @@ function _info_packages(packages)
     if option.get("diagnosis") then
         table.insert(config_argv, "-D")
     end
+    if option.get("plat") then
+        table.insert(config_argv, "-p")
+        table.insert(config_argv, option.get("plat"))
+    end
+    if option.get("arch") then
+        table.insert(config_argv, "-a")
+        table.insert(config_argv, option.get("arch"))
+    end
+    local mode  = option.get("mode")
+    if mode then
+        table.insert(config_argv, "-m")
+        table.insert(config_argv, mode)
+    end
+    local kind  = option.get("kind")
+    if kind then
+        table.insert(config_argv, "-k")
+        table.insert(config_argv, kind)
+    end
     os.vrunv("xmake", config_argv)
 
     -- show info
@@ -81,6 +110,28 @@ function _info_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    local extra = {system = false}
+    if mode == "debug" then
+        extra.debug = true
+    end
+    if kind == "shared" then
+        extra.configs = extra.configs or {}
+        extra.configs.shared = true
+    end
+    local configs = option.get("configs")
+    if configs then
+        extra.configs = extra.configs or {}
+        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
+        if extra_configs then
+            table.join2(extra.configs, extra_configs)
+        else
+            raise(errors)
+        end
+    end
+    if extra then
+        local extra_str = string.serialize(extra, {indent = false, strip = true})
+        table.insert(require_argv, "--extra=" .. extra_str)
     end
     table.join2(require_argv, packages)
     os.vexecv("xmake", require_argv)
