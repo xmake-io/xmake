@@ -23,6 +23,11 @@ import("core.base.option")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
+-- get the build environments
+function buildenvs(package, opt)
+    return table.copy(toolchain.load("msvc"):runenvs())
+end
+
 -- build package
 function build(package, configs, opt)
 
@@ -43,7 +48,7 @@ function build(package, configs, opt)
     end
 
     -- do build
-    local runenvs = toolchain.load("msvc"):runenvs()
-    local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vrunv(msbuild.program, argv, {envs = runenvs})
+    local envs = opt.envs or buildenvs(package, opt)
+    local msbuild = find_tool("msbuild", {envs = envs})
+    os.vrunv(msbuild.program, argv, {envs = envs})
 end
