@@ -567,10 +567,10 @@ function build(package, configs, opt)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    table.insert(argv, opt.sourcedir or '..')
+    table.insert(argv, oldir)
 
     -- do configure
-    os.vrunv("cmake", argv, {envs = :opt.envs or buildenvs(package, opt)})
+    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build
     local cmake_generator = opt.cmake_generator
@@ -625,7 +625,7 @@ function install(package, configs, opt)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    table.insert(argv, opt.sourcedir or '..')
+    table.insert(argv, oldir)
 
     -- generate build file
     os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
