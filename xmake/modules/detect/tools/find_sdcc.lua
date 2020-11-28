@@ -22,7 +22,7 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find dmd
+-- find sdcc
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,7 +30,7 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local dmd = find_sdcc()
+-- local sdcc = find_sdcc()
 --
 -- @endcode
 --
@@ -61,7 +61,5 @@ function main(opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end
