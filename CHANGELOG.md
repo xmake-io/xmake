@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1035](https://github.com/xmake-io/xmake/issues/1035): The graphics configuration menu fully supports mouse events, and support scroll bar
+
 ### Change
 
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
@@ -868,6 +872,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1035](https://github.com/xmake-io/xmake/issues/1035): 图形配置菜单完整支持鼠标事件，并且新增滚动栏
 
 ### 改进
 
