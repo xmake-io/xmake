@@ -69,7 +69,7 @@ rule("lex")
         local compinst = compiler.load((extension == ".ll" and "cxx" or "cc"), {target = target})
 
         -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx, configs = {includedirs = sourcefile_dir}})
+        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
 
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)

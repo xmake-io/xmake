@@ -74,6 +74,9 @@ rule("yacc")
         -- add objectfile
         table.insert(target:objectfiles(), objectfile)
 
+        -- add includedirs
+        target:add("includedirs", sourcefile_dir)
+
         -- load dependent info
         local dependfile = target:dependfile(objectfile)
         local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
