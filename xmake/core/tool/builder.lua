@@ -373,7 +373,13 @@ function builder:_preprocess_flags(flags)
         flag = flag:trim()
         if #flag > 0 then
             if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag))
+                -- ignore e.g. -DTEST="Hello world"
+                local s = flag:gsub("\".-\"", "")
+                if s:find(" ", 1, true) then
+                    table.join2(results, os.argv(flag))
+                else
+                    table.insert(results, flag)
+                end
             else
                 table.insert(results, flag)
             end
