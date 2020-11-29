@@ -24,6 +24,7 @@ local view      = require("ui/view")
 local label     = require("ui/label")
 local event     = require("ui/event")
 local curses    = require("ui/curses")
+local action    = require("ui/action")
 
 -- define module
 local textarea = textarea or label()
@@ -36,9 +37,6 @@ function textarea:init(name, bounds, text)
 
     -- mark as selectable
     self:option_set("selectable", true)
-
-    -- enable progress
-    self:option_set("progress", true)
 
     -- init start line
     self._STARTLINE = 0
@@ -59,17 +57,6 @@ function textarea:on_draw(transparent)
     if strs and #strs > 0 and textattr then
         self:canvas():attr(textattr):move(0, 0):putstrs(strs, self._STARTLINE + 1)
     end
-
-    -- draw progress
-    if self:option("progress") then
-        local tb = self._STARTLINE
-        local fator = self:height() / self._LINECOUNT
-        local sb = math.min(math.floor(tb * fator), self:height() - 1)
-        local se = math.min(sb + math.ceil(self:height() * fator), self:height())
-        if se > sb and se - sb < self:height() then
-            self:canvas():attr("black"):move(self:width() - 1, sb):putchar(' ', se - sb, true)
-        end
-    end
 end
 
 -- set text
@@ -80,24 +67,33 @@ function textarea:text_set(text)
     return label.text_set(self, text)
 end
 
+-- is scrollable?
+function textarea:scrollable()
+    return self._LINECOUNT > self:height()
+end
+
 -- scroll
 function textarea:scroll(lines)
-    if self._LINECOUNT > self:height() then
+    if self:scrollable() then
         self._STARTLINE = self._STARTLINE + lines
         if self._STARTLINE < 0 then
             self._STARTLINE = 0
         end
-        if self._STARTLINE > self._LINECOUNT - self:height() then
-            self._STARTLINE = self._LINECOUNT - self:height()
+        local startline_end = self._LINECOUNT > self:height() and self._LINECOUNT - self:height() or self._LINECOUNT
+        if self._STARTLINE > startline_end then
+            self._STARTLINE = startline_end
         end
+        self:action_on(action.ac_on_scrolled, self._STARTLINE / startline_end)
         self:invalidate()
     end
 end
 
 -- scroll to end
 function textarea:scroll_to_end()
-    if self._LINECOUNT > self:height() then
-        self._STARTLINE = self._LINECOUNT - self:height()
+    if self:scrollable() then
+        local startline_end = self._LINECOUNT > self:height() and self._LINECOUNT - self:height() or self._LINECOUNT
+        self._STARTLINE = startline_end
+        self:action_on(action.ac_on_scrolled, self._STARTLINE / startline_end)
         self:invalidate()
     end
 end

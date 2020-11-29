@@ -47,9 +47,6 @@ function textedit:init(name, bounds, text)
     self:option_set("mouseable", true)
     self:action_set(action.ac_on_clicked, function () return true end)
 
-    -- disable progress
-    self:option_set("progress", false)
-
     -- enable multiple line
     self:option_set("multiline", true)
 end

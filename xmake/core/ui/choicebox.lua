@@ -38,19 +38,125 @@ function choicebox:init(name, bounds)
     -- init panel
     panel.init(self, name, bounds)
 
-    -- init values
-    self._VALUES = {}
+    -- init items
+    self._ITEMS = {}
+
+    -- init start index
+    self._STARTINDEX = 1
+end
+
+-- load values
+function choicebox:load(values, selected)
+
+    -- clear the views first
+    self:clear()
+
+    -- load items
+    local items = {}
+    for idx, value in ipairs(values) do
+        table.insert(items, self:_load_item(value, idx, idx == selected))
+    end
+    self._ITEMS = items
+
+    -- insert top-n items
+    local startindex = self._STARTINDEX
+    for idx = startindex, startindex + self:height() - 1 do
+        local item = items[idx]
+        if item then
+            self:insert(item)
+        else
+            break
+        end
+    end
+
+    -- select the first item
+    self:select(self:first())
+
+    -- on loaded
+    self:action_on(action.ac_on_load)
+
+    -- invalidate
+    self:invalidate()
+end
+
+-- is scrollable?
+function choicebox:scrollable()
+    return #self:_items() > self:height()
+end
+
+-- scroll
+function choicebox:scroll(count)
+    if self:scrollable() then
+        local items = self:_items()
+        local totalcount = #items
+        local startindex = self._STARTINDEX + count
+        if startindex > totalcount then
+            return
+        elseif startindex < 1 then
+            startindex = 1
+        end
+        self._STARTINDEX = startindex
+        self:clear()
+        for idx = startindex, startindex + self:height() - 1 do
+            local item = items[idx]
+            if item then
+                item:bounds():move2(0, idx - startindex)
+                self:insert(item)
+            else
+                break
+            end
+        end
+        if count > 0 then
+            self:select(self:first())
+        else
+            self:select(self:last())
+        end
+        self:invalidate()
+    end
+end
+
+-- on resize
+function choicebox:on_resize()
+    local items = self:_items()
+    local totalcount = #items
+    local startindex = self._STARTINDEX
+    for idx = 1, totalcount do
+        local item = items[idx]
+        if item then
+            if idx >= startindex and idx < startindex + self:height() then
+                if not self:view(item:name()) then
+                    item:bounds():move2(0, idx - startindex)
+                    self:insert(item)
+                end
+            else
+                if self:view(item:name()) then
+                    self:remove(item)
+                end
+            end
+        end
+    end
+    panel.on_resize(self)
 end
 
 -- on event
 function choicebox:on_event(e)
-
-    -- select config
     if e.type == event.ev_keyboard then
         if e.key_name == "Down" then
-            return self:select_next()
+            if self:current() == self:last() then
+                self:scroll(self:height())
+            else
+                self:select_next()
+            end
+            self:_notify_scrolled()
+            return true
         elseif e.key_name == "Up" then
-            return self:select_prev()
+            if self:current() == self:first() then
+                self:scroll(-self:height())
+            else
+                self:select_prev()
+            end
+            self:_notify_scrolled()
+            return true
         elseif e.key_name == "Enter" or e.key_name == " " then
             self:_do_select()
             return true
@@ -61,44 +167,36 @@ function choicebox:on_event(e)
     end
 end
 
--- load values
-function choicebox:load(values, selected)
-
-    -- clear the views first
-    self:clear()
-
-    -- insert values
-    self._VALUES = values
-    for idx, value in ipairs(values) do
-        self:_do_insert(value, idx, idx == selected)
-    end
-
-    -- select the first item
-    self:select(self:first())
-
-    -- invalidate
-    self:invalidate()
-end
-
--- do insert a value item
-function choicebox:_do_insert(value, index, selected)
+-- load a item with value
+function choicebox:_load_item(value, index, selected)
 
     -- init text
     local text = (selected and "(X) " or "( ) ") .. tostring(value)
 
     -- init a value item view
-    local item = button:new("choicebox.value." .. self:count(),
-                    rect:new(0, self:count(), self:width(), 1),
+    local item = button:new("choicebox.value." .. index,
+                    rect:new(0, index - 1, self:width(), 1),
                     text,
                     function (v, e)
                         self:_do_select()
                     end)
 
-    -- attach this index
+    -- attach index and value
     item:extra_set("index", index)
+    item:extra_set("value", value)
+    return item
+end
 
-    -- insert this config item
-    self:insert(item)
+-- notify scrolled
+function choicebox:_notify_scrolled()
+    local totalcount = #self:_items()
+    local startindex = self:current():extra("index")
+    self:action_on(action.ac_on_scrolled, startindex / totalcount)
+end
+
+-- get all items
+function choicebox:_items()
+    return self._ITEMS
 end
 
 -- do select the current config
@@ -108,24 +206,17 @@ function choicebox:_do_select()
     for v in self:views() do
         local text = v:text()
         if text and text:startswith("(X) ") then
-            local i = v:extra("index")
-            if i then
-                local t = self._VALUES[i]
-                v:text_set("( ) " .. tostring(t))
-            end
+            local t = v:extra("value")
+            v:text_set("( ) " .. tostring(t))
         end
     end
 
     -- get the current item
     local item = self:current()
 
-    -- get the current index
-    local index = item:extra("index")
-
-    -- get the current value
-    local value = self._VALUES[index]
-
     -- do action: on selected
+    local index = item:extra("index")
+    local value = item:extra("value")
     self:action_on(action.ac_on_selected, index, value)
 
     -- update text

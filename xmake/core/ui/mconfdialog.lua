@@ -26,6 +26,7 @@ local event        = require("ui/event")
 local action       = require("ui/action")
 local curses       = require("ui/curses")
 local window       = require("ui/window")
+local scrollbar    = require("ui/scrollbar")
 local menuconf     = require("ui/menuconf")
 local boxdialog    = require("ui/boxdialog")
 local textdialog   = require("ui/textdialog")
@@ -54,6 +55,9 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
     self:button_add("save", "< Save >", function (v, e) self:action_on(action.ac_on_save) end)
     self:buttons():select(self:button("select"))
 
+    -- insert scrollbar
+    self:box():panel():insert(self:scrollbar_menuconf())
+
     -- insert menu config
     self:box():panel():insert(self:menuconf())
     self:box():panel():action_add(action.ac_on_resized, function (v)
@@ -63,6 +67,17 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
 
     -- disable to select to box (disable Tab switch and only response to buttons)
     self:box():option_set("selectable", false)
+
+    -- on resize for panel
+    self:box():panel():action_add(action.ac_on_resized, function (v)
+        self:menuconf():bounds_set(rect:new(0, 0, v:width() - 1, v:height()))
+        self:scrollbar_menuconf():bounds_set(rect:new(v:width() - 1, 0, 1, v:height()))
+        if self:menuconf():scrollable() then
+            self:scrollbar_menuconf():show(true)
+        else
+            self:scrollbar_menuconf():show(false)
+        end
+    end)
 
     -- on selected
     self:menuconf():action_set(action.ac_on_selected, function (v, config)
@@ -94,6 +109,22 @@ Pressing <Y> includes, <N> excludes. Enter <Esc> or <Back> to go back, <?> for H
             return true
         end
     end)
+
+    -- show scrollbar?
+    self:menuconf():action_add(action.ac_on_load, function (v)
+        if v:scrollable() then
+            self:scrollbar_menuconf():show(true)
+        else
+            self:scrollbar_menuconf():show(false)
+        end
+    end)
+
+    -- on scroll
+    self:menuconf():action_add(action.ac_on_scrolled, function (v, progress)
+        if self:scrollbar_menuconf():state("visible") then
+            self:scrollbar_menuconf():progress_set(progress)
+        end
+    end)
 end
 
 -- load configs
@@ -111,10 +142,20 @@ end
 function mconfdialog:menuconf()
     if not self._MENUCONF then
         local bounds = self:box():panel():bounds()
-        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(0, 0, bounds:width(), bounds:height()))
+        self._MENUCONF = menuconf:new("mconfdialog.menuconf", rect:new(0, 0, bounds:width() - 1, bounds:height()))
         self._MENUCONF:state_set("focused", true) -- we can select and highlight selected item
     end
     return self._MENUCONF
+end
+
+-- get menu scrollbar
+function mconfdialog:scrollbar_menuconf()
+    if not self._SCROLLBAR_MENUCONF then
+        local bounds = self:box():panel():bounds()
+        self._SCROLLBAR_MENUCONF = scrollbar:new("mconfdialog.scrollbar", rect:new(bounds:width() - 1, 0, 1, bounds:height()))
+        self._SCROLLBAR_MENUCONF:show(false)
+    end
+    return self._SCROLLBAR_MENUCONF
 end
 
 -- get help dialog
@@ -122,6 +163,7 @@ function mconfdialog:helpdialog()
     if not self._HELPDIALOG then
         local helpdialog = textdialog:new("mconfdialog.help", self:bounds(), "help")
         helpdialog:button_add("exit", "< Exit >", function (v) helpdialog:quit() end)
+        helpdialog:option_set("scrollable", true)
         self._HELPDIALOG = helpdialog
     end
     return self._HELPDIALOG
@@ -132,6 +174,7 @@ function mconfdialog:resultdialog()
     if not self._RESULTDIALOG then
         local resultdialog = textdialog:new("mconfdialog.result", self:bounds(), "result")
         resultdialog:button_add("exit", "< Exit >", function (v) resultdialog:quit() end)
+        resultdialog:option_set("scrollable", true)
         self._RESULTDIALOG = resultdialog
     end
     return self._RESULTDIALOG

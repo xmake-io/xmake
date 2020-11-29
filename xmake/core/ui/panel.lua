@@ -64,7 +64,7 @@ function panel:init(name, bounds)
 
         local p = v:last()
         while p do
-            if p:option('selectable') and p:bounds():contains(x, y) then
+            if p:option("selectable") and p:bounds():contains(x, y) then
                 if p:option("mouseable") then
                     v:select(p)
                     return p:action_on(action.ac_on_clicked, x, y)

@@ -45,7 +45,6 @@ function inputdialog:init(name, bounds, title)
     self:text():bounds().ey = 1
     self:text():invalidate(true)
     self:text():option_set("selectable", false)
-    self:text():option_set("progress", false)
 
     -- text changed
     self:text():action_set(action.ac_on_text_changed, function (v)
