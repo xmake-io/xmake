@@ -226,6 +226,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 assert(value ~= nil, "cannot get variable(%s) in %s.", variable, srcfile)
             end
             dprint("  > replace %s -> %s", variable, value)
+            if type(value) == "table" then
+                dprint("invalid variable value", value)
+            end
             return value
         end)
 
