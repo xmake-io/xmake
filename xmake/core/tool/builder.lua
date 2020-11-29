@@ -372,18 +372,7 @@ function builder:_preprocess_flags(flags)
     for _, flag in ipairs(flags) do
         flag = flag:trim()
         if #flag > 0 then
-            local split = false
             if flag:find(" ", 1, true) then
-                split = true
-                -- ignore e.g. -DTEST="Hello world"
-                if flag:find("\"", 1, true) then
-                    local s = flag:gsub("\".-\"", "")
-                    if not s:find(" ", 1, true) then
-                        split = false
-                    end
-                end
-            end
-            if split then
                 table.join2(results, os.argv(flag))
             else
                 table.insert(results, flag)
