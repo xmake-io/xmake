@@ -144,7 +144,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.rundir        = _make_dirs(target:get("rundir"))
     targetinfo.configdir     = _make_dirs(os.getenv("XMAKE_CONFIGDIR"))
     targetinfo.configfiledir = _make_dirs(target:get("configdir"))
-    targetinfo.includedirs   = _make_dirs(_get_values_from_target(target, "includedirs"))
+    targetinfo.includedirs   = _make_dirs(table.join(_get_values_from_target(target, "includedirs") or {}, _get_values_from_target(target, "sysincludedirs")))
     targetinfo.linkdirs      = _make_dirs(_get_values_from_target(target, "linkdirs"))
     targetinfo.sourcedirs    = _make_dirs(_get_values_from_target(target, "values.project.vsxmake.sourcedirs"))
 
