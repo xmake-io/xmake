@@ -38,7 +38,8 @@ function main(target)
     local targetkind = target:targetkind()
     if targetkind == "shared" or targetkind == "static" then
         local targetfile = target:targetfile()
-        target:add("links", target:basename(), {interface = true})
+        local links = target:get("links", {interface = true})
+        target:set("links", table.join(target:basename(), links), {interface = true}) -- we need move target link to head
         target:add("linkdirs", path.directory(targetfile), {interface = true})
         if target:rule("go") then
             -- we need add includedirs to support import modules for golang
