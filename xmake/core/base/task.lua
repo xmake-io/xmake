@@ -46,7 +46,6 @@ function task.common_options()
         ,   {'D', "diagnosis", "k",  nil,   "Print lots of diagnosis information (backtrace, check info ..) only for developers."
                                         ,   "And we can append -v to get more whole information."
                                         ,   "    e.g. $ xmake -vD"                                      }
-        ,   {nil, "profile",   "k",  nil,   "Print performance data only for developers."               }
         ,   {nil, "version",   "k",  nil,   "Print the version number and exit."                        }
         ,   {'h', "help",      "k",  nil,   "Print this help message and exit."                         }
         ,   {}
