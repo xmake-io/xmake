@@ -10,6 +10,10 @@
 
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
 
+### Bugs fixed
+
+* [#1091](https://github.com/xmake-io/xmake/issues/1091): Fix incorrect ordering of inherited library dependencies
+
 ## v2.3.9
 
 ### New features
@@ -880,6 +884,10 @@
 ### 改进
 
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): 修复并改进 cl 编译器头文件依赖信息
+
+### Bugs 修复
+
+* [#1091](https://github.com/xmake-io/xmake/issues/1091): 修复不正确的继承链接依赖
 
 ## v2.3.9
 
