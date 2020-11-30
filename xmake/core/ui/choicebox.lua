@@ -160,6 +160,11 @@ function choicebox:on_event(e)
             end
             self:_notify_scrolled()
             return true
+        elseif e.key_name == "PageDown" or e.key_name == "PageUp" then
+            local direction = e.key_name == "PageDown" and 1 or -1
+            self:scroll(self:height() * direction)
+            self:_notify_scrolled()
+            return true
         elseif e.key_name == "Enter" or e.key_name == " " then
             self:_do_select()
             return true
