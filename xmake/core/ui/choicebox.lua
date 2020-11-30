@@ -51,6 +51,9 @@ function choicebox:load(values, selected)
     -- clear the views first
     self:clear()
 
+    -- reset start index
+    self._STARTINDEX = 1
+
     -- load items
     local items = {}
     for idx, value in ipairs(values) do

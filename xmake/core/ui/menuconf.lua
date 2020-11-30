@@ -54,6 +54,9 @@ function menuconf:load(configs)
     -- clear the views first
     self:clear()
 
+    -- reset start index
+    self._STARTINDEX = 1
+
     -- detach the previous config and view
     local configs_prev = self._CONFIGS._PREV
     if configs_prev then
