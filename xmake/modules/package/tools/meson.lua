@@ -21,11 +21,16 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("package.tools.ninja")
 
 -- get build directory
-function _get_buildir()
-    _g.buildir = _g.buildir or ("build_" .. hash.uuid4():split('%-')[1])
-    return _g.buildir
+function _get_buildir(opt)
+    if opt and opt.buildir then
+        return opt.buildir
+    else
+        _g.buildir = _g.buildir or ("build_" .. hash.uuid4():split('%-')[1])
+        return _g.buildir
+    end
 end
 
 -- get configs
@@ -110,19 +115,26 @@ function generate(package, configs, opt)
     os.vrunv("meson", argv, {envs = opt.envs or buildenvs(package)})
 end
 
+-- build package
+function build(package, configs, opt)
+
+    -- generate build files
+    opt = opt or {}
+    generate(package, configs, opt)
+
+    -- do build
+    local buildir = _get_buildir(opt)
+    ninja.build(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+end
+
 -- install package
 function install(package, configs, opt)
 
     -- generate build files
+    opt = opt or {}
     generate(package, configs, opt)
 
     -- do build and install
-    local buildir = _get_buildir()
-    if option.get("verbose") or option.get("diagnosis") then
-        os.vrunv("ninja", {"-v", "-C", buildir})
-        os.vrunv("ninja", {"install", "-v", "-C", buildir})
-    else
-        os.vrunv("ninja", {"-C", buildir})
-        os.vrunv("ninja", {"install", "-C", buildir})
-    end
+    local buildir = _get_buildir(opt)
+    ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 end

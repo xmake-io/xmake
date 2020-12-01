@@ -26,6 +26,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
+import("package.tools.ninja")
 
 -- translate windows bin path
 function _translate_windows_bin_path(bin_path)
@@ -432,15 +433,7 @@ end
 -- do build for ninja
 function _build_for_ninja(package, configs, opt)
     opt = opt or {}
-    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {"-C", os.curdir()}
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    table.insert(argv, "-j")
-    table.insert(argv, njob)
-    os.vrunv(ninja.program, argv, {envs = opt.envs or buildenvs(package, opt)})
+    ninja.build(package, {}, {envs = opt.envs or buildenvs(package, opt)})
 end
 
 -- do build for cmake/build
@@ -512,15 +505,7 @@ end
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
-    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local ninja = assert(find_tool("ninja"), "ninja not found!")
-    local argv = {"install", "-C", os.curdir()}
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    table.insert(argv, "-j")
-    table.insert(argv, njob)
-    os.vrunv(ninja.program, argv, {envs = opt.envs or buildenvs(package, opt)})
+    ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt)})
     _install_files_for_cmake(package, opt)
 end
 
