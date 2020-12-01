@@ -150,6 +150,17 @@ function _instance:gsub(...)
     return self:rawstr():gsub(...)
 end
 
+-- add string compatible interface, e.g. version .. str
+function _instance.__concat(op1, op2)
+    if type(op1) == "string" then
+        return op1 .. op2:rawstr()
+    elseif type(op2) == "string" then
+        return op1:rawstr() .. op2
+    else
+        return op1:rawstr() .. op2:rawstr()
+    end
+end
+
 -- new an instance
 function semver.new(version)
 
