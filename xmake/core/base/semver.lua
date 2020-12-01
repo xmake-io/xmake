@@ -93,6 +93,11 @@ function _instance:gsub(...)
     return self:rawstr():gsub(...)
 end
 
+-- add string compatible interface, string.split
+function _instance:split(...)
+    return self:rawstr():split(...)
+end
+
 -- v1 == v2 (str/ver)?
 function _instance:eq(version)
     if type(version) == "string" then
