@@ -145,6 +145,11 @@ function _instance:__tostring()
     return self:rawstr()
 end
 
+-- add string compatible interface, string.gsub
+function _instance:gsub(...)
+    return self:rawstr():gsub(...)
+end
+
 -- new an instance
 function semver.new(version)
 

@@ -85,7 +85,7 @@ function _handler(package, strval)
                     --          {version = function (version) return version:gsub("%.", "") end})
                     local version_filter = package:url_version(strval)
                     if version_filter then
-                        return version_filter(package:version_str())
+                        return version_filter(package:version())
                     end
                 end
                 return package:version_str()
