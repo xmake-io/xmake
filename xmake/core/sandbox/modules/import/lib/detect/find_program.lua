@@ -123,7 +123,7 @@ end
 function sandbox_lib_detect_find_program._find_from_packages(name, opt)
 
     -- get the manifest file of package, e.g. ~/.xmake/packages/g/git/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
-    local manifest_file = path.join(package.installdir(), name:sub(1, 1), name, opt.version, opt.buildhash, "manifest.txt")
+    local manifest_file = path.join(package.installdir(), name:sub(1, 1), name, opt.require_version, opt.buildhash, "manifest.txt")
     if not os.isfile(manifest_file) then
         return
     end
