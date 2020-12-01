@@ -88,6 +88,11 @@ function _instance:at(version1, version2)
     return self:ge(version1) and self:le(version2)
 end
 
+-- add string compatible interface, string.sub
+function _instance:sub(...)
+    return self:rawstr():sub(...)
+end
+
 -- add string compatible interface, string.gsub
 function _instance:gsub(...)
     return self:rawstr():gsub(...)
@@ -96,6 +101,16 @@ end
 -- add string compatible interface, string.split
 function _instance:split(...)
     return self:rawstr():split(...)
+end
+
+-- add string compatible interface, string.startswith
+function _instance:startswith(...)
+    return self:rawstr():startswith(...)
+end
+
+-- add string compatible interface, string.endswith
+function _instance:endswith(...)
+    return self:rawstr():endswith(...)
 end
 
 -- v1 == v2 (str/ver)?
