@@ -88,6 +88,11 @@ function _instance:at(version1, version2)
     return self:ge(version1) and self:le(version2)
 end
 
+-- add string compatible interface, string.gsub
+function _instance:gsub(...)
+    return self:rawstr():gsub(...)
+end
+
 -- v1 == v2 (str/ver)?
 function _instance:eq(version)
     if type(version) == "string" then
@@ -143,11 +148,6 @@ end
 -- get the raw version string
 function _instance:__tostring()
     return self:rawstr()
-end
-
--- add string compatible interface, string.gsub
-function _instance:gsub(...)
-    return self:rawstr():gsub(...)
 end
 
 -- add string compatible interface, e.g. version .. str
