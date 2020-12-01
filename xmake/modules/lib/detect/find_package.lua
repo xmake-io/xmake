@@ -29,7 +29,7 @@ import("package.manager.find_package")
 -- @param name  the package name
 --              e.g. zlib 1.12.x (try all), xmake::zlib 1.12.x, brew::zlib, brew::pcre/libpcre16, vcpkg::zlib, conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options
---              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", version = "1.0.x",
+--              e.g. { verbose = false, force = false, plat = "iphoneos", arch = "arm64", mode = "debug", require_version = "1.0.x", version = true,
 --                     external = true, -- we use sysincludedirs instead of includedirs as results
 --                     linkdirs = {"/usr/lib"}, includedirs = "/usr/include", links = {"ssl"}, includes = {"ssl.h"}
 --                     packagedirs = {"/tmp/packages"}, system = true, cachekey = "xxxx"
@@ -40,7 +40,7 @@ import("package.manager.find_package")
 -- @code
 --
 -- local package = find_package("openssl")
--- local package = find_package("openssl", {version = "1.0.*"})
+-- local package = find_package("openssl", {require_version = "1.0.*", version = true})
 -- local package = find_package("openssl", {plat = "iphoneos"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
@@ -57,8 +57,8 @@ function main(name, opt)
 
     -- init cache key
     local key = "find_package_" .. opt.plat .. "_" .. opt.arch
-    if opt.version then
-        key = key .. "_" .. opt.version
+    if opt.require_version then
+        key = key .. "_" .. opt.require_version
     end
     if opt.cachekey then
         key = key .. "_" .. opt.cachekey
@@ -73,38 +73,40 @@ function main(name, opt)
     -- attempt to get result from cache first
     local cacheinfo = cache.load(key)
     local result = cacheinfo[name]
-    if result ~= nil and not opt.force then
-        return result and result or nil
-    end
+    if result == nil or opt.force then
 
-    -- find package
-    local found_manager_name, package_name
-    result, found_manager_name, package_name = find_package(name, opt)
+        -- find package
+        local found_manager_name, package_name
+        result, found_manager_name, package_name = find_package(name, opt)
 
-    -- use isystem?
-    if result and result.includedirs and opt.external then
-        result.sysincludedirs = result.includedirs
-        result.includedirs = nil
-    end
+        -- use isystem?
+        if result and result.includedirs and opt.external then
+            result.sysincludedirs = result.includedirs
+            result.includedirs = nil
+        end
 
-    -- cache result
-    cacheinfo[name] = result and result or false
-    cache.save(key, cacheinfo)
+        -- cache result
+        cacheinfo[name] = result and result or false
+        cache.save(key, cacheinfo)
 
-    -- trace
-    if opt.verbose or option.get("verbose") then
-        if result then
+        -- trace
+        if opt.verbose or option.get("verbose") then
+            if result then
 
-            -- only display manager of found package if the package we searched for
-            -- did not specify a package manager
-            local display_manager = name:find("::", 1, true) and "" or (found_manager_name or "") .. "::"
-            local display_name = display_manager .. package_name
-            cprint("checking for %s ... ${color.success}%s %s", name, display_name, result.version and result.version or "")
-        else
-            cprint("checking for %s ... ${color.nothing}${text.nothing}", name)
+                -- only display manager of found package if the package we searched for
+                -- did not specify a package manager
+                local display_manager = name:find("::", 1, true) and "" or (found_manager_name or "") .. "::"
+                local display_name = display_manager .. package_name
+                cprint("checking for %s ... ${color.success}%s %s", name, display_name, result.version and result.version or "")
+            else
+                cprint("checking for %s ... ${color.nothing}${text.nothing}", name)
+            end
         end
     end
 
-    -- ok?
-    return result
+    -- does not show version (default)? strip it
+    if not opt.version and result then
+        result.version = nil
+    end
+    return result and result or nil
 end

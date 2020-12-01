@@ -27,8 +27,8 @@ import("core.package.package")
 function _go_get_installdir(name, opt)
     local name = "go_" .. name:lower()
     local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
-    if opt.version then
-        dir = path.join(dir, opt.version)
+    if opt.require_version then
+        dir = path.join(dir, opt.require_version)
     end
     return path.join(dir, opt.buildhash)
 end
@@ -42,7 +42,7 @@ function main(name, opt)
     local result
     local installdir = _go_get_installdir(name, opt)
     for _, libraryfile in ipairs(os.files(path.join(installdir, "lib", "**.a"))) do
-        result = {version = opt.version, linkdirs = path.join(installdir, "lib"), includedirs = path.join(installdir, "lib")}
+        result = {version = opt.require_version, linkdirs = path.join(installdir, "lib"), includedirs = path.join(installdir, "lib")}
         break
     end
     return result

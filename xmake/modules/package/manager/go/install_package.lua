@@ -28,15 +28,15 @@ import("private.tools.go.goenv")
 -- get the package cache directory
 function _go_get_cachedir(name, opt)
     local name = "go_" .. name:lower()
-    return path.join(package.cachedir(), name:sub(1, 1), name, opt.version)
+    return path.join(package.cachedir(), name:sub(1, 1), name, opt.require_version)
 end
 
 -- get the package install directory
 function _go_get_installdir(name, opt)
     local name = "go_" .. name:lower()
     local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
-    if opt.version then
-        dir = path.join(dir, opt.version)
+    if opt.require_version then
+        dir = path.join(dir, opt.require_version)
     end
     return path.join(dir, opt.buildhash)
 end
@@ -44,14 +44,14 @@ end
 -- install package
 --
 -- @param name  the package name, e.g. go::github.com/sirupsen/logrus
--- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , version = "x.x.x", buildhash = "xxxxxx"}
+-- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x", buildhash = "xxxxxx"}
 --
 -- @return      true or false
 --
 function main(name, opt)
 
     -- TODO we do not yet support the installation of go packages in specific versions
-    local version = opt.version
+    local version = opt.require_version
     assert(not version or version == "latest" or version == "master", "we can only support to install go packages without version!")
 
     -- find go

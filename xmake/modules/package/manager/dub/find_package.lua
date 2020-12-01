@@ -57,7 +57,7 @@ function main(name, opt)
                     local pkgname    = pkgkey[1]:trim()
                     local pkgversion = pkgkey[2]:trim()
                     if pkgname == name and find_file(libpattern, pkgpath) and
-                        (not opt.version or opt.version == "latest" or opt.version == "master" or semver.satisfies(pkgversion, opt.version)) then
+                        (not opt.require_version or opt.require_version == "latest" or opt.require_version == "master" or semver.satisfies(pkgversion, opt.require_version)) then
                         pkgdir = pkgpath
                         break
                     end
@@ -80,7 +80,7 @@ function main(name, opt)
                 end
             end
             if #includedirs > 0 and #links > 0 then
-                result = {version = opt.version, links = links, linkdirs = pkgdir, includedirs = includedirs}
+                result = {version = opt.require_version, links = links, linkdirs = pkgdir, includedirs = includedirs}
             end
         end
     end

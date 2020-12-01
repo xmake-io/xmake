@@ -26,7 +26,7 @@ import("lib.detect.find_tool")
 -- install package
 --
 -- @param name  the package name, e.g. dub::log
--- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , version = "x.x.x", buildhash = "xxxxxx"}
+-- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x", buildhash = "xxxxxx"}
 --
 -- @return      true or false
 --
@@ -43,8 +43,8 @@ function main(name, opt)
     if option.get("verbose") then
         table.insert(argv, "-v")
     end
-    if opt.version and opt.version ~= "latest" and opt.version ~= "master" then
-        table.insert(argv, "--version=" .. opt.version)
+    if opt.require_version and opt.require_version ~= "latest" and opt.require_version ~= "master" then
+        table.insert(argv, "--version=" .. opt.require_version)
     end
     os.vrunv(dub.program, argv)
 

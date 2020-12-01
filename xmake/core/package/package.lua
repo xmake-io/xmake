@@ -901,7 +901,7 @@ function _instance:fetch(opt)
 
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_tool(self:name(), {version = self:version_str(),
+            fetchinfo = self._find_tool(self:name(), {require_version = self:version_str(),
                                                       cachekey = "fetch_package_xmake",
                                                       buildhash = self:buildhash(),
                                                       norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
@@ -931,7 +931,7 @@ function _instance:fetch(opt)
 
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_package("xmake::" .. self:name(), {version = self:version_str(),
+            fetchinfo = self._find_package("xmake::" .. self:name(), {require_version = self:version_str(),
                                                                       cachekey = "fetch_package_xmake",
                                                                       buildhash = self:buildhash(),
                                                                       pkgconfigs = self:configs(),
@@ -945,7 +945,7 @@ function _instance:fetch(opt)
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
             fetchinfo = self._find_package(self:name(), {force = opt.force,
-                                                         version = require_ver,
+                                                         require_version = require_ver,
                                                          mode = self:mode(),
                                                          pkgconfigs = self:configs(),
                                                          buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
@@ -1380,11 +1380,11 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = table.copy(pkg:configs())
-            opt.mode      = pkg:debug() and "debug" or "release"
-            opt.plat      = pkg:plat()
-            opt.arch      = pkg:arch()
-            opt.version   = pkg:version_str()
-            opt.buildhash = pkg:buildhash()
+            opt.mode            = pkg:debug() and "debug" or "release"
+            opt.plat            = pkg:plat()
+            opt.arch            = pkg:arch()
+            opt.require_version = pkg:version_str()
+            opt.buildhash       = pkg:buildhash()
             import("package.manager.install_package")(pkg:name(), opt)
         end
 

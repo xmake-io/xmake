@@ -157,7 +157,7 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
     end
 
     -- attempt to find it from the xmake packages
-    if opt.version and opt.buildhash then
+    if opt.require_version and opt.buildhash then
         return sandbox_lib_detect_find_program._find_from_packages(name, opt)
     end
 

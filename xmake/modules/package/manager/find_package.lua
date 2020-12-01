@@ -145,9 +145,9 @@ end
 -- @code
 --
 -- local package = find_package("openssl")
--- local package = find_package("openssl", {version = "1.0.*"})
+-- local package = find_package("openssl", {require_version = "1.0.*"})
 -- local package = find_package("openssl", {plat = "iphoneos"})
--- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", version = "1.0.1"})
+-- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib"}, includedirs = "/usr/local/include", require_version = "1.0.1"})
 -- local package = find_package("openssl", {linkdirs = {"/usr/lib", "/usr/local/lib", links = {"ssl", "crypto"}, includes = {"ssl.h"}})
 -- local package, manager_name, package_name = find_package("openssl")
 --
@@ -174,19 +174,17 @@ function main(name, opt)
     -- get package name and require version
     local require_version = nil
     package_name, require_version = unpack(package_name:trim():split("%s"))
-    opt.version = require_version or opt.version
+    opt.require_version = require_version or opt.require_version
 
     -- find package
     local found_manager_name = nil
     result, found_manager_name = _find_package(manager_name, package_name, opt)
 
     -- match version?
-    if opt.version and opt.version:find('.', 1, true) and result then
-        if not (result.version and (result.version == opt.version or semver.satisfies(result.version, opt.version))) then
+    if opt.require_version and opt.require_version:find('.', 1, true) and result then
+        if not (result.version and (result.version == opt.require_version or semver.satisfies(result.version, opt.require_version))) then
             result = nil
         end
     end
-
-    -- ok?
     return result, found_manager_name, package_name
 end

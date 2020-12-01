@@ -103,7 +103,7 @@ function main(name, opt)
     -- get package name and require version
     local require_version = nil
     package_name, require_version = unpack(package_name:trim():split("%s"))
-    opt.version = require_version or opt.version
+    opt.require_version = require_version or opt.require_version
 
     -- do install package
     _install_package(manager_name, package_name, opt)
