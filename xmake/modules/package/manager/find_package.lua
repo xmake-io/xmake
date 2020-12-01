@@ -57,7 +57,7 @@ function _find_package_with_builtin_rule(package_name, opt)
         if opt.plat == os.subhost() and opt.arch == os.subarch() then
 
             -- find it from pacman
-            if is_subhost("linux", "msys") and find_tool("pacman") then
+            if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("pacman") then
                 table.insert(managers, "pacman")
             end
 
