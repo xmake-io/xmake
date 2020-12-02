@@ -85,7 +85,12 @@ function _handler(package, strval)
                     --          {version = function (version) return version:gsub("%.", "") end})
                     local version_filter = package:url_version(strval)
                     if version_filter then
-                        return version_filter(package:version())
+                        local v = version_filter(package:version())
+                        if v ~= nil then
+                            -- may be semver version object
+                            v = tostring(v)
+                        end
+                        return v
                     end
                 end
                 return package:version_str()
