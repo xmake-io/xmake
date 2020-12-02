@@ -60,13 +60,13 @@ function generate(package, configs, opt)
     table.insert(argv, "gen")
     table.insert(argv, _get_buildir(opt))
     for name, value in pairs(_get_configs(package, configs, opt)) do
-        if type(name) == "string" then
+        if type(value) == "string" then
             table.insert(args, name .. '=\"' .. value .. "\"")
         else
             table.insert(args, name .. "=" .. tostring(value))
         end
     end
-    table.insert(argv, "--args='" .. table.concat(args, ' ') .. "'")
+    table.insert(argv, "--args=" .. table.concat(args, ' '))
 
     -- do configure
     local gn = assert(find_tool("gn"), "gn not found!")
