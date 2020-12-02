@@ -306,11 +306,11 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
             generate_configfiles()
             generate_configheader()
         end
-    end
 
-    -- check target toolchains
-    if recheck then
-        _check_target_toolchains()
+        -- check target toolchains
+        if recheck then
+            _check_target_toolchains()
+        end
     end
 
     -- dump config
