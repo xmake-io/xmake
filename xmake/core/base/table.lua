@@ -50,7 +50,6 @@ end
 
 -- join all objects and tables
 function table.join(...)
-
     local result = {}
     for _, t in ipairs({...}) do
         if type(t) == "table" then
@@ -67,7 +66,6 @@ end
 
 -- join all objects and tables to self
 function table.join2(self, ...)
-
     for _, t in ipairs({...}) do
         if type(t) == "table" then
             for k, v in pairs(t) do
@@ -81,6 +79,13 @@ function table.join2(self, ...)
     return self
 end
 
+-- swap items in array
+function table.swap(array, i, j)
+    local val = array[i]
+    array[i] = array[j]
+    array[j] = val
+end
+
 -- append all objects to array
 function table.append(array, ...)
     for _, value in ipairs({...}) do
@@ -91,43 +96,29 @@ end
 
 -- copy the table to self
 function table.copy(copied)
-
-    -- init it
-    copied = copied or {}
-
-    -- copy it
     local result = {}
+    copied = copied or {}
     for k, v in pairs(table.wrap(copied)) do
         result[k] = v
     end
-
-    -- ok
     return result
 end
 
 -- copy the table to self
 function table.copy2(self, copied)
 
-    -- check
-    assert(self)
-
-    -- init it
-    copied = copied or {}
-
     -- clear self first
     table.clear(self)
 
     -- copy it
+    copied = copied or {}
     for k, v in pairs(table.wrap(copied)) do
         self[k] = v
     end
-
 end
 
 -- inherit interfaces and create a new instance
 function table.inherit(...)
-
-    -- init instance
     local classes = {...}
     local instance = {}
     local metainfo = {}
@@ -149,18 +140,11 @@ function table.inherit(...)
         end
     end
     setmetatable(instance, metainfo)
-
-    -- ok?
     return instance
 end
 
 -- inherit interfaces from the given class
 function table.inherit2(self, ...)
-
-    -- check
-    assert(self)
-
-    -- init instance
     local classes = {...}
     local metainfo = getmetatable(self) or {}
     for _, clasz in ipairs(classes) do
@@ -180,15 +164,11 @@ function table.inherit2(self, ...)
             end
         end
     end
-
-    -- ok?
     return self
 end
 
 -- slice table array
 function table.slice(self, first, last, step)
-
-    -- slice it
     local sliced = {}
     for i = first or 1, last or #self, step or 1 do
         sliced[#sliced + 1] = self[i]
