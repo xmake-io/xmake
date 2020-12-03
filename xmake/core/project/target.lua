@@ -266,6 +266,9 @@ end
 -- get interface
 --  - target:get("cflags", {interface = true})
 --
+-- get raw reference of values
+--  - target:get("cflags", {rawref = true})
+--
 function _instance:get(name, opt)
 
     -- get values
@@ -278,7 +281,7 @@ function _instance:get(name, opt)
     local vs_required  = self:_visibility(opt)
 
     -- get all values? (private and interface)
-    if vs_required == vs_public then
+    if vs_required == vs_public or (opt and opt.rawref) then
         return values
     end
 
