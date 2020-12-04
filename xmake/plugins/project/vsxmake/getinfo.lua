@@ -151,6 +151,10 @@ function _make_targetinfo(mode, arch, target)
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
+    targetinfo.cxxlanguage   = "stdcpp14" -- only for intellisense
+    if targetinfo.languages:find("c++17", 1, true) or targetinfo.languages:find("cxx17", 1, true) then
+        targetinfo.cxxlanguage = "stdcpp17"
+    end
     local configcache = cache("local.config")
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do
@@ -325,13 +329,14 @@ function main(outputdir, vsinfo)
                     _target.kind = target:targetkind()
                     _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
                     _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
-                    local tgtdir = target:get("targetdir")
-                    if tgtdir then _target.targetdir = path.relative(tgtdir, _target.vcxprojdir) end
+                    local targetdir = target:get("targetdir")
+                    if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
                     _target._sub = _target._sub or {}
                     _target._sub[mode] = _target._sub[mode] or {}
-                    local tgtinfo = _make_targetinfo(mode, arch, target)
-                    _target._sub[mode][arch] = tgtinfo
-                    _target.sdkver = tgtinfo.sdkver
+                    local targetinfo = _make_targetinfo(mode, arch, target)
+                    _target._sub[mode][arch] = targetinfo
+                    _target.sdkver = targetinfo.sdkver
+                    _target.cxxlanguage = targetinfo.cxxlanguage
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
@@ -345,7 +350,7 @@ function main(outputdir, vsinfo)
 
     -- leave project directory
     os.cd(oldir)
-    for _,target in pairs(targets) do
+    for _, target in pairs(targets) do
         target._sub2 = {}
         local dirs = {}
         local root = project.directory()

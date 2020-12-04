@@ -46,7 +46,7 @@ function _expand(params)
                 for i, p in ipairs(r) do
                     rcopy[i] = p .. "\0" .. c
                 end
-               newr= table.join(newr, rcopy)
+               newr = table.join(newr, rcopy)
             end
             r = newr
         end
