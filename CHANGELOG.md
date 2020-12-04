@@ -5,6 +5,7 @@
 ### New features
 
 * [#1035](https://github.com/xmake-io/xmake/issues/1035): The graphics configuration menu fully supports mouse events, and support scroll bar
+* [#1098](https://github.com/xmake-io/xmake/issues/1098): Support stdin for os.execv
 
 ### Change
 
@@ -881,6 +882,7 @@
 ### 新特性
 
 * [#1035](https://github.com/xmake-io/xmake/issues/1035): 图形配置菜单完整支持鼠标事件，并且新增滚动栏
+* [#1098](https://github.com/xmake-io/xmake/issues/1098): 支持传递 stdin 到 os.execv 进行输入重定向
 
 ### 改进
 
