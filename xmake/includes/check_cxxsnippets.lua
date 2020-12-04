@@ -48,6 +48,9 @@ function check_cxxsnippets(definition, snippets, opt)
         if opt.defines then
             add_defines(opt.defines)
         end
+        if opt.warnings then
+            set_warnings(opt.warnings)
+        end
     option_end()
     add_options(optname)
 end
@@ -82,6 +85,9 @@ function configvar_check_cxxsnippets(definition, snippets, opt)
         end
         if opt.defines then
             add_defines(opt.defines)
+        end
+        if opt.warnings then
+            set_warnings(opt.warnings)
         end
     option_end()
     add_options(optname)
