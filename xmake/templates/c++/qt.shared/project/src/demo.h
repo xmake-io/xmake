@@ -10,4 +10,4 @@ public:
     QtDemo();
 };
 
-#endif // QT_TEST5_H
+#endif // QT_DEMO_H
