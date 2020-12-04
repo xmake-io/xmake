@@ -163,14 +163,26 @@ end
 -- open a subprocess
 --
 -- @param command   the process command
--- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
+-- @param opt       the option arguments, e.g. {stdin = filepath/file/pipe, stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
 --
 -- @return          the subprocess
 --
 function process.open(command, opt)
 
-    -- get stdout and pass to subprocess
+    -- get stdin and pass to subprocess
     opt = opt or {}
+    local stdin = opt.stdin
+    if type(stdin) == "string" then
+        opt.inpath = stdin
+    elseif type(stdin) == "table" then
+        if stdin.otype and stdin:otype() == 2 then
+            opt.inpipe = stdin:cdata()
+        else
+            opt.infile = stdin:cdata()
+        end
+    end
+
+    -- get stdout and pass to subprocess
     local stdout = opt.stdout
     if type(stdout) == "string" then
         opt.outpath = stdout
@@ -207,14 +219,26 @@ end
 --
 -- @param program   the program
 -- @param argv      the arguments list
--- @param opt       the option arguments, e.g. {stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
+-- @param opt       the option arguments, e.g. {stdin = filepath/file/pipe, stdout = filepath/file/pipe, stderr = filepath/file/pipe, envs = {"PATH=xxx", "XXX=yyy"}})
 --
 -- @return          the subprocess
 --
 function process.openv(program, argv, opt)
 
-    -- get stdout and pass to subprocess
+    -- get stdin and pass to subprocess
     opt = opt or {}
+    local stdin = opt.stdin
+    if type(stdin) == "string" then
+        opt.inpath = stdin
+    elseif type(stdin) == "table" then
+        if stdin.otype and stdin:otype() == 2 then
+            opt.inpipe = stdin:cdata()
+        else
+            opt.infile = stdin:cdata()
+        end
+    end
+
+    -- get stdout and pass to subprocess
     local stdout = opt.stdout
     if type(stdout) == "string" then
         opt.outpath = stdout
