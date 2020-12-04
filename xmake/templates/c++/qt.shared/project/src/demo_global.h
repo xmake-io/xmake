@@ -9,4 +9,4 @@
 #  define QT_DEMOSHARED_EXPORT Q_DECL_IMPORT
 #endif
 
-#endif // QT_TEST5_GLOBAL_H
+#endif // QT_DEMO_GLOBAL_H
