@@ -438,7 +438,8 @@ end
 
 -- do build for cmake/build
 function _build_for_cmakebuild(package, configs, opt)
-    os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+    local cmake = assert(find_tool("cmake"), "cmake not found!")
+    os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
 end
 
 -- do install for msvc
@@ -512,8 +513,9 @@ end
 -- do install for cmake/build
 function _install_for_cmakebuild(package, configs, opt)
     opt = opt or {}
-    os.vrunv("cmake", {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
-    os.vrunv("cmake", {"--install", os.curdir()})
+    local cmake = assert(find_tool("cmake"), "cmake not found!")
+    os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
+    os.vrunv(cmake.program, {"--install", os.curdir()})
     _install_files_for_cmake(package, opt)
 end
 
@@ -555,7 +557,8 @@ function build(package, configs, opt)
     table.insert(argv, oldir)
 
     -- do configure
-    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
+    local cmake = assert(find_tool("cmake"), "cmake not found!")
+    os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build
     local cmake_generator = opt.cmake_generator
@@ -613,7 +616,8 @@ function install(package, configs, opt)
     table.insert(argv, oldir)
 
     -- generate build file
-    os.vrunv("cmake", argv, {envs = opt.envs or buildenvs(package, opt)})
+    local cmake = assert(find_tool("cmake"), "cmake not found!")
+    os.vrunv(cmake.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 
     -- do build and install
     local cmake_generator = opt.cmake_generator
