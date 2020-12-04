@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-2020, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_cmake.lua
+-- @file        find_ninja.lua
 --
 
 -- imports
@@ -23,7 +23,7 @@ import("lib.detect.find_program")
 import("lib.detect.find_programver")
 import("core.tool.toolchain")
 
--- find cmake
+-- find ninja
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -31,8 +31,8 @@ import("core.tool.toolchain")
 --
 -- @code
 --
--- local cmake = find_cmake()
--- local cmake, version = find_cmake({version = true})
+-- local ninja = find_ninja()
+-- local ninja, version = find_ninja({version = true})
 --
 -- @endcode
 --
@@ -41,7 +41,6 @@ function main(opt)
     -- init options
     opt = opt or {}
     if is_host("windows") then
-        opt.paths = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
         local msvc = toolchain.load("msvc")
         if msvc:check() then
             opt.envs = toolchain.load("msvc"):runenvs() -- we attempt to find it from vstudio environments
@@ -49,7 +48,7 @@ function main(opt)
     end
 
     -- find program
-    local program = find_program(opt.program or "cmake", opt)
+    local program = find_program(opt.program or "ninja", opt)
 
     -- find program version
     local version = nil
