@@ -24,6 +24,7 @@ local view      = require("ui/view")
 local event     = require("ui/event")
 local action    = require("ui/action")
 local curses    = require("ui/curses")
+local bit       = require("bit")
 
 -- define module
 local label = label or view()
@@ -129,7 +130,7 @@ function label:splitext(text, width)
         while #line > width do
             local size = 0
             for i = 1, #line do
-                if (line:byte(i) & 0xc0) ~= 0x80 then
+                if bit.band(line:byte(i), 0xc0) ~= 0x80 then
                     size = size + 1
                     if size > width then
                         table.insert(result, line:sub(1, i - 1))

@@ -27,6 +27,7 @@ local border    = require("ui/border")
 local curses    = require("ui/curses")
 local textarea  = require("ui/textarea")
 local action    = require("ui/action")
+local bit       = require("bit")
 
 -- define module
 local textedit = textedit or textarea()
@@ -85,7 +86,7 @@ function textedit:on_event(e)
             if #text > 0 then
                 local size = 1
                 -- while continuation byte
-                while (text:byte(#text - size + 1) & 0xc0) == 0x80 do
+                while bit.band(text:byte(#text - size + 1), 0xc0) == 0x80 do
                     size = size + 1
                 end
                 self:text_set(text:sub(1, #text - size))
