@@ -127,8 +127,20 @@ function label:splitext(text, width)
     for idx = 1, #lines do
         local line = lines[idx]
         while #line > width do
-            table.insert(result, line:sub(1, width))
-            line = line:sub(width + 1)
+            local size = 0
+            for i = 1, #line do
+                if (line:byte(i) & 0xc0) ~= 0x80 then
+                    size = size + 1
+                    if size > width then
+                        table.insert(result, line:sub(1, i - 1))
+                        line = line:sub(i)
+                        break
+                    end
+                end
+            end
+            if size <= width then
+                break
+            end
         end
         table.insert(result, line)
     end

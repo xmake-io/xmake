@@ -77,16 +77,18 @@ function textedit:on_event(e)
 
     -- update text
     if e.type == event.ev_keyboard then
-        if e.key_code > 0x1f and e.key_code < 0x7f then
-            self:text_set(self:text() .. e.key_name)
-            return true
-        elseif e.key_name == "Enter" and self:option("multiline") then
+        if e.key_name == "Enter" and self:option("multiline") then
             self:text_set(self:text() .. '\n')
             return true
         elseif e.key_name == "Backspace" then
             local text = self:text()
             if #text > 0 then
-                self:text_set(text:sub(1, #text - 1))
+                local size = 1
+                -- while continuation byte
+                while (text:byte(#text - size + 1) & 0xc0) == 0x80 do
+                    size = size + 1
+                end
+                self:text_set(text:sub(1, #text - size))
             end
             return true
         elseif e.key_name == "CtrlV" then
@@ -94,6 +96,9 @@ function textedit:on_event(e)
             if pastetext then
                 self:text_set(self:text() .. pastetext)
             end
+            return true
+        elseif e.key_code > 0x1f and e.key_code < 0xf8 then
+            self:text_set(self:text() .. string.char(e.key_code))
             return true
         end
     end
