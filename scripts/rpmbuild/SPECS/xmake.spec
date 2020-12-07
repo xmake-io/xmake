@@ -72,7 +72,7 @@ chmod 755 %{buildroot}%{_bindir}/%{name}
 cp -p README.md %{buildroot}%{_datadir}
 cp -p LICENSE.md %{buildroot}%{_datadir}
 cp -p scripts/xrepo.sh %{buildroot}%{_bindir}/xrepo
-chmod 777 %{buildroot}%{_bindir}/xrepo
+chmod 755 %{buildroot}%{_bindir}/xrepo
 
 %check
 %{buildroot}%{_bindir}/%{name} --version
