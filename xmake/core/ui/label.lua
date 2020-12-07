@@ -131,7 +131,7 @@ function label:splitext(text, width)
             local size = 0
             for i = 1, #line do
                 if bit.band(line:byte(i), 0xc0) ~= 0x80 then
-                    size = size + 1
+                    size = size + line:wcwidth(i)
                     if size > width then
                         table.insert(result, line:sub(1, i - 1))
                         line = line:sub(i)
