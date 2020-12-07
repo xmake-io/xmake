@@ -38,17 +38,17 @@ import("core.tool.toolchain")
 --
 function main(opt)
 
-    -- init options
+    -- find program
     opt = opt or {}
-    if is_host("windows") then
+    local program = find_program(opt.program or "ninja", opt)
+    if not program and is_host("windows") then
         local msvc = toolchain.load("msvc")
         if msvc:check() then
             opt.envs = toolchain.load("msvc"):runenvs() -- we attempt to find it from vstudio environments
+            opt.force = true
+            program = find_program(opt.program or "ninja", opt)
         end
     end
-
-    -- find program
-    local program = find_program(opt.program or "ninja", opt)
 
     -- find program version
     local version = nil

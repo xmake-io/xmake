@@ -42,14 +42,18 @@ function main(opt)
     opt = opt or {}
     if is_host("windows") then
         opt.paths = "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Kitware\\CMake;InstallDir)\\bin"
-        local msvc = toolchain.load("msvc")
-        if msvc:check() then
-            opt.envs = toolchain.load("msvc"):runenvs() -- we attempt to find it from vstudio environments
-        end
     end
 
     -- find program
     local program = find_program(opt.program or "cmake", opt)
+    if not program and is_host("windows") then
+        local msvc = toolchain.load("msvc")
+        if msvc:check() then
+            opt.envs = toolchain.load("msvc"):runenvs() -- we attempt to find it from vstudio environments
+            opt.force = true
+            program = find_program(opt.program or "cmake", opt)
+        end
+    end
 
     -- find program version
     local version = nil
