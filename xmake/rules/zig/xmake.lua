@@ -21,6 +21,11 @@
 -- define rule: zig.build
 rule("zig.build")
     set_sourcekinds("zc")
+    on_load(function (target)
+        local cachedir = target:values("zig.cachedir") or path.join(target:objectdir(), "zig-cache")
+        os.mkdir(cachedir)
+        target:add("zcflags", "--cache-dir " .. cachedir)
+    end)
     on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: zig
