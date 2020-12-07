@@ -18,6 +18,9 @@
     <a href="https://github.com/xmake-io/xmake/releases">
       <img src="https://img.shields.io/github/release/xmake-io/xmake.svg?style=flat-square" alt="Github All Releases" />
     </a>
+    <a href="https://aur.archlinux.org/packages/xmake">
+      <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
+    </a>
   </div>
   <div>
     <a href="https://github.com/xmake-io/xmake/blob/master/LICENSE.md">
@@ -35,8 +38,8 @@
     <a href="https://jq.qq.com/?_wv=1027&k=5hpwWFv">
       <img src="https://img.shields.io/badge/chat-on%20QQ-ff69b4.svg?style=flat-square" alt="QQ" />
     </a>
-    <a href="https://aur.archlinux.org/packages/xmake">
-      <img src="https://img.shields.io/aur/votes/xmake.svg?style=flat-square" alt="AUR votes" />
+    <a href="https://discord.gg/XXRp26A4Gr">
+      <img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?style=flat-square" alt="Discord" />
     </a>
     <a href="https://xmake.io/#/sponsor">
       <img src="https://img.shields.io/badge/donate-us-orange.svg?style=flat-square" alt="Donate" />
@@ -477,10 +480,14 @@ Some projects using xmake:
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
 * Homepage：[tboox.org](https://tboox.org)
-* Community：[/r/xmake on reddit](https://www.reddit.com/r/xmake/)
-* ChatRoom：[Char on telegram](https://t.me/tbooxorg), [Chat on gitter](https://gitter.im/xmake-io/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+* Community
+  - [Chat on reddit](https://www.reddit.com/r/xmake/)
+  - [Chat on telegram](https://t.me/tbooxorg)
+  - [Chat on gitter](https://gitter.im/xmake-io/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+  - [Chat on discord/en](https://discord.gg/XXRp26A4Gr)
+  - [Chat on discord/zh](https://discord.gg/aY7RVeKdG7)
+  - Chat on QQ Group: 343118190(Technical Support), 662147501
 * Source Code：[Github](https://github.com/xmake-io/xmake), [Gitee](https://gitee.com/tboox/xmake)
-* QQ Group: 343118190(Technical Support), 662147501
 * Wechat Public: tboox-os
 
 ## Thanks
