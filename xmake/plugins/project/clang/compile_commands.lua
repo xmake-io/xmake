@@ -115,8 +115,7 @@ function _make_all(jsonfile)
     -- make commands
     _g.firstline = true
     for _, target in pairs(project.targets()) do
-        local isdefault = target:get("default")
-        if not target:isphony() and (isdefault == nil or isdefault == true) then
+        if not target:isphony() then
             _make_target(jsonfile, target)
         end
     end
