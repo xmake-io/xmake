@@ -338,9 +338,12 @@ function _get_configs_for_generator(package, configs, opt)
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
-    elseif package:is_plat("mingw") and is_host("windows") then
+    elseif package:is_plat("mingw") and is_subhost("msys") then
         table.insert(configs, "-G")
         table.insert(configs, "MSYS Makefiles")
+    elseif package:is_plat("mingw") and is_subhost("windows") then
+        table.insert(configs, "-G")
+        table.insert(configs, "MinGW Makefiles")
     elseif package:is_plat("windows") then
         table.insert(configs, "-G")
         table.insert(configs, _get_cmake_generator_for_msvc())
