@@ -216,10 +216,17 @@ function _get_configs_for_appleos(package, configs, opt)
     envs.CMAKE_STATIC_LINKER_FLAGS = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
     envs.CMAKE_EXE_LINKER_FLAGS    = _get_ldflags(package, opt)
     envs.CMAKE_SHARED_LINKER_FLAGS = _get_shflags(package, opt)
+    -- https://cmake.org/cmake/help/v3.17/manual/cmake-toolchains.7.html#id25
     if package:is_plat("watchos") then
-        envs.CMAKE_SYSTEM_NAME     = "watchOS"
+        envs.CMAKE_SYSTEM_NAME = "watchOS"
+        if package:is_arch("x86_64", "i386") then
+            envs.CMAKE_OSX_SYSROOT = "watchsimulator"
+        end
     else
-        envs.CMAKE_SYSTEM_NAME     = "iOS"
+        envs.CMAKE_SYSTEM_NAME = "iOS"
+        if package:is_arch("x86_64", "i386") then
+            envs.CMAKE_OSX_SYSROOT = "iphonesimulator"
+        end
     end
     envs.CMAKE_FIND_ROOT_PATH_MODE_LIBRARY = "ONLY"
     envs.CMAKE_FIND_ROOT_PATH_MODE_INCLUDE = "ONLY"
