@@ -65,6 +65,8 @@ xmake 是一个基于 Lua 的轻量级跨平台构建工具，使用 xmake.lua �
 
 如果你想要了解更多，请参考：[在线文档](https://xmake.io/#/zh-cn/getting_started), [Github](https://github.com/xmake-io/xmake)以及[Gitee](https://gitee.com/tboox/xmake)
 
+也欢迎加入我们的 [社区](https://xmake.io/#/zh-ch/about/contact).
+
 ![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
 
 ## 课程

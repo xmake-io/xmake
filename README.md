@@ -63,6 +63,8 @@ It can compile the project directly like Make/Ninja, or generate project files l
 
 If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake)
 
+Also welcome to join our [community](https://xmake.io/#/about/contact).
+
 ![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
 
 ## Installation
@@ -479,7 +481,7 @@ Some projects using xmake:
 ## Contacts
 
 * Email：[waruqi@gmail.com](mailto:waruqi@gmail.com)
-* Homepage：[tboox.org](https://tboox.org)
+* Homepage：[xmake.io](https://xmake.io)
 * Community
   - [Chat on reddit](https://www.reddit.com/r/xmake/)
   - [Chat on telegram](https://t.me/tbooxorg)
