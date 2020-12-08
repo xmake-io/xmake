@@ -11,6 +11,7 @@
 
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
 * Support utf8 for ui modules and `xmake f --menu`
+* Improve to support zig on macOS
 
 ### Bugs fixed
 
@@ -889,6 +890,7 @@
 
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): 修复并改进 cl 编译器头文件依赖信息
 * 针对 ui 模块和 `xmake f --menu` 增加 utf8 支持
+* 改进 zig 语言在 macOS 上的支持
 
 ### Bugs 修复
 
