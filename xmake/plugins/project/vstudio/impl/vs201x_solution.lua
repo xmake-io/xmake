@@ -22,6 +22,15 @@
 import("core.project.project")
 import("vsfile")
 
+-- get vs arch
+function _vs_arch(arch)
+    if arch == 'x86' or arch == 'i386' then return "Win32" end
+    if arch == 'x86_64' then return "x64" end
+    if arch:startswith('arm64') then return "ARM64" end
+    if arch:startswith('arm') then return "ARM" end
+    return arch
+end
+
 -- make header
 function _make_header(slnfile, vsinfo)
     slnfile:print("Microsoft Visual Studio Solution File, Format Version %s.00", vsinfo.solution_version)
@@ -75,8 +84,9 @@ function _make_global(slnfile, vsinfo)
         if not target:isphony() then
             for _, mode in ipairs(vsinfo.modes) do
                 for _, arch in ipairs(vsinfo.archs) do
-                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
-                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, arch)
+                    local vs_arch = _vs_arch(arch)
+                    slnfile:print("{%s}.%s|%s.ActiveCfg = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
+                    slnfile:print("{%s}.%s|%s.Build.0 = %s|%s", hash.uuid4(targetname), mode, arch, mode, vs_arch)
                 end
             end
         end
