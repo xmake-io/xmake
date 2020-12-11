@@ -3,7 +3,7 @@
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Condition="'$(XmakeCudaVersion)' != '' And Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets')" 
+    <Import Condition="'$(XmakeCudaVersion)' != '' And Exists('$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets')"
       Project="$(VCTargetsPath)\BuildCustomizations\CUDA $(XmakeCudaVersion).targets" />
   </ImportGroup>
 
@@ -13,7 +13,7 @@
     <XmakeConfigDirResolved>$(XmakeConfigDir)</XmakeConfigDirResolved>
     <XmakeConfigFileDirResolved>$(XmakeConfigFileDir)</XmakeConfigFileDirResolved>
     <XmakeRunDirResolved>$(XmakeRunDir)</XmakeRunDirResolved>
-    
+
     <!-- resolve if they are relative paths -->
     <XmakeBuilDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeBuilDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeBuilDirResolved)'))</XmakeBuilDirResolved>
     <XmakeTargetDirResolved Condition="!$([System.IO.Path]::IsPathRooted('$(XmakeTargetDirResolved)'))">$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)\$(XmakeTargetDirResolved)'))</XmakeTargetDirResolved>
@@ -37,13 +37,13 @@
   <PropertyGroup Label="XmakeInternal">
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' != ''">-F "$(XmakeProjectFile)"</_XmakeProjectFlag>
     <_XmakeProjectFlag Condition="'$(XmakeProjectFile)' == ''">-P .</_XmakeProjectFlag>
-    
+
     <_XmakeCommonFlags>$(XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags Condition="$(XmakeVerbose)">-v $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags Condition="$(XmakeDiagnosis)">-D $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags>$(_XmakeCommonFlags.Trim()) $(_XmakeProjectFlag)</_XmakeCommonFlags>
 
-    <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDirResolved)').TrimEnd('/\'.ToCharArray()))"</_XmakeOutFlag>
+    <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDirResolved)').TrimEnd('\').TrimEnd('/'))"</_XmakeOutFlag>
 
     <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
     <_XmakeConfigFlags>-y -p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
@@ -53,7 +53,7 @@
 
     <_XmakeBuildFileFlags>$(_XmakeBuildFlags.Trim())</_XmakeBuildFileFlags>
     <_XmakeBuildFileFlags Condition="$(XmakeRebuildFile)">$(_XmakeBuildFileFlags.Trim()) -r</_XmakeBuildFileFlags>
-    
+
     <_XmakeCleanFlags>$(XmakeCleanFlags.Trim())</_XmakeCleanFlags>
     <_XmakeCleanFlags Condition="$(XmakeCleanAll)">-a $(_XmakeCleanFlags.Trim())</_XmakeCleanFlags>
 
@@ -67,8 +67,8 @@
     <_XmakeEnv>
       chcp 65001 &gt; NUL
       pushd $(XmakeProjectDirResolved)
-      set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('/\'.ToCharArray()))
-      set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('/\'.ToCharArray()))
+      set XMAKE_CONFIGDIR=$(XmakeConfigDirResolved.TrimEnd('\').TrimEnd('/'))
+      set XMAKE_PROGRAM_DIR=$(XmakeProgramDirResolved.TrimEnd('\').TrimEnd('/'))
       set XMAKE_SKIP_HISTORY=1
       set XMAKE_IN_VSTUDIO=1
     </_XmakeEnv>
