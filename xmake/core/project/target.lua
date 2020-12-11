@@ -93,14 +93,19 @@ function _instance:_load_rules(suffix)
     return true
 end
 
--- load all
-function _instance:_load_all()
+-- do before_load target and rules
+function _instance:_load_before()
 
     -- do before_load with target rules
     local ok, errors = self:_load_rules("before")
     if not ok then
         return false, errors
     end
+    return true
+end
+
+-- do load target and rules
+function _instance:_load()
 
     -- do load with target rules
     local ok, errors = self:_load_rules()
@@ -111,22 +116,16 @@ function _instance:_load_all()
     -- do load for target
     local on_load = self:script("load")
     if on_load then
-        local ok, errors = sandbox.load(on_load, self)
+        ok, errors = sandbox.load(on_load, self)
         if not ok then
             return false, errors
         end
     end
-
-    -- do after_load with target rules
-    local ok, errors = self:_load_rules("after")
-    if not ok then
-        return false, errors
-    end
     return true
 end
 
--- do load target and rules
-function _instance:_load()
+-- do after_load target and rules
+function _instance:_load_after()
 
     -- enter the environments of the target packages
     local oldenvs = {}
@@ -135,8 +134,8 @@ function _instance:_load()
         os.addenv(name, unpack(values))
     end
 
-    -- load all
-    local ok, errors = self:_load_all()
+    -- do after_load with target rules
+    local ok, errors = self:_load_rules("after")
     if not ok then
         return false, errors
     end

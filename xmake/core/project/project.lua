@@ -346,8 +346,14 @@ end
 -- load target
 function project._load_target(t, requires)
 
+    -- do before_load() for target and all rules
+    local ok, errors = t:_load_before()
+    if not ok then
+        return false, errors
+    end
+
     -- do on_load() for target and all rules
-    local ok, errors = t:_load()
+    ok, errors = t:_load()
     if not ok then
         return false, errors
     end
@@ -379,6 +385,12 @@ function project._load_target(t, requires)
             end
             table.insert(t._TOOLCHAINS, toolchain_inst)
         end
+    end
+
+    -- do after_load() for target and all rules
+    ok, errors = t:_load_after()
+    if not ok then
+        return false, errors
     end
     return true
 end
