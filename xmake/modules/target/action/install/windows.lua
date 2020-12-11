@@ -74,12 +74,14 @@ function install_binary(target, opt)
     -- install the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" and target:is_plat("windows", "mingw") then
+        if dep:targetkind() == "shared" then
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
                 os.vcp(depfile, binarydir)
             end
         end
+        -- install all shared libraries in packages in all deps
+        _install_shared_for_packages(dep, binarydir)
     end
 
     -- install shared libraries for all packages
