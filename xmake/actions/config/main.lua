@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -141,10 +142,14 @@ function _check_target_toolchains()
     -- @note we must check targets after loading options
     for _, target in pairs(project.targets()) do
         if target:get("enabled") ~= false and (target:get("toolchains") or not target:is_plat(config.get("plat"))) then
+            local target_toolchains = target:get("toolchains")
+            if target_toolchains then
+                target_toolchains = hashset.from(table.wrap(target_toolchains))
+            end
             for _, toolchain_inst in pairs(target:toolchains()) do
                 -- check toolchains for `target/set_toolchains()`
-                if target:get("toolchains") then
-                    if not toolchain_inst:check() then
+                if target_toolchains then
+                    if not toolchain_inst:check() and target_toolchains:has(toolchain_inst:name()) then
                         raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
                     end
                 else
