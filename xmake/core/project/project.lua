@@ -343,6 +343,46 @@ function project._load_toolchains(opt)
     return toolchains
 end
 
+-- load target
+function project._load_target(t, requires)
+
+    -- do on_load() for target and all rules
+    local ok, errors = t:_load()
+    if not ok then
+        return false, errors
+    end
+
+    -- load packages
+    t._PACKAGES = t._PACKAGES or {}
+    for _, packagename in ipairs(table.wrap(t:get("packages"))) do
+        local p = requires[packagename]
+        if p then
+            table.insert(t._PACKAGES, p)
+        end
+    end
+
+    -- load toolchains
+    local toolchains = t:get("toolchains")
+    if toolchains then
+        t._TOOLCHAINS = {}
+        for _, name in ipairs(table.wrap(toolchains)) do
+            local toolchain_opt = table.copy(t:extraconf("toolchains", name))
+            toolchain_opt.arch = t:arch()
+            toolchain_opt.plat = t:plat()
+            local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
+            -- attempt to load toolchain from project
+            if not toolchain_inst then
+                toolchain_inst = project.toolchain(name, toolchain_opt)
+            end
+            if not toolchain_inst then
+                return false, errors
+            end
+            table.insert(t._TOOLCHAINS, toolchain_inst)
+        end
+    end
+    return true
+end
+
 -- load targets
 function project._load_targets()
 
@@ -422,35 +462,6 @@ function project._load_targets()
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
-
-        -- load packages
-        t._PACKAGES = t._PACKAGES or {}
-        for _, packagename in ipairs(table.wrap(t:get("packages"))) do
-            local p = requires[packagename]
-            if p then
-                table.insert(t._PACKAGES, p)
-            end
-        end
-
-        -- load toolchains
-        local toolchains = t:get("toolchains")
-        if toolchains then
-            t._TOOLCHAINS = {}
-            for _, name in ipairs(table.wrap(toolchains)) do
-                local toolchain_opt = table.copy(t:extraconf("toolchains", name))
-                toolchain_opt.arch = t:arch()
-                toolchain_opt.plat = t:plat()
-                local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
-                -- attempt to load toolchain from project
-                if not toolchain_inst then
-                    toolchain_inst = project.toolchain(name, toolchain_opt)
-                end
-                if not toolchain_inst then
-                    return nil, errors
-                end
-                table.insert(t._TOOLCHAINS, toolchain_inst)
-            end
-        end
     end
 
     -- sort targets for all deps
@@ -463,7 +474,7 @@ function project._load_targets()
     -- do load for each target
     local ok = false
     for _, t in ipairs(ordertargets) do
-        ok, errors = t:_load()
+        ok, errors = project._load_target(t, requires)
         if not ok then
             break
         end
