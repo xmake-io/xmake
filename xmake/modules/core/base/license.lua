@@ -30,6 +30,7 @@ function _licenses()
                                  "MIT",
                                  "Zlib",
                                  "Public Domain",
+                                 "CC0",
                                  "LLVM",
                                  "AFL-3.0",
                                  "AGPL-3.0",
