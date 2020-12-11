@@ -321,7 +321,7 @@ function project._load_rules()
 end
 
 -- load toolchains
-function project._load_toolchains()
+function project._load_toolchains(opt)
 
     -- load the project file first if has not been loaded?
     local ok, errors = project._load()
@@ -338,7 +338,7 @@ function project._load_toolchains()
     -- make toolchain instances
     local toolchains = {}
     for toolchain_name, toolchain_info in pairs(results) do
-        toolchains[toolchain_name] = toolchain.new(toolchain_name, toolchain_info)
+        toolchains[toolchain_name] = toolchain.new(toolchain_name, toolchain_info, opt)
     end
     return toolchains
 end
@@ -437,10 +437,13 @@ function project._load_targets()
         if toolchains then
             t._TOOLCHAINS = {}
             for _, name in ipairs(table.wrap(toolchains)) do
-                local toolchain_inst, errors = toolchain.load(name, t:extraconf("toolchains", name))
+                local toolchain_opt = table.copy(t:extraconf("toolchains", name))
+                toolchain_opt.arch = t:arch()
+                toolchain_opt.plat = t:plat()
+                local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
                 -- attempt to load toolchain from project
                 if not toolchain_inst then
-                    toolchain_inst = project.toolchain(name)
+                    toolchain_inst = project.toolchain(name, toolchain_opt)
                 end
                 if not toolchain_inst then
                     return nil, errors
@@ -996,20 +999,25 @@ function project.rules()
 end
 
 -- get the given toolchain
-function project.toolchain(name)
-    return project.toolchains()[name]
+function project.toolchain(name, opt)
+    return project.toolchains(opt)[name]
 end
 
 -- get project toolchains
-function project.toolchains()
-    if not project._TOOLCHAINS then
-        local toolchains, errors = project._load_toolchains()
+function project.toolchains(opt)
+    opt = opt or {}
+    local key = "key_" .. (opt.plat or "") .. "_" .. (opt.arch or "")
+    project._TOOLCHAINS = project._TOOLCHAINS or {}
+    local toolchains = project._TOOLCHAINS[key]
+    if not toolchains then
+        local errors
+        toolchains, errors = project._load_toolchains(opt)
         if not toolchains then
             os.raise(errors)
         end
-        project._TOOLCHAINS = toolchains
+        project._TOOLCHAINS[key] = toolchains
     end
-    return project._TOOLCHAINS
+    return toolchains
 end
 
 -- get the given task

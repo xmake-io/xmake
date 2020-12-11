@@ -328,9 +328,12 @@ function _instance:_checktool(toolkind, toolpath)
         end
     end
 
+    -- init cache key
+    local cachekey = "toolchain_" .. self:plat() .. "_" .. self:arch()
+
     -- find tool program
     local program, toolname
-    local tool = find_tool(toolpath, {program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
+    local tool = find_tool(toolpath, {cachekey = cachekey, program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = tool.name
