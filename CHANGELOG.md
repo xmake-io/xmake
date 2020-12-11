@@ -17,6 +17,7 @@
 
 * [#1091](https://github.com/xmake-io/xmake/issues/1091): Fix incorrect ordering of inherited library dependencies
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): Fix c++ language intellisense for vsxmake
+* [#1132](https://github.com/xmake-io/xmake/issues/1132): Fix TrimEnd bug for vsxmake
 
 ## v2.3.9
 
@@ -896,6 +897,7 @@
 
 * [#1091](https://github.com/xmake-io/xmake/issues/1091): 修复不正确的继承链接依赖
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): 修复 vsxmake 插件 c++ 语言标准智能提示错误
+* [#1132](https://github.com/xmake-io/xmake/issues/1132): 修复 vsxmake 插件中配置路径被截断问题
 
 ## v2.3.9
 
