@@ -41,12 +41,12 @@
     <_XmakeCommonFlags>$(XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags Condition="$(XmakeVerbose)">-v $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
     <_XmakeCommonFlags Condition="$(XmakeDiagnosis)">-D $(_XmakeCommonFlags.Trim())</_XmakeCommonFlags>
-    <_XmakeCommonFlags>$(_XmakeCommonFlags.Trim()) $(_XmakeProjectFlag)</_XmakeCommonFlags>
+    <_XmakeCommonFlags>-y $(_XmakeCommonFlags.Trim()) $(_XmakeProjectFlag)</_XmakeCommonFlags>
 
     <_XmakeOutFlag>-o "$([MSBuild]::MakeRelative('$(XmakeProjectDirResolved)', '$(XmakeBuilDirResolved)').TrimEnd('\').TrimEnd('/'))"</_XmakeOutFlag>
 
     <_XmakeConfigFlags>$(XmakeConfigFlags.Trim())</_XmakeConfigFlags>
-    <_XmakeConfigFlags>-y -p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
+    <_XmakeConfigFlags>-p $(XmakePlat) -m $(XmakeMode) -a $(XmakeArch) $(_XmakeOutFlag) $(_XmakeConfigFlags.Trim())</_XmakeConfigFlags>
 
     <_XmakeBuildFlags>$(XmakeBuildFlags.Trim())</_XmakeBuildFlags>
     <_XmakeBuildFlags Condition="$(XmakeWarning)">-w $(_XmakeBuildFlags.Trim())</_XmakeBuildFlags>
