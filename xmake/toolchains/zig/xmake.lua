@@ -50,4 +50,10 @@ toolchain("zig")
             toolchain:add("zcldflags", "-target", march)
             toolchain:add("zcshflags", "-target", march)
         end
+
+        -- @see https://github.com/ziglang/zig/issues/5825
+        if toolchain:is_plat("windows") then
+            toolchain:add("zcldflags", "--subsystem console")
+            toolchain:add("syslinks", "kernel32", "ntdll")
+        end
     end)

@@ -106,14 +106,6 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     local argv = {}
     if targetkind == "binary" then
         table.insert(argv, "build-exe")
-        if is_plat("windows") then
-            -- TODO this is only a temporary workaround to fix msvc/lld issue for zig 0.7.0.
-            -- @see https://github.com/ziglang/zig/issues/5825
-            table.insert(argv, "--subsystem")
-            table.insert(argv, "console")
-            table.insert(argv, "-lkernel32")
-            table.insert(argv, "-lntdll")
-        end
     elseif targetkind == "static" or targetkind == "shared" then
         table.insert(argv, "build-lib")
     else
