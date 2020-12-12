@@ -6,6 +6,7 @@
 
 * [#1035](https://github.com/xmake-io/xmake/issues/1035): The graphics configuration menu fully supports mouse events, and support scroll bar
 * [#1098](https://github.com/xmake-io/xmake/issues/1098): Support stdin for os.execv
+* [#1079](https://github.com/xmake-io/xmake/issues/1079): Add autoupdate plugin rule for vsxmake, `add_rules("plugin.vsxmake.autoupdate")`
 
 ### Change
 
@@ -886,6 +887,7 @@
 
 * [#1035](https://github.com/xmake-io/xmake/issues/1035): 图形配置菜单完整支持鼠标事件，并且新增滚动栏
 * [#1098](https://github.com/xmake-io/xmake/issues/1098): 支持传递 stdin 到 os.execv 进行输入重定向
+* [#1079](https://github.com/xmake-io/xmake/issues/1079): 为 vsxmake 插件添加工程自动更新插件，`add_rules("plugin.vsxmake.autoupdate")`
 
 ### 改进
 
