@@ -29,19 +29,25 @@
 --
 rule("plugin.vsxmake.autoupdate")
     before_build(function (target)
-        if not _g.autoupdate then
-            import("core.project.depend")
-            import("core.project.project")
+
+        -- imports
+        import("core.project.depend")
+        import("core.project.project")
+        import("core.base.task")
+
+        -- run only once for all xmake process in vs
+        local tmpfile = os.tmpfile(path.join(os.projectdir(), "plugin.vsxmake.autoupdate"))
+        local lockfile = io.openlock(tmpfile .. ".lock")
+        if lockfile:trylock() then
             if os.getenv("XMAKE_IN_VSTUDIO") then
                 depend.on_changed(function ()
-                    print("autoupdate vsxmake project ..")
-                    project.unlock()
-                    os.execv("xmake", {"project", "-k", "vsxmake"})
-                    project.lock()
-                    print("autoupdate vsxmake project ok")
-                end, {files = project.allfiles()})
+                    -- we use task instead of os.exec("xmake") to avoid the project lock
+                    print("update vsxmake project ..")
+                    task.run("project", {kind = "vsxmake"})
+                    print("update vsxmake project ok")
+                end, {dependfile = tmpfile .. ".d", files = project.allfiles()})
             end
-            _g.autoupdate = true
+            lockfile:close()
         end
     end)
 
