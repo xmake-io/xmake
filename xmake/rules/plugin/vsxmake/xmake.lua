@@ -29,16 +29,19 @@
 --
 rule("plugin.vsxmake.autoupdate")
     before_build(function (target)
-        import("core.project.depend")
-        import("core.project.project")
-        if os.getenv("XMAKE_IN_VSTUDIO") then
-            depend.on_changed(function ()
-                print("autoupdate vsxmake project ..")
-                project.unlock()
-                os.execv("xmake", {"project", "-k", "vsxmake"})
-                project.lock()
-                print("autoupdate vsxmake project ok")
-            end, {files = project.allfiles()})
+        if not _g.autoupdate then
+            import("core.project.depend")
+            import("core.project.project")
+            if os.getenv("XMAKE_IN_VSTUDIO") then
+                depend.on_changed(function ()
+                    print("autoupdate vsxmake project ..")
+                    project.unlock()
+                    os.execv("xmake", {"project", "-k", "vsxmake"})
+                    project.lock()
+                    print("autoupdate vsxmake project ok")
+                end, {files = project.allfiles()})
+            end
+            _g.autoupdate = true
         end
     end)
 
