@@ -321,7 +321,7 @@ function project._load_rules()
 end
 
 -- load toolchains
-function project._load_toolchains(opt)
+function project._load_toolchains()
 
     -- load the project file first if has not been loaded?
     local ok, errors = project._load()
@@ -338,7 +338,7 @@ function project._load_toolchains(opt)
     -- make toolchain instances
     local toolchains = {}
     for toolchain_name, toolchain_info in pairs(results) do
-        toolchains[toolchain_name] = toolchain.new(toolchain_name, toolchain_info, opt)
+        toolchains[toolchain_name] = toolchain_info
     end
     return toolchains
 end
@@ -669,6 +669,20 @@ function project._sort_targets(targets, ordertargets, targetrefs, target)
         targetrefs[target:name()] = true
         table.insert(ordertargets, target)
     end
+end
+
+-- get project toolchain infos (@note only with toolchain info)
+function project._toolchains()
+    local toolchains = project._TOOLCHAINS
+    if not toolchains then
+        local errors
+        toolchains, errors = project._load_toolchains()
+        if not toolchains then
+            os.raise(errors)
+        end
+        project._TOOLCHAINS = toolchains
+    end
+    return toolchains
 end
 
 -- get project apis
@@ -1023,24 +1037,15 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
-    return project.toolchains(opt)[name]
+    local info = project._toolchains()[name]
+    if info then
+        return toolchain.load_withinfo(name, info, opt)
+    end
 end
 
--- get project toolchains
-function project.toolchains(opt)
-    opt = opt or {}
-    local key = "key_" .. (opt.plat or "") .. "_" .. (opt.arch or "")
-    project._TOOLCHAINS = project._TOOLCHAINS or {}
-    local toolchains = project._TOOLCHAINS[key]
-    if not toolchains then
-        local errors
-        toolchains, errors = project._load_toolchains(opt)
-        if not toolchains then
-            os.raise(errors)
-        end
-        project._TOOLCHAINS[key] = toolchains
-    end
-    return toolchains
+-- get project toolchains list
+function project.toolchains()
+    return table.keys(project._toolchains())
 end
 
 -- get the given task
@@ -1050,10 +1055,7 @@ end
 
 -- get tasks
 function project.tasks()
-
     if not project._TASKS then
-
-        -- load tasks
         local tasks, errors = project._load_tasks()
         if not tasks then
             os.raise(errors)
@@ -1065,10 +1067,7 @@ end
 
 -- get packages
 function project.packages()
-
     if not project._PACKAGES then
-
-        -- load packages
         local packages, errors = project._load_packages()
         if not packages then
             return nil, errors
