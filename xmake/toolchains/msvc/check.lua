@@ -28,13 +28,16 @@ import("lib.detect.find_tool")
 function _check_vsenv(toolchain)
 
     -- have been checked?
-    local vs = config.get("vs")
-    if vs and config.get("__vcvarsall") then
+    local vs = toolchain:config("vs") or config.get("vs")
+    local vcvars = toolchain:config("vcvars")
+    if vs and vcvars then
         return vs
     end
 
     -- find vstudio
-    local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset"), sdkver = config.get("vs_sdkver")})
+    local vs_toolset = toolchain:config("vs_toolset") or config.get("vs_toolset")
+    local vs_sdkver  = toolchain:config("vs_sdkver") or config.get("vs_sdkver")
+    local vstudio = find_vstudio({vcvars_ver = vs_toolset, sdkver = vs_sdkver})
     if vstudio then
 
         -- make order vsver
@@ -52,15 +55,15 @@ function _check_vsenv(toolchain)
         -- get vcvarsall
         for _, vsver in ipairs(vsvers) do
             local vcvarsall = (vstudio[vsver] or {}).vcvarsall or {}
-            local vsenv = vcvarsall[toolchain:arch()]
-            if vsenv and vsenv.PATH and vsenv.INCLUDE and vsenv.LIB then
+            local vcvars = vcvarsall[toolchain:arch()]
+            if vcvars and vcvars.PATH and vcvars.INCLUDE and vcvars.LIB then
 
-                -- save vsenv
-                config.set("__vcvarsall", vcvarsall)
+                -- save vcvars
+                toolchain:config_set("vcvars", vcvars)
 
                 -- check compiler
                 local program = nil
-                local tool = find_tool("cl.exe", {force = true, envs = vsenv})
+                local tool = find_tool("cl.exe", {force = true, envs = vcvars})
                 if tool then
                     program = tool.program
                 end
@@ -76,7 +79,8 @@ end
 function _check_vstudio(toolchain)
     local vs = _check_vsenv(toolchain)
     if vs then
-        config.set("vs", vs, {readonly = true, force = true})
+        toolchain:config_set("vs", vs)
+        toolchain:configs_save()
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())

@@ -26,37 +26,14 @@ import("detect.sdks.find_vstudio")
 -- add the given vs environment
 function _add_vsenv(toolchain, name)
 
-    -- get vcvarsall
-    local vcvarsall = config.get("__vcvarsall")
-    if not vcvarsall then
+    -- get vcvars
+    local vcvars = toolchain:config("vcvars")
+    if not vcvars then
         return
     end
 
-    -- get vs environment for the current arch
-    local arch = toolchain:arch()
-    local vsenv = vcvarsall[arch] or {}
-
-    -- switch vstudio environment if vs_sdkver has been changed
-    local switch_vsenv = false
-    local vs = config.get("vs")
-    local vs_sdkver = config.get("vs_sdkver")
-    if vs and vs_sdkver and vsenv.WindowsSDKVersion and vs_sdkver ~= vsenv.WindowsSDKVersion then
-        switch_vsenv = true
-    end
-    if switch_vsenv then
-        -- find vstudio
-        local vstudio = find_vstudio({vcvars_ver = config.get("vs_toolset"), sdkver = vs_sdkver})
-        if vstudio then
-            vcvarsall = (vstudio[vs] or {}).vcvarsall or {}
-            vsenv = vcvarsall[arch] or {}
-            if vsenv and vsenv.PATH and vsenv.INCLUDE and vsenv.LIB then
-                config.set("__vcvarsall", vcvarsall)
-            end
-        end
-    end
-
     -- get the paths for the vs environment
-    local new = vsenv[name]
+    local new = vcvars[name]
     if new then
         toolchain:add("runenvs", name:upper(), path.splitenv(new))
     end

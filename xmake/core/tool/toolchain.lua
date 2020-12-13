@@ -36,11 +36,16 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, configs)
-    local instance    = table.inherit(_instance)
-    instance._NAME    = name
-    instance._INFO    = info
-    instance._CONFIGS = configs
+function _instance.new(name, info, cachekey, configs)
+    local instance     = table.inherit(_instance)
+    instance._NAME     = name
+    instance._INFO     = info
+    instance._CACHE    = require("sandbox/modules/import/lib/detect/cache")
+    instance._CACHEKEY = cachekey
+    instance._CONFIGS  = instance._CACHE.load(cachekey) or {}
+    for k, v in pairs(configs) do
+        instance._CONFIGS[k] = v
+    end
     return instance
 end
 
@@ -191,15 +196,24 @@ function _instance:sdkdir()
     return config.get("sdk") or self:info():get("sdkdir")
 end
 
+-- get cachekey
+function _instance:cachekey()
+    return self._CACHEKEY
+end
+
 -- get user config from `set_toolchains("", {configs = {vs = "2018"}})`
 function _instance:config(name)
-    return self._CONFIGS and self._CONFIGS[name]
+    return self._CONFIGS[name]
 end
 
 -- set user config
 function _instance:config_set(name, data)
-    self._CONFIGS = self._CONFIGS or {}
     self._CONFIGS[name] = data
+end
+
+-- save user configs
+function _instance:configs_save()
+    self._CACHE.save(self:cachekey(), self._CONFIGS)
 end
 
 -- do check, we only check it once for all architectures
@@ -488,7 +502,7 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, result, opt)
+    local instance = _instance.new(name, result, cachekey, opt)
     toolchain._TOOLCHAINS[cachekey] = instance
     return instance
 end
@@ -509,7 +523,7 @@ function toolchain.load_withinfo(name, info, opt)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, info, opt)
+    local instance = _instance.new(name, info, cachekey, opt)
     toolchain._TOOLCHAINS[cachekey] = instance
     return instance
 end
