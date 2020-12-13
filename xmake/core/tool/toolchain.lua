@@ -404,10 +404,13 @@ end
 
 -- get cache key
 function toolchain._cachekey(name, opt)
-    local cachekey = name
-    for _, k in ipairs(table.orderkeys(opt)) do
-        local v = opt[k]
-        cachekey = cachekey .. "_" .. k .. "_" .. tostring(v)
+    local cachekey = opt.cachekey
+    if not cachekey then
+        cachekey = name
+        for _, k in ipairs(table.orderkeys(opt)) do
+            local v = opt[k]
+            cachekey = cachekey .. "_" .. k .. "_" .. tostring(v)
+        end
     end
     return cachekey
 end

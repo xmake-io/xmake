@@ -1773,7 +1773,7 @@ function _instance:tool(toolkind)
             for idx, toolchain_inst in ipairs(toolchains) do
                 program, toolname = toolchain_inst:tool(toolkind)
                 if program then
-                    toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
+                    toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch(), cachekey = toolchain_inst:cachekey()}
                     break
                 end
             end
