@@ -352,12 +352,9 @@ function _instance:_checktool(toolkind, toolpath)
         end
     end
 
-    -- init cache key
-    local cachekey = "toolchain_" .. self:plat() .. "_" .. self:arch()
-
     -- find tool program
     local program, toolname
-    local tool = find_tool(toolpath, {cachekey = cachekey, program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
+    local tool = find_tool(toolpath, {cachekey = self:cachekey(), program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = tool.name
@@ -406,7 +403,7 @@ end
 function toolchain._cachekey(name, opt)
     local cachekey = opt.cachekey
     if not cachekey then
-        cachekey = name
+        cachekey = "toolchain_" .. name
         for _, k in ipairs(table.orderkeys(opt)) do
             local v = opt[k]
             cachekey = cachekey .. "_" .. k .. "_" .. tostring(v)

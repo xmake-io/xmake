@@ -1745,7 +1745,7 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
-    local key = toolkind .. "_" .. self:plat() .. "_" .. self:arch()
+    local key = self:name() .. "_" .. toolkind .. "_" .. self:plat() .. "_" .. self:arch()
     local program, toolname, toolchain_info
     local toolinfo = tools[key]
     if toolinfo == nil then
