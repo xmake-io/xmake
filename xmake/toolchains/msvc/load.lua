@@ -61,6 +61,7 @@ function main(toolchain)
     _add_vsenv(toolchain, "LIB")
     _add_vsenv(toolchain, "INCLUDE")
     _add_vsenv(toolchain, "LIBPATH")
+    -- find_rc.lua need them
     _add_vsenv(toolchain, "WindowsSdkDir")
     _add_vsenv(toolchain, "WindowsSDKVersion")
 

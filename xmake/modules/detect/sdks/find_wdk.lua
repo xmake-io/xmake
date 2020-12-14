@@ -24,6 +24,7 @@ import("lib.detect.find_file")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.tool.toolchain")
 import("detect.sdks.find_vstudio")
 
 -- find WDK directory
@@ -34,23 +35,14 @@ function _find_sdkdir(sdkdir)
         sdkdir = os.getenv("WindowsSdkDir")
     end
 
-    -- get sdk directory from vsvars
+    -- get sdk directory from vcvars
     if not sdkdir then
-        local arch = config.arch() or os.arch()
-        local vcvarsall = config.get("__vcvarsall")
-        if not vcvarsall then
-            local vstudio = find_vstudio()
-            if vstudio then
-                for _, vsinfo in pairs(vstudio) do
-                    if vsinfo.vcvarsall then
-                        vcvarsall = vsinfo.vcvarsall
-                        break
-                    end
-                end
+        local msvc = toolchain.load("msvc")
+        if msvc and msvc:check() then
+            local vcvars = msvc:config("vcvars")
+            if vcvars then
+                sdkdir = vcvars.WindowsSdkDir
             end
-        end
-        if vcvarsall then
-            sdkdir = (vcvarsall[arch] or {}).WindowsSdkDir
         end
     end
     return sdkdir

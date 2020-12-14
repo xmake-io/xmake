@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.cache")
 import("lib.detect.find_file")
+import("core.tool.toolchain")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
@@ -28,14 +29,16 @@ import("core.project.config")
 -- find dotnet directory
 function _find_sdkdir(sdkdir)
 
-    -- get sdk directory from vsvars
+    -- get sdk directory from vcvars
     if not sdkdir then
-        local arch = config.arch()
-        local vcvarsall = config.get("__vcvarsall")
-        if vcvarsall then
-            sdkdir = (vcvarsall[arch] or {}).WindowsSdkDir
-            if sdkdir then
-                sdkdir = path.join(path.directory(path.translate(sdkdir)), "NETFXSDK")
+        local msvc = toolchain.load("msvc")
+        if msvc and msvc:check() then
+            local vcvars = msvc:config("vcvars")
+            if vcvars then
+                sdkdir = vcvars.WindowsSdkDir
+                if sdkdir then
+                    sdkdir = path.join(path.directory(path.translate(sdkdir)), "NETFXSDK")
+                end
             end
         end
     end
