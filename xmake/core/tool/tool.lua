@@ -229,11 +229,7 @@ function tool.load(kind, opt)
     if not instance then
         return nil, errors
     end
-
-    -- save instance to the cache
     tool._TOOLS[cachekey] = instance
-
-    -- ok
     return instance
 end
 

@@ -35,7 +35,7 @@ function _add_vsenv(toolchain, name)
     -- get the paths for the vs environment
     local new = vcvars[name]
     if new then
-        toolchain:add("runenvs", name:upper(), path.splitenv(new))
+        toolchain:add("runenvs", name, table.unwrap(path.splitenv(new)))
     end
 end
 
@@ -61,6 +61,8 @@ function main(toolchain)
     _add_vsenv(toolchain, "LIB")
     _add_vsenv(toolchain, "INCLUDE")
     _add_vsenv(toolchain, "LIBPATH")
+    _add_vsenv(toolchain, "WindowsSdkDir")
+    _add_vsenv(toolchain, "WindowsSDKVersion")
 
     -- add some default flags
     toolchain:add("cxxflags", "/EHsc")
