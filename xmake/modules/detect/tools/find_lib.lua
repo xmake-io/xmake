@@ -51,8 +51,8 @@ function main(opt)
         io.writefile(sourcefile, "int test(void)\n{return 0;}")
 
         -- check it
-        local cl = assert(find_tool("cl", opt))
-        local link = assert(find_tool("link", opt))
+        local cl = assert(find_tool("cl", {envs = opt.envs}))
+        local link = assert(find_tool("link", {envs = opt.envs}))
         os.runv(cl.program, {"-c", "-Fo" .. objectfile, sourcefile}, {envs = opt.envs})
         os.runv(link.program, {"-lib", "-out:" .. libraryfile, objectfile}, {envs = opt.envs})
         verinfo = os.iorunv(program, {"-list", libraryfile}, {envs = opt.envs})
