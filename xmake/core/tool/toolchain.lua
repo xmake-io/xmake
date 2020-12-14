@@ -46,6 +46,15 @@ function _instance.new(name, info, cachekey, configs)
     for k, v in pairs(configs) do
         instance._CONFIGS[k] = v
     end
+    -- is global toolchain for the whole platform?
+    configs.plat = nil
+    configs.arch = nil
+    configs.cachekey = nil
+    local plat = config.get("plat") or os.host()
+    local arch = config.get("arch") or os.arch()
+    if instance:is_plat(plat) and instance:is_arch(arch) and #table.keys(configs) == 0 then
+        instance._CONFIGS.__global = true
+    end
     return instance
 end
 
@@ -135,6 +144,11 @@ end
 -- is standalone toolchain?
 function _instance:standalone()
     return self:kind() == "standalone"
+end
+
+-- global toolchain for whole platform
+function _instance:global()
+    return self:config("__global")
 end
 
 -- get the run environments
