@@ -79,6 +79,12 @@ function _get_cflags(package, opt)
     end
     table.join2(result, package:config("cflags"))
     table.join2(result, package:config("cxflags"))
+    if opt.cflags then
+        table.join2(result, opt.cflags)
+    end
+    if opt.cxflags then
+        table.join2(result, opt.cxflags)
+    end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
@@ -95,6 +101,12 @@ function _get_cxxflags(package, opt)
     end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
+    if opt.cxxflags then
+        table.join2(result, opt.cflags)
+    end
+    if opt.cxflags then
+        table.join2(result, opt.cxflags)
+    end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
         return table.concat(result, ' ')
@@ -109,6 +121,9 @@ function _get_asflags(package, opt)
         table.join2(result, package:build_getenv("asflags"))
     end
     table.join2(result, package:config("asflags"))
+    if opt.asflags then
+        table.join2(result, opt.asflags)
+    end
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -122,6 +137,9 @@ function _get_ldflags(package, opt)
         table.join2(result, package:build_getenv("ldflags"))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
+    if opt.ldflags then
+        table.join2(result, opt.ldflags)
+    end
     if #result > 0 then
         return table.concat(result, ' ')
     end
@@ -135,6 +153,9 @@ function _get_shflags(package, opt)
         table.join2(result, package:build_getenv("shflags"))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
+    if opt.shflags then
+        table.join2(result, opt.shflags)
+    end
     if #result > 0 then
         return table.concat(result, ' ')
     end
