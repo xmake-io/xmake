@@ -13,12 +13,14 @@
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
 * Support utf8 for ui modules and `xmake f --menu`
 * Improve to support zig on macOS
+* [#1135] (https://github.com/xmake-io/xmake/issues/1135): Improve the toolchain, support for switching between multiple vs for target
 
 ### Bugs fixed
 
 * [#1091](https://github.com/xmake-io/xmake/issues/1091): Fix incorrect ordering of inherited library dependencies
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): Fix c++ language intellisense for vsxmake
 * [#1132](https://github.com/xmake-io/xmake/issues/1132): Fix TrimEnd bug for vsxmake
+* [#1142](https://github.com/xmake-io/xmake/issues/1142): Fix git not found when installing packages
 
 ## v2.3.9
 
@@ -894,12 +896,14 @@
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): 修复并改进 cl 编译器头文件依赖信息
 * 针对 ui 模块和 `xmake f --menu` 增加 utf8 支持
 * 改进 zig 语言在 macOS 上的支持
+* [#1135](https://github.com/xmake-io/xmake/issues/1135): 改进工具链，对 target 增加对多版本 vs 工具链的切换支持
 
 ### Bugs 修复
 
 * [#1091](https://github.com/xmake-io/xmake/issues/1091): 修复不正确的继承链接依赖
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): 修复 vsxmake 插件 c++ 语言标准智能提示错误
 * [#1132](https://github.com/xmake-io/xmake/issues/1132): 修复 vsxmake 插件中配置路径被截断问题
+* [#1142](https://github.com/xmake-io/xmake/issues/1142): 修复安装包的时候，出现git找不到问题
 
 ## v2.3.9
 
