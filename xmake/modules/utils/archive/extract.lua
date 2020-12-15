@@ -114,7 +114,7 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     local excludesfile = nil
     if opt.excludes and not outputdir_old then
         excludesfile = os.tmpfile()
-        io.writefile(excludesfile, table.concat(opt.excludes, '\n'))
+        io.writefile(excludesfile, table.concat(table.wrap(opt.excludes), '\n'))
         table.insert(argv, "-xr@" .. excludesfile)
     end
 
