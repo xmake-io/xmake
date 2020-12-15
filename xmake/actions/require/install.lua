@@ -176,18 +176,21 @@ function main(requires_raw)
         return
     end
 
-    -- enter environment
+    -- find git
     environment.enter()
+    local git = find_tool("git")
+    environment.leave()
 
     -- pull all repositories first if not exists
     --
     -- attempt to install git from the builtin-packages first if git not found
     --
-    if find_tool("git") and not repository.pulled() then
+    if git and not repository.pulled() then
         task.run("repo", {update = true})
     end
 
     -- install packages
+    environment.enter()
     local packages = package.install_packages(requires, {requires_extra = requires_extra})
     if packages then
 
@@ -197,8 +200,6 @@ function main(requires_raw)
         -- register all required local packages
         _register_required_packages(packages)
     end
-
-    -- leave environment
     environment.leave()
 end
 
