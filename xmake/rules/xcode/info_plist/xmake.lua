@@ -31,6 +31,7 @@ rule("xcode.info_plist")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("core.tool.toolchain")
         import("private.utils.progress")
 
         -- check
@@ -60,8 +61,13 @@ rule("xcode.info_plist")
             PRODUCT_NAME = target:name(),
             PRODUCT_DISPLAY_NAME = target:name(),
             CURRENT_PROJECT_VERSION = target:version() and tostring(target:version()) or "1.0",
-            MACOSX_DEPLOYMENT_TARGET = get_config("target_minver_macosx")
         }
+        if target:is_plat("macosx") then
+            local toolchain_xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
+            if toolchain_xcode then
+                maps.MACOSX_DEPLOYMENT_TARGET = toolchain_xcode:config("target_minver")
+            end
+        end
         if target:rule("xcode.bundle") then
             maps.PRODUCT_BUNDLE_PACKAGE_TYPE = "BNDL"
         elseif target:rule("xcode.framework") then

@@ -31,6 +31,7 @@ rule("xcode.storyboard")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
+        import("core.tool.toolchain")
         import("private.utils.progress")
 
         -- get xcode sdk directory
@@ -57,14 +58,16 @@ rule("xcode.storyboard")
         os.tryrm(base_lproj)
 
         -- do compile
-        local target_minver
+        local target_minver = nil
+        local toolchain_xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
+        if toolchain_xcode then
+            target_minver = toolchain_xcode:config("target_minver")
+        end
         local argv = {"--errors", "--warnings", "--notices", "--auto-activate-custom-fonts", "--output-format", "human-readable-text"}
-        if is_plat("macosx") then
-            target_minver = get_config("target_minver_macosx")
+        if target:is_plat("macosx") then
             table.insert(argv, "--target-device")
             table.insert(argv, "mac")
-        elseif is_plat("iphoneos") then
-            target_minver = get_config("target_minver_iphoneos")
+        elseif target:is_plat("iphoneos") then
             table.insert(argv, "--target-device")
             table.insert(argv, "iphone")
             table.insert(argv, "--target-device")

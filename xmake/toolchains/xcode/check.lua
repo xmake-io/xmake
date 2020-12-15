@@ -27,8 +27,13 @@ import("detect.sdks.find_xcode")
 function main(toolchain)
 
     -- find xcode
-    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true, plat = toolchain:plat(), arch = toolchain:arch()})
+    local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
+    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true,
+                                                   sdkver = xcode_sdkver,
+                                                   plat = toolchain:plat(),
+                                                   arch = toolchain:arch()})
     if xcode then
+        xcode_sdkver = xcode.sdkver
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
     else
         return false
@@ -44,14 +49,7 @@ function main(toolchain)
     -- target("test")
     --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})
     --
-    local xcode_sdkver = toolchain:is_plat(config.plat()) and config.get("xcode_sdkver")
-    if not xcode_sdkver then
-        xcode_sdkver = config.get("xcode_sdkver_" .. toolchain:plat())
-    end
-    local target_minver = toolchain:is_plat(config.plat()) and config.get("target_minver")
-    if not target_minver then
-        target_minver = config.get("target_minver_" .. toolchain:plat())
-    end
+    local target_minver = toolchain:config("target_minver") and config.get("target_minver")
     if xcode_sdkver and not target_minver then
         target_minver = xcode_sdkver
         if toolchain:is_plat("macosx") then
@@ -61,6 +59,8 @@ function main(toolchain)
             end
         end
     end
-    config.set("target_minver_" .. toolchain:plat(), target_minver)
+    toolchain:config_set("xcode_sdkver", xcode_sdkver)
+    toolchain:config_set("target_minver", target_minver)
+    toolchain:configs_save()
     return true
 end
