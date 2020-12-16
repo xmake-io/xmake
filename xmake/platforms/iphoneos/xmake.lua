@@ -42,6 +42,7 @@ platform("iphoneos")
         local arch = config.get("arch")
         if not arch then
             config.set("arch", "arm64")
+            platform:arch_set("arm64")
             cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
         end
     end)

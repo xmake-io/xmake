@@ -52,6 +52,16 @@ function _instance:arch()
     return self._ARCH or config.get("arch")
 end
 
+-- set platform architecture
+function _instance:arch_set(arch)
+    if self:arch() ~= arch then
+        -- we need clean the dirty cache if architecture has been changed
+        platform._PLATFORMS[self:name() .. "_" .. self:arch()] = nil
+        platform._PLATFORMS[self:name() .. "_" .. arch] = self
+        self._ARCH = arch
+    end
+end
+
 -- set the value to the platform configuration
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
