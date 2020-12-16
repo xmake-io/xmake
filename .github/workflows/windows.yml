@@ -57,10 +57,10 @@ jobs:
           Copy-Item ./scripts/xrepo.bat ./xmake
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
+          xrepo --version
           xmake show
           #xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
-          xrepo --version
 
         # build artifacts
       - name: set release arch name
