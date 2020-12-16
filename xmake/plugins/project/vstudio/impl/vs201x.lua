@@ -238,7 +238,7 @@ function make(outputdir, vsinfo)
                 project.clear()
 
                 -- check platform
-                platform.load(config.plat()):check()
+                platform.load(config.plat(), arch):check()
 
                 -- check project options
                 project.check()
