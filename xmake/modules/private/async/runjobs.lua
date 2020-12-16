@@ -131,6 +131,8 @@ function main(name, jobs, opt)
 
     -- run jobs
     local index = 0
+    local count = 0
+    local count_as_index = opt.count_as_index
     local priority_prev = 0
     local priority_curr = 0
     local job_pending = nil
@@ -185,7 +187,8 @@ function main(name, jobs, opt)
                                 if opt.curdir then
                                     os.cd(opt.curdir)
                                 end
-                                jobfunc(i, total)
+                                jobfunc(count_as_index and count or i, total)
+                                count = count + 1
                             end
                         end,
                         catch

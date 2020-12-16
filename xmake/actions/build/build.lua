@@ -224,7 +224,7 @@ function main(targetname)
             if errors and progress.showing_without_scroll() then
                 print("")
             end
-        end, curdir = curdir})
+        end, curdir = curdir, count_as_index = true})
         os.cd(curdir)
     end
 end
