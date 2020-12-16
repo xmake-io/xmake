@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
+import("private.detect.find_platform")
 import("lib.detect.cache", {alias = "detectcache"})
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
@@ -268,6 +269,14 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- find default platform and save to configuration
+    local plat, arch = find_platform({global = true})
+    assert(plat == config.plat())
+    assert(arch == config.arch())
+
+    -- load platform instance
+    local instance_plat = platform.load(plat, arch)
+
     -- merge the checked configure
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
@@ -275,17 +284,14 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         -- clear detect cache
         detectcache.clear()
 
-        -- check configure
-        config.check()
+        -- check platform
+        instance_plat:check()
 
         -- check project options
         if not trybuild then
             project.check()
         end
     end
-
-    -- load platform
-    platform.load(config.plat())
 
     -- translate the build directory
     local buildir = config.get("buildir")

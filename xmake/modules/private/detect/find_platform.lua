@@ -110,9 +110,9 @@ end
 
 -- find default platform and architecture
 --
--- @param       opt        the argument options, e.g. {plat = "", arch = "", global = true}
+-- @param   opt the argument options, e.g. {plat = "", arch = "", global = true}
 --
--- @return      {plat = "", arch = ""}
+-- @return  plat, arch
 --
 -- @code
 --
@@ -142,5 +142,5 @@ function main(opt)
             cprint("checking for architecture ... ${color.success}%s", plat)
         end
     end
-    return {plat = plat, arch = arch}
+    return plat, arch
 end

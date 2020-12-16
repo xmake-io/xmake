@@ -27,12 +27,11 @@ local raise     = require("sandbox/modules/raise")
 
 -- load the current platform
 function sandbox_core_platform.load(plat, arch)
-
-    -- load the platform configure
-    local ok, errors = platform.load(plat, arch)
-    if not ok then
+    local instance, errors = platform.load(plat, arch)
+    if not instance then
         raise(errors)
     end
+    return instance
 end
 
 -- get the platform os

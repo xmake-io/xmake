@@ -279,15 +279,6 @@ end
 -- do check
 function _instance:check()
 
-    -- check platform
-    local on_check = self:script("check")
-    if on_check then
-        local ok, errors = sandbox.load(on_check, self)
-        if not ok then
-            return false, errors
-        end
-    end
-
     -- check toolchains
     local toolchains = self:toolchains({all = true})
     local idx = 1
@@ -396,7 +387,6 @@ function platform._apis()
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_check"
         }
     ,   keyvalues =
         {

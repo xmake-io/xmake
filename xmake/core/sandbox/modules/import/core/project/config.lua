@@ -111,21 +111,6 @@ function sandbox_core_project_config.clear()
     config.clear()
 end
 
--- check the configuration
-function sandbox_core_project_config.check()
-
-    -- check configuration for the current platform
-    local instance, errors = platform.load()
-    if instance then
-        local ok, errors = instance:check()
-        if not ok then
-            raise(errors)
-        end
-    else
-        raise(errors)
-    end
-end
-
 -- dump the configuration
 function sandbox_core_project_config.dump()
     config.dump()
