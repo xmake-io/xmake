@@ -18,18 +18,6 @@
 -- @file        xmake.lua
 --
 
--- get the default platform
-function get_default_plat()
-    local subhost = os.subhost()
-    if subhost == "msys" then
-        local msystem = os.getenv("MSYSTEM")
-        if msystem and msystem:lower():find("mingw", 1, true) then
-            return "mingw"
-        end
-    end
-    return subhost
-end
-
 -- define task
 task("config")
 
@@ -56,8 +44,7 @@ task("config")
                     {'c', "clean",      "k",  nil       ,   "Clean the cached configure and configure all again."           }
                 ,   {nil, "menu",       "k",  nil       ,   "Configure project with a menu-driven user interface."          }
                 ,   {category = "."}
-                ,   {'p', "plat",       "kv", get_default_plat()
-                                                        , "Compile for the given platform."
+                ,   {'p', "plat",       "kv", "auto"    , "Compile for the given platform."
                                                         ,   values = function (complete, opt)
 
                                                                 -- imports

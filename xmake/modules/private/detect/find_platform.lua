@@ -139,7 +139,7 @@ function main(opt)
         end
         if not opt.arch and not config.get("arch") then
             config.set("arch", arch)
-            cprint("checking for architecture ... ${color.success}%s", plat)
+            cprint("checking for architecture ... ${color.success}%s", arch)
         end
     end
     return plat, arch
