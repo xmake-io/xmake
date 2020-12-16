@@ -21,8 +21,7 @@ function test_vsxmake(t)
     -- set config
     local arch = os.getenv("platform") or "x86"
     config.set("arch", arch, {readonly = true, force = true})
-    config.check()
-    platform.load(config.plat())
+    platform.load(config.plat()):check()
 
     -- create sln & vcxproj
     local vs = config.get("vs")
