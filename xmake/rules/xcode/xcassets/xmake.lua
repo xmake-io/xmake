@@ -88,7 +88,7 @@ rule("xcode.xcassets")
         end
         table.insert(argv, "--app-icon")
         table.insert(argv, "AppIcon")
-        if is_plat("iphoneos") then
+        if target:is_plat("iphoneos") then
             table.insert(argv, "--enable-on-demand-resources")
             table.insert(argv, "YES")
             table.insert(argv, "--compress-pngs")

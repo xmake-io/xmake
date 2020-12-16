@@ -96,7 +96,7 @@ function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
 
     -- find mobile provision only for iphoneos
     local mobile_provision
-    if is_plat("iphoneos") then
+    if plat == "iphoneos" then
         local mobile_provisions = codesign.mobile_provisions()
         if mobile_provisions then
             mobile_provision = config.get("xcode_mobile_provision")
@@ -174,8 +174,6 @@ function main(sdkdir, opt)
             end
         end
     else
-
-        -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
         end

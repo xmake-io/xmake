@@ -28,7 +28,7 @@ function main(toolchain)
 
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
-    local xcode = find_xcode(config.get("xcode"), {force = not optional, verbose = true,
+    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = toolchain:global(),
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})

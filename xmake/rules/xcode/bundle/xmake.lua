@@ -35,7 +35,7 @@ rule("xcode.bundle")
         -- get contents and resources directory
         local contentsdir = bundledir
         local resourcesdir = bundledir
-        if is_plat("macosx") then
+        if target:is_plat("macosx") then
             contentsdir = path.join(bundledir, "Contents")
             resourcesdir = path.join(bundledir, "Contents", "Resources")
         end
@@ -74,7 +74,7 @@ rule("xcode.bundle")
             progress.show(opt.progress, "${color.build.target}generating.xcode.$(mode) %s", path.filename(bundledir))
 
             -- copy target file
-            if is_plat("macosx") then
+            if target:is_plat("macosx") then
                 os.vcp(target:targetfile(), path.join(contentsdir, "MacOS", path.filename(target:targetfile())))
             else
                 os.vcp(target:targetfile(), path.join(contentsdir, path.filename(target:targetfile())))

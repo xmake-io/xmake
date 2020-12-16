@@ -38,9 +38,9 @@ end
 
 -- main entry
 function main (target)
-    if is_plat("iphoneos") then
+    if target:is_plat("iphoneos") then
         _uninstall_for_ios(target)
-    elseif is_plat("macosx") then
+    elseif target:is_plat("macosx") then
         _uninstall_for_macosx(target)
     end
 end

@@ -29,7 +29,7 @@ function main (target)
     -- get contents and resources directory
     local contentsdir = bundledir
     local resourcesdir = bundledir
-    if is_plat("macosx") then
+    if target:is_plat("macosx") then
         contentsdir = path.join(bundledir, "Contents")
         resourcesdir = path.join(bundledir, "Contents", "Resources")
     end
@@ -41,12 +41,12 @@ function main (target)
     target:set("filename", target:basename())
 
     -- set install directory
-    if is_plat("macosx") and not target:get("installdir") then
+    if target:is_plat("macosx") and not target:get("installdir") then
         target:set("installdir", "/Applications")
     end
 
     -- add frameworks
-    if is_plat("macosx") then
+    if target:is_plat("macosx") then
         target:add("frameworks", "AppKit")
     else
         target:add("frameworks", "UIKit")

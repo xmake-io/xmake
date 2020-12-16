@@ -86,7 +86,7 @@ rule("xcode.storyboard")
 
         -- do link
         argv = {"--errors", "--warnings", "--notices", "--auto-activate-custom-fonts", "--output-format", "human-readable-text"}
-        if is_plat("macosx") then
+        if target:is_plat("macosx") then
             table.insert(argv, "--target-device")
             table.insert(argv, "mac")
         end
