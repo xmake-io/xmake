@@ -28,15 +28,35 @@ function main(toolchain)
 
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
-    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = toolchain:global(),
+    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
+                                                   find_codesign = toolchain:global(),
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
-    if xcode then
-        xcode_sdkver = xcode.sdkver
-        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-    else
+    if not xcode then
+        cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
         return false
+    end
+
+    -- xcode found
+    xcode_sdkver = xcode.sdkver
+    if toolchain:global() then
+        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
+        config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
+        config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
+        cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
+        if xcode.codesign_identity then
+            cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
+        else
+            cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
+        end
+        if toolchain:is_plat("iphoneos") then
+            if xcode.mobile_provision then
+                cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
+            else
+                cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
+            end
+        end
     end
 
     -- save target minver
@@ -62,5 +82,7 @@ function main(toolchain)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:configs_save()
+    cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
+    cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
     return true
 end
