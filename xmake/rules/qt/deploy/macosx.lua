@@ -23,12 +23,21 @@ import("core.theme.theme")
 import("core.base.option")
 import("core.project.config")
 import("core.project.depend")
+import("core.tool.toolchain")
 import("lib.detect.find_path")
 import("private.utils.progress")
 
 -- save Info.plist
 function _save_info_plist(target, info_plist_file)
 
+    -- get target minver
+    local target_minver = nil
+    local toolchain_xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
+    if toolchain_xcode then
+        target_minver = toolchain_xcode:config("target_minver")
+    end
+
+    -- generate info.plist
     local name = target:basename()
     io.writefile(info_plist_file, string.format([[<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -59,7 +68,7 @@ function _save_info_plist(target, info_plist_file)
 	<key>NSPrincipalClass</key>
 	<string>NSApplication</string>
 </dict>
-</plist>]], name, name, name, name, get_config("target_minver_macosx") or (macos.version():major() .. "." .. macos.version():minor())))
+</plist>]], name, name, name, name, target_minver or (macos.version():major() .. "." .. macos.version():minor())))
 end
 
 -- deploy application package for macosx
