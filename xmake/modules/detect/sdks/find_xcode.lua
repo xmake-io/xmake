@@ -144,8 +144,8 @@ function main(sdkdir, opt)
     end
 
     -- get plat and arch
-    local plat = opt.plat or config.get("plat") or "macosx"
-    local arch = opt.arch or config.get("arch") or "x86_64"
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
 
     -- find xcode
     local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode"), opt.sdkver, plat, arch)
@@ -159,7 +159,7 @@ function main(sdkdir, opt)
         -- trace
         if opt.verbose or option.get("verbose") then
             cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
-            cprint("checking for SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
+            cprint("checking for SDK (%s) version of Xcode ... ${color.success}%s", plat, xcode.sdkver)
             if xcode.codesign_identity then
                 cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
             else
