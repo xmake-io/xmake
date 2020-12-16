@@ -42,16 +42,6 @@ platform("android")
     set_formats("shared", "lib$(name).so")
     set_formats("symbol", "$(name).sym")
 
-    -- on check
-    on_check(function (platform)
-        import("core.project.config")
-        local arch = config.get("arch")
-        if not arch then
-            config.set("arch", "armeabi-v7a")
-            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
-        end
-    end)
-
     -- set toolchains
     set_toolchains("envs", "ndk", "rust")
 

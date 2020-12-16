@@ -36,17 +36,6 @@ platform("iphoneos")
     set_formats("shared", "lib$(name).dylib")
     set_formats("symbol", "$(name).dSYM")
 
-    -- on check
-    on_check(function (platform)
-        import("core.project.config")
-        local arch = config.get("arch")
-        if not arch then
-            config.set("arch", "arm64")
-            platform:arch_set("arm64")
-            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
-        end
-    end)
-
     -- set toolchains
     set_toolchains("envs", "xcode")
 
