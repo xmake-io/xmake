@@ -13,7 +13,6 @@
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): Fix and improve to parse cl deps
 * Support utf8 for ui modules and `xmake f --menu`
 * Improve to support zig on macOS
-* [#1135] (https://github.com/xmake-io/xmake/issues/1135): Improve the toolchain, support for switching between multiple vs for target
 
 ### Bugs fixed
 
@@ -896,7 +895,6 @@
 * [#1072](https://github.com/xmake-io/xmake/issues/1072): 修复并改进 cl 编译器头文件依赖信息
 * 针对 ui 模块和 `xmake f --menu` 增加 utf8 支持
 * 改进 zig 语言在 macOS 上的支持
-* [#1135](https://github.com/xmake-io/xmake/issues/1135): 改进工具链，对 target 增加对多版本 vs 工具链的切换支持
 
 ### Bugs 修复
 
