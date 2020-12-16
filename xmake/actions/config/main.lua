@@ -195,11 +195,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- lock the whole project
     project.lock()
 
-    -- find default platform and save to configuration
-    local plat, arch = find_platform({global = true})
-    assert(plat == config.plat())
-    assert(arch == config.arch())
-
     -- enter menu config
     local options_changed = false
     if option.get("menu") then
@@ -273,6 +268,11 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
             config.set(name, value)
         end
     end
+
+    -- find default platform and save to configuration
+    local plat, arch = find_platform({global = true})
+    assert(plat == config.plat())
+    assert(arch == config.arch())
 
     -- load platform instance
     local instance_plat = platform.load(plat, arch)

@@ -59,6 +59,7 @@ function main(toolchain)
             end
         end
     end
+    print(toolchain:cachekey(), target_minver)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:configs_save()
