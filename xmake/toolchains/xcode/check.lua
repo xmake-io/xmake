@@ -79,6 +79,7 @@ function main(toolchain)
             end
         end
     end
+    toolchain:config_set("xcode", xcode.sdkdir)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
     toolchain:config_set("target_minver", target_minver)
     toolchain:configs_save()
