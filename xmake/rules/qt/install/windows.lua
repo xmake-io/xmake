@@ -34,7 +34,7 @@ function main(target, opt)
     local installfile = path.join(target:installdir(), "bin", path.filename(targetfile))
 
     -- need re-generate this app?
-    local dependfile = target:dependfile(targetfile)
+    local dependfile = target:dependfile(installfile)
 
     depend.on_changed(function ()
         -- do deploy
@@ -83,5 +83,5 @@ function main(target, opt)
         table.insert(argv, installfile)
 
         os.vrunv(windeployqt, argv, {envs = envs})
-    end, {dependfile = dependfile, files = targetfile})
+    end, {dependfile = dependfile, files = installfile})
 end
