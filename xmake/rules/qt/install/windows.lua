@@ -22,7 +22,7 @@
 import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
-import("detect.sdks.find_vstudio")
+import("lib.detect.find_path")
 
 -- install application package for windows
 function main(target, opt)
