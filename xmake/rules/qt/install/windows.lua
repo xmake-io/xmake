@@ -33,55 +33,50 @@ function main(target, opt)
     local targetfile = target:targetfile()
     local installfile = path.join(target:installdir(), "bin", path.filename(targetfile))
 
-    -- need re-generate this app?
-    local dependfile = target:dependfile(installfile)
+    -- do deploy
+    
+    -- get qt sdk
+    local qt = target:data("qt")
 
-    depend.on_changed(function ()
-        -- do deploy
-        
-        -- get qt sdk
-        local qt = target:data("qt")
+    -- get windeployqt
+    local windeployqt = path.join(qt.bindir, "windeployqt.exe")
+    assert(os.isexec(windeployqt), "windeployqt.exe not found!")
 
-        -- get windeployqt
-        local windeployqt = path.join(qt.bindir, "windeployqt.exe")
-        assert(os.isexec(windeployqt), "windeployqt.exe not found!")
-
-        -- find qml directory
-        local qmldir = nil
-        for _, sourcebatch in pairs(target:sourcebatches()) do
-            if sourcebatch.rulename == "qt.qrc" then
-                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                    qmldir = find_path("*.qml", path.directory(sourcefile))
-                    if qmldir then
-                        break
-                    end
+    -- find qml directory
+    local qmldir = nil
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        if sourcebatch.rulename == "qt.qrc" then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                qmldir = find_path("*.qml", path.directory(sourcefile))
+                if qmldir then
+                    break
                 end
             end
         end
+    end
 
-        -- find msvc to set VCINSTALLDIR env
-        local envs = nil
-        local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
-        if msvc then
-            local vcvars = msvc:config("vcvars")
-            if vcvars and vcvars.VSInstallDir then
-                envs = {VCINSTALLDIR = path.join(vcvars.VSInstallDir, "VC")}
-            end
+    -- find msvc to set VCINSTALLDIR env
+    local envs = nil
+    local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
+    if msvc then
+        local vcvars = msvc:config("vcvars")
+        if vcvars and vcvars.VSInstallDir then
+            envs = {VCINSTALLDIR = path.join(vcvars.VSInstallDir, "VC")}
         end
+    end
 
-        local argv = {"--force"}
-        if option.get("diagnosis") then
-            table.insert(argv, "--verbose=2")
-        elseif option.get("verbose") then
-            table.insert(argv, "--verbose=1")
-        else
-            table.insert(argv, "--verbose=0")
-        end
-        if qmldir then
-            table.insert(argv, "--qmldir=" .. qmldir)
-        end
-        table.insert(argv, installfile)
+    local argv = {"--force"}
+    if option.get("diagnosis") then
+        table.insert(argv, "--verbose=2")
+    elseif option.get("verbose") then
+        table.insert(argv, "--verbose=1")
+    else
+        table.insert(argv, "--verbose=0")
+    end
+    if qmldir then
+        table.insert(argv, "--qmldir=" .. qmldir)
+    end
+    table.insert(argv, installfile)
 
-        os.vrunv(windeployqt, argv, {envs = envs})
-    end, {dependfile = dependfile, files = installfile})
+    os.vrunv(windeployqt, argv, {envs = envs})
 end
