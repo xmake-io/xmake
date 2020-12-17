@@ -19,21 +19,16 @@
 --
 
 -- imports
-import("core.theme.theme")
 import("core.base.option")
 import("core.project.config")
-import("core.project.depend")
 import("core.tool.toolchain")
 import("detect.sdks.find_vstudio")
-import("private.utils.progress")
 
 -- install application package for windows
 function main(target, opt)
 
     local targetfile = target:targetfile()
     local installfile = path.join(target:installdir(), "bin", path.filename(targetfile))
-
-    -- do deploy
     
     -- get qt sdk
     local qt = target:data("qt")
