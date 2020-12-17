@@ -62,13 +62,13 @@ end
 
 -- main entry
 function main (target)
-    if is_plat("iphoneos") then
-        if is_arch("x86_64", "i386") then
+    if target:is_plat("iphoneos") then
+        if target:is_arch("x86_64", "i386") then
             _install_for_ios_simulator(target)
         else
             _install_for_ios(target)
         end
-    elseif is_plat("macosx") then
+    elseif target:is_plat("macosx") then
         _install_for_macosx(target)
     end
 end

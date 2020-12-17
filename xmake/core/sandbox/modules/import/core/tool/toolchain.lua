@@ -31,7 +31,7 @@ local raise     = require("sandbox/modules/raise")
 function sandbox_core_tool_toolchain.list()
     local names = table.copy(platform.toolchains())
     if os.isfile(os.projectfile()) then
-        for name, _ in pairs(project.toolchains()) do
+        for _, name in ipairs(project.toolchains()) do
             table.insert(names, name)
         end
     end

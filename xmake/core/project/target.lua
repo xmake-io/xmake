@@ -1745,7 +1745,7 @@ function _instance:tool(toolkind)
     end
 
     -- get tool program
-    local key = toolkind .. "_" .. self:plat() .. "_" .. self:arch()
+    local key = self:name() .. "_" .. toolkind .. "_" .. self:plat() .. "_" .. self:arch()
     local program, toolname, toolchain_info
     local toolinfo = tools[key]
     if toolinfo == nil then
@@ -1773,7 +1773,10 @@ function _instance:tool(toolkind)
             for idx, toolchain_inst in ipairs(toolchains) do
                 program, toolname = toolchain_inst:tool(toolkind)
                 if program then
-                    toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
+                    toolchain_info = {name = toolchain_inst:name(),
+                                      plat = toolchain_inst:plat(),
+                                      arch = toolchain_inst:arch(),
+                                      cachekey = toolchain_inst:cachekey()}
                     break
                 end
             end

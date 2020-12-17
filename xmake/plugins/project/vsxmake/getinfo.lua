@@ -296,14 +296,11 @@ function main(outputdir, vsinfo)
             -- clear project to reload and recheck it
             project.clear()
 
-            -- check configure
-            config.check()
+            -- check platform
+            platform.load(config.plat(), arch):check()
 
             -- check project options
             project.check()
-
-            -- reload platform
-            platform.load(config.plat())
 
             -- re-generate configheader
             generate_configheader()

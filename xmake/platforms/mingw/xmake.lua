@@ -37,25 +37,6 @@ platform("mingw")
     set_formats("binary", "$(name).exe")
     set_formats("symbol", "$(name).pdb")
 
-    -- on check
-    on_check(function (platform)
-        import("core.project.config")
-        local arch = config.get("arch")
-        if not arch then
-            local mingw_chost = nil
-            if is_subhost("msys") then
-                mingw_chost = os.getenv("MINGW_CHOST")
-            end
-            if mingw_chost == "i686-w64-mingw32" then
-                arch = "i386"
-            else
-                arch = "x86_64"
-            end
-            config.set("arch", arch)
-            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
-        end
-    end)
-
     -- set toolchains
     set_toolchains("envs", "mingw", "yasm", "nasm", "fasm", "go")
 

@@ -26,6 +26,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
 import("core.project.cache")
+import("private.detect.find_platform")
 import("lib.detect.cache", {alias = "detectcache"})
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
@@ -141,23 +142,23 @@ function _check_target_toolchains()
     -- check toolchains configuration for all target in the current project
     -- @note we must check targets after loading options
     for _, target in pairs(project.targets()) do
-        if target:get("enabled") ~= false and (target:get("toolchains") or not target:is_plat(config.get("plat"))) then
+        if target:get("enabled") ~= false and (target:get("toolchains") or
+                                               not target:is_plat(config.get("plat")) or
+                                               not target:is_arch(config.get("arch"))) then
             local target_toolchains = target:get("toolchains")
             if target_toolchains then
                 target_toolchains = hashset.from(table.wrap(target_toolchains))
-            end
-            for _, toolchain_inst in pairs(target:toolchains()) do
-                -- check toolchains for `target/set_toolchains()`
-                if target_toolchains then
+                for _, toolchain_inst in pairs(target:toolchains()) do
+                    -- check toolchains for `target/set_toolchains()`
                     if not toolchain_inst:check() and target_toolchains:has(toolchain_inst:name()) then
                         raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
                     end
-                else
-                    -- check platform toolchains for `target/set_plat()`
-                    local ok, errors = target:platform():check()
-                    if not ok then
-                        raise(errors)
-                    end
+                end
+            else
+                -- check platform toolchains for `target/set_plat()`
+                local ok, errors = target:platform():check()
+                if not ok then
+                    raise(errors)
                 end
             end
         end
@@ -268,6 +269,14 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- find default platform and save to configuration
+    local plat, arch = find_platform({global = true})
+    assert(plat == config.plat())
+    assert(arch == config.arch())
+
+    -- load platform instance
+    local instance_plat = platform.load(plat, arch)
+
     -- merge the checked configure
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
@@ -275,17 +284,14 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         -- clear detect cache
         detectcache.clear()
 
-        -- check configure
-        config.check()
+        -- check platform
+        instance_plat:check()
 
         -- check project options
         if not trybuild then
             project.check()
         end
     end
-
-    -- load platform
-    platform.load(config.plat())
 
     -- translate the build directory
     local buildir = config.get("buildir")

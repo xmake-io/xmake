@@ -31,6 +31,7 @@ import("core.ui.action")
 import("core.ui.menuconf")
 import("core.ui.mconfdialog")
 import("core.ui.application")
+import("private.detect.find_platform")
 
 -- the app application
 local app = application()
@@ -227,11 +228,17 @@ function app:_basic_configs(cache)
     -- make configs by category
     self._BASIC_CONFIGS = self:_make_configs_by_category("Basic Configuration", options_by_category, cache, function (opt)
 
-        -- get default
+        -- get option
+        local name    = opt[2] or opt[1]
         local default = opt[4]
+        local kind    = (opt[3] == "k" or type(default) == "boolean") and "boolean" or "string"
 
-        -- get kind
-        local kind = (opt[3] == "k" or type(default) == "boolean") and "boolean" or "string"
+        -- get default platform
+        if name == "plat" then
+            default = find_platform()
+        elseif name == "arch" then
+            _, default = find_platform()
+        end
 
         -- choice option?
         local values = opt.values
@@ -267,7 +274,7 @@ function app:_basic_configs(cache)
         end
 
         -- make option info
-        return {name = opt[2] or opt[1], kind = kind, default = default, values = values, description = description}
+        return {name = name, kind = kind, default = default, values = values, description = description}
     end)
     return self._BASIC_CONFIGS
 end

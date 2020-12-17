@@ -41,7 +41,7 @@ function main (target, opt)
 
         -- copy target file
         local binarydir = contentsdir
-        if is_plat("macosx") then
+        if target:is_plat("macosx") then
             binarydir = path.join(contentsdir, "MacOS")
         end
         os.vcp(target:targetfile(), path.join(binarydir, path.filename(target:targetfile())))
@@ -72,7 +72,7 @@ function main (target, opt)
         -- generate embedded.mobileprovision to *.app/embedded.mobileprovision
         local mobile_provision_embedded = path.join(bundledir, "embedded.mobileprovision")
         local mobile_provision = target:values("xcode.mobile_provision") or get_config("xcode_mobile_provision")
-        if mobile_provision and is_plat("iphoneos") then
+        if mobile_provision and target:is_plat("iphoneos") then
             os.tryrm(mobile_provision_embedded)
             local provisions = codesign.mobile_provisions()
             if provisions then

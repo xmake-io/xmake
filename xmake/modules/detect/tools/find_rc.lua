@@ -57,16 +57,12 @@ function main(opt)
     --
     -- e.g. C:\Program Files (x86)\Windows Kits\10\bin\10.0.17134.0\x64
     --
-    local arch = opt.arch or config.arch() or os.arch()
-    local vcvarsall = config.get("__vcvarsall")
-    if vcvarsall then
-        local vcvars = vcvarsall[arch]
-        if vcvars and vcvars.WindowsSdkDir and vcvars.WindowsSDKVersion then
-            local bindir = path.join(vcvars.WindowsSdkDir, "bin", vcvars.WindowsSDKVersion, arch)
-            if os.isdir(bindir) then
-                opt.paths = opt.paths or {}
-                table.insert(opt.paths, bindir)
-            end
+    local envs = opt.envs
+    if envs and envs.WindowsSdkDir and envs.WindowsSDKVersion then
+        local bindir = path.join(envs.WindowsSdkDir, "bin", envs.WindowsSDKVersion, arch)
+        if os.isdir(bindir) then
+            opt.paths = opt.paths or {}
+            table.insert(opt.paths, bindir)
         end
     end
 

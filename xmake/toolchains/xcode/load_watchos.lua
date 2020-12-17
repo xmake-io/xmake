@@ -32,12 +32,12 @@ function main(toolchain)
     local platname = simulator and "WatchSimulator" or "WatchOS"
 
     -- init target minimal version
-    local target_minver = config.get("target_minver_watchos")
+    local target_minver = toolchain:config("target_minver")
     local target_minver_flags = (simulator and "-mwatchos-simulator-version-min=" or "-mwatchos-version-min=") .. target_minver
 
     -- init the xcode sdk directory
     local xcode_dir     = config.get("xcode")
-    local xcode_sdkver  = config.get("xcode_sdkver_watchos")
+    local xcode_sdkver  = toolchain:config("xcode_sdkver")
     local xcode_sdkdir  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode_dir, platname, platname, xcode_sdkver)
 
     -- init flags for c/c++

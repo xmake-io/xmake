@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("core.tool.toolchain")
 
 -- find devenv
 --
@@ -48,11 +49,12 @@ function main(opt)
     -- e.g. C:\Program Files\Microsoft Visual Studio 9.0\Common7\IDE
     --
     local program = nil
-    local vcvarsall = config.get("__vcvarsall")
-    if vcvarsall then
-        for _, vsvars in pairs(vcvarsall) do
-            if vsvars.DevEnvdir and os.isexec(path.join(vsvars.DevEnvdir, "devenv.exe")) then
-                program = path.join(vsvars.DevEnvdir, "devenv.exe")
+    local msvc = toolchain.load("msvc")
+    if msvc then
+        local vcvars = msvc:config("vcvars")
+        if vcvars then
+            if vcvars.DevEnvdir and os.isexec(path.join(vcvars.DevEnvdir, "devenv.exe")) then
+                program = path.join(vcvars.DevEnvdir, "devenv.exe")
             end
         end
     end

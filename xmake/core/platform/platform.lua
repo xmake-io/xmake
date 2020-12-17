@@ -52,6 +52,16 @@ function _instance:arch()
     return self._ARCH or config.get("arch")
 end
 
+-- set platform architecture
+function _instance:arch_set(arch)
+    if self:arch() ~= arch then
+        -- we need clean the dirty cache if architecture has been changed
+        platform._PLATFORMS[self:name() .. "_" .. self:arch()] = nil
+        platform._PLATFORMS[self:name() .. "_" .. arch] = self
+        self._ARCH = arch
+    end
+end
+
 -- set the value to the platform configuration
 function _instance:set(name, ...)
     self._INFO:apival_set(name, ...)
@@ -195,7 +205,10 @@ function _instance:tool(toolkind)
         for idx, toolchain_inst in ipairs(toolchains) do
             program, toolname = toolchain_inst:tool(toolkind)
             if program then
-                toolchain_info = {name = toolchain_inst:name(), plat = toolchain_inst:plat(), arch = toolchain_inst:arch()}
+                toolchain_info = {name = toolchain_inst:name(),
+                                  plat = toolchain_inst:plat(),
+                                  arch = toolchain_inst:arch(),
+                                  cachekey = toolchain_inst:cachekey()}
                 toolinfo[1] = program
                 toolinfo[2] = toolname
                 toolinfo[3] = toolchain_info
@@ -265,15 +278,6 @@ end
 
 -- do check
 function _instance:check()
-
-    -- check platform
-    local on_check = self:script("check")
-    if on_check then
-        local ok, errors = sandbox.load(on_check, self)
-        if not ok then
-            return false, errors
-        end
-    end
 
     -- check toolchains
     local toolchains = self:toolchains({all = true})
@@ -383,7 +387,6 @@ function platform._apis()
         {
             -- platform.on_xxx
             "platform.on_load"
-        ,   "platform.on_check"
         }
     ,   keyvalues =
         {

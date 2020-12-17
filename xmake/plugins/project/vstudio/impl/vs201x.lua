@@ -25,6 +25,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
+import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
@@ -37,9 +38,12 @@ function _make_targetinfo(mode, arch, target)
     local targetinfo = { mode = mode, arch = (arch == "x86" and "Win32" or "x64") }
 
     -- get sdk version
-    local vcvarsall = config.get("__vcvarsall")
-    if vcvarsall then
-        targetinfo.sdkver = (vcvarsall[arch] or {}).WindowsSDKVersion
+    local msvc = toolchain.load("msvc")
+    if msvc then
+        local vcvars = msvc:config("vcvars")
+        if vcvars then
+            targetinfo.sdkver = vcvars.WindowsSDKVersion
+        end
     end
 
     -- save c/c++ precompiled output file (.pch)
@@ -233,14 +237,11 @@ function make(outputdir, vsinfo)
                 -- clear project to reload and recheck it
                 project.clear()
 
-                -- check configure
-                config.check()
+                -- check platform
+                platform.load(config.plat(), arch):check()
 
                 -- check project options
                 project.check()
-
-                -- reload platform
-                platform.load(config.plat())
 
                 -- re-generate configheader
                 generate_configheader()

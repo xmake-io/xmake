@@ -40,16 +40,6 @@ platform("cygwin")
     -- set install directory
     set_installdir("/usr/local")
 
-    -- on check
-    on_check(function (platform)
-        import("core.project.config")
-        local arch = config.get("arch")
-        if not arch then
-            config.set("arch", os.subarch())
-            cprint("checking for architecture ... ${color.success}%s", config.get("arch"))
-        end
-    end)
-
     -- set toolchains
     set_toolchains("envs", "cross", "gcc", "clang", "yasm", "gfortran")
 

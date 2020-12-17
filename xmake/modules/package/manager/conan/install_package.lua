@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tool.toolchain")
 import("core.platform.platform")
 import("lib.detect.find_tool")
 import("devel.git")
@@ -219,7 +220,11 @@ function main(name, opt)
             table.insert(argv, "compiler.runtime=" .. opt.vs_runtime)
         end
     elseif opt.plat == "iphoneos" then
-        local target_minver = config.get("target_minver_iphoneos")
+        local target_minver = nil
+        local toolchain_xcode = toolchain.load("xcode", {plat = opt.plat, arch = opt.arch})
+        if toolchain_xcode then
+            target_minver = toolchain_xcode:config("target_minver")
+        end
         if target_minver and tonumber(target_minver) > 10 and (arch == "armv7" or arch == "armv7s" or arch == "x86") then
             target_minver = "10" -- iOS 10 is the maximum deployment target for 32-bit targets
         end

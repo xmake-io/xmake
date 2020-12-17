@@ -27,7 +27,7 @@ import("lib.detect.find_directory")
 import("private.tools.codesign")
 
 -- find xcode directory
-function _find_sdkdir(sdkdir)
+function _find_sdkdir(sdkdir, opt)
     if sdkdir and os.isdir(sdkdir) then
         return sdkdir
     end
@@ -35,9 +35,11 @@ function _find_sdkdir(sdkdir)
 end
 
 -- find the sdk version of xcode
-function _find_xcode_sdkver(sdkdir, plat, arch)
+function _find_xcode_sdkver(sdkdir, opt)
 
     -- select platform sdkdir
+    local plat = opt.plat
+    local arch = opt.arch
     local platsdkdir = nil
     if plat == "iphoneos" then
         if arch == "i386" or arch == "x86_64" then
@@ -65,52 +67,56 @@ function _find_xcode_sdkver(sdkdir, plat, arch)
 end
 
 -- find the xcode toolchain
-function _find_xcode(sdkdir, xcode_sdkver, plat, arch)
+function _find_xcode(sdkdir, opt)
 
     -- find xcode root directory
-    sdkdir = _find_sdkdir(sdkdir)
+    sdkdir = _find_sdkdir(sdkdir, opt)
     if not sdkdir then
         return {}
     end
 
     -- find the sdk version
-    local sdkver = xcode_sdkver or _find_xcode_sdkver(sdkdir, plat, arch)
+    local sdkver = opt.sdkver or _find_xcode_sdkver(sdkdir, opt)
     if not sdkver then
         return {}
     end
 
-    -- find codesign identity
-    local codesign_identity = config.get("xcode_codesign_identity")
-    if codesign_identity == nil then -- we will disable codesign_identity if be false
-        codesign_identity = global.get("xcode_codesign_identity")
-    end
-    if codesign_identity == nil then
-        local codesign_identities = codesign.codesign_identities()
-        if codesign_identities then
-            for identity, _ in pairs(codesign_identities) do
-                codesign_identity = identity
-                break
-            end
-        end
-    end
+    -- find codesign
+    if opt.find_codesign then
 
-    -- find mobile provision only for iphoneos
-    local mobile_provision
-    if is_plat("iphoneos") then
-        local mobile_provisions = codesign.mobile_provisions()
-        if mobile_provisions then
-            mobile_provision = config.get("xcode_mobile_provision")
-            if mobile_provision == nil then -- we will disable mobile_provision if be false
-                mobile_provision = global.get("xcode_mobile_provision")
-            end
-            if mobile_provision == nil then
-                for provision, _ in pairs(mobile_provisions) do
-                    mobile_provision = provision
+        -- find codesign identity
+        local codesign_identity = config.get("xcode_codesign_identity")
+        if codesign_identity == nil then -- we will disable codesign_identity if be false
+            codesign_identity = global.get("xcode_codesign_identity")
+        end
+        if codesign_identity == nil then
+            local codesign_identities = codesign.codesign_identities()
+            if codesign_identities then
+                for identity, _ in pairs(codesign_identities) do
+                    codesign_identity = identity
                     break
                 end
-            -- valid mobile provision not found? reset it
-            elseif not mobile_provisions[mobile_provision] then
-                mobile_provision = nil
+            end
+        end
+
+        -- find mobile provision only for iphoneos
+        local mobile_provision
+        if opt.plat == "iphoneos" then
+            local mobile_provisions = codesign.mobile_provisions()
+            if mobile_provisions then
+                mobile_provision = config.get("xcode_mobile_provision")
+                if mobile_provision == nil then -- we will disable mobile_provision if be false
+                    mobile_provision = global.get("xcode_mobile_provision")
+                end
+                if mobile_provision == nil then
+                    for provision, _ in pairs(mobile_provisions) do
+                        mobile_provision = provision
+                        break
+                    end
+                -- valid mobile provision not found? reset it
+                elseif not mobile_provisions[mobile_provision] then
+                    mobile_provision = nil
+                end
             end
         end
     end
@@ -121,7 +127,7 @@ end
 --
 -- @param sdkdir    the xcode directory
 -- @param opt       the argument options
---                  e.g. {verbose = true, force = false, sdkver = 19, toolchains_ver = "4.9"}
+--                  e.g. {verbose = true, force = false, sdkver = 19, find_codesign = true}
 --
 -- @return          the xcode toolchain. e.g. {bindir = .., cross = ..}
 --
@@ -144,54 +150,14 @@ function main(sdkdir, opt)
     end
 
     -- get plat and arch
-    local plat = opt.plat or config.get("plat") or "macosx"
-    local arch = opt.arch or config.get("arch") or "x86_64"
-
-    -- get xcode sdk version
-    local xcode_sdkver = (plat == config.plat()) and config.get("xcode_sdkver")
-    if not xcode_sdkver then
-        xcode_sdkver = config.get("xcode_sdkver_" .. plat)
-    end
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
 
     -- find xcode
-    local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode"), opt.sdkver or xcode_sdkver, plat, arch)
-    if xcode and xcode.sdkdir then
-
-        -- save to config
-        config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
-        config.set("xcode_sdkver_" .. plat, xcode.sdkver, {force = true, readonly = true})
-        config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
-        config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
-
-        -- trace
-        if opt.verbose or option.get("verbose") then
-            cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
-            cprint("checking for SDK version of Xcode ... ${color.success}%s", xcode.sdkver)
-            if xcode.codesign_identity then
-                cprint("checking for Codesign Identity of Xcode ... ${color.success}%s", xcode.codesign_identity)
-            else
-                cprint("checking for Codesign Identity of Xcode ... ${color.nothing}${text.nothing}")
-            end
-            if plat == "iphoneos" then
-                if xcode.mobile_provision then
-                    cprint("checking for Mobile Provision of Xcode ... ${color.success}%s", xcode.mobile_provision)
-                else
-                    cprint("checking for Mobile Provision of Xcode ... ${color.nothing}${text.nothing}")
-                end
-            end
-        end
-    else
-
-        -- trace
-        if opt.verbose or option.get("verbose") then
-            cprint("checking for Xcode directory ... ${color.nothing}${text.nothing}")
-        end
-    end
+    local xcode = _find_xcode(sdkdir or config.get("xcode") or global.get("xcode"), opt)
 
     -- save to cache
     cacheinfo.xcode = xcode or false
     cache.save(key, cacheinfo)
-
-    -- ok?
     return xcode
 end

@@ -36,12 +36,25 @@ local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, plat, arch)
-    local instance    = table.inherit(_instance)
-    instance._NAME    = name
-    instance._INFO    = info
-    instance._PLAT    = plat
-    instance._ARCH    = arch
+function _instance.new(name, info, cachekey, configs)
+    local instance     = table.inherit(_instance)
+    instance._NAME     = name
+    instance._INFO     = info
+    instance._CACHE    = require("sandbox/modules/import/lib/detect/cache")
+    instance._CACHEKEY = cachekey
+    instance._CONFIGS  = instance._CACHE.load(cachekey) or {}
+    for k, v in pairs(configs) do
+        instance._CONFIGS[k] = v
+    end
+    -- is global toolchain for the whole platform?
+    configs.plat = nil
+    configs.arch = nil
+    configs.cachekey = nil
+    local plat = config.get("plat") or os.host()
+    local arch = config.get("arch") or os.arch()
+    if instance:is_plat(plat) and instance:is_arch(arch) and #table.keys(configs) == 0 then
+        instance._CONFIGS.__global = true
+    end
     return instance
 end
 
@@ -52,12 +65,12 @@ end
 
 -- get toolchain platform
 function _instance:plat()
-    return self._PLAT
+    return self:config("plat")
 end
 
 -- get toolchain architecture
 function _instance:arch()
-    return self._ARCH
+    return self:config("arch")
 end
 
 -- the current platform is belong to the given platforms?
@@ -133,6 +146,11 @@ function _instance:standalone()
     return self:kind() == "standalone"
 end
 
+-- global toolchain for whole platform
+function _instance:global()
+    return self:config("__global")
+end
+
 -- get the run environments
 function _instance:runenvs()
     local runenvs = self._RUNENVS
@@ -190,6 +208,26 @@ end
 -- get the sdk directory
 function _instance:sdkdir()
     return config.get("sdk") or self:info():get("sdkdir")
+end
+
+-- get cachekey
+function _instance:cachekey()
+    return self._CACHEKEY
+end
+
+-- get user config from `set_toolchains("", {configs = {vs = "2018"}})`
+function _instance:config(name)
+    return self._CONFIGS[name]
+end
+
+-- set user config
+function _instance:config_set(name, data)
+    self._CONFIGS[name] = data
+end
+
+-- save user configs
+function _instance:configs_save()
+    self._CACHE.save(self:cachekey(), self._CONFIGS)
 end
 
 -- do check, we only check it once for all architectures
@@ -328,12 +366,9 @@ function _instance:_checktool(toolkind, toolpath)
         end
     end
 
-    -- init cache key
-    local cachekey = "toolchain_" .. self:plat() .. "_" .. self:arch()
-
     -- find tool program
     local program, toolname
-    local tool = find_tool(toolpath, {cachekey = cachekey, program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
+    local tool = find_tool(toolpath, {cachekey = self:cachekey(), program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
         toolname = tool.name
@@ -378,6 +413,19 @@ function toolchain._interpreter()
     return interp
 end
 
+-- get cache key
+function toolchain._cachekey(name, opt)
+    local cachekey = opt.cachekey
+    if not cachekey then
+        cachekey = "toolchain_" .. name
+        for _, k in ipairs(table.orderkeys(opt)) do
+            local v = opt[k]
+            cachekey = cachekey .. "_" .. k .. "_" .. tostring(v)
+        end
+    end
+    return cachekey
+end
+
 -- get toolchain apis
 function toolchain.apis()
     return
@@ -419,14 +467,14 @@ function toolchain.directories()
     return dirs
 end
 
--- load the given toolchain
+-- load toolchain
 function toolchain.load(name, opt)
 
     -- init cache key
     opt = opt or {}
-    local plat = opt.plat or config.get("plat") or os.host()
-    local arch = opt.arch or config.get("arch") or os.arch()
-    local cachekey = name .. plat .. arch
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
+    local cachekey = toolchain._cachekey(name, opt)
 
     -- get it directly from cache dirst
     toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
@@ -468,17 +516,30 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, result, plat, arch)
+    local instance = _instance.new(name, result, cachekey, opt)
     toolchain._TOOLCHAINS[cachekey] = instance
     return instance
 end
 
--- new toolchain
-function toolchain.new(name, info, opt)
+-- load toolchain from the give toolchain info
+function toolchain.load_withinfo(name, info, opt)
+
+    -- init cache key
     opt = opt or {}
-    local plat = opt.plat or config.get("plat") or os.host()
-    local arch = opt.arch or config.get("arch") or os.arch()
-    return _instance.new(name, info, plat, arch)
+    opt.plat = opt.plat or config.get("plat") or os.host()
+    opt.arch = opt.arch or config.get("arch") or os.arch()
+    local cachekey = toolchain._cachekey(name, opt)
+
+    -- get it directly from cache dirst
+    toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
+    if toolchain._TOOLCHAINS[cachekey] then
+        return toolchain._TOOLCHAINS[cachekey]
+    end
+
+    -- save instance to the cache
+    local instance = _instance.new(name, info, cachekey, opt)
+    toolchain._TOOLCHAINS[cachekey] = instance
+    return instance
 end
 
 -- return module

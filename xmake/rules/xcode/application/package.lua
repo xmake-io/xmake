@@ -40,7 +40,7 @@ end
 
 -- main entry
 function main (target, opt)
-    if is_plat("iphoneos") then
+    if target:is_plat("iphoneos") then
         _package_for_ios(target)
     end
 end

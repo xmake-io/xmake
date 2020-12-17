@@ -39,10 +39,8 @@ function _get_toolset_ver(targetinfo, vsinfo)
     return toolset_ver
 end
 
--- get platform sdk version
+-- get platform sdk version from vcvars.WindowsSDKVersion
 function _get_platform_sdkver(target, vsinfo)
-
-    -- get sdk version for vcvarsall[arch].WindowsSDKVersion
     local sdkver = nil
     for _, targetinfo in ipairs(target.info) do
         sdkver = targetinfo.sdkver
@@ -50,8 +48,6 @@ function _get_platform_sdkver(target, vsinfo)
             break
         end
     end
-
-    -- done
     return sdkver or vsinfo.sdk_version
 end
 
