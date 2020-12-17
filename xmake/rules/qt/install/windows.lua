@@ -23,6 +23,7 @@ import("core.theme.theme")
 import("core.base.option")
 import("core.project.config")
 import("core.project.depend")
+import("core.tool.toolchain")
 import("detect.sdks.find_vstudio")
 import("private.utils.progress")
 
