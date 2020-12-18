@@ -67,7 +67,7 @@ function cache._instance(scopename)
     -- make the cache path
     local cachepath = (scopename:gsub("%.", "/"))
     cachepath = (cachepath:gsub("^local%/", path.join(config.directory(), "cache") .. "/"))
-    cachepath = (cachepath:gsub("^global%/", path.join(global.directory(), "cache") .. "/"))
+    cachepath = (cachepath:gsub("^global%/", path.join(global.cachedir()) .. "/"))
 
     -- save the cache path
     instance._CACHEPATH = cachepath
