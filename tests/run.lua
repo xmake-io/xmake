@@ -1,5 +1,5 @@
 -- imports
-import("core.project.task")
+import("core.base.task")
 import("core.base.option")
 
 local params = {}
