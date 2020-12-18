@@ -110,6 +110,11 @@ function global.directory()
     return global._DIRECTORY
 end
 
+-- get the global cache directory
+function global.cachedir()
+    return global.get("cachedir") or path.join(global.directory(), "cache")
+end
+
 -- load the global configuration
 function global.load()
 

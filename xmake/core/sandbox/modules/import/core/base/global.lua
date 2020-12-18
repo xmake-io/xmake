@@ -28,63 +28,23 @@ local global    = require("base/global")
 local platform  = require("platform/platform")
 local raise     = require("sandbox/modules/raise")
 
--- get the configure
-function sandbox_core_base_global.get(name)
-    return global.get(name)
-end
-
--- set the configure
---
--- @param name  the name
--- @param value the value
--- @param opt   the argument options, e.g. {readonly = false, force = false}
---
-function sandbox_core_base_global.set(name, value, opt)
-    global.set(name, value, opt)
-end
-
--- this config name is readonly?
-function sandbox_core_base_global.readonly(name)
-    return config.readonly(name)
-end
-
--- dump the configure
-function sandbox_core_base_global.dump()
-    global.dump()
-end
+-- export some readonly interfaces
+sandbox_core_base_global.get       = global.get
+sandbox_core_base_global.set       = global.set
+sandbox_core_base_global.readonly  = global.readonly
+sandbox_core_base_global.dump      = global.dump
+sandbox_core_base_global.clear     = global.clear
+sandbox_core_base_global.options   = global.options
+sandbox_core_base_global.filepath  = global.filepath
+sandbox_core_base_global.directory = global.directory
+sandbox_core_base_global.cachedir  = global.cachedir
 
 -- save the configure
 function sandbox_core_base_global.save()
-
-    -- save it
     local ok, errors = global.save()
     if not ok then
         raise(errors)
     end
-end
-
--- clear the configure
-function sandbox_core_base_global.clear()
-    return global.clear()
-end
-
--- get all options
-function sandbox_core_base_global.options()
-    return global.options()
-end
-
--- get the configure file path
-function sandbox_core_base_global.filepath()
-    local filepath = global.filepath()
-    assert(filepath)
-    return filepath
-end
-
--- get the configure directory
-function sandbox_core_base_global.directory()
-    local dir = global.directory()
-    assert(dir)
-    return dir
 end
 
 -- return module
