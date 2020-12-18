@@ -1,5 +1,5 @@
 A cross-platform build utility based on Lua
-Copyright 2015-2020 The TBOOX Open Source Group
+Copyright 2015-present The TBOOX Open Source Group
 
 This product includes software developed by The TBOOX Open Source Group (https://tboox.org/).
 
