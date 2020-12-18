@@ -302,7 +302,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- only config for building project using third-party buildsystem
     if not trybuild then
 
-        -- install and update requires and config header
+        -- install and update requires
         local require_enable = option.boolean(option.get("require"))
         if (recheck or require_enable) and require_enable ~= false then
             install_requires()
@@ -312,7 +312,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         -- otherwise has_package() will be invalid.
         _check_target(targetname)
 
-        -- update the config header
+        -- update the config files
         if recheck then
             generate_configfiles()
             generate_configheader()

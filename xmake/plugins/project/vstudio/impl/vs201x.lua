@@ -29,6 +29,9 @@ import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
+import("lib.detect.cache", {alias = "detectcache"})
+import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
+import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 
 -- make target info
@@ -229,6 +232,9 @@ function make(outputdir, vsinfo)
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
 
+                -- clear detect cache
+                detectcache.clear()
+
                 -- modify config
                 config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
                 config.set("mode", mode, {readonly = true, force = true})
@@ -243,7 +249,11 @@ function make(outputdir, vsinfo)
                 -- check project options
                 project.check()
 
-                -- re-generate configheader
+                -- install and update requires
+                install_requires()
+
+                -- update config files
+                generate_configfiles()
                 generate_configheader()
             end
 
