@@ -27,9 +27,9 @@ local table = require("base/table")
 
 -- new an instance
 function _instance.new(name)
-    local instance = table.inherit(_instance)
-    instance._NAME = name
-    instance._ITEMS = {}
+    local instance   = table.inherit(_instance)
+    instance._NAME   = name
+    instance._SCOPES = {}
     return instance
 end
 
@@ -38,24 +38,52 @@ function _instance:name()
     return self._NAME
 end
 
--- get all cached items
-function _instance:items()
-    return self._ITEMS
+-- get all cache scopes
+function _instance:scopes()
+    return self._SCOPES
 end
 
--- get cache item value
-function _instance:get(name)
-    return self._ITEMS[name]
+-- get cache scope
+function _instance:scope(scopename)
+    return self._SCOPES[scopename]
 end
 
--- set cache item value
-function _instance:set(name, value)
-    self._ITEMS[name] = value
+-- set cache scope
+function _instance:scope_set(scopename, scope)
+    self._SCOPES[scopename] = scope
 end
 
--- clear cache items
+-- get cache value in the given scope
+function _instance:value(scopename, name)
+    local scope = self._SCOPES[scopename]
+    if scope then
+        return scope[name]
+    end
+end
+
+-- set cache value in the given scope
+function _instance:value_set(scopename, name, value)
+    local scope = self._SCOPES[scopename]
+    if not scope then
+        scope = {}
+        self._SCOPES[scopename] = scope
+    end
+    scope[name] = value
+end
+
+-- add cache value in the given scope
+function _instance:value_add(scopename, name, value)
+    local scope = self._SCOPES[scopename]
+    if not scope then
+        scope = {}
+        self._SCOPES[scopename] = scope
+    end
+    scope[name] = table.unwrap(table.join(scope[name] or {}, value))
+end
+
+-- clear cache scopes
 function _instance:clear()
-    self._ITEMS = {}
+    self._SCOPES = {}
 end
 
 -- get cache instance
@@ -78,29 +106,49 @@ function memcache.caches()
     return memcache._CACHES
 end
 
--- get cache item value
-function memcache.get(cachename, name)
-    return memcache.cache(cachename):get(name)
+-- get cache scopes
+function memcache.scopes(cachename)
+    return memcache.cache(cachename):scopes()
 end
 
--- set cache item value
-function memcache.set(cachename, name, value)
-    return memcache.cache(cachename):set(name, value)
+-- get cache scope
+function memcache.scope(cachename, scopename)
+    return memcache.cache(cachename):scope(scopename)
 end
 
--- clear caches of the given scope name, it will clear all caches if pattern is nil
+-- set cache scope
+function memcache.scope_set(cachename, scopename, scope)
+    return memcache.cache(cachename):scope_set(scopename, scope)
+end
+
+-- get cache value in the given scope
+function memcache.value(cachename, scopename, name)
+    return memcache.cache(cachename):value(scopename, name)
+end
+
+-- set cache value in the given scope
+function memcache.value_set(cachename, scopename, name, value)
+    return memcache.cache(cachename):value_set(scopename, name, value)
+end
+
+-- add cache value in the given scope
+function memcache.value_add(cachename, scopename, name, value)
+    return memcache.cache(cachename):value_add(scopename, name, value)
+end
+
+-- clear caches of the given group name, it will clear all caches if group name is nil
 --
 -- @code
 -- memcache.clear() -- clear all caches
--- memcache.clear("cachescope") -- clear caches with `cachescope.*`
+-- memcache.clear("groupname") -- clear caches with `groupname.*`
 -- @endcode
 --
-function memcache.clear(scopename)
+function memcache.clear(groupname)
     local caches = memcache.caches()
     if caches then
         for _, cache in pairs(caches) do
-            if scopename then
-                if cache:name():startswith(scopename .. ".") then
+            if groupname then
+                if cache:name():startswith(groupname .. ".") then
                     cache:clear()
                 end
             else
