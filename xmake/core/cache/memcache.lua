@@ -19,7 +19,8 @@
 --
 
 -- define module: memcache
-local memcache = memcache or {}
+local memcache  = memcache or {}
+local _instance = _instance or {}
 
 -- load modules
 local table = require("base/table")
@@ -91,7 +92,7 @@ end
 --
 -- @code
 -- memcache.clear() -- clear all caches
--- memcache.clear("cachescope.") -- clear caches with `cachescope.*`
+-- memcache.clear("cachescope") -- clear caches with `cachescope.*`
 -- @endcode
 --
 function memcache.clear(scopename)
@@ -99,7 +100,7 @@ function memcache.clear(scopename)
     if caches then
         for _, cache in pairs(caches) do
             if scopename then
-                if cache:startswith(scopename) then
+                if cache:name():startswith(scopename .. ".") then
                     cache:clear()
                 end
             else
