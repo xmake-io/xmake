@@ -15,11 +15,11 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cache.lua
+-- @file        localcache.lua
 --
 
--- define module: cache
-local cache = cache or {}
+-- define module: localcache
+local localcache = localcache or {}
 
 -- load modules
 local io     = require("base/io")
@@ -29,5 +29,5 @@ local table  = require("base/table")
 local utils  = require("base/utils")
 local global = require("base/global")
 
--- return module: cache
-return cache
+-- return module: localcache
+return localcache
