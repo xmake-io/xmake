@@ -136,19 +136,13 @@ function memcache.value_add(cachename, scopename, name, value)
     return memcache.cache(cachename):value_add(scopename, name, value)
 end
 
--- clear caches of the given group name, it will clear all caches if group name is nil
---
--- @code
--- memcache.clear() -- clear all caches
--- memcache.clear("groupname") -- clear caches with `groupname.*`
--- @endcode
---
-function memcache.clear(groupname)
+-- clear the given cache, it will clear all caches if cache name is nil
+function memcache.clear(cachename)
     local caches = memcache.caches()
     if caches then
         for _, cache in pairs(caches) do
-            if groupname then
-                if cache:name():startswith(groupname .. ".") then
+            if cachename then
+                if cache:name() == cachename then
                     cache:clear()
                 end
             else
