@@ -27,9 +27,9 @@ local table = require("base/table")
 
 -- new an instance
 function _instance.new(name)
-    local instance   = table.inherit(_instance)
-    instance._NAME   = name
-    instance._SCOPES = {}
+    local instance = table.inherit(_instance)
+    instance._NAME = name
+    instance._DATA = {}
     return instance
 end
 
@@ -38,52 +38,60 @@ function _instance:name()
     return self._NAME
 end
 
--- get all cache scopes
-function _instance:scopes()
-    return self._SCOPES
+-- get cache data
+function _instance:data()
+    return self._DATA
 end
 
--- get cache scope
-function _instance:scope(scopename)
-    return self._SCOPES[scopename]
+-- get cache value in level/1
+function _instance:get(key)
+    return self._DATA[key]
 end
 
--- set cache scope
-function _instance:scope_set(scopename, scope)
-    self._SCOPES[scopename] = scope
-end
-
--- get cache value in the given scope
-function _instance:value(scopename, name)
-    local scope = self._SCOPES[scopename]
-    if scope then
-        return scope[name]
+-- get cache value in level/2
+function _instance:get2(key1, key2)
+    local value1 = self:get(key1)
+    if value1 ~= nil then
+        return value1[key2]
     end
 end
 
--- set cache value in the given scope
-function _instance:value_set(scopename, name, value)
-    local scope = self._SCOPES[scopename]
-    if not scope then
-        scope = {}
-        self._SCOPES[scopename] = scope
+-- get cache value in level/3
+function _instance:get3(key1, key2, key3)
+    local value2 = self:get2(key1)
+    if value2 ~= nil then
+        return value2[key3]
     end
-    scope[name] = value
 end
 
--- add cache value in the given scope
-function _instance:value_add(scopename, name, value)
-    local scope = self._SCOPES[scopename]
-    if not scope then
-        scope = {}
-        self._SCOPES[scopename] = scope
+-- set cache value in level/1
+function _instance:set(key, value)
+    self._DATA[key] = value
+end
+
+-- set cache value in level/2
+function _instance:set2(key1, key2, value2)
+    local value1 = self:get(key1)
+    if value1 == nil then
+        value1 = {}
+        self:set(key1, value1)
     end
-    scope[name] = table.unwrap(table.join(scope[name] or {}, value))
+    value1[key2] = value2
+end
+
+-- set cache value in level/3
+function _instance:set3(key1, key2, key3, value3)
+    local value2 = self:get2(key1, key2)
+    if value2 == nil then
+        value2 = {}
+        self:set2(key1, key2, value2)
+    end
+    value2[key3] = value3
 end
 
 -- clear cache scopes
 function _instance:clear()
-    self._SCOPES = {}
+    self._DATA = {}
 end
 
 -- get cache instance
@@ -106,34 +114,34 @@ function memcache.caches()
     return memcache._CACHES
 end
 
--- get cache scopes
-function memcache.scopes(cachename)
-    return memcache.cache(cachename):scopes()
+-- get cache value in level/1
+function memcache.get(cachename, key)
+    return memcache.cache(cachename):get(key)
 end
 
--- get cache scope
-function memcache.scope(cachename, scopename)
-    return memcache.cache(cachename):scope(scopename)
+-- get cache value in level/2
+function memcache.get2(cachename, key1, key2)
+    return memcache.cache(cachename):get2(key1, key2)
 end
 
--- set cache scope
-function memcache.scope_set(cachename, scopename, scope)
-    return memcache.cache(cachename):scope_set(scopename, scope)
+-- get cache value in level/3
+function memcache.get3(cachename, key1, key2, key3)
+    return memcache.cache(cachename):get3(key1, key2, key3)
 end
 
--- get cache value in the given scope
-function memcache.value(cachename, scopename, name)
-    return memcache.cache(cachename):value(scopename, name)
+-- set cache value in level/1
+function memcache.set(cachename, key, value)
+    return memcache.cache(cachename):set(key, value)
 end
 
--- set cache value in the given scope
-function memcache.value_set(cachename, scopename, name, value)
-    return memcache.cache(cachename):value_set(scopename, name, value)
+-- set cache value in level/2
+function memcache.set2(cachename, key1, key2, value)
+    return memcache.cache(cachename):set2(key1, key2, value)
 end
 
--- add cache value in the given scope
-function memcache.value_add(cachename, scopename, name, value)
-    return memcache.cache(cachename):value_add(scopename, name, value)
+-- set cache value in level/3
+function memcache.set3(cachename, key1, key2, key3, value)
+    return memcache.cache(cachename):set3(key1, key2, key3, value)
 end
 
 -- clear the given cache, it will clear all caches if cache name is nil
