@@ -50,7 +50,7 @@ end
 -- load cache
 function _instance:load()
     local result = io.load(path.join(config.cachedir(), self:name()))
-    if result then
+    if result ~= nil then
         self._DATA = result
     end
 end
