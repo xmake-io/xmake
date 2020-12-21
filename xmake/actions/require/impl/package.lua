@@ -27,7 +27,7 @@ import("core.base.scheduler")
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
-import("lib.detect.cache", {alias = "detectcache"})
+import("core.cache.localcache")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("actions.install", {alias = "action_install"})
@@ -838,8 +838,8 @@ function uninstall_packages(requires, opt)
     -- do not remove dependent packages
     opt.nodeps = true
 
-    -- clear the detect cache
-    detectcache.clear()
+    -- clear the local cache
+    localcache.clear()
 
     -- remove all packages
     local packages = {}

@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("lib.detect.cache")
+import("core.cache.detectcache")
 import("detect.tools.find_ping")
 import("detect.tools.find_nmap")
 import("private.async.runjobs")
@@ -45,7 +45,7 @@ function main(hosts, opt)
     -- do not force ping? enable cache
     local cacheinfo = nil
     if not opt.force then
-        cacheinfo = cache.load("net.ping")
+        cacheinfo = detectcache:get("net.ping")
     end
 
     -- run tasks
@@ -111,7 +111,8 @@ function main(hosts, opt)
 
     -- save cache
     if cacheinfo then
-        cache.save("net.ping", cacheinfo)
+        detectcache:set("net.ping", cacheinfo)
+        detectcache:save()
     end
 
     -- ok?
