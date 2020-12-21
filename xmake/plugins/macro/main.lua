@@ -76,11 +76,9 @@ function macros(anonymousname)
 
             -- get macro name
             local macroname = path.basename(macrofile)
-
             if macroname == "anonymous" and anonymousname then
                 macroname = anonymousname
             end
-
             table.insert(results, macroname)
         end
     end
@@ -249,8 +247,6 @@ function _end(macroname)
 
     -- save the macro block
     for _, cmdline in ipairs(block) do
-
-        -- save command line
         file:print("    os.exec(\"%s\")", (cmdline:gsub("[\\\"]", function (w) return "\\" .. w end)))
     end
 
