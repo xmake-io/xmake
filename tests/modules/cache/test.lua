@@ -1,4 +1,6 @@
 import("core.cache.memcache")
+import("core.cache.localcache")
+import("core.cache.globalcache")
 
 function test_memcache(t)
     memcache.set("mycache", "xyz", {1, 2, 3})
@@ -13,3 +15,28 @@ function test_memcache(t)
     t:are_equal(memcache.get2("mycache", "foo", "bar"), nil)
 end
 
+function test_localcache(t)
+    localcache.set("mycache", "xyz", {1, 2, 3})
+    localcache.set2("mycache", "foo", "bar", "1")
+    t:are_equal(localcache.get("mycache", "xyz"), {1, 2, 3})
+    t:are_equal(localcache.get2("mycache", "foo", "bar"), "1")
+    localcache.clear("mycache")
+    t:are_equal(localcache.get2("mycache", "foo", "bar"), nil)
+    localcache.set2("mycache", "foo", "bar", "1")
+    localcache.clear()
+    t:are_equal(localcache.get("mycache", "xyz"), nil)
+    t:are_equal(localcache.get2("mycache", "foo", "bar"), nil)
+end
+
+function test_globalcache(t)
+    globalcache.set("mycache", "xyz", {1, 2, 3})
+    globalcache.set2("mycache", "foo", "bar", "1")
+    t:are_equal(globalcache.get("mycache", "xyz"), {1, 2, 3})
+    t:are_equal(globalcache.get2("mycache", "foo", "bar"), "1")
+    globalcache.clear("mycache")
+    t:are_equal(globalcache.get2("mycache", "foo", "bar"), nil)
+    globalcache.set2("mycache", "foo", "bar", "1")
+    globalcache.clear()
+    t:are_equal(globalcache.get("mycache", "xyz"), nil)
+    t:are_equal(globalcache.get2("mycache", "foo", "bar"), nil)
+end
