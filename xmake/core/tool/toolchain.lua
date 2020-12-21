@@ -419,7 +419,7 @@ end
 function toolchain._cachekey(name, opt)
     local cachekey = opt.cachekey
     if not cachekey then
-        cachekey = "toolchain_" .. name
+        cachekey = name
         for _, k in ipairs(table.orderkeys(opt)) do
             local v = opt[k]
             cachekey = cachekey .. "_" .. k .. "_" .. tostring(v)
