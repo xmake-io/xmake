@@ -410,8 +410,6 @@ function toolchain._interpreter()
 
     -- save interpreter
     toolchain._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 

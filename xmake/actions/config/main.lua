@@ -27,7 +27,6 @@ import("core.project.project")
 import("core.platform.platform")
 import("private.detect.find_platform")
 import("core.cache.localcache")
-import("core.cache.configcache")
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
@@ -70,7 +69,7 @@ function _need_check(changed)
 
     -- get the previous mtimes
     if not changed then
-        local mtimes_prev = configcache:get("mtimes")
+        local mtimes_prev = localcache.get("config", "mtimes")
         if mtimes_prev then
 
             -- check for all project files
@@ -95,7 +94,7 @@ function _need_check(changed)
     end
 
     -- update mtimes
-    configcache:set("mtimes", mtimes)
+    localcache.set("config", "mtimes", mtimes)
 
     -- changed?
     return changed
@@ -220,7 +219,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- override configure from the options or cache
     local options_history = {}
     if not option.get("clean") and not autogen then
-        options_history = configcache:get("options") or {}
+        options_history = localcache.get("config", "options") or {}
         options = options or options_history
     end
     for name, value in pairs(options) do
@@ -327,10 +326,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- save options and configure for the given target
     config.save()
-    configcache:set("options", options)
-
-    -- save config cache
-    configcache:save()
+    localcache.set("config", "options", options)
+    localcache.save("config")
 
     -- unlock the whole project
     project.unlock()
