@@ -22,17 +22,17 @@
 local sandbox_core_sandbox = sandbox_core_sandbox or {}
 
 -- load modules
-local sandbox   = require("sandbox/sandbox")
-local raise     = require("sandbox/modules/raise")
-local try       = require("sandbox/modules/try")
-local catch     = require("sandbox/modules/catch")
-local utils     = require("base/utils")
-local table     = require("base/table")
-local colors    = require("base/colors")
-local dump      = require("base/dump")
-local option    = require("base/option")
-local scheduler = require("base/scheduler")
-local history   = require("project/history")
+local sandbox     = require("sandbox/sandbox")
+local raise       = require("sandbox/modules/raise")
+local try         = require("sandbox/modules/try")
+local catch       = require("sandbox/modules/catch")
+local utils       = require("base/utils")
+local table       = require("base/table")
+local colors      = require("base/colors")
+local dump        = require("base/dump")
+local option      = require("base/option")
+local scheduler   = require("base/scheduler")
+local globalcache = require("cache/globalcache")
 
 -- print variables for interactive mode
 function sandbox_core_sandbox._interactive_dump(...)
@@ -82,7 +82,7 @@ function sandbox_core_sandbox.interactive()
         readline.clear_history()
 
         -- load history
-        replhistory = history("global.history"):load("replhistory") or {}
+        replhistory = globalcache.get("history", "replhistory") or {}
         for _, ln in ipairs(replhistory) do
             readline.add_history(ln)
         end
@@ -110,8 +110,9 @@ function sandbox_core_sandbox.interactive()
         local entries = readline.history_list()
         if #entries > #replhistory then
             for i = #replhistory + 1, #entries do
-                history("global.history"):save("replhistory", entries[i].line)
+                globalcache.set("history", "replhistory", entries[i].line)
             end
+            globalcache.save("history")
         end
 
         -- clear history

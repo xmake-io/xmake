@@ -20,8 +20,8 @@
 
 -- imports
 import("core.base.option")
-import("core.project.cache")
 import("core.package.package")
+import("core.cache.localcache")
 
 -- clear the unused or invalid package directories
 function _clear_packagedirs(packagedir)
@@ -96,8 +96,8 @@ function main(package_names)
     os.rm(package.cachedir())
 
     -- clear require cache
-    local require_cache = cache("local.require")
+    local require_cache = localcache.cache("package")
     require_cache:clear()
-    require_cache:flush()
+    require_cache:save()
 end
 

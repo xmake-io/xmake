@@ -22,33 +22,20 @@
 local sandbox_lib_detect_cache = sandbox_lib_detect_cache or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local option    = require("base/option")
-local cache     = require("project/cache")
-local project   = require("project/project")
-local sandbox   = require("sandbox/sandbox")
-local raise     = require("sandbox/modules/raise")
-
--- get detect cache instance
-function sandbox_lib_detect_cache._instance()
-    local detectcache = sandbox_lib_detect_cache._INSTANCE or cache(os.isfile(project.rootfile()) and "local.detect" or "memory.detect")
-    sandbox_lib_detect_cache._INSTANCE = detectcache
-    return detectcache
-end
+local os          = require("base/os")
+local path        = require("base/path")
+local table       = require("base/table")
+local utils       = require("base/utils")
+local option      = require("base/option")
+local sandbox     = require("sandbox/sandbox")
+local raise       = require("sandbox/modules/raise")
+local detectcache = require("cache/detectcache")
 
 -- load detect cache
 --
 -- @param name  the cache name. e.g. find_program, find_programver, ..
 --
 function sandbox_lib_detect_cache.load(name)
-
-    -- get detect cache
-    local detectcache = sandbox_lib_detect_cache._instance()
-
-    -- attempt to get result from cache first
     local cacheinfo = detectcache:get(name)
     if cacheinfo == nil then
         cacheinfo = {}
@@ -63,13 +50,8 @@ end
 -- @param info  the cache info
 --
 function sandbox_lib_detect_cache.save(name, info)
-
-    -- get detect cache
-    local detectcache = sandbox_lib_detect_cache._instance()
-
-    -- save cache info
     detectcache:set(name, info)
-    detectcache:flush()
+    detectcache:save()
 end
 
 -- clear detect cache
@@ -77,11 +59,6 @@ end
 -- @param name  the cache name. e.g. find_program, find_programver, ..
 --
 function sandbox_lib_detect_cache.clear(name)
-
-    -- get detect cache
-    local detectcache = sandbox_lib_detect_cache._instance()
-
-    -- clear cache info
     if name then
         detectcache:set(name, {})
     else

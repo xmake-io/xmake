@@ -25,9 +25,9 @@ import("core.base.hashset")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
-import("core.project.cache")
 import("private.detect.find_platform")
-import("lib.detect.cache", {alias = "detectcache"})
+import("core.cache.localcache")
+import("core.cache.configcache")
 import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
@@ -69,7 +69,6 @@ function _need_check(changed)
     local mtimes = project.mtimes()
 
     -- get the previous mtimes
-    local configcache = cache("local.config")
     if not changed then
         local mtimes_prev = configcache:get("mtimes")
         if mtimes_prev then
@@ -204,9 +203,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- the target name
     local targetname = option.get("target") or "all"
 
-    -- get config cache
-    local configcache = cache("local.config")
-
     -- load the project configure
     --
     -- priority: option > option_cache > global > option_default > config_check > project_check > config_cache
@@ -281,8 +277,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
-        -- clear detect cache
-        detectcache.clear()
+        -- clear local cache
+        localcache.clear()
 
         -- check platform
         instance_plat:check()
@@ -333,8 +329,8 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     config.save()
     configcache:set("options", options)
 
-    -- flush config cache
-    configcache:flush()
+    -- save config cache
+    configcache:save()
 
     -- unlock the whole project
     project.unlock()

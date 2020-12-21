@@ -23,8 +23,8 @@ import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
 import("core.project.config")
-import("core.project.cache")
 import("core.project.project")
+import("core.cache.configcache")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
@@ -155,7 +155,6 @@ function _make_targetinfo(mode, arch, target)
     if targetinfo.languages:find("c++17", 1, true) or targetinfo.languages:find("cxx17", 1, true) then
         targetinfo.cxxlanguage = "stdcpp17"
     end
-    local configcache = cache("local.config")
     local flags = {}
     for k, v in pairs(configcache:get("options_" .. target:name())) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then

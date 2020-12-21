@@ -26,9 +26,10 @@ local _instance = _instance or {}
 local utils       = require("base/utils")
 local string      = require("base/string")
 local global      = require("base/global")
-local cache       = require("project/cache")
 local config      = require("project/config")
 local interpreter = require("base/interpreter")
+local localcache  = require("cache/localcache")
+local globalcache = require("cache/globalcache")
 
 -- new an instance
 function _instance.new(name, url, branch, directory, is_global)
@@ -42,8 +43,6 @@ function _instance.new(name, url, branch, directory, is_global)
     instance._BRANCH    = branch
     instance._DIRECTORY = directory
     instance._IS_GLOBAL = is_global
-
-    -- ok
     return instance
 end
 
@@ -119,21 +118,11 @@ end
 
 -- get cache
 function repository._cache(is_global)
-
-    -- get position
-    local position = is_global and "global" or "local"
-
-    -- get it from cache first if exists
-    if repository._CACHE and repository._CACHE[position] then
-        return repository._CACHE[position]
+    if is_global then
+        return globalcache.cache("repository")
+    else
+        return localcache.cache("repository")
     end
-
-    -- init cache
-    repository._CACHE = repository._CACHE or {}
-    repository._CACHE[position] = cache(position .. ".repository")
-
-    -- ok
-    return repository._CACHE[position]
 end
 
 -- the interpreter
@@ -153,8 +142,6 @@ function repository._interpreter()
 
     -- save interpreter
     repository._INTERPRETER = interp
-
-    -- ok?
     return interp
 end
 
@@ -207,8 +194,6 @@ function repository.load(name, url, branch, is_global)
 
     -- save instance to the cache
     repository._REPOS[name] = instance
-
-    -- ok
     return instance
 end
 
@@ -243,9 +228,7 @@ function repository.add(name, url, branch, is_global)
 
     -- save repositories
     repository._cache(is_global):set("repositories", repositories)
-
-    -- flush it
-    repository._cache(is_global):flush()
+    repository._cache(is_global):save()
     return true
 end
 
@@ -263,20 +246,14 @@ function repository.remove(name, is_global)
 
     -- save repositories
     repository._cache(is_global):set("repositories", repositories)
-
-    -- flush it
-    repository._cache(is_global):flush()
+    repository._cache(is_global):save()
     return true
 end
 
 -- clear all repositories
 function repository.clear(is_global)
-
-    -- clear repositories
     repository._cache(is_global):set("repositories", {})
-
-    -- flush it
-    repository._cache(is_global):flush()
+    repository._cache(is_global):save()
     return true
 end
 

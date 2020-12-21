@@ -27,7 +27,7 @@ local io                = require("base/io")
 local table             = require("base/table")
 local utils             = require("base/utils")
 local string            = require("base/string")
-local cache             = require("project/cache")
+local cache             = require("cache/localcache")
 
 -- the cache instance
 --

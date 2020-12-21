@@ -33,7 +33,7 @@ local global         = require("base/global")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
-local cache          = require("project/cache")
+local localcache     = require("cache/localcache")
 local linker         = require("tool/linker")
 local compiler       = require("tool/compiler")
 local sandbox        = require("sandbox/sandbox")
@@ -373,17 +373,7 @@ end
 
 -- get cache
 function option._cache()
-
-    -- get it from cache first if exists
-    if option._CACHE then
-        return option._CACHE
-    end
-
-    -- init cache
-    option._CACHE = cache("local.option")
-
-    -- ok
-    return option._CACHE
+    return localcache.cache("option")
 end
 
 -- get option apis
@@ -496,7 +486,7 @@ end
 
 -- save all options to the cache file
 function option.save()
-    option._cache():flush()
+    option._cache():save()
 end
 
 -- return module

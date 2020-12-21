@@ -31,6 +31,7 @@ local global         = require("base/global")
 local option         = require("base/option")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
+local localcache     = require("cache/localcache")
 local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
@@ -40,9 +41,9 @@ function _instance.new(name, info, cachekey, configs)
     local instance     = table.inherit(_instance)
     instance._NAME     = name
     instance._INFO     = info
-    instance._CACHE    = require("sandbox/modules/import/lib/detect/cache")
+    instance._CACHE    = localcache.cache("toolchain")
     instance._CACHEKEY = cachekey
-    instance._CONFIGS  = instance._CACHE.load(cachekey) or {}
+    instance._CONFIGS  = instance._CACHE:get(cachekey) or {}
     for k, v in pairs(configs) do
         instance._CONFIGS[k] = v
     end
@@ -227,7 +228,8 @@ end
 
 -- save user configs
 function _instance:configs_save()
-    self._CACHE.save(self:cachekey(), self._CONFIGS)
+    self._CACHE:set(self:cachekey(), self._CONFIGS)
+    self._CACHE:save()
 end
 
 -- do check, we only check it once for all architectures

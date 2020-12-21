@@ -15,9 +15,8 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cache.lua
+-- @file        configcache.lua
 --
 
--- return module
-return require("project/cache")
+return require("cache/localcache").cache("config")
 

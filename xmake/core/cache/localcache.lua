@@ -172,6 +172,20 @@ function localcache.set3(cachename, key1, key2, key3, value)
     return localcache.cache(cachename):set3(key1, key2, key3, value)
 end
 
+-- save the given cache, it will save all caches if cache name is nil
+function localcache.save(cachename)
+    if cachename then
+        localcache.cache(cachename):save()
+    else
+        local caches = localcache.caches()
+        if caches then
+            for _, cache in pairs(caches) do
+                cache:save()
+            end
+        end
+    end
+end
+
 -- clear the given cache, it will clear all caches if cache name is nil
 function localcache.clear(cachename)
     if cachename then

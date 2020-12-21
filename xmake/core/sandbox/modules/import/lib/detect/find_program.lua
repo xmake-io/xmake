@@ -22,18 +22,18 @@
 local sandbox_lib_detect_find_program = sandbox_lib_detect_find_program or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local option    = require("base/winos")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local option    = require("base/option")
-local project   = require("project/project")
-local sandbox   = require("sandbox/sandbox")
-local raise     = require("sandbox/modules/raise")
-local vformat   = require("sandbox/modules/vformat")
-local cache     = require("sandbox/modules/import/lib/detect/cache")
-local scheduler = require("sandbox/modules/import/core/base/scheduler")
+local os          = require("base/os")
+local path        = require("base/path")
+local option      = require("base/winos")
+local table       = require("base/table")
+local utils       = require("base/utils")
+local option      = require("base/option")
+local project     = require("project/project")
+local detectcache = require("cache/detectcache")
+local sandbox     = require("sandbox/sandbox")
+local raise       = require("sandbox/modules/raise")
+local vformat     = require("sandbox/modules/vformat")
+local scheduler   = require("sandbox/modules/import/core/base/scheduler")
 
 -- globals
 local checking  = nil
@@ -255,8 +255,7 @@ function sandbox_lib_detect_find_program.main(name, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = cache.load(cachekey)
-    local result = cacheinfo[name]
+    local result = detectcache:get2(cachekey, name)
     if result ~= nil and not opt.force then
         return result and result or nil
     end
@@ -279,10 +278,8 @@ function sandbox_lib_detect_find_program.main(name, opt)
     checking = nil
 
     -- cache result
-    cacheinfo[name] = result and result or false
-
-    -- save cache info
-    cache.save(cachekey, cacheinfo)
+    detectcache:set2(cachekey, name, result and result or false)
+    detectcache:save()
 
     -- trace
     if option.get("verbose") or opt.verbose then
