@@ -109,8 +109,13 @@ function sandbox_core_sandbox.interactive()
         -- save to history
         local entries = readline.history_list()
         if #entries > #replhistory then
+            local historylines = globalcache.get("history", "replhistory") or {}
             for i = #replhistory + 1, #entries do
-                globalcache.set("history", "replhistory", entries[i].line)
+                if #historylines > 64 then
+                    table.remove(historylines, 1)
+                end
+                table.insert(historylines, entries[i].line)
+                globalcache.set("history", "replhistory", historylines)
             end
             globalcache.save("history")
         end

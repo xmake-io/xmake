@@ -194,40 +194,38 @@ end
 function _end(macroname)
 
     -- load the history: cmdlines
-    local cmdlines = localcache.get("history", "cmdlines")
+    local cmdlines = table.wrap(localcache.get("history", "cmdlines"))
 
     -- get the last macro block
     local begin = false
     local block = {}
-    if cmdlines then
-        local total = #cmdlines
-        local index = total
-        while index ~= 0 do
+    local total = #cmdlines
+    local index = total
+    while index ~= 0 do
 
-            -- the command line
-            local cmdline = cmdlines[index]
+        -- the command line
+        local cmdline = cmdlines[index]
 
-            -- found begin? break it
-            if cmdline == "__macro_begin__" then
-                begin = true
-                break
-            end
-
-            -- found end? break it
-            if cmdline == "__macro_end__" then
-                break
-            end
-
-            -- ignore "xmake m .." and "xmake macro .."
-            if not cmdline:find("xmake%s+macro%s*") and not cmdline:find("xmake%s+m%s*") then
-
-                -- save this command line to block
-                table.insert(block, 1, cmdline)
-            end
-
-            -- the previous line
-            index = index - 1
+        -- found begin? break it
+        if cmdline == "__macro_begin__" then
+            begin = true
+            break
         end
+
+        -- found end? break it
+        if cmdline == "__macro_end__" then
+            break
+        end
+
+        -- ignore "xmake m .." and "xmake macro .."
+        if not cmdline:find("xmake%s+macro%s*") and not cmdline:find("xmake%s+m%s*") then
+
+            -- save this command line to block
+            table.insert(block, 1, cmdline)
+        end
+
+        -- the previous line
+        index = index - 1
     end
 
     -- the begin tag not found?
@@ -236,7 +234,8 @@ function _end(macroname)
     end
 
     -- patch end tag to the history: cmdlines
-    localcache.set("history", "cmdlines", "__macro_end__")
+    table.insert(cmdlines, "__macro_end__")
+    localcache.set("history", "cmdlines", cmdlines)
     localcache.save("history")
 
     -- open the macro file
