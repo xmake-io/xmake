@@ -58,7 +58,7 @@ end
 
 -- save cache
 function _instance:save()
-    local ok, errors = io.save(path.join(config.cachedir(), self:name()), self._DATA)
+    local ok, errors = io.save(path.join(global.cachedir(), self:name()), self._DATA)
     if not ok then
         os.raise(errors)
     end

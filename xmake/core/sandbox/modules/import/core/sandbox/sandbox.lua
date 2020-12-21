@@ -82,7 +82,7 @@ function sandbox_core_sandbox.interactive()
         readline.clear_history()
 
         -- load history
-        replhistory = globalcache.get("history", "replhistory") or {}
+        replhistory = table.wrap(globalcache.get("history", "replhistory"))
         for _, ln in ipairs(replhistory) do
             readline.add_history(ln)
         end
@@ -109,13 +109,12 @@ function sandbox_core_sandbox.interactive()
         -- save to history
         local entries = readline.history_list()
         if #entries > #replhistory then
-            local historylines = globalcache.get("history", "replhistory") or {}
             for i = #replhistory + 1, #entries do
-                if #historylines > 64 then
-                    table.remove(historylines, 1)
+                if #replhistory > 64 then
+                    table.remove(replhistory, 1)
                 end
-                table.insert(historylines, entries[i].line)
-                globalcache.set("history", "replhistory", historylines)
+                table.insert(replhistory, entries[i].line)
+                globalcache.set("history", "replhistory", replhistory)
             end
             globalcache.save("history")
         end
