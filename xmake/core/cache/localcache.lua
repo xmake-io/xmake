@@ -25,6 +25,7 @@ local _instance = _instance or {}
 -- load modules
 local table   = require("base/table")
 local io      = require("base/io")
+local os      = require("base/os")
 local path    = require("base/path")
 local config  = require("project/config")
 
@@ -130,7 +131,14 @@ function localcache.cache(cachename)
 end
 
 -- get all caches
-function localcache.caches()
+function localcache.caches(opt)
+    opt = opt or {}
+    if opt.flush then
+        for _, cachefile in ipairs(os.files(path.join(config.cachedir(), "*"))) do
+            local cachename = path.filename(cachefile)
+            localcache.cache(cachename)
+        end
+    end
     return localcache._CACHES
 end
 
@@ -166,14 +174,12 @@ end
 
 -- clear the given cache, it will clear all caches if cache name is nil
 function localcache.clear(cachename)
-    local caches = localcache.caches()
-    if caches then
-        for _, cache in pairs(caches) do
-            if cachename then
-                if cache:name() == cachename then
-                    cache:clear()
-                end
-            else
+    if cachename then
+        localcache.cache(cachename):clear()
+    else
+        local caches = localcache.caches({flush = true})
+        if caches then
+            for _, cache in pairs(caches) do
                 cache:clear()
             end
         end

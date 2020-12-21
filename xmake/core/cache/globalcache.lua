@@ -25,6 +25,7 @@ local _instance = _instance or {}
 -- load modules
 local table   = require("base/table")
 local io      = require("base/io")
+local os      = require("base/os")
 local path    = require("base/path")
 local global  = require("base/global")
 
@@ -130,7 +131,14 @@ function globalcache.cache(cachename)
 end
 
 -- get all caches
-function globalcache.caches()
+function globalcache.caches(opt)
+    opt = opt or {}
+    if opt.flush then
+        for _, cachefile in ipairs(os.files(path.join(global.cachedir(), "*"))) do
+            local cachename = path.filename(cachefile)
+            globalcache.cache(cachename)
+        end
+    end
     return globalcache._CACHES
 end
 
@@ -166,14 +174,12 @@ end
 
 -- clear the given cache, it will clear all caches if cache name is nil
 function globalcache.clear(cachename)
-    local caches = globalcache.caches()
-    if caches then
-        for _, cache in pairs(caches) do
-            if cachename then
-                if cache:name() == cachename then
-                    cache:clear()
-                end
-            else
+    if cachename then
+        globalcache.cache(cachename):clear()
+    else
+        local caches = globalcache.caches({flush = true})
+        if caches then
+            for _, cache in pairs(caches) do
                 cache:clear()
             end
         end
