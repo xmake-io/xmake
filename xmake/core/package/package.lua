@@ -33,6 +33,7 @@ local semver         = require("base/semver")
 local option         = require("base/option")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
+local memcache       = require("cache/memcache")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local platform       = require("platform/platform")
@@ -710,7 +711,8 @@ end
 
 -- get the build hash
 function _instance:buildhash()
-    if self._BUILDHASH == nil then
+    local buildhash = package._memcache():get2(self, "buildhash")
+    if buildhash == nil then
         local str = self:plat() .. self:arch()
         local configs = self:configs()
         if configs then
@@ -727,9 +729,10 @@ function _instance:buildhash()
             configs_str = configs_str:gsub("\"", "")
             str = str .. configs_str
         end
-        self._BUILDHASH = hash.uuid4(str):gsub('-', ''):lower()
+        buildhash = hash.uuid4(str):gsub('-', ''):lower()
+        package._memcache():set2(self, "buildhash", buildhash)
     end
-    return self._BUILDHASH
+    return buildhash
 end
 
 -- get the group name
@@ -858,7 +861,7 @@ function _instance:fetch(opt)
     opt = opt or {}
 
     -- attempt to get it from cache
-    local fetchinfo = self._FETCHINFO
+    local fetchinfo = package._memcache():get2(self, "fetchinfo")
     if not opt.force and opt.external == nil and fetchinfo then
         return fetchinfo
     end
@@ -959,7 +962,7 @@ function _instance:fetch(opt)
     end
 
     -- save to cache
-    self._FETCHINFO = fetchinfo
+    package._memcache():set2(self, "fetchinfo", fetchinfo)
 
     -- mark as system package?
     if isSys ~= nil then
@@ -970,7 +973,8 @@ end
 
 -- exists this package?
 function _instance:exists()
-    return self._FETCHINFO ~= nil
+    local fetchinfo = package._memcache():get2(self, "fetchinfo")
+    return fetchinfo ~= nil
 end
 
 -- fetch all local info with dependencies
@@ -1281,6 +1285,11 @@ function package._interpreter()
 
     -- ok?
     return interp
+end
+
+-- get package memcache
+function package._memcache()
+    return memcache.cache("core.base.package")
 end
 
 -- get package apis
