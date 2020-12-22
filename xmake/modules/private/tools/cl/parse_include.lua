@@ -28,8 +28,8 @@ import("private.tools.vstool")
 
 -- probe include note prefix from cl
 function _probe_include_note_from_cl()
-    local key = "note_include"
-    local note = detectcache:get2("cldeps.parse_include", key)
+    local key = "cldeps.parse_include.note"
+    local note = detectcache:get(key)
     if not note then
         local cl = find_tool("cl")
         if cl then
@@ -59,7 +59,7 @@ function _probe_include_note_from_cl()
             end
             os.tryrm(projectdir)
         end
-        detectcache:set2("cldeps.parse_include", key, note)
+        detectcache:set(key, note)
         detectcache:save()
     end
     return note
