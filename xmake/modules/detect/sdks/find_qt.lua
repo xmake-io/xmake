@@ -19,12 +19,12 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.cache.detectcache")
 
 -- find qt sdk directory
 function _find_sdkdir(sdkdir, sdkver)
@@ -195,7 +195,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_qt"
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.qt and cacheinfo.qt.sdkdir and os.isdir(cacheinfo.qt.sdkdir) then
         return cacheinfo.qt
     end
@@ -227,8 +227,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.qt = qt or false
-    cache.save(key, cacheinfo)
-
-    -- ok?
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return qt
 end

@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("lib.detect.cache")
+import("core.cache.detectcache")
 import("package.manager.find_package")
 
 -- find package using the package manager
@@ -71,7 +71,7 @@ function main(name, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     local result = cacheinfo[name]
     if result == nil or opt.force then
 
@@ -87,7 +87,8 @@ function main(name, opt)
 
         -- cache result
         cacheinfo[name] = result and result or false
-        cache.save(key, cacheinfo)
+        detectcache:set(key, cacheinfo)
+        detectcache:save()
 
         -- trace
         if opt.verbose or option.get("verbose") then

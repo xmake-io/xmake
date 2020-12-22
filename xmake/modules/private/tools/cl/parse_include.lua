@@ -22,15 +22,14 @@
 import("core.project.project")
 import("core.base.hashset")
 import("core.tool.toolchain")
-import("lib.detect.cache")
+import("core.cache.detectcache")
 import("lib.detect.find_tool")
 import("private.tools.vstool")
 
 -- probe include note prefix from cl
 function _probe_include_note_from_cl()
     local key = "note_include"
-    local cacheinfo = cache.load("cldeps.parse_include")
-    local note = cacheinfo[key]
+    local note = detectcache:get2("cldeps.parse_include", key)
     if not note then
         local cl = find_tool("cl")
         if cl then
@@ -60,8 +59,8 @@ function _probe_include_note_from_cl()
             end
             os.tryrm(projectdir)
         end
-        cacheinfo[key] = note
-        cache.save("cldeps.parse_include", cacheinfo)
+        detectcache:set2("cldeps.parse_include", key, note)
+        detectcache:save()
     end
     return note
 end

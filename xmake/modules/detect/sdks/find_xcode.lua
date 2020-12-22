@@ -19,10 +19,10 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.cache.detectcache")
 import("lib.detect.find_directory")
 import("private.tools.codesign")
 
@@ -144,7 +144,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_xcode"
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.xcode and cacheinfo.xcode.sdkdir and os.isdir(cacheinfo.xcode.sdkdir) then
         return cacheinfo.xcode
     end
@@ -158,6 +158,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.xcode = xcode or false
-    cache.save(key, cacheinfo)
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return xcode
 end
