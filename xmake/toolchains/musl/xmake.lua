@@ -38,6 +38,7 @@ toolchain("musl")
         if toolchain:is_arch("arm") then
             toolchain:add("cxflags", "-march=armv7-a", "-msoft-float", {force = true})
             toolchain:add("ldflags", "-march=armv7-a", "-msoft-float", {force = true})
+            toolchain:add("syslinks", "atomic") -- fix undefined reference to `__atomic_fetch_add_8'
         end
         toolchain:add("ldflags", "--static", {force = true})
         toolchain:add("syslinks", "gcc", "c")
