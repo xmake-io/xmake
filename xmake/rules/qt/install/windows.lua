@@ -55,8 +55,8 @@ function main(target, opt)
     local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
     if msvc then
         local vcvars = msvc:config("vcvars")
-        if vcvars and vcvars.VSInstallDir then
-            envs = {VCINSTALLDIR = path.join(vcvars.VSInstallDir, "VC")}
+        if vcvars and vcvars.VCInstallDir then
+            envs = {VCINSTALLDIR = vcvars.VCInstallDir}
         end
     end
 

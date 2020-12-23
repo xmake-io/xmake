@@ -22,27 +22,71 @@
 import("core.project.project")
 import("core.base.hashset")
 import("parse_include")
+import("core.tool.toolchain")
+
+-- get $VCInstallDir
+function _VCInstallDir()
+    local VCInstallDir = _g.VCInstallDir
+    if not VCInstallDir then
+        local msvc = toolchain.load("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars and vcvars.VCInstallDir then
+                VCInstallDir = vcvars.VCInstallDir
+                _g.VCInstallDir = VCInstallDir
+            end
+        end
+    end
+    return VCInstallDir
+end
+
+-- get $WindowsSdkDir
+function _WindowsSdkDir()
+    local WindowsSdkDir = _g.WindowsSdkDir
+    if not WindowsSdkDir then
+        local msvc = toolchain.load("msvc")
+        if msvc then
+            local vcvars = msvc:config("vcvars")
+            if vcvars and vcvars.WindowsSdkDir then
+                WindowsSdkDir = vcvars.WindowsSdkDir
+                _g.WindowsSdkDir = WindowsSdkDir
+            end
+        end
+    end
+    return WindowsSdkDir
+end
+
+
+-- normailize path of a dependecy
+function _normailize_dep(dep, projectdir)
+    if path.is_absolute(dep) then
+        dep = path.translate(dep)
+    else
+        dep = path.absolute(dep, projectdir)
+    end
+    local VCInstallDir = _VCInstallDir()
+    local WindowsSdkDir = _WindowsSdkDir()
+    if (VCInstallDir and dep:startswith(VCInstallDir)) or (WindowsSdkDir and dep:startswith(WindowsSdkDir)) then
+        -- we ignore headerfiles in vc install directory
+        return
+    end
+    if dep:startswith(projectdir) then
+        return path.relative(dep, projectdir)
+    else
+        -- we need also check header files outside project
+        -- https://github.com/xmake-io/xmake/issues/1154
+        return dep
+    end
+end
 
 -- parse depsfiles from string
 function main(depsdata)
-
-    -- translate it
     local results = hashset.new()
     for _, line in ipairs(depsdata:split("\n", {plain = true})) do
-
-        -- get includefile
         local includefile = parse_include(line:trim())
         if includefile then
-
-            -- get the relative
-            includefile = path.relative(includefile, project.directory())
-            includefile = path.absolute(includefile)
-
-            -- save it if belong to the project
-            if includefile:startswith(os.projectdir()) then
-
-                -- insert it and filter repeat
-                includefile = path.relative(includefile, project.directory())
+            includefile = _normailize_dep(includefile, os.projectdir())
+            if includefile then
                 results:insert(includefile)
             end
         end
