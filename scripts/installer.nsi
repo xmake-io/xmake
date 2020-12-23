@@ -140,7 +140,7 @@ VIFileVersion                            ${VERSION}.0
 VIAddVersionKey /LANG=0 ProductName      XMake
 VIAddVersionKey /LANG=0 Comments         "A cross-platform build utility based on Lua$\nwebsite: https://xmake.io"
 VIAddVersionKey /LANG=0 CompanyName      "The TBOOX Open Source Group"
-VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io$\nCopyright (C) 2005-2015 Mike Pall, luajit.org"
+VIAddVersionKey /LANG=0 LegalCopyright   "Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io"
 VIAddVersionKey /LANG=0 FileDescription  "XMake Installer - v${VERSION}"
 VIAddVersionKey /LANG=0 OriginalFilename "xmake-${ARCH}.exe"
 VIAddVersionKey /LANG=0 FileVersion      ${VERSION_FULL}

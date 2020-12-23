@@ -104,13 +104,13 @@ fi
 # below is installation
 # print a LOGO!
 echo 'xmake, A cross-platform build utility based on Lua.   '
-echo 'Copyright (C) 2015-2020 Ruki Wang, tboox.org, xmake.io'
+echo 'Copyright (C) 2015-present Ruki Wang, tboox.org, xmake.io'
 echo '                         _                            '
 echo '    __  ___ __  __  __ _| | ______                    '
 echo '    \ \/ / |  \/  |/ _  | |/ / __ \                   '
 echo '     >  <  | \__/ | /_| |   <  ___/                   '
 echo '    /_/\_\_|_|  |_|\__ \|_|\_\____|                   '
-echo '                         by ruki, tboox.org           '
+echo '                         by ruki, xmake.io            '
 echo '                                                      '
 echo '   👉  Manual: https://xmake.io/#/getting_started     '
 echo '   🙏  Donate: https://xmake.io/#/sponsor             '
