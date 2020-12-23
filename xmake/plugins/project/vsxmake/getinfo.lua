@@ -31,6 +31,7 @@ import("core.cache.memcache")
 import("core.cache.localcache")
 import("lib.detect.find_tool")
 import("private.action.run.make_runenvs")
+import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 
@@ -308,11 +309,12 @@ function main(outputdir, vsinfo)
             -- check project options
             project.check()
 
-            -- re-generate configheader
-            generate_configheader()
+            -- install and update requires
+            install_requires()
 
-            -- re-generate configfiles
+            -- update config files
             generate_configfiles()
+            generate_configheader()
 
             -- ensure to enter project directory
             os.cd(project.directory())
