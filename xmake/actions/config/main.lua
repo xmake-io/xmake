@@ -276,8 +276,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     local recheck = _need_check(options_changed or not configcache_loaded or autogen)
     if recheck then
 
-        -- clear local cache
+        -- clear and flush local cache to disk
         localcache.clear()
+        localcache.save()
 
         -- check platform
         instance_plat:check()
@@ -324,7 +325,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         config.dump()
     end
 
-    -- save options and configure for the given target
+    -- save options and config cache
     config.save()
     localcache.set("config", "options", options)
     localcache.save("config")
