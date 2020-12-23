@@ -239,21 +239,13 @@ end
 
 -- set the option value
 function _instance:set_value(value)
-
-    -- set value to option
     config.set(self:name(), value)
-
-    -- save option
     self:_save()
 end
 
 -- clear the option status and need recheck it
 function _instance:clear()
-
-    -- clear config
     config.set(self:name(), nil)
-
-    -- clear this option in cache
     self:_clear()
 end
 

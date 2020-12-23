@@ -233,17 +233,19 @@ function make(outputdir, vsinfo)
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
 
-                -- clear cache
-                memcache.clear()
-                localcache.clear()
-
                 -- modify config
                 config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
                 config.set("mode", mode, {readonly = true, force = true})
                 config.set("arch", arch, {readonly = true, force = true})
 
-                -- clear project to reload and recheck it
-                project.clear()
+                -- clear all options
+                for _, opt in ipairs(project.options()) do
+                    opt:clear()
+                end
+
+                -- clear cache
+                memcache.clear()
+                localcache.clear()
 
                 -- check platform
                 platform.load(config.plat(), arch):check()

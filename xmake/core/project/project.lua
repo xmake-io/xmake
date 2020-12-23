@@ -32,6 +32,7 @@ local global                = require("base/global")
 local process               = require("base/process")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
+local memcache              = require("cache/memcache")
 local rule                  = require("project/rule")
 local target                = require("project/target")
 local config                = require("project/config")
@@ -107,7 +108,7 @@ end
 -- some packages are enabled?
 function project._api_has_package(interp, ...)
     -- only for loading targets
-    local requires = project._REQUIRES
+    local requires = project._memcache():get("requires")
     if requires then
         for _, name in ipairs(table.join(...)) do
             local pkg = requires[name]
@@ -151,7 +152,7 @@ end
 function project._load(force, disable_filter)
 
     -- has already been loaded?
-    if project._INFO and not force then
+    if project._memcache():get("rootinfo") and not force then
         return true
     end
 
@@ -195,7 +196,7 @@ function project._load(force, disable_filter)
     for name, value in pairs(rootinfo_target:info()) do
         rootinfo:set("target." .. name, value)
     end
-    project._INFO = rootinfo
+    project._memcache():set("rootinfo", rootinfo)
 
     -- leave the project directory
     oldir, errors = os.cd(oldir)
@@ -401,7 +402,7 @@ function project._load_targets()
     -- mark targets have been loaded even if it may fail to load.
     -- because once loaded, there will be some cached state, such as options,
     -- so if we load it a second time, there will be some hidden state inconsistencies.
-    project._TARGETS_LOADED = true
+    project._memcache():set("targets_loaded", true)
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
     local requires = project.requires()
@@ -671,16 +672,21 @@ function project._sort_targets(targets, ordertargets, targetrefs, target)
     end
 end
 
+-- get project memcache
+function project._memcache()
+    return memcache.cache("core.project.project")
+end
+
 -- get project toolchain infos (@note only with toolchain info)
 function project._toolchains()
-    local toolchains = project._TOOLCHAINS
+    local toolchains = project._memcache():get("toolchains")
     if not toolchains then
         local errors
         toolchains, errors = project._load_toolchains()
         if not toolchains then
             os.raise(errors)
         end
-        project._TOOLCHAINS = toolchains
+        project._memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
@@ -880,7 +886,8 @@ end
 
 -- get the project info from the given name
 function project.get(name)
-    return project._INFO and project._INFO:get(name) or nil
+    local rootinfo = project._memcache():get("rootinfo")
+    return rootinfo and rootinfo:get(name) or nil
 end
 
 -- get the project name
@@ -901,10 +908,10 @@ end
 
 -- get the project policy, the root policy of the target scope
 function project.policy(name)
-    local policies = project._POLICIES
+    local policies = project._memcache():get("policies")
     if not policies then
         policies = project.get("target.policy")
-        project._POLICIES = policies
+        project._memcache():set("policies", policies)
         if policies then
             local defined_policies = policy.policies()
             for name, _ in pairs(policies) do
@@ -917,32 +924,9 @@ function project.policy(name)
     return policy.check(name, policies and policies[name])
 end
 
--- clear project cache to reload targets and options
-function project.clear()
-
-    -- clear options status in config file first
-    for _, opt in ipairs(table.wrap(project._OPTIONS)) do
-        opt:clear()
-    end
-
-    -- clear cache
-    project._INFO = nil
-    project._TARGETS = nil
-    project._TARGETS_LOADED = false
-    project._ORDERTARGETS = nil
-    project._OPTIONS = nil
-    project._REQUIRES = nil
-    project._REQUIRES_STR = nil
-    project._REQUIRES_EXTRA = nil
-    project._RULES = nil
-    project._TASKS = nil
-    project._PACKAGES = nil
-    project._POLICIES = nil
-end
-
 -- project has been loaded?
 function project.is_loaded()
-    return project._TARGETS_LOADED
+    return project._memcache():get("targets_loaded")
 end
 
 -- get the given target
@@ -952,24 +936,27 @@ end
 
 -- get targets
 function project.targets()
-    if not project._TARGETS then
-        local targets, ordertargets, errors = project._load_targets()
+    local targets = project._memcache():get("targets")
+    if not targets then
+        local ordertargets, errors
+        targets, ordertargets, errors = project._load_targets()
         if not targets or not ordertargets then
             os.raise(errors)
         end
-        project._TARGETS = targets
-        project._ORDERTARGETS = ordertargets
+        project._memcache():set("targets", targets)
+        project._memcache():set("ordertargets", ordertargets)
     end
-    return project._TARGETS
+    return targets
 end
 
 -- get order targets
 function project.ordertargets()
-    if not project._ORDERTARGETS then
-        -- ensure _ORDERTARGETS to be initialized
+    local ordertargets = project._memcache():get("ordertargets")
+    if not ordertargets then
+        -- ensure ordertargets to be cached
         project.targets()
     end
-    return project._ORDERTARGETS
+    return ordertargets
 end
 
 -- get the given option
@@ -979,18 +966,16 @@ end
 
 -- get options
 function project.options()
-
-    -- load options and enable filter
-    if not project._OPTIONS then
-        local options, errors = project._load_options()
+    local options = project._memcache():get("options")
+    if not options then
+        local errors
+        options, errors = project._load_options()
         if not options then
             os.raise(errors)
         end
-        project._OPTIONS = options
+        project._memcache():set("options", options)
     end
-
-    -- ok
-    return project._OPTIONS
+    return options
 end
 
 -- get the given require info
@@ -1000,19 +985,23 @@ end
 
 -- get requires info
 function project.requires()
-    if not project._REQUIRES then
-        local requires, errors = project._load_requires()
+    local requires = project._memcache():get("requires")
+    if not requires then
+        local errors
+        requires, errors = project._load_requires()
         if not requires then
             os.raise(errors)
         end
-        project._REQUIRES = requires
+        project._memcache():set("requires", requires)
     end
-    return project._REQUIRES
+    return requires
 end
 
 -- get string requires
 function project.requires_str()
-    if not project._REQUIRES_STR then
+    local requires_str   = project._memcache():get("requires_str")
+    local requires_extra = project._memcache():get("requires_extra")
+    if not requires_str then
 
         -- reload the project file to handle `has_config()`
         local ok, errors = project._load(true)
@@ -1021,11 +1010,11 @@ function project.requires_str()
         end
 
         -- get raw requires
-        local requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
-        project._REQUIRES_STR = requires_str or false
-        project._REQUIRES_EXTRA = requires_extra
+        requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
+        project._memcache():set("requires_str", requires_str or false)
+        project._memcache():set("requires_extra", requires_extra)
     end
-    return project._REQUIRES_STR or nil, project._REQUIRES_EXTRA
+    return requires_str or nil, requires_extra
 end
 
 -- get the given rule
@@ -1035,14 +1024,16 @@ end
 
 -- get project rules
 function project.rules()
-    if not project._RULES then
-        local rules, errors = project._load_rules()
+    local rules = project._memcache():get("rules")
+    if not rules then
+        local errors
+        rules, errors = project._load_rules()
         if not rules then
             os.raise(errors)
         end
-        project._RULES = rules
+        project._memcache():set("rules", rules)
     end
-    return project._RULES
+    return rules
 end
 
 -- get the given toolchain
@@ -1065,26 +1056,30 @@ end
 
 -- get tasks
 function project.tasks()
-    if not project._TASKS then
-        local tasks, errors = project._load_tasks()
+    local tasks = project._memcache():get("tasks")
+    if not tasks then
+        local errors
+        tasks, errors = project._load_tasks()
         if not tasks then
             os.raise(errors)
         end
-        project._TASKS = tasks
+        project._memcache():set("tasks", tasks)
     end
-    return project._TASKS
+    return tasks
 end
 
 -- get packages
 function project.packages()
-    if not project._PACKAGES then
-        local packages, errors = project._load_packages()
+    local packages = project._memcache():get("packages")
+    if not packages then
+        local errors
+        packages, errors = project._load_packages()
         if not packages then
             return nil, errors
         end
-        project._PACKAGES = packages
+        project._memcache():set("packages", packages)
     end
-    return project._PACKAGES
+    return packages
 end
 
 -- get the mtimes

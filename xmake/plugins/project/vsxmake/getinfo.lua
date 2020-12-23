@@ -27,6 +27,7 @@ import("core.project.project")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
+import("core.cache.memcache")
 import("core.cache.localcache")
 import("lib.detect.find_tool")
 import("private.action.run.make_runenvs")
@@ -292,8 +293,14 @@ function main(outputdir, vsinfo)
             config.set("mode", mode, {readonly = true, force = true})
             config.set("arch", arch, {readonly = true, force = true})
 
-            -- clear project to reload and recheck it
-            project.clear()
+            -- clear all options
+            for _, opt in ipairs(project.options()) do
+                opt:clear()
+            end
+
+            -- clear cache
+            memcache.clear()
+            localcache.clear()
 
             -- check platform
             platform.load(config.plat(), arch):check()
