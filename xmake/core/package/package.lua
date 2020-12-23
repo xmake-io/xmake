@@ -711,7 +711,7 @@ end
 
 -- get the build hash
 function _instance:buildhash()
-    local buildhash = package._memcache():get2(self, "buildhash")
+    local buildhash = self._BUILDHASH
     if buildhash == nil then
         local str = self:plat() .. self:arch()
         local configs = self:configs()
@@ -730,7 +730,7 @@ function _instance:buildhash()
             str = str .. configs_str
         end
         buildhash = hash.uuid4(str):gsub('-', ''):lower()
-        package._memcache():set2(self, "buildhash", buildhash)
+        self._BUILDHASH = buildhash
     end
     return buildhash
 end
@@ -861,7 +861,7 @@ function _instance:fetch(opt)
     opt = opt or {}
 
     -- attempt to get it from cache
-    local fetchinfo = package._memcache():get2(self, "fetchinfo")
+    local fetchinfo = self._FETCHINFO
     if not opt.force and opt.external == nil and fetchinfo then
         return fetchinfo
     end
@@ -962,7 +962,7 @@ function _instance:fetch(opt)
     end
 
     -- save to cache
-    package._memcache():set2(self, "fetchinfo", fetchinfo)
+    self._FETCHINFO = fetchinfo
 
     -- mark as system package?
     if isSys ~= nil then
@@ -973,8 +973,7 @@ end
 
 -- exists this package?
 function _instance:exists()
-    local fetchinfo = package._memcache():get2(self, "fetchinfo")
-    return fetchinfo ~= nil
+    return self._FETCHINFO ~= nil
 end
 
 -- fetch all local info with dependencies
@@ -1373,9 +1372,9 @@ end
 function package.load_from_system(packagename)
 
     -- get it directly from cache first
-    package._PACKAGES = package._PACKAGES or {}
-    if package._PACKAGES[packagename] then
-        return package._PACKAGES[packagename]
+    local instance = package._memcache():get2("packages", packagename)
+    if instance then
+        return instance
     end
 
     -- get package info
@@ -1398,7 +1397,7 @@ function package.load_from_system(packagename)
         end
 
         -- make sandbox instance with the given script
-        local instance, errors = sandbox.new(on_install, interp:filter())
+        instance, errors = sandbox.new(on_install, interp:filter())
         if not instance then
             return nil, errors
         end
@@ -1413,7 +1412,7 @@ function package.load_from_system(packagename)
     end
 
     -- new an instance
-    local instance = _instance.new(packagename, scopeinfo.new("package", packageinfo))
+    instance = _instance.new(packagename, scopeinfo.new("package", packageinfo))
 
     -- mark as system or 3rd package
     instance._isSys = true
@@ -1433,9 +1432,7 @@ function package.load_from_system(packagename)
     end
 
     -- save instance to the cache
-    package._PACKAGES[packagename] = instance
-
-    -- ok
+    package._memcache():set2("packages", instance)
     return instance
 end
 
@@ -1443,9 +1440,9 @@ end
 function package.load_from_project(packagename, project)
 
     -- get it directly from cache first
-    package._PACKAGES = package._PACKAGES or {}
-    if package._PACKAGES[packagename] then
-        return package._PACKAGES[packagename]
+    local instance = package._memcache():get2("packages", packagename)
+    if instance then
+        return instance
     end
 
     -- load packages (with cache)
@@ -1467,8 +1464,8 @@ function package.load_from_project(packagename, project)
     end
 
     -- new an instance
-    local instance = _instance.new(packagename, packageinfo)
-    package._PACKAGES[packagename] = instance
+    instance = _instance.new(packagename, packageinfo)
+    package._memcache():set2("packages", instance)
     return instance
 end
 
@@ -1476,9 +1473,9 @@ end
 function package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- get it directly from cache first
-    package._PACKAGES = package._PACKAGES or {}
-    if package._PACKAGES[packagename] then
-        return package._PACKAGES[packagename]
+    local instance = package._memcache():get2("packages", packagename)
+    if instance then
+        return instance
     end
 
     -- load repository first for checking the xmake minimal version
@@ -1525,13 +1522,13 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- new an instance
-    local instance = _instance.new(packagename, packageinfo, path.directory(scriptpath))
+    instance = _instance.new(packagename, packageinfo, path.directory(scriptpath))
 
     -- save repository
     instance._REPO = repo
 
     -- save instance to the cache
-    package._PACKAGES[packagename] = instance
+    package._memcache():set2("packages", instance)
     return instance
 end
 

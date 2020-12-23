@@ -27,6 +27,7 @@ import("core.base.scheduler")
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
+import("core.cache.memcache")
 import("core.cache.localcache")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
@@ -35,6 +36,11 @@ import("actions.download", {alias = "action_download"})
 import("devel.git")
 import("net.fasturl")
 import("repository")
+
+-- get memcache
+function _memcache()
+    return memcache.cache("require.impl.package")
+end
 
 --
 -- parse require string
@@ -76,7 +82,7 @@ import("repository")
 function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get it from cache first
-    local requires = _g._REQUIRES or {}
+    local requires = _memcache():get("requires") or {}
     local required = requires[require_str]
     if required then
         return required.packagename, required.requireinfo
@@ -174,7 +180,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- save this required item to cache
     requires[require_str] = required
-    _g._REQUIRES = requires
+    _memcache():set("requires", requires)
 
     -- ok
     return required.packagename, required.requireinfo
@@ -324,7 +330,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- attempt to get it from cache first
     opt = opt or {}
-    local packages = _g._PACKAGES or {}
+    local packages = _memcache():get("packages") or {}
     local package = packages[packagename]
     if package then
 
@@ -380,7 +386,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- save this package package to cache
     packages[packagename] = package
-    _g._PACKAGES = packages
+    _memcache():set("packages", packages)
     return package
 end
 

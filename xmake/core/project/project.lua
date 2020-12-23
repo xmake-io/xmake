@@ -925,9 +925,19 @@ function project.clear()
         opt:clear()
     end
 
-    -- clear targets and options
+    -- clear cache
+    project._INFO = nil
     project._TARGETS = nil
+    project._TARGETS_LOADED = false
+    project._ORDERTARGETS = nil
     project._OPTIONS = nil
+    project._REQUIRES = nil
+    project._REQUIRES_STR = nil
+    project._REQUIRES_EXTRA = nil
+    project._RULES = nil
+    project._TASKS = nil
+    project._PACKAGES = nil
+    project._POLICIES = nil
 end
 
 -- project has been loaded?
