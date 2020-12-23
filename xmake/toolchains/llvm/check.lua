@@ -44,33 +44,10 @@ function _find_xcode(toolchain)
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
     end
-
-    -- save target minver
-    --
-    -- @note we need to differentiate the version for the system,
-    -- because the xcode toolchain of iphoneos/macosx may need to be used at the same time.
-    --
-    -- e.g.
-    --
-    -- target("test")
-    --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})
-    --
-    local target_minver = toolchain:config("target_minver") and config.get("target_minver")
-    if xcode_sdkver and not target_minver then
-        target_minver = xcode_sdkver
-        if toolchain:is_plat("macosx") then
-            local macos_ver = macos.version()
-            if macos_ver then
-                target_minver = macos_ver:major() .. "." .. macos_ver:minor()
-            end
-        end
-    end
     toolchain:config_set("xcode", xcode.sdkdir)
     toolchain:config_set("xcode_sdkver", xcode_sdkver)
-    toolchain:config_set("target_minver", target_minver)
     toolchain:configs_save()
     cprint("checking for SDK version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), xcode_sdkver)
-    cprint("checking for Minimal target version of Xcode for %s (%s) ... ${color.success}%s", toolchain:plat(), toolchain:arch(), target_minver)
 end
 
 -- check the cross toolchain
