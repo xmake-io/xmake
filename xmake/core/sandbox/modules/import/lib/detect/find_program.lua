@@ -55,7 +55,12 @@ function sandbox_lib_detect_find_program._check(program, opt)
 
     -- no check script? attempt to run it directly
     if not opt.check then
-        return 0 == os.execv(program, {"--version"}, {stdout = os.nuldev(), stderr = os.nuldev(), envs = opt.envs})
+        local stdout, stderr
+        if not option.get("diagnosis") then
+            stdout = os.nuldev()
+            stderr = os.nuldev()
+        end
+        return 0 == os.execv(program, {"--version"}, {stdout = stdout, stderr = stderr, envs = opt.envs})
     end
 
     -- check it
