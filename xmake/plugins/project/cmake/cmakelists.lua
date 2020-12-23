@@ -144,6 +144,9 @@ function _add_target_sources(cmakelists, target)
     for _, sourcefile in ipairs(target:sourcefiles()) do
         cmakelists:print("    " .. _get_unix_path(sourcefile))
     end
+    for _, headerfile in ipairs(target:headerfiles()) do
+        cmakelists:print("    " .. _get_unix_path(headerfile))
+    end
     cmakelists:print(")")
 end
 
