@@ -14,6 +14,7 @@
 * Support utf8 for ui modules and `xmake f --menu`
 * Improve to support zig on macOS
 * [#1135](https://github.com/xmake-io/xmake/issues/1135): Improve multi-toolchain and multi-platforms for targets
+* [#1153](https://github.com/xmake-io/xmake/issues/1153): Improve llvm toolchain to support sysroot on macOS
 
 ### Bugs fixed
 
@@ -897,6 +898,7 @@
 * 针对 ui 模块和 `xmake f --menu` 增加 utf8 支持
 * 改进 zig 语言在 macOS 上的支持
 * [#1135](https://github.com/xmake-io/xmake/issues/1135): 针对特定 target 改进多平台多工具链同时配置支持
+* [#1153](https://github.com/xmake-io/xmake/issues/1153): 改进 llvm 工具链，针对 macos 上编译增加 isysroot 支持
 
 ### Bugs 修复
 
