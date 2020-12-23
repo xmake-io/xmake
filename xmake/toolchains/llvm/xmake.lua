@@ -61,6 +61,19 @@ toolchain("llvm")
             toolchain:add("shflags", march)
         end
 
+        -- init flags for the xcode sdk directory
+        if toolchain:is_plat("macosx") then
+            local xcode_dir     = get_config("xcode")
+            local xcode_sdkver  = toolchain:config("xcode_sdkver")
+            local xcode_sdkdir  = nil
+            if xcode_dir and xcode_sdkver then
+                xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+                toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
+                toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
+                toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
+            end
+        end
+
         -- add bin search library for loading some dependent .dll files windows
         local bindir = toolchain:bindir()
         if bindir and is_host("windows") then

@@ -39,16 +39,20 @@ function main(toolchain)
     -- init flags for c/c++
     toolchain:add("cxflags", "-arch " .. arch)
     toolchain:add("ldflags", "-arch " .. arch)
+    toolchain:add("shflags", "-arch " .. arch)
     if target_minver then
         toolchain:add("cxflags", "-mmacosx-version-min=" .. target_minver)
         toolchain:add("mxflags", "-mmacosx-version-min=" .. target_minver)
         toolchain:add("ldflags", "-mmacosx-version-min=" .. target_minver)
+        toolchain:add("shflags", "-mmacosx-version-min=" .. target_minver)
     end
     if xcode_sdkdir then
         toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
         toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
+        toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
     end
     toolchain:add("ldflags", "-stdlib=libc++")
+    toolchain:add("shflags", "-stdlib=libc++")
     toolchain:add("syslinks", "z")
 
     -- init flags for objc/c++ (with ldflags and shflags)
