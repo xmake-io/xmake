@@ -33,7 +33,7 @@ function _get_configs(package, configs)
     if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
-            table.insert(cxflags, "--vs_runtime=" .. vs_runtime)
+            table.insert(configs, "--vs_runtime=" .. vs_runtime)
         end
     end
     table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))

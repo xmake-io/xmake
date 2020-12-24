@@ -48,6 +48,9 @@ rule("c++")
     -- add build rules
     add_deps("c++.build", "c.build")
 
+    -- set compiler runtime, e.g. vs runtime
+    add_deps("utils.compiler.runtime")
+
     -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")
 
