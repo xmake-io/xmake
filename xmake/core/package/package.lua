@@ -1098,8 +1098,14 @@ function _instance:_generate_build_configs(configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
         local vs_runtime = self:config("vs_runtime")
-        if ld and path.basename(ld:lower()) == "link" and vs_runtime and vs_runtime == "MT" then
-            configs.ldflags = "-nodefaultlib:msvcrt.lib"
+        if vs_runtime and ld and path.basename(ld:lower()) == "link" then -- for msvc?
+            local vs_runtime_cxflags = "/" .. vs_runtime .. (self:debug() and "d" or "")
+            configs.cxflags = table.wrap(configs.cxflags)
+            table.insert(configs.cxflags, vs_runtime_cxflags)
+            if vs_runtime == "MT" then
+                configs.ldflags = table.wrap(configs.ldflags)
+                table.insert(configs.ldflags, "-nodefaultlib:msvcrt.lib")
+            end
         end
     end
     return configs
