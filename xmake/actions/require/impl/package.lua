@@ -243,7 +243,7 @@ function _add_package_configurations(package)
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
-    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = get_config("vs_runtime") or "MT", values = {"MT", "MD"}})
 end
 
 -- select package version

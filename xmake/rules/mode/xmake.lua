@@ -34,6 +34,12 @@ rule("mode.debug")
             if not target:get("optimize") then
                 target:set("optimize", "none")
             end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime .. "d")
+            end
         end
     end)
 
@@ -61,6 +67,12 @@ rule("mode.release")
             -- strip all symbols
             if not target:get("strip") then
                 target:set("strip", "all")
+            end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
             end
         end
     end)
@@ -90,6 +102,12 @@ rule("mode.releasedbg")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -113,6 +131,12 @@ rule("mode.minsizerel")
             -- strip all symbols
             if not target:get("strip") then
                 target:set("strip", "all")
+            end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
             end
         end
     end)
@@ -142,6 +166,12 @@ rule("mode.profile")
             target:add("cxflags", "-pg")
             target:add("mxflags", "-pg")
             target:add("ldflags", "-pg")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -166,6 +196,12 @@ rule("mode.coverage")
             target:add("cxflags", "--coverage")
             target:add("mxflags", "--coverage")
             target:add("ldflags", "--coverage")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -195,6 +231,12 @@ rule("mode.asan")
             target:add("mxflags", "-fsanitize=address")
             target:add("ldflags", "-fsanitize=address")
             target:add("shflags", "-fsanitize=address")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -224,6 +266,12 @@ rule("mode.tsan")
             target:add("mxflags", "-fsanitize=thread")
             target:add("ldflags", "-fsanitize=thread")
             target:add("shflags", "-fsanitize=thread")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -253,6 +301,12 @@ rule("mode.msan")
             target:add("mxflags", "-fsanitize=memory")
             target:add("ldflags", "-fsanitize=memory")
             target:add("shflags", "-fsanitize=memory")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -282,6 +336,12 @@ rule("mode.lsan")
             target:add("mxflags", "-fsanitize=leak")
             target:add("ldflags", "-fsanitize=leak")
             target:add("shflags", "-fsanitize=leak")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -311,6 +371,12 @@ rule("mode.ubsan")
             target:add("mxflags", "-fsanitize=undefined")
             target:add("ldflags", "-fsanitize=undefined")
             target:add("shflags", "-fsanitize=undefined")
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
+            end
         end
     end)
 
@@ -333,6 +399,12 @@ rule("mode.valgrind")
                 else
                     target:set("optimize", "fastest")
                 end
+            end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
             end
         end
     end)
@@ -360,6 +432,12 @@ rule("mode.check")
                 target:add("mxflags", "-fsanitize=address", "-ftrapv")
                 target:add("ldflags", "-fsanitize=address")
                 target:add("shflags", "-fsanitize=address")
+            end
+
+            -- set vs runtime
+            local vs_runtime = get_config("vs_runtime")
+            if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
+                target:set("runtimes", vs_runtime)
             end
         end
     end)
