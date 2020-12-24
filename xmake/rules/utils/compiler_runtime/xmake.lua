@@ -25,7 +25,7 @@ rule("utils.compiler.runtime")
         -- set vs runtime
         local vs_runtime = get_config("vs_runtime")
         if vs_runtime and target:is_plat("windows") and not target:get("runtimes") then
-            target:set("runtimes", vs_runtime .. (is_mode("debug") and "d" or ""))
+            target:set("runtimes", vs_runtime)
         end
     end)
 
