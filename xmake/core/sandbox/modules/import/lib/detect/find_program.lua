@@ -56,7 +56,7 @@ function sandbox_lib_detect_find_program._check(program, opt)
     -- no check script? attempt to run it directly
     if not opt.check then
         local ok, errors = os.runv(program, {"--version"}, {envs = opt.envs})
-        if not ok and option.get("diagnosis") then
+        if not ok and option.get("verbose") and option.get("diagnosis") then
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
         end
         return ok
@@ -72,7 +72,7 @@ function sandbox_lib_detect_find_program._check(program, opt)
     end
 
     -- check failed? print verbose error info
-    if not ok and option.get("diagnosis") then
+    if not ok and option.get("verbose") and option.get("diagnosis") then
         utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
     end
     return ok
