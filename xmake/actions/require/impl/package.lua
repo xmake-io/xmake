@@ -237,13 +237,14 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
+    local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
-    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = get_config("vs_runtime") or "MT", values = {"MT", "MTd", "MD", "MDd"}})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
 end
 
 -- select package version
