@@ -23,13 +23,15 @@ import("core.base.option")
 import("core.base.semver")
 import("core.base.hashset")
 import("core.project.config")
-import("core.project.cache")
 import("core.project.project")
 import("core.platform.platform")
 import("core.tool.compiler")
 import("core.tool.linker")
+import("core.cache.memcache")
+import("core.cache.localcache")
 import("lib.detect.find_tool")
 import("private.action.run.make_runenvs")
+import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 
@@ -155,9 +157,8 @@ function _make_targetinfo(mode, arch, target)
     if targetinfo.languages:find("c++17", 1, true) or targetinfo.languages:find("cxx17", 1, true) then
         targetinfo.cxxlanguage = "stdcpp17"
     end
-    local configcache = cache("local.config")
     local flags = {}
-    for k, v in pairs(configcache:get("options_" .. target:name())) do
+    for k, v in pairs(localcache.get("config", "options_" .. target:name())) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
             table.insert(flags, "--" .. k .. "=" .. tostring(v));
         end
@@ -293,8 +294,14 @@ function main(outputdir, vsinfo)
             config.set("mode", mode, {readonly = true, force = true})
             config.set("arch", arch, {readonly = true, force = true})
 
-            -- clear project to reload and recheck it
-            project.clear()
+            -- clear all options
+            for _, opt in ipairs(project.options()) do
+                opt:clear()
+            end
+
+            -- clear cache
+            memcache.clear()
+            localcache.clear()
 
             -- check platform
             platform.load(config.plat(), arch):check()
@@ -302,11 +309,12 @@ function main(outputdir, vsinfo)
             -- check project options
             project.check()
 
-            -- re-generate configheader
-            generate_configheader()
+            -- install and update requires
+            install_requires()
 
-            -- re-generate configfiles
+            -- update config files
             generate_configfiles()
+            generate_configheader()
 
             -- ensure to enter project directory
             os.cd(project.directory())

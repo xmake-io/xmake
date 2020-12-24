@@ -1880,6 +1880,7 @@ function target.apis()
         ,   "target.set_warnings"
         ,   "target.set_fpmodels"
         ,   "target.set_optimize"
+        ,   "target.set_runtimes"
         ,   "target.set_languages"
         ,   "target.set_toolchains"
             -- target.add_xxx

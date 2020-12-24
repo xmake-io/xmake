@@ -15,9 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        cache.lua
+-- @file        memcache.lua
 --
 
 -- return module
-return require("project/cache")
+return require("cache/memcache")
 

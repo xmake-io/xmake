@@ -29,7 +29,8 @@ import("core.tool.toolchain")
 import("vs201x_solution")
 import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
-import("lib.detect.cache", {alias = "detectcache"})
+import("core.cache.memcache")
+import("core.cache.localcache")
 import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
@@ -232,16 +233,19 @@ function make(outputdir, vsinfo)
             -- reload config, project and platform
             if mode ~= config.mode() or arch ~= config.arch() then
 
-                -- clear detect cache
-                detectcache.clear()
-
                 -- modify config
                 config.set("as", nil, {force = true}) -- force to re-check as for ml/ml64
                 config.set("mode", mode, {readonly = true, force = true})
                 config.set("arch", arch, {readonly = true, force = true})
 
-                -- clear project to reload and recheck it
-                project.clear()
+                -- clear all options
+                for _, opt in ipairs(project.options()) do
+                    opt:clear()
+                end
+
+                -- clear cache
+                memcache.clear()
+                localcache.clear()
 
                 -- check platform
                 platform.load(config.plat(), arch):check()

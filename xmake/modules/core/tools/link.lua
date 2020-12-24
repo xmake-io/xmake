@@ -96,6 +96,13 @@ function nf_syslink(self, lib)
     return nf_link(self, lib)
 end
 
+-- make vs runtime flag
+function nf_runtime(self, vs_runtime)
+    if vs_runtime and vs_runtime:startswith("MT") then
+        return "-nodefaultlib:msvcrt.lib"
+    end
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     return "-libpath:" .. os.args(path.translate(dir))

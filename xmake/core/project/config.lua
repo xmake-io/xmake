@@ -148,6 +148,11 @@ function config.filepath()
     return path.join(config.directory(), xmake._NAME .. ".conf")
 end
 
+-- get the local cache directory
+function config.cachedir()
+    return path.join(config.directory(), "cache")
+end
+
 -- get the configure directory on the current host/arch platform
 function config.directory()
     if config._DIRECTORY == nil then

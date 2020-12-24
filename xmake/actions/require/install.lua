@@ -165,10 +165,6 @@ end
 -- install packages
 function main(requires_raw)
 
-    -- avoid to run this task repeatly
-    if _g.installed then return end
-    _g.installed = true
-
     -- get requires and extra config
     local requires_extra = nil
     local requires, requires_extra = get_requires(requires_raw)

@@ -19,11 +19,11 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("lib.detect.find_path")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.cache.detectcache")
 import("detect.sdks.find_cross_toolchain")
 
 -- find mingw directory
@@ -121,7 +121,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_mingw"
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.mingw and cacheinfo.mingw.sdkdir and os.isdir(cacheinfo.mingw.sdkdir) then
         return cacheinfo.mingw
     end
@@ -147,8 +147,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.mingw = mingw or false
-    cache.save(key, cacheinfo)
-
-    -- ok?
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return mingw
 end

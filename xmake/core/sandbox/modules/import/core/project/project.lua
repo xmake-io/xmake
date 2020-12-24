@@ -50,7 +50,6 @@ sandbox_core_project.rootfile     = project.rootfile
 sandbox_core_project.allfiles     = project.allfiles
 sandbox_core_project.rcfile       = project.rcfile
 sandbox_core_project.directory    = project.directory
-sandbox_core_project.clear        = project.clear
 sandbox_core_project.name         = project.name
 sandbox_core_project.modes        = project.modes
 sandbox_core_project.mtimes       = project.mtimes
@@ -62,11 +61,6 @@ sandbox_core_project.policy       = project.policy
 sandbox_core_project.tmpdir       = project.tmpdir
 sandbox_core_project.tmpfile      = project.tmpfile
 sandbox_core_project.is_loaded    = project.is_loaded
-
--- load project
-function sandbox_core_project.load()
-    deprecated.add("project.clear() or only remove it", "project.load()")
-end
 
 -- check project options
 function sandbox_core_project.check()

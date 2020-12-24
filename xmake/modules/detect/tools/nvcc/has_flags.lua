@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("lib.detect.cache")
+import("core.cache.detectcache")
 import("core.language.language")
 
 -- is linker?
@@ -78,11 +78,8 @@ function _check_from_arglist(flags, opt, islinker)
     -- make flags key
     local flagskey = opt.program .. "_" .. (opt.programver or "")
 
-    -- load cache
-    local cacheinfo  = cache.load(key)
-
     -- get all flags from argument list
-    local allflags = cacheinfo[flagskey]
+    local allflags = detectcache:get2(key, flagskey)
     if not allflags then
 
         -- get argument list
@@ -95,11 +92,9 @@ function _check_from_arglist(flags, opt, islinker)
         end
 
         -- save cache
-        cacheinfo[flagskey] = allflags
-        cache.save(key, cacheinfo)
+        detectcache:set2(key, flagskey, allflags)
+        detectcache:save()
     end
-
-    -- ok?
     return allflags[flags[1]]
 end
 

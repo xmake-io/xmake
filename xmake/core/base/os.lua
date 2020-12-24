@@ -764,8 +764,6 @@ function os.iorunv(program, argv, opt)
     -- remove the temporary output and error file
     os.rm(outfile)
     os.rm(errfile)
-
-    -- ok?
     return ok == 0, outdata, errdata, errors
 end
 

@@ -19,12 +19,12 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("lib.detect.find_file")
 import("core.tool.toolchain")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.cache.detectcache")
 
 -- find dotnet directory
 function _find_sdkdir(sdkdir)
@@ -101,7 +101,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_dotnet." .. (sdkdir or "")
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.dotnet then
         return cacheinfo.dotnet
     end
@@ -129,8 +129,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.dotnet = dotnet or false
-    cache.save(key, cacheinfo)
-
-    -- ok?
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return dotnet
 end

@@ -27,7 +27,8 @@ import("core.base.scheduler")
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
-import("lib.detect.cache", {alias = "detectcache"})
+import("core.cache.memcache")
+import("core.cache.localcache")
 import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("actions.install", {alias = "action_install"})
@@ -35,6 +36,11 @@ import("actions.download", {alias = "action_download"})
 import("devel.git")
 import("net.fasturl")
 import("repository")
+
+-- get memcache
+function _memcache()
+    return memcache.cache("require.impl.package")
+end
 
 --
 -- parse require string
@@ -76,7 +82,7 @@ import("repository")
 function _parse_require(require_str, requires_extra, parentinfo)
 
     -- get it from cache first
-    local requires = _g._REQUIRES or {}
+    local requires = _memcache():get("requires") or {}
     local required = requires[require_str]
     if required then
         return required.packagename, required.requireinfo
@@ -174,7 +180,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- save this required item to cache
     requires[require_str] = required
-    _g._REQUIRES = requires
+    _memcache():set("requires", requires)
 
     -- ok
     return required.packagename, required.requireinfo
@@ -231,13 +237,14 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
+    local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
-    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = "MT", values = {"MT", "MD"}})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
 end
 
 -- select package version
@@ -324,7 +331,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- attempt to get it from cache first
     opt = opt or {}
-    local packages = _g._PACKAGES or {}
+    local packages = _memcache():get("packages") or {}
     local package = packages[packagename]
     if package then
 
@@ -380,7 +387,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- save this package package to cache
     packages[packagename] = package
-    _g._PACKAGES = packages
+    _memcache():set("packages", packages)
     return package
 end
 
@@ -838,8 +845,8 @@ function uninstall_packages(requires, opt)
     -- do not remove dependent packages
     opt.nodeps = true
 
-    -- clear the detect cache
-    detectcache.clear()
+    -- clear the local cache
+    localcache.clear()
 
     -- remove all packages
     local packages = {}

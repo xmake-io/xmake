@@ -19,12 +19,12 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("lib.detect.find_file")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
 import("core.tool.toolchain")
+import("core.cache.detectcache")
 import("detect.sdks.find_vstudio")
 
 -- find WDK directory
@@ -153,7 +153,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_wdk"
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.wdk and cacheinfo.wdk.sdkdir and os.isdir(cacheinfo.wdk.sdkdir) then
         return cacheinfo.wdk
     end
@@ -181,8 +181,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.wdk = wdk or false
-    cache.save(key, cacheinfo)
-
-    -- ok?
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return wdk
 end

@@ -22,29 +22,19 @@
 local requireinfo = requireinfo or {}
 
 -- load modules
-local io      = require("base/io")
-local os      = require("base/os")
-local path    = require("base/path")
-local table   = require("base/table")
-local utils   = require("base/utils")
-local cache   = require("project/cache")
-local config  = require("project/config")
-local semver  = require("base/semver")
-local sandbox = require("sandbox/sandbox")
+local io         = require("base/io")
+local os         = require("base/os")
+local path       = require("base/path")
+local table      = require("base/table")
+local utils      = require("base/utils")
+local config     = require("project/config")
+local semver     = require("base/semver")
+local sandbox    = require("sandbox/sandbox")
+local localcache = require("cache/localcache")
 
 -- get cache
 function requireinfo._cache()
-
-    -- get it from cache first if exists
-    if requireinfo._CACHE then
-        return requireinfo._CACHE
-    end
-
-    -- init cache
-    requireinfo._CACHE = cache("local.requires")
-
-    -- ok
-    return requireinfo._CACHE
+    return localcache.cache("package")
 end
 
 -- save the requires info to the cache
@@ -64,7 +54,7 @@ function requireinfo:save()
 
     -- save it
     requireinfo._cache():set(self:name(), self._INFO)
-    requireinfo._cache():flush()
+    requireinfo._cache():save()
 end
 
 -- clear the requireinfo

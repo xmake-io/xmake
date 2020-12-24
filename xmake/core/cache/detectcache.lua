@@ -15,8 +15,8 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        history.lua
+-- @file        detectcache.lua
 --
 
--- return module
-return require("project/history")
+return require("cache/localcache").cache("detect")
+

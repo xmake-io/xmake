@@ -22,16 +22,16 @@
 local sandbox_lib_detect_find_programver = sandbox_lib_detect_find_programver or {}
 
 -- load modules
-local os        = require("base/os")
-local path      = require("base/path")
-local table     = require("base/table")
-local utils     = require("base/utils")
-local option    = require("base/option")
-local semver    = require("base/semver")
-local project   = require("project/project")
-local sandbox   = require("sandbox/sandbox")
-local raise     = require("sandbox/modules/raise")
-local cache     = require("sandbox/modules/import/lib/detect/cache")
+local os          = require("base/os")
+local path        = require("base/path")
+local table       = require("base/table")
+local utils       = require("base/utils")
+local option      = require("base/option")
+local semver      = require("base/semver")
+local project     = require("project/project")
+local detectcache = require("cache/detectcache")
+local sandbox     = require("sandbox/sandbox")
+local raise       = require("sandbox/modules/raise")
 
 -- find program version
 --
@@ -62,8 +62,7 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = cache.load(cachekey)
-    local result = cacheinfo[program]
+    local result = detectcache:get2(cachekey, program)
     if result ~= nil and not opt.force then
         return result and result or nil
     end
@@ -99,8 +98,8 @@ function sandbox_lib_detect_find_programver.main(program, opt)
     end
 
     -- save result
-    cacheinfo[program] = result and result or false
-    cache.save(cachekey, cacheinfo)
+    detectcache:set2(cachekey, program, result and result or false)
+    detectcache:save()
     return result
 end
 

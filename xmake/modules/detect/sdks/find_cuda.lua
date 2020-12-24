@@ -19,11 +19,11 @@
 --
 
 -- imports
-import("lib.detect.cache")
 import("lib.detect.find_file")
 import("core.base.option")
 import("core.base.global")
 import("core.project.config")
+import("core.cache.detectcache")
 
 -- find cuda sdk directory
 function _find_sdkdir()
@@ -108,7 +108,7 @@ function main(sdkdir, opt)
 
     -- attempt to load cache first
     local key = "detect.sdks.find_cuda"
-    local cacheinfo = cache.load(key)
+    local cacheinfo = detectcache:get(key) or {}
     if not opt.force and cacheinfo.cuda and cacheinfo.cuda.sdkdir and os.isdir(cacheinfo.cuda.sdkdir) then
         return cacheinfo.cuda
     end
@@ -134,8 +134,7 @@ function main(sdkdir, opt)
 
     -- save to cache
     cacheinfo.cuda = cuda or false
-    cache.save(key, cacheinfo)
-
-    -- ok?
+    detectcache:set(key, cacheinfo)
+    detectcache:save()
     return cuda
 end

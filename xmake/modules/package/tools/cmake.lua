@@ -197,10 +197,19 @@ function _get_configs_for_windows(package, configs, opt)
         end
     end
     local vs_runtime = package:config("vs_runtime")
+    if vs_runtime == "MT" then
+        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
+    elseif vs_runtime == "MTd" then
+        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebug")
+    elseif vs_runtime == "MD" then
+        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
+    elseif vs_runtime == "MDd" then
+        table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
+    end
     if vs_runtime then
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. '"')
         table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. 'd"')
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. '"')
         table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
     end
     _get_configs_for_generic(package, configs, opt)

@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("core.project.history")
+import("core.cache.localcache")
 
 -- the macro directories
 function _directories()
@@ -46,32 +46,22 @@ function _directory(macroname)
 
     -- check
     assert(macrodir, "macro(%s) not found!", macroname)
-
-    -- ok
     return macrodir
 end
 
 -- the readable macro file
 function _rfile(macroname)
-
-    -- is anonymous?
     if macroname == '.' then
         macroname = "anonymous"
     end
-
-    -- get it
     return path.join(_directory(macroname), macroname .. ".lua")
 end
 
 -- the writable macro file
 function _wfile(macroname)
-
-    -- is anonymous?
     if macroname == '.' then
         macroname = "anonymous"
     end
-
-    -- get it
     return path.join(path.join(config.directory(), "macros"), macroname .. ".lua")
 end
 
@@ -86,11 +76,9 @@ function macros(anonymousname)
 
             -- get macro name
             local macroname = path.basename(macrofile)
-
             if macroname == "anonymous" and anonymousname then
                 macroname = anonymousname
             end
-
             table.insert(results, macroname)
         end
     end
@@ -99,21 +87,14 @@ end
 
 -- list macros
 function _list()
-
-    -- trace
     cprint("${bright}macros:")
-
-    -- find all macros
     for _, macroname in ipairs(macros(".<anonymous>")) do
-        -- show it
         print("    " .. macroname)
     end
 end
 
 -- show macro
 function _show(macroname)
-
-    -- show it
     local file = _rfile(macroname)
     if os.isfile(file) then
         io.cat(file)
@@ -124,8 +105,6 @@ end
 
 -- clear all macros
 function _clear()
-
-    -- clear all
     os.rm(path.join(config.directory(), "macros"))
 end
 
@@ -207,49 +186,46 @@ end
 
 -- begin to record macro
 function _begin()
-
-    -- patch begin tag to the history: cmdlines
-    history("local.history"):save("cmdlines", "__macro_begin__")
+    localcache.set("history", "cmdlines", "__macro_begin__")
+    localcache.save("history")
 end
 
 -- end to record macro
 function _end(macroname)
 
     -- load the history: cmdlines
-    local cmdlines = history("local.history"):load("cmdlines")
+    local cmdlines = table.wrap(localcache.get("history", "cmdlines"))
 
     -- get the last macro block
     local begin = false
     local block = {}
-    if cmdlines then
-        local total = #cmdlines
-        local index = total
-        while index ~= 0 do
+    local total = #cmdlines
+    local index = total
+    while index ~= 0 do
 
-            -- the command line
-            local cmdline = cmdlines[index]
+        -- the command line
+        local cmdline = cmdlines[index]
 
-            -- found begin? break it
-            if cmdline == "__macro_begin__" then
-                begin = true
-                break
-            end
-
-            -- found end? break it
-            if cmdline == "__macro_end__" then
-                break
-            end
-
-            -- ignore "xmake m .." and "xmake macro .."
-            if not cmdline:find("xmake%s+macro%s*") and not cmdline:find("xmake%s+m%s*") then
-
-                -- save this command line to block
-                table.insert(block, 1, cmdline)
-            end
-
-            -- the previous line
-            index = index - 1
+        -- found begin? break it
+        if cmdline == "__macro_begin__" then
+            begin = true
+            break
         end
+
+        -- found end? break it
+        if cmdline == "__macro_end__" then
+            break
+        end
+
+        -- ignore "xmake m .." and "xmake macro .."
+        if not cmdline:find("xmake%s+macro%s*") and not cmdline:find("xmake%s+m%s*") then
+
+            -- save this command line to block
+            table.insert(block, 1, cmdline)
+        end
+
+        -- the previous line
+        index = index - 1
     end
 
     -- the begin tag not found?
@@ -258,7 +234,9 @@ function _end(macroname)
     end
 
     -- patch end tag to the history: cmdlines
-    history("local.history"):save("cmdlines", "__macro_end__")
+    table.insert(cmdlines, "__macro_end__")
+    localcache.set("history", "cmdlines", cmdlines)
+    localcache.save("history")
 
     -- open the macro file
     local file = io.open(_wfile(macroname), "w")
@@ -268,8 +246,6 @@ function _end(macroname)
 
     -- save the macro block
     for _, cmdline in ipairs(block) do
-
-        -- save command line
         file:print("    os.exec(\"%s\")", (cmdline:gsub("[\\\"]", function (w) return "\\" .. w end)))
     end
 
@@ -293,7 +269,7 @@ function _run(macroname)
     if macroname == ".." then
 
         -- load the history: cmdlines
-        local cmdlines = history("local.history"):load("cmdlines")
+        local cmdlines = localcache.get("history", "cmdlines")
 
         -- get the last command
         local lastcmd = nil

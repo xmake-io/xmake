@@ -142,8 +142,6 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps =
     {
         none       = "-W0"
@@ -154,15 +152,11 @@ function nf_warning(self, level)
     ,   everything = "-Wall"
     ,   error      = "-WX"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
         none        = "-Od"
@@ -171,15 +165,18 @@ function nf_optimize(self, level)
     ,   smallest    = "-O1 -GL" -- /GL and (/OPT:REF is on by default in linker), we need enable /ltcg
     ,   aggressive  = "-Ox -fp:fast"
     }
-
-    -- make it
     return maps[level]
+end
+
+-- make vs runtime flag
+function nf_runtime(self, vs_runtime)
+    if vs_runtime then
+        return "-" .. vs_runtime
+    end
 end
 
 -- make the vector extension flag
 function nf_vectorext(self, extension)
-
-    -- the maps
     local maps =
     {
         sse    = "-arch:SSE"
@@ -187,8 +184,6 @@ function nf_vectorext(self, extension)
     ,   avx    = "-arch:AVX"
     ,   avx2   = "-arch:AVX2"
     }
-
-    -- check it
     local flag = maps[extension]
     if flag and self:has_flags(flag, "cxflags") then
         return flag
