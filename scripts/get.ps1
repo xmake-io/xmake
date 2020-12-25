@@ -153,7 +153,7 @@ param (
                 $content = [System.Text.RegularExpressions.Regex]::Replace($content, "\n*(# PowerShell parameter completion shim for xmake)?\s*Register-ArgumentCompleter -Native -CommandName xmake -ScriptBlock\s*{.+?\n}\s*", "`n", [System.Text.RegularExpressions.RegexOptions]::Singleline) 
             }
             try {
-                $appendcontent = (Invoke-Webrequest 'https://cdn.jsdelivr.net/gh/xmake-io/xmake@master/scripts/register-completions.ps1' -UseBasicParsing).Content
+                $appendcontent = (Invoke-Webrequest 'https://raw.githubusercontent.com/xmake-io/xmake/master/scripts/register-completions.ps1' -UseBasicParsing).Content
             } catch {
                 writeErrorTip 'Download failed!'
                 writeErrorTip 'Check your network or... the news of S3 break'
