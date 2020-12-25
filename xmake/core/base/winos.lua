@@ -288,8 +288,19 @@ function winos.registry_values(keypath)
     -- get the root directory
     local rootdir = keypath:sub(p + 1)
 
-    -- get values
-    return winos._registry_values(rootkey, rootdir, pattern)
+    -- get value names
+    local value_names = {}
+    local count, errors = winos._registry_values(rootkey, rootdir, function (value_name)
+        if not pattern or value_name:match("^" .. pattern .. "$") then
+            table.insert(value_names, value_name)
+        end
+        return true
+    end)
+    if count ~= nil then
+        return value_names
+    else
+        return nil, errors
+    end
 end
 
 -- return module: winos

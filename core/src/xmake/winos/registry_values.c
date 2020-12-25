@@ -36,7 +36,11 @@
 
 /* get registry values
  *
- * local value, errors = winos.registry_values("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debug*")
+ * local count, errors = winos.registry_values("HKEY_LOCAL_MACHINE",
+ *                                             "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug",
+ *                                             function (value_name)
+ *                                                 return true -- continue or break
+ *                                             end)
  */
 tb_int_t xm_winos_registry_values(lua_State* lua)
 {
@@ -46,11 +50,12 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
     // get the arguments
     tb_char_t const* rootkey = luaL_checkstring(lua, 1);
     tb_char_t const* rootdir = luaL_checkstring(lua, 2);
-    tb_char_t const* pattern = luaL_checkstring(lua, 3);
-    tb_check_return_val(rootkey && rootdir && pattern, 0);
+    tb_bool_t is_function    = lua_isfunction(lua, 3);
+    tb_check_return_val(rootkey && rootdir && is_function, 0);
 
     // query key-value
     tb_bool_t   ok = tb_false;
+    tb_int_t    count = 0;
     HKEY        key = tb_null;
     HKEY        keynew = tb_null;
     tb_char_t*  value = tb_null;
@@ -97,9 +102,6 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
             break;
         }
 
-        // init result
-        lua_newtable(lua);
-
         // get all values
         DWORD i = 0;
         for (i = 0; i < value_name_num; i++)
@@ -108,20 +110,30 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
             DWORD value_name_size = sizeof(value_name);
             if (RegEnumValueA(keynew, i, value_name, &value_name_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
             {
-                lua_pop(lua, 1);
                 lua_pushnil(lua);
                 lua_pushfstring(lua, "get registry value(%d) failed: %s\\%s", i, rootkey, rootdir);
                 break;
             }
 
-            // save value name
+            // do callback(value_name)
+            lua_pushvalue(lua, 3);
             lua_pushlstring(lua, value_name, value_name_size);
-            lua_rawseti(lua, -2, (tb_int_t)(i + 1));
+            lua_call(lua, 1, 1);
+            count++;
+
+            // is continue?
+            tb_bool_t is_continue = lua_toboolean(lua, -1);
+            lua_pop(lua, 1);
+            if (!is_continue)
+            {
+                ok = tb_true;
+                break;
+            }
         }
-        tb_assert_and_check_break(i == value_name_num);
 
         // ok
-        ok = tb_true;
+        if (i == value_name_num)
+            ok = tb_true;
 
     } while (0);
 
@@ -131,5 +143,10 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
     keynew = tb_null;
 
     // ok?
-    return ok? 1 : 2;
+    if (ok)
+    {
+        lua_pushinteger(lua, count);
+        return 1;
+    }
+    else return 2;
 }
