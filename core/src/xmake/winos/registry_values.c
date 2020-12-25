@@ -69,9 +69,6 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
             break;
         }
 
-        // get registry value
-        DWORD type = 0;
-
         // open registry key
         if (RegOpenKeyExA(key, rootdir, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
         {
@@ -80,49 +77,51 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
             break;
         }
 
-        // get registry value size
-        DWORD valuesize = 0;
-        if (RegQueryValueExA(keynew, pattern, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
+        // query values
+        DWORD value_name_num = 0;
+        DWORD value_name_maxn = 0;
+        if (RegQueryInfoKeyA(keynew, tb_null, tb_null, tb_null, tb_null, tb_null, tb_null, &value_name_num, &value_name_maxn, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
         {
             lua_pushnil(lua);
-            lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, pattern);
+            lua_pushfstring(lua, "query registry info failed: %s\\%s", rootkey, rootdir);
+            break;
+        }
+        value_name_maxn++; // add `\0`
+
+        // ensure enough value name buffer
+        tb_char_t value_name[8192];
+        if (value_name_maxn > sizeof(value_name))
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "no enough value name buffer: %s\\%s", rootkey, rootdir);
             break;
         }
 
-        // make value buffer
-        value = (tb_char_t*)tb_malloc0(valuesize + 1);
-        tb_assert_and_check_break(value);
+        // init result
+        lua_newtable(lua);
 
-        // get value result
-        type = 0;
-        if (RegQueryValueExA(keynew, pattern, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
+        // get all values
+        DWORD i = 0;
+        for (i = 0; i < value_name_num; i++)
         {
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, pattern);
-            break;
-        }
+            // get value
+            DWORD value_name_size = sizeof(value_name);
+            if (RegEnumValueA(keynew, i, value_name, &value_name_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
+            {
+                lua_pop(lua, 1);
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "get registry value(%d) failed: %s\\%s", i, rootkey, rootdir);
+                break;
+            }
 
-        // save result
-        switch (type)
-        {
-        case REG_SZ:
-        case REG_EXPAND_SZ:
-            lua_pushstring(lua, value);
-            ok = tb_true;
-            break;
-        case REG_DWORD:
-            lua_pushfstring(lua, "%d", *((tb_int_t*)value));
-            ok = tb_true;
-            break;
-        case REG_QWORD:
-            lua_pushfstring(lua, "%lld", *((tb_int64_t*)value));
-            ok = tb_true;
-            break;
-        default:
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "unsupported registry value type: %d", type);
-            break;
+            // save value name
+            lua_pushlstring(lua, value_name, value_name_size);
+            lua_rawseti(lua, -2, (tb_int_t)(i + 1));
         }
+        tb_assert_and_check_break(i == value_name_num);
+
+        // ok
+        ok = tb_true;
 
     } while (0);
 
@@ -130,10 +129,6 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
     if (keynew)
         RegCloseKey(keynew);
     keynew = tb_null;
-
-    // exit value
-    if (value) tb_free(value);
-    value = tb_null;
 
     // ok?
     return ok? 1 : 2;
