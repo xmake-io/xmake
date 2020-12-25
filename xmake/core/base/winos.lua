@@ -26,10 +26,11 @@ local os     = require("base/os")
 local path   = require("base/path")
 local semver = require("base/semver")
 
-winos._ansi_cp        = winos._ansi_cp or winos.ansi_cp
-winos._oem_cp         = winos._oem_cp  or winos.oem_cp
-winos._registry_query = winos._registry_query or winos.registry_query
-winos._registry_keys  = winos._registry_keys or winos.registry_keys
+winos._ansi_cp         = winos._ansi_cp or winos.ansi_cp
+winos._oem_cp          = winos._oem_cp  or winos.oem_cp
+winos._registry_query  = winos._registry_query or winos.registry_query
+winos._registry_keys   = winos._registry_keys or winos.registry_keys
+winos._registry_values = winos._registry_values or winos.registry_values
 
 function winos.ansi_cp()
     if not winos._ANSI_CP then
