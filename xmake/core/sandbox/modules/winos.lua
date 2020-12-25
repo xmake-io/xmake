@@ -53,12 +53,12 @@ function sandbox_winos.registry_query(keypath)
 end
 
 -- get registry keys
-function sandbox_winos.registry_keys(pattern)
-    local keypaths, errors = winos.registry_keys(pattern)
-    if not keypaths then
+function sandbox_winos.registry_keys(keypath)
+    local keys, errors = winos.registry_keys(keypath)
+    if not keys then
         raise(errors)
     end
-    return keypaths
+    return keys
 end
 
 -- get registry values

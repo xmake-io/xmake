@@ -217,52 +217,78 @@ end
 
 -- get registry key paths
 --
--- @param pattern   the search pattern
+-- @param keypath   the key path (support key pattern, e.g. \\a\\b;xx*yy)
 --                  uses "*" to match any part of a key path,
 --                  uses "**" to recurse into subkey paths.
 -- @return          the result array and errors
 --
 -- @code
--- local keypaths, errors = winos.registry_keys("HKEY_LOCAL_MACHINE\\SOFTWARE\\*\\Windows NT\\*\\CurrentVersion\\AeDebug")
--- local keypaths, errors = winos.registry_keys("HKEY_LOCAL_MACHINE\\SOFTWARE\\**")
+-- local keys, errors = winos.registry_keys("HKEY_LOCAL_MACHINE\\SOFTWARE\\*\\Windows NT\\*\\CurrentVersion\\AeDebug")
+-- local keys, errors = winos.registry_keys("HKEY_LOCAL_MACHINE\\SOFTWARE\\**")
 -- @endcode
 --
-function winos.registry_keys(pattern)
+function winos.registry_keys(keypath)
 
     -- get rootkey, e.g. HKEY_LOCAL_MACHINE
     local rootkey
-    local p = pattern:find("\\", 1, true)
+    local p = keypath:find("\\", 1, true)
     if p then
-        rootkey = pattern:sub(1, p - 1)
+        rootkey = keypath:sub(1, p - 1)
     end
     if not rootkey then
         return
     end
 
     -- get the root directory
-    local rootdir = pattern:sub(p + 1)
+    local rootdir = keypath:sub(p + 1)
     p = rootdir:find("*", 1, true)
     if p then
         rootdir = path.directory(rootdir:sub(1, p - 1))
     end
 
-    -- convert pattern to a lua pattern
-    pattern = path.pattern(pattern)
+    -- get key pattern with a lua pattern
+    local pattern = path.pattern(keypath)
 
-    -- find keys
+    -- get keys
     return winos._registry_keys(rootkey, rootdir, pattern)
 end
 
 -- get registry values from the given key path
 --
--- @param keypath   the key path
+-- @param keypath   the key path (support value pattern, e.g. \\a\\b;xx*yy)
+--                  uses "*" to match value name,
 -- @return          the values array and errors
 --
 -- @code
 -- local values, errors = winos.registry_values("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug")
+-- local values, errors = winos.registry_values("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debug*")
 -- @endcode
 --
 function winos.registry_values(keypath)
+
+    -- get value pattern
+    local splitinfo = keypath:split(';', {plain = true})
+    local pattern = splitinfo[2]
+    if pattern then
+        pattern = path.pattern(pattern)
+    end
+    keypath = splitinfo[1]
+
+    -- get rootkey, e.g. HKEY_LOCAL_MACHINE
+    local rootkey
+    local p = keypath:find("\\", 1, true)
+    if p then
+        rootkey = keypath:sub(1, p - 1)
+    end
+    if not rootkey then
+        return nil, "root key not found!"
+    end
+
+    -- get the root directory
+    local rootdir = keypath:sub(p + 1)
+
+    -- get values
+    return winos._registry_values(rootkey, rootdir, pattern)
 end
 
 -- return module: winos
