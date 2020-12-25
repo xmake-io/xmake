@@ -241,7 +241,8 @@ function _make_vsinfo_archs()
             table.insert(vsinfo_archs, arch:trim())
         end
     else
-        vsinfo_archs = platform.archs()
+        -- we use it first if global set_arch("xx") is setted in xmake.lua
+        vsinfo_archs = project.get("target.arch") or platform.archs()
     end
     if not vsinfo_archs or #vsinfo_archs == 0 then
         vsinfo_archs = { config.arch() }

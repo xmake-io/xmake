@@ -17,6 +17,7 @@
 * [#1135](https://github.com/xmake-io/xmake/issues/1135): Improve multi-toolchain and multi-platforms for targets
 * [#1153](https://github.com/xmake-io/xmake/issues/1153): Improve llvm toolchain to support sysroot on macOS
 * [#1071](https://github.com/xmake-io/xmake/issues/1071): Improve to generate vs/vsxmake project to support for remote packages
+* Improve vs/vsxmake project plugin to support global `set_arch()` setting
 
 ### Bugs fixed
 
@@ -903,6 +904,7 @@
 * [#1135](https://github.com/xmake-io/xmake/issues/1135): 针对特定 target 改进多平台多工具链同时配置支持
 * [#1153](https://github.com/xmake-io/xmake/issues/1153): 改进 llvm 工具链，针对 macos 上编译增加 isysroot 支持
 * [#1071](https://github.com/xmake-io/xmake/issues/1071): 改进 vs/vsxmake 生成插件去支持远程依赖包
+* 改进 vs/vsxmake 工程生成插件去支持全局的 `set_arch()` 设置
 
 ### Bugs 修复
 
