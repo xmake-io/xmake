@@ -31,7 +31,6 @@ sandbox_winos.ansi_cp           = winos.ansi_cp
 sandbox_winos.cp_info           = winos.cp_info
 sandbox_winos.console_cp        = winos.console_cp
 sandbox_winos.console_output_cp = winos.console_output_cp
-sandbox_winos.registry_query    = winos.registry_query
 sandbox_winos.logical_drives    = winos.logical_drives
 sandbox_winos.cmdargv           = winos.cmdargv
 
@@ -42,6 +41,33 @@ function sandbox_winos.version()
         raise("cannot get the version of the current winos!")
     end
     return winver
+end
+
+-- query registry value
+function sandbox_winos.registry_query(keypath)
+    local value, errors = winos.registry_query(keypath)
+    if not value then
+        raise(errors)
+    end
+    return value
+end
+
+-- get registry keys
+function sandbox_winos.registry_keys(pattern)
+    local keypaths, errors = winos.registry_keys(pattern)
+    if not keypaths then
+        raise(errors)
+    end
+    return keypaths
+end
+
+-- get registry values
+function sandbox_winos.registry_values(keypath)
+    local values, errors = winos.registry_values(keypath)
+    if not values then
+        raise(errors)
+    end
+    return values
 end
 
 -- return module
