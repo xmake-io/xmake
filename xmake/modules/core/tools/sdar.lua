@@ -75,32 +75,3 @@ function link(self, objectfiles, targetkind, targetfile, flags)
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
--- extract the static library to object directory
-function extract(self, libraryfile, objectdir)
-
-    -- make the object directory first
-    os.mkdir(objectdir)
-
-    -- get the absolute path of this library
-    libraryfile = path.absolute(libraryfile)
-
-    -- enter the object directory
-    local oldir = os.cd(objectdir)
-
-    -- extract it
-    os.runv(self:program(), {"-x", libraryfile})
-
-    -- check repeat object name
-    local repeats = {}
-    local objectfiles = os.iorunv(self:program(), {"-t", libraryfile})
-    for _, objectfile in ipairs(objectfiles:split('\n')) do
-        if repeats[objectfile] then
-            raise("object name(%s) conflicts in library: %s", objectfile, libraryfile)
-        end
-        repeats[objectfile] = true
-    end
-
-    -- leave the object directory
-    os.cd(oldir)
-end
-
