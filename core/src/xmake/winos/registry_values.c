@@ -31,18 +31,12 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
- */
-// the RegGetValueA func type
-typedef BOOL (WINAPI* xm_RegGetValueA_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
-
-/* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
 
 /* get registry values
  *
- * local value, errors = winos.registry_values("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debugger")
+ * local value, errors = winos.registry_values("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debug*")
  */
 tb_int_t xm_winos_registry_values(lua_State* lua)
 {
@@ -50,10 +44,10 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
-    tb_char_t const* rootkey   = luaL_checkstring(lua, 1);
-    tb_char_t const* rootdir   = luaL_checkstring(lua, 2);
-    tb_char_t const* valuename = luaL_checkstring(lua, 3);
-    tb_check_return_val(rootkey && rootdir && valuename, 0);
+    tb_char_t const* rootkey = luaL_checkstring(lua, 1);
+    tb_char_t const* rootdir = luaL_checkstring(lua, 2);
+    tb_char_t const* pattern = luaL_checkstring(lua, 3);
+    tb_check_return_val(rootkey && rootdir && pattern, 0);
 
     // query key-value
     tb_bool_t   ok = tb_false;
@@ -75,73 +69,37 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
             break;
         }
 
-        // attempt to load RegGetValueA
-        static xm_RegGetValueA_t s_RegGetValueA = tb_null;
-        if (!s_RegGetValueA)
-        {
-            // load the advapi32 module
-            tb_dynamic_ref_t module = (tb_dynamic_ref_t)GetModuleHandleA("advapi32.dll");
-            if (!module) module = tb_dynamic_init("advapi32.dll");
-            if (module) s_RegGetValueA = (xm_RegGetValueA_t)tb_dynamic_func(module, "RegGetValueA");
-        }
-
         // get registry value
         DWORD type = 0;
-        if (s_RegGetValueA)
+
+        // open registry key
+        if (RegOpenKeyExA(key, rootdir, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
         {
-            // get registry value size
-            DWORD valuesize = 0;
-            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, 0, tb_null, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
-
-            // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize + 1);
-            tb_assert_and_check_break(value);
-
-            // get value result
-            type = 0;
-            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "open registry key failed: %s\\%s", rootkey, rootdir);
+            break;
         }
-        else
+
+        // get registry value size
+        DWORD valuesize = 0;
+        if (RegQueryValueExA(keynew, pattern, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
         {
-            // open registry key
-            if (RegOpenKeyExA(key, rootdir, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "open registry key failed: %s\\%s", rootkey, rootdir);
-                break;
-            }
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, pattern);
+            break;
+        }
 
-            // get registry value size
-            DWORD valuesize = 0;
-            if (RegQueryValueExA(keynew, valuename, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
+        // make value buffer
+        value = (tb_char_t*)tb_malloc0(valuesize + 1);
+        tb_assert_and_check_break(value);
 
-            // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize + 1);
-            tb_assert_and_check_break(value);
-
-            // get value result
-            type = 0;
-            if (RegQueryValueExA(keynew, valuename, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
+        // get value result
+        type = 0;
+        if (RegQueryValueExA(keynew, pattern, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, pattern);
+            break;
         }
 
         // save result
