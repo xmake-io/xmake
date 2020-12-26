@@ -234,9 +234,13 @@ function main(opt)
     -- find vswhere
     local vswhere = find_tool("vswhere")
 
+    -- sort vs versions
+    local order_vsvers = table.keys(vsvers)
+    table.sort(order_vsvers, function (a, b) return tonumber(a) > tonumber(b) end)
+
     -- find vs2017 -> vs4.2
     local results = {}
-    for version in pairs(vsvers) do
+    for _, version in ipairs(order_vsvers) do
 
         -- find VC install path (and aux build path) using `vswhere` (for version >= 15.0)
         -- * version > 15.0 eschews registry entries; but `vswhere` (included with version >= 15.2) can be used to find VC install path
@@ -266,18 +270,21 @@ function main(opt)
             table.insert(paths, vswhere_VCAuxiliaryBuildDir)
         end
 
-        -- find vs from some logical drives paths
-        for _, logical_drive in ipairs(winos.logical_drives()) do
-            if os.isdir(path.join(logical_drive, "Program Files (x86)")) then
-                table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
-                table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
-            end
-            table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
-            table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio " .. version, "VC"))
-        end
-
         -- find vcvarsall.bat, vcvars32.bat for vs7.1
         local vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
+        if not vcvarsall then
+            -- find vs from some logical drives paths
+            paths = {}
+            for _, logical_drive in ipairs(winos.logical_drives()) do
+                if os.isdir(path.join(logical_drive, "Program Files (x86)")) then
+                    table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+                    table.insert(paths, path.join(logical_drive, "Program Files (x86)", "Microsoft Visual Studio " .. version, "VC"))
+                end
+                table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio", vsvers[version], "*", "VC", "Auxiliary", "Build"))
+                table.insert(paths, path.join(logical_drive, "Program Files", "Microsoft Visual Studio " .. version, "VC"))
+            end
+            vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
+        end
         if vcvarsall then
 
             -- load vcvarsall
@@ -288,7 +295,5 @@ function main(opt)
             results[vsvers[version]] = {version = version, vcvarsall_bat = vcvarsall, vcvarsall = {x86 = vcvarsall_x86, x64 = vcvarsall_x64}}
         end
     end
-
-    -- ok?
     return results
 end
