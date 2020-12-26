@@ -164,9 +164,10 @@ function _check_target_toolchains()
 end
 
 -- main entry
-function main()
+function main(opt)
 
     -- avoid to run this task repeatly
+    opt = opt or {}
     if _g.configured then return end
     _g.configured = true
 
@@ -185,7 +186,7 @@ function main()
     -- check the working directory
     if not option.get("project") and not option.get("file") and os.isdir(os.projectdir()) then
         if path.translate(os.projectdir()) ~= path.translate(os.workingdir()) then
-            utils.warning([[You are working in the project directory(%s) and you can also
+            wprint([[You are working in the project directory(%s) and you can also
 force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
@@ -321,7 +322,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- dump config
-    if option.get("verbose") then
+    if option.get("verbose") and not opt.disable_dump then
         config.dump()
     end
 

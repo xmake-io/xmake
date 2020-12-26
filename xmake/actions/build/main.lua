@@ -97,7 +97,7 @@ function main()
     local targetname = option.get("target")
 
     -- config it first
-    task.run("config", {target = targetname, verbose = false})
+    task.run("config", {target = targetname}, {disable_dump = true})
 
     -- enter project directory
     local oldir = os.cd(project.directory())
