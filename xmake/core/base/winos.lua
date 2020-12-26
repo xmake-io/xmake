@@ -239,26 +239,50 @@ function winos.registry_keys(keypath)
     if not rootkey then
         return
     end
+    keypath = keypath:sub(p + 1)
 
     -- get the root directory
     local pattern
-    local rootdir = keypath:sub(p + 1)
+    local rootdir = keypath
     p = rootdir:find("*", 1, true)
     if p then
+        pattern = path.pattern(rootdir)
         rootdir = path.directory(rootdir:sub(1, p - 1))
-        pattern = path.pattern(keypath)
     end
 
-    print(rootkey, rootdir, pattern)
+    -- compute the recursion level
+    --
+    -- infinite recursion: aaa\\**
+    -- limit recursion level: aaa\\*\\*
+    local recursion = 0
+    if keypath:find("**", 1, true) then
+        recursion = -1
+    else
+        -- "aaa\\*\\*" -> "*\\" -> recursion level: 1
+        -- "aaa\\*\\xxx" -> "*\\" -> recursion level: 1
+        -- "aaa\\*\\subkey\\xxx" -> "*\\\\" -> recursion level: 2
+        if p then
+            local _, seps = keypath:sub(p):gsub("\\", "")
+            if seps > 0 then
+                recursion = seps
+            end
+        end
+    end
 
     -- get keys
     local keys = {}
-    local count, errors = winos._registry_keys(rootkey, rootdir, function (key)
+    local count, errors = winos._registry_keys(rootkey, rootdir, recursion, function (key)
         if not pattern or key:match("^" .. pattern .. "$") then
-            table.insert(keys, key)
+            table.insert(keys, rootkey .. '\\' .. key)
+            if #keys > 4096 then
+                return false
+            end
         end
         return true
     end)
+    if #keys > 4096 then
+        return nil, "too much registry keys: " .. keypath
+    end
     if count ~= nil then
         return keys
     else

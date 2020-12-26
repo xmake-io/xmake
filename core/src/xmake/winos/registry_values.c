@@ -53,12 +53,11 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
     tb_bool_t is_function    = lua_isfunction(lua, 3);
     tb_check_return_val(rootkey && rootdir && is_function, 0);
 
-    // query key-value
+    // enum values
     tb_bool_t   ok = tb_false;
     tb_int_t    count = 0;
     HKEY        key = tb_null;
     HKEY        keynew = tb_null;
-    tb_char_t*  value = tb_null;
     do
     {
         // get registry rootkey
