@@ -85,7 +85,7 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
         // query values
         DWORD value_name_num = 0;
         DWORD value_name_maxn = 0;
-        if (RegQueryInfoKeyA(keynew, tb_null, tb_null, tb_null, tb_null, tb_null, tb_null, &value_name_num, &value_name_maxn, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
+        if (RegQueryInfoKeyW(keynew, tb_null, tb_null, tb_null, tb_null, tb_null, tb_null, &value_name_num, &value_name_maxn, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
         {
             lua_pushnil(lua);
             lua_pushfstring(lua, "query registry info failed: %s\\%s", rootkey, rootdir);
@@ -94,8 +94,8 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
         value_name_maxn++; // add `\0`
 
         // ensure enough value name buffer
-        tb_char_t value_name[8192];
-        if (value_name_maxn > sizeof(value_name))
+        tb_wchar_t value_name[1024];
+        if (value_name_maxn > tb_arrayn(value_name))
         {
             lua_pushnil(lua);
             lua_pushfstring(lua, "no enough value name buffer: %s\\%s", rootkey, rootdir);
@@ -104,20 +104,30 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
 
         // get all values
         DWORD i = 0;
+        tb_char_t value_name_a[1024];
         for (i = 0; i < value_name_num; i++)
         {
-            // get value
-            DWORD value_name_size = sizeof(value_name);
-            if (RegEnumValueA(keynew, i, value_name, &value_name_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
+            // get value name
+            DWORD value_name_size = tb_arrayn(value_name);
+            if (RegEnumValueW(keynew, i, value_name, &value_name_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value(%d) failed: %s\\%s", i, rootkey, rootdir);
+                lua_pushfstring(lua, "get registry value name(%d) failed: %s\\%s", i, rootkey, rootdir);
+                break;
+            }
+
+            // get value name (mbs)
+            tb_size_t value_name_a_size = tb_wtoa(value_name_a, value_name, sizeof(value_name_a));
+            if (value_name_a_size == -1)
+            {
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "convert registry value name(%d) failed: %s\\%s", i, rootkey, rootdir);
                 break;
             }
 
             // do callback(value_name)
             lua_pushvalue(lua, 3);
-            lua_pushlstring(lua, value_name, value_name_size);
+            lua_pushlstring(lua, value_name_a, value_name_a_size);
             lua_call(lua, 1, 1);
             count++;
 
