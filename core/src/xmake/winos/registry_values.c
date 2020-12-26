@@ -108,6 +108,7 @@ tb_int_t xm_winos_registry_values(lua_State* lua)
         for (i = 0; i < value_name_num; i++)
         {
             // get value name
+            value_name[0] = L'\0';
             DWORD value_name_size = tb_arrayn(value_name);
             if (RegEnumValueW(keynew, i, value_name, &value_name_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
             {

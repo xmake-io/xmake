@@ -241,17 +241,29 @@ function winos.registry_keys(keypath)
     end
 
     -- get the root directory
+    local pattern
     local rootdir = keypath:sub(p + 1)
     p = rootdir:find("*", 1, true)
     if p then
         rootdir = path.directory(rootdir:sub(1, p - 1))
+        pattern = path.pattern(keypath)
     end
 
-    -- get key pattern with a lua pattern
-    local pattern = path.pattern(keypath)
+    print(rootkey, rootdir, pattern)
 
     -- get keys
-    return winos._registry_keys(rootkey, rootdir, pattern)
+    local keys = {}
+    local count, errors = winos._registry_keys(rootkey, rootdir, function (key)
+        if not pattern or key:match("^" .. pattern .. "$") then
+            table.insert(keys, key)
+        end
+        return true
+    end)
+    if count ~= nil then
+        return keys
+    else
+        return nil, errors
+    end
 end
 
 -- get registry values from the given key path

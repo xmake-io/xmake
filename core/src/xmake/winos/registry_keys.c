@@ -31,10 +31,8 @@
 #include "prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * types
+ * private implementation
  */
-// the RegGetValueA func type
-typedef BOOL (WINAPI* xm_RegGetValueA_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpValue, DWORD dwFlags, LPDWORD pdwType, PVOID pvData, LPDWORD pcbData);
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
@@ -42,7 +40,11 @@ typedef BOOL (WINAPI* xm_RegGetValueA_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpVa
 
 /* get registry keys
  *
- * local value, errors = winos.registry_keys("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debugger")
+ * local count, errors = winos.registry_keys("HKEY_LOCAL_MACHINE",
+ *                                             "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug",
+ *                                             function (key_path)
+ *                                                 return true -- continue or break
+ *                                             end)
  */
 tb_int_t xm_winos_registry_keys(lua_State* lua)
 {
@@ -50,13 +52,14 @@ tb_int_t xm_winos_registry_keys(lua_State* lua)
     tb_assert_and_check_return_val(lua, 0);
 
     // get the arguments
-    tb_char_t const* rootkey   = luaL_checkstring(lua, 1);
-    tb_char_t const* rootdir   = luaL_checkstring(lua, 2);
-    tb_char_t const* valuename = luaL_checkstring(lua, 3);
-    tb_check_return_val(rootkey && rootdir && valuename, 0);
+    tb_char_t const* rootkey = luaL_checkstring(lua, 1);
+    tb_char_t const* rootdir = luaL_checkstring(lua, 2);
+    tb_bool_t is_function    = lua_isfunction(lua, 3);
+    tb_check_return_val(rootkey && rootdir && is_function, 0);
 
     // query key-value
     tb_bool_t   ok = tb_false;
+    tb_int_t    count = 0;
     HKEY        key = tb_null;
     HKEY        keynew = tb_null;
     tb_char_t*  value = tb_null;
@@ -75,96 +78,77 @@ tb_int_t xm_winos_registry_keys(lua_State* lua)
             break;
         }
 
-        // attempt to load RegGetValueA
-        static xm_RegGetValueA_t s_RegGetValueA = tb_null;
-        if (!s_RegGetValueA)
+        // open registry key
+        if (RegOpenKeyExA(key, rootdir, 0, KEY_READ, &keynew) != ERROR_SUCCESS && keynew)
         {
-            // load the advapi32 module
-            tb_dynamic_ref_t module = (tb_dynamic_ref_t)GetModuleHandleA("advapi32.dll");
-            if (!module) module = tb_dynamic_init("advapi32.dll");
-            if (module) s_RegGetValueA = (xm_RegGetValueA_t)tb_dynamic_func(module, "RegGetValueA");
-        }
-
-        // get registry value
-        DWORD type = 0;
-        if (s_RegGetValueA)
-        {
-            // get registry value size
-            DWORD valuesize = 0;
-            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, 0, tb_null, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
-
-            // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize + 1);
-            tb_assert_and_check_break(value);
-
-            // get value result
-            type = 0;
-            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
-        }
-        else
-        {
-            // open registry key
-            if (RegOpenKeyExA(key, rootdir, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "open registry key failed: %s\\%s", rootkey, rootdir);
-                break;
-            }
-
-            // get registry value size
-            DWORD valuesize = 0;
-            if (RegQueryValueExA(keynew, valuename, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
-
-            // make value buffer
-            value = (tb_char_t*)tb_malloc0(valuesize + 1);
-            tb_assert_and_check_break(value);
-
-            // get value result
-            type = 0;
-            if (RegQueryValueExA(keynew, valuename, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
-            {
-                lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
-                break;
-            }
-        }
-
-        // save result
-        switch (type)
-        {
-        case REG_SZ:
-        case REG_EXPAND_SZ:
-            lua_pushstring(lua, value);
-            ok = tb_true;
-            break;
-        case REG_DWORD:
-            lua_pushfstring(lua, "%d", *((tb_int_t*)value));
-            ok = tb_true;
-            break;
-        case REG_QWORD:
-            lua_pushfstring(lua, "%lld", *((tb_int64_t*)value));
-            ok = tb_true;
-            break;
-        default:
             lua_pushnil(lua);
-            lua_pushfstring(lua, "unsupported registry value type: %d", type);
+            lua_pushfstring(lua, "open registry key failed: %s\\%s", rootkey, rootdir);
             break;
         }
+
+        // query keys
+        DWORD key_path_num = 0;
+        DWORD key_path_maxn = 0;
+        if (RegQueryInfoKeyW(keynew, tb_null, tb_null, tb_null, &key_path_num, &key_path_maxn, tb_null, tb_null, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "query registry info failed: %s\\%s", rootkey, rootdir);
+            break;
+        }
+        key_path_maxn++; // add `\0`
+
+        // ensure enough key path buffer
+        tb_wchar_t key_path[TB_PATH_MAXN];
+        if (key_path_maxn > tb_arrayn(key_path))
+        {
+            lua_pushnil(lua);
+            lua_pushfstring(lua, "no enough key path buffer: %s\\%s", rootkey, rootdir);
+            break;
+        }
+
+        // get all keys
+        DWORD i = 0;
+        tb_char_t key_path_a[TB_PATH_MAXN];
+        for (i = 0; i < key_path_num; i++)
+        {
+            // get key path
+            key_path[0] = L'\0';
+            DWORD key_path_size = tb_arrayn(key_path);
+            if (RegEnumKeyExW(keynew, i, key_path, &key_path_size, tb_null, tb_null, tb_null, tb_null) != ERROR_SUCCESS)
+            {
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "get registry key path(%d) failed: %s\\%s", i, rootkey, rootdir);
+                break;
+            }
+
+            // get key path (mbs)
+            tb_size_t key_path_a_size = tb_wtoa(key_path_a, key_path, sizeof(key_path_a));
+            if (key_path_a_size == -1)
+            {
+                lua_pushnil(lua);
+                lua_pushfstring(lua, "convert registry key path(%d) failed: %s\\%s", i, rootkey, rootdir);
+                break;
+            }
+
+            // do callback(key_path)
+            lua_pushvalue(lua, 3);
+            lua_pushlstring(lua, key_path_a, key_path_a_size);
+            lua_call(lua, 1, 1);
+            count++;
+
+            // is continue?
+            tb_bool_t is_continue = lua_toboolean(lua, -1);
+            lua_pop(lua, 1);
+            if (!is_continue)
+            {
+                ok = tb_true;
+                break;
+            }
+        }
+
+        // ok
+        if (i == key_path_num)
+            ok = tb_true;
 
     } while (0);
 
@@ -173,10 +157,12 @@ tb_int_t xm_winos_registry_keys(lua_State* lua)
         RegCloseKey(keynew);
     keynew = tb_null;
 
-    // exit value
-    if (value) tb_free(value);
-    value = tb_null;
-
     // ok?
-    return ok? 1 : 2;
+    if (ok)
+    {
+        lua_pushinteger(lua, count);
+        return 1;
+    }
+    else return 2;
 }
+
