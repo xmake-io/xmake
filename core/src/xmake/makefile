@@ -135,6 +135,8 @@ ifdef iswin
 xmake_C_FILES 			+= \
 						winos/ansi \
 						winos/logical_drives \
+						winos/registry_keys \
+						winos/registry_values \
 						winos/registry_query
 endif
 
