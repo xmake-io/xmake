@@ -328,7 +328,7 @@ function winos.registry_values(keypath)
     local value_names = {}
     local count, errors = winos._registry_values(rootkey, rootdir, function (value_name)
         if not pattern or value_name:match("^" .. pattern .. "$") then
-            table.insert(value_names, value_name)
+            table.insert(value_names, rootkey .. "\\" .. rootdir .. ";" .. value_name)
         end
         return true
     end)
