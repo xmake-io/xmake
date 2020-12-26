@@ -8,6 +8,7 @@
 * [#1098](https://github.com/xmake-io/xmake/issues/1098): Support stdin for os.execv
 * [#1079](https://github.com/xmake-io/xmake/issues/1079): Add autoupdate plugin rule for vsxmake, `add_rules("plugin.vsxmake.autoupdate")`
 * Add `xmake f --vs_runtime=MT` and `set_runtimes("MT")` to set vs runtime for targets and packages
+* [#1032](https://github.com/xmake-io/xmake/issues/1032): Support to enum registry keys and values
 
 ### Change
 
@@ -895,6 +896,7 @@
 * [#1098](https://github.com/xmake-io/xmake/issues/1098): 支持传递 stdin 到 os.execv 进行输入重定向
 * [#1079](https://github.com/xmake-io/xmake/issues/1079): 为 vsxmake 插件添加工程自动更新插件，`add_rules("plugin.vsxmake.autoupdate")`
 * 添加 `xmake f --vs_runtime=MT` 和 `set_runtimes("MT")` 去更方便的对 target 和 package 进行设置
+* [#1032](https://github.com/xmake-io/xmake/issues/1032): 支持枚举注册表 keys 和 values
 
 ### 改进
 

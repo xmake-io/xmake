@@ -185,6 +185,8 @@ tb_int_t xm_winos_ansi_cp(lua_State* lua);
 tb_int_t xm_winos_oem_cp(lua_State* lua);
 tb_int_t xm_winos_logical_drives(lua_State* lua);
 tb_int_t xm_winos_registry_query(lua_State* lua);
+tb_int_t xm_winos_registry_keys(lua_State* lua);
+tb_int_t xm_winos_registry_values(lua_State* lua);
 #endif
 
 // the string functions
@@ -287,6 +289,8 @@ static luaL_Reg const g_winos_functions[] =
 ,   { "ansi_cp",             xm_winos_ansi_cp           }
 ,   { "logical_drives",      xm_winos_logical_drives    }
 ,   { "registry_query",      xm_winos_registry_query    }
+,   { "registry_keys",       xm_winos_registry_keys     }
+,   { "registry_values",     xm_winos_registry_values   }
 ,   { tb_null,               tb_null                    }
 };
 #endif

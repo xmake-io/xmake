@@ -25,9 +25,11 @@ local winos = require("base/winos")
 local sandbox_winos = sandbox_winos or {}
 
 -- export some readonly interfaces
-sandbox_winos.registry_query = winos.registry_query
-sandbox_winos.logical_drives = winos.logical_drives
-sandbox_winos.version        = winos.version
+sandbox_winos.registry_query  = winos.registry_query
+sandbox_winos.registry_keys   = winos.registry_keys
+sandbox_winos.registry_values = winos.registry_values
+sandbox_winos.logical_drives  = winos.logical_drives
+sandbox_winos.version         = winos.version
 
 -- return module
 return sandbox_winos

@@ -42,74 +42,36 @@ typedef BOOL (WINAPI* xm_RegGetValueA_t)(HKEY hkey, LPCSTR lpSubKey, LPCSTR lpVa
 
 /* query registry
  *
- * local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug;Debugger")
+ * local value, errors = winos.registry_query("HKEY_LOCAL_MACHINE", "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\AeDebug", "Debugger")
  */
 tb_int_t xm_winos_registry_query(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the path
-    tb_char_t const* path = luaL_checkstring(lua, 1);
-    tb_check_return_val(path, 0);
+    // get the arguments
+    tb_char_t const* rootkey   = luaL_checkstring(lua, 1);
+    tb_char_t const* rootdir   = luaL_checkstring(lua, 2);
+    tb_char_t const* valuename = luaL_checkstring(lua, 3);
+    tb_check_return_val(rootkey && rootdir && valuename, 0);
 
     // query key-value
     tb_bool_t   ok = tb_false;
-    HKEY        key = NULL;
-    HKEY        keynew = NULL;
-    tb_char_t   pathbuf[TB_PATH_MAXN];
+    HKEY        key = tb_null;
+    HKEY        keynew = tb_null;
     tb_char_t*  value = tb_null;
     do
     {
-        // copy path
-        tb_size_t size = tb_strlcpy(pathbuf, path, sizeof(pathbuf));
-        if (size >= sizeof(pathbuf))
-        {
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "too long path: %s", path);
-            break;
-        }
-
-        // parse path key and subkey
-        tb_char_t* pathkey      = tb_null;
-        tb_char_t* pathsubkey   = tb_null;
-        tb_char_t* p            = pathbuf;
-        for (; *p && *p != '\\'; p++) ;
-        if (*p == '\\')
-        {
-            *p = '\0';
-            pathkey = pathbuf;
-            pathsubkey = p + 1;
-        }
-        if (!pathkey || !pathsubkey)
-        {
-            lua_pushnil(lua);
-            lua_pushfstring(lua, "parse pathkey and pathsubkey failed: %s", path);
-            break;
-        }
-
-        // parse value name
-        tb_char_t* valuename = tb_null;
-        for (p = pathbuf + size - 1; p >= pathbuf && *p && *p != ';'; p--) ;
-        if (p >= pathbuf && *p == ';')
-        {
-            valuename = p + 1;
-            *p = '\0';
-        }
-
-        // trace
-        tb_trace_d("key: %s, subkey: %s, name: %s", pathkey, pathsubkey, valuename? valuename : "(default)");
-
-        // get registry key
-        if (!tb_strcmp(pathkey, "HKEY_CLASSES_ROOT"))         key = HKEY_CLASSES_ROOT;
-        else if (!tb_strcmp(pathkey, "HKEY_CURRENT_CONFIG"))  key = HKEY_CURRENT_CONFIG;
-        else if (!tb_strcmp(pathkey, "HKEY_CURRENT_USER"))    key = HKEY_CURRENT_USER;
-        else if (!tb_strcmp(pathkey, "HKEY_LOCAL_MACHINE"))   key = HKEY_LOCAL_MACHINE;
-        else if (!tb_strcmp(pathkey, "HKEY_USERS"))           key = HKEY_USERS;
+        // get registry rootkey
+        if (!tb_strcmp(rootkey, "HKEY_CLASSES_ROOT"))         key = HKEY_CLASSES_ROOT;
+        else if (!tb_strcmp(rootkey, "HKEY_CURRENT_CONFIG"))  key = HKEY_CURRENT_CONFIG;
+        else if (!tb_strcmp(rootkey, "HKEY_CURRENT_USER"))    key = HKEY_CURRENT_USER;
+        else if (!tb_strcmp(rootkey, "HKEY_LOCAL_MACHINE"))   key = HKEY_LOCAL_MACHINE;
+        else if (!tb_strcmp(rootkey, "HKEY_USERS"))           key = HKEY_USERS;
         else
         {
             lua_pushnil(lua);
-            lua_pushfstring(lua, "invalid registry path: %s", path);
+            lua_pushfstring(lua, "invalid registry rootkey: %s", rootkey);
             break;
         }
 
@@ -129,10 +91,10 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
         {
             // get registry value size
             DWORD valuesize = 0;
-            if (s_RegGetValueA(key, pathsubkey, valuename, RRF_RT_ANY, 0, tb_null, &valuesize) != ERROR_SUCCESS)
+            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, 0, tb_null, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s", path);
+                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
 
@@ -142,20 +104,20 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
 
             // get value result
             type = 0;
-            if (s_RegGetValueA(key, pathsubkey, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
+            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s", path);
+                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
         }
         else
         {
             // open registry key
-            if (RegOpenKeyExA(key, pathsubkey, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
+            if (RegOpenKeyExA(key, rootdir, 0, KEY_QUERY_VALUE, &keynew) != ERROR_SUCCESS && keynew)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "open registry key failed: %s", path);
+                lua_pushfstring(lua, "open registry key failed: %s\\%s", rootkey, rootdir);
                 break;
             }
 
@@ -164,7 +126,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
             if (RegQueryValueExA(keynew, valuename, tb_null, tb_null, tb_null, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value size failed: %s", path);
+                lua_pushfstring(lua, "get registry value size failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
 
@@ -177,7 +139,7 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
             if (RegQueryValueExA(keynew, valuename, tb_null, &type, (LPBYTE)value, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
-                lua_pushfstring(lua, "get registry value failed: %s", path);
+                lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);
                 break;
             }
         }
@@ -207,9 +169,9 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
     } while (0);
 
     // exit registry key
-    if (keynew != NULL)
+    if (keynew)
         RegCloseKey(keynew);
-    keynew = NULL;
+    keynew = tb_null;
 
     // exit value
     if (value) tb_free(value);
