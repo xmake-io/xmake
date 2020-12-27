@@ -152,11 +152,26 @@ function _make_targetinfo(mode, arch, target)
 
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
+
+    -- save languages
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
     if targetinfo.languages then
         -- fix c++17 to cxx17 for Xmake.props
         targetinfo.languages = targetinfo.languages:replace("c++", "cxx", {plain = true})
     end
+
+    -- save subsystem
+    local linkflags = linker.linkflags(target:targetkind(), target:sourcekinds(), {target = target})
+    for _, linkflag in ipairs(linkflags) do
+        if linkflag:lower():find("[%-/]subsystem:windows") then
+            targetinfo.subsystem = "windows"
+        end
+    end
+    if not targetinfo.subsystem then
+        targetinfo.subsystem = "console"
+    end
+
+    -- save config flags
     local flags = {}
     for k, v in pairs(localcache.get("config", "options_" .. target:name())) do
         if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then

@@ -135,6 +135,7 @@ MSBuild Properties:
     XmakeMfcKind: $(XmakeMfcKind)
     XmakeDefines: $(XmakeDefines)
     XmakeLanguages: $(XmakeLanguages)
+    XmakeSubSystem: $(XmakeSubSystem)
     XmakeIncludeDirs: $(XmakeIncludeDirs)
     XmakeLinkDirs: $(XmakeLinkDirs)
     XmakeSourceDirs: $(XmakeSourceDirs)

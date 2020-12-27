@@ -88,7 +88,6 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>%(PreprocessorDefinitions);$(XmakeDefines)</PreprocessorDefinitions>
-    
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx11'))">stdcpp11</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx14'))">stdcpp14</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('cxx17'))">stdcpp17</LanguageStandard>
@@ -102,6 +101,11 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2a'))">stdcpplatest</LanguageStandard>
     </ClCompile>
+
+    <Link>
+      <SubSystem Condition="'%(SubSystem)' == '' And $(XmakeSubSystem.Contains('console'))">Console</SubSystem>
+      <SubSystem Condition="'%(SubSystem)' == '' And $(XmakeSubSystem.Contains('windows'))">Windows</SubSystem>
+    </Link>
   </ItemDefinitionGroup>
 
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
