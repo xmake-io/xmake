@@ -278,7 +278,11 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if recheck then
 
         -- clear and flush local cache to disk
-        localcache.clear()
+        localcache.clear("config")
+        localcache.clear("detect")
+        localcache.clear("option")
+        localcache.clear("package")
+        localcache.clear("toolchain")
         localcache.save()
 
         -- check platform
