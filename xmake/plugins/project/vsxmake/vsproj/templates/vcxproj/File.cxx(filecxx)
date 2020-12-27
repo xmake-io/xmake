@@ -1,4 +1,3 @@
     <ClCompile Include="$(XmakeProjectDir)\#path#">
       <CompileAs>CompileAsCpp</CompileAs>
-      <LanguageStandard>#cxxlanguage#</LanguageStandard>
     </ClCompile>

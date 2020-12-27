@@ -153,9 +153,9 @@ function _make_targetinfo(mode, arch, target)
     -- save defines
     targetinfo.defines       = _make_arrs(_get_values_from_target(target, "defines"))
     targetinfo.languages     = _make_arrs(_get_values_from_target(target, "languages"))
-    targetinfo.cxxlanguage   = "stdcpp14" -- only for intellisense
-    if targetinfo.languages:find("c++17", 1, true) or targetinfo.languages:find("cxx17", 1, true) then
-        targetinfo.cxxlanguage = "stdcpp17"
+    if targetinfo.languages then
+        -- fix c++17 to cxx17 for Xmake.props
+        targetinfo.languages = targetinfo.languages:replace("c++", "cxx", {plain = true})
     end
     local flags = {}
     for k, v in pairs(localcache.get("config", "options_" .. target:name())) do
@@ -346,7 +346,6 @@ function main(outputdir, vsinfo)
                     local targetinfo = _make_targetinfo(mode, arch, target)
                     _target._sub[mode][arch] = targetinfo
                     _target.sdkver = targetinfo.sdkver
-                    _target.cxxlanguage = targetinfo.cxxlanguage
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
