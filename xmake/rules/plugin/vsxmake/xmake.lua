@@ -45,7 +45,9 @@ rule("plugin.vsxmake.autoupdate")
                     print("update vsxmake project ..")
                     task.run("project", {kind = "vsxmake"})
                     print("update vsxmake project ok")
-                end, {dependfile = tmpfile .. ".d", files = project.allfiles()})
+                end, {dependfile = tmpfile .. ".d",
+                      files = project.allfiles(),
+                      values = target:sourcefiles()})
             end
             lockfile:close()
         end
