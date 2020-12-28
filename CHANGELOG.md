@@ -9,6 +9,7 @@
 * [#1079](https://github.com/xmake-io/xmake/issues/1079): Add autoupdate plugin rule for vsxmake, `add_rules("plugin.vsxmake.autoupdate")`
 * Add `xmake f --vs_runtime=MT` and `set_runtimes("MT")` to set vs runtime for targets and packages
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): Support to enum registry keys and values
+* [#1026](https://github.com/xmake-io/xmake/issues/1026): Support group for vs/vsxmake project
 
 ### Change
 
@@ -898,6 +899,7 @@
 * [#1079](https://github.com/xmake-io/xmake/issues/1079): 为 vsxmake 插件添加工程自动更新插件，`add_rules("plugin.vsxmake.autoupdate")`
 * 添加 `xmake f --vs_runtime=MT` 和 `set_runtimes("MT")` 去更方便的对 target 和 package 进行设置
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): 支持枚举注册表 keys 和 values
+* [#1026](https://github.com/xmake-io/xmake/issues/1026): 支持对 vs/vsmake 工程增加分组设置
 
 ### 改进
 
