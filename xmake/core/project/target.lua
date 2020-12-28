@@ -1869,6 +1869,7 @@ function target.apis()
         ,   "target.set_arch"
         ,   "target.set_strip"
         ,   "target.set_rules"
+        ,   "target.set_group"
         ,   "target.set_version"
         ,   "target.set_license"
         ,   "target.set_enabled"
