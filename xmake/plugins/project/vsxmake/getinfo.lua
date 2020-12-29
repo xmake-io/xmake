@@ -271,10 +271,15 @@ function _make_vsinfo_groups()
         if not target:isphony() then
             local group_path = target:get("group")
             if group_path then
-                for _, group_name in ipairs(path.split(group_path)) do
+                local group_names = path.split(group_path)
+                for idx, group_name in ipairs(group_names) do
                     local group = groups[group_name] or {}
                     group.group = group_name
                     group.group_id = hash.uuid4(group_name)
+                    if idx > 1 then
+                        local parent_group_name = group_names[idx - 1]
+                        group.parent_group_id = hash.uuid4(parent_group_name)
+                    end
                     groups[group_name] = group
                 end
             end
