@@ -265,6 +265,31 @@ function _make_vsinfo_archs()
     return vsinfo_archs
 end
 
+function _make_vsinfo_groups()
+    local groups = {}
+    local group_deps = {}
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            local group_path = target:get("group")
+            if group_path then
+                local group_name = path.filename(group_path)
+                local group_names = path.split(group_path)
+                for idx, name in ipairs(group_names) do
+                    local group = groups["group." .. name] or {}
+                    group.group = name
+                    group.group_id = hash.uuid4(name)
+                    if idx > 1 then
+                        group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4(group_names[idx - 1])}
+                    end
+                    groups["group." .. name] = group
+                end
+                group_deps["group_dep.target." .. targetname] = {current_id = hash.uuid4(targetname), parent_id = groups["group." .. group_name].group_id}
+            end
+        end
+    end
+    return groups, group_deps
+end
+
 -- make vstudio project
 function main(outputdir, vsinfo)
 
@@ -290,16 +315,24 @@ function main(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
+
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
 
+    -- init groups
+    local groups, group_deps = _make_vsinfo_groups()
+    vsinfo.groups            = table.keys(groups)
+    vsinfo.group_deps        = table.keys(group_deps)
+    vsinfo._groups           = groups
+    vsinfo._group_deps       = group_deps
+
     -- load targets
     local targets = {}
-    vsinfo._sub2 = {}
+    vsinfo._arch_modes = {}
     for _, mode in ipairs(vsinfo.modes) do
-        vsinfo._sub2[mode] = {}
+        vsinfo._arch_modes[mode] = {}
         for _, arch in ipairs(vsinfo.archs) do
-            vsinfo._sub2[mode][arch] = { mode = mode, arch = arch }
+            vsinfo._arch_modes[mode][arch] = { mode = mode, arch = arch }
 
             -- trace
             print("checking for %s.%s ...", mode, arch)
@@ -356,33 +389,32 @@ function main(outputdir, vsinfo)
                     _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
                     local targetdir = target:get("targetdir")
                     if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
-                    _target._sub = _target._sub or {}
-                    _target._sub[mode] = _target._sub[mode] or {}
+                    _target._targets = _target._targets or {}
+                    _target._targets[mode] = _target._targets[mode] or {}
                     local targetinfo = _make_targetinfo(mode, arch, target)
-                    _target._sub[mode][arch] = targetinfo
+                    _target._targets[mode][arch] = targetinfo
                     _target.sdkver = targetinfo.sdkver
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                     _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                    -- save deps
                     _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
                 end
             end
         end
     end
-
-    -- leave project directory
     os.cd(oldir)
     for _, target in pairs(targets) do
-        target._sub2 = {}
+        target._paths = {}
         local dirs = {}
         local root = project.directory()
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
-            target._sub2[f] =
+            target._paths[f] =
             {
                 path = _escape(f),
                 dir = _escape(dir)
@@ -398,14 +430,14 @@ function main(outputdir, vsinfo)
                 dir = path.directory(dir)
             end
         end
-        target._sub3 = dirs
+        target._dirs = dirs
         target.dirs = table.keys(dirs)
-        target._sub4 = {}
+        target._deps = {}
         for _, v in ipairs(target.deps) do
-            target._sub4[v] = targets[v]
+            target._deps[v] = targets[v]
         end
     end
     vsinfo.targets = table.keys(targets)
-    vsinfo._sub = targets
+    vsinfo._targets = targets
     return vsinfo
 end

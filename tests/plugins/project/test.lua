@@ -41,7 +41,7 @@ function test_vsxmake(t)
         {
             function ()
                 print("--- sln file ---")
-                io.cat(projname .. "_" .. vstype .. ".sln")
+                io.cat(projname .. ".sln")
                 print("--- vcx file ---")
                 io.cat(projname .. "/" .. projname .. ".vcxproj")
                 print("--- filter file ---")

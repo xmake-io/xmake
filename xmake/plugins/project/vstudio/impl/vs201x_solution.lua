@@ -40,26 +40,32 @@ end
 -- make projects
 function _make_projects(slnfile, vsinfo)
 
-    -- the vstudio tool uuid for vc project
-    local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
-
     -- make all targets
+    local groups = {}
+    local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
-
-            -- enter project
             slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
-
-            -- add dependences
             for _, dep in ipairs(target:get("deps")) do
                 slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
                 slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
                 slnfile:leave("EndProjectSection")
             end
-
-            -- leave project
             slnfile:leave("EndProject")
+            local group_path = target:get("group")
+            if group_path then
+                for _, group_name in ipairs(path.split(group_path)) do
+                    groups[group_name] = hash.uuid4(group_name)
+                end
+            end
         end
+    end
+
+    -- make all groups
+    local project_group_uuid = "2150E333-8FDC-42A3-9474-1A3956D46DE8"
+    for group_name, group_uuid in pairs(groups) do
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\", \"{%s}\"", project_group_uuid, group_name, group_name, group_uuid)
+        slnfile:leave("EndProject")
     end
 end
 
@@ -96,6 +102,31 @@ function _make_global(slnfile, vsinfo)
     -- add solution properties
     slnfile:enter("GlobalSection(SolutionProperties) = preSolution")
     slnfile:print("HideSolutionNode = FALSE")
+    slnfile:leave("EndGlobalSection")
+
+    -- add project groups
+    slnfile:enter("GlobalSection(NestedProjects) = preSolution")
+    local subgroups = {}
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            local group_path = target:get("group")
+            if group_path then
+                -- target -> group
+                local group_name = path.filename(group_path)
+                slnfile:print("{%s} = {%s}", hash.uuid4(targetname), hash.uuid4(group_name))
+                -- group -> group -> ...
+                local group_names = path.split(group_path)
+                for idx, group_name in ipairs(group_names) do
+                    local key = group_name .. (group_name_sub or "")
+                    local group_name_sub = group_names[idx + 1]
+                    if group_name_sub and not subgroups[key] then
+                        slnfile:print("{%s} = {%s}", hash.uuid4(group_name_sub), hash.uuid4(group_name))
+                        subgroups[key] = true
+                    end
+                end
+            end
+        end
+    end
     slnfile:leave("EndGlobalSection")
 
     -- leave global

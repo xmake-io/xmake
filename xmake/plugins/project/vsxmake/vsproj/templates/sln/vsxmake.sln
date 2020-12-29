@@ -11,6 +11,7 @@ Microsoft Visual Studio Solution File, Format Version #solution_version#.0
 VisualStudioVersion = #vs_version#
 MinimumVisualStudioVersion = 10.0
 #Import(Project)#
+#Import(ProjectGroup)#
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{007754BD-BB1F-452F-A0D8-13EF216C5ED9}"
 	ProjectSection(SolutionItems) = preProject
 		Xmake.Custom.props = Xmake.Custom.props
@@ -26,6 +27,8 @@ Global
     GlobalSection(SolutionProperties) = preSolution
         HideSolutionNode = FALSE
     EndGlobalSection
+    GlobalSection(NestedProjects) = preSolution
+#Import(ProjectGroupConfig)#    EndGlobalSection
     GlobalSection(ExtensibilityGlobals) = postSolution
         SolutionGuid = {#solution_id#}
     EndGlobalSection
