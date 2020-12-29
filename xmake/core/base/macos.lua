@@ -33,21 +33,13 @@ function macos.version()
         return macos._VERSION
     end
 
-    -- get macver
+    -- get mac version
     local macver = nil
     local ok, verstr = os.iorun("sw_vers -productVersion")
     if ok and verstr then
-        macver = verstr:match("%d+%.%d+%.%d+")
-        if macver then
-            macver = macver:trim()
-        end
-        macver = semver.new(macver)
+        macver = semver.new(verstr:trim())
     end
-
-    -- save to cache
     macos._VERSION = macver or false
-
-    -- done
     return macver
 end
 
