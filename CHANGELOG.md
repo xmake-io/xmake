@@ -28,6 +28,7 @@
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): Fix c++ language intellisense for vsxmake
 * [#1132](https://github.com/xmake-io/xmake/issues/1132): Fix TrimEnd bug for vsxmake
 * [#1142](https://github.com/xmake-io/xmake/issues/1142): Fix git not found when installing packages
+* Fix macos.version bug for macOS Big Sur
 
 ## v2.3.9
 
@@ -918,6 +919,7 @@
 * [#1105](https://github.com/xmake-io/xmake/issues/1105): 修复 vsxmake 插件 c++ 语言标准智能提示错误
 * [#1132](https://github.com/xmake-io/xmake/issues/1132): 修复 vsxmake 插件中配置路径被截断问题
 * [#1142](https://github.com/xmake-io/xmake/issues/1142): 修复安装包的时候，出现git找不到问题
+* 修复在 macOS Big Sur 上 macos.version 问题
 
 ## v2.3.9
 
