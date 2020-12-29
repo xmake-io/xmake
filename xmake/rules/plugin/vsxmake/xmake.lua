@@ -28,7 +28,7 @@
 -- @endcode
 --
 rule("plugin.vsxmake.autoupdate")
-    before_build(function (target)
+    after_build(function (target)
 
         -- imports
         import("core.project.depend")
