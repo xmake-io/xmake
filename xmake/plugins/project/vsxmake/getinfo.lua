@@ -392,6 +392,12 @@ function main(outputdir, vsinfo)
 
                     -- save deps
                     _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
+
+                    -- save group id
+                    local group_path = target:get("group")
+                    if group_path then
+                        _target.group_id = hash.uuid4(path.filename(group_path))
+                    end
                 end
             end
         end
