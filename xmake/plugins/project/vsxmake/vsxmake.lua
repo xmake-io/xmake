@@ -57,9 +57,24 @@ function _buildparams(info, target, default)
             opt = table.join(target, opt)
         end
         for _, k in ipairs(opt) do
-            local v = (i._sub or {})[k] or (i._sub2 or {})[k] or (i._sub3 or {})[k] or (i._sub4 or {})[k] or i[k]
+            local v = (i._targets or {})[k]
+            if v == nil and i._arch_modes then
+                v = i._arch_modes[k]
+            end
+            if v == nil and i._paths then
+                v = i._paths[k]
+            end
+            if v == nil and i._dirs then
+                v = i._dirs[k]
+            end
+            if v == nil and i._deps then
+                v = i._deps[k]
+            end
             if v == nil and i._groups then
                 v = i._groups[k]
+            end
+            if v == nil then
+                v = i[k]
             end
             if v == nil then
                 raise("key '" .. k .. "' not found")
@@ -89,31 +104,31 @@ function _buildparams(info, target, default)
             table.insert(r, info.groups)
         end
         if args.dir then
-            table.insert(r, info._sub[target].dirs)
+            table.insert(r, info._targets[target].dirs)
         end
         if args.dep then
-            table.insert(r, info._sub[target].deps)
+            table.insert(r, info._targets[target].deps)
         end
         if args.filec then
-            local files = info._sub[target].sourcefiles
+            local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".c"}))
         elseif args.filecxx then
-            local files = info._sub[target].sourcefiles
+            local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cpp", ".cc", ".cxx"}))
         elseif args.filecu then
-            local files = info._sub[target].sourcefiles
+            local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".cu"}))
         elseif args.fileobj then
-            local files = info._sub[target].sourcefiles
+            local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".obj", ".o"}))
         elseif args.filerc then
-            local files = info._sub[target].sourcefiles
+            local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".rc"}))
         elseif args.incc then
-            local files = info._sub[target].headerfiles
+            local files = info._targets[target].headerfiles
             table.insert(r, _filter_files(files, nil, {".natvis"}))
         elseif args.incnatvis then
-            local files = info._sub[target].headerfiles
+            local files = info._targets[target].headerfiles
             table.insert(r, _filter_files(files, {".natvis"}))
         end
         return r
@@ -179,7 +194,7 @@ function make(version)
 
         for _, target in ipairs(info.targets) do
             local paramsprovidertarget = _buildparams(info, target, "<!-- nil -->")
-            local proj_dir = info._sub[target].vcxprojdir
+            local proj_dir = info._targets[target].vcxprojdir
 
             -- write project file
             local proj = path.join(proj_dir, target .. ".vcxproj")

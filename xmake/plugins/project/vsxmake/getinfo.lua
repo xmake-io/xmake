@@ -324,11 +324,11 @@ function main(outputdir, vsinfo)
 
     -- load targets
     local targets = {}
-    vsinfo._sub2 = {}
+    vsinfo._arch_modes = {}
     for _, mode in ipairs(vsinfo.modes) do
-        vsinfo._sub2[mode] = {}
+        vsinfo._arch_modes[mode] = {}
         for _, arch in ipairs(vsinfo.archs) do
-            vsinfo._sub2[mode][arch] = { mode = mode, arch = arch }
+            vsinfo._arch_modes[mode][arch] = { mode = mode, arch = arch }
 
             -- trace
             print("checking for %s.%s ...", mode, arch)
@@ -385,10 +385,10 @@ function main(outputdir, vsinfo)
                     _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
                     local targetdir = target:get("targetdir")
                     if targetdir then _target.targetdir = path.relative(targetdir, _target.vcxprojdir) end
-                    _target._sub = _target._sub or {}
-                    _target._sub[mode] = _target._sub[mode] or {}
+                    _target._targets = _target._targets or {}
+                    _target._targets[mode] = _target._targets[mode] or {}
                     local targetinfo = _make_targetinfo(mode, arch, target)
-                    _target._sub[mode][arch] = targetinfo
+                    _target._targets[mode][arch] = targetinfo
                     _target.sdkver = targetinfo.sdkver
 
                     -- save all sourcefiles and headerfiles
@@ -409,14 +409,14 @@ function main(outputdir, vsinfo)
     end
     os.cd(oldir)
     for _, target in pairs(targets) do
-        target._sub2 = {}
+        target._paths = {}
         local dirs = {}
         local root = project.directory()
         target.sourcefiles = table.imap(target.sourcefiles, function(_, v) return path.relative(v, root) end)
         target.headerfiles = table.imap(target.headerfiles, function(_, v) return path.relative(v, root) end)
         for _, f in ipairs(table.join(target.sourcefiles, target.headerfiles)) do
             local dir = path.directory(f)
-            target._sub2[f] =
+            target._paths[f] =
             {
                 path = _escape(f),
                 dir = _escape(dir)
@@ -432,14 +432,14 @@ function main(outputdir, vsinfo)
                 dir = path.directory(dir)
             end
         end
-        target._sub3 = dirs
+        target._dirs = dirs
         target.dirs = table.keys(dirs)
-        target._sub4 = {}
+        target._deps = {}
         for _, v in ipairs(target.deps) do
-            target._sub4[v] = targets[v]
+            target._deps[v] = targets[v]
         end
     end
     vsinfo.targets = table.keys(targets)
-    vsinfo._sub = targets
+    vsinfo._targets = targets
     return vsinfo
 end
