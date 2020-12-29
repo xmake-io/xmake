@@ -28,8 +28,7 @@ Global
         HideSolutionNode = FALSE
     EndGlobalSection
     GlobalSection(NestedProjects) = preSolution
-#Import(TargetGroupConfig)#
-#Import(SubGroupConfig)#    EndGlobalSection
+#Import(ProjectGroupConfig)#    EndGlobalSection
     GlobalSection(ExtensibilityGlobals) = postSolution
         SolutionGuid = {#solution_id#}
     EndGlobalSection

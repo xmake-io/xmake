@@ -73,6 +73,9 @@ function _buildparams(info, target, default)
             if v == nil and i._groups then
                 v = i._groups[k]
             end
+            if v == nil and i._group_deps then
+                v = i._group_deps[k]
+            end
             if v == nil then
                 v = i[k]
             end
@@ -102,6 +105,9 @@ function _buildparams(info, target, default)
         end
         if args.group then
             table.insert(r, info.groups)
+        end
+        if args.group_dep then
+            table.insert(r, info.group_deps)
         end
         if args.dir then
             table.insert(r, info._targets[target].dirs)

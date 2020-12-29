@@ -267,25 +267,27 @@ end
 
 function _make_vsinfo_groups()
     local groups = {}
+    local group_deps = {}
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
             local group_path = target:get("group")
             if group_path then
+                local group_name = path.filename(group_path)
                 local group_names = path.split(group_path)
-                for idx, group_name in ipairs(group_names) do
-                    local group = groups[group_name] or {}
-                    group.group = group_name
-                    group.group_id = hash.uuid4(group_name)
+                for idx, name in ipairs(group_names) do
+                    local group = groups["group." .. name] or {}
+                    group.group = name
+                    group.group_id = hash.uuid4(name)
                     if idx > 1 then
-                        local parent_group_name = group_names[idx - 1]
-                        group.parent_group_id = hash.uuid4(parent_group_name)
+                        group_deps["group_dep." .. name] = {current_id = group.group_id, parent_id = hash.uuid4(group_names[idx - 1])}
                     end
-                    groups[group_name] = group
+                    groups["group." .. name] = group
                 end
+                group_deps["group_dep.target." .. targetname] = {current_id = hash.uuid4(targetname), parent_id = groups["group." .. group_name].group_id}
             end
         end
     end
-    return groups
+    return groups, group_deps
 end
 
 -- make vstudio project
@@ -318,9 +320,11 @@ function main(outputdir, vsinfo)
     vsinfo.archs = _make_vsinfo_archs()
 
     -- init groups
-    local groups   = _make_vsinfo_groups()
-    vsinfo.groups  = table.keys(groups)
-    vsinfo._groups = groups
+    local groups, group_deps = _make_vsinfo_groups()
+    vsinfo.groups            = table.keys(groups)
+    vsinfo.group_deps        = table.keys(group_deps)
+    vsinfo._groups           = groups
+    vsinfo._group_deps       = group_deps
 
     -- load targets
     local targets = {}
@@ -397,12 +401,6 @@ function main(outputdir, vsinfo)
 
                     -- save deps
                     _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
-
-                    -- save group id
-                    local group_path = target:get("group")
-                    if group_path then
-                        _target.group_id = hash.uuid4(path.filename(group_path))
-                    end
                 end
             end
         end
