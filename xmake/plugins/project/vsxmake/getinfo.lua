@@ -265,6 +265,24 @@ function _make_vsinfo_archs()
     return vsinfo_archs
 end
 
+function _make_vsinfo_groups()
+    local groups = {}
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            local group_path = target:get("group")
+            if group_path then
+                for _, group_name in ipairs(path.split(group_path)) do
+                    local group = groups[group_name] or {}
+                    group.group = group_name
+                    group.group_id = hash.uuid4(group_name)
+                    groups[group_name] = group
+                end
+            end
+        end
+    end
+    return groups
+end
+
 -- make vstudio project
 function main(outputdir, vsinfo)
 
@@ -290,8 +308,14 @@ function main(outputdir, vsinfo)
 
     -- init modes
     vsinfo.modes = _make_vsinfo_modes()
+
     -- init archs
     vsinfo.archs = _make_vsinfo_archs()
+
+    -- init groups
+    local groups   = _make_vsinfo_groups()
+    vsinfo.groups  = table.keys(groups)
+    vsinfo._groups = groups
 
     -- load targets
     local targets = {}
@@ -366,13 +390,12 @@ function main(outputdir, vsinfo)
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))
                     _target.headerfiles = table.unique(table.join(_target.headerfiles or {}, (target:headerfiles())))
 
+                    -- save deps
                     _target.deps = table.unique(table.join(_target.deps or {}, table.keys(target:deps()), nil))
                 end
             end
         end
     end
-
-    -- leave project directory
     os.cd(oldir)
     for _, target in pairs(targets) do
         target._sub2 = {}

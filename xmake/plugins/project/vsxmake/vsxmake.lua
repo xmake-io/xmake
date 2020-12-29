@@ -57,7 +57,10 @@ function _buildparams(info, target, default)
             opt = table.join(target, opt)
         end
         for _, k in ipairs(opt) do
-            local v = (i._sub or {})[k] or (i._sub2 or {})[k] or (i._sub3 or {})[k] or (i._sub4 or {})[k]or i[k]
+            local v = (i._sub or {})[k] or (i._sub2 or {})[k] or (i._sub3 or {})[k] or (i._sub4 or {})[k] or i[k]
+            if v == nil and i._groups then
+                v = i._groups[k]
+            end
             if v == nil then
                 raise("key '" .. k .. "' not found")
             end
@@ -81,6 +84,9 @@ function _buildparams(info, target, default)
         end
         if args.arch then
             table.insert(r, info.archs)
+        end
+        if args.group then
+            table.insert(r, info.groups)
         end
         if args.dir then
             table.insert(r, info._sub[target].dirs)
