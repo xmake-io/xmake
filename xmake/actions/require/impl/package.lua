@@ -330,9 +330,9 @@ end
 function _load_package(packagename, requireinfo, opt)
 
     -- attempt to get it from cache first
-    opt = opt or {}
+    local key = opt.rootkey .. "." .. packagename
     local packages = _memcache():get("packages") or {}
-    local package = packages[packagename]
+    local package = packages[key]
     if package then
 
         -- satisfy required version?
@@ -386,7 +386,7 @@ function _load_package(packagename, requireinfo, opt)
     package:envs_load()
 
     -- save this package package to cache
-    packages[packagename] = package
+    packages[key] = package
     _memcache():set("packages", packages)
     return package
 end
@@ -404,7 +404,8 @@ function _load_packages(requires, opt)
     for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- load package
-        local package = _load_package(requireinfo.name, requireinfo.info, opt)
+        local rootkey = opt.rootkey or requireinfo.name
+        local package = _load_package(requireinfo.name, requireinfo.info, table.join(opt, {rootkey = rootkey}))
 
         -- maybe package not found and optional
         if package then
@@ -432,7 +433,7 @@ function _load_packages(requires, opt)
 
                     -- load dependent packages and do not load system packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps, system = false})) do
+                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps, system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
