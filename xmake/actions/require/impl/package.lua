@@ -326,20 +326,49 @@ function _check_package_configurations(package)
     end
 end
 
+-- get package key
+function _packagekey(packagename, requireinfo, version)
+    local key = packagename .. "/" .. (version or requireinfo.version)
+    local configs = requireinfo.configs
+    if configs then
+        local configs_order = {}
+        for k, v in pairs(configs) do
+            table.insert(configs_order, k .. "=" .. tostring(v))
+        end
+        table.sort(configs_order)
+        key = key .. ":" .. string.serialize(configs_order, true)
+    end
+    return key
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
-    -- attempt to get it from cache first
-    local key = opt.rootkey .. "." .. packagename
-    local packages = _memcache():get("packages") or {}
-    local package = packages[key]
-    if package then
-
-        -- satisfy required version?
-        local version_required = _select_package_version(package, requireinfo)
-        if version_required and version_required ~= package:version_str() then
-            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, package:version_str(), requireinfo.version)
+    -- It exists conflict for dependent packages for each root packages? resolve it first
+    -- e.g.
+    -- add_requires("foo") -> bar -> zlib 1.2.10
+    --                     -> xyz -> zlib 1.2.11 or other configs
+    --
+    -- add_requires("ddd") -> zlib
+    --
+    -- We assume that there is no conflict between `foo` and `ddd`.
+    --
+    -- Of course, conflicts caused by `add_packages("foo", "ddd")`
+    -- cannot be detected at present and can only be resolved by the user
+    --
+    local rootkey = opt.rootkey
+    local packagekey = _packagekey(packagename, requireinfo)
+    local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
+    if packagekey_prev then
+        if packagekey_prev and packagekey_prev ~= packagekey then
+            raise("package(%s): conflict dependences with package(%s)!", packagekey, packagekey_prev)
         end
+    end
+    _memcache():set3("packages_root", rootkey, packagename, packagekey)
+
+    -- attempt to get it from cache first
+    local package = _memcache():get2("packages", packagekey)
+    if package then
         return package
     end
 
@@ -367,6 +396,15 @@ function _load_package(packagename, requireinfo, opt)
         package:version_set(version, source)
     end
 
+    -- latest/semver to the cached version? update package key and load package from cache
+    if version then
+        packagekey = _packagekey(packagename, requireinfo, version)
+        local package_cached = _memcache():get2("packages", packagekey)
+        if package_cached then
+            return package_cached
+        end
+    end
+
     -- save require info to package
     package:requireinfo_set(requireinfo)
 
@@ -386,8 +424,7 @@ function _load_package(packagename, requireinfo, opt)
     package:envs_load()
 
     -- save this package package to cache
-    packages[key] = package
-    _memcache():set("packages", packages)
+    _memcache():set2("packages", packagekey, package)
     return package
 end
 
