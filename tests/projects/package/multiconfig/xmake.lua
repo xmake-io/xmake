@@ -11,7 +11,7 @@ target("test1")
 target("test2")
     set_kind("binary")
     add_files("src/*.c")
-    add_packages("zlib#debug")
+    add_packages("zlib~debug")
 
 target("test3")
     set_kind("binary")

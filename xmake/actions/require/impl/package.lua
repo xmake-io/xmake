@@ -74,6 +74,9 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
+-- pass configs to all dependent packages
+-- - add_requires("libpng", {depconfigs = {shared = true, cxflags = "-DTEST"}})
+--
 -- {system = nil/true/false}:
 --   nil: get local or system packages
 --   true: only get system package
@@ -172,6 +175,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
+        depconfigs       = require_extra.depconfigs,-- the configuration passed to dependent packages
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
@@ -327,7 +331,7 @@ function _check_package_configurations(package)
 end
 
 -- get package key
-function _packagekey(packagename, requireinfo, version)
+function _get_packagekey(packagename, requireinfo, version)
     local key = packagename .. "/" .. (version or requireinfo.version)
     local configs = requireinfo.configs
     if configs then
@@ -357,7 +361,7 @@ function _load_package(packagename, requireinfo, opt)
     -- cannot be detected at present and can only be resolved by the user
     --
     local rootkey = opt.rootkey
-    local packagekey = _packagekey(packagename, requireinfo)
+    local packagekey = _get_packagekey(packagename, requireinfo)
     local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
     if packagekey_prev then
         if packagekey_prev and packagekey_prev ~= packagekey then
@@ -398,7 +402,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- latest/semver to the cached version? update package key and load package from cache
     if version then
-        packagekey = _packagekey(packagename, requireinfo, version)
+        packagekey = _get_packagekey(packagename, requireinfo, version)
         local package_cached = _memcache():get2("packages", packagekey)
         if package_cached then
             return package_cached
@@ -428,10 +432,38 @@ function _load_package(packagename, requireinfo, opt)
     return package
 end
 
--- load the extra configs dependent packages and inherit some builtin configs
+-- load the extra configs dependent packages
 function _load_package_depconfigs(package)
-    local deps = package:get("deps")
+
+    -- get all extra configs of dependent packages
     local extraconfs = package:extraconf("deps") or {}
+
+    -- inherit depconfigs of root package
+    -- e.g. add_requires("libpng", {depconfigs = {...}})
+    --
+    local deps = package:get("deps")
+    local requireinfo = package:requireinfo()
+    if requireinfo and requireinfo.depconfigs then
+        for _, depstr in ipairs(deps) do
+            local depconf = extraconfs[depstr]
+            if not depconf then
+                depconf = {}
+                extraconfs[depstr] = depconf
+            end
+            depconf.configs = depconf.configs or {}
+            for k, v in pairs(requireinfo.depconfigs) do
+                if depconf.configs[k] == nil then
+                    depconf.configs[k] = v
+                end
+            end
+        end
+    end
+    -- TODO disable system deps
+--    print(requireinfo)
+
+    -- inherit some builtin configs of root package
+    -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD"}})
+    --
     if not package:config("shared") then
         for _, depstr in ipairs(deps) do
             local depconf = extraconfs[depstr]
@@ -445,6 +477,7 @@ function _load_package_depconfigs(package)
             end
         end
     end
+--    print(extraconfs)
     return extraconfs
 end
 
