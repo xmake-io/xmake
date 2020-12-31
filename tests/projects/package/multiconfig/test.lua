@@ -1,7 +1,6 @@
 -- main entry
 function main(t)
 
-    -- TODO
     -- build project
---    t:build()
+    t:build()
 end
