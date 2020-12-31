@@ -1,6 +1,5 @@
--- main entry
 function main(t)
-
-    -- build project
-    t:build()
+    if is_plat(os.subhost()) then
+        t:build()
+    end
 end
