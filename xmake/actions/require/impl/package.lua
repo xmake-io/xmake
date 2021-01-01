@@ -460,7 +460,13 @@ function _load_package(packagename, requireinfo, opt)
     package:requireinfo_set(requireinfo)
 
     -- save display name
-    package:displayname_set(opt.requirepath)
+    local packageid = _memcache():get2("packageids", packagename)
+    local displayname = packagename
+    if packageid then
+        displayname = displayname .. "#" .. tostring(packageid)
+    end
+    _memcache():set2("packageids", packagename, (packageid or 0) + 1)
+    package:displayname_set(displayname)
 
     -- add some builtin configurations to package
     _add_package_configurations(package)
@@ -572,16 +578,28 @@ function _sort_packages_urls(packages)
     end
 end
 
--- get package status string
-function _get_package_status_str(package)
-    local status = {}
-    if package:debug() then
-        table.insert(status, "debug")
-    end
+-- get package configs string
+function _get_package_configs_str(package)
+    local configs = {}
     if package:optional() then
-        table.insert(status, "optional")
+        table.insert(configs, "optional")
     end
-    return #status > 0 and "(" .. table.concat(status, ", ") .. ")" or ""
+    local requireinfo = package:requireinfo()
+    if requireinfo then
+        for k, v in pairs(requireinfo.configs) do
+            if type(v) == "boolean" then
+                table.insert(configs, k .. ":" .. (v and "y" or "n"))
+            else
+                table.insert(configs, k .. ":" .. v)
+            end
+        end
+    end
+    local configs_str = #configs > 0 and "(" .. table.concat(configs, ", ") .. ")" or ""
+    local limitwidth = os.getwinsize().width / 2
+    if #configs_str > limitwidth then
+        configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+    end
+    return configs_str
 end
 
 -- get user confirm
@@ -627,12 +645,12 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:requirepath(), package_in_group:version_str() or "", _get_package_status_str(package_in_group))
+                            cprint("  ${yellow}%s${clear} %s %s %{dim}%s", idx == 1 and "->" or "   or", package_in_group:requirepath(), package_in_group:version_str() or "", _get_package_configs_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  ${yellow}->${clear} %s %s %s", package:displayname(), package:version_str() or "", _get_package_status_str(package))
+                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", package:displayname(), package:version_str() or "", _get_package_configs_str(package))
                         packages_showed[tostring(package)] = true
                     end
                 end
