@@ -693,6 +693,7 @@ function project.apis()
         ,   "set_description"
             -- add_xxx
         ,   "add_requires"
+        ,   "add_requireconfs"
         ,   "add_repositories"
         }
     ,   paths =
@@ -1002,8 +1003,21 @@ function project.requires_str()
         requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
         project._memcache():set("requires_str", requires_str or false)
         project._memcache():set("requires_extra", requires_extra)
+
+        -- get raw requireconfs
+        local requireconfs_str, requireconfs_extra = project.get("requireconfs"), project.get("__extra_requireconfs")
+        project._memcache():set("requireconfs_str", requireconfs_str or false)
+        project._memcache():set("requireconfs_extra", requireconfs_extra)
     end
     return requires_str or nil, requires_extra
+end
+
+-- get string requireconfs
+function project.requireconfs_str()
+    project.requires_str()
+    local requireconfs_str   = project._memcache():get("requireconfs_str")
+    local requireconfs_extra = project._memcache():get("requireconfs_extra")
+    return requireconfs_str, requireconfs_extra
 end
 
 -- get the given rule

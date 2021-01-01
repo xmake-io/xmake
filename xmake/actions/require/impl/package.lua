@@ -82,15 +82,6 @@ end
 --   true: only get system package
 --   false: only get local packages
 --
--- custom on_load/after_load package script
--- - add_requires("libpng", {after_load = function (package)
---                               -- modify dependent package version and configs
---                               -- package:set("deps", "zlib 1.2.10", {system = false, configs = {cxflags = "-DTEST"}})
---
---                               -- only modify dependent package configs
---                               package:extraconf_set("deps", "zlib", {system = false, configs = {cxflags = "-DTEST"}})
---                           end})
---
 --
 function _parse_require(require_str, requires_extra, parentinfo)
 
@@ -183,8 +174,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
         external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
-        on_load          = require_extra.on_load,   -- optional, we use it to override package().on_load
-        after_load       = require_extra.after_load -- optional, we use it to load some user custom configuration after loading package()
     }
     return required.packagename, required.requireinfo
 end
@@ -418,15 +407,9 @@ function _load_package(packagename, requireinfo, opt)
     _check_package_configurations(package)
 
     -- do load
-    local on_load = requireinfo.on_load or package:script("load")
+    local on_load = package:script("load")
     if on_load then
         on_load(package)
-    end
-
-    -- do after_load
-    local after_load = requireinfo.after_load
-    if after_load then
-        after_load(package)
     end
 
     -- load environments from the manifest to enable the environments of on_install()
@@ -443,34 +426,10 @@ function _load_package_depconfigs(package)
     -- get all extra configs of dependent packages
     local extraconfs = package:extraconf("deps") or {}
 
-    -- inherit depconfigs of root package
-    -- e.g. add_requires("libpng", {deps = {...}})
-    --
-    local deps = package:get("deps")
-    local requireinfo = package:requireinfo()
-    if requireinfo and requireinfo.deps then
-        local requiredeps = requireinfo.deps
-        for _, depstr in ipairs(deps) do
-            local depconf = extraconfs[depstr]
-            if not depconf then
-                depconf = {}
-                extraconfs[depstr] = depconf
-            end
-            depconf.configs = depconf.configs or {}
-            for k, v in pairs(requiredeps.configs) do
-                depconf.configs[k] = v
-            end
-            for k, v in pairs(requiredeps) do
-                if k ~= "configs" then
-                    depconf[k] = v
-                end
-            end
-        end
-    end
-
     -- inherit some builtin configs of root package
     -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD"}})
     --
+    local deps = package:get("deps")
     if not package:config("shared") then
         for _, depstr in ipairs(deps) do
             local depconf = extraconfs[depstr]
@@ -484,6 +443,7 @@ function _load_package_depconfigs(package)
             end
         end
     end
+    print(extraconfs)
     return extraconfs
 end
 
