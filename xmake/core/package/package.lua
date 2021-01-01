@@ -671,6 +671,16 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
+-- get the require path
+function _instance:requirepath()
+    return self._REQUIREPATH
+end
+
+-- set the require path
+function _instance:requirepath_set(requirepath)
+    self._REQUIREPATH = requirepath
+end
+
 -- get the given configuration value of package
 function _instance:config(name)
     local configs = self:configs()

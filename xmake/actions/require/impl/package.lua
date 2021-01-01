@@ -270,7 +270,7 @@ function _select_package_version(package, requireinfo)
         elseif has_giturl then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
         else
-            raise("package(%s %s): not found!", package:name(), require_version)
+            raise("package(%s %s): not found!", package:requirepath(), require_version)
         end
         return version, source
     end
@@ -293,7 +293,7 @@ function _check_package_configurations(package)
         if conf then
             local config_type = conf.type
             if config_type ~= nil and type(value) ~= config_type then
-                raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
+                raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:requirepath(), package:version_str(), type(value), name, config_type)
             end
             if conf.values then
                 local found = false
@@ -304,16 +304,16 @@ function _check_package_configurations(package)
                     end
                 end
                 if not found then
-                    raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
+                    raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:requirepath(), package:version_str(), value, name, package:name())
                 end
             end
             if conf.restrict then
                 if not conf.restrict(value) then
-                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
+                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:requirepath(), package:version_str(), value, name)
                 end
             end
         else
-            raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
+            raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:requirepath(), package:version_str(), name, package:name())
         end
     end
 end
@@ -456,8 +456,11 @@ function _load_package(packagename, requireinfo, opt)
         end
     end
 
-    -- save require info to package
+    -- save require info
     package:requireinfo_set(requireinfo)
+
+    -- save require path
+    package:requirepath_set(opt.requirepath)
 
     -- add some builtin configurations to package
     _add_package_configurations(package)
@@ -523,7 +526,7 @@ function _load_packages(requires, opt)
 
         -- load package
         local rootkey     = opt.rootkey or requireitem.name
-        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey}))
+        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey, requirepath = requirepath}))
 
         -- maybe package not found and optional
         if package then
@@ -624,12 +627,12 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", _get_package_status_str(package_in_group))
+                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:requirepath(), package_in_group:version_str() or "", _get_package_status_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  ${yellow}->${clear} %s %s %s", package:name(), package:version_str() or "", _get_package_status_str(package))
+                        cprint("  ${yellow}->${clear} %s %s %s", package:requirepath(), package:version_str() or "", _get_package_status_str(package))
                         packages_showed[tostring(package)] = true
                     end
                 end
@@ -754,11 +757,11 @@ function _install_packages(packages_install, packages_download)
         for _, index in ipairs(running_jobs_indices) do
             local package = packages_installing[index]
             if package then
-                table.insert(installing, package:name())
+                table.insert(installing, package:requirepath())
             end
             local package = packages_downloading[index]
             if package then
-                table.insert(downloading, package:name())
+                table.insert(downloading, package:requirepath())
             end
         end
 
@@ -878,7 +881,7 @@ function install_packages(requires, opt)
         -- show tips
         cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch)!")
         for _, package in ipairs(packages_unsupported) do
-            print("  -> %s %s", package:name(), package:version_str() or "")
+            print("  -> %s %s", package:requirepath(), package:version_str() or "")
         end
         raise()
     end
@@ -888,7 +891,7 @@ function install_packages(requires, opt)
         local packages_must = {}
         for _, package in ipairs(packages_install) do
             if not package:optional() then
-                table.insert(packages_must, package:name())
+                table.insert(packages_must, package:requirepath())
             end
         end
         if #packages_must > 0 then
