@@ -5,7 +5,7 @@ add_requires("libpng", {system = false, configs = {vs_runtime = "MD"},
                         end})
 
 add_requires("libtiff", {system = false, configs = {vs_runtime = "MD"},
-                         depconfigs = {cxflags = "-DTEST2"}})
+                         deps = {system = false, configs = {cxflags = "-DTEST2"}}})
 
 target("test")
     set_kind("binary")

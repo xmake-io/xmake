@@ -75,21 +75,24 @@ end
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
 -- pass configs to all dependent packages
--- - add_requires("libpng", {depconfigs = {shared = true, cxflags = "-DTEST"}})
+-- - add_requires("libpng", {deps = {system = false, configs = {shared = true, cxflags = "-DTEST"}}})
 --
 -- {system = nil/true/false}:
 --   nil: get local or system packages
 --   true: only get system package
 --   false: only get local packages
 --
+-- custom on_load/after_load package script
+-- - add_requires("libpng", {after_load = function (package)
+--                               -- modify dependent package version and configs
+--                               -- package:set("deps", "zlib 1.2.10", {system = false, configs = {cxflags = "-DTEST"}})
+--
+--                               -- only modify dependent package configs
+--                               package:extraconf_set("deps", "zlib", {system = false, configs = {cxflags = "-DTEST"}})
+--                           end})
+--
+--
 function _parse_require(require_str, requires_extra, parentinfo)
-
-    -- get it from cache first
-    local requires = _memcache():get("requires") or {}
-    local required = requires[require_str]
-    if required then
-        return required.packagename, required.requireinfo
-    end
 
     -- split package and version info
     local splitinfo = require_str:split('%s+')
@@ -175,7 +178,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
-        depconfigs       = require_extra.depconfigs,-- the configuration passed to dependent packages
+        deps             = require_extra.deps,      -- the configuration passed to dependent packages
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
@@ -183,12 +186,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         on_load          = require_extra.on_load,   -- optional, we use it to override package().on_load
         after_load       = require_extra.after_load -- optional, we use it to load some user custom configuration after loading package()
     }
-
-    -- save this required item to cache
-    requires[require_str] = required
-    _memcache():set("requires", requires)
-
-    -- ok
     return required.packagename, required.requireinfo
 end
 
@@ -447,11 +444,12 @@ function _load_package_depconfigs(package)
     local extraconfs = package:extraconf("deps") or {}
 
     -- inherit depconfigs of root package
-    -- e.g. add_requires("libpng", {depconfigs = {...}})
+    -- e.g. add_requires("libpng", {deps = {...}})
     --
     local deps = package:get("deps")
     local requireinfo = package:requireinfo()
-    if requireinfo and requireinfo.depconfigs then
+    if requireinfo and requireinfo.deps then
+        local requiredeps = requireinfo.deps
         for _, depstr in ipairs(deps) do
             local depconf = extraconfs[depstr]
             if not depconf then
@@ -459,9 +457,12 @@ function _load_package_depconfigs(package)
                 extraconfs[depstr] = depconf
             end
             depconf.configs = depconf.configs or {}
-            for k, v in pairs(requireinfo.depconfigs) do
-                if depconf.configs[k] == nil then
-                    depconf.configs[k] = v
+            for k, v in pairs(requiredeps.configs) do
+                depconf.configs[k] = v
+            end
+            for k, v in pairs(requiredeps) do
+                if k ~= "configs" then
+                    depconf[k] = v
                 end
             end
         end
@@ -805,8 +806,7 @@ function load_packages(requires, opt)
     local unique = {}
     local packages = {}
     for _, package in ipairs(_load_packages(requires, opt)) do
-        -- remove repeat packages with same the package name and version
-        local key = package:name() .. (package:version_str() or "")
+        local key = _get_packagekey(package:name(), package:requireinfo())
         if not unique[key] then
             table.insert(packages, package)
             unique[key] = true
