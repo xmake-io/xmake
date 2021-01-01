@@ -443,7 +443,6 @@ function _load_package_depconfigs(package)
             end
         end
     end
-    print(extraconfs)
     return extraconfs
 end
 

@@ -619,7 +619,7 @@ function project._load_requires()
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- discard scripts in extrainfo, we need not it now (e.g. on_load ..)
+        -- @deprecated discard scripts in extrainfo, we need not it now (e.g. on_load ..)
         if extrainfo then
             for k, v in pairs(extrainfo) do
                 if type(v) == "function" then
