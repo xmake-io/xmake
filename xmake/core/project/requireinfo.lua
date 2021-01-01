@@ -39,20 +39,6 @@ end
 
 -- save the requires info to the cache
 function requireinfo:save()
-
-    -- To ensure that the full information (version, ..) is obtained, delay loading it
-    if not self._LOADED then
-        local on_load = self:script("on_load")
-        if on_load then
-            local ok, errors = sandbox.load(on_load, self)
-            if not ok then
-                os.raise(errors)
-            end
-        end
-        self._LOADED = true
-    end
-
-    -- save it
     requireinfo._cache():set(self:name(), self._INFO)
     requireinfo._cache():save()
 end
@@ -82,11 +68,6 @@ end
 -- get the require name
 function requireinfo:name()
     return self._NAME
-end
-
--- get the given script
-function requireinfo:script(name)
-    return self._SCRIPTS and self._SCRIPTS[name] or nil
 end
 
 -- get the package version

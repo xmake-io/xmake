@@ -83,6 +83,11 @@ function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
 end
 
+-- set the extra configuration
+function _instance:extraconf_set(name, item, key, value)
+    return self._INFO:extraconf_set(name, item, key, value)
+end
+
 -- get the package license
 function _instance:license()
     return self:get("license")
@@ -217,17 +222,6 @@ end
 -- get order deps
 function _instance:orderdeps()
     return self._ORDERDEPS
-end
-
--- add deps
-function _instance:deps_add(...)
-    for _, dep in ipairs({...}) do
-        self:add("deps", dep:name())
-        self._DEPS = self._DEPS or {}
-        self._DEPS[dep:name()] = dep
-        self._ORDERDEPS = self._ORDERDEPS or {}
-        table.insert(self._ORDERDEPS, dep)
-    end
 end
 
 -- get parents
@@ -682,6 +676,14 @@ function _instance:config(name)
     local configs = self:configs()
     if configs then
         return configs[name]
+    end
+end
+
+-- set configuration value
+function _instance:config_set(name, value)
+    local configs = self:configs()
+    if configs then
+        configs[name] = value
     end
 end
 

@@ -614,28 +614,17 @@ function project._load_requires()
         -- load it from cache first (@note will discard scripts in extrainfo)
         local instance = requireinfo.load(alias or packagename)
         if not instance then
-
-            -- init a require info instance
             instance = table.inherit(requireinfo)
-
-            -- save name and info
             instance._NAME = alias or packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- move scripts of extrainfo  (e.g. on_load ..)
+        -- discard scripts in extrainfo, we need not it now (e.g. on_load ..)
         if extrainfo then
             for k, v in pairs(extrainfo) do
                 if type(v) == "function" then
-                    instance._SCRIPTS = instance._SCRIPTS or {}
-                    instance._SCRIPTS[k] = v
                     extrainfo[k] = nil
                 end
-            end
-
-            -- TODO exists deprecated option? show tips
-            if extrainfo.option then
-                os.raise("`option = {}` is no longger supported in add_requires(), please update xmake.lua")
             end
         end
 

@@ -179,7 +179,9 @@ function _parse_require(require_str, requires_extra, parentinfo)
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
-        external         = require_extra.external   -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
+        external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
+        on_load          = require_extra.on_load,   -- optional, we use it to override package().on_load
+        after_load       = require_extra.after_load -- optional, we use it to load some user custom configuration after loading package()
     }
 
     -- save this required item to cache
@@ -418,10 +420,16 @@ function _load_package(packagename, requireinfo, opt)
     -- check package configurations
     _check_package_configurations(package)
 
-    -- do load for package
-    local on_load = package:script("load")
+    -- do load
+    local on_load = requireinfo.on_load or package:script("load")
     if on_load then
         on_load(package)
+    end
+
+    -- do after_load
+    local after_load = requireinfo.after_load
+    if after_load then
+        after_load(package)
     end
 
     -- load environments from the manifest to enable the environments of on_install()
@@ -458,8 +466,6 @@ function _load_package_depconfigs(package)
             end
         end
     end
-    -- TODO disable system deps
---    print(requireinfo)
 
     -- inherit some builtin configs of root package
     -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD"}})
@@ -477,7 +483,6 @@ function _load_package_depconfigs(package)
             end
         end
     end
---    print(extraconfs)
     return extraconfs
 end
 
@@ -491,11 +496,12 @@ function _load_packages(requires, opt)
 
     -- load packages
     local packages = {}
-    for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
+    for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
 
         -- load package
-        local rootkey = opt.rootkey or requireinfo.name
-        local package = _load_package(requireinfo.name, requireinfo.info, table.join(opt, {rootkey = rootkey}))
+        local rootkey     = opt.rootkey or requireitem.name
+        local requireinfo = requireitem.info
+        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey}))
 
         -- maybe package not found and optional
         if package then
@@ -510,7 +516,7 @@ function _load_packages(requires, opt)
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps, system = false})) do
+                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requires_extra = extraconfs, parentinfo = requireinfo, nodeps = opt.nodeps, system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
@@ -609,36 +615,6 @@ function _get_confirm(packages)
         end
     end})
     return confirm
-end
-
--- patch some builtin dependent packages
-function _patch_packages(packages_install, packages_download)
-
-    -- @NOTE use git.apply instead of patch
-    -- we can add some builtin packages like this
-    --[[
-    -- add package(patch)
-    local patched_package = nil
-    for _, package in ipairs(packages_install) do
-        if package:patches() then
-            patched_package = package
-            break
-        end
-    end
-    if patched_package then
-        local packages = load_packages("patch")
-        if packages and #packages > 0 then
-            -- install patch package
-            local package = packages[1]
-            if not package:fetch() then
-                packages_download[tostring(package)] = package
-                table.insert(packages_install, 1, package)
-            end
-            -- add dependences to ensure to be installed first
-            patched_package:deps_add(package)
-        end
-    end
-    ]]
 end
 
 -- install packages
@@ -884,9 +860,6 @@ function install_packages(requires, opt)
         end
         raise()
     end
-
-    -- patch some dependent builtin packages
-    _patch_packages(packages_install, packages_download)
 
     -- get user confirm
     if not _get_confirm(packages_install) then
