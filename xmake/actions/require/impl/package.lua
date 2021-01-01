@@ -318,6 +318,65 @@ function _check_package_configurations(package)
     end
 end
 
+-- match require path
+function _match_requirepath(requirepath, requireconf)
+    local pattern = requireconf
+    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+    pattern = pattern:gsub("%*%*", "\001")
+    pattern = pattern:gsub("%*", "\002")
+    pattern = pattern:gsub("\001", ".*")
+    pattern = pattern:gsub("\002", "[^.]*")
+    pattern = string.ipattern(pattern, true)
+    return (requirepath:match('^' .. pattern .. '$'))
+end
+
+-- load requireinfo and merge requireconfs
+--
+-- add_requireconfs("*",            {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("lib*",         {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libwebp",      {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libpng.zlib",  {system = false, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
+-- add_requireconfs("libtiff.*",    {system = false, configs = {cxflags = "-DTEST2"}})
+-- add_requireconfs("libwebp.**",   {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
+--
+function _load_requireinfo(packagename, requireinfo, requirepath)
+
+    -- find requireconf from the given requirepath
+    local requireconf_result = {}
+    local requireconfs, requireconfs_extra = project.requireconfs_str()
+    if requireconfs then
+        for _, requireconf in ipairs(requireconfs) do
+            if _match_requirepath(requirepath, requireconf) then
+                local requireconf_extra = requireconfs_extra[requireconf]
+                table.insert(requireconf_result, {requireconf = requireconf, requireconf_extra = requireconf_extra})
+            end
+        end
+    end
+
+    -- merge requireconf_extra into requireinfo
+    if #requireconf_result == 1 then
+        local requireconf_extra = requireconf_result[1].requireconf_extra
+        if requireconf_extra then
+            for k, v in pairs(requireconf_extra.configs) do
+                requireinfo.configs = requireinfo.configs or {}
+                requireinfo.configs[k] = v
+            end
+            for k, v in pairs(requireconf_extra) do
+                if k ~= "configs" then
+                    requireinfo[k] = v
+                end
+            end
+        end
+    elseif #requireconf_result > 1 then
+        local confs = {}
+        for _, item in ipairs(requireconf_result) do
+            table.insert(confs, item.requireconf)
+        end
+        raise("package(%s) will match multiple add_requireconfs(%s)!", requirepath, table.concat(confs, " "))
+    end
+    return requireinfo
+end
+
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
     local key = packagename .. "/" .. (version or requireinfo.version)
@@ -456,11 +515,14 @@ function _load_packages(requires, opt)
 
     -- load packages
     local packages = {}
-    for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
+    for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt)) do
+
+        -- load requireinfo
+        local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
+        local requireinfo = _load_requireinfo(requireitem.name, requireitem.info, requirepath)
 
         -- load package
         local rootkey     = opt.rootkey or requireitem.name
-        local requireinfo = requireitem.info
         local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey}))
 
         -- maybe package not found and optional
@@ -476,7 +538,7 @@ function _load_packages(requires, opt)
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requires_extra = extraconfs, parentinfo = requireinfo, nodeps = opt.nodeps, system = false})) do
+                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requirepath = requirepath, requires_extra = extraconfs, parentinfo = requireinfo, nodeps = opt.nodeps, system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
@@ -750,13 +812,14 @@ function cachedir()
 end
 
 -- load requires
-function load_requires(requires, requires_extra, parentinfo)
-    local requireinfos = {}
+function load_requires(requires, requires_extra, opt)
+    opt = opt or {}
+    local requireitems = {}
     for _, require_str in ipairs(requires) do
-        local packagename, requireinfo = _parse_require(require_str, requires_extra, parentinfo)
-        table.insert(requireinfos, {name = packagename, info = requireinfo})
+        local packagename, requireinfo = _parse_require(require_str, requires_extra, opt.parentinfo)
+        table.insert(requireitems, {name = packagename, info = requireinfo})
     end
-    return requireinfos
+    return requireitems
 end
 
 -- load all required packages
