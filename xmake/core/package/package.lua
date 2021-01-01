@@ -671,14 +671,14 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
--- get the require path
-function _instance:requirepath()
-    return self._REQUIREPATH
+-- get the display name
+function _instance:displayname()
+    return self._DISPLAYNAME
 end
 
--- set the require path
-function _instance:requirepath_set(requirepath)
-    self._REQUIREPATH = requirepath
+-- set the display name
+function _instance:displayname_set(displayname)
+    self._DISPLAYNAME = displayname
 end
 
 -- get the given configuration value of package
