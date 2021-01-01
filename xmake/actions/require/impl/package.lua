@@ -468,6 +468,13 @@ function _load_package(packagename, requireinfo, opt)
     _memcache():set2("packageids", packagename, (packageid or 0) + 1)
     package:displayname_set(displayname)
 
+    -- disable parallelize if the package cache directory conflicts
+    local cachedirs = _memcache():get2("cachedirs", package:cachedir())
+    if cachedirs then
+        package:set("parallelize", false)
+    end
+    _memcache():set2("cachedirs", package:cachedir(), true)
+
     -- add some builtin configurations to package
     _add_package_configurations(package)
 

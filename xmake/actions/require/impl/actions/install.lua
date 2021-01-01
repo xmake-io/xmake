@@ -211,7 +211,7 @@ function main(package)
 
             -- trace
             tty.erase_line_to_start().cr()
-            cprint("${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:name(), package:version_str() or "")
+            cprint("${yellow}  => ${clear}install %s %s .. ${color.success}${text.success}", package:displayname(), package:version_str() or "")
         end,
 
         catch
@@ -230,7 +230,7 @@ function main(package)
 
                 -- trace
                 tty.erase_line_to_start().cr()
-                cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:name(), package:version_str() or "")
+                cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:displayname(), package:version_str() or "")
 
                 -- leave the package environments
                 package:envs_leave()
