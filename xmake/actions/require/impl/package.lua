@@ -578,6 +578,21 @@ function _sort_packages_urls(packages)
     end
 end
 
+-- get package parents string
+function _get_package_parents_str(package)
+    local parents = package:parents()
+    if parents then
+        local parentnames = {}
+        for _, parent in pairs(parents) do
+            table.insert(parentnames, parent:displayname())
+        end
+        if #parentnames == 0 then
+            return
+        end
+        return table.concat(parentnames, ",")
+    end
+end
+
 -- get package configs string
 function _get_package_configs_str(package)
     local configs = {}
@@ -594,8 +609,12 @@ function _get_package_configs_str(package)
             end
         end
     end
-    local configs_str = #configs > 0 and "(" .. table.concat(configs, ", ") .. ")" or ""
-    local limitwidth = os.getwinsize().width / 2
+    local parents_str = _get_package_parents_str(package)
+    if parents_str then
+        table.insert(configs, "from:" .. parents_str)
+    end
+    local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
+    local limitwidth = os.getwinsize().width * 2 / 3
     if #configs_str > limitwidth then
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
     end
