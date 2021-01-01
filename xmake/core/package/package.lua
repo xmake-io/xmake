@@ -994,6 +994,7 @@ function _instance:fetchdeps()
     if not fetchinfo then
         return
     end
+    fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
     local orderdeps = self:orderdeps()
     if orderdeps then
         local total = #orderdeps
@@ -1002,8 +1003,10 @@ function _instance:fetchdeps()
             local depinfo = dep:fetch()
             if depinfo then
                 for name, values in pairs(depinfo) do
-                    fetchinfo[name] = table.wrap(fetchinfo[name])
-                    table.join2(fetchinfo[name], values)
+                    if name ~= "license" and name ~= "version" then
+                        fetchinfo[name] = table.wrap(fetchinfo[name])
+                        table.join2(fetchinfo[name], values)
+                    end
                 end
             end
         end
