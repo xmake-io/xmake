@@ -320,24 +320,56 @@ end
 
 -- match require path
 function _match_requirepath(requirepath, requireconf)
-    local pattern = requireconf
+
+    -- get the excludes
+    local excludes = requireconf:match("|.*$")
+    if excludes then excludes = excludes:split("|", {plain = true}) end
+
+    -- translate excludes
+    if excludes then
+        local _excludes = {}
+        for _, exclude in ipairs(excludes) do
+            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+            exclude = exclude:gsub("%*%*", "\001")
+            exclude = exclude:gsub("%*", "\002")
+            exclude = exclude:gsub("\001", ".*")
+            exclude = exclude:gsub("\002", "[^.]*")
+            exclude = string.ipattern(exclude, true)
+            table.insert(_excludes, exclude)
+        end
+        excludes = _excludes
+    end
+
+    -- do match
+    local pattern = requireconf:gsub("|.*$", "")
     pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
     pattern = pattern:gsub("%*%*", "\001")
     pattern = pattern:gsub("%*", "\002")
     pattern = pattern:gsub("\001", ".*")
     pattern = pattern:gsub("\002", "[^.]*")
     pattern = string.ipattern(pattern, true)
-    return (requirepath:match('^' .. pattern .. '$'))
+    if (requirepath:match('^' .. pattern .. '$')) then
+        local splitinfo = requireconf:split("*", {plain = true, limit = 2})
+        if #splitinfo == 2 then
+            for _, exclude in ipairs(excludes) do
+                pattern = splitinfo[1] .. exclude
+                if (requirepath:match('^' .. pattern .. '$')) then
+                    return false
+                end
+            end
+        end
+        return true
+    end
 end
 
 -- load requireinfo and merge requireconfs
 --
--- add_requireconfs("*",            {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("lib*",         {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("libwebp",      {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("libpng.zlib",  {system = false, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
--- add_requireconfs("libtiff.*",    {system = false, configs = {cxflags = "-DTEST2"}})
--- add_requireconfs("libwebp.**",   {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
+-- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("lib*",                      {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libwebp",                   {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libpng.zlib",               {system = false, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
+-- add_requireconfs("libtiff.*",                 {system = false, configs = {cxflags = "-DTEST2"}})
+-- add_requireconfs("libwebp.**|cmake|autoconf", {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
 --
 function _load_requireinfo(packagename, requireinfo, requirepath)
 
