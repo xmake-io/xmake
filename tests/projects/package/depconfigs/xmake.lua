@@ -11,13 +11,15 @@ target("test")
     add_files("src/*.c")
     add_packages("libpng")
     before_build(function (target)
-        local found
-        for _, linkdir in ipairs(target:pkg("libpng"):get("linkdirs")) do
-            if linkdir:find("zlib/1.2.10", 1, true) then
-                found = true
+        if target:pkg("libpng") then
+            local found
+            for _, linkdir in ipairs(target:pkg("libpng"):get("linkdirs")) do
+                if linkdir:find("zlib[/\\]1%.2%.10") then
+                    found = true
+                end
             end
+            assert(found, "package(zlib 1.2.10) not found!")
         end
-        assert(found, "package(zlib 1.2.10) not found!")
     end)
 
 target("test2")
@@ -25,13 +27,15 @@ target("test2")
     add_files("src/*.c")
     add_packages("libtiff")
     before_build(function (target)
-        local found
-        for _, linkdir in ipairs(target:pkg("libtiff"):get("linkdirs")) do
-            if linkdir:find("zlib", 1, true) then
-                found = true
+        if target:pkg("libtiff") then
+            local found
+            for _, linkdir in ipairs(target:pkg("libtiff"):get("linkdirs")) do
+                if linkdir:find("zlib", 1, true) then
+                    found = true
+                end
             end
+            assert(found, "package(zlib) not found!")
         end
-        assert(found, "package(zlib) not found!")
     end)
 
 target("test3")
@@ -39,11 +43,13 @@ target("test3")
     add_files("src/*.c")
     add_packages("libwebp")
     before_build(function (target)
-        local found
-        for _, linkdir in ipairs(target:pkg("libwebp"):get("linkdirs")) do
-            if linkdir:find("zlib", 1, true) then
-                found = true
+        if target:pkg("libwebp") then
+            local found
+            for _, linkdir in ipairs(target:pkg("libwebp"):get("linkdirs")) do
+                if linkdir:find("zlib", 1, true) then
+                    found = true
+                end
             end
+            assert(found, "package(zlib) not found!")
         end
-        assert(found, "package(zlib) not found!")
     end)
