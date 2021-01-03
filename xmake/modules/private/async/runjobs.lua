@@ -75,13 +75,17 @@ function main(name, jobs, opt)
 
     -- run timer
     local stop = false
-    local running_jobs_indices
+    local running_jobs_indices = {}
     if opt.on_timer then
         scheduler.co_start_named(name .. "/timer", function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
-                    opt.on_timer(running_jobs_indices)
+                    local indices
+                    if running_jobs_indices then
+                        indices = table.keys(running_jobs_indices)
+                    end
+                    opt.on_timer(indices)
                 end
             end
         end)
@@ -137,7 +141,6 @@ function main(name, jobs, opt)
     local priority_curr = 0
     local job_pending = nil
     while index < total do
-        running_jobs_indices = {}
         scheduler.co_group_begin(group_name, function (co_group)
             local freemax = comax - #co_group
             local max = math.min(index + freemax, total)
@@ -178,11 +181,11 @@ function main(name, jobs, opt)
 
                 -- start this job
                 index = index + 1
-                table.insert(running_jobs_indices, index)
                 scheduler.co_start_named(name .. '/' .. jobname, function(i)
                     try
                     {
                         function()
+                            running_jobs_indices[i] = i
                             if jobfunc then
                                 if opt.curdir then
                                     os.cd(opt.curdir)
@@ -190,6 +193,7 @@ function main(name, jobs, opt)
                                 jobfunc(count_as_index and count or i, total)
                                 count = count + 1
                             end
+                            running_jobs_indices[i] = nil
                         end,
                         catch
                         {
@@ -218,7 +222,7 @@ function main(name, jobs, opt)
             end
         end)
 
-        -- need only one jobs exited if be same priority
+        -- need only one job exited if be same priority
         if priority_curr == priority_prev then
             scheduler.co_group_wait(group_name, {limit = 1})
         else
