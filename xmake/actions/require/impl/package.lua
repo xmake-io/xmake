@@ -236,6 +236,7 @@ function _add_package_configurations(package)
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
+    package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
 end
 
@@ -537,7 +538,7 @@ function _load_package_depconfigs(package)
     local extraconfs = package:extraconf("deps") or {}
 
     -- inherit some builtin configs of root package
-    -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD"}})
+    -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
     --
     local deps = package:get("deps")
     if not package:config("shared") then
@@ -550,6 +551,9 @@ function _load_package_depconfigs(package)
             depconf.configs = depconf.configs or {}
             if depconf.configs.vs_runtime == nil then
                 depconf.configs.vs_runtime = package:config("vs_runtime")
+            end
+            if depconf.configs.pic == nil then
+                depconf.configs.pic = package:config("pic")
             end
         end
     end

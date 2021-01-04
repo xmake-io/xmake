@@ -725,23 +725,46 @@ end
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
-        local str = self:plat() .. self:arch()
-        local configs = self:configs()
-        if configs then
-            -- since luajit v2.1, the key order of the table is random and undefined.
-            -- We cannot directly deserialize the table, so the result may be different each time
-            local configs_order = {}
-            for k, v in pairs(table.wrap(configs)) do
-                table.insert(configs_order, k .. "=" .. tostring(v))
-            end
-            table.sort(configs_order)
+        local function _get_buildhash(configs)
+            local str = self:plat() .. self:arch()
+            if configs then
+                -- since luajit v2.1, the key order of the table is random and undefined.
+                -- We cannot directly deserialize the table, so the result may be different each time
+                local configs_order = {}
+                for k, v in pairs(table.wrap(configs)) do
+                    table.insert(configs_order, k .. "=" .. tostring(v))
+                end
+                table.sort(configs_order)
 
-            -- We need to be compatible with the hash value string for the previous luajit version
-            local configs_str = string.serialize(configs_order, true)
-            configs_str = configs_str:gsub("\"", "")
-            str = str .. configs_str
+                -- we need to be compatible with the hash value string for the previous luajit version
+                local configs_str = string.serialize(configs_order, true)
+                configs_str = configs_str:gsub("\"", "")
+                str = str .. configs_str
+            end
+            return hash.uuid4(str):gsub('-', ''):lower()
         end
-        buildhash = hash.uuid4(str):gsub('-', ''):lower()
+        local function _get_installdir(...)
+            local name = self:name():lower():gsub("::", "_")
+            local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+            if self:version_str() then
+                dir = path.join(dir, self:version_str())
+            end
+            return path.join(dir, ...)
+        end
+
+        -- we need to be compatible with the hash value string for the previous xmake version
+        -- without builtin pic configuration (< 2.5.1).
+        if self:config("pic") then
+            local configs = table.copy(self:configs())
+            configs.pic = nil
+            buildhash = _get_buildhash(configs)
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+        if not buildhash then
+            buildhash = _get_buildhash(self:configs())
+        end
         self._BUILDHASH = buildhash
     end
     return buildhash
