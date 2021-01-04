@@ -420,6 +420,14 @@ end
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
+    -- strip trailng ~tag, e.g. zlib~debug
+    local displayname
+    if packagename:find('~', 1, true) then
+        displayname = packagename
+        packagename = packagename:gsub("~.+$", "")
+        requireinfo.alias = requireinfo.alias or displayname
+    end
+
     -- It exists conflict for dependent packages for each root packages? resolve it first
     -- e.g.
     -- add_requires("foo") -> bar -> zlib 1.2.10
@@ -485,12 +493,14 @@ function _load_package(packagename, requireinfo, opt)
     package:requireinfo_set(requireinfo)
 
     -- save display name
-    local packageid = _memcache():get2("packageids", packagename)
-    local displayname = packagename
-    if packageid then
-        displayname = displayname .. "#" .. tostring(packageid)
+    if not displayname then
+        local packageid = _memcache():get2("packageids", packagename)
+        displayname = packagename
+        if packageid then
+            displayname = displayname .. "#" .. tostring(packageid)
+        end
+        _memcache():set2("packageids", packagename, (packageid or 0) + 1)
     end
-    _memcache():set2("packageids", packagename, (packageid or 0) + 1)
     package:displayname_set(displayname)
 
     -- disable parallelize if the package cache directory conflicts
