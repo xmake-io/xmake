@@ -321,39 +321,32 @@ end
 -- match require path
 function _match_requirepath(requirepath, requireconf)
 
+    -- get pattern
+    local function _get_pattern(pattern)
+        pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+        pattern = pattern:gsub("%*%*", "\001")
+        pattern = pattern:gsub("%*", "\002")
+        pattern = pattern:gsub("\001", ".*")
+        pattern = pattern:gsub("\002", "[^.]*")
+        pattern = string.ipattern(pattern, true)
+        return pattern
+    end
+
     -- get the excludes
     local excludes = requireconf:match("|.*$")
     if excludes then excludes = excludes:split("|", {plain = true}) end
 
-    -- translate excludes
-    if excludes then
-        local _excludes = {}
-        for _, exclude in ipairs(excludes) do
-            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-            exclude = exclude:gsub("%*%*", "\001")
-            exclude = exclude:gsub("%*", "\002")
-            exclude = exclude:gsub("\001", ".*")
-            exclude = exclude:gsub("\002", "[^.]*")
-            exclude = string.ipattern(exclude, true)
-            table.insert(_excludes, exclude)
-        end
-        excludes = _excludes
-    end
-
     -- do match
     local pattern = requireconf:gsub("|.*$", "")
-    pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-    pattern = pattern:gsub("%*%*", "\001")
-    pattern = pattern:gsub("%*", "\002")
-    pattern = pattern:gsub("\001", ".*")
-    pattern = pattern:gsub("\002", "[^.]*")
-    pattern = string.ipattern(pattern, true)
+    pattern = _get_pattern(pattern)
     if (requirepath:match('^' .. pattern .. '$')) then
-        local splitinfo = requireconf:split("*", {plain = true, limit = 2})
-        if #splitinfo == 2 then
+        -- exclude sub-deps, e.g. "libwebp.**|cmake|autoconf"
+        local splitinfo = requirepath:split(".", {plain = true})
+        if #splitinfo > 0 then
+            local name = splitinfo[#splitinfo]
             for _, exclude in ipairs(excludes) do
-                pattern = splitinfo[1] .. exclude
-                if (requirepath:match('^' .. pattern .. '$')) then
+                pattern = _get_pattern(exclude)
+                if (name:match('^' .. pattern .. '$')) then
                     return false
                 end
             end
