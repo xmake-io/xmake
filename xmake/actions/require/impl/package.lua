@@ -391,6 +391,11 @@ function _load_requireinfo(packagename, requireinfo, requirepath)
     if #requireconf_result == 1 then
         local requireconf_extra = requireconf_result[1].requireconf_extra
         if requireconf_extra then
+            if requireconf_extra.debug then
+                requireconf_extra.configs = requireconf_extra.configs or {}
+                requireconf_extra.configs.debug = true
+                requireconf_extra.debug = nil
+            end
             for k, v in pairs(requireconf_extra.configs) do
                 requireinfo.configs = requireinfo.configs or {}
                 if requireinfo.configs[k] == nil then
