@@ -380,16 +380,28 @@ function _load_requireinfo(packagename, requireinfo, requirepath)
     end
 
     -- merge requireconf_extra into requireinfo
+    -- and the configs of add_requires have a higher priority than add_requireconfs.
+    --
+    -- for example:
+    -- add_requireconfs("*", {configs = {debug = false}})
+    -- add_requires("foo", "bar", {configs = {debug = true}})
+    --
+    -- foo and bar will be debug mode
+    --
     if #requireconf_result == 1 then
         local requireconf_extra = requireconf_result[1].requireconf_extra
         if requireconf_extra then
             for k, v in pairs(requireconf_extra.configs) do
                 requireinfo.configs = requireinfo.configs or {}
-                requireinfo.configs[k] = v
+                if requireinfo.configs[k] == nil then
+                    requireinfo.configs[k] = v
+                end
             end
             for k, v in pairs(requireconf_extra) do
                 if k ~= "configs" then
-                    requireinfo[k] = v
+                    if requireinfo[k] == nil then
+                        requireinfo[k] = v
+                    end
                 end
             end
         end
