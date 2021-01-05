@@ -21,6 +21,7 @@
 * [#1071](https://github.com/xmake-io/xmake/issues/1071): Improve to generate vs/vsxmake project to support for remote packages
 * Improve vs/vsxmake project plugin to support global `set_arch()` setting
 * [#1164](https://github.com/xmake-io/xmake/issues/1164): Improve to launch console programs for vsxmake project
+* [#1179](https://github.com/xmake-io/xmake/issues/1179): Improve llvm toolchain and add isysroot
 
 ### Bugs fixed
 
@@ -912,6 +913,7 @@
 * [#1071](https://github.com/xmake-io/xmake/issues/1071): 改进 vs/vsxmake 生成插件去支持远程依赖包
 * 改进 vs/vsxmake 工程生成插件去支持全局的 `set_arch()` 设置
 * [#1164](https://github.com/xmake-io/xmake/issues/1164): 改进 vsxmake 插件调试加载 console 程序
+* [#1179](https://github.com/xmake-io/xmake/issues/1179): 改进 llvm 工具链，添加 isysroot
 
 ### Bugs 修复
 

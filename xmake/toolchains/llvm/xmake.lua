@@ -61,7 +61,7 @@ toolchain("llvm")
             toolchain:add("shflags", march)
         end
 
-        -- init flags for the xcode sdk directory
+        -- init flags for macOS
         if toolchain:is_plat("macosx") then
             local xcode_dir     = get_config("xcode")
             local xcode_sdkver  = toolchain:config("xcode_sdkver")
@@ -71,6 +71,14 @@ toolchain("llvm")
                 toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
+            else
+                -- @see https://github.com/xmake-io/xmake/issues/1179
+                local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+                if os.exists(macsdk) then
+                    toolchain:add("cxflags", "-isysroot " .. macsdk)
+                    toolchain:add("ldflags", "-isysroot " .. macsdk)
+                    toolchain:add("shflags", "-isysroot " .. macsdk)
+                end
             end
         end
 
