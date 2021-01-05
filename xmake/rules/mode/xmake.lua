@@ -62,6 +62,9 @@ rule("mode.release")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
@@ -90,6 +93,9 @@ rule("mode.releasedbg")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
@@ -114,6 +120,9 @@ rule("mode.minsizerel")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
@@ -142,6 +151,9 @@ rule("mode.profile")
             target:add("cxflags", "-pg")
             target:add("mxflags", "-pg")
             target:add("ldflags", "-pg")
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
