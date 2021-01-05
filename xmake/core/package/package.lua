@@ -957,6 +957,7 @@ function _instance:fetch(opt)
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
             fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
+                                                      require_version = require_ver,
                                                       force = opt.force})
             if fetchinfo then
                 isSys = true
