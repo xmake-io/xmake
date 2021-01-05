@@ -566,7 +566,7 @@ function _load_package_depconfigs(package)
     -- get all extra configs of dependent packages
     local extraconfs = package:extraconf("deps") or {}
 
-    -- inherit some builtin configs of root package
+    -- inherit some builtin configs of root package if these config values are not default value
     -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
     --
     local deps = package:get("deps")
@@ -578,10 +578,10 @@ function _load_package_depconfigs(package)
                 extraconfs[depstr] = depconf
             end
             depconf.configs = depconf.configs or {}
-            if depconf.configs.vs_runtime == nil then
+            if depconf.configs.vs_runtime == nil and package:config("vs_runtime") ~= "MT" then
                 depconf.configs.vs_runtime = package:config("vs_runtime")
             end
-            if depconf.configs.pic == nil then
+            if depconf.configs.pic == nil and package:config("pic") ~= true then
                 depconf.configs.pic = package:config("pic")
             end
         end
