@@ -361,7 +361,7 @@ end
 -- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
 -- add_requireconfs("lib*",                      {system = false, configs = {vs_runtime = "MD"}})
 -- add_requireconfs("libwebp",                   {system = false, configs = {vs_runtime = "MD"}})
--- add_requireconfs("libpng.zlib",               {system = false, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
+-- add_requireconfs("libpng.zlib",               {system = false, override = true, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
 -- add_requireconfs("libtiff.*",                 {system = false, configs = {cxflags = "-DTEST2"}})
 -- add_requireconfs("libwebp.**|cmake|autoconf", {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
 --
@@ -379,32 +379,44 @@ function _load_requireinfo(packagename, requireinfo, requirepath)
         end
     end
 
-    -- merge requireconf_extra into requireinfo
+    -- append requireconf_extra into requireinfo
     -- and the configs of add_requires have a higher priority than add_requireconfs.
     --
-    -- for example:
+    -- e.g.
     -- add_requireconfs("*", {configs = {debug = false}})
     -- add_requires("foo", "bar", {configs = {debug = true}})
     --
     -- foo and bar will be debug mode
     --
+    -- we can also override the configs of add_requires
+    --
+    -- e.g.
+    -- add_requires("zlib 1.2.11")
+    -- add_requireconfs("zlib", {override = true, version = "1.2.10"})
+    --
+    -- we override the version of zlib to 1.2.10
+    --
     if #requireconf_result == 1 then
         local requireconf_extra = requireconf_result[1].requireconf_extra
         if requireconf_extra then
+            -- preprocess requireconf_extra, (debug, override ..)
+            local override = requireconf_extra.override
+            requireconf_extra.override = nil
             if requireconf_extra.debug then
                 requireconf_extra.configs = requireconf_extra.configs or {}
                 requireconf_extra.configs.debug = true
                 requireconf_extra.debug = nil
             end
+            -- append or override configs and extra options
             for k, v in pairs(requireconf_extra.configs) do
                 requireinfo.configs = requireinfo.configs or {}
-                if requireinfo.configs[k] == nil then
+                if override or requireinfo.configs[k] == nil then
                     requireinfo.configs[k] = v
                 end
             end
             for k, v in pairs(requireconf_extra) do
                 if k ~= "configs" then
-                    if requireinfo[k] == nil then
+                    if override or requireinfo[k] == nil then
                         requireinfo[k] = v
                     end
                 end
