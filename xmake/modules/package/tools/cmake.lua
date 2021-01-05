@@ -60,8 +60,8 @@ function _get_cflags_from_packagedeps(package, opt)
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
                 table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.defines))
-                table.join2(result, compiler.map_flags("cxx", "includedir", _translate_paths(fetchinfo.includedirs)))
-                table.join2(result, compiler.map_flags("cxx", "sysincludedir", _translate_paths(fetchinfo.sysincludedirs)))
+                table.join2(result, _translate_paths(compiler.map_flags("cxx", "includedir", fetchinfo.includedirs)))
+                table.join2(result, _translate_paths(compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs)))
             end
         end
     end
@@ -76,9 +76,9 @@ function _get_ldflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", _translate_paths(fetchinfo.linkdirs)))
+                table.join2(result, _translate_paths(linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
                 table.join2(result, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", _translate_paths(fetchinfo.syslinks)))
+                table.join2(result, _translate_paths(linker.map_flags("binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
             end
         end
     end
