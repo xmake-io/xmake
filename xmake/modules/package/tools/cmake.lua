@@ -28,6 +28,22 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
 
+-- translate paths
+function _translate_paths(paths)
+    if is_host("windows") then
+        if type(paths) == "string" then
+            return (paths:gsub("\\", "/"))
+        elseif type(paths) == "table" then
+            local result = {}
+            for _, p in ipairs(paths) do
+                table.insert(result, (p:gsub("\\", "/")))
+            end
+            return result
+        end
+    end
+    return paths
+end
+
 -- translate windows bin path
 function _translate_windows_bin_path(bin_path)
     if bin_path then
@@ -44,8 +60,8 @@ function _get_cflags_from_packagedeps(package, opt)
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
                 table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.defines))
-                table.join2(result, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
-                table.join2(result, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
+                table.join2(result, compiler.map_flags("cxx", "includedir", _translate_paths(fetchinfo.includedirs)))
+                table.join2(result, compiler.map_flags("cxx", "sysincludedir", _translate_paths(fetchinfo.sysincludedirs)))
             end
         end
     end
@@ -60,9 +76,9 @@ function _get_ldflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
+                table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", _translate_paths(fetchinfo.linkdirs)))
                 table.join2(result, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", fetchinfo.syslinks))
+                table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", _translate_paths(fetchinfo.syslinks)))
             end
         end
     end
