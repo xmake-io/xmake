@@ -34,6 +34,10 @@ rule("qt.ui")
         local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
         assert(uic and os.isexec(uic), "uic not found!")
 
+        -- add includedirs
+        local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
+        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
+
         -- save uic
         target:data_set("qt.uic", uic)
     end)
@@ -48,35 +52,18 @@ rule("qt.ui")
         import("core.project.depend")
         import("private.utils.progress")
 
-        -- get uic
+        -- do build
         local uic = target:data("qt.uic")
-
-        -- get c++ header file for ui
-        local headerfile_ui = path.join(target:autogendir(), "rules", "qt", "ui", "ui_" .. path.basename(sourcefile_ui) .. ".h")
-        local headerfile_dir = path.directory(headerfile_ui)
-
-        -- add includedirs
-        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
-
-        -- need build this object?
-        local dependfile = target:dependfile(headerfile_ui)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(headerfile_ui)}) then
-            return
-        end
-
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.object}compiling.qt.ui %s", sourcefile_ui)
-
-        -- ensure ui header file directory
-        if not os.isdir(headerfile_dir) then
-            os.mkdir(headerfile_dir)
-        end
-
-        -- compile ui
-        os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
-
-        -- update files and values to the dependent file
-        dependinfo.files = {sourcefile_ui}
-        depend.save(dependinfo, dependfile)
+        local dryrun = option.get("dry-run")
+        local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
+        local headerfile_ui = path.join(headerfile_dir, "ui_" .. path.basename(sourcefile_ui) .. ".h")
+        depend.on_changed(function ()
+            progress.show(opt.progress, "${color.build.object}compiling.qt.ui %s", sourcefile_ui)
+            if not dryrun then
+                if not os.isdir(headerfile_dir) then
+                    os.mkdir(headerfile_dir)
+                end
+                os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
+            end
+        end, {dependfile = target:dependfile(headerfile_ui), files = {sourcefile_ui}, lastmtime = os.mtime(headerfile_ui), always_changed = dryrun})
     end)
