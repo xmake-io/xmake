@@ -34,9 +34,13 @@ rule("qt.ui")
         local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
         assert(uic and os.isexec(uic), "uic not found!")
 
-        -- add includedirs
+        -- add includedirs, @note we use sysincludedirs to suppress warning (file not found).
+        -- and we muse add it in load stage to ensure `depend.on_changed` work.
+        --
+        -- @see https://github.com/xmake-io/xmake/issues/1180
+        --
         local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
-        target:add("includedirs", path.absolute(headerfile_dir, os.projectdir()))
+        target:add("sysincludedirs", path.absolute(headerfile_dir, os.projectdir()))
 
         -- save uic
         target:data_set("qt.uic", uic)
