@@ -56,6 +56,11 @@ function main(opt)
         table.insert(argv, "-f")
     end
 
+    -- remove all files and does not use the standard ignore rules
+    if opt.all then
+        table.insert(argv, "-x")
+    end
+
     -- enter repository directory
     local oldir = nil
     if opt.repodir then

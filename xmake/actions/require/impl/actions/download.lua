@@ -40,7 +40,7 @@ function _checkout(package, url, sourcedir, url_alias)
         not (option.get("force") and package:branch()) then -- we need disable cache if we force to clone from the given branch
 
         -- clean the previous build files
-        git.clean({repodir = packagedir, force = true})
+        git.clean({repodir = packagedir, force = true, all = true})
         -- reset the previous modified files
         git.reset({repodir = packagedir, hard = true})
         tty.erase_line_to_start().cr()
@@ -50,7 +50,7 @@ function _checkout(package, url, sourcedir, url_alias)
     -- we can use local package from the search directories directly if network is too slow
     local localdir = find_directory(package:name() .. archive.extension(url), core_package.searchdirs())
     if localdir and os.isdir(localdir) then
-        git.clean({repodir = localdir, force = true})
+        git.clean({repodir = localdir, force = true, all = true})
         tty.erase_line_to_start().cr()
         return
     end
