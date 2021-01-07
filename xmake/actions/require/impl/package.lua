@@ -452,11 +452,13 @@ end
 function _inherit_parent_configs(requireinfo, parentinfo)
     local requireinfo_configs = requireinfo.configs or {}
     local parentinfo_configs  = parentinfo.configs or {}
-    if requireinfo_configs.vs_runtime == nil then
-        requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
-    end
-    if requireinfo_configs.pic == nil then
-        requireinfo_configs.pic = parentinfo_configs.pic
+    if not requireinfo_configs.shared then
+        if requireinfo_configs.vs_runtime == nil then
+            requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+        end
+        if requireinfo_configs.pic == nil then
+            requireinfo_configs.pic = parentinfo_configs.pic
+        end
     end
     requireinfo.configs = requireinfo_configs
 end
@@ -494,15 +496,15 @@ function _load_package(packagename, requireinfo, opt)
     -- merge requireinfo from `add_requireconfs()`
     _merge_requireinfo(requireinfo, opt.requirepath)
 
+    -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
+    if opt.parentinfo and package:kind() ~= "binary" then
+        _inherit_parent_configs(requireinfo, opt.parentinfo)
+    end
+
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
     if version then
         package:version_set(version, source)
-    end
-
-    -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
-    if opt.parentinfo and package:kind() ~= "binary" and not package:config("shared") then
-        _inherit_parent_configs(requireinfo, opt.parentinfo)
     end
 
     -- get package key
