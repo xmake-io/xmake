@@ -447,6 +447,21 @@ function _get_packagekey(packagename, requireinfo, version)
     return key
 end
 
+-- inherit some builtin configs of parent package if these config values are not default value
+-- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
+--
+function _inherit_parent_configs(requireinfo, parentinfo)
+    local requireinfo_configs = requireinfo.configs or {}
+    local parentinfo_configs  = parentinfo.configs or {}
+    if requireinfo_configs.vs_runtime == nil then
+        requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+    end
+    if requireinfo_configs.pic == nil then
+        requireinfo_configs.pic = parentinfo_configs.pic
+    end
+    requireinfo.configs = requireinfo_configs
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
@@ -505,13 +520,21 @@ function _load_package(packagename, requireinfo, opt)
     assert(package, "package(%s) not found!", packagename)
 
     -- select package version
+    local package_key_changed = false
     local version, source = _select_package_version(package, requireinfo)
     if version then
         package:version_set(version, source)
+        package_key_changed = true
     end
 
-    -- latest/semver to the cached version? update package key and load package from cache
-    if version then
+    -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
+    if opt.parentinfo and package:kind() ~= "binary" and not package:config("shared") then
+        _inherit_parent_configs(requireinfo, opt.parentinfo)
+        package_key_changed = true
+    end
+
+    -- the package key has been changed? update package key and load correct package from cache or update cache
+    if package_key_changed then
         packagekey = _get_packagekey(packagename, requireinfo, version)
         local package_cached = _memcache():get2("packages", packagekey)
         if package_cached then
@@ -560,35 +583,6 @@ function _load_package(packagename, requireinfo, opt)
     return package
 end
 
--- load the extra configs dependent packages
-function _load_package_depconfigs(package)
-
-    -- get all extra configs of dependent packages
-    local extraconfs = package:extraconf("deps") or {}
-
-    -- inherit some builtin configs of root package if these config values are not default value
-    -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
-    --
-    local deps = package:get("deps")
-    if not package:config("shared") then
-        for _, depstr in ipairs(deps) do
-            local depconf = extraconfs[depstr]
-            if not depconf then
-                depconf = {}
-                extraconfs[depstr] = depconf
-            end
-            depconf.configs = depconf.configs or {}
-            if depconf.configs.vs_runtime == nil and package:config("vs_runtime") ~= "MT" then
-                depconf.configs.vs_runtime = package:config("vs_runtime")
-            end
-            if depconf.configs.pic == nil and package:config("pic") ~= true then
-                depconf.configs.pic = package:config("pic")
-            end
-        end
-    end
-    return extraconfs
-end
-
 -- load all required packages
 function _load_packages(requires, opt)
 
@@ -617,12 +611,14 @@ function _load_packages(requires, opt)
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
 
-                    -- get the extra configs dependent packages
-                    local extraconfs = _load_package_depconfigs(package)
-
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey, requirepath = requirepath, requires_extra = extraconfs, parentinfo = requireinfo, nodeps = opt.nodeps, system = false})) do
+                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey,
+                                                               requirepath = requirepath,
+                                                               requires_extra = package:extraconf("deps") or {},
+                                                               parentinfo = requireinfo,
+                                                               nodeps = opt.nodeps,
+                                                               system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
