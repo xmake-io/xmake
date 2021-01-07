@@ -728,7 +728,7 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s %{dim}%s", idx == 1 and "->" or "   or", package_in_group:requirepath(), package_in_group:version_str() or "", _get_package_configs_str(package_in_group))
+                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", _get_package_configs_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
