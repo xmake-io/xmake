@@ -356,7 +356,7 @@ function _match_requirepath(requirepath, requireconf)
     end
 end
 
--- load requireinfo and merge requireconfs
+-- merge requireinfo from `add_requireconfs()`
 --
 -- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
 -- add_requireconfs("lib*",                      {system = false, configs = {vs_runtime = "MD"}})
@@ -365,7 +365,7 @@ end
 -- add_requireconfs("libtiff.*",                 {system = false, configs = {cxflags = "-DTEST2"}})
 -- add_requireconfs("libwebp.**|cmake|autoconf", {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
 --
-function _load_requireinfo(packagename, requireinfo, requirepath)
+function _merge_requireinfo(requireinfo, requirepath)
 
     -- find requireconf from the given requirepath
     local requireconf_result = {}
@@ -429,7 +429,6 @@ function _load_requireinfo(packagename, requireinfo, requirepath)
         end
         raise("package(%s) will match multiple add_requireconfs(%s)!", requirepath, table.concat(confs, " "))
     end
-    return requireinfo
 end
 
 -- get package key
@@ -473,35 +472,8 @@ function _load_package(packagename, requireinfo, opt)
         requireinfo.alias = requireinfo.alias or displayname
     end
 
-    -- It exists conflict for dependent packages for each root packages? resolve it first
-    -- e.g.
-    -- add_requires("foo") -> bar -> zlib 1.2.10
-    --                     -> xyz -> zlib 1.2.11 or other configs
-    --
-    -- add_requires("ddd") -> zlib
-    --
-    -- We assume that there is no conflict between `foo` and `ddd`.
-    --
-    -- Of course, conflicts caused by `add_packages("foo", "ddd")`
-    -- cannot be detected at present and can only be resolved by the user
-    --
-    local rootkey = opt.rootkey
-    local packagekey = _get_packagekey(packagename, requireinfo)
-    local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
-    if packagekey_prev then
-        if packagekey_prev and packagekey_prev ~= packagekey then
-            raise("package(%s): conflict dependences with package(%s)!", packagekey, packagekey_prev)
-        end
-    end
-    _memcache():set3("packages_root", rootkey, packagename, packagekey)
-
-    -- attempt to get it from cache first
-    local package = _memcache():get2("packages", packagekey)
-    if package then
-        return package
-    end
-
     -- load package from project first
+    local package
     if os.isfile(os.projectfile()) then
         package = _load_package_from_project(packagename)
     end
@@ -519,27 +491,48 @@ function _load_package(packagename, requireinfo, opt)
     -- check
     assert(package, "package(%s) not found!", packagename)
 
+    -- merge requireinfo from `add_requireconfs()`
+    _merge_requireinfo(requireinfo, opt.requirepath)
+
     -- select package version
-    local package_key_changed = false
     local version, source = _select_package_version(package, requireinfo)
     if version then
         package:version_set(version, source)
-        package_key_changed = true
     end
 
     -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
     if opt.parentinfo and package:kind() ~= "binary" and not package:config("shared") then
         _inherit_parent_configs(requireinfo, opt.parentinfo)
-        package_key_changed = true
     end
 
-    -- the package key has been changed? update package key and load correct package from cache or update cache
-    if package_key_changed then
-        packagekey = _get_packagekey(packagename, requireinfo, version)
-        local package_cached = _memcache():get2("packages", packagekey)
-        if package_cached then
-            return package_cached
+    -- get package key
+    local packagekey = _get_packagekey(packagename, requireinfo, version)
+
+    -- It exists conflict for dependent packages for each root packages? resolve it first
+    -- e.g.
+    -- add_requires("foo") -> bar -> zlib 1.2.10
+    --                     -> xyz -> zlib 1.2.11 or other configs
+    --
+    -- add_requires("ddd") -> zlib
+    --
+    -- We assume that there is no conflict between `foo` and `ddd`.
+    --
+    -- Of course, conflicts caused by `add_packages("foo", "ddd")`
+    -- cannot be detected at present and can only be resolved by the user
+    --
+    local rootkey = opt.rootkey
+    local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
+    if packagekey_prev then
+        if packagekey_prev and packagekey_prev ~= packagekey then
+            raise("package(%s): conflict dependences with package(%s)!", packagekey, packagekey_prev)
         end
+    end
+    _memcache():set3("packages_root", rootkey, packagename, packagekey)
+
+    -- get package from cache first
+    local package_cached = _memcache():get2("packages", packagekey)
+    if package_cached then
+        return package_cached
     end
 
     -- save require info
@@ -595,12 +588,10 @@ function _load_packages(requires, opt)
     local packages = {}
     for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt)) do
 
-        -- load requireinfo
-        local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
-        local requireinfo = _load_requireinfo(requireitem.name, requireitem.info, requirepath)
-
         -- load package
         local rootkey     = opt.rootkey or requireitem.name
+        local requireinfo = requireitem.info
+        local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
         local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey, requirepath = requirepath}))
 
         -- maybe package not found and optional
