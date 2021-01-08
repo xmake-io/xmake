@@ -115,9 +115,9 @@ function _register_required_packages(packages)
     local registered_in_group = {}
     for _, instance in ipairs(packages) do
 
-        -- only register the first package in same group
+        -- only register the first package in same group and root packages
         local group = instance:group()
-        if not group or not registered_in_group[group] then
+        if not instance:parents() and (not group or not registered_in_group[group]) then
 
             -- do not register binary package
             local requireinfo = project.require(instance:alias() or instance:name())

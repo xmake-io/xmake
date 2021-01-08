@@ -614,28 +614,17 @@ function project._load_requires()
         -- load it from cache first (@note will discard scripts in extrainfo)
         local instance = requireinfo.load(alias or packagename)
         if not instance then
-
-            -- init a require info instance
             instance = table.inherit(requireinfo)
-
-            -- save name and info
             instance._NAME = alias or packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- move scripts of extrainfo  (e.g. on_load ..)
+        -- @deprecated discard scripts in extrainfo, we need not it now (e.g. on_load ..)
         if extrainfo then
             for k, v in pairs(extrainfo) do
                 if type(v) == "function" then
-                    instance._SCRIPTS = instance._SCRIPTS or {}
-                    instance._SCRIPTS[k] = v
                     extrainfo[k] = nil
                 end
-            end
-
-            -- TODO exists deprecated option? show tips
-            if extrainfo.option then
-                os.raise("`option = {}` is no longger supported in add_requires(), please update xmake.lua")
             end
         end
 
@@ -704,6 +693,7 @@ function project.apis()
         ,   "set_description"
             -- add_xxx
         ,   "add_requires"
+        ,   "add_requireconfs"
         ,   "add_repositories"
         }
     ,   paths =
@@ -1013,8 +1003,21 @@ function project.requires_str()
         requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
         project._memcache():set("requires_str", requires_str or false)
         project._memcache():set("requires_extra", requires_extra)
+
+        -- get raw requireconfs
+        local requireconfs_str, requireconfs_extra = project.get("requireconfs"), project.get("__extra_requireconfs")
+        project._memcache():set("requireconfs_str", requireconfs_str or false)
+        project._memcache():set("requireconfs_extra", requireconfs_extra)
     end
     return requires_str or nil, requires_extra
+end
+
+-- get string requireconfs
+function project.requireconfs_str()
+    project.requires_str()
+    local requireconfs_str   = project._memcache():get("requireconfs_str")
+    local requireconfs_extra = project._memcache():get("requireconfs_extra")
+    return requireconfs_str, requireconfs_extra
 end
 
 -- get the given rule

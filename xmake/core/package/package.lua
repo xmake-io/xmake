@@ -83,6 +83,11 @@ function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
 end
 
+-- set the extra configuration
+function _instance:extraconf_set(name, item, key, value)
+    return self._INFO:extraconf_set(name, item, key, value)
+end
+
 -- get the package license
 function _instance:license()
     return self:get("license")
@@ -219,17 +224,6 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
--- add deps
-function _instance:deps_add(...)
-    for _, dep in ipairs({...}) do
-        self:add("deps", dep:name())
-        self._DEPS = self._DEPS or {}
-        self._DEPS[dep:name()] = dep
-        self._ORDERDEPS = self._ORDERDEPS or {}
-        table.insert(self._ORDERDEPS, dep)
-    end
-end
-
 -- get parents
 function _instance:parents()
     return self._PARENTS
@@ -302,8 +296,8 @@ end
 function _instance:lock(opt)
     if self:filelock():trylock(opt) then
         return true
-    elseif option.get("diagnosis") then
-        utils.warning("the current package is being accessed by other processes, please waiting!")
+    else
+        utils.cprint("${color.warning}package(%s) is being accessed by other processes, please waiting!", self:name())
     end
     local ok, errors = self:filelock():lock(opt)
     if not ok then
@@ -677,11 +671,29 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
+-- get the display name
+function _instance:displayname()
+    return self._DISPLAYNAME
+end
+
+-- set the display name
+function _instance:displayname_set(displayname)
+    self._DISPLAYNAME = displayname
+end
+
 -- get the given configuration value of package
 function _instance:config(name)
     local configs = self:configs()
     if configs then
         return configs[name]
+    end
+end
+
+-- set configuration value
+function _instance:config_set(name, value)
+    local configs = self:configs()
+    if configs then
+        configs[name] = value
     end
 end
 
@@ -713,23 +725,46 @@ end
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
-        local str = self:plat() .. self:arch()
-        local configs = self:configs()
-        if configs then
-            -- since luajit v2.1, the key order of the table is random and undefined.
-            -- We cannot directly deserialize the table, so the result may be different each time
-            local configs_order = {}
-            for k, v in pairs(table.wrap(configs)) do
-                table.insert(configs_order, k .. "=" .. tostring(v))
-            end
-            table.sort(configs_order)
+        local function _get_buildhash(configs)
+            local str = self:plat() .. self:arch()
+            if configs then
+                -- since luajit v2.1, the key order of the table is random and undefined.
+                -- We cannot directly deserialize the table, so the result may be different each time
+                local configs_order = {}
+                for k, v in pairs(table.wrap(configs)) do
+                    table.insert(configs_order, k .. "=" .. tostring(v))
+                end
+                table.sort(configs_order)
 
-            -- We need to be compatible with the hash value string for the previous luajit version
-            local configs_str = string.serialize(configs_order, true)
-            configs_str = configs_str:gsub("\"", "")
-            str = str .. configs_str
+                -- we need to be compatible with the hash value string for the previous luajit version
+                local configs_str = string.serialize(configs_order, true)
+                configs_str = configs_str:gsub("\"", "")
+                str = str .. configs_str
+            end
+            return hash.uuid4(str):gsub('-', ''):lower()
         end
-        buildhash = hash.uuid4(str):gsub('-', ''):lower()
+        local function _get_installdir(...)
+            local name = self:name():lower():gsub("::", "_")
+            local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+            if self:version_str() then
+                dir = path.join(dir, self:version_str())
+            end
+            return path.join(dir, ...)
+        end
+
+        -- we need to be compatible with the hash value string for the previous xmake version
+        -- without builtin pic configuration (< 2.5.1).
+        if self:config("pic") then
+            local configs = table.copy(self:configs())
+            configs.pic = nil
+            buildhash = _get_buildhash(configs)
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+        if not buildhash then
+            buildhash = _get_buildhash(self:configs())
+        end
         self._BUILDHASH = buildhash
     end
     return buildhash
@@ -922,6 +957,7 @@ function _instance:fetch(opt)
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
             fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
+                                                      require_version = require_ver,
                                                       force = opt.force})
             if fetchinfo then
                 isSys = true
@@ -982,6 +1018,7 @@ function _instance:fetchdeps()
     if not fetchinfo then
         return
     end
+    fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
     local orderdeps = self:orderdeps()
     if orderdeps then
         local total = #orderdeps
@@ -990,8 +1027,10 @@ function _instance:fetchdeps()
             local depinfo = dep:fetch()
             if depinfo then
                 for name, values in pairs(depinfo) do
-                    fetchinfo[name] = table.wrap(fetchinfo[name])
-                    table.join2(fetchinfo[name], values)
+                    if name ~= "license" and name ~= "version" then
+                        fetchinfo[name] = table.wrap(fetchinfo[name])
+                        table.join2(fetchinfo[name], values)
+                    end
                 end
             end
         end

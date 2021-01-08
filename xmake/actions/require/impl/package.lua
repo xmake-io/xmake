@@ -74,19 +74,16 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
+-- pass configs to all dependent packages
+-- - add_requires("libpng", {deps = {system = false, configs = {shared = true, cxflags = "-DTEST"}}})
+--
 -- {system = nil/true/false}:
 --   nil: get local or system packages
 --   true: only get system package
 --   false: only get local packages
 --
+--
 function _parse_require(require_str, requires_extra, parentinfo)
-
-    -- get it from cache first
-    local requires = _memcache():get("requires") or {}
-    local required = requires[require_str]
-    if required then
-        return required.packagename, required.requireinfo
-    end
 
     -- split package and version info
     local splitinfo = require_str:split('%s+')
@@ -172,17 +169,12 @@ function _parse_require(require_str, requires_extra, parentinfo)
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
+        deps             = require_extra.deps,      -- the configuration passed to dependent packages
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
-        external         = require_extra.external   -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
+        external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
     }
-
-    -- save this required item to cache
-    requires[require_str] = required
-    _memcache():set("requires", requires)
-
-    -- ok
     return required.packagename, required.requireinfo
 end
 
@@ -244,6 +236,7 @@ function _add_package_configurations(package)
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
+    package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
 end
 
@@ -278,7 +271,7 @@ function _select_package_version(package, requireinfo)
         elseif has_giturl then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
         else
-            raise("package(%s %s): not found!", package:name(), require_version)
+            raise("package(%s %s): not found!", package:displayname(), require_version)
         end
         return version, source
     end
@@ -301,7 +294,7 @@ function _check_package_configurations(package)
         if conf then
             local config_type = conf.type
             if config_type ~= nil and type(value) ~= config_type then
-                raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:name(), package:version_str(), type(value), name, config_type)
+                raise("package(%s %s): invalid type(%s) for config(%s), need type(%s)!", package:displayname(), package:version_str(), type(value), name, config_type)
             end
             if conf.values then
                 local found = false
@@ -312,38 +305,177 @@ function _check_package_configurations(package)
                     end
                 end
                 if not found then
-                    raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:name(), package:version_str(), value, name, package:name())
+                    raise("package(%s %s): invalid value(%s) for config(%s), please run `xmake require --info %s` to get all valid values!", package:displayname(), package:version_str(), value, name, package:name())
                 end
             end
             if conf.restrict then
                 if not conf.restrict(value) then
-                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:name(), package:version_str(), value, name)
+                    raise("package(%s %s): invalid value(%s) for config(%s)!", package:displayname(), package:version_str(), value, name)
                 end
             end
         else
-            raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:name(), package:version_str(), name, package:name())
+            raise("package(%s %s): invalid config(%s), please run `xmake require --info %s` to get all configurations!", package:displayname(), package:version_str(), name, package:name())
         end
     end
+end
+
+-- match require path
+function _match_requirepath(requirepath, requireconf)
+
+    -- get pattern
+    local function _get_pattern(pattern)
+        pattern = pattern:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
+        pattern = pattern:gsub("%*%*", "\001")
+        pattern = pattern:gsub("%*", "\002")
+        pattern = pattern:gsub("\001", ".*")
+        pattern = pattern:gsub("\002", "[^.]*")
+        pattern = string.ipattern(pattern, true)
+        return pattern
+    end
+
+    -- get the excludes
+    local excludes = requireconf:match("|.*$")
+    if excludes then excludes = excludes:split("|", {plain = true}) end
+
+    -- do match
+    local pattern = requireconf:gsub("|.*$", "")
+    pattern = _get_pattern(pattern)
+    if (requirepath:match('^' .. pattern .. '$')) then
+        -- exclude sub-deps, e.g. "libwebp.**|cmake|autoconf"
+        local splitinfo = requirepath:split(".", {plain = true})
+        if #splitinfo > 0 then
+            local name = splitinfo[#splitinfo]
+            for _, exclude in ipairs(excludes) do
+                pattern = _get_pattern(exclude)
+                if (name:match('^' .. pattern .. '$')) then
+                    return false
+                end
+            end
+        end
+        return true
+    end
+end
+
+-- merge requireinfo from `add_requireconfs()`
+--
+-- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("lib*",                      {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libwebp",                   {system = false, configs = {vs_runtime = "MD"}})
+-- add_requireconfs("libpng.zlib",               {system = false, override = true, configs = {cxflags = "-DTEST1"}, version = "1.2.10"})
+-- add_requireconfs("libtiff.*",                 {system = false, configs = {cxflags = "-DTEST2"}})
+-- add_requireconfs("libwebp.**|cmake|autoconf", {system = false, configs = {cxflags = "-DTEST3"}}) -- recursive deps
+--
+function _merge_requireinfo(requireinfo, requirepath)
+
+    -- find requireconf from the given requirepath
+    local requireconf_result = {}
+    local requireconfs, requireconfs_extra = project.requireconfs_str()
+    if requireconfs then
+        for _, requireconf in ipairs(requireconfs) do
+            if _match_requirepath(requirepath, requireconf) then
+                local requireconf_extra = requireconfs_extra[requireconf]
+                table.insert(requireconf_result, {requireconf = requireconf, requireconf_extra = requireconf_extra})
+            end
+        end
+    end
+
+    -- append requireconf_extra into requireinfo
+    -- and the configs of add_requires have a higher priority than add_requireconfs.
+    --
+    -- e.g.
+    -- add_requireconfs("*", {configs = {debug = false}})
+    -- add_requires("foo", "bar", {configs = {debug = true}})
+    --
+    -- foo and bar will be debug mode
+    --
+    -- we can also override the configs of add_requires
+    --
+    -- e.g.
+    -- add_requires("zlib 1.2.11")
+    -- add_requireconfs("zlib", {override = true, version = "1.2.10"})
+    --
+    -- we override the version of zlib to 1.2.10
+    --
+    if #requireconf_result == 1 then
+        local requireconf_extra = requireconf_result[1].requireconf_extra
+        if requireconf_extra then
+            -- preprocess requireconf_extra, (debug, override ..)
+            local override = requireconf_extra.override
+            requireconf_extra.override = nil
+            if requireconf_extra.debug then
+                requireconf_extra.configs = requireconf_extra.configs or {}
+                requireconf_extra.configs.debug = true
+                requireconf_extra.debug = nil
+            end
+            -- append or override configs and extra options
+            for k, v in pairs(requireconf_extra.configs) do
+                requireinfo.configs = requireinfo.configs or {}
+                if override or requireinfo.configs[k] == nil then
+                    requireinfo.configs[k] = v
+                end
+            end
+            for k, v in pairs(requireconf_extra) do
+                if k ~= "configs" then
+                    if override or requireinfo[k] == nil then
+                        requireinfo[k] = v
+                    end
+                end
+            end
+        end
+    elseif #requireconf_result > 1 then
+        local confs = {}
+        for _, item in ipairs(requireconf_result) do
+            table.insert(confs, item.requireconf)
+        end
+        raise("package(%s) will match multiple add_requireconfs(%s)!", requirepath, table.concat(confs, " "))
+    end
+end
+
+-- get package key
+function _get_packagekey(packagename, requireinfo, version)
+    local key = packagename .. "/" .. (version or requireinfo.version)
+    local configs = requireinfo.configs
+    if configs then
+        local configs_order = {}
+        for k, v in pairs(configs) do
+            table.insert(configs_order, k .. "=" .. tostring(v))
+        end
+        table.sort(configs_order)
+        key = key .. ":" .. string.serialize(configs_order, true)
+    end
+    return key
+end
+
+-- inherit some builtin configs of parent package if these config values are not default value
+-- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
+--
+function _inherit_parent_configs(requireinfo, parentinfo)
+    local requireinfo_configs = requireinfo.configs or {}
+    local parentinfo_configs  = parentinfo.configs or {}
+    if not requireinfo_configs.shared then
+        if requireinfo_configs.vs_runtime == nil then
+            requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+        end
+        if requireinfo_configs.pic == nil then
+            requireinfo_configs.pic = parentinfo_configs.pic
+        end
+    end
+    requireinfo.configs = requireinfo_configs
 end
 
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
-    -- attempt to get it from cache first
-    opt = opt or {}
-    local packages = _memcache():get("packages") or {}
-    local package = packages[packagename]
-    if package then
-
-        -- satisfy required version?
-        local version_required = _select_package_version(package, requireinfo)
-        if version_required and version_required ~= package:version_str() then
-            raise("package(%s): version conflict, '%s' does not satisfy '%s'!", packagename, package:version_str(), requireinfo.version)
-        end
-        return package
+    -- strip trailng ~tag, e.g. zlib~debug
+    local displayname
+    if packagename:find('~', 1, true) then
+        displayname = packagename
+        packagename = packagename:gsub("~.+$", "")
+        requireinfo.alias = requireinfo.alias or displayname
     end
 
     -- load package from project first
+    local package
     if os.isfile(os.projectfile()) then
         package = _load_package_from_project(packagename)
     end
@@ -361,14 +493,70 @@ function _load_package(packagename, requireinfo, opt)
     -- check
     assert(package, "package(%s) not found!", packagename)
 
+    -- merge requireinfo from `add_requireconfs()`
+    _merge_requireinfo(requireinfo, opt.requirepath)
+
+    -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
+    if opt.parentinfo and package:kind() ~= "binary" then
+        _inherit_parent_configs(requireinfo, opt.parentinfo)
+    end
+
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
     if version then
         package:version_set(version, source)
     end
 
-    -- save require info to package
+    -- get package key
+    local packagekey = _get_packagekey(packagename, requireinfo, version)
+
+    -- It exists conflict for dependent packages for each root packages? resolve it first
+    -- e.g.
+    -- add_requires("foo") -> bar -> zlib 1.2.10
+    --                     -> xyz -> zlib 1.2.11 or other configs
+    --
+    -- add_requires("ddd") -> zlib
+    --
+    -- We assume that there is no conflict between `foo` and `ddd`.
+    --
+    -- Of course, conflicts caused by `add_packages("foo", "ddd")`
+    -- cannot be detected at present and can only be resolved by the user
+    --
+    local rootkey = opt.rootkey
+    local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
+    if packagekey_prev then
+        if packagekey_prev and packagekey_prev ~= packagekey then
+            raise("package(%s): conflict dependences with package(%s)!", packagekey, packagekey_prev)
+        end
+    end
+    _memcache():set3("packages_root", rootkey, packagename, packagekey)
+
+    -- get package from cache first
+    local package_cached = _memcache():get2("packages", packagekey)
+    if package_cached then
+        return package_cached
+    end
+
+    -- save require info
     package:requireinfo_set(requireinfo)
+
+    -- save display name
+    if not displayname then
+        local packageid = _memcache():get2("packageids", packagename)
+        displayname = packagename
+        if packageid then
+            displayname = displayname .. "#" .. tostring(packageid)
+        end
+        _memcache():set2("packageids", packagename, (packageid or 0) + 1)
+    end
+    package:displayname_set(displayname)
+
+    -- disable parallelize if the package cache directory conflicts
+    local cachedirs = _memcache():get2("cachedirs", package:cachedir())
+    if cachedirs then
+        package:set("parallelize", false)
+    end
+    _memcache():set2("cachedirs", package:cachedir(), true)
 
     -- add some builtin configurations to package
     _add_package_configurations(package)
@@ -376,7 +564,7 @@ function _load_package(packagename, requireinfo, opt)
     -- check package configurations
     _check_package_configurations(package)
 
-    -- do load for package
+    -- do load
     local on_load = package:script("load")
     if on_load then
         on_load(package)
@@ -386,8 +574,7 @@ function _load_package(packagename, requireinfo, opt)
     package:envs_load()
 
     -- save this package package to cache
-    packages[packagename] = package
-    _memcache():set("packages", packages)
+    _memcache():set2("packages", packagekey, package)
     return package
 end
 
@@ -401,10 +588,13 @@ function _load_packages(requires, opt)
 
     -- load packages
     local packages = {}
-    for _, requireinfo in ipairs(load_requires(requires, opt.requires_extra, opt.parentinfo)) do
+    for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt)) do
 
         -- load package
-        local package = _load_package(requireinfo.name, requireinfo.info, opt)
+        local rootkey     = opt.rootkey or requireitem.name
+        local requireinfo = requireitem.info
+        local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
+        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey, requirepath = requirepath}))
 
         -- maybe package not found and optional
         if package then
@@ -414,25 +604,14 @@ function _load_packages(requires, opt)
                 local deps = package:get("deps")
                 if deps and opt.nodeps ~= true then
 
-                    -- get the extra configs dependent packages and inherit some builtin configs
-                    local extraconfs = package:extraconf("deps") or {}
-                    if not package:config("shared") then
-                        for _, depstr in ipairs(deps) do
-                            local depconf = extraconfs[depstr]
-                            if not depconf then
-                                depconf = {}
-                                extraconfs[depstr] = depconf
-                            end
-                            depconf.configs = depconf.configs or {}
-                            if depconf.configs.vs_runtime == nil then
-                                depconf.configs.vs_runtime = package:config("vs_runtime")
-                            end
-                        end
-                    end
-
-                    -- load dependent packages and do not load system packages for package/deps()
+                    -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requires_extra = extraconfs, parentinfo = requireinfo.info, nodeps = opt.nodeps, system = false})) do
+                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey,
+                                                               requirepath = requirepath,
+                                                               requires_extra = package:extraconf("deps") or {},
+                                                               parentinfo = requireinfo,
+                                                               nodeps = opt.nodeps,
+                                                               system = false})) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
@@ -463,16 +642,47 @@ function _sort_packages_urls(packages)
     end
 end
 
--- get package status string
-function _get_package_status_str(package)
-    local status = {}
-    if package:debug() then
-        table.insert(status, "debug")
+-- get package parents string
+function _get_package_parents_str(package)
+    local parents = package:parents()
+    if parents then
+        local parentnames = {}
+        for _, parent in pairs(parents) do
+            table.insert(parentnames, parent:displayname())
+        end
+        if #parentnames == 0 then
+            return
+        end
+        return table.concat(parentnames, ",")
     end
+end
+
+-- get package configs string
+function _get_package_configs_str(package)
+    local configs = {}
     if package:optional() then
-        table.insert(status, "optional")
+        table.insert(configs, "optional")
     end
-    return #status > 0 and "(" .. table.concat(status, ", ") .. ")" or ""
+    local requireinfo = package:requireinfo()
+    if requireinfo then
+        for k, v in pairs(requireinfo.configs) do
+            if type(v) == "boolean" then
+                table.insert(configs, k .. ":" .. (v and "y" or "n"))
+            else
+                table.insert(configs, k .. ":" .. v)
+            end
+        end
+    end
+    local parents_str = _get_package_parents_str(package)
+    if parents_str then
+        table.insert(configs, "from:" .. parents_str)
+    end
+    local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
+    local limitwidth = os.getwinsize().width * 2 / 3
+    if #configs_str > limitwidth then
+        configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+    end
+    return configs_str
 end
 
 -- get user confirm
@@ -518,12 +728,12 @@ function _get_confirm(packages)
                     local group = package:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s %s", idx == 1 and "->" or "   or", package_in_group:name(), package_in_group:version_str() or "", _get_package_status_str(package_in_group))
+                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", _get_package_configs_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  ${yellow}->${clear} %s %s %s", package:name(), package:version_str() or "", _get_package_status_str(package))
+                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", package:displayname(), package:version_str() or "", _get_package_configs_str(package))
                         packages_showed[tostring(package)] = true
                     end
                 end
@@ -531,36 +741,6 @@ function _get_confirm(packages)
         end
     end})
     return confirm
-end
-
--- patch some builtin dependent packages
-function _patch_packages(packages_install, packages_download)
-
-    -- @NOTE use git.apply instead of patch
-    -- we can add some builtin packages like this
-    --[[
-    -- add package(patch)
-    local patched_package = nil
-    for _, package in ipairs(packages_install) do
-        if package:patches() then
-            patched_package = package
-            break
-        end
-    end
-    if patched_package then
-        local packages = load_packages("patch")
-        if packages and #packages > 0 then
-            -- install patch package
-            local package = packages[1]
-            if not package:fetch() then
-                packages_download[tostring(package)] = package
-                table.insert(packages_install, 1, package)
-            end
-            -- add dependences to ensure to be installed first
-            patched_package:deps_add(package)
-        end
-    end
-    ]]
 end
 
 -- install packages
@@ -678,11 +858,11 @@ function _install_packages(packages_install, packages_download)
         for _, index in ipairs(running_jobs_indices) do
             local package = packages_installing[index]
             if package then
-                table.insert(installing, package:name())
+                table.insert(installing, package:displayname())
             end
             local package = packages_downloading[index]
             if package then
-                table.insert(downloading, package:name())
+                table.insert(downloading, package:displayname())
             end
         end
 
@@ -736,13 +916,14 @@ function cachedir()
 end
 
 -- load requires
-function load_requires(requires, requires_extra, parentinfo)
-    local requireinfos = {}
+function load_requires(requires, requires_extra, opt)
+    opt = opt or {}
+    local requireitems = {}
     for _, require_str in ipairs(requires) do
-        local packagename, requireinfo = _parse_require(require_str, requires_extra, parentinfo)
-        table.insert(requireinfos, {name = packagename, info = requireinfo})
+        local packagename, requireinfo = _parse_require(require_str, requires_extra, opt.parentinfo)
+        table.insert(requireitems, {name = packagename, info = requireinfo})
     end
-    return requireinfos
+    return requireitems
 end
 
 -- load all required packages
@@ -751,8 +932,7 @@ function load_packages(requires, opt)
     local unique = {}
     local packages = {}
     for _, package in ipairs(_load_packages(requires, opt)) do
-        -- remove repeat packages with same the package name and version
-        local key = package:name() .. (package:version_str() or "")
+        local key = _get_packagekey(package:name(), package:requireinfo())
         if not unique[key] then
             table.insert(packages, package)
             unique[key] = true
@@ -802,20 +982,17 @@ function install_packages(requires, opt)
         -- show tips
         cprint("${bright color.warning}note: ${clear}the following packages are unsupported for $(plat)/$(arch)!")
         for _, package in ipairs(packages_unsupported) do
-            print("  -> %s %s", package:name(), package:version_str() or "")
+            print("  -> %s %s", package:displayname(), package:version_str() or "")
         end
         raise()
     end
-
-    -- patch some dependent builtin packages
-    _patch_packages(packages_install, packages_download)
 
     -- get user confirm
     if not _get_confirm(packages_install) then
         local packages_must = {}
         for _, package in ipairs(packages_install) do
             if not package:optional() then
-                table.insert(packages_must, package:name())
+                table.insert(packages_must, package:displayname())
             end
         end
         if #packages_must > 0 then

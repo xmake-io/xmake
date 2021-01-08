@@ -56,23 +56,28 @@ function main(name, opt)
     opt.mode = opt.mode or config.mode() or "release"
 
     -- init cache key
-    local key = "find_package_" .. opt.plat .. "_" .. opt.arch
-    if opt.require_version then
-        key = key .. "_" .. opt.require_version
-    end
+    local cachekey = "find_package_" .. opt.plat .. "_" .. opt.arch
     if opt.cachekey then
-        key = key .. "_" .. opt.cachekey
+        cachekey = cachekey .. "_" .. opt.cachekey
+    end
+
+    -- init package key
+    local packagekey = name
+    if opt.buildhash then
+        packagekey = packagekey .. "_" .. opt.buildhash
     end
     if opt.mode then
-        key = key .. "_" .. opt.mode
+        packagekey = packagekey .. "_" .. opt.mode
+    end
+    if opt.require_version then
+        packagekey = packagekey .. "_" .. opt.require_version
     end
     if opt.external then
-        key = key .. "_external"
+        packagekey = packagekey .. "_external"
     end
 
     -- attempt to get result from cache first
-    local cacheinfo = detectcache:get(key) or {}
-    local result = cacheinfo[name]
+    local result = detectcache:get2(cachekey, packagekey)
     if result == nil or opt.force then
 
         -- find package
@@ -86,8 +91,7 @@ function main(name, opt)
         end
 
         -- cache result
-        cacheinfo[name] = result and result or false
-        detectcache:set(key, cacheinfo)
+        detectcache:set2(cachekey, packagekey, result and result or false)
         detectcache:save()
 
         -- trace

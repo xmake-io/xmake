@@ -114,8 +114,6 @@ function main(hosts, opt)
         detectcache:set("net.ping", cacheinfo)
         detectcache:save()
     end
-
-    -- ok?
     return results
 end
 
