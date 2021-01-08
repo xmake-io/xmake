@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
@@ -137,6 +138,24 @@ jobs:
         with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
           path: artifacts/${{env.RELEASE_NAME}}/shafile
+
+        # upload artifacts to latest release
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@master
+
+      - name: Upload artifacts to lastest release
+        if: ${{ env.GITHUB_REF_SLUG }} == 'dev' || ${{ env.GITHUB_REF_SLUG }} == 'master'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: artifacts/${{env.RELEASE_NAME}}/xmake.exe
+          asset_name: xmake-${{ env.GITHUB_REF_SLUG }}.${{ env.RELEASE_NAME }}.exe
+          tag: ${{ steps.previoustag.outputs.tag }}
+          overwrite: true
 
         # publish release
       - name: publish
