@@ -17,6 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          # WyriHaximus/github-action-get-previous-tag@master need it
           fetch-depth: 0
           submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
