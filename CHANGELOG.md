@@ -10,6 +10,7 @@
 * Add `xmake f --vs_runtime=MT` and `set_runtimes("MT")` to set vs runtime for targets and packages
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): Support to enum registry keys and values
 * [#1026](https://github.com/xmake-io/xmake/issues/1026): Support group for vs/vsxmake project
+* [#1178](https://github.com/xmake-io/xmake/issues/1178): Add `add_requireconfs()` api to rewrite configs of depend packages
 
 ### Change
 
@@ -902,6 +903,7 @@
 * 添加 `xmake f --vs_runtime=MT` 和 `set_runtimes("MT")` 去更方便的对 target 和 package 进行设置
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): 支持枚举注册表 keys 和 values
 * [#1026](https://github.com/xmake-io/xmake/issues/1026): 支持对 vs/vsmake 工程增加分组设置
+* [#1178](https://github.com/xmake-io/xmake/issues/1178): 添加 `add_requireconfs()` 接口去重写依赖包的配置
 
 ### 改进
 
