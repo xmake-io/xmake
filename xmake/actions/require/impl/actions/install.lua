@@ -1,4 +1,4 @@
---!The Make-like install Utility based on Lua
+--!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
 -- you may not use this file except in compliance with the License.
