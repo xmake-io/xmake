@@ -294,6 +294,7 @@ function main()
 
     -- has been installed?
     local fetchinfo   = assert(fetch_version(option.get("xmakever")), "cannot fetch xmake version info!")
+    print(fetchinfo)
     local is_official = fetchinfo.is_official
     local mainurls    = fetchinfo.urls
     local version     = fetchinfo.version
@@ -309,15 +310,17 @@ function main()
             raise("not support to update from unofficial source on windows, missing '--scriptonly' flag?")
         end
 
+        local winarch = os.arch() == "x64" and "win64" or "win32"
         if version:find('.', 1, true) then
-            local winarch = os.arch() == "x64" and "win64" or "win32"
-            mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
-                        format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", version, version, winarch),
+            mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", version, version, winarch),
                         format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@%s/xmake-%s.%s.exe.zip", version, version, winarch),
                         format("https://gitlab.com/xmake-mirror/xmake-releases/raw/%s/xmake-%s.%s.exe.zip", version, version, winarch)}
         else
             -- regard as a git branch, fetch from ci
-            mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch())}
+            local tags = fetchinfo.tags
+            table.sort(tags)
+            local latest_version = tags[#tags] or ("v" .. xmake.version():shortstr())
+            mainurls = {format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", latest_version, version, winarch)}
         end
 
         -- re-sort mainurls
