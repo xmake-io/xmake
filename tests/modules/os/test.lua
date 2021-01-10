@@ -79,8 +79,14 @@ function test_argv(t)
     t:are_equal(os.argv('"aa\\\\bb/cc (dd)" ee'), {"aa\\bb/cc (dd)", "ee"})
     -- $cli -DTEST=\"hello\"
     t:are_equal(os.argv('-DTEST=\\"hello\\"'), {'-DTEST="hello"'})
+    -- $cli -DTEST=\"hello\" -DTEST=\"hello\"
+    t:are_equal(os.argv('-DTEST=\\"hello\\" -DTEST2=\\"hello\\"'), {'-DTEST="hello"', '-DTEST2="hello"'})
     -- $cli -DTEST="hello"
     t:are_equal(os.argv('-DTEST="hello"'), {'-DTEST=hello'})
+    -- $cli -DTEST="hello world"
+    t:are_equal(os.argv('-DTEST="hello world"'), {'-DTEST=hello world'})
+    -- $cli -DTEST=\"hello world\"
+    t:are_equal(os.argv('-DTEST=\\"hello world\\"'), {'-DTEST="hello', 'world\"'})
     -- $cli "-DTEST=\"hello world\"" "-DTEST2="\hello world2\""
     t:are_equal(os.argv('"-DTEST=\\\"hello world\\\"" "-DTEST2=\\\"hello world2\\\""'), {'-DTEST="hello world"', '-DTEST2="hello world2"'})
     -- $cli '-DTEST="hello world"' '-DTEST2="hello world2"'
@@ -98,6 +104,7 @@ function test_args(t)
     t:are_equal(os.args({"aa\\bb/cc (dd)", "ee"}), '"aa\\\\bb/cc (dd)" ee')
     t:are_equal(os.args({"aa\\bb/cc", "dd"}, {escape = true}), "aa\\\\bb/cc dd")
     t:are_equal(os.args('-DTEST="hello"'), '-DTEST=\\"hello\\"')
+    t:are_equal(os.args({'-DTEST="hello"', '-DTEST2="hello"'}), '-DTEST=\\"hello\\" -DTEST2=\\"hello\\"')
     t:are_equal(os.args('-DTEST=hello'), '-DTEST=hello') -- irreversible
 --    t:are_equal(os.args({'-DTEST="hello world"', '-DTEST2="hello world2"'}), '"-DTEST=\\\"hello world\\\"" "-DTEST2=\\\"hello world2\\\""')
 end
