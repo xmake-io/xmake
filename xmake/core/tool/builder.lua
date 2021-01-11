@@ -364,23 +364,20 @@ end
 -- preprocess flags
 function builder:_preprocess_flags(flags)
 
-    -- remove repeat
-    flags = table.unique(flags)
-
-    -- split flag group, e.g. "-I /xxx" => {"-I", "/xxx"}
+    -- remove repeat first and split flags group, e.g. "-I /xxx" => {"-I", "/xxx"}
+    local unique = {}
     local results = {}
     for _, flag in ipairs(flags) do
         flag = flag:trim()
-        if #flag > 0 then
+        if #flag > 0 and not unique[flag] then
             if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag))
+                table.join2(results, os.argv(flag, {splitonly = true}))
             else
                 table.insert(results, flag)
             end
+            unique[flag] = true
         end
     end
-
-    -- get it
     return results
 end
 
