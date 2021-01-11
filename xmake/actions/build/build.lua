@@ -28,7 +28,8 @@ import("core.base.hashset")
 
 -- clean target for rebuilding
 function _clean_target(target)
-    if not target:isphony() then
+    local targetkind = target:targetkind()
+    if targetkind ~= "phony" and targetkind ~= "object" then
         os.tryrm(target:symbolfile())
         os.tryrm(target:targetfile())
     end
