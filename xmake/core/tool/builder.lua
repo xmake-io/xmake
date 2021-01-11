@@ -373,7 +373,7 @@ function builder:_preprocess_flags(flags)
         flag = flag:trim()
         if #flag > 0 then
             if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag))
+                table.join2(results, os.argv(flag, {splitonly = true}))
             else
                 table.insert(results, flag)
             end

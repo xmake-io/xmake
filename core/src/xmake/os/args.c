@@ -38,43 +38,35 @@ static tb_void_t tb_os_args_append(tb_string_ref_t result, tb_char_t const* cstr
     // check
     tb_assert_and_check_return(size < TB_PATH_MAXN);
 
-    // wrap and escape characters
+    // need wrap quote?
     tb_char_t ch;
-    tb_size_t n = 0;
     tb_char_t const* p = cstr;
     tb_bool_t wrap_quote = tb_false;
-    tb_char_t buff[TB_PATH_MAXN];
-    tb_size_t m = tb_arrayn(buff);
-    while ((ch = *p) && n < m)
+    if (!nowrap)
+    {
+        while ((ch = *p))
+        {
+            if (ch == ' ' || ch == '(' || ch == ')') wrap_quote = tb_true;
+            p++;
+        }
+    }
+
+    // wrap begin quote
+    if (wrap_quote) tb_string_chrcat(result, '\"');
+
+    // escape characters
+    p = cstr;
+    while ((ch = *p))
     {
         // escape '"' or '\\'
-        if (ch == '\"' || (escape && ch == '\\'))
-        {
-            if (n < m) buff[n++] = '\\';
-        }
-        else if (ch == ' ' || ch == '(' || ch == ')') wrap_quote = tb_true;
-        if (n < m) buff[n++] = ch;
+        if (ch == '\"' || ((escape || wrap_quote) && ch == '\\'))
+            tb_string_chrcat(result, '\\');
+        tb_string_chrcat(result, ch);
         p++;
     }
-    tb_assert_and_check_return(n < m);
-    buff[n] = '\0';
 
-    // wrap "" if exists escape characters and spaces?
-    if (wrap_quote && !nowrap)
-    {
-        tb_string_chrcat(result, '\"');
-        tb_size_t i = 0;
-        tb_char_t ch;
-        for (i = 0; i < n; i++)
-        {
-            ch = buff[i];
-            if (ch == '\\') // escape the '\\' characters in ""
-                tb_string_chrcat(result, '\\');
-            tb_string_chrcat(result, ch);
-        }
-        tb_string_chrcat(result, '\"');
-    }
-    else if (n) tb_string_cstrncat(result, buff, n);
+    // wrap end quote
+    if (wrap_quote) tb_string_chrcat(result, '\"');
 }
 
 /* //////////////////////////////////////////////////////////////////////////////////////
