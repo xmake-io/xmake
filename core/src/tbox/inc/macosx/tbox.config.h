@@ -143,7 +143,7 @@
 #define TB_CONFIG_POSIX_HAVE_OPENDIR 1
 #define TB_CONFIG_POSIX_HAVE_DLOPEN 1
 #define TB_CONFIG_POSIX_HAVE_OPEN 1
-#if !defined(__arm__)
+#if !defined(__arm64__) && !defined(__aarch64__)
 #   define TB_CONFIG_POSIX_HAVE_STAT64 1
 #else
 /* #undef TB_CONFIG_POSIX_HAVE_STAT64 */
