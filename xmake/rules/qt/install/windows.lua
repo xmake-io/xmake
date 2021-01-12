@@ -68,6 +68,13 @@ function main(target, opt)
     else
         table.insert(argv, "--verbose=0")
     end
+
+    if is_mode("debug") then
+        table.insert(argv, "--debug")
+    elseif is_mode("release") then
+        table.insert(argv, "--release")
+    end
+
     if qmldir then
         table.insert(argv, "--qmldir=" .. qmldir)
     end
