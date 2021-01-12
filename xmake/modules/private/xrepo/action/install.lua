@@ -180,6 +180,7 @@ function _install_packages(packages)
         table.insert(require_argv, "-D")
     end
     if option.get("jobs") then
+        table.insert(require_argv, "-j")
         table.insert(require_argv, option.get("jobs"))
     end
     if option.get("force") then

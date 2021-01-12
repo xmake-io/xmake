@@ -112,27 +112,15 @@ end
 -- install package
 function install(package, configs, opt)
 
-    -- init options
+    -- do build
     opt = opt or {}
+    build(package, configs, opt)
 
-    -- pass configurations
-    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local argv = {"install", "-j" .. njob}
+    -- do install
+    local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
-    for name, value in pairs(configs) do
-        value = tostring(value):trim()
-        if value ~= "" then
-            if type(name) == "number" then
-                table.insert(argv, value)
-            else
-                table.insert(argv, name .. "=" .. value)
-            end
-        end
-    end
-
-    -- do install
     if is_host("bsd") then
         os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
     else
