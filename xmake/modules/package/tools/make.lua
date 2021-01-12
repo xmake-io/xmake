@@ -85,7 +85,7 @@ function build(package, configs, opt)
     opt = opt or {}
 
     -- pass configurations
-    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -116,7 +116,8 @@ function install(package, configs, opt)
     opt = opt or {}
 
     -- pass configurations
-    local argv = {"install"}
+    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local argv = {"install", "-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
