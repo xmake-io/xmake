@@ -43,7 +43,6 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     -- make the genvcvars.bat
     opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
-    local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
     -- fix error caused by the new vsDevCmd.bat of vs2019
@@ -57,16 +56,19 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
     for idx, var in ipairs(vcvars) do
-        file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
+        file:print("echo " .. var .. " = %%" .. var .. "%%")
     end
     file:close()
 
     -- run genvcvars.bat
-    os.run(genvcvars_bat)
+    local outdata = try {function () return os.iorun(genvcvars_bat) end}
+    if not outdata then
+        return
+    end
 
     -- load all envirnoment variables
     local variables = {}
-    for _, line in ipairs((io.readfile(genvcvars_dat) or ""):split("\n")) do
+    for _, line in ipairs(outdata:split("\n")) do
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
