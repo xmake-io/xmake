@@ -32,14 +32,16 @@ function menu_options()
     {
         {'k', "kind",          "kv", nil, "Enable static/shared library.",
                                        values = {"static", "shared"}         },
-        {'p', "plat",          "kv", nil, "Set the given platform."             },
-        {'a', "arch",          "kv", nil, "Set the given architecture."         },
+        {'p', "plat",          "kv", nil, "Set the given platform."          },
+        {'a', "arch",          "kv", nil, "Set the given architecture."      },
         {'m', "mode",          "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
         {'f', "configs",       "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo install -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
+        {'j', "jobs",         "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+                                          "Specifies the number of jobs to build simultaneously."},
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -176,6 +178,9 @@ function _install_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    if option.get("jobs") then
+        table.insert(require_argv, option.get("jobs"))
     end
     if option.get("force") then
         table.insert(require_argv, "--force")

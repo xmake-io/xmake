@@ -470,7 +470,7 @@ end
 
 -- do build for make
 function _build_for_make(package, configs, opt)
-    local njob = opt.jobs or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -539,7 +539,7 @@ end
 
 -- do install for make
 function _install_for_make(package, configs, opt)
-    local njob = opt.jobs or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")

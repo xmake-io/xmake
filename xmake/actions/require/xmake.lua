@@ -46,6 +46,8 @@ task("require")
                                                          "    $ xmake require --clean",
                                                          "    $ xmake require --clean zlib tbox pcr*"                          }
                 ,   {'f', "force",      "k",  nil,       "Force to reinstall all package dependencies."                        }
+                ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+                                                         "Specifies the number of jobs to build simultaneously."               }
                 ,   {nil, "shallow",    "k",  nil,       "Does not install dependent packages."                                }
                 ,   {'l', "list",       "k",  nil,       "List all package dependencies in project.",
                                                          "e.g.",

@@ -234,7 +234,7 @@ function install(package, configs, opt)
 
     -- do make and install
     opt = opt or {}
-    local njob = opt.jobs or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "V=1")
