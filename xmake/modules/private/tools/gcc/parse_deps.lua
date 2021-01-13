@@ -60,10 +60,16 @@ function main(depsdata)
     local results = hashset.new()
     local projectdir = os.projectdir()
     local line = depsdata:rtrim() -- maybe there will be an empty newline at the end. so we trim it first
-    line = line:gsub("\\ ", space_placeholder)
-    for _, includefile in ipairs(line:split(' ', {plain = true})) do -- it will trim all internal spaces without `{strict = true}`
+    local plain = {plain = true}
+    line = line:replace("\\ ", space_placeholder, plain)
+    for _, includefile in ipairs(line:split(' ', plain)) do -- it will trim all internal spaces without `{strict = true}`
+        -- some gcc toolchains will some invalid paths (e.g. `d\:\xxx`), we need fix it
+        -- https://github.com/xmake-io/xmake/issues/1196
+        if is_host("windows") and includefile:match("^%w\\:") then
+            includefile = includefile:replace("\\:", ":", plain)
+        end
         if not includefile:endswith(":") then -- ignore "xxx.o:" prefix
-            includefile = includefile:gsub(space_placeholder, ' ')
+            includefile = includefile:replace(space_placeholder, ' ', plain)
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)
                 if includefile then
