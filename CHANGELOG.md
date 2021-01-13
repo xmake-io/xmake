@@ -32,6 +32,7 @@
 * [#1142](https://github.com/xmake-io/xmake/issues/1142): Fix git not found when installing packages
 * Fix macos.version bug for macOS Big Sur
 * [#1084](https://github.com/xmake-io/xmake/issues/1084): Fix `add_defines()` bug (contain spaces)
+* [#1195](https://github.com/xmake-io/xmake/pull/1195): Fix unicode problem for vs and improve find_vstudio/os.exec
 
 ## v2.3.9
 
@@ -926,6 +927,7 @@
 * [#1142](https://github.com/xmake-io/xmake/issues/1142): 修复安装包的时候，出现git找不到问题
 * 修复在 macOS Big Sur 上 macos.version 问题
 * [#1084](https://github.com/xmake-io/xmake/issues/1084): 修复 `add_defines()` 中带有双引号和空格导致无法正确处理宏定义的问题
+* [#1195](https://github.com/xmake-io/xmake/pull/1195): 修复 unicode 编码问题，改进 vs 环境查找和进程执行
 
 ## v2.3.9
 
