@@ -149,7 +149,7 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@master
 
       - name: Upload artifacts to lastest release
-        if: ${{ env.GITHUB_REF_SLUG }} == 'dev' || ${{ env.GITHUB_REF_SLUG }} == 'master'
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
