@@ -71,7 +71,7 @@ function main(target, opt)
 
     if is_mode("debug") then
         table.insert(argv, "--debug")
-    elseif is_mode("release") then
+    else
         table.insert(argv, "--release")
     end
 
