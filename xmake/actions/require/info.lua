@@ -114,9 +114,14 @@ function main(requires_raw)
             cprint("      -> ${magenta}urls${clear}:")
             for _, url in ipairs(urls) do
                 print("         -> %s", filter.handle(url, instance))
-                local sourcehash = instance:sourcehash(instance:url_alias(url))
-                if sourcehash then
-                    cprint("            -> ${yellow}%s", sourcehash)
+                if git.asgiturl(url) then
+                    local url_alias = instance:url_alias(url)
+                    cprint("            -> ${yellow}%s", instance:revision(url_alias) or instance:tag() or instance:version_str())
+                else
+                    local sourcehash = instance:sourcehash(instance:url_alias(url))
+                    if sourcehash then
+                        cprint("            -> ${yellow}%s", sourcehash)
+                    end
                 end
             end
         end

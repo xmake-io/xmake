@@ -72,7 +72,7 @@ function _checkout(package, url, sourcedir, url_alias)
         git.clone(url, {outputdir = packagedir, recursive = true})
 
         -- attempt to checkout the given version
-        git.checkout(package:revision(url_alias) or package:tag(), {repodir = packagedir})
+        git.checkout(package:revision(url_alias) or package:tag() or package:version_str(), {repodir = packagedir})
     end
 
     -- move to source directory
