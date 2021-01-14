@@ -44,7 +44,7 @@ function main(target, opt)
     end
 
     -- trace
-    print("installing to %s ..", installdir)
+    print("installing %s to %s ..", target:name(), installdir)
 
     -- call script
     if not target:isphony() then

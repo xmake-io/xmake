@@ -36,7 +36,7 @@ function main(target, opt)
     end
 
     -- trace
-    print("uninstalling from %s ..", installdir)
+    print("uninstalling %s from %s ..", target:name(), installdir)
 
     -- call script
     if not target:isphony() then
