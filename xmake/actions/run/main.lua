@@ -89,6 +89,16 @@ function _on_run_target(target)
     _do_run_target(target)
 end
 
+-- recursively target add env
+function _add_target_pkgenvs(target)
+    for name, values in pairs(target:pkgenvs()) do
+        os.addenv(name, unpack(values))
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        _add_target_pkgenvs(dep)
+    end
+end
+
 -- run the given target
 function _run(target)
 
@@ -96,8 +106,8 @@ function _run(target)
     local oldenvs = {}
     for name, values in pairs(target:pkgenvs()) do
         oldenvs[name] = os.getenv(name)
-        os.addenv(name, unpack(values))
     end
+    _add_target_pkgenvs(target)
 
     -- the target scripts
     local scripts =
