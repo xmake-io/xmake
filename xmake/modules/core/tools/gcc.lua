@@ -363,12 +363,12 @@ function _has_color_diagnostics(self)
         if io.isatty() and (colors.color8() or colors.color256()) then
             local theme = colors.theme()
             if theme and theme:name() ~= "plain" then
-                -- for clang
-                if self:has_flags("-fcolor-diagnostics", "cxflags") then
-                    colors_diagnostics = "-fcolor-diagnostics"
                 -- for gcc
-                elseif self:has_flags("-fdiagnostics-color=always", "cxflags") then
+                if self:has_flags("-fdiagnostics-color=always", "cxflags") then
                     colors_diagnostics = "-fdiagnostics-color=always"
+                -- for clang
+                elseif self:has_flags("-fcolor-diagnostics", "cxflags") then
+                    colors_diagnostics = "-fcolor-diagnostics"
                 end
             end
         end
