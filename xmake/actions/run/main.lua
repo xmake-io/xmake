@@ -90,12 +90,15 @@ function _on_run_target(target)
 end
 
 -- recursively target add env
-function _add_target_pkgenvs(target)
+function _add_target_pkgenvs(target, oldenvs)
     for name, values in pairs(target:pkgenvs()) do
+        if not oldenvs[name] then
+            oldenvs[name] = os.getenv(name)
+        end
         os.addenv(name, unpack(values))
     end
     for _, dep in ipairs(target:orderdeps()) do
-        _add_target_pkgenvs(dep)
+        _add_target_pkgenvs(dep, oldenvs)
     end
 end
 
@@ -104,10 +107,7 @@ function _run(target)
 
     -- enter the environments of the target packages
     local oldenvs = {}
-    for name, values in pairs(target:pkgenvs()) do
-        oldenvs[name] = os.getenv(name)
-    end
-    _add_target_pkgenvs(target)
+    _add_target_pkgenvs(target, oldenvs)
 
     -- the target scripts
     local scripts =
