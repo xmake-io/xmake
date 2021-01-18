@@ -308,6 +308,16 @@ function make(outputdir, vsinfo)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end
 
+    -- clear config and local cache
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
+
     -- leave project directory
     os.cd(oldir)
 end
