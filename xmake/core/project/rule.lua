@@ -155,6 +155,7 @@ function rule.apis()
             -- rule.set_xxx
             "rule.set_extensions"
         ,   "rule.set_sourcekinds"
+        ,   "rule.set_kind"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
@@ -219,6 +220,16 @@ end
 -- get the rule name
 function rule:name()
     return self._NAME
+end
+
+-- get the rule kind
+--
+-- current supported kind:
+--  - target: default, only for each target
+--  - project: global rule, for whole project
+--
+function rule:kind()
+    return self:get("kind") or "target"
 end
 
 -- get the given dependent rule

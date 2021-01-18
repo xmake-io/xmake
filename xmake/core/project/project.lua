@@ -462,15 +462,18 @@ function project._load_targets()
         for _, rulename in ipairs(rulenames) do
             local r = project.rule(rulename) or rule.rule(rulename)
             if r then
-                t._RULES[rulename] = r
-                for _, deprule in ipairs(r:orderdeps()) do
-                    local name = deprule:name()
-                    if not t._RULES[name] then
-                        t._RULES[name] = deprule
-                        table.insert(t._ORDERULES, deprule)
+                -- only add target rules
+                if r:kind() == "target" then
+                    t._RULES[rulename] = r
+                    for _, deprule in ipairs(r:orderdeps()) do
+                        local name = deprule:name()
+                        if not t._RULES[name] then
+                            t._RULES[name] = deprule
+                            table.insert(t._ORDERULES, deprule)
+                        end
                     end
+                    table.insert(t._ORDERULES, r)
                 end
-                table.insert(t._ORDERULES, r)
             else
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
