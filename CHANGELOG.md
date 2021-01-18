@@ -11,6 +11,7 @@
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): Support to enum registry keys and values
 * [#1026](https://github.com/xmake-io/xmake/issues/1026): Support group for vs/vsxmake project
 * [#1178](https://github.com/xmake-io/xmake/issues/1178): Add `add_requireconfs()` api to rewrite configs of depend packages
+* [#1043](https://github.com/xmake-io/xmake/issues/1043): Add `luarocks.module` rule for luarocks-build-xmake
 
 ### Change
 
@@ -906,6 +907,7 @@
 * [#1032](https://github.com/xmake-io/xmake/issues/1032): 支持枚举注册表 keys 和 values
 * [#1026](https://github.com/xmake-io/xmake/issues/1026): 支持对 vs/vsmake 工程增加分组设置
 * [#1178](https://github.com/xmake-io/xmake/issues/1178): 添加 `add_requireconfs()` 接口去重写依赖包的配置
+* [#1043](https://github.com/xmake-io/xmake/issues/1043): 为 luarocks 模块添加 `luarocks.module` 构建规则
 
 ### 改进
 
