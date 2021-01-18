@@ -87,23 +87,21 @@ function sandbox_core_project_config.readonly(name)
 end
 
 -- load the configuration
-function sandbox_core_project_config.load(targetname)
-    return config.load(targetname)
+function sandbox_core_project_config.load()
+    return config.load()
 end
 
 -- save the configuration
-function sandbox_core_project_config.save(targetname)
-
-    -- save it
-    local ok, errors = config.save(targetname)
+function sandbox_core_project_config.save()
+    local ok, errors = config.save()
     if not ok then
         raise(errors)
     end
 end
 
 -- read the value from the configuration file directly
-function sandbox_core_project_config.read(name, targetname)
-    return config.read(name, targetname)
+function sandbox_core_project_config.read(name)
+    return config.read(name)
 end
 
 -- clear the configuration
