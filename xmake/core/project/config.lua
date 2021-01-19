@@ -29,10 +29,8 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
--- get the current given configure
+-- get the current given configuration
 function config.get(name)
-
-    -- get it
     local value = nil
     if config._CONFIGS then
         value = config._CONFIGS[name]
@@ -40,8 +38,6 @@ function config.get(name)
             value = nil
         end
     end
-
-    -- get it
     return value
 end
 
@@ -150,8 +146,17 @@ function config.load()
             return false
         end
     end
-    config._CONFIGS = configs
-    return true
+    -- merge into the current configuration
+    local ok = false
+    if configs then
+        for name, value in pairs(configs) do
+            if config.get(name) == nil then
+                config.set(name, value)
+                ok = true
+            end
+        end
+    end
+    return ok
 end
 
 -- save the project configuration
