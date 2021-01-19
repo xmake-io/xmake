@@ -167,6 +167,17 @@ function _writefileifneeded(file, content)
     io.writefile(file, content)
 end
 
+function _clear_cacheconf()
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
+end
+
 -- make
 function make(version)
 
@@ -218,13 +229,6 @@ function make(version)
         end
 
         -- clear config and local cache
-        config.clear()
-        config.save()
-        localcache.clear("config")
-        localcache.clear("detect")
-        localcache.clear("option")
-        localcache.clear("package")
-        localcache.clear("toolchain")
-        localcache.save()
+        _clear_cacheconf()
     end
 end
