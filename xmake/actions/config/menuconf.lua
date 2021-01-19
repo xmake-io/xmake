@@ -360,7 +360,7 @@ function app:load(cache)
 
     -- load config from cache
     if cache then
-        cache = config.load(option.get("target") or "all")
+        cache = config.load()
     end
 
     -- clear configs first

@@ -24,6 +24,7 @@ import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
 import("core.project.config")
+import("core.cache.localcache")
 
 local template_root = path.join(os.scriptdir(), "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
@@ -166,6 +167,17 @@ function _writefileifneeded(file, content)
     io.writefile(file, content)
 end
 
+function _clear_cacheconf()
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
+end
+
 -- make
 function make(version)
 
@@ -215,5 +227,8 @@ function make(version)
             _trycp(template_items, proj_dir)
             _trycp(template_itemfil, proj_dir)
         end
+
+        -- clear config and local cache
+        _clear_cacheconf()
     end
 end

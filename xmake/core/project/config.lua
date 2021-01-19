@@ -29,36 +29,8 @@ local table         = require("base/table")
 local utils         = require("base/utils")
 local option        = require("base/option")
 
--- load the project configure
-function config._load(targetname)
-
-    -- check
-    targetname = targetname or "all"
-
-    -- load configure from the file first
-    local filepath = config.filepath()
-    if os.isfile(filepath) then
-
-        -- load it
-        local results, errors = io.load(filepath)
-        if not results then
-            return nil, errors
-        end
-
-        -- load the target configure
-        if results._TARGETS then
-            return table.wrap(results._TARGETS[targetname])
-        end
-    end
-
-    -- empty
-    return {}
-end
-
--- get the current given configure
+-- get the current given configuration
 function config.get(name)
-
-    -- get it
     local value = nil
     if config._CONFIGS then
         value = config._CONFIGS[name]
@@ -66,8 +38,6 @@ function config.get(name)
             value = nil
         end
     end
-
-    -- get it
     return value
 end
 
@@ -107,18 +77,15 @@ end
 -- get all options
 function config.options()
 
-    -- check
-    assert(config._CONFIGS)
-
     -- remove values with "auto" and private item
     local configs = {}
-    for name, value in pairs(config._CONFIGS) do
-        if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
-            configs[name] = value
+    if config._CONFIGS then
+        for name, value in pairs(config._CONFIGS) do
+            if not name:find("^_%u+") and (type(value) ~= "string" or value ~= "auto") then
+                configs[name] = value
+            end
         end
     end
-
-    -- get it
     return configs
 end
 
@@ -169,69 +136,40 @@ function config.directory()
     return config._DIRECTORY
 end
 
--- load the project configure
-function config.load(targetname)
-
-    -- load configure
-    local results, errors = config._load(targetname)
-    if not results then
-        utils.error(errors)
-        return false
-    end
-
-    -- merge the target configure first
-    local ok = false
-    for name, value in pairs(results) do
-        if config.get(name) == nil then
-            config.set(name, value)
-            ok = true
+-- load the project configuration
+function config.load()
+    local configs, errors
+    if os.isfile(config.filepath()) then
+        configs, errors = io.load(config.filepath())
+        if not configs then
+            utils.error(errors)
+            return false
         end
     end
-
-    -- ok?
+    -- merge into the current configuration
+    local ok = false
+    if configs then
+        for name, value in pairs(configs) do
+            if config.get(name) == nil then
+                config.set(name, value)
+                ok = true
+            end
+        end
+    end
     return ok
 end
 
--- save the project configure
-function config.save(targetname)
-
-    -- check
-    targetname = targetname or "all"
-
-    -- load the previous results from configure
-    local results = {}
-    local filepath = config.filepath()
-    if os.isfile(filepath) then
-        results = io.load(filepath) or {}
-    end
-
-    -- the targets
-    local targets = results._TARGETS or {}
-    results._TARGETS = targets
-
-    -- clear target first
-    targets[targetname] = {}
-
-    -- update target
-    local target = targets[targetname]
-    for name, value in pairs(config.options()) do
-        target[name] = value
-    end
-
-    -- add version
-    results.__version = xmake._VERSION_SHORT
-
-    -- save it
-    return io.save(config.filepath(), results)
+-- save the project configuration
+function config.save()
+    return io.save(config.filepath(), config.options())
 end
 
--- read value from the configure file directly
-function config.read(name, targetname)
-
-    -- load configs
-    local configs = config._load(targetname)
-
-    -- get it
+-- read value from the configuration file directly
+function config.read(name)
+    local configs
+    if os.isfile(config.filepath()) then
+        configs = io.load(config.filepath())
+    end
     local value = nil
     if configs then
         value = configs[name]
@@ -239,8 +177,6 @@ function config.read(name, targetname)
             value = nil
         end
     end
-
-    -- ok?
     return value
 end
 

@@ -35,6 +35,18 @@ import("actions.require.install", {alias = "install_requires", rootdir = os.prog
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 
+-- clear cache configuration
+function _clear_cacheconf()
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
+end
+
 -- make target info
 function _make_targetinfo(mode, arch, target)
 
@@ -307,6 +319,9 @@ function make(outputdir, vsinfo)
         vs201x_vcxproj.make(vsinfo, target)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end
+
+    -- clear config and local cache
+    _clear_cacheconf()
 
     -- leave project directory
     os.cd(oldir)
