@@ -43,7 +43,8 @@ rule("luarocks.module")
         end
 
         -- export symbols
-        if target:is_plat("windows") then
+        local _, toolname = target:tool("cc")
+        if toolname == "cl" then
             local exported_name = target:name():gsub("%.", "_")
             exported_name = exported_name:match('^[^%-]+%-(.+)$') or exported_name
             target:add("shflags", "/export:luaopen_" .. exported_name, {force = true})
