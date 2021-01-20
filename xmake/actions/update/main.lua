@@ -294,7 +294,6 @@ function main()
 
     -- has been installed?
     local fetchinfo   = assert(fetch_version(option.get("xmakever")), "cannot fetch xmake version info!")
-    print(fetchinfo)
     local is_official = fetchinfo.is_official
     local mainurls    = fetchinfo.urls
     local version     = fetchinfo.version
