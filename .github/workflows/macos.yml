@@ -15,31 +15,33 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: prepare local xmake
+      - name: Prepare local xmake
         run: cp -rf . ../xmake-source
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
-      - uses: dlang-community/setup-dlang@v1
-        with:
-          compiler: dmd-latest
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
+        # installation
+      - name: Installation
+        run: |
+          brew install dmd
+
         # tests
-      - name: tests
+      - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
 
         # build artifacts
-      - name: artifact
+      - name: Artifact
         run: |
           brew install gnu-tar
           gem install --no-document fpm
-          scripts/makepkg osxpkg 
+          scripts/makepkg osxpkg
           scripts/archive-all
-          scripts/makeself/build-runfile.sh 
+          scripts/makeself/build-runfile.sh
         # upload artifacts
       - uses: actions/upload-artifact@v2
         with:
@@ -63,7 +65,7 @@ jobs:
           path: artifacts/xmake.zip
 
         # publish release
-      - name: publish
+      - name: Publish package
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -74,7 +76,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.macosx.pkg
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish gz runfile
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -85,7 +87,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.gz.run
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish xz runfile
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -96,7 +98,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.xz.run
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish gz archive
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -107,7 +109,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.tar.gz
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish zip archive
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
