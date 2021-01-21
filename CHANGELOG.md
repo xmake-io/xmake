@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.5.1
+
 ### New features
 
 * [#1035](https://github.com/xmake-io/xmake/issues/1035): The graphics configuration menu fully supports mouse events, and support scroll bar
@@ -898,6 +900,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.5.1
 
 ### 新特性
 
