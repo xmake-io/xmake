@@ -40,8 +40,11 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo install -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
-        {'j', "jobs",         "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+        {'j', "jobs",          "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
                                           "Specifies the number of jobs to build simultaneously."},
+        {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
+                                       "e.g.",
+                                       "    -- xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -89,18 +92,41 @@ function menu_options()
     return options, show_options, description
 end
 
+-- enter working directory
+function _enter_workdir()
+    local workdir = os.tmpfile({ramdisk = false}) .. ".xrepo.dir"
+    os.tryrm(workdir)
+    os.mkdir(workdir)
+    local oldir = os.cd(workdir)
+    os.vrunv("xmake", {"create", "-P", "."})
+    local includes = option.get("includes")
+    if includes then
+        local content = io.readfile("xmake.lua")
+        local file = io.open("xmake.lua", 'w')
+        for _, include in ipairs(path.splitenv(includes)) do
+            if not path.is_absolute(include) then
+                include = path.absolute(include, oldir)
+            end
+            file:print("includes('%s')", include)
+        end
+        file:print("")
+        file:print(content)
+        file:close()
+    end
+    return workdir, oldir
+end
+
+-- leave working directory
+function _leave_workdir(workdir, oldir)
+    os.cd(oldir)
+    os.tryrm(workdir)
+end
+
 -- install packages
 function _install_packages(packages)
 
     -- enter working project directory
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
-    if not os.isdir(workdir) then
-        os.mkdir(workdir)
-        os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
-    else
-        os.cd(workdir)
-    end
+    local workdir, oldir = _enter_workdir()
 
     -- disable xmake-stats
     os.setenv("XMAKE_STATS", "false")
@@ -214,6 +240,9 @@ function _install_packages(packages)
     end
     table.join2(require_argv, packages)
     os.vexecv("xmake", require_argv)
+
+    -- leave working directory
+    _leave_workdir(workdir, oldir)
 end
 
 -- main entry
