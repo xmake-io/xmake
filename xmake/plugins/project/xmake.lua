@@ -58,10 +58,10 @@ task("project")
                                                             end                                                                             }
                 ,   {'m', "modes",     "kv" , nil       ,   "Set the project modes."
                                                         ,   "    e.g. "
-                                                        ,   "    - xmake project -k vsxmake -m \"release" .. path.envsep() ..  "debug\""    }
+                                                        ,   "    - xmake project -k vsxmake -m \"release,debug\""                           }
                 ,   {'a', "archs",     "kv" , nil       ,          "Set the project archs."
                                                         ,   "    e.g. "
-                                                        ,   "    - xmake project -k vsxmake -a \"x86" .. path.envsep() ..  "x64\""          }
+                                                        ,   "    - xmake project -k vsxmake -a \"x86,x64\""                                 }
                 ,   {nil, "outputdir", "v"  , "."       ,   "Set the output directory."                                                     }
                 }
             }
