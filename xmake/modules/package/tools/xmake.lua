@@ -79,7 +79,7 @@ function install(package, configs)
 
     -- inherit builtin configs
     local argv = _init_argv("f", "-y", "-c")
-    local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "mingw", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "mingw", "sdk", "toolchain", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
     for _, name in ipairs(names) do
         local value = get_config(name)
         if value ~= nil then

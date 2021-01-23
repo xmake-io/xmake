@@ -92,6 +92,9 @@ function _get_cflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("cflags"))
         table.join2(result, package:build_getenv("cxflags"))
+        table.join2(result, compiler.map_flags("c", "define", package:build_getenv("defines")))
+        table.join2(result, compiler.map_flags("c", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, compiler.map_flags("c", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("cflags"))
     table.join2(result, package:config("cxflags"))
@@ -114,6 +117,9 @@ function _get_cxxflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("cxxflags"))
         table.join2(result, package:build_getenv("cxflags"))
+        table.join2(result, compiler.map_flags("cxx", "define", package:build_getenv("defines")))
+        table.join2(result, compiler.map_flags("cxx", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, compiler.map_flags("cxx", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
@@ -135,6 +141,9 @@ function _get_asflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("asflags"))
+        table.join2(result, compiler.map_flags("as", "define", package:build_getenv("defines")))
+        table.join2(result, compiler.map_flags("as", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, compiler.map_flags("as", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("asflags"))
     if opt.asflags then
@@ -151,6 +160,9 @@ function _get_ldflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("ldflags"))
+        table.join2(result, linker.map_flags("binary", {"cxx"}, "link", package:build_getenv("links")))
+        table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
+        table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.ldflags then
@@ -167,6 +179,9 @@ function _get_shflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("shflags"))
+        table.join2(result, linker.map_flags("shared", {"cxx"}, "link", package:build_getenv("links")))
+        table.join2(result, linker.map_flags("shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
+        table.join2(result, linker.map_flags("shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.shflags then
