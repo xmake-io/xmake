@@ -39,13 +39,12 @@ function main(opt)
 
         -- init search paths
         local paths = {
-            "$(env ONEAPI_ROOT)\\mkl\\latest",
-            "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{09085019-08A5-40A0-B0E8-570C171997A0};InstallLocation)\\mkl\\latest"
+            "$(env ONEAPI_ROOT)\\mkl\\latest"
         }
 
         -- find library
         local result = {links = {}, linkdirs = {}, includedirs = {}}
-        local linkinfo = find_library("mkl_core", paths, {suffixes = "lib\\" .. rdir})
+        local linkinfo = find_library("mkl_core", paths, {suffixes = path.join("lib", rdir)})
         if not linkinfo then
             -- not found?
             return
