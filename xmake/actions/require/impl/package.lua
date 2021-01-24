@@ -972,7 +972,7 @@ function install_packages(requires, opt)
     local packages_download = {}
     local packages_unsupported = {}
     for _, package in ipairs(packages) do
-        if not package:exists() and (#package:urls() > 0 or package:script("install")) then
+        if not package:exists() then
             if package:supported() then
                 if #package:urls() > 0 then
                     packages_download[tostring(package)] = package
