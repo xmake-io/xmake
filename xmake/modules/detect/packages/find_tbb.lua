@@ -38,13 +38,12 @@ function main(opt)
 
         -- init search paths
         local paths = {
-            "$(env ONEAPI_ROOT)\\tbb\\latest",
-            "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\{09085019-08A5-40A0-B0E8-570C171997A0};InstallLocation)\\tbb\\latest"
+            "$(env ONEAPI_ROOT)\\tbb\\latest"
         }
 
         -- find library
         local result = {links = {}, linkdirs = {}, includedirs = {}}
-        local linkinfo = find_library("tbb", paths, {suffixes = "lib\\" .. rdir .. "\\vc14"})
+        local linkinfo = find_library("tbb", paths, {suffixes = path.join("lib", rdir, "vc14")})
         if linkinfo then
             table.insert(result.linkdirs, linkinfo.linkdir)
             table.join2(result.links, {"tbb", "tbb_malloc"})
@@ -54,7 +53,7 @@ function main(opt)
         end
 
         -- find include
-        table.insert(result.includedirs, find_path("tbb\\tbb.h", paths, {suffixes = "include"}))
+        table.insert(result.includedirs, find_path(path.join("tbb", "tbb.h"), paths, {suffixes = "include"}))
 
         -- ok
         return result
