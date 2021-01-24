@@ -766,9 +766,12 @@ function _install_packages(packages_install, packages_download)
 
                 -- all dependences has been installed? we install it now
                 local ready = true
+                local dep_not_found = nil
                 for _, dep in ipairs(pkg:orderdeps()) do
                     if not dep:exists() then
                         ready = false
+                        dep_not_found = dep
+                        break
                     end
                 end
                 local group = pkg:group()
@@ -789,6 +792,10 @@ function _install_packages(packages_install, packages_download)
                     package = pkg
                     table.remove(packages_pending, idx)
                     break
+                elseif #packages_pending == 1 and dep_not_found then
+                    raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
+                elseif #packages_pending == 1 then
+                    raise("package(%s): cannot be installed!", pkg:displayname())
                 end
             end
             if package == nil and #packages_pending > 0 then
