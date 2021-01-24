@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.base.process")
 import("core.project.config")
 import("core.platform.platform")
-import("core.platform.environment")
 import("private.action.update.fetch_version")
 import("private.action.require.packagenv")
 
@@ -111,9 +110,6 @@ function main()
     -- load platform
     platform.load(config.plat())
 
-    -- enter environment
-    environment.enter("toolchains")
-
     -- enter the environments of git
     packagenv.enter("git")
 
@@ -144,7 +140,4 @@ function main()
 
     -- leave the environments of git
     packagenv.leave("git")
-
-    -- leave environment
-    environment.leave("toolchains")
 end

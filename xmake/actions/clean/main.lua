@@ -26,7 +26,6 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.environment")
 import("private.action.clean.remove_files")
 import("target.action.clean", {alias = "_do_clean_target"})
 

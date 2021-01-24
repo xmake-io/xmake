@@ -20,7 +20,6 @@
 
 -- imports
 import("core.project.config")
-import("core.platform.environment")
 import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
 import("private.action.require.packagenv")
@@ -34,16 +33,13 @@ import("package")
 --
 function enter()
 
-    -- set search paths of toolchains
-    environment.enter("toolchains")
-
     -- unzip or 7zip is necessary
     if not find_tool("unzip") and not find_tool("7z") then
         raise("unzip or 7zip not found! we need install it first")
     end
 
-    -- enter the environments of git and 7z
-    packagenv.enter("git", "7z")
+    -- enter the environments of git
+    packagenv.enter("git")
 
     -- git not found? install it first
     local packages = {}
@@ -72,9 +68,6 @@ function leave()
     end
     _g._PACKAGES = nil
 
-    -- leave the environments of git and 7z
-    packagenv.leave("7z", "git")
-
-    -- restore search paths of toolchains
-    environment.leave("toolchains")
+    -- leave the environments of git
+    packagenv.leave("git")
 end

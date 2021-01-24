@@ -26,7 +26,6 @@ import("core.project.config")
 import("core.project.project")
 import("core.package.package")
 import("core.platform.platform")
-import("core.platform.environment")
 
 -- clean up temporary files once a day
 function cleanup()
