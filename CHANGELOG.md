@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-766481512): Support `zig cc` and `zig c++` as c/c++ compiler
+
 ## v2.5.1
 
 ### New features
@@ -901,6 +905,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-766481512): 支持 `zig cc` 和 `zig c++` 作为 c/c++ 编译器
 
 ## v2.5.1
 

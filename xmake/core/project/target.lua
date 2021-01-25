@@ -699,8 +699,6 @@ function _instance:pkgs()
     for _, pkg in ipairs(self:orderpkgs()) do
         self._PKGS_ENABLED[pkg:name()] = pkg
     end
-
-    -- get it
     return self._PKGS_ENABLED
 end
 
