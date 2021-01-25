@@ -371,7 +371,6 @@ function _instance:_checktool(toolkind, toolpath)
     -- find tool program
     local program, toolname
     local tool = find_tool(toolpath, {cachekey = self:cachekey(), program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
-            print(self:name(), toolkind, tool)
     if tool then
         program = tool.program
         toolname = tool.name

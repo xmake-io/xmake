@@ -18,7 +18,6 @@
 -- @file        zig_cxx.lua
 --
 
--- inherit g++
-inherit("gxx")
+inherit("zig_cc")
 
 
