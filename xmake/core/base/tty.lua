@@ -112,5 +112,83 @@ function tty.flush()
     return tty
 end
 
+-- get terminal name
+--  - xterm
+--  - cmd
+--  - vstudio (in visual studio)
+--  - vscode (in vscode)
+--  - msys2
+--  - cygwin
+--  - powershell
+--  - windows-terminal
+--  - gnome-terminal
+--  - xfce4-terminal
+--  - konsole
+--  - terminator
+--  - rxvt
+--  - lxterminal
+--  - unknown
+--
+function tty.term()
+    local term = tty._TERM
+    if term == nil then
+
+        -- get term from $TERM_PROGRAM
+        if term == nil then
+            local TERM_PROGRAM = os.getenv("TERM_PROGRAM")
+            if TERM_PROGRAM ~= nil then
+                if TERM_PROGRAM:find("vscode", 1, true) then
+                    term = "vscode"
+                end
+            end
+        end
+
+        -- get term from system
+        if term == nil then
+            local subhost = xmake._SUBHOST
+            if subhost == "windows" then
+                if os.getenv("XMAKE_IN_VSTUDIO") then
+                    term = "vstudio"
+                elseif os.getenv("WT_SESSION") then
+                    term = "windows-terminal"
+                elseif os.getenv("PROMPT") then -- $PROMPT == "$P$G"
+                    term = "cmd"
+                else
+                    -- TODO maybe powershell if no $PROMPT, we need improve it
+                    term = "powershell"
+                end
+            elseif subhost == "msys" then
+                term = "msys2"
+            elseif subhost == "cygwin" then
+                term = "cygwin"
+            elseif subhost == "macosx" then
+                term = "xterm"
+            end
+        end
+
+        -- get term from $TERM
+        if term == nil then
+            local TERM = os.getenv("TERM")
+            if TERM ~= nil then
+                if TERM:find("xterm", 1, true) then
+                    term = "xterm"
+                end
+            end
+        end
+        tty._TERM = term or "unknown"
+    end
+    return term
+end
+
+-- has emoji?
+function tty.has_emoji()
+    local has_emoji = tty._HAS_EMOJI
+    if has_emoji == nil then
+        -- TODO
+        tty._HAS_EMOJI = has_emoji or false
+    end
+    return has_emoji
+end
+
 -- return module
 return tty
