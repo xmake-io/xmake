@@ -184,7 +184,23 @@ end
 function tty.has_emoji()
     local has_emoji = tty._HAS_EMOJI
     if has_emoji == nil then
-        -- TODO
+        local term = tty.term()
+        local winos = require("base/winos")
+
+        -- before win7 on cmd? disable it
+        if has_emoji == nil and term == "cmd" and winos.version():le("win7") then
+            has_emoji = false
+        end
+
+        -- on msys2/cygwin? disable it
+        if has_emoji == nil and (term == "msys2" or term == "cygwin") then
+            has_emoji = false
+        end
+
+        -- enable it by default
+        if has_emoji == nil then
+            has_emoji = true
+        end
         tty._HAS_EMOJI = has_emoji or false
     end
     return has_emoji
