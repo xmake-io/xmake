@@ -30,6 +30,10 @@ toolchain("zig")
 
         -- set toolset
         local zig = get_config("zc") or "zig"
+        toolchain:set("toolset", "cc",    zig .. " cc")
+        toolchain:set("toolset", "cxx",   zig .. " c++")
+        toolchain:set("toolset", "ld",    zig .. " c++")
+        toolchain:set("toolset", "sh",    zig .. " c++")
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
         toolchain:set("toolset", "zcar", "$(env ZC)", zig)
         toolchain:set("toolset", "zcld", "$(env ZC)", zig)
