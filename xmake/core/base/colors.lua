@@ -22,6 +22,7 @@
 local colors = colors or {}
 
 -- load modules
+local tty -- lazy loading it
 local emoji = require("base/emoji")
 
 -- the color8 keys
@@ -208,16 +209,6 @@ function colors.truecolor()
     return colorterm:find("truecolor", 1, true) or colorterm:find("24bit", 1, true)
 end
 
--- support emoji?
-function colors.emoji()
-    local emoji = colors._EMOJI
-    if emoji == nil then
-        emoji = not os.getenv("XMAKE_COLORTERM_NOEMOJI")
-        colors._EMOJI = emoji
-    end
-    return emoji
-end
-
 -- make rainbow truecolor code by the index of characters
 --
 -- @param index     the index of characters
@@ -327,6 +318,7 @@ function colors.translate(str, opt)
     end
 
     -- translate color blocks, e.g. ${red}, ${color.xxx}, ${emoji}
+    tty = tty or require("base/tty")
     str = str:gsub("(%${(.-)})", function(_, word)
 
         -- not supported? ignore it
@@ -336,7 +328,7 @@ function colors.translate(str, opt)
         end
 
         -- is plain theme? no colors and no emoji
-        local noemoji = not colors.emoji()
+        local noemoji = not tty.has_emoji()
         if opt.plain or (theme and theme:name() == "plain") then
             nocolors = true
             noemoji = true
