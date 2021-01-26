@@ -28,18 +28,7 @@ toolchain("zig")
     -- on load
     on_load(function (toolchain)
 
-        -- set toolset
-        local zig = get_config("zc") or "zig"
-        toolchain:set("toolset", "cc",    zig .. " cc")
-        toolchain:set("toolset", "cxx",   zig .. " c++")
-        toolchain:set("toolset", "ld",    zig .. " c++")
-        toolchain:set("toolset", "sh",    zig .. " c++")
-        toolchain:set("toolset", "zc",   "$(env ZC)", zig)
-        toolchain:set("toolset", "zcar", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcld", "$(env ZC)", zig)
-        toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
-
-        -- init flags
+        -- init march
         local march
         if toolchain:is_plat("macosx") then
             -- FIXME
@@ -56,6 +45,18 @@ toolchain("zig")
             toolchain:add("zcldflags", "-target", march)
             toolchain:add("zcshflags", "-target", march)
         end
+
+        -- set toolset
+        -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
+        local zig = get_config("zc") or "zig"
+        toolchain:set("toolset", "cc",    zig .. " cc" .. (march and (" --target=" .. march) or ""))
+        toolchain:set("toolset", "cxx",   zig .. " c++" .. (march and (" --target=" .. march) or ""))
+        toolchain:set("toolset", "ld",    zig .. " c++" .. (march and (" --target=" .. march) or ""))
+        toolchain:set("toolset", "sh",    zig .. " c++" .. (march and (" --target=" .. march) or ""))
+        toolchain:set("toolset", "zc",   "$(env ZC)", zig)
+        toolchain:set("toolset", "zcar", "$(env ZC)", zig)
+        toolchain:set("toolset", "zcld", "$(env ZC)", zig)
+        toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
 
         -- @see https://github.com/ziglang/zig/issues/5825
         if toolchain:is_plat("windows") then

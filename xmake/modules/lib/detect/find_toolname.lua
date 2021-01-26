@@ -63,12 +63,16 @@ function _find(program)
 
     -- try the the whole name with spaces, e.g. "zig cc" -> zig_cc
     partnames = {}
+    names = path.filename(program):lower():split("%s")
     for _, name in ipairs(names) do
         -- remove suffix: ".exe", e.g. "zig.exe cc"
         name = name:gsub("%.%w+", "")
         -- "zig c++" -> zig_cxx
         name = name:gsub("%+", "x")
-        table.insert(partnames, name)
+        -- skip -arguments
+        if not name:startswith("-") then
+            table.insert(partnames, name)
+        end
     end
     toolname = table.concat(partnames, "_")
     if module.find("detect.tools.find_" .. toolname) then

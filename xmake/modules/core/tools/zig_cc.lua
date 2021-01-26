@@ -27,21 +27,23 @@ function init(self)
     -- init super
     _super.init(self)
 
-    -- init flags
-    local march
-    if is_plat("macosx") then
-        -- FIXME
-        --march = is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
-    elseif is_plat("linux") then
-        march = is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
-    elseif is_plat("windows") then
-        march = is_arch("x86") and "i386-windows-msvc" or "x86_64-windows-msvc"
-    elseif is_plat("mingw") then
-        march = is_arch("x86") and "i386-windows-gnu" or "x86_64-windows-gnu"
-    end
-    if march then
-        self:add("cxflags", "-target", march)
-        self:add("ldflags", "-target", march)
-        self:add("shflags", "-target", march)
+    -- patch target
+    if not self:program():find("target", 1, true) then
+        local march
+        if is_plat("macosx") then
+            -- FIXME
+            --march = is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
+        elseif is_plat("linux") then
+            march = is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
+        elseif is_plat("windows") then
+            march = is_arch("x86") and "i386-windows-msvc" or "x86_64-windows-msvc"
+        elseif is_plat("mingw") then
+            march = is_arch("x86") and "i386-windows-gnu" or "x86_64-windows-gnu"
+        end
+        if march then
+            self:add("cxflags", "-target", march)
+            self:add("ldflags", "-target", march)
+            self:add("shflags", "-target", march)
+        end
     end
 end
