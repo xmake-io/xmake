@@ -138,6 +138,9 @@ end
 -- the init function for main
 function main._init()
 
+    -- disable scheduler first
+    scheduler:enable(false)
+
     -- get project directory and project file from the argument option
     local options, err = main._basicparse()
     if not options then
@@ -284,6 +287,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- run task
+    scheduler:enable(true)
     scheduler:co_start_named("xmake " .. taskname, function ()
         local ok, errors = taskinst:run()
         if not ok then
