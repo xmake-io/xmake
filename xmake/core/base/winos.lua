@@ -172,8 +172,26 @@ function winos.cmdargv(argv, key)
         if f then
             -- we need split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
             -- @see https://github.com/xmake-io/xmake/issues/812
-            for _, arg in ipairs(argv) do
-                f:write(os.args(arg, {escape = true}) .. "\n")
+            local idx = 1
+            while idx <= #argv do
+                arg = argv[idx]
+                -- we need ensure `/name value` in same line,
+                -- otherwise cl.exe will prompt that the corresponding parameter value cannot be found
+                --
+                -- e.g.
+                --
+                -- /sourceDependencies xxxx.json
+                -- -Dxxx
+                -- foo.obj
+                --
+                if idx + 1 <= #argv and arg:find("^[-/]") and not argv[idx + 1]:find("^[-/]") then
+                    f:write(os.args(arg) .. " ")
+                    f:write(os.args(argv[idx + 1]) .. "\n")
+                    idx = idx + 2
+                else
+                    f:write(os.args(arg) .. "\n")
+                    idx = idx + 1
+                end
             end
             f:close()
         end
