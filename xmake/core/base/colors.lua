@@ -142,41 +142,6 @@ colors._keys24 =
 -- the escape string
 colors._ESC = '\x1b[%sm'
 
--- get colorterm setting
---
--- COLORTERM: color8, color256, truecolor, nocolor
---
-function colors._colorterm()
-    local colorterm = colors._COLORTERM
-    if colorterm == nil then
-        colorterm = os.getenv("XMAKE_COLORTERM") or os.getenv("COLORTERM") or ""
-        colors._COLORTERM = colorterm
-    end
-    return colorterm
-end
-
--- support 24bits true color
---
--- There's no reliable way, and ncurses/terminfo's maintainer expressed he has no intent on introducing support.
--- S-Lang author added a check for $COLORTERM containing either "truecolor" or "24bit" (case sensitive).
--- In turn, VTE, Konsole and iTerm2 set this variable to "truecolor" (it's been there in VTE for a while,
--- it's relatively new and maybe still git-only in Konsole and iTerm2).
---
--- This is obviously not a reliable method, and is not forwarded via sudo, ssh etc. However, whenever it errs,
--- it errs on the safe side: does not advertise support whereas it's actually supported.
--- App developers can freely choose to check for this same variable, or introduce their own method
--- (e.g. an option in their config file), whichever matches better the overall design of the given app.
--- Checking $COLORTERM is recommended though, since that would lead to a more unique desktop experience
--- where the user has to set one variable only and it takes effect across all the apps, rather than something
--- separately for each app.
---
-function colors.truecolor()
-
-    -- support true color?
-    local colorterm = colors._colorterm()
-    return colorterm:find("truecolor", 1, true) or colorterm:find("24bit", 1, true)
-end
-
 -- make rainbow truecolor code by the index of characters
 --
 -- @param index     the index of characters
@@ -291,7 +256,7 @@ function colors.translate(str, opt)
 
         -- not supported? ignore it
         local nocolors = false
-        if not tty.has_color8() and not tty.has_color256() and not colors.truecolor() then
+        if not tty.has_color8() and not tty.has_color256() and not tty.has_color24() then
             nocolors = true
         end
 
@@ -304,7 +269,7 @@ function colors.translate(str, opt)
 
         -- get keys
         local keys = tty.has_color256() and colors._keys256 or colors._keys8
-        if colors.truecolor() then
+        if tty.has_color24() then
             keys = colors._keys24
         end
 
@@ -344,7 +309,7 @@ function colors.translate(str, opt)
             -- get the color code
             local code = keys[block]
             if not code then
-                if colors.truecolor() and block:find(";", 1, true) then
+                if tty.has_color24() and block:find(";", 1, true) then
                     if block:startswith("on;") then
                         code = block:gsub("on;", "48;2;")
                     else

@@ -500,14 +500,14 @@ function option.show_logo(logo, opt)
 
     -- make rainbow for logo
     opt = opt or {}
-    if colors.truecolor() or tty.has_color256() then
+    if tty.has_color24() or tty.has_color256() then
         local lines = {}
         local seed  = opt.seed or 236
         for _, line in ipairs(logo:split("\n")) do
             local i = 0
             local line2 = ""
             line:gsub(".", function (c)
-                local code = colors.truecolor() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
+                local code = tty.has_color24() and colors.rainbow24(i, seed) or colors.rainbow256(i, seed)
                 line2 = string.format("%s${bright %s}%s", line2, code, c)
                 i = i + 1
             end)
