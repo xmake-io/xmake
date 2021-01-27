@@ -66,7 +66,7 @@ end
 function _has_color_diagnostics(self)
     local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
     if colors_diagnostics == nil then
-        if io.isatty() and (tty.has_color8() or colors.color256()) then
+        if io.isatty() and (tty.has_color8() or tty.has_color256()) then
             local theme = colors.theme()
             if theme and theme:name() ~= "plain" then
                 -- for clang

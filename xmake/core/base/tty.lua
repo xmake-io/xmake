@@ -263,5 +263,48 @@ function tty.has_color8()
     return has_color8
 end
 
+-- has 256 colors?
+function tty.has_color256()
+
+    local has_color256 = tty._HAS_COLOR256
+    if has_color256 == nil then
+
+        -- detect it from $COLORTERM
+        if has_color256 == nil then
+            local colorterm = tty._colorterm()
+            if colorterm == "nocolor" then
+                has_color256 = false
+            elseif colorterm == "color256" or colorterm == "truecolor" then
+                has_color256 = true
+            end
+        end
+
+        -- detect it from $TERM
+        local term = tty.term()
+        local term_env = os.getenv("TERM")
+        if has_color256 == nil then
+            if term == "vstudio" then
+                has_color256 = false
+            elseif term_env and term_env:find("256color", 1, true) then
+                has_color256 = true
+            end
+        end
+
+        -- detect it from system
+        if has_color256 == nil then
+            if os.host() == "windows" then
+                has_color256 = false
+            elseif os.host() == "linux" or os.host("macosx") then
+                -- alway enabled for linux/macOS, $TERM maybe xterm, not xterm-256color, but it is supported
+                has_color256 = true
+            else
+                has_color256 = false
+            end
+        end
+        tty._HAS_COLOR256 = has_color256 or false
+    end
+    return has_color256
+end
+
 -- return module
 return tty

@@ -155,19 +155,6 @@ function colors._colorterm()
     return colorterm
 end
 
--- support 256 colors?
-function colors.color256()
-
-    -- no color?
-    local colorterm = colors._colorterm()
-    if colorterm == "nocolor" then
-        return false
-    end
-
-    -- has 256 colors?
-    return colorterm == "color256" or os.subhost() ~= "windows"
-end
-
 -- support 24bits true color
 --
 -- There's no reliable way, and ncurses/terminfo's maintainer expressed he has no intent on introducing support.
@@ -304,7 +291,7 @@ function colors.translate(str, opt)
 
         -- not supported? ignore it
         local nocolors = false
-        if not tty.has_color8() and not colors.color256() and not colors.truecolor() then
+        if not tty.has_color8() and not tty.has_color256() and not colors.truecolor() then
             nocolors = true
         end
 
@@ -316,7 +303,7 @@ function colors.translate(str, opt)
         end
 
         -- get keys
-        local keys = colors.color256() and colors._keys256 or colors._keys8
+        local keys = tty.has_color256() and colors._keys256 or colors._keys8
         if colors.truecolor() then
             keys = colors._keys24
         end
@@ -363,7 +350,7 @@ function colors.translate(str, opt)
                     else
                         code = "38;2;" .. block
                     end
-                elseif colors.color256() and block:find("#", 1, true) then
+                elseif tty.has_color256() and block:find("#", 1, true) then
                     if block:startswith("on#") then
                         code = block:gsub("on#", "48;5;")
                     else
