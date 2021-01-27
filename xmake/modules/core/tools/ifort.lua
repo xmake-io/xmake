@@ -47,7 +47,7 @@ if is_host("windows") then
         opt = opt or {}
         local argv = table.join("-o", targetfile, objectfiles, "/link", flags)
         if not opt.rawargs then
-            argv = winos.cmdargv(argv)
+            argv = winos.cmdargv(argv, {escape = true})
         end
         -- @note we cannot put -dll to @args.txt
         if targetkind == "shared" then

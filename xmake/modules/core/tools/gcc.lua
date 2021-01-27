@@ -340,7 +340,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
     local argv = table.join("-o", targetfile, objectfiles, flags, flags_extra)
     if is_host("windows") and not opt.rawargs then
-        argv = winos.cmdargv(argv)
+        argv = winos.cmdargv(argv, {escape = true})
     end
     return self:program(), argv
 end

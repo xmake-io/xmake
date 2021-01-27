@@ -155,7 +155,7 @@ function winos.version()
 end
 
 -- get command arguments on windows to solve 8192 character command line length limit
-function winos.cmdargv(argv, key)
+function winos.cmdargv(argv, opt)
 
     -- too long arguments?
     local limit = 4096
@@ -167,7 +167,8 @@ function winos.cmdargv(argv, key)
         end
     end
     if argn > limit then
-        local argsfile = os.tmpfile(key or table.concat(argv, '')) .. ".args.txt"
+        opt = opt or {}
+        local argsfile = os.tmpfile(opt.tmpkey or table.concat(argv, '')) .. ".args.txt"
         local f = io.open(argsfile, 'w', {encoding = "ansi"})
         if f then
             -- we need split args file to solve `fatal error LNK1170: line in command file contains 131071 or more characters`
@@ -185,11 +186,11 @@ function winos.cmdargv(argv, key)
                 -- foo.obj
                 --
                 if idx + 1 <= #argv and arg:find("^[-/]") and not argv[idx + 1]:find("^[-/]") then
-                    f:write(os.args(arg) .. " ")
-                    f:write(os.args(argv[idx + 1]) .. "\n")
+                    f:write(os.args(arg, {escape = opt.escape}) .. " ")
+                    f:write(os.args(argv[idx + 1], {escape = opt.escape}) .. "\n")
                     idx = idx + 2
                 else
-                    f:write(os.args(arg) .. "\n")
+                    f:write(os.args(arg, {escape = opt.escape}) .. "\n")
                     idx = idx + 1
                 end
             end
