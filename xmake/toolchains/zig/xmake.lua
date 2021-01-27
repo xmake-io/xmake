@@ -25,37 +25,52 @@ toolchain("zig")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
+    -- mark as standalone toolchain
+    set_kind("standalone")
+
     -- on load
     on_load(function (toolchain)
-
-        -- init march
-        local march
-        if toolchain:is_plat("macosx") then
-            march = toolchain:is_arch("x86") and "i386-macos-gnu" or "x86_64-macos-gnu"
-        elseif toolchain:is_plat("linux") then
-            march = toolchain:is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
-        elseif toolchain:is_plat("windows") then
-            march = toolchain:is_arch("x86") and "i386-windows-msvc" or "x86_64-windows-msvc"
-        elseif toolchain:is_plat("mingw") then
-            march = toolchain:is_arch("x86") and "i386-windows-gnu" or "x86_64-windows-gnu"
-        end
-        if march then
-            toolchain:add("zcflags", "-target", march)
-            toolchain:add("zcldflags", "-target", march)
-            toolchain:add("zcshflags", "-target", march)
-        end
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
         local zig = get_config("zc") or "zig"
-        toolchain:set("toolset", "cc",    zig .. " cc" .. (march and (" --target=" .. march) or ""))
-        toolchain:set("toolset", "cxx",   zig .. " c++" .. (march and (" --target=" .. march) or ""))
-        toolchain:set("toolset", "ld",    zig .. " c++" .. (march and (" --target=" .. march) or ""))
-        toolchain:set("toolset", "sh",    zig .. " c++" .. (march and (" --target=" .. march) or ""))
+        toolchain:set("toolset", "cc",    zig .. " cc")
+        toolchain:set("toolset", "cxx",   zig .. " c++")
+        toolchain:set("toolset", "ld",    zig .. " c++")
+        toolchain:set("toolset", "sh",    zig .. " c++")
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
         toolchain:set("toolset", "zcar", "$(env ZC)", zig)
         toolchain:set("toolset", "zcld", "$(env ZC)", zig)
         toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
+
+        -- init arch
+        if toolchain:is_arch("arm64") then
+            arch = "aarch64"
+        elseif toolchain:is_arch("i386", "x86") then
+            arch = "i386"
+        else
+            arch = "x86_64"
+        end
+
+        -- init target
+        local target
+        if toolchain:is_plat("macosx") then
+            target = arch .. "-macos-gnu"
+        elseif toolchain:is_plat("linux") then
+            target = arch .. "-linux-gnu"
+        elseif toolchain:is_plat("windows") then
+            target = arch .. "-windows-msvc"
+        elseif toolchain:is_plat("mingw") then
+            target = arch .. "-windows-gnu"
+        end
+        if target then
+            toolchain:add("cxflags", "-target", target)
+            toolchain:add("shflags", "-target", target)
+            toolchain:add("ldflags", "-target", target)
+            toolchain:add("zcflags", "-target", target)
+            toolchain:add("zcldflags", "-target", target)
+            toolchain:add("zcshflags", "-target", target)
+        end
 
         -- @see https://github.com/ziglang/zig/issues/5825
         if toolchain:is_plat("windows") then
