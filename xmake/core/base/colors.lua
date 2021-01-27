@@ -155,25 +155,6 @@ function colors._colorterm()
     return colorterm
 end
 
--- support 8 colors?
-function colors.color8()
-
-    -- no color?
-    local colorterm = colors._colorterm()
-    if colorterm == "nocolor" then
-        return false
-    end
-
-    -- has 8 colors?
-    if colorterm == "color8" or os.subhost() ~= "windows" then
-        return true
-    end
-
-    -- this is supported if exists ANSICON envirnoment variable on windows
-    colors._ANSICON = colors._ANSICON or os.getenv("ANSICON") or ""
-    return colors._ANSICON ~= ""
-end
-
 -- support 256 colors?
 function colors.color256()
 
@@ -323,7 +304,7 @@ function colors.translate(str, opt)
 
         -- not supported? ignore it
         local nocolors = false
-        if not colors.color8() and not colors.color256() and not colors.truecolor() then
+        if not tty.has_color8() and not colors.color256() and not colors.truecolor() then
             nocolors = true
         end
 

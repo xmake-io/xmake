@@ -38,6 +38,19 @@ function tty._iowrite(...)
     end
 end
 
+-- get colorterm setting
+--
+-- COLORTERM: color8, color256, truecolor, nocolor
+--
+function tty._colorterm()
+    local colorterm = tty._COLORTERM
+    if colorterm == nil then
+        colorterm = os.getenv("XMAKE_COLORTERM") or os.getenv("COLORTERM") or ""
+        tty._COLORTERM = colorterm
+    end
+    return colorterm
+end
+
 -- erases from the current cursor position to the end of the current line.
 function tty.erase_line_to_end()
     tty._iowrite("\x1b[K")
@@ -204,6 +217,50 @@ function tty.has_emoji()
         tty._HAS_EMOJI = has_emoji or false
     end
     return has_emoji
+end
+
+-- has 8 colors?
+function tty.has_color8()
+    local has_color8 = tty._HAS_COLOR8
+    if has_color8 == nil then
+
+        -- detect it from $COLORTERM
+        if has_color8 == nil then
+            local colorterm = tty._colorterm()
+            if colorterm == "nocolor" then
+                has_color8 = false
+            elseif colorterm == "color8" or colorterm == "color256" or colorterm == "truecolor" then
+                has_color8 = true
+            end
+        end
+
+        -- detect it from $TERM
+        local term = tty.term()
+        if has_color8 == nil then
+            if term == "vstudio" then
+                has_color8 = false
+            elseif term == "xterm" then
+                has_color8 = true
+            end
+        end
+
+        -- detect it from system
+        if has_color8 == nil then
+            if os.host() == "windows" then
+                local winos = require("base/winos")
+                if winos.version():le("win7") then
+                    has_color8 = false
+                else
+                    has_color8 = true
+                end
+            else
+                -- alway enabled for unix-like system
+                has_color8 = true
+            end
+        end
+        tty._HAS_COLOR8 = has_color8 or false
+    end
+    return has_color8
 end
 
 -- return module
