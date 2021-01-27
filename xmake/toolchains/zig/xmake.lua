@@ -28,6 +28,12 @@ toolchain("zig")
     -- mark as standalone toolchain
     set_kind("standalone")
 
+    -- on check
+    on_check(function (toolchain)
+        -- only for overriding cross.on_check, because we will use `-p cross --cross=xxx`
+        return true
+    end)
+
     -- on load
     on_load(function (toolchain)
 
@@ -44,20 +50,41 @@ toolchain("zig")
         toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
 
         -- init arch
-        if toolchain:is_arch("arm64") then
+        if toolchain:is_arch("arm64", "arm64-v8a") then
             arch = "aarch64"
+        elseif toolchain:is_arch("arm", "armv7") then
+            arch = "arm"
         elseif toolchain:is_arch("i386", "x86") then
             arch = "i386"
+        elseif toolchain:is_arch("riscv64") then
+            arch = "riscv64"
+        elseif toolchain:is_arch("mips.*") then
+            arch = toolchain:arch()
+        elseif toolchain:is_arch("ppc64") then
+            arch = "powerpc64"
+        elseif toolchain:is_arch("ppc") then
+            arch = "powerpc"
+        elseif toolchain:is_arch("s390x") then
+            arch = "s390x"
         else
             arch = "x86_64"
         end
 
         -- init target
         local target
-        if toolchain:is_plat("macosx") then
+        if toolchain:is_plat("cross") then
+            -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
+            target = toolchain:cross()
+        elseif toolchain:is_plat("macosx") then
             target = arch .. "-macos-gnu"
         elseif toolchain:is_plat("linux") then
-            target = arch .. "-linux-gnu"
+            if arch == "arm" then
+                target = "arm-linux-gnueabi"
+            elseif arch == "mips64" or arch == "mips64el" then
+                target = arch .. "-linux-gnuabi64"
+            else
+                target = arch .. "-linux-gnu"
+            end
         elseif toolchain:is_plat("windows") then
             target = arch .. "-windows-msvc"
         elseif toolchain:is_plat("mingw") then
