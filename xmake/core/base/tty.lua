@@ -40,7 +40,7 @@ end
 
 -- get colorterm setting
 --
--- COLORTERM: 8color, 256color, truecolor, nocolor
+-- COLORTERM: 8color/color8, 256color/color256, truecolor, nocolor
 --
 function tty._colorterm()
     local colorterm = tty._COLORTERM
@@ -276,7 +276,7 @@ function tty.has_color256()
             local colorterm = tty._colorterm()
             if colorterm == "nocolor" then
                 has_color256 = false
-            elseif colorterm and colorterm:find("256color", 1, true) then
+            elseif colorterm and (colorterm:find("256color", 1, true) or colorterm:find("color256", 1, true)) then
                 has_color256 = true
             elseif tty.has_color24() then
                 has_color256 = true
@@ -289,7 +289,7 @@ function tty.has_color256()
         if has_color256 == nil then
             if term == "vstudio" then
                 has_color256 = false
-            elseif term_env and term_env:find("256color", 1, true) then
+            elseif term_env and (term_env:find("256color", 1, true) or term_env:find("color256", 1, true)) then
                 has_color256 = true
             end
         end
