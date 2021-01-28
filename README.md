@@ -230,7 +230,7 @@ musl          The musl-based cross-compilation toolchains
 * Dlang
 * Fortran
 * Cuda
-* Zig (Experimental)
+* Zig
 
 ## Support Features
 
