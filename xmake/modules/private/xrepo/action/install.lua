@@ -92,41 +92,18 @@ function menu_options()
     return options, show_options, description
 end
 
--- enter working directory
-function _enter_workdir()
-    local workdir = os.tmpfile({ramdisk = false}) .. ".xrepo.dir"
-    os.tryrm(workdir)
-    os.mkdir(workdir)
-    local oldir = os.cd(workdir)
-    os.vrunv("xmake", {"create", "-P", "."})
-    local includes = option.get("includes")
-    if includes then
-        local content = io.readfile("xmake.lua")
-        local file = io.open("xmake.lua", 'w')
-        for _, include in ipairs(path.splitenv(includes)) do
-            if not path.is_absolute(include) then
-                include = path.absolute(include, oldir)
-            end
-            file:print("includes('%s')", include)
-        end
-        file:print("")
-        file:print(content)
-        file:close()
-    end
-    return workdir, oldir
-end
-
--- leave working directory
-function _leave_workdir(workdir, oldir)
-    os.cd(oldir)
-    os.tryrm(workdir)
-end
-
 -- install packages
 function _install_packages(packages)
 
     -- enter working project directory
-    local workdir, oldir = _enter_workdir()
+    local workdir = path.join(os.tmpdir(), "xrepo", "working")
+    if not os.isdir(workdir) then
+        os.mkdir(workdir)
+        os.cd(workdir)
+        os.vrunv("xmake", {"create", "-P", "."})
+    else
+        os.cd(workdir)
+    end
 
     -- disable xmake-stats
     os.setenv("XMAKE_STATS", "false")
@@ -192,7 +169,8 @@ function _install_packages(packages)
     if option.get("target_minver") then
         table.insert(config_argv, "--target_minver=" .. option.get("target_minver"))
     end
-    os.vrunv("xmake", config_argv)
+    local envs = {XMAKE_RCFILES = option.get("includes")}
+    os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do install
     local require_argv = {"require"}
@@ -239,10 +217,7 @@ function _install_packages(packages)
         table.insert(require_argv, "--extra=" .. extra_str)
     end
     table.join2(require_argv, packages)
-    os.vexecv("xmake", require_argv)
-
-    -- leave working directory
-    _leave_workdir(workdir, oldir)
+    os.vexecv("xmake", require_argv, {envs = envs})
 end
 
 -- main entry
