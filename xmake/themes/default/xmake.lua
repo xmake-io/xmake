@@ -77,8 +77,13 @@ theme("default")
     set_color("dump.function", "cyan")
 
     -- menu
-    set_color("menu.main.task.name", "magenta")
-    set_color("menu.option.name", "green")
+    if is_subhost("widows") and os.term() == "powershell" then
+        set_color("menu.main.task.name", "cyan bright")
+        set_color("menu.option.name", "green bright")
+    else
+        set_color("menu.main.task.name", "magenta")
+        set_color("menu.option.name", "green")
+    end
     set_color("menu.usage", "cyan")
 
     -- interactive mode

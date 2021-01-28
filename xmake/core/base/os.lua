@@ -971,6 +971,11 @@ function os.fscase()
     return os._FSCASE
 end
 
+-- get term
+function os.term()
+    return require("base/tty").term()
+end
+
 -- get all current environment variables
 function os.getenvs()
     local envs = {}

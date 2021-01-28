@@ -27,6 +27,7 @@ local interpreter   = require("base/interpreter")
 local sandbox_os = sandbox_os or {}
 
 -- export some readonly interfaces
+sandbox_os.term        = os.term
 sandbox_os.host        = os.host
 sandbox_os.arch        = os.arch
 sandbox_os.subhost     = os.subhost
