@@ -167,11 +167,12 @@ function project._load(force, disable_filter)
 
     -- load script
     local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data)
-            local xmakerc_file = project.rcfile()
-            if xmakerc_file and os.isfile(xmakerc_file) then
-                local rcdata = io.readfile(xmakerc_file)
-                if rcdata then
-                    data = rcdata .. "\n" .. data
+            for _, xmakerc_file in ipairs(project.rcfiles()) do
+                if xmakerc_file and os.isfile(xmakerc_file) then
+                    local rcdata = io.readfile(xmakerc_file)
+                    if rcdata then
+                        data = rcdata .. "\n" .. data
+                    end
                 end
             end
             return data
@@ -837,28 +838,35 @@ end
 
 -- get all loaded project files with subfiles (xmake.lua)
 function project.allfiles()
-    local rcfile = project.rcfile()
-    if rcfile and os.isfile(rcfile) then
-        return table.join(project.interpreter():scriptfiles(), rcfile)
-    else
-        return project.interpreter():scriptfiles()
+    local files = {}
+    table.join2(files, project.interpreter():scriptfiles())
+    for _, rcfile in ipairs(project.rcfiles()) do
+        if rcfile and os.isfile(rcfile) then
+            table.insert(files, rcfile)
+        end
     end
+    return files
 end
 
--- get the global rcfile: ~/.xmakerc.lua
-function project.rcfile()
-    local xmakerc = project._XMAKE_RCFILE
-    if xmakerc == nil then
-        xmakerc = "/etc/xmakerc.lua"
-        if not os.isfile(xmakerc) then
-            xmakerc = "~/.xmakerc.lua"
-            if not os.isfile(xmakerc) then
-                xmakerc = path.join(global.directory(), "xmakerc.lua")
+-- get the global rcfiles: ~/.xmakerc.lua
+function project.rcfiles()
+    local rcfiles = project._XMAKE_RCFILES
+    if rcfiles == nil then
+        rcfiles = {}
+        local rcpaths = {}
+        local rcpaths_env = os.getenv("XMAKE_RCFILES")
+        if rcpaths_env then
+            table.join2(rcpaths, path.splitenv(rcpaths_env))
+        end
+        table.join2(rcpaths, {"/etc/xmakerc.lua", "~/.xmakerc.lua", path.join(global.directory(), "xmakerc.lua")})
+        for _, rcfile in ipairs(rcpaths) do
+            if os.isfile(rcfile) then
+                table.insert(rcfiles, rcfile)
             end
         end
-        project._XMAKE_RCFILE = xmakerc
+        project._XMAKE_RCFILES = rcfiles
     end
-    return xmakerc
+    return rcfiles
 end
 
 -- get the project directory
