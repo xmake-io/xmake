@@ -7,6 +7,7 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-766481512): Support `zig cc` and `zig c++` as c/c++ compiler
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-768193083): Support zig cross-compilation
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): Improve to detect terminal and color codes
+* [#1216](https://github.com/xmake-io/xmake/issues/1216): Pass custom configuration scripts to xrepo
 
 ## v2.5.1
 
@@ -913,6 +914,7 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-766481512): 支持 `zig cc` 和 `zig c++` 作为 c/c++ 编译器
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-768193083): 支持使用 zig 进行交叉编译
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): 改进终端和 color codes 探测
+* [#1216](https://github.com/xmake-io/xmake/issues/1216): 传递自定义 includes 脚本给 xrepo
 
 ## v2.5.1
 
