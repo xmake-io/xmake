@@ -163,7 +163,7 @@ function tty.term()
                 if TERM:find("xterm", 1, true) then
                     term = "xterm"
                 elseif TERM == "cygwin" then
-                    term == "cygwin"
+                    term = "cygwin"
                 end
             end
         end
