@@ -77,7 +77,7 @@ theme("default")
     set_color("dump.function", "cyan")
 
     -- menu
-    if is_subhost("widows") and os.term() == "powershell" then
+    if is_subhost("windows") and os.term() == "powershell" then
         set_color("menu.main.task.name", "cyan bright")
         set_color("menu.option.name", "green bright")
     else
