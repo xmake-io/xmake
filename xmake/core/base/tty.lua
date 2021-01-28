@@ -156,6 +156,18 @@ function tty.term()
             end
         end
 
+        -- get term from $TERM
+        if term == nil then
+            local TERM = os.getenv("TERM")
+            if TERM ~= nil then
+                if TERM:find("xterm", 1, true) then
+                    term = "xterm"
+                elseif TERM == "cygwin" then
+                    term == "cygwin"
+                end
+            end
+        end
+
         -- get term from system
         if term == nil then
             local subhost = xmake._SUBHOST
@@ -176,16 +188,6 @@ function tty.term()
                 term = "cygwin"
             elseif subhost == "macosx" then
                 term = "xterm"
-            end
-        end
-
-        -- get term from $TERM
-        if term == nil then
-            local TERM = os.getenv("TERM")
-            if TERM ~= nil then
-                if TERM:find("xterm", 1, true) then
-                    term = "xterm"
-                end
             end
         end
         tty._TERM = term or "unknown"
@@ -250,7 +252,9 @@ function tty.has_color8()
         if has_color8 == nil then
             if os.host() == "windows" then
                 local winos = require("base/winos")
-                if winos.version():le("win7") then
+                if os.getenv("ANSICON") then
+                    has_color8 = true
+                elseif winos.version():le("win7") then
                     has_color8 = false
                 else
                     has_color8 = true
