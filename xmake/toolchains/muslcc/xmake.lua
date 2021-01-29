@@ -19,7 +19,7 @@
 --
 
 -- define toolchain
-toolchain("musl")
+toolchain("muslcc")
 
     -- set homepage
     set_homepage("https://musl.cc/")
