@@ -246,7 +246,7 @@ function tty.has_color8()
         if has_color8 == nil then
             if term == "vstudio" then
                 has_color8 = false
-            elseif term == "xterm" then
+            elseif term == "xterm" or "mintty" then
                 has_color8 = true
             end
         end
