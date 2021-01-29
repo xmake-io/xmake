@@ -205,8 +205,8 @@ function tty.has_emoji()
         local term = tty.term()
         local winos = require("base/winos")
 
-        -- before win7 on cmd? disable it
-        if has_emoji == nil and winos.version():le("win7") then
+        -- before win7? disable it
+        if has_emoji == nil and (os.host() == "windows" and winos.version():le("win7")) then
             has_emoji = false
         end
 
