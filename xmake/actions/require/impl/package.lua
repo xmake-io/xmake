@@ -367,6 +367,11 @@ end
 --
 function _merge_requireinfo(requireinfo, requirepath)
 
+    -- only for project
+    if not os.isfile(os.projectfile()) then
+        return
+    end
+
     -- find requireconf from the given requirepath
     local requireconf_result = {}
     local requireconfs, requireconfs_extra = project.requireconfs_str()
