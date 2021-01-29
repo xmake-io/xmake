@@ -133,6 +133,7 @@ end
 --  - msys2
 --  - cygwin
 --  - powershell
+--  - mintty
 --  - windows-terminal
 --  - gnome-terminal
 --  - xfce4-terminal
@@ -152,6 +153,8 @@ function tty.term()
             if TERM_PROGRAM ~= nil then
                 if TERM_PROGRAM:find("vscode", 1, true) then
                     term = "vscode"
+                elseif TERM_PROGRAM == "mintty" then
+                    term = "mintty" -- git bash
                 end
             end
         end
@@ -203,7 +206,7 @@ function tty.has_emoji()
         local winos = require("base/winos")
 
         -- before win7 on cmd? disable it
-        if has_emoji == nil and term == "cmd" and winos.version():le("win7") then
+        if has_emoji == nil and winos.version():le("win7") then
             has_emoji = false
         end
 
