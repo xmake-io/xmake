@@ -252,24 +252,28 @@ function colors.translate(str, opt)
 
     -- translate color blocks, e.g. ${red}, ${color.xxx}, ${emoji}
     tty = tty or require("base/tty")
+    local has_color8   = tty.has_color8()
+    local has_color256 = tty.has_color256()
+    local has_color24  = tty.has_color24()
+    local has_emoji    = tty.has_emoji()
     str = str:gsub("(%${(.-)})", function(_, word)
 
         -- not supported? ignore it
         local nocolors = false
-        if not tty.has_color8() and not tty.has_color256() and not tty.has_color24() then
+        if not has_color8 and not has_color256 and not has_color24 then
             nocolors = true
         end
 
         -- is plain theme? no colors and no emoji
-        local noemoji = not tty.has_emoji()
+        local noemoji = not has_emoji
         if opt.plain or (theme and theme:name() == "plain") then
             nocolors = true
             noemoji = true
         end
 
         -- get keys
-        local keys = tty.has_color256() and colors._keys256 or colors._keys8
-        if tty.has_color24() then
+        local keys = has_color256 and colors._keys256 or colors._keys8
+        if has_color24 then
             keys = colors._keys24
         end
 
@@ -309,13 +313,13 @@ function colors.translate(str, opt)
             -- get the color code
             local code = keys[block]
             if not code then
-                if tty.has_color24() and block:find(";", 1, true) then
+                if has_color24 and block:find(";", 1, true) then
                     if block:startswith("on;") then
                         code = block:gsub("on;", "48;2;")
                     else
                         code = "38;2;" .. block
                     end
-                elseif tty.has_color256() and block:find("#", 1, true) then
+                elseif has_color256 and block:find("#", 1, true) then
                     if block:startswith("on#") then
                         code = block:gsub("on#", "48;5;")
                     else
