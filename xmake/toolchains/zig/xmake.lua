@@ -54,7 +54,7 @@ toolchain("zig")
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
-        local zig = toolchain:config("zig")
+        local zig = toolchain:config("zig") or "zig"
         toolchain:set("toolset", "cc",    zig .. " cc")
         toolchain:set("toolset", "cxx",   zig .. " c++")
         toolchain:set("toolset", "ld",    zig .. " c++")
