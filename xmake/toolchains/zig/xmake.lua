@@ -38,9 +38,15 @@ toolchain("zig")
                 table.join2(paths, envs.PATH)
             end
         end
-        local zig = find_tool("zig", {program = get_config("zc"), paths = paths})
-        if zig and zig.program then
-            toolchain:config_set("zig", zig.program)
+        local zig = get_config("zc")
+        if not zig then
+            zig = find_tool("zig", {paths = paths})
+            if zig and zig.program then
+                zig = zig.program
+            end
+        end
+        if zig then
+            toolchain:config_set("zig", zig)
             toolchain:configs_save()
             return true
         end
