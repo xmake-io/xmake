@@ -25,9 +25,6 @@ toolchain("zig")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
-
     -- on check
     on_check(function (toolchain)
         import("lib.detect.find_tool")
@@ -40,7 +37,7 @@ toolchain("zig")
         end
         local zig = get_config("zc")
         if not zig then
-            zig = find_tool("zig", {paths = paths})
+            zig = find_tool("zig", {force = true, paths = paths})
             if zig and zig.program then
                 zig = zig.program
             end
