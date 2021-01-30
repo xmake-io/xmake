@@ -30,8 +30,20 @@ toolchain("zig")
 
     -- on check
     on_check(function (toolchain)
-        -- only for overriding cross.on_check, because we will use `-p cross --cross=xxx`
-        return true
+        import("lib.detect.find_tool")
+        local paths = {}
+        for _, package in ipairs(toolchain:packages()) do
+            local envs = package:get("envs")
+            if envs then
+                table.join2(paths, envs.PATH)
+            end
+        end
+        local zig = find_tool("zig", {program = get_config("zc"), paths = paths})
+        if zig and zig.program then
+            toolchain:config_set("zig", zig.program)
+            toolchain:configs_save()
+            return true
+        end
     end)
 
     -- on load
@@ -39,7 +51,7 @@ toolchain("zig")
 
         -- set toolset
         -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
-        local zig = get_config("zc") or "zig"
+        local zig = toolchain:config("zig")
         toolchain:set("toolset", "cc",    zig .. " cc")
         toolchain:set("toolset", "cxx",   zig .. " c++")
         toolchain:set("toolset", "ld",    zig .. " c++")

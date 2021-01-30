@@ -260,6 +260,26 @@ function _instance:load_cross_toolchain()
     return sandbox_module.import("toolchains.cross.load", {rootdir = os.programdir(), anonymous = true})(self)
 end
 
+-- get packages
+function _instance:packages()
+    local packages = self._PACKAGES
+    if packages == nil then
+        packages = {}
+        local project = require("project/project")
+        for _, pkgname in ipairs(table.wrap(self:config("packages"))) do
+            local requires = project.requires()
+            if requires then
+                local pkginfo = requires[pkgname]
+                if pkginfo then
+                    table.insert(packages, pkginfo)
+                end
+            end
+        end
+        self._PACKAGES = packages
+    end
+    return packages
+end
+
 -- on check (builtin)
 function _instance:_on_check()
     local on_check = self:info():get("check")
