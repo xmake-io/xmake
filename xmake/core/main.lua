@@ -281,7 +281,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
 
     -- get task instance
     local taskname = option.taskname() or "build"
-    local taskinst = project.task(taskname) or task.task(taskname)
+    local taskinst = task.task(taskname) or project.task(taskname)
     if not taskinst then
         return main._exit(string.format("do unknown task(%s)!", taskname))
     end
