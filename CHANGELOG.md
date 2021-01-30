@@ -9,6 +9,10 @@
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): Improve to detect terminal and color codes
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): Pass custom configuration scripts to xrepo
 
+### Bugs fixed
+
+* [#1219](https://github.com/xmake-io/xmake/issues/1219): Fix version check and update
+
 ## v2.5.1
 
 ### New features
@@ -916,6 +920,10 @@
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): 改进终端和 color codes 探测
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): 传递自定义 includes 脚本给 xrepo
 
+### Bugs 修复
+
+* [#1219](https://github.com/xmake-io/xmake/issues/1219): 修复版本检测和更新
+
 ## v2.5.1
 
 ### 新特性
@@ -997,7 +1005,7 @@
 * [#978](https://github.com/xmake-io/xmake/issues/978): 改进工具链的flags顺序
 * 改进XCode工具链，支持macOS/arm64
 
-### Bugs修复
+### Bugs 修复
 
 * [#951](https://github.com/xmake-io/xmake/issues/951): 修复 emcc (WebAssembly) 工具链在windows上的支持
 * [#992](https://github.com/xmake-io/xmake/issues/992): 修复文件锁偶尔打开失败问题
@@ -1024,7 +1032,7 @@
 * [#927](https://github.com/xmake-io/xmake/issues/927): 改进android ndk，支持arm/thumb指令模式切换
 * 改进 trybuild/cmake 支持 Android/Mingw/iPhoneOS/WatchOS 工具链
 
-### Bugs修复
+### Bugs 修复
 
 * [#903](https://github.com/xmake-io/xmake/issues/903): 修复vcpkg包安装失败问题
 * [#912](https://github.com/xmake-io/xmake/issues/912): 修复自定义工具链
@@ -1065,7 +1073,7 @@
 * 改进msvc工具链，去除全局环境变量的依赖
 * [#857](https://github.com/xmake-io/xmake/pull/857): 改进`set_toolchains()`支持交叉编译的时候，特定target可以切换到host工具链同时编译
 
-### Bugs修复
+### Bugs 修复
 
 * 修复进度字符显示
 * [#829](https://github.com/xmake-io/xmake/issues/829): 修复由于macOS大小写不敏感系统导致的sysroot无效路径问题
@@ -1092,7 +1100,7 @@
 * [#808](https://github.com/xmake-io/xmake/issues/808): 生成cmakelists插件增加对add_frameworks的支持
 * [#820](https://github.com/xmake-io/xmake/issues/820): 支持独立的工作目录和构建目录，保持项目目录完全干净
 
-### Bugs修复
+### Bugs 修复
 
 * [#786](https://github.com/xmake-io/xmake/issues/786): 修复头文件依赖检测
 * [#810](https://github.com/xmake-io/xmake/issues/810): 修复linux下gcc strip debug符号问题
@@ -1130,7 +1138,7 @@
 * [#732](https://github.com/xmake-io/xmake/issues/732): 改进find_package支持查找homebrew/cmake安装的包
 * [#695](https://github.com/xmake-io/xmake/issues/695): 改进采用android ndk最新的abi命名
 
-### Bugs修复
+### Bugs 修复
 
 * 修复windows下link error显示问题
 * [#718](https://github.com/xmake-io/xmake/issues/718): 修复依赖包下载在多镜像时一定概率缓存失效问题
@@ -1157,7 +1165,7 @@
 * 改进process调度器
 * [#651](https://github.com/xmake-io/xmake/issues/651): 改进os/io模块系统操作错误提示
 
-### Bugs修复
+### Bugs 修复
 
 * 修复增量编译检测依赖文件的一些问题
 * 修复log输出导致xmake-vscode插件解析编译错误信息失败问题
@@ -1184,7 +1192,7 @@
 * [#629](https://github.com/xmake-io/xmake/issues/629): 改进hash.uuid并且实现uuid v4
 * [#639](https://github.com/xmake-io/xmake/issues/639): 改进参数解析器支持`-jN`风格传参
 
-### Bugs修复
+### Bugs 修复
 
 * [#567](https://github.com/xmake-io/xmake/issues/567): 修复序列化对象时候出现的内存溢出问题
 * [#566](https://github.com/xmake-io/xmake/issues/566): 修复安装远程依赖的链接顺序问题
@@ -1212,7 +1220,7 @@
 * [#542](https://github.com/xmake-io/xmake/pull/542): 改进vs系列工具链的unicode输出问题
 * 对于安装的lua脚本，启用lua字节码存储，减少安装包大小（<2.4M），提高运行加载效率。
 
-### Bugs修复
+### Bugs 修复
 
 * [#549](https://github.com/xmake-io/xmake/issues/549): 修复新版vs2019下检测环境会卡死的问题
 
@@ -1253,7 +1261,7 @@
 * 改进`target:on_xxx`自定义脚本，去支持匹配`android|armv7-a@macosx,linux|x86_64`模式
 * 改进loadfile，优化启动速度，windows上启动xmake时间提速98%
 
-### Bugs修复
+### Bugs 修复
 
 * [#400](https://github.com/xmake-io/xmake/issues/400): 修复qt项目c++语言标准设置无效问题
 
@@ -1294,7 +1302,7 @@
 * [#351](https://github.com/xmake-io/xmake/issues/351): 生成vs201x插件增加对yasm的支持
 * 重构改进整个远程依赖包管理器，更加快速、稳定、可靠，并提供更多的常用包
 
-### Bugs修复
+### Bugs 修复
 
 * 修复无法通过 `set_optimize()` 设置优化选项，如果存在`add_rules("mode.release")`的情况下
 * [#289](https://github.com/xmake-io/xmake/issues/289): 修复在windows下解压gzip文件失败
@@ -1327,7 +1335,7 @@
 * 支持only头文件依赖包的安装
 * 支持对包内置links的手动调整，`add_packages("xxx", {links = {}})`
 
-### Bugs修复
+### Bugs 修复
 
 * 修复安装依赖包失败中断后的状态不一致性问题
 
@@ -1354,7 +1362,7 @@
 * [#208](https://github.com/xmake-io/xmake/issues/208): 改进rpath对动态库的支持
 * [#225](https://github.com/xmake-io/xmake/issues/225): 改进vs环境探测
 
-### Bugs修复
+### Bugs 修复
 
 * [#177](https://github.com/xmake-io/xmake/issues/177): 修复被依赖的动态库target，如果设置了basename后链接失败问题
 * 修复`$ xmake f --menu`中Exit问题以及cpu过高问题
@@ -1386,7 +1394,7 @@
 * [#171](https://github.com/xmake-io/xmake/issues/171): 改进Qt环境的构建依赖
 * 在makefile生成插件中实现`make clean`
 
-### Bugs修复
+### Bugs 修复
 
 * 修复无法通过`add_ldflags("xx", "xx", {force = true})`强制设置多个flags的问题
 * [#157](https://github.com/xmake-io/xmake/issues/157): 修复pdb符号输出目录不存在情况下编译失败问题
@@ -1420,7 +1428,7 @@
 * 增加对linux/arm, arm64的支持，可以在arm linux上运行xmake
 * 改进vs201x工程生成插件，更好的includedirs设置支持
 
-### Bugs修复
+### Bugs 修复
 
 * 修复依赖修改编译和链接问题
 * [#151](https://github.com/xmake-io/xmake/issues/151): 修复`os.nuldev()`在mingw上传入gcc时出现问题
@@ -1443,7 +1451,7 @@
 * 改进macOS编译平台的探测，如果没有安装xcode也能够进行编译构建，如果有编译器的话
 * 改进`set_config_header`接口，支持局部版本号设置，优先于全局`set_version`，例如：`set_config_header("config", {version = "2.1.8", build = "%Y%m%d%H%M"})`
 
-### Bugs修复
+### Bugs 修复
 
 * [#145](https://github.com/xmake-io/xmake/issues/145): 修复运行target的当前目录环境
 
@@ -1473,7 +1481,7 @@
 * 为windows cmd终端增加彩色输出
 * 增加`-w|--warning`参数来启用实时警告输出
 
-### Bugs修复
+### Bugs 修复
 
 * 修复`set_pcxxheader`编译没有继承flags配置问题
 * [#140](https://github.com/xmake-io/xmake/issues/140): 修复`os.tmpdir()`在fakeroot下的冲突问题
@@ -1490,7 +1498,7 @@
 * 改进`target.add_deps`接口，添加继承配置，允许手动禁止依赖继承，例如：`add_deps("test", {inherit = false})`
 * 移除`tbox.pkg`二进制依赖，直接集成tbox源码进行编译
 
-### Bugs修复
+### Bugs 修复
 
 * 修复目标级联依赖问题
 * 修复`target:add`和`option:add`问题
@@ -1540,7 +1548,7 @@
 * 将`echo` 和 `app2ipa` 插件迁移到 [xmake-plugins](https://github.com/xmake-io/xmake-plugins) 仓库
 * 添加`set_config_header("config.h", {prefix = ""})` 代替 `set_config_h` 和 `set_config_h_prefix`
 
-### Bugs修复
+### Bugs 修复
 
 * 修复`try-catch-finally`
 * 修复解释器bug，解决当加载多级子目录时，根域属性设置不对
@@ -1564,7 +1572,7 @@
 * [#78](https://github.com/xmake-io/xmake/pull/78): 美化非全屏终端窗口下的`xmake --help`输出
 * 避免产生不必要的`.xmake`目录，如果不在工程中的时候
 
-### Bugs修复
+### Bugs 修复
 
 * [#67](https://github.com/xmake-io/xmake/issues/67): 修复 `sudo make install` 命令权限问题
 * [#70](https://github.com/xmake-io/xmake/issues/70): 修复检测android编译器错误
@@ -1590,7 +1598,7 @@
 * 改进工具链检测，通过延迟延迟检测提升整体检测效率
 * 当自动扫面生成`xmake.lua`时，添加更友好的用户提示，避免用户无操作
 
-### Bugs修复
+### Bugs 修复
 
 * 修复版本检测的错误提示信息
 * [#60](https://github.com/xmake-io/xmake/issues/60): 修复macosx和windows平台的xmake自举编译
@@ -1610,7 +1618,7 @@
 * 支持编译android版本的rust程序
 * 增强vs201x工程生成插件，支持同时多模式、架构编译
 
-### Bugs修复
+### Bugs 修复
 
 * 修复编译android程序，找不到系统头文件问题
 * 修复检测选项行为不正确问题
@@ -1645,7 +1653,7 @@
 * 精简和优化构建输出信息，添加`-q|--quiet`选项实现静默构建
 * 改进`makefile`生成插件，抽取编译工具和编译选项到全局变量
 
-### Bugs修复
+### Bugs 修复
 
 * [#41](https://github.com/waruqi/xmake/issues/41): 修复在windows下自动检测x64失败问题
 * [#43](https://github.com/waruqi/xmake/issues/43): 避免创建不必要的.xmake工程缓存目录
@@ -1667,7 +1675,7 @@
 * 移除`core/tools`目录以及msys工具链，在windows上使用xmake自编译core源码进行安装，优化xmake源码磁盘空间
 * 移除`xmake/packages`，默认模板安装不再内置二进制packages，暂时需要手动放置，以后再做成自动包依赖下载编译
 
-### Bugs修复
+### Bugs 修复
 
 * 修复msvc的编译选项不支持问题：`-def:xxx.def`
 * 修复ml.exe汇编器脚本
@@ -1689,7 +1697,7 @@
 * 增强内建变量的处理
 * 支持字符串类型的选项option设置
 
-### Bugs修复
+### Bugs 修复
 
 * 修复在linux下检测ld连接器失败，如果没装g++的话
 * 修复`*.cxx`编译失败问题
@@ -1709,7 +1717,7 @@
 * 改进makefile生成插件，移除对xmake的依赖，并且支持`windows/linux/macosx`等大部分pc平台
 * 优化多任务编译速度，在windows下编译提升较为明显
 
-### Bugs修复
+### Bugs 修复
 
 * 修复安装目录错误问题
 * 修复`import`根目录错误问题
@@ -1723,7 +1731,7 @@
 * 更新工程模板
 * 增强函数检测
 
-### Bugs修复
+### Bugs 修复
 
 * [#7](https://github.com/waruqi/xmake/issues/7): 修复用模板创建工程后，target名不对问题：'[targetname]'
 * [#9](https://github.com/waruqi/xmake/issues/9): 修复clang不支持c++11的问题
@@ -1765,7 +1773,7 @@
 * 简化命令行配置开关, 支持`xmake config --xxx=[y|n|yes|no|true|false]`等开关值
 * 合并iphoneos和iphonesimulator平台，以及watchos和watchsimulator平台，通过arch来区分，使得打包更加方便，能够支持一次性打包iphoneos的所有arch到一个包中
 
-### Bugs修复
+### Bugs 修复
 
 * [#3](https://github.com/waruqi/xmake/issues/3): 修复ArchLinux 编译失败问题
 * [#4](https://github.com/waruqi/xmake/issues/4): 修复windows上安装失败问题
@@ -1789,7 +1797,7 @@
 * 增强`add_files`接口，支持直接添加`*.o/obj/a/lib`文件，并且支持静态库的合并
 * 裁剪xmake的安装过程，移除一些预编译的二进制程序
 
-### Bugs修复
+### Bugs 修复
 
 * [#1](https://github.com/waruqi/xmake/issues/4): 修复win7上安装失败问题
 * 修复和增强工具链检测
@@ -1804,7 +1812,7 @@
 * 添加import接口，使得在xmake.lua中可以导入一些扩展模块，例如：os，path，utils等等，使得脚本更灵活
 * 添加android平台arm64-v8a支持
 
-### Bugs修复
+### Bugs 修复
 
 * 修复set_installscript接口的一些bug
 * 修复在windows x86_64下，安装失败的问题
