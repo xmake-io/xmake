@@ -106,9 +106,12 @@ toolchain("zig")
             target = arch .. "-windows-gnu"
         end
         if target then
-            toolchain:add("cxflags", "-target", target)
-            toolchain:add("shflags", "-target", target)
-            toolchain:add("ldflags", "-target", target)
+            toolchain:add("zig_cc.cxflags", "-target", target)
+            toolchain:add("zig_cc.shflags", "-target", target)
+            toolchain:add("zig_cc.ldflags", "-target", target)
+            toolchain:add("zig_cxx.cxflags", "-target", target)
+            toolchain:add("zig_cxx.shflags", "-target", target)
+            toolchain:add("zig_cxx.ldflags", "-target", target)
             toolchain:add("zcflags", "-target", target)
             toolchain:add("zcldflags", "-target", target)
             toolchain:add("zcshflags", "-target", target)
