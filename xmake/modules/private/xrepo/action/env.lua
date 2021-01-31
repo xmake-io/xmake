@@ -46,6 +46,8 @@ function menu_options()
         {'b', "packages",   "kv", nil, "Set the packages to be bound",
                                        "e.g.",
                                        "    - xrepo env -b \"python 3.x\" python",
+                                       "    - xrepo env -b \"llvm 11.x\" bash",
+                                       "      $ clang --version",
                                        "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
         {},
         {nil, "program",    "v",  nil, "Set the program name to be run",
