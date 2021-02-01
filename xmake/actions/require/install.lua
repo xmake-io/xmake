@@ -73,6 +73,11 @@ function _register_required_package_libs(instance, requireinfo, is_deps)
     end
 end
 
+-- register the base info of required package
+function _register_required_package_base(instance, requireinfo)
+    requireinfo:set("__installdir", instance:installdir())
+end
+
 -- register the required local package
 function _register_required_package(instance, requireinfo)
 
@@ -85,6 +90,7 @@ function _register_required_package(instance, requireinfo)
 
         -- add packages info with all dependencies
         local envs = {}
+        _register_required_package_base(instance, requireinfo)
         _register_required_package_libs(instance, requireinfo)
         _register_required_package_envs(instance, envs)
         local orderdeps = instance:orderdeps()

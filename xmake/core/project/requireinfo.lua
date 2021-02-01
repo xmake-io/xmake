@@ -108,6 +108,11 @@ function requireinfo:requirestr()
     return self:get("__requirestr")
 end
 
+-- get the install directory
+function requireinfo:installdir()
+    return self:get("__installdir")
+end
+
 -- get the extra info from the given name
 function requireinfo:extra(name)
     local extrainfo = self:extrainfo()

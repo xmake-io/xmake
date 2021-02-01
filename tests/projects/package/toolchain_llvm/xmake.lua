@@ -1,5 +1,5 @@
 add_rules("mode.debug", "mode.release")
-add_requires("llvm 11.0.0")
+add_requires("llvm 11.0.0", {alias = "llvm-11"})
 
 target("test")
     set_kind("binary")
