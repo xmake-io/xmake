@@ -87,14 +87,16 @@ function linuxos.name()
                 os_release = os_release:trim():lower()
                 if os_release:find("arch linux", 1, true) or os_release:find("archlinux", 1, true) then
                     name = "archlinux"
+                elseif os_release:find("centos linux", 1, true) or os_release:find("centos", 1, true) then
+                    name = "centos"
                 elseif os_release:find("fedora", 1, true) then
                     name = "fedora"
+                elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
+                    name = "linuxmint"
                 elseif os_release:find("ubuntu", 1, true) then
                     name = "ubuntu"
                 elseif os_release:find("debian", 1, true) then
                     name = "debian"
-                elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
-                    name = "linuxmint"
                 end
             end
         end
