@@ -85,7 +85,7 @@ function linuxos.name()
             local os_release = io.readfile("/etc/os-release")
             if os_release then
                 os_release = os_release:trim():lower()
-                if os_release:find("arch linux", 1, true) then
+                if os_release:find("arch linux", 1, true) or os_release:find("archlinux", 1, true) then
                     name = "archlinux"
                 elseif os_release:find("fedora", 1, true) then
                     name = "fedora"
@@ -93,6 +93,8 @@ function linuxos.name()
                     name = "ubuntu"
                 elseif os_release:find("debian", 1, true) then
                     name = "debian"
+                elseif os_release:find("linux mint", 1, true) or os_release:find("linuxmint", 1, true) then
+                    name = "linuxmint"
                 end
             end
         end
