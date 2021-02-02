@@ -33,8 +33,20 @@ function main(toolchain)
         return
     end
 
-    -- find cross toolchain
+    -- find cross toolchain from external envirnoment
     local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
+    if not cross_toolchain then
+        -- find it from packages
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                cross_toolchain = find_cross_toolchain(installdir, {cross = cross})
+                if cross_toolchain then
+                    break
+                end
+            end
+        end
+    end
     if cross_toolchain then
         config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
         config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})

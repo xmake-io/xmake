@@ -343,19 +343,37 @@ function main(archivefile, outputdir, opt)
     opt = opt or {}
 
     -- init extractors
-    local extractors =
-    {
-        [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z}
-    ,   [".7z"]         = {_extract_using_7z}
-    ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
-    ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
-    ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
-    ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
-    ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
-    ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_gzip}
-    ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
-    ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
-    }
+    local extractors
+    if is_host("windows") then
+        -- we use 7z first, becase xmake package has builtin 7z program on windows
+        extractors =
+        {
+            [".zip"]        = {_extract_using_7z, _extract_using_unzip, _extract_using_tar}
+        ,   [".7z"]         = {_extract_using_7z}
+        ,   [".gz"]         = {_extract_using_7z, _extract_using_gzip, _extract_using_tar}
+        ,   [".xz"]         = {_extract_using_7z, _extract_using_xz, _extract_using_tar}
+        ,   [".tgz"]        = {_extract_using_7z, _extract_using_tar}
+        ,   [".bz2"]        = {_extract_using_7z, _extract_using_tar}
+        ,   [".tar"]        = {_extract_using_7z, _extract_using_tar}
+        ,   [".tar.gz"]     = {_extract_using_7z, _extract_using_tar, _extract_using_gzip}
+        ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_tar, _extract_using_xz}
+        ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_tar}
+        }
+    else
+        extractors =
+        {
+            [".zip"]        = {_extract_using_unzip, _extract_using_tar, _extract_using_7z}
+        ,   [".7z"]         = {_extract_using_7z}
+        ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
+        ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
+        ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
+        ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
+        ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
+        ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_gzip}
+        ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
+        ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
+        }
+    end
 
     -- get extension
     local extension = opt.extension or get_archive_extension(archivefile)
