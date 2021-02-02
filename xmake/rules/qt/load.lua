@@ -102,9 +102,11 @@ function main(target, opt)
     end
 
     -- add -fPIC
-    target:add("cxflags", "-fPIC")
-    target:add("mxflags", "-fPIC")
-    target:add("asflags", "-fPIC")
+    if not target:is_plat("windows", "mingw") then
+        target:add("cxflags", "-fPIC")
+        target:add("mxflags", "-fPIC")
+        target:add("asflags", "-fPIC")
+    end
 
     -- need c++11 at least
     local languages = target:get("languages")

@@ -75,7 +75,9 @@ end
 
 -- register the base info of required package
 function _register_required_package_base(instance, requireinfo)
-    requireinfo:set("__installdir", instance:installdir())
+    if not instance:isSys() and not instance:is3rd() then
+        requireinfo:set("__installdir", instance:installdir())
+    end
 end
 
 -- register the required local package
