@@ -265,7 +265,11 @@ function _instance:revision(url_alias)
     end
 end
 
--- get the package kind, binary or nil(library)
+-- get the package kind
+--
+-- - binary
+-- - library(default)
+--
 function _instance:kind()
     local kind = self:get("kind")
     if not kind then
@@ -275,6 +279,11 @@ function _instance:kind()
         end
     end
     return kind
+end
+
+-- is binary package?
+function _instance:is_binary()
+    return self:kind() == "binary"
 end
 
 -- get the filelock of the whole package directory

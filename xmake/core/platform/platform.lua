@@ -164,7 +164,7 @@ function _instance:toolchains(opt)
             end
 
             -- get the platform toolchains
-            if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
+            if (not toolchain_given or not toolchain_given:is_standalone()) and self._INFO:get("toolchains") then
                 names = self._INFO:get("toolchains")
             end
         end
@@ -288,11 +288,11 @@ function _instance:check()
     while idx <= num do
         local toolchain = toolchains[idx]
         -- we need remove other standalone toolchains if standalone toolchain found
-        if (standalone and toolchain:standalone()) or not toolchain:check() then
+        if (standalone and toolchain:is_standalone()) or not toolchain:check() then
             table.remove(toolchains, idx)
             num = num - 1
         else
-            if toolchain:standalone() then
+            if toolchain:is_standalone() then
                 standalone = true
             end
             idx = idx + 1

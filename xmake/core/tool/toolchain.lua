@@ -142,8 +142,8 @@ function _instance:kind()
     return self:info():get("kind")
 end
 
--- is cross-compilation toolchain
-function _instance:cross_toolchain()
+-- is cross-compilation toolchain?
+function _instance:is_cross()
     if self:kind() == "cross" then
         return true
     elseif self:kind() == "standalone" and (self:cross() or self:sdkdir()) then
@@ -152,7 +152,7 @@ function _instance:cross_toolchain()
 end
 
 -- is standalone toolchain?
-function _instance:standalone()
+function _instance:is_standalone()
     return self:kind() == "standalone" or self:kind() == "cross"
 end
 
@@ -292,7 +292,7 @@ end
 -- on check (builtin)
 function _instance:_on_check()
     local on_check = self:info():get("check")
-    if not on_check and self:cross_toolchain() then
+    if not on_check and self:is_cross() then
         on_check = self.check_cross_toolchain
     end
     return on_check
@@ -301,7 +301,7 @@ end
 -- on load (builtin)
 function _instance:_on_load()
     local on_load = self:info():get("load")
-    if not on_load and self:cross_toolchain() then
+    if not on_load and self:is_cross() then
         on_load = self.load_cross_toolchain
     end
     return on_load
