@@ -8,6 +8,7 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-768193083): Support zig cross-compilation
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): Improve to detect terminal and color codes
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): Pass custom configuration scripts to xrepo
+* Add linuxos builtin module to get linux system information
 
 ### Bugs fixed
 
@@ -919,6 +920,7 @@
 * [#955](https://github.com/xmake-io/xmake/issues/955#issuecomment-768193083): 支持使用 zig 进行交叉编译
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): 改进终端和 color codes 探测
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): 传递自定义 includes 脚本给 xrepo
+* 添加 linuxos 内置模块获取 linux 系统信息
 
 ### Bugs 修复
 
