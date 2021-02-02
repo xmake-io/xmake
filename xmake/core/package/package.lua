@@ -252,8 +252,6 @@ function _instance:sourcehash(url_alias)
         if not sourcehash then
             sourcehash = versions[version_str]
         end
-
-        -- ok?
         return sourcehash
     end
 end

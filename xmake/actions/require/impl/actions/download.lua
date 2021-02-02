@@ -215,8 +215,6 @@ function main(package)
                 else
                     _download(package, url, sourcedir, url_alias, url_excludes)
                 end
-
-                -- ok
                 return true
             end,
             catch
