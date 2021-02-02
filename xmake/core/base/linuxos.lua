@@ -97,6 +97,8 @@ function linuxos.name()
                     name = "ubuntu"
                 elseif os_release:find("debian", 1, true) then
                     name = "debian"
+                elseif os_release:find("opensuse", 1, true) then
+                    name = "opensuse"
                 end
             end
         end
