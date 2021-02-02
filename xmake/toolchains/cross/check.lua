@@ -29,7 +29,7 @@ function main(toolchain)
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     local cross  = toolchain:cross()
-    if not sdkdir and not bindir and not cross then
+    if not sdkdir and not bindir and not cross and not toolchain:config("packages") then
         return
     end
 

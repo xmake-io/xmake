@@ -25,8 +25,8 @@ toolchain("muslcc")
     set_homepage("https://musl.cc/")
     set_description("The musl-based cross-compilation toolchains")
 
-    -- mark as standalone toolchain
-    set_kind("standalone")
+    -- mark as cross-compilation toolchain
+    set_kind("cross")
 
     -- on load
     on_load(function (toolchain)
