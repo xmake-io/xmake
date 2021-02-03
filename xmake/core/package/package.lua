@@ -31,6 +31,7 @@ local table          = require("base/table")
 local global         = require("base/global")
 local semver         = require("base/semver")
 local option         = require("base/option")
+local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local memcache       = require("cache/memcache")
@@ -239,8 +240,6 @@ end
 
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
-
-    -- get sourcehash
     local versions    = self:get("versions")
     local version_str = self:version_str()
     if versions and version_str then
@@ -251,6 +250,9 @@ function _instance:sourcehash(url_alias)
         end
         if not sourcehash then
             sourcehash = versions[version_str]
+        end
+        if sourcehash then
+            sourcehash = sourcehash:lower()
         end
         return sourcehash
     end
@@ -737,7 +739,8 @@ end
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
-        local function _get_buildhash(configs)
+        local function _get_buildhash(configs, opt)
+            opt = opt or {}
             local str = self:plat() .. self:arch()
             if configs then
                 -- since luajit v2.1, the key order of the table is random and undefined.
@@ -752,6 +755,21 @@ function _instance:buildhash()
                 local configs_str = string.serialize(configs_order, true)
                 configs_str = configs_str:gsub("\"", "")
                 str = str .. configs_str
+            end
+            if opt.sourcehash ~= false then
+                local sourcehashs = hashset.new()
+                for _, url in ipairs(self:urls()) do
+                    local url_alias = self:url_alias(url)
+                    local sourcehash = self:sourcehash(url_alias)
+                    if sourcehash then
+                        sourcehashs:insert(sourcehash)
+                    end
+                end
+                if not sourcehashs:empty() then
+                    for _, sourcehash in sourcehashs:keys() do
+                        str = str .. "_" .. sourcehash
+                    end
+                end
             end
             return hash.uuid4(str):gsub('-', ''):lower()
         end
@@ -769,11 +787,22 @@ function _instance:buildhash()
         if self:config("pic") then
             local configs = table.copy(self:configs())
             configs.pic = nil
-            buildhash = _get_buildhash(configs)
+            buildhash = _get_buildhash(configs, {sourcehash = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
         end
+
+        -- we need to be compatible with the hash value string for the previous xmake version
+        -- without sourcehash (< 2.5.2)
+        if not buildhash then
+            buildhash = _get_buildhash(self:configs(), {sourcehash = false})
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+
+        -- get build hash for current version
         if not buildhash then
             buildhash = _get_buildhash(self:configs())
         end
