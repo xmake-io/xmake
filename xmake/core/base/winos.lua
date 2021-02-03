@@ -215,7 +215,7 @@ function winos.registry_query(keypath)
 
     -- get value name
     local splitinfo = keypath:split(';', {plain = true})
-    local valuename = splitinfo[2] or "(Default)"
+    local valuename = splitinfo[2] or ""
     keypath = splitinfo[1]
 
     -- get rootkey, e.g. HKEY_LOCAL_MACHINE
