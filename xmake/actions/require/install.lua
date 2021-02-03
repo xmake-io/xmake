@@ -51,7 +51,7 @@ end
 -- register required package libraries
 -- libs: includedirs, links, linkdirs ...
 function _register_required_package_libs(instance, requireinfo, is_deps)
-    if instance:kind() ~= "binary" then
+    if instance:is_library() then
         local fetchinfo = instance:fetch()
         if fetchinfo then
             fetchinfo.name    = nil

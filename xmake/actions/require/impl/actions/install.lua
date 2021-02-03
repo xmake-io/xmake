@@ -32,7 +32,7 @@ import(".utils.filter")
 function _patch_pkgconfig(package)
 
     -- only binary? need not pkgconfig
-    if package:kind() == "binary" then
+    if not package:is_library() then
         return
     end
 

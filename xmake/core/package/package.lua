@@ -101,7 +101,7 @@ end
 -- get the platform of package
 function _instance:plat()
     -- @note we uses os.host() instead of them for the binary package
-    if self:kind() == "binary" then
+    if self:is_binary() then
         return os.host()
     end
     local requireinfo = self:requireinfo()
@@ -114,7 +114,7 @@ end
 -- get the architecture of package
 function _instance:arch()
     -- @note we uses os.arch() instead of them for the binary package
-    if self:kind() == "binary" then
+    if self:is_binary() then
         return os.arch()
     end
     local requireinfo = self:requireinfo()
@@ -286,6 +286,11 @@ function _instance:is_binary()
     return self:kind() == "binary"
 end
 
+-- is library package?
+function _instance:is_library()
+    return self:kind() == nil or self:kind() == "library"
+end
+
 -- get the filelock of the whole package directory
 function _instance:filelock()
     local filelock = self._FILELOCK
@@ -430,7 +435,7 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
-        if self:kind() == "binary" or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
+        if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
         -- add LD_LIBRARY_PATH to load *.so directory
@@ -939,7 +944,7 @@ function _instance:fetch(opt)
     -- fetch binary tool?
     fetchinfo = nil
     local isSys = nil
-    if self:kind() == "binary" then
+    if self:is_binary() then
 
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})

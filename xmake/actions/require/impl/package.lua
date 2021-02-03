@@ -502,7 +502,7 @@ function _load_package(packagename, requireinfo, opt)
     _merge_requireinfo(requireinfo, opt.requirepath)
 
     -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
-    if opt.parentinfo and package:kind() ~= "binary" then
+    if opt.parentinfo and package:is_library() then
         _inherit_parent_configs(requireinfo, opt.parentinfo)
     end
 
