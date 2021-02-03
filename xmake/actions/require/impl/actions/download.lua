@@ -27,6 +27,7 @@ import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_file")
 import("lib.detect.find_directory")
 import(".utils.filter")
+import(".utils.url_filename")
 import("net.http")
 import("devel.git")
 import("utils.archive")
@@ -88,7 +89,7 @@ end
 function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- get package file
-    local packagefile = package:name() .. "-" .. package:version_str() .. archive.extension(url)
+    local packagefile = url_filename(url)
 
     -- get sourcehash from the given url
     --
@@ -240,11 +241,7 @@ function main(package)
                             local searchnames = hashset.new()
                             for _, url_failed in ipairs(urls_failed) do
                                 cprint("  ${yellow}- %s", url_failed)
-                                if git.checkurl(url_failed) then
-                                    searchnames:insert(package:name() .. archive.extension(url_failed))
-                                else
-                                    searchnames:insert(package:name() .. "-" .. package:version_str() .. archive.extension(url_failed))
-                                end
+                                searchnames:insert(url_filename(url_failed))
                             end
                             cprint("to the local search directories: ${bright}%s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
                             cprint("  ${bright}- %s", table.concat(searchnames:to_array(), ", "))
