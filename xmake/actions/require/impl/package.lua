@@ -74,9 +74,6 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
--- pass configs to all dependent packages
--- - add_requires("libpng", {deps = {system = false, configs = {shared = true, cxflags = "-DTEST"}}})
---
 -- {system = nil/true/false}:
 --   nil: get local or system packages
 --   true: only get system package
@@ -169,7 +166,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
-        deps             = require_extra.deps,      -- the configuration passed to dependent packages
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
