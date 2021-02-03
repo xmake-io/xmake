@@ -156,8 +156,8 @@ function _instance:is_standalone()
     return self:kind() == "standalone" or self:kind() == "cross"
 end
 
--- global toolchain for whole platform
-function _instance:global()
+-- is global toolchain for whole platform
+function _instance:is_global()
     return self:config("__global")
 end
 

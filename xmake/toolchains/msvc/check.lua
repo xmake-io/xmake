@@ -79,7 +79,7 @@ end
 function _check_vstudio(toolchain)
     local vs = _check_vsenv(toolchain)
     if vs then
-        if toolchain:global() then
+        if toolchain:is_global() then
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
