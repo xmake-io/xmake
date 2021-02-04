@@ -273,20 +273,21 @@ end
 function _instance:packages()
     local packages = self._PACKAGES
     if packages == nil then
-        packages = {}
         local project = require("project/project")
-        for _, pkgname in ipairs(table.wrap(self:config("packages"))) do
+        -- we will get packages from `set_toolchains("", {packages})` or `toolchain().add_packages()`
+        for _, pkgname in ipairs(table.wrap(self:config("packages") or self:info():get("packages"))) do
             local requires = project.requires()
             if requires then
                 local pkginfo = requires[pkgname]
                 if pkginfo then
+                    packages = packages or {}
                     table.insert(packages, pkginfo)
                 end
             end
         end
-        self._PACKAGES = packages
+        self._PACKAGES = packages or false
     end
-    return packages
+    return packages or nil
 end
 
 -- on check (builtin)
@@ -466,8 +467,10 @@ function toolchain.apis()
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         ,   "toolchain.set_archs"
+        ,   "toolchain.set_packages"
         ,   "toolchain.set_homepage"
         ,   "toolchain.set_description"
+        ,   "toolchain.add_packages"
         }
     ,   keyvalues =
         {

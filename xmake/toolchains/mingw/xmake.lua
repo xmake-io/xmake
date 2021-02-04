@@ -28,6 +28,9 @@ toolchain("mingw")
     -- mark as standalone toolchain
     set_kind("standalone")
 
+    -- add packages, TODO maybe we still add mingw package in xmake-repo
+    add_packages("llvm-mingw")
+
     -- check toolchain
     on_check("check")
 

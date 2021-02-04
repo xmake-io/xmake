@@ -28,6 +28,9 @@ toolchain("llvm")
     -- mark as standalone toolchain
     set_kind("standalone")
 
+    -- add packages
+    add_packages("llvm")
+
     -- set toolset
     set_toolset("cc",     "clang")
     set_toolset("cxx",    "clang", "clang++")

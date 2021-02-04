@@ -25,6 +25,9 @@ toolchain("zig")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
+    -- add packages
+    add_packages("zig")
+
     -- on check
     on_check(function (toolchain)
         import("lib.detect.find_tool")

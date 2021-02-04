@@ -28,6 +28,9 @@ toolchain("gnu-rm")
     -- mark as cross-complation toolchain
     set_kind("cross")
 
+    -- add packages
+    add_packages("gnu-rm")
+
     -- on load
     on_load(function (toolchain)
 
