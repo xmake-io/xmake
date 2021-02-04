@@ -706,9 +706,11 @@ end
 function _instance:orderpkgs()
     if not self._ORDERPKGS_ENABLED then
         local packages = {}
-        for _, pkg in ipairs(self._PACKAGES) do
-            if pkg:enabled() then
-                table.insert(packages, pkg)
+        if self._PACKAGES then
+            for _, pkg in ipairs(self._PACKAGES) do
+                if pkg:enabled() then
+                    table.insert(packages, pkg)
+                end
             end
         end
         self._ORDERPKGS_ENABLED = packages
