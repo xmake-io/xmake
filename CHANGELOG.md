@@ -10,6 +10,10 @@
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): Pass custom configuration scripts to xrepo
 * Add linuxos builtin module to get linux system information
 
+### Change
+
+* [#1226](https://github.com/xmake-io/xmake/issues/1226): Add missing qt include directories
+
 ### Bugs fixed
 
 * [#1219](https://github.com/xmake-io/xmake/issues/1219): Fix version check and update
@@ -921,6 +925,10 @@
 * [#1177](https://github.com/xmake-io/xmake/issues/1177): 改进终端和 color codes 探测
 * [#1216](https://github.com/xmake-io/xmake/issues/1216): 传递自定义 includes 脚本给 xrepo
 * 添加 linuxos 内置模块获取 linux 系统信息
+
+### 改进
+
+* [#1226](https://github.com/xmake-io/xmake/issues/1226): 添加缺失的 Qt 头文件搜索路径
 
 ### Bugs 修复
 
