@@ -220,17 +220,20 @@ function main(target, opt)
                         _add_includedirs(target, path.join(frameworkdir, "Headers"))
                         -- e.g. QtGui.framework/Headers/5.15.0/QtGui/qpa/qplatformopenglcontext.h
                         -- https://github.com/xmake-io/xmake/issues/1226
+                        _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver))
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver, framework))
                         useframeworks = true
                     else
                         target:add("syslinks", _link(qt.libdir, framework, qt_sdkver))
                         _add_includedirs(target, path.join(qt.includedir, framework))
                         -- e.g. QtGui/5.15.0/QtGui/qpa/qplatformopenglcontext.h
+                        _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver))
                         _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver, framework))
                     end
                 else
                     target:add("syslinks", _link(qt.libdir, framework, qt_sdkver))
                     _add_includedirs(target, path.join(qt.includedir, framework))
+                    _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver))
                     _add_includedirs(target, path.join(qt.includedir, framework, qt.sdkver, framework))
                 end
             end
