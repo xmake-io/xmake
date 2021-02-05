@@ -127,7 +127,13 @@ function main(target, opt)
         end
     end
     if not cxxlang then
-        target:add("languages", "cxx11")
+        -- Qt6 require at least '/std:c++17'
+        -- @see https://github.com/xmake-io/xmake/issues/1183
+        if qt_sdkver:ge("6.0") then
+            target:add("languages", "c++17")
+        else
+            target:add("languages", "c++11")
+        end
     end
 
     -- add defines for the compile mode

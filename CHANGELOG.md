@@ -13,6 +13,7 @@
 ### Change
 
 * [#1226](https://github.com/xmake-io/xmake/issues/1226): Add missing qt include directories
+* [#1183](https://github.com/xmake-io/xmake/issues/1183): Improve c++ lanuages to support Qt6
 
 ### Bugs fixed
 
@@ -929,6 +930,7 @@
 ### 改进
 
 * [#1226](https://github.com/xmake-io/xmake/issues/1226): 添加缺失的 Qt 头文件搜索路径
+* [#1183](https://github.com/xmake-io/xmake/issues/1183): 改进 C++ 语言标准，以便支持 Qt6
 
 ### Bugs 修复
 
