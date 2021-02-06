@@ -223,12 +223,15 @@ function configure(package, configs, opt)
     -- init options
     opt = opt or {}
 
+    -- get envs
+    local envs = opt.envs or buildenvs(package, opt)
+
     -- generate configure file
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.vrunv("sh", {"./autogen.sh"})
+            os.vrunv("sh", {"./autogen.sh"}, {envs = envs})
         elseif os.isfile("configure.ac") then
-            os.vrun("autoreconf --install --symlink")
+            os.vrunv("autoreconf", {"--install", "--symlink"}, {envs = envs})
         end
     end
 
@@ -246,7 +249,7 @@ function configure(package, configs, opt)
     end
 
     -- do configure
-    os.vrunv("sh", argv, {envs = opt.envs or buildenvs(package, opt)})
+    os.vrunv("sh", argv, {envs = envs})
 end
 
 -- install package
