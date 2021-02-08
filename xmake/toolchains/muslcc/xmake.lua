@@ -28,9 +28,6 @@ toolchain("muslcc")
     -- mark as cross-compilation toolchain
     set_kind("cross")
 
-    -- add packages
-    add_packages("muslcc")
-
     -- on load
     on_load(function (toolchain)
 

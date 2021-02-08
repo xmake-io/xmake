@@ -274,8 +274,8 @@ function _instance:packages()
     local packages = self._PACKAGES
     if packages == nil then
         local project = require("project/project")
-        -- we will get packages from `set_toolchains("", {packages})` or `toolchain().add_packages()`
-        for _, pkgname in ipairs(table.wrap(self:config("packages") or self:info():get("packages"))) do
+        -- we will get packages from `set_toolchains("foo", {packages})` or `set_toolchains("foo@packages")`
+        for _, pkgname in ipairs(table.wrap(self:config("packages"))) do
             local requires = project.requires()
             if requires then
                 local pkginfo = requires[pkgname]
@@ -456,6 +456,24 @@ function toolchain._cachekey(name, opt)
     return cachekey
 end
 
+-- parse toolchain and package name
+--
+-- format: toolchain@package
+-- e.g. "clang@llvm-10", "@muslcc", zig
+--
+function toolchain._parsename(name)
+    local splitinfo = name:split('@', {plain = true, strict = true})
+    local toolchain_name = splitinfo[1]
+    if toolchain_name == "" then
+        toolchain_name = nil
+    end
+    local packages = splitinfo[2]
+    if packages == "" then
+        packages = nil
+    end
+    return toolchain_name or packages, packages
+end
+
 -- get toolchain apis
 function toolchain.apis()
     return
@@ -467,10 +485,8 @@ function toolchain.apis()
         ,   "toolchain.set_bindir"
         ,   "toolchain.set_sdkdir"
         ,   "toolchain.set_archs"
-        ,   "toolchain.set_packages"
         ,   "toolchain.set_homepage"
         ,   "toolchain.set_description"
-        ,   "toolchain.add_packages"
         }
     ,   keyvalues =
         {
@@ -502,8 +518,13 @@ end
 -- load toolchain
 function toolchain.load(name, opt)
 
-    -- init cache key
+    -- get toolchain name and packages
     opt = opt or {}
+    local packages
+    name, packages = toolchain._parsename(name)
+    opt.packages = opt.packages or packages
+
+    -- get cache key
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
     local cachekey = toolchain._cachekey(name, opt)
@@ -556,8 +577,13 @@ end
 -- load toolchain from the give toolchain info
 function toolchain.load_withinfo(name, info, opt)
 
-    -- init cache key
+    -- get toolchain name and packages
     opt = opt or {}
+    local packages
+    name, packages = toolchain._parsename(name)
+    opt.packages = opt.packages or packages
+
+    -- get cache key
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
     local cachekey = toolchain._cachekey(name, opt)
