@@ -378,6 +378,7 @@ function builder:_preprocess_flags(flags)
             unique[flag] = true
         end
     end
+--    utils.dump(results)
     return results
 end
 
