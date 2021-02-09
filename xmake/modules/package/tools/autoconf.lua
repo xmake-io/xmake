@@ -220,7 +220,7 @@ end
 -- get the autogen environments
 function autogen_envs(package, opt)
     opt = opt or {}
-    local envs = {}
+    local envs = {NOCONFIGURE = "yes"}
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
     for _, dep in ipairs(package:orderdeps()) do
