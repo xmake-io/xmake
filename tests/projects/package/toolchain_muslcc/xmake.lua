@@ -1,16 +1,19 @@
 add_rules("mode.debug", "mode.release")
 
--- set muslcc as global toolchain
+-- set cross-compliation platform
+set_plat("cross")
+set_arch("arm")
+
+-- add toolchains package
 add_requires("muslcc")
+
+-- add library packages
+add_requires("zlib",  {system = false})
+
+-- set global toolchains for target and packages
 set_toolchains("@muslcc")
-
--- explicitly specify the package toolchain
-add_requires("zlib", {configs = {toolchains = "@muslcc"}})
-
--- use global toolchain: muslcc
-add_requires("pcre2")
 
 target("test")
     set_kind("binary")
     add_files("src/*.c")
-    add_packages("zlib", "pcre2")
+    add_packages("zlib", "openssl")

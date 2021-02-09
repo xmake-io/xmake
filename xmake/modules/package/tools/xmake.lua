@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.toolchain")
 import("core.package.repository")
 
 -- get configs
@@ -30,13 +31,22 @@ function _get_configs(package, configs)
     local cxxflags = table.join(table.wrap(package:config("cxxflags")), get_config("cxxflags"))
     local asflags  = table.join(table.wrap(package:config("asflags")),  get_config("asflags"))
     local ldflags  = table.join(table.wrap(package:config("ldflags")),  get_config("ldflags"))
+    table.insert(configs, "--plat=" .. package:plat())
+    table.insert(configs, "--arch=" .. package:arch())
+    table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
     if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then
             table.insert(configs, "--vs_runtime=" .. vs_runtime)
         end
     end
-    table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
+    local names = {"ndk", "ndk_sdkver", "vs", "mingw", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+    for _, name in ipairs(names) do
+        local value = get_config(name)
+        if value ~= nil then
+            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+        end
+    end
     if cflags then
         table.insert(configs, "--cflags=" .. table.concat(cflags, ' '))
     end
@@ -56,7 +66,7 @@ function _get_configs(package, configs)
 end
 
 -- init arguments and inherit some global options from the parent xmake
-function _init_argv(...)
+function _init_argv(package, ...)
     local argv = {...}
     for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
         local value = option.get(name)
@@ -69,25 +79,43 @@ function _init_argv(...)
     return argv
 end
 
+-- get the build environments
+function buildenvs(package, opt)
+    opt = opt or {}
+    local envs = {}
+    -- pass toolchains
+    local toolchains = package:config("toolchains")
+    if toolchains then
+        local rcfile_path = os.tmpfile() .. ".lua"
+        local rcfile = io.open(rcfile_path, 'w')
+        local toolchain_packages = {}
+        for _, name in ipairs(toolchains) do
+            local toolchain_inst = toolchain.load(name, {plat = package:plat(), arch = package:arch()})
+            if toolchain_inst then
+                table.join2(toolchain_packages, toolchain_inst:config("packages"))
+            end
+        end
+        rcfile:print("add_requires(\"%s\")", table.concat(toolchain_packages, '", "'))
+        rcfile:print("add_toolchains(\"%s\")", table.concat(table.wrap(toolchains), '", "'))
+        rcfile:close()
+        envs.XMAKE_RCFILES = {}
+        table.insert(envs.XMAKE_RCFILES, rcfile_path)
+        table.join2(envs.XMAKE_RCFILES, os.getenv("XMAKE_RCFILES"))
+    end
+    return envs
+end
+
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
 
     -- pass local repositories
+    opt = opt or {}
     for _, repo in ipairs(repository.repositories()) do
         os.vrunv("xmake", {"repo", "--add", repo:name(), repo:url(), repo:branch()})
     end
 
-    -- inherit builtin configs
-    local argv = _init_argv("f", "-y", "-c")
-    local names   = {"plat", "arch", "ndk", "ndk_sdkver", "vs", "mingw", "sdk", "toolchain", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
-    for _, name in ipairs(names) do
-        local value = get_config(name)
-        if value ~= nil then
-            table.insert(argv, "--" .. name .. "=" .. tostring(value))
-        end
-    end
-
     -- pass configurations
+    local argv = _init_argv(package, "f", "-y", "-c")
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -98,13 +126,18 @@ function install(package, configs)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    os.vrunv("xmake", argv)
+
+    -- get build environments
+    local envs = opt.envs or buildenvs(package)
+
+    -- do configure
+    os.vrunv("xmake", argv, {envs = envs})
 
     -- do build
-    argv = _init_argv()
-    os.vrunv("xmake", argv)
+    argv = _init_argv(package)
+    os.vrunv("xmake", argv, {envs = envs})
 
     -- do install
-    argv = _init_argv("install", "-y", "-o", package:installdir())
-    os.vrunv("xmake", argv)
+    argv = _init_argv(package, "install", "-y", "-o", package:installdir())
+    os.vrunv("xmake", argv, {envs = envs})
 end

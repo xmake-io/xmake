@@ -106,10 +106,10 @@ function _instance:plat()
         return os.host()
     end
     local requireinfo = self:requireinfo()
-    if requireinfo and requireinfo.plat then
+    if not plat and requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return self:get("plat") or config.get("plat") or os.host()
+    return self:get("plat") or package._target_plat()
 end
 
 -- get the architecture of package
@@ -118,11 +118,13 @@ function _instance:arch()
     if self:is_binary() then
         return os.arch()
     end
-    local requireinfo = self:requireinfo()
-    if requireinfo and requireinfo.arch then
-        return requireinfo.arch
+    if not arch then
+        local requireinfo = self:requireinfo()
+        if requireinfo and requireinfo.arch then
+            return requireinfo.arch
+        end
     end
-    return self:get("arch") or config.get("arch") or os.arch()
+    return self:get("arch") or package._target_arch()
 end
 
 -- get the target os
@@ -1333,12 +1335,22 @@ end
 
 -- the current platform is belong to the given platforms?
 function package._api_is_plat(interp, ...)
-    return config.is_plat(...)
+    local plat = package._target_plat()
+    for _, v in ipairs(table.join(...)) do
+        if v and plat == v then
+            return true
+        end
+    end
 end
 
 -- the current platform is belong to the given architectures?
 function package._api_is_arch(interp, ...)
-    return config.is_arch(...)
+    local arch = package._target_arch()
+    for _, v in ipairs(table.join(...)) do
+        if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
 end
 
 -- the current host is belong to the given hosts?
@@ -1374,6 +1386,44 @@ end
 -- get package memcache
 function package._memcache()
     return memcache.cache("core.base.package")
+end
+
+-- get global target platform of package
+function package._target_plat()
+    local plat = package._PLAT
+    if plat == nil then
+        if not plat and os.isfile(os.projectfile()) then
+            local project = require("project/project")
+            local target_root_plat = project.get("target.plat")
+            if target_root_plat then
+                plat = target_root_plat
+            end
+        end
+        if not plat then
+            plat = config.get("plat") or os.host()
+        end
+        package._PLAT = plat
+    end
+    return plat
+end
+
+-- get global target architecture of pacakge
+function package._target_arch()
+    local arch = package._ARCH
+    if arch == nil then
+        if not arch then
+            local project = require("project/project")
+            local target_root_arch = project.get("target.arch")
+            if target_root_arch then
+                arch = target_root_arch
+            end
+        end
+        if not arch then
+            arch = config.get("arch") or os.arch()
+        end
+        package._ARCH = arch
+    end
+    return arch
 end
 
 -- get package apis

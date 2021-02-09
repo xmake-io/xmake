@@ -1890,6 +1890,7 @@ function target.apis()
         ,   "target.add_imports"
         ,   "target.add_languages"
         ,   "target.add_vectorexts"
+        ,   "target.add_toolchains"
         }
     ,   keyvalues =
         {

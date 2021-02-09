@@ -225,8 +225,12 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
+    local toolchains
+    if package:is_plat("cross") and package:is_library() then
+        -- we only can set toolchains to library package
+        toolchains = project.get("target.toolchains") or get_config("toolchain")
+    end
     local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
-    local toolchains = project.get("target.toolchains") or get_config("toolchain")
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
@@ -235,7 +239,7 @@ function _add_package_configurations(package)
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
     package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
-    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains.", default = toolchains})
+    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation.", default = toolchains})
 end
 
 -- select package version
