@@ -8,7 +8,7 @@ set_arch("arm")
 add_requires("muslcc")
 
 -- add library packages
-add_requires("zlib",  {system = false})
+add_requires("zlib", "libplist",  {system = false})
 
 -- set global toolchains for target and packages
 set_toolchains("@muslcc")
@@ -16,4 +16,4 @@ set_toolchains("@muslcc")
 target("test")
     set_kind("binary")
     add_files("src/*.c")
-    add_packages("zlib", "openssl")
+    add_packages("zlib", "libplist")
