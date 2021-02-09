@@ -217,6 +217,31 @@ function buildenvs(package, opt)
     return envs
 end
 
+-- get the autogen environments
+function autogen_envs(package, opt)
+    opt = opt or {}
+    local envs = {}
+    local ACLOCAL_PATH = {}
+    local PKG_CONFIG_PATH = {}
+    for _, dep in ipairs(package:orderdeps()) do
+        local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
+        end
+        pkgconfig = path.join(dep:installdir(), "share", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
+        end
+        local aclocal = path.join(dep:installdir(), "share", "aclocal")
+        if os.isdir(aclocal) then
+            table.insert(ACLOCAL_PATH, aclocal)
+        end
+    end
+    envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
+    envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
+    return envs
+end
+
 -- configure package
 function configure(package, configs, opt)
 
@@ -229,9 +254,9 @@ function configure(package, configs, opt)
     -- generate configure file
     if not os.isfile("configure") then
         if os.isfile("autogen.sh") then
-            os.vrunv("sh", {"./autogen.sh"}, {envs = envs})
+            os.vrunv("sh", {"./autogen.sh"}, {envs = autogen_envs(package, opt)})
         elseif os.isfile("configure.ac") then
-            os.vrunv("autoreconf", {"--install", "--symlink"}, {envs = envs})
+            os.vrunv("autoreconf", {"--install", "--symlink"}, {envs = autogen_envs(package, opt)})
         end
     end
 
