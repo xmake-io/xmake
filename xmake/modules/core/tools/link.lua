@@ -78,7 +78,7 @@ function nf_symbol(self, level, target)
     local targetkind = target:get("kind")
     if level == "debug" and (targetkind == "binary" or targetkind == "shared") then
         if target and target.symbolfile then
-            flags = "-debug -pdb:" .. target:symbolfile()
+            flags = {"-debug", "-pdb:" .. target:symbolfile()}
         else
             flags = "-debug"
         end
@@ -105,7 +105,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-libpath:" .. os.args(path.translate(dir))
+    return {"-libpath:" .. path.translate(dir)}
 end
 
 -- make the link arguments list

@@ -233,12 +233,12 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(path.translate(dir))
+    return {"-I", path.translate(dir)}
 end
 
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
-    return "-isystem " .. os.args(path.translate(dir))
+    return {"-isystem", path.translate(dir)}
 end
 
 -- make the link flag
@@ -253,30 +253,30 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(path.translate(dir))
+    return {"-L", path.translate(dir)}
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
-        return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
+        return {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
-        end))
+        end))}
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
-        return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
+        return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
     end
 end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return "-framework " .. framework
+    return {"-framework", framework}
 end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. os.args(path.translate(frameworkdir))
+    return {"-F", path.translate(frameworkdir)}
 end
 
 -- make the c precompiled header flag
@@ -284,9 +284,9 @@ function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
         local pcoutputfile = target:pcoutputfile("c")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
+            return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
-            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
+            return {"-include", path.filename(pcheaderfile), "-I", path.directory(pcoutputfile)}
         end
     end
 end
@@ -296,9 +296,9 @@ function nf_pcxxheader(self, pcheaderfile, target)
     if self:kind() == "cxx" then
         local pcoutputfile = target:pcoutputfile("cxx")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
+            return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
-            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
+            return {"-include", path.filename(pcheaderfile), "-I", path.directory(pcoutputfile)}
         end
     end
 end

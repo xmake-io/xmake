@@ -200,7 +200,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
+    return {"-I", dir}
 end
 
 -- make the sysincludedir flag
@@ -220,29 +220,29 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(dir)
+    return {"-L", dir}
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
-        return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
+        return {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
-        end))
+        end))}
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
-        return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
+        return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
     end
 end
 
 -- make the c precompiled header flag
 function nf_pcheader(self, pcheaderfile, target)
-    return "-include " .. os.args(pcheaderfile)
+    return {"-include", pcheaderfile}
 end
 
 -- make the c++ precompiled header flag
 function nf_pcxxheader(self, pcheaderfile, target)
-    return "-include " .. os.args(pcheaderfile)
+    return {"-include", pcheaderfile}
 end
 
 -- make the link arguments list
@@ -260,7 +260,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags)
     -- add `-Wl,--out-implib,outputdir/libxxx.a` for xxx.dll on mingw/gcc
     if targetkind == "shared" and config.plat() == "mingw" then
         table.insert(flags_extra, "-Xlinker")
-        table.insert(flags_extra, "-Wl,--out-implib," .. os.args(path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")))
+        table.insert(flags_extra, "-Wl,--out-implib," .. path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib"))
     end
 
     -- make link args
@@ -269,11 +269,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 

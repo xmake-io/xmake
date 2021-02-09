@@ -345,14 +345,14 @@ function builder:_add_flags_from_language(flags, target, getters)
                     local results = mapper(self:_tool(), table.wrap(getter(flagname)), target, self:_targetkind())
                     for _, flag in ipairs(table.wrap(results)) do
                         if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.join2(flags, flag)
+                            table.insert(flags, flag)
                         end
                     end
                 else
                     for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
                         local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
                         if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.join2(flags, flag)
+                            table.insert(flags, flag)
                         end
                     end
                 end
@@ -368,17 +368,24 @@ function builder:_preprocess_flags(flags)
     local unique = {}
     local results = {}
     for _, flag in ipairs(flags) do
-        flag = flag:trim()
-        if #flag > 0 and not unique[flag] then
-            if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag, {splitonly = true}))
-            else
-                table.insert(results, flag)
+        if type(flag) == "string" then
+            flag = flag:trim()
+            if #flag > 0 and not unique[flag] then
+                if flag:find(" ", 1, true) then
+                    table.join2(results, os.argv(flag, {splitonly = true}))
+                else
+                    table.insert(results, flag)
+                end
+                unique[flag] = true
             end
-            unique[flag] = true
+        else
+            -- may be a table group? e.g. {"-I", "/xxx"}
+            if #flag > 0 and not unique[flag] then
+                table.join2(results, flag)
+                unique[flag] = true
+            end
         end
     end
---    utils.dump(results)
     return results
 end
 

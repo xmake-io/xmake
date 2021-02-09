@@ -65,7 +65,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(path.translate(dir))
+    return {"-L", path.translate(dir)}
 end
 
 -- make the link arguments list
