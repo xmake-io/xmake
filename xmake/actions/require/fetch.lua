@@ -85,7 +85,7 @@ function main(requires_raw)
             end
         end
         if #flags > 0 then
-            print(table.concat(flags, " "))
+            print(os.args(flags))
         else
             print(fetchinfos)
         end

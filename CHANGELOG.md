@@ -18,6 +18,7 @@
 ### Bugs fixed
 
 * [#1219](https://github.com/xmake-io/xmake/issues/1219): Fix version check and update
+* [#1235](https://github.com/xmake-io/xmake/issues/1235): Fix include directories with spaces
 
 ## v2.5.1
 
@@ -935,6 +936,7 @@
 ### Bugs 修复
 
 * [#1219](https://github.com/xmake-io/xmake/issues/1219): 修复版本检测和更新
+* [#1235](https://github.com/xmake-io/xmake/issues/1235): 修复 includes 搜索路径中带有空格编译不过问题
 
 ## v2.5.1
 
