@@ -27,6 +27,7 @@ import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("utils.archive")
 import("impl.utils.filter")
+import("impl.utils.url_filename")
 import("impl.package")
 import("impl.repository")
 import("impl.environment")
@@ -152,11 +153,7 @@ function main(requires_raw)
         cprint("      -> ${magenta}searchdirs${clear}: %s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
         local searchnames = hashset.new()
         for _, url in ipairs(instance:urls()) do
-            if git.checkurl(url) then
-                searchnames:insert(instance:name() .. archive.extension(url))
-            else
-                searchnames:insert(instance:name() .. "-" .. instance:version_str() .. archive.extension(url))
-            end
+            searchnames:insert(url_filename(url))
         end
         cprint("      -> ${magenta}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
 

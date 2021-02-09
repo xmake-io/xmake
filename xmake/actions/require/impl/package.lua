@@ -74,9 +74,6 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
--- pass configs to all dependent packages
--- - add_requires("libpng", {deps = {system = false, configs = {shared = true, cxflags = "-DTEST"}}})
---
 -- {system = nil/true/false}:
 --   nil: get local or system packages
 --   true: only get system package
@@ -169,7 +166,6 @@ function _parse_require(require_str, requires_extra, parentinfo)
         system           = require_extra.system,    -- default: true, we can set it to disable system package manually
         option           = require_extra.option,    -- set and attach option
         configs          = require_build_configs,   -- the required building configurations
-        deps             = require_extra.deps,      -- the configuration passed to dependent packages
         default          = require_extra.default,   -- default: true, we can set it to disable package manually
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
@@ -229,6 +225,11 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
+    local toolchains
+    if package:is_plat("cross") and package:is_library() then
+        -- we only can set toolchains to library package
+        toolchains = project.get("target.toolchains") or get_config("toolchain")
+    end
     local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
@@ -238,6 +239,7 @@ function _add_package_configurations(package)
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
     package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
+    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation.", default = toolchains})
 end
 
 -- select package version
@@ -502,7 +504,7 @@ function _load_package(packagename, requireinfo, opt)
     _merge_requireinfo(requireinfo, opt.requirepath)
 
     -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
-    if opt.parentinfo and package:kind() ~= "binary" then
+    if opt.parentinfo and package:is_library() then
         _inherit_parent_configs(requireinfo, opt.parentinfo)
     end
 

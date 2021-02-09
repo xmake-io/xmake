@@ -25,6 +25,17 @@ import("detect.sdks.find_mingw")
 -- check the mingw toolchain
 function main(toolchain)
     local mingw = find_mingw(config.get("mingw"), {verbose = true, bindir = config.get("bin"), cross = config.get("cross")})
+    if not mingw then
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                mingw = find_mingw(installdir, {verbose = true, cross = config.get("cross")})
+                if mingw then
+                    break
+                end
+            end
+        end
+    end
     if mingw then
         config.set("mingw", mingw.sdkdir, {force = true, readonly = true})
         config.set("cross", mingw.cross, {readonly = true, force = true})

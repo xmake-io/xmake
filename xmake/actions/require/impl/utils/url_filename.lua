@@ -15,20 +15,11 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        url_filename.lua
 --
 
--- define toolchain
-toolchain("cross")
-
-    -- set descrption
-    set_description("Common cross compilation toolchain")
-
-    -- mark as cross-compilation toolchain
-    set_kind("cross")
-
-    -- check toolchain
-    on_check("check")
-
-    -- load toolchain
-    on_load("load")
+-- get filename from url
+function main(url)
+    local urlpath = url:split('?', {plain = true})[1]
+    return path.filename(urlpath)
+end

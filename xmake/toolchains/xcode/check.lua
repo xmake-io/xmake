@@ -29,7 +29,7 @@ function main(toolchain)
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
     local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
-                                                   find_codesign = toolchain:global(),
+                                                   find_codesign = toolchain:is_global(),
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
@@ -40,7 +40,7 @@ function main(toolchain)
 
     -- xcode found
     xcode_sdkver = xcode.sdkver
-    if toolchain:global() then
+    if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
         config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})

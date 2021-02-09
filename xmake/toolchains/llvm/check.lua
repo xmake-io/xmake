@@ -40,7 +40,7 @@ function _find_xcode(toolchain)
 
     -- xcode found
     xcode_sdkver = xcode.sdkver
-    if toolchain:global() then
+    if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
     end

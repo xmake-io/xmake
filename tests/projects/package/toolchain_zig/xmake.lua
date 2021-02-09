@@ -4,4 +4,5 @@ add_requires("zig 0.7.x")
 target("test")
     set_kind("binary")
     add_files("src/*.zig")
-    set_toolchains("zig", {packages = "zig"})
+    set_toolchains("@zig")
+

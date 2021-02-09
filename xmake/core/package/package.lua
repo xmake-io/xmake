@@ -31,6 +31,7 @@ local table          = require("base/table")
 local global         = require("base/global")
 local semver         = require("base/semver")
 local option         = require("base/option")
+local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local memcache       = require("cache/memcache")
@@ -101,27 +102,29 @@ end
 -- get the platform of package
 function _instance:plat()
     -- @note we uses os.host() instead of them for the binary package
-    if self:kind() == "binary" then
+    if self:is_binary() then
         return os.host()
     end
     local requireinfo = self:requireinfo()
-    if requireinfo and requireinfo.plat then
+    if not plat and requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return self:get("plat") or config.get("plat") or os.host()
+    return self:get("plat") or package._target_plat()
 end
 
 -- get the architecture of package
 function _instance:arch()
     -- @note we uses os.arch() instead of them for the binary package
-    if self:kind() == "binary" then
+    if self:is_binary() then
         return os.arch()
     end
-    local requireinfo = self:requireinfo()
-    if requireinfo and requireinfo.arch then
-        return requireinfo.arch
+    if not arch then
+        local requireinfo = self:requireinfo()
+        if requireinfo and requireinfo.arch then
+            return requireinfo.arch
+        end
     end
-    return self:get("arch") or config.get("arch") or os.arch()
+    return self:get("arch") or package._target_arch()
 end
 
 -- get the target os
@@ -239,8 +242,6 @@ end
 
 -- get hash of the source package for the url_alias@version_str
 function _instance:sourcehash(url_alias)
-
-    -- get sourcehash
     local versions    = self:get("versions")
     local version_str = self:version_str()
     if versions and version_str then
@@ -251,6 +252,9 @@ function _instance:sourcehash(url_alias)
         end
         if not sourcehash then
             sourcehash = versions[version_str]
+        end
+        if sourcehash then
+            sourcehash = sourcehash:lower()
         end
         return sourcehash
     end
@@ -265,7 +269,11 @@ function _instance:revision(url_alias)
     end
 end
 
--- get the package kind, binary or nil(library)
+-- get the package kind
+--
+-- - binary
+-- - library(default)
+--
 function _instance:kind()
     local kind = self:get("kind")
     if not kind then
@@ -275,6 +283,16 @@ function _instance:kind()
         end
     end
     return kind
+end
+
+-- is binary package?
+function _instance:is_binary()
+    return self:kind() == "binary"
+end
+
+-- is library package?
+function _instance:is_library()
+    return self:kind() == nil or self:kind() == "library"
 end
 
 -- get the filelock of the whole package directory
@@ -421,7 +439,7 @@ function _instance:envs()
     local envs = self._ENVS
     if not envs then
         envs = {}
-        if self:kind() == "binary" or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
+        if self:is_binary() or self:is_plat("windows", "mingw") then -- bin/*.dll for windows
             envs.PATH = {"bin"}
         end
         -- add LD_LIBRARY_PATH to load *.so directory
@@ -723,7 +741,8 @@ end
 function _instance:buildhash()
     local buildhash = self._BUILDHASH
     if buildhash == nil then
-        local function _get_buildhash(configs)
+        local function _get_buildhash(configs, opt)
+            opt = opt or {}
             local str = self:plat() .. self:arch()
             if configs then
                 -- since luajit v2.1, the key order of the table is random and undefined.
@@ -738,6 +757,21 @@ function _instance:buildhash()
                 local configs_str = string.serialize(configs_order, true)
                 configs_str = configs_str:gsub("\"", "")
                 str = str .. configs_str
+            end
+            if opt.sourcehash ~= false then
+                local sourcehashs = hashset.new()
+                for _, url in ipairs(self:urls()) do
+                    local url_alias = self:url_alias(url)
+                    local sourcehash = self:sourcehash(url_alias)
+                    if sourcehash then
+                        sourcehashs:insert(sourcehash)
+                    end
+                end
+                if not sourcehashs:empty() then
+                    for _, sourcehash in sourcehashs:keys() do
+                        str = str .. "_" .. sourcehash
+                    end
+                end
             end
             return hash.uuid4(str):gsub('-', ''):lower()
         end
@@ -755,11 +789,22 @@ function _instance:buildhash()
         if self:config("pic") then
             local configs = table.copy(self:configs())
             configs.pic = nil
-            buildhash = _get_buildhash(configs)
+            buildhash = _get_buildhash(configs, {sourcehash = false})
             if not os.isdir(_get_installdir(buildhash)) then
                 buildhash = nil
             end
         end
+
+        -- we need to be compatible with the hash value string for the previous xmake version
+        -- without sourcehash (< 2.5.2)
+        if not buildhash then
+            buildhash = _get_buildhash(self:configs(), {sourcehash = false})
+            if not os.isdir(_get_installdir(buildhash)) then
+                buildhash = nil
+            end
+        end
+
+        -- get build hash for current version
         if not buildhash then
             buildhash = _get_buildhash(self:configs())
         end
@@ -930,7 +975,7 @@ function _instance:fetch(opt)
     -- fetch binary tool?
     fetchinfo = nil
     local isSys = nil
-    if self:kind() == "binary" then
+    if self:is_binary() then
 
         -- import find_tool
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
@@ -1290,12 +1335,22 @@ end
 
 -- the current platform is belong to the given platforms?
 function package._api_is_plat(interp, ...)
-    return config.is_plat(...)
+    local plat = package._target_plat()
+    for _, v in ipairs(table.join(...)) do
+        if v and plat == v then
+            return true
+        end
+    end
 end
 
 -- the current platform is belong to the given architectures?
 function package._api_is_arch(interp, ...)
-    return config.is_arch(...)
+    local arch = package._target_arch()
+    for _, v in ipairs(table.join(...)) do
+        if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
 end
 
 -- the current host is belong to the given hosts?
@@ -1331,6 +1386,44 @@ end
 -- get package memcache
 function package._memcache()
     return memcache.cache("core.base.package")
+end
+
+-- get global target platform of package
+function package._target_plat()
+    local plat = package._PLAT
+    if plat == nil then
+        if not plat and os.isfile(os.projectfile()) then
+            local project = require("project/project")
+            local target_root_plat = project.get("target.plat")
+            if target_root_plat then
+                plat = target_root_plat
+            end
+        end
+        if not plat then
+            plat = config.get("plat") or os.host()
+        end
+        package._PLAT = plat
+    end
+    return plat
+end
+
+-- get global target architecture of pacakge
+function package._target_arch()
+    local arch = package._ARCH
+    if arch == nil then
+        if not arch then
+            local project = require("project/project")
+            local target_root_arch = project.get("target.arch")
+            if target_root_arch then
+                arch = target_root_arch
+            end
+        end
+        if not arch then
+            arch = config.get("arch") or os.arch()
+        end
+        package._ARCH = arch
+    end
+    return arch
 end
 
 -- get package apis

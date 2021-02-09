@@ -187,7 +187,7 @@ function _package_addenvs(envs, instance)
     end
 
     -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH ..
-    if instance:kind() ~= "binary" then
+    if instance:is_library() then
         local pkgconfig = path.join(installdir, "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
             _package_addenv(envs, "PKG_CONFIG_PATH", pkgconfig)

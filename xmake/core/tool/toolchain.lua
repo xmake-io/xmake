@@ -142,13 +142,22 @@ function _instance:kind()
     return self:info():get("kind")
 end
 
--- is standalone toolchain?
-function _instance:standalone()
-    return self:kind() == "standalone"
+-- is cross-compilation toolchain?
+function _instance:is_cross()
+    if self:kind() == "cross" then
+        return true
+    elseif self:kind() == "standalone" and (self:cross() or self:sdkdir()) then
+        return true
+    end
 end
 
--- global toolchain for whole platform
-function _instance:global()
+-- is standalone toolchain?
+function _instance:is_standalone()
+    return self:kind() == "standalone" or self:kind() == "cross"
+end
+
+-- is global toolchain for whole platform
+function _instance:is_global()
     return self:config("__global")
 end
 
@@ -264,26 +273,27 @@ end
 function _instance:packages()
     local packages = self._PACKAGES
     if packages == nil then
-        packages = {}
         local project = require("project/project")
+        -- we will get packages from `set_toolchains("foo", {packages})` or `set_toolchains("foo@packages")`
         for _, pkgname in ipairs(table.wrap(self:config("packages"))) do
             local requires = project.requires()
             if requires then
                 local pkginfo = requires[pkgname]
                 if pkginfo then
+                    packages = packages or {}
                     table.insert(packages, pkginfo)
                 end
             end
         end
-        self._PACKAGES = packages
+        self._PACKAGES = packages or false
     end
-    return packages
+    return packages or nil
 end
 
 -- on check (builtin)
 function _instance:_on_check()
     local on_check = self:info():get("check")
-    if not on_check and self:standalone() and (self:cross() or self:sdkdir()) then
+    if not on_check and self:is_cross() then
         on_check = self.check_cross_toolchain
     end
     return on_check
@@ -292,7 +302,7 @@ end
 -- on load (builtin)
 function _instance:_on_load()
     local on_load = self:info():get("load")
-    if not on_load and self:standalone() and (self:cross() or self:sdkdir()) then
+    if not on_load and self:is_cross() then
         on_load = self.load_cross_toolchain
     end
     return on_load
@@ -446,6 +456,24 @@ function toolchain._cachekey(name, opt)
     return cachekey
 end
 
+-- parse toolchain and package name
+--
+-- format: toolchain@package
+-- e.g. "clang@llvm-10", "@muslcc", zig
+--
+function toolchain._parsename(name)
+    local splitinfo = name:split('@', {plain = true, strict = true})
+    local toolchain_name = splitinfo[1]
+    if toolchain_name == "" then
+        toolchain_name = nil
+    end
+    local packages = splitinfo[2]
+    if packages == "" then
+        packages = nil
+    end
+    return toolchain_name or packages, packages
+end
+
 -- get toolchain apis
 function toolchain.apis()
     return
@@ -490,8 +518,13 @@ end
 -- load toolchain
 function toolchain.load(name, opt)
 
-    -- init cache key
+    -- get toolchain name and packages
     opt = opt or {}
+    local packages
+    name, packages = toolchain._parsename(name)
+    opt.packages = opt.packages or packages
+
+    -- get cache key
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
     local cachekey = toolchain._cachekey(name, opt)
@@ -544,8 +577,13 @@ end
 -- load toolchain from the give toolchain info
 function toolchain.load_withinfo(name, info, opt)
 
-    -- init cache key
+    -- get toolchain name and packages
     opt = opt or {}
+    local packages
+    name, packages = toolchain._parsename(name)
+    opt.packages = opt.packages or packages
+
+    -- get cache key
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
     local cachekey = toolchain._cachekey(name, opt)
