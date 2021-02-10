@@ -565,6 +565,11 @@ function _load_package(packagename, requireinfo, opt)
     end
     _memcache():set2("cachedirs", package:cachedir(), true)
 
+    -- disable parallelize if this package is toolchain? we need install toolchain package first
+    if package:is_toolchain() then
+        package:set("parallelize", false)
+    end
+
     -- add some builtin configurations to package
     _add_package_configurations(package)
 
@@ -628,7 +633,7 @@ function _load_packages(requires, opt)
                 end
             end
 
-            -- save this package package
+            -- save this package
             table.insert(packages, package)
         end
     end

@@ -272,6 +272,7 @@ end
 -- get the package kind
 --
 -- - binary
+-- - toolchain (is also binary)
 -- - library(default)
 --
 function _instance:kind()
@@ -287,7 +288,12 @@ end
 
 -- is binary package?
 function _instance:is_binary()
-    return self:kind() == "binary"
+    return self:kind() == "binary" or self:kind() == "toolchain"
+end
+
+-- is toolchain package?
+function _instance:is_toolchain()
+    return self:kind() == "toolchain"
 end
 
 -- is library package?
