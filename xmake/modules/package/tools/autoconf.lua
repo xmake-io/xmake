@@ -91,7 +91,7 @@ function _get_configs(package, configs)
             elseif package:is_arch("arm.*") then
                 host = "arm"
             end
-            host = host .. "-" .. package:os()
+            host = host .. "-" .. package:targetos()
             table.insert(configs, "--host=" .. host)
         end
     end

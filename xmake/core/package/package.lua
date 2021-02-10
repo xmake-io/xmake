@@ -128,12 +128,12 @@ function _instance:arch()
 end
 
 -- get the target os
-function _instance:os()
+function _instance:targetos()
     local requireinfo = self:requireinfo()
-    if requireinfo and requireinfo.os then
-        return requireinfo.os
+    if requireinfo and requireinfo.targetos then
+        return requireinfo.targetos
     end
-    return platform.os()
+    return config.get("target_os") or platform.os()
 end
 
 -- get the build mode
@@ -167,8 +167,8 @@ function _instance:is_arch(...)
 end
 
 -- the current platform is belong to the given target os?
-function _instance:is_os(...)
-    local os = self:os()
+function _instance:is_targetos(...)
+    local os = self:targetos()
     for _, v in ipairs(table.join(...)) do
         if v and os == v then
             return true
@@ -1417,7 +1417,7 @@ end
 function package._target_arch()
     local arch = package._ARCH
     if arch == nil then
-        if not arch then
+        if not arch and os.isfile(os.projectfile()) then
             local project = require("project/project")
             local target_root_arch = project.get("target.arch")
             if target_root_arch then

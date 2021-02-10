@@ -99,7 +99,7 @@ end
 
 -- get the platform os
 function _instance:os()
-    return self._INFO:get("os") or config.get("target_os")
+    return self._INFO:get("os")
 end
 
 -- get the platform menu
