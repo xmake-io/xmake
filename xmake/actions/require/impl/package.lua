@@ -634,7 +634,12 @@ function _load_packages(requires, opt)
             end
 
             -- save this package
-            table.insert(packages, package)
+            -- @note if this root package is toolchain, we need to move it to the beginning in order to install first
+            if not opt.parentinfo and package:is_toolchain() then
+                table.insert(packages, 1, package)
+            else
+                table.insert(packages, package)
+            end
         end
     end
     return packages

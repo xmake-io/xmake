@@ -4,11 +4,11 @@ add_rules("mode.debug", "mode.release")
 set_plat("cross")
 set_arch("arm")
 
--- add toolchains package
-add_requires("muslcc")
-
 -- add library packages
 add_requires("zlib", "libplist",  {system = false})
+
+-- add toolchains package
+add_requires("muslcc")
 
 -- set global toolchains for target and packages
 set_toolchains("@muslcc")
