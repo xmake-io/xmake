@@ -118,13 +118,7 @@ function _instance:arch()
     if self:is_binary() then
         return os.arch()
     end
-    if not arch then
-        local requireinfo = self:requireinfo()
-        if requireinfo and requireinfo.arch then
-            return requireinfo.arch
-        end
-    end
-    return self:get("arch") or package._target_arch()
+    return self:targetarch()
 end
 
 -- get the target os
@@ -134,6 +128,15 @@ function _instance:targetos()
         return requireinfo.targetos
     end
     return config.get("target_os") or platform.os()
+end
+
+-- get the target architecture
+function _instance:targetarch()
+    local requireinfo = self:requireinfo()
+    if requireinfo and requireinfo.arch then
+        return requireinfo.arch
+    end
+    return self:get("arch") or package._target_arch()
 end
 
 -- get the build mode
@@ -168,9 +171,19 @@ end
 
 -- the current platform is belong to the given target os?
 function _instance:is_targetos(...)
-    local os = self:targetos()
+    local targetos = self:targetos()
     for _, v in ipairs(table.join(...)) do
-        if v and os == v then
+        if v and targetos == v then
+            return true
+        end
+    end
+end
+
+-- the current architecture is belong to the given target architectures?
+function _instance:is_targetarch(...)
+    local targetarch = self:targetarch()
+    for _, v in ipairs(table.join(...)) do
+        if v and targetarch:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
         end
     end
@@ -1400,9 +1413,9 @@ function package._target_plat()
     if plat == nil then
         if not plat and os.isfile(os.projectfile()) then
             local project = require("project/project")
-            local target_root_plat = project.get("target.plat")
-            if target_root_plat then
-                plat = target_root_plat
+            local targetplat_root = project.get("target.plat")
+            if targetplat_root then
+                plat = targetplat_root
             end
         end
         if not plat then
@@ -1419,9 +1432,9 @@ function package._target_arch()
     if arch == nil then
         if not arch and os.isfile(os.projectfile()) then
             local project = require("project/project")
-            local target_root_arch = project.get("target.arch")
-            if target_root_arch then
-                arch = target_root_arch
+            local targetarch_root = project.get("target.arch")
+            if targetarch_root then
+                arch = targetarch_root
             end
         end
         if not arch then
