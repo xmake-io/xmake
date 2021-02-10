@@ -153,6 +153,7 @@ function main(requires_raw)
         cprint("      -> ${magenta}searchdirs${clear}: %s", table.concat(table.wrap(core_package.searchdirs()), path.envsep()))
         local searchnames = hashset.new()
         for _, url in ipairs(instance:urls()) do
+            url = filter.handle(url, instance)
             searchnames:insert(url_filename(url))
         end
         cprint("      -> ${magenta}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))
