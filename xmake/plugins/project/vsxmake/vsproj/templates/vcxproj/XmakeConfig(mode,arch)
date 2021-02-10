@@ -16,4 +16,5 @@
     <XmakeIncludeDirs>#includedirs#</XmakeIncludeDirs>
     <XmakeLinkDirs>#linkdirs#</XmakeLinkDirs>
     <XmakeSourceDirs>#sourcedirs#</XmakeSourceDirs>
+    <XmakePrecompiledHeader>#pcheaderfile#</XmakePrecompiledHeader>
   </PropertyGroup>
