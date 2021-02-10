@@ -809,10 +809,12 @@ function _install_packages(packages_install, packages_download)
                     package = pkg
                     table.remove(packages_pending, idx)
                     break
-                elseif #packages_pending == 1 and dep_not_found then
-                    raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
-                elseif #packages_pending == 1 then
-                    raise("package(%s): cannot be installed!", pkg:displayname())
+                elseif installing_count == 0 then
+                    if #packages_pending == 1 and dep_not_found then
+                        raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
+                    elseif #packages_pending == 1 then
+                        raise("package(%s): cannot be installed!", pkg:displayname())
+                    end
                 end
             end
             if package == nil and #packages_pending > 0 then
