@@ -23,26 +23,26 @@ local target    = target or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit            = require("bit")
-local os             = require("base/os")
-local path           = require("base/path")
-local utils          = require("base/utils")
-local table          = require("base/table")
-local baseoption     = require("base/option")
-local deprecated     = require("base/deprecated")
-local rule           = require("project/rule")
-local option         = require("project/option")
-local config         = require("project/config")
-local policy         = require("project/policy")
-local requireinfo    = require("project/requireinfo")
-local tool           = require("tool/tool")
-local linker         = require("tool/linker")
-local compiler       = require("tool/compiler")
-local platform       = require("platform/platform")
-local environment    = require("platform/environment")
-local language       = require("language/language")
-local sandbox        = require("sandbox/sandbox")
-local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
+local bit             = require("bit")
+local os              = require("base/os")
+local path            = require("base/path")
+local utils           = require("base/utils")
+local table           = require("base/table")
+local baseoption      = require("base/option")
+local deprecated      = require("base/deprecated")
+local rule            = require("project/rule")
+local option          = require("project/option")
+local config          = require("project/config")
+local policy          = require("project/policy")
+local project_package = require("project/package")
+local tool            = require("tool/tool")
+local linker          = require("tool/linker")
+local compiler        = require("tool/compiler")
+local platform        = require("platform/platform")
+local environment     = require("platform/environment")
+local language        = require("language/language")
+local sandbox         = require("sandbox/sandbox")
+local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
 function _instance.new(name, info, project)
@@ -668,7 +668,7 @@ function _instance:orderopts()
 
     -- load options from packages if no require info, be compatible with the option package in (*.pkg)
     for _, name in ipairs(table.wrap(self:get("packages"))) do
-        if not requireinfo.load(name) then
+        if not project_package.load(name) then
             local opt = nil
             if config.get(name) then opt = option.load(name) end
             if opt then

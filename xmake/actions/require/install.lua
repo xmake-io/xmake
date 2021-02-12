@@ -50,7 +50,7 @@ end
 
 -- register required package libraries
 -- libs: includedirs, links, linkdirs ...
-function _register_required_package_libs(instance, requireinfo, is_deps)
+function _register_required_package_libs(instance, required_package, is_deps)
     if instance:is_library() then
         local fetchinfo = instance:fetch()
         if fetchinfo then
@@ -68,32 +68,32 @@ function _register_required_package_libs(instance, requireinfo, is_deps)
                 fetchinfo.static  = nil
                 fetchinfo.shared  = nil
             end
-            requireinfo:add(fetchinfo)
+            required_package:add(fetchinfo)
         end
     end
 end
 
 -- register the base info of required package
-function _register_required_package_base(instance, requireinfo)
+function _register_required_package_base(instance, required_package)
     if not instance:isSys() and not instance:is3rd() then
-        requireinfo:set("__installdir", instance:installdir())
+        required_package:set("__installdir", instance:installdir())
     end
 end
 
 -- register the required local package
-function _register_required_package(instance, requireinfo)
+function _register_required_package(instance, required_package)
 
     -- disable it if this package is optional and missing
     if _g.optional_missing[instance:name()] then
-        requireinfo:enable(false)
+        required_package:enable(false)
     else
         -- clear require info first
-        requireinfo:clear()
+        required_package:clear()
 
         -- add packages info with all dependencies
         local envs = {}
-        _register_required_package_base(instance, requireinfo)
-        _register_required_package_libs(instance, requireinfo)
+        _register_required_package_base(instance, required_package)
+        _register_required_package_libs(instance, required_package)
         _register_required_package_envs(instance, envs)
         local orderdeps = instance:orderdeps()
         if orderdeps then
@@ -101,21 +101,21 @@ function _register_required_package(instance, requireinfo)
             for idx, _ in ipairs(orderdeps) do
                 local dep = orderdeps[total + 1 - idx]
                 if dep then
-                    _register_required_package_libs(dep, requireinfo, true)
+                    _register_required_package_libs(dep, required_package, true)
                     _register_required_package_envs(dep, envs)
                 end
             end
         end
         if #table.keys(envs) > 0 then
-            requireinfo:add({envs = envs})
+            required_package:add({envs = envs})
         end
 
         -- enable this require info
-        requireinfo:enable(true)
+        required_package:enable(true)
     end
 
     -- save this require info and flush the whole cache file
-    requireinfo:save()
+    required_package:save()
 end
 
 -- register all required local packages
@@ -127,10 +127,10 @@ function _register_required_packages(packages)
         local group = instance:group()
         if not instance:parents() and (not group or not registered_in_group[group]) then
 
-            -- do not register binary package
-            local requireinfo = project.require(instance:alias() or instance:name())
-            if requireinfo then
-                _register_required_package(instance, requireinfo)
+            -- register required package
+            local required_package = project.required_package(instance:alias() or instance:name())
+            if required_package then
+                _register_required_package(instance, required_package)
             end
 
             -- mark as registered in group

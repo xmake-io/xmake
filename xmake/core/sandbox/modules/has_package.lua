@@ -21,7 +21,7 @@
 -- return module
 return function (...)
     require("sandbox/modules/import/core/sandbox/module").import("core.project.project")
-    local requires = project.requires()
+    local requires = project.required_packages()
     if requires then
         for _, name in ipairs(table.join(...)) do
             local pkg = requires[name]

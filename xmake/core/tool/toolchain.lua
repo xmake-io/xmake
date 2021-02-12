@@ -276,7 +276,7 @@ function _instance:packages()
         local project = require("project/project")
         -- we will get packages from `set_toolchains("foo", {packages})` or `set_toolchains("foo@packages")`
         for _, pkgname in ipairs(table.wrap(self:config("packages"))) do
-            local requires = project.requires()
+            local requires = project.required_packages()
             if requires then
                 local pkginfo = requires[pkgname]
                 if pkginfo then

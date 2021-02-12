@@ -38,7 +38,7 @@ local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
 local policy                = require("project/policy")
-local requireinfo           = require("project/requireinfo")
+local project_package       = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
 local platform              = require("platform/platform")
@@ -406,7 +406,7 @@ function project._load_targets()
     project._memcache():set("targets_loaded", true)
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
-    local requires = project.requires()
+    local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
         return nil, errors
@@ -616,9 +616,9 @@ function project._load_requires()
         end
 
         -- load it from cache first (@note will discard scripts in extrainfo)
-        local instance = requireinfo.load(alias or packagename)
+        local instance = project_package.load(alias or packagename)
         if not instance then
-            instance = table.inherit(requireinfo)
+            instance = table.inherit(project_package)
             instance._NAME = alias or packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
@@ -979,13 +979,13 @@ function project.options()
     return options
 end
 
--- get the given require info
-function project.require(name)
-    return project.requires()[name]
+-- get the given required package
+function project.required_package(name)
+    return project.required_packages()[name]
 end
 
--- get requires info
-function project.requires()
+-- get required packages
+function project.required_packages()
     local requires = project._memcache():get("requires")
     if not requires then
         local errors

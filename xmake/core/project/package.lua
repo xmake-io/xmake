@@ -15,11 +15,11 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        requireinfo.lua
+-- @file        package.lua
 --
 
 -- define module
-local requireinfo = requireinfo or {}
+local package = package or {}
 
 -- load modules
 local io         = require("base/io")
@@ -33,18 +33,18 @@ local sandbox    = require("sandbox/sandbox")
 local localcache = require("cache/localcache")
 
 -- get cache
-function requireinfo._cache()
+function package._cache()
     return localcache.cache("package")
 end
 
 -- save the requires info to the cache
-function requireinfo:save()
-    requireinfo._cache():set(self:name(), self._INFO)
-    requireinfo._cache():save()
+function package:save()
+    package._cache():set(self:name(), self._INFO)
+    package._cache():save()
 end
 
--- clear the requireinfo
-function requireinfo:clear()
+-- clear the package
+function package:clear()
     local info = self._INFO
     if info then
         for k, v in pairs(info) do
@@ -55,23 +55,23 @@ function requireinfo:clear()
     end
 end
 
--- dump this requireinfo
-function requireinfo:dump()
+-- dump this package
+function package:dump()
     utils.dump(self._INFO)
 end
 
 -- get the require info
-function requireinfo:get(infoname)
+function package:get(infoname)
     return self._INFO[infoname]
 end
 
 -- get the require name
-function requireinfo:name()
+function package:name()
     return self._NAME
 end
 
 -- get the package version
-function requireinfo:version()
+function package:version()
 
     -- get it from cache first
     if self._VERSION ~= nil then
@@ -89,32 +89,32 @@ function requireinfo:version()
 end
 
 -- get the package license
-function requireinfo:license()
+function package:license()
     return self:get("license")
 end
 
 -- has static libraries?
-function requireinfo:has_static()
+function package:has_static()
     return self:get("static")
 end
 
 -- has shared libraries?
-function requireinfo:has_shared()
+function package:has_shared()
     return self:get("shared")
 end
 
 -- get the require string
-function requireinfo:requirestr()
+function package:requirestr()
     return self:get("__requirestr")
 end
 
 -- get the install directory
-function requireinfo:installdir()
+function package:installdir()
     return self:get("__installdir")
 end
 
 -- get the extra info from the given name
-function requireinfo:extra(name)
+function package:extra(name)
     local extrainfo = self:extrainfo()
     if extrainfo then
         return extrainfo[name]
@@ -122,12 +122,12 @@ function requireinfo:extra(name)
 end
 
 -- get the extra info
-function requireinfo:extrainfo()
+function package:extrainfo()
     return self:get("__extrainfo")
 end
 
 -- set the value to the requires info
-function requireinfo:set(name_or_info, ...)
+function package:set(name_or_info, ...)
     if type(name_or_info) == "string" then
         local args = ...
         if args ~= nil then
@@ -143,7 +143,7 @@ function requireinfo:set(name_or_info, ...)
 end
 
 -- add the value to the requires info
-function requireinfo:add(name_or_info, ...)
+function package:add(name_or_info, ...)
     if type(name_or_info) == "string" then
         local info = table.wrap(self._INFO[name_or_info])
         self._INFO[name_or_info] = table.unwrap(table.unique(table.join(info, ...)))
@@ -155,7 +155,7 @@ function requireinfo:add(name_or_info, ...)
 end
 
 -- this require info is enabled?
-function requireinfo:enabled()
+function package:enabled()
     return self:get("__enabled")
 end
 
@@ -163,28 +163,28 @@ end
 --
 -- @param enabled   enable it?
 --
-function requireinfo:enable(enabled)
+function package:enable(enabled)
     self:set("__enabled", enabled)
 end
 
 -- load the requires info from the cache
-function requireinfo.load(name)
+function package.load(name)
 
     -- check
     assert(name)
 
     -- get info
-    local info = requireinfo._cache():get(name)
+    local info = package._cache():get(name)
     if info == nil then
         return
     end
 
-    -- init requireinfo instance
-    local instance = table.inherit(requireinfo)
+    -- init package instance
+    local instance = table.inherit(package)
     instance._INFO = info
     instance._NAME = name
     return instance
 end
 
 -- return module
-return requireinfo
+return package
