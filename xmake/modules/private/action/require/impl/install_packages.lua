@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
+import("core.project.project")
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
@@ -29,6 +30,7 @@ import("actions.install", {alias = "action_install"})
 import("actions.download", {alias = "action_download"})
 import("net.fasturl")
 import("private.action.require.impl.package")
+import("private.action.require.impl.register_packages")
 
 -- sort packages urls
 function _sort_packages_urls(packages)
@@ -231,26 +233,31 @@ function _install_packages(packages_install, packages_download)
                 -- download this package first
                 local downloaded = true
                 if packages_download[tostring(instance)] then
-                    packages_downloading[index] =instance 
+                    packages_downloading[index] = instance
                     downloaded = action_download(instance)
                     packages_downloading[index] = nil
                 end
 
                 -- install this package
-                packages_installing[index] =instance 
+                packages_installing[index] = instance
                 if downloaded then
                     action_install(instance)
                 end
-                packages_installing[index] = nil
+
+                -- register it to local cache if it is root required package
+                if not instance:parents() then
+                    register_packages(instance)
+                end
 
                 -- mark this group as 'installed' or 'failed'
                 if group then
                     packages_in_group[group] = instance:exists() and 1 or -1
                 end
 
-                -- enable parallelize
+                -- next
                 parallelize = true
                 installing_count = installing_count - 1
+                packages_installing[index] = nil
             end
         end
         packages_installing[index] = nil
@@ -321,6 +328,25 @@ function _install_packages(packages_install, packages_download)
     end})
 end
 
+-- only enable the first package in same group and root packages
+function _disable_other_packages_in_group(packages)
+    local registered_in_group = {}
+    for _, instance in ipairs(packages) do
+        local group = instance:group()
+        if not instance:parents() and group then
+            local required_package = project.required_package(instance:alias() or instance:name())
+            if required_package then
+                if not registered_in_group[group] and required_package:enabled() then
+                    registered_in_group[group] = true
+                elseif required_package:enabled() then
+                    required_package:enable(false)
+                    required_package:save()
+                end
+            end
+        end
+    end
+end
+
 -- install packages
 function main(requires, opt)
 
@@ -348,7 +374,7 @@ function main(requires, opt)
         if not instance:exists() then
             if instance:supported() then
                 if #instance:urls() > 0 then
-                    packages_download[tostring(instance)] =instance 
+                    packages_download[tostring(instance)] = instance
                 end
                 table.insert(packages_install, instance)
             elseif not instance:optional() then
@@ -388,6 +414,12 @@ function main(requires, opt)
 
     -- install all required packages from repositories
     _install_packages(packages_install, packages_download)
+
+    -- register all required root packages to local cache
+    register_packages(packages)
+
+    -- disable other packages in same group
+    _disable_other_packages_in_group(packages)
     return packages
 end
 
