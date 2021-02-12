@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.base.global")
 import("devel.git")
 import("net.fasturl")
-import("actions.require.impl.environment", {rootdir = os.programdir()})
+import("private.action.require.impl.environment")
 
 -- install plugins
 function _install()

@@ -31,7 +31,7 @@ import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
 import("core.cache.memcache")
 import("core.cache.localcache")
-import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
+import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 

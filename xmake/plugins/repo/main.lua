@@ -26,7 +26,7 @@ import("core.platform.platform")
 import("core.package.repository")
 import("devel.git")
 import("private.async.runjobs")
-import("actions.require.impl.environment", {rootdir = os.programdir()})
+import("private.action.require.impl.environment")
 
 -- add repository url
 function _add(name, url, branch, is_global)

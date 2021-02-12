@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
-import("actions.require.impl.package", {rootdir = os.programdir()})
+import("private.action.require.impl.package")
 
 -- get menu options
 function menu_options()
