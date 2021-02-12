@@ -20,10 +20,10 @@
 
 -- imports
 import("core.base.task")
-import("private.package.impl.utils.filter")
-import("private.package.impl.package")
-import("private.package.impl.repository")
-import("private.package.impl.environment")
+import("private.action.require.impl.utils.filter")
+import("private.action.require.impl.package")
+import("private.action.require.impl.repository")
+import("private.action.require.impl.environment")
 
 -- search the given packages
 function main(names)

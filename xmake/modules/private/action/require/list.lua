@@ -21,9 +21,9 @@
 -- imports
 import("core.project.project")
 import("core.base.task")
-import("private.package.impl.package")
-import("private.package.impl.repository")
-import("private.package.impl.environment")
+import("private.action.require.impl.package")
+import("private.action.require.impl.repository")
+import("private.action.require.impl.environment")
 
 -- from xmake/system/remote?
 function _from(instance)

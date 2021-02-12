@@ -23,10 +23,10 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.project")
 import("lib.detect.find_tool")
-import("private.package.impl.package")
-import("private.package.impl.repository")
-import("private.package.impl.environment")
-import("private.package.impl.utils.get_requires")
+import("private.action.require.impl.package")
+import("private.action.require.impl.repository")
+import("private.action.require.impl.environment")
+import("private.action.require.impl.utils.get_requires")
 
 -- register required package environments
 -- envs: bin path for *.dll, program ..
