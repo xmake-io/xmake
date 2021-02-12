@@ -86,8 +86,6 @@ function buildenvs(package, opt)
     -- pass toolchains
     local toolchains = package:config("toolchains")
     if toolchains then
-        local rcfile_path = os.tmpfile() .. ".lua"
-        local rcfile = io.open(rcfile_path, 'w')
         local toolchain_packages = {}
         for _, name in ipairs(toolchains) do
             local toolchain_inst = toolchain.load(name, {plat = package:plat(), arch = package:arch()})
@@ -95,7 +93,11 @@ function buildenvs(package, opt)
                 table.join2(toolchain_packages, toolchain_inst:config("packages"))
             end
         end
-        rcfile:print("add_requires(\"%s\")", table.concat(toolchain_packages, '", "'))
+        local rcfile_path = os.tmpfile() .. ".lua"
+        local rcfile = io.open(rcfile_path, 'w')
+        if #toolchain_packages > 0 then
+            rcfile:print("add_requires(\"%s\")", table.concat(toolchain_packages, '", "'))
+        end
         rcfile:print("add_toolchains(\"%s\")", table.concat(table.wrap(toolchains), '", "'))
         rcfile:close()
         envs.XMAKE_RCFILES = {}
