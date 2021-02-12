@@ -35,7 +35,7 @@ import("actions.install", {alias = "action_install"})
 import("actions.download", {alias = "action_download"})
 import("devel.git")
 import("net.fasturl")
-import("repository")
+import("private.package.impl.repository")
 
 -- get memcache
 function _memcache()

@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.option")
-import(".utils.filter")
+import("private.package.impl.utils.filter")
 
 -- test the given package
 function main(package)

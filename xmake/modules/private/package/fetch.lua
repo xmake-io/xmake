@@ -25,9 +25,9 @@ import("core.project.project")
 import("core.package.package", {alias = "core_package"})
 import("core.tool.linker")
 import("core.tool.compiler")
-import("impl.package")
-import("impl.repository")
-import("impl.utils.get_requires")
+import("private.package.impl.package")
+import("private.package.impl.repository")
+import("private.package.impl.utils.get_requires")
 
 -- fetch the given package info
 function main(requires_raw)

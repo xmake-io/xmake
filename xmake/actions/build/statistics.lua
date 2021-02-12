@@ -24,7 +24,7 @@ import("core.base.process")
 import("core.project.config")
 import("core.platform.platform")
 import("private.action.update.fetch_version")
-import("private.action.require.packagenv")
+import("private.package.impl.packagenv")
 
 -- statistics is enabled?
 function _is_enabled()

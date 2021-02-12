@@ -31,7 +31,7 @@ import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
 import("configheader", {alias = "generate_configheader"})
-import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
+import("private.package.install", {alias = "install_requires"})
 
 -- filter option
 function _option_filter(name)

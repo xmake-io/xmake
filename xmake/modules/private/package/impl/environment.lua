@@ -22,8 +22,8 @@
 import("core.project.config")
 import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
-import("private.action.require.packagenv")
-import("package")
+import("private.package.impl.packagenv")
+import("private.package.impl.package")
 
 -- enter environment
 --

@@ -15,18 +15,18 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        export.lua
+-- @file        uninstall.lua
 --
 
 -- imports
 import("core.base.task")
 import("core.base.option")
-import("impl.package")
-import("impl.repository")
-import("impl.environment")
-import("impl.utils.get_requires")
+import("private.package.impl.package")
+import("private.package.impl.repository")
+import("private.package.impl.environment")
+import("private.package.impl.utils.get_requires")
 
--- export the given packages
+-- uninstall the given packages
 function main(requires_raw)
 
     -- enter environment
@@ -44,25 +44,22 @@ function main(requires_raw)
         return
     end
 
-    -- export packages
-    local exportdir = option.get("exportdir")
-    local packages  = package.export_packages(requires, {requires_extra = requires_extra, exportdir = exportdir})
+    -- uninstall packages
+    local packages = package.uninstall_packages(requires, {requires_extra = requires_extra})
     for _, instance in ipairs(packages) do
-        print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
+        print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end
     if not packages or #packages == 0 then
         cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
         if os.getenv("XREPO_WORKING") then
-            print("please attempt to export them with `-f/--configs=` option, e.g.")
-            print("    - xrepo export -f \"name=value, ...\" package")
-            print("    - xrepo export -m debug -k shared -f \"name=value, ...\" package")
+            print("please attempt to remove them with `-f/--configs=` option, e.g.")
+            print("    - xrepo remove -f \"name=value, ...\" package")
+            print("    - xrepo remove -m debug -k shared -f \"name=value, ...\" package")
         else
-            print("please attempt to export them with `--extra=` option, e.g.")
-            print("    - xmake require --export --extra=\"{configs={...}}\" package")
-            print("    - xmake require --export --extra=\"{debug=true,configs={shared=true}}\" package")
+            print("please attempt to uninstall them with `--extra=` option, e.g.")
+            print("    - xmake require --uninstall --extra=\"{configs={...}}\" package")
+            print("    - xmake require --uninstall --extra=\"{debug=true,configs={shared=true}}\" package")
         end
-    else
-        print("output: %s", exportdir)
     end
 
     -- leave environment
