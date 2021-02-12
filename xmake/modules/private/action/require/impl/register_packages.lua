@@ -15,18 +15,11 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        package.lua
+-- @file        register_packages.lua
 --
 
 -- imports
-import("core.base.option")
-import("core.base.task")
 import("core.project.project")
-import("lib.detect.find_tool")
-import("private.action.require.impl.repository")
-import("private.action.require.impl.environment")
-import("private.action.require.impl.install_packages")
-import("private.action.require.impl.utils.get_requires")
 
 -- register required package environments
 -- envs: bin path for *.dll, program ..
@@ -83,8 +76,8 @@ end
 -- register the required local package
 function _register_required_package(instance, required_package)
 
-    -- disable it if this package is optional and missing
-    if _g.optional_missing[instance:name()] then
+    -- disable it if this package is missing
+    if not instance:exists() then
         required_package:enable(false)
     else
         -- clear require info first
@@ -119,91 +112,14 @@ function _register_required_package(instance, required_package)
 end
 
 -- register all required local packages
-function _register_required_packages(packages)
-    local registered_in_group = {}
+function main(packages)
     for _, instance in ipairs(packages) do
-
-        -- only register the first package in same group and root packages
-        local group = instance:group()
-        if not instance:parents() and (not group or not registered_in_group[group]) then
-
-            -- register required package
+        if not instance:parents() then
             local required_package = project.required_package(instance:alias() or instance:name())
             if required_package then
                 _register_required_package(instance, required_package)
             end
-
-            -- mark as registered in group
-            if group then
-                registered_in_group[group] = true
-            end
         end
     end
-end
-
--- check missing packages
-function _check_missing_packages(packages)
-
-    -- get all missing packages
-    local packages_missing = {}
-    local optional_missing = {}
-    for _, instance in ipairs(packages) do
-        if not instance:exists() and (#instance:urls() > 0 or instance:isSys()) then
-            if instance:optional() then
-                optional_missing[instance:name()] = instance
-            else
-                table.insert(packages_missing, instance:name())
-            end
-        end
-    end
-
-    -- raise tips
-    if #packages_missing > 0 then
-        local cmd = "xmake repo -u"
-        if os.getenv("XREPO_WORKING") then
-            cmd = "xrepo update-repo"
-        end
-        raise("The packages(%s) not found, please run `%s` first!", table.concat(packages_missing, ", "), cmd)
-    end
-
-    -- save the optional missing packages
-    _g.optional_missing = optional_missing
-end
-
--- install packages
-function main(requires_raw)
-
-    -- get requires and extra config
-    local requires_extra = nil
-    local requires, requires_extra = get_requires(requires_raw)
-    if not requires or #requires == 0 then
-        return
-    end
-
-    -- find git
-    environment.enter()
-    local git = find_tool("git")
-    environment.leave()
-
-    -- pull all repositories first if not exists
-    --
-    -- attempt to install git from the builtin-packages first if git not found
-    --
-    if git and not repository.pulled() then
-        task.run("repo", {update = true})
-    end
-
-    -- install packages
-    environment.enter()
-    local packages = install_packages(requires, {requires_extra = requires_extra})
-    if packages then
-
-        -- check missing packages
-        _check_missing_packages(packages)
-
-        -- register all required local packages
-        _register_required_packages(packages)
-    end
-    environment.leave()
 end
 

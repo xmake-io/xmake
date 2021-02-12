@@ -21,9 +21,9 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
-import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
+import("private.action.require.impl.export_packages")
 import("private.action.require.impl.utils.get_requires")
 
 -- export the given packages
@@ -46,7 +46,7 @@ function main(requires_raw)
 
     -- export packages
     local exportdir = option.get("exportdir")
-    local packages  = package.export_packages(requires, {requires_extra = requires_extra, exportdir = exportdir})
+    local packages  = export_packages(requires, {requires_extra = requires_extra, exportdir = exportdir})
     for _, instance in ipairs(packages) do
         print("export: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end

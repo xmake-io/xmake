@@ -21,9 +21,9 @@
 -- imports
 import("core.base.task")
 import("core.base.option")
-import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
+import("private.action.require.impl.uninstall_packages")
 import("private.action.require.impl.utils.get_requires")
 
 -- uninstall the given packages
@@ -45,7 +45,7 @@ function main(requires_raw)
     end
 
     -- uninstall packages
-    local packages = package.uninstall_packages(requires, {requires_extra = requires_extra})
+    local packages = uninstall_packages(requires, {requires_extra = requires_extra})
     for _, instance in ipairs(packages) do
         print("uninstall: %s%s ok!", instance:name(), instance:version_str() and ("-" .. instance:version_str()) or "")
     end

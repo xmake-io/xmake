@@ -21,9 +21,9 @@
 -- imports
 import("core.base.task")
 import("private.action.require.impl.utils.filter")
-import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
+import("private.action.require.impl.search_packages")
 
 -- search the given packages
 function main(names)
@@ -45,7 +45,7 @@ function main(names)
     print("The package names:")
 
     -- search packages
-    for name, packages in pairs(package.search_packages(names)) do
+    for name, packages in pairs(search_packages(names)) do
         if #packages > 0 then
 
             -- show name
