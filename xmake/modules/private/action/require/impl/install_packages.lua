@@ -245,6 +245,9 @@ function _install_packages(packages_install, packages_download)
                 end
 
                 -- register it to local cache if it is root required package
+                --
+                -- @note we need to register the package in time,
+                -- because other packages may be used, e.g. toolchain/packages
                 if not instance:parents() then
                     register_packages(instance)
                 end
