@@ -31,6 +31,7 @@ local global         = require("base/global")
 local option         = require("base/option")
 local interpreter    = require("base/interpreter")
 local config         = require("project/config")
+local memcache       = require("cache/memcache")
 local localcache     = require("cache/localcache")
 local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
@@ -41,7 +42,7 @@ function _instance.new(name, info, cachekey, configs)
     local instance     = table.inherit(_instance)
     instance._NAME     = name
     instance._INFO     = info
-    instance._CACHE    = localcache.cache("toolchain")
+    instance._CACHE    = toolchain._localcache()
     instance._CACHEKEY = cachekey
     instance._CONFIGS  = instance._CACHE:get(cachekey) or {}
     for k, v in pairs(configs) do
@@ -420,6 +421,16 @@ function _instance:_checktool(toolkind, toolpath)
     return program, toolname
 end
 
+-- get memcache
+function toolchain._memcache()
+    return memcache.cache("core.tool.toolchain")
+end
+
+-- get local cache
+function toolchain._localcache()
+    return localcache.cache("toolchain")
+end
+
 -- the interpreter
 function toolchain._interpreter()
 
@@ -600,23 +611,86 @@ function toolchain.load_withinfo(name, info, opt)
     return instance
 end
 
+-- get the program and name of the given tool kind
+function toolchain.tool(toolchains, toolkind, opt)
+
+    -- get plat and arch
+    opt = opt or {}
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
+
+    -- get cache and cachekey
+    local cache = toolchain:_localcache()
+    local cachekey = "tool_" .. (opt.cachekey or "") .. "_" .. plat .. "_" .. arch .. "_" .. toolkind
+    local updatecache = false
+
+    -- get program from before_script
+    local program, toolname, toolchain_info
+    local before_get = opt.before_get
+    if before_get then
+        program, toolname, toolchain_info = before_get(toolkind)
+        if program then
+            updatecache = true
+        end
+    end
+
+    -- get program from local cache
+    if not program then
+        program = cache:get2(cachekey, "program")
+        toolname = cache:get2(cachekey, "toolname")
+        toolchain_info = cache:get2(cachekey, "toolchain_info")
+    end
+
+    -- get program from toolchains
+    if not program then
+        for idx, toolchain_inst in ipairs(toolchains) do
+            program, toolname = toolchain_inst:tool(toolkind)
+            if program then
+                toolchain_info = {name = toolchain_inst:name(),
+                                  plat = toolchain_inst:plat(),
+                                  arch = toolchain_inst:arch(),
+                                  cachekey = toolchain_inst:cachekey()}
+                updatecache = true
+                break
+            end
+        end
+    end
+
+    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
+    if program and type(program) == "string" then
+        local pos = program:find('@', 1, true)
+        if pos then
+            toolname = program:sub(1, pos - 1)
+            program = program:sub(pos + 1)
+            updatecache = true
+        end
+    end
+
+    -- update cache
+    if program and updatecache then
+        cache:set2(cachekey, "program", program)
+        cache:set2(cachekey, "toolname", toolname)
+        cache:set2(cachekey, "toolchain_info", toolchain_info)
+        cache:save()
+    end
+    return program, toolname, toolchain_info
+end
+
 -- get tool configuration from the toolchains
 function toolchain.toolconfig(toolchains, name, opt)
 
-    -- init tool configs cache
+    -- get plat and arch
     opt = opt or {}
-    local toolconfigs = toolchain._TOOLCONFIGS
-    if not toolconfigs then
-        toolconfigs = {}
-        toolchain._TOOLCONFIGS = toolconfigs
-    end
+    local plat = opt.plat or config.get("plat") or os.host()
+    local arch = opt.arch or config.get("arch") or os.arch()
+
+    -- get cache and cachekey
+    local cache = toolchain._memcache()
+    local cachekey = "toolconfig_" .. (opt.cachekey or "") .. "_" .. plat .. "_" .. arch
 
     -- get configuration
-    local cachekey = (opt.cachekey or "") .. name
-    local toolconfig = toolconfigs[cachekey]
+    local toolconfig = cache:get2(cachekey, name)
     if toolconfig == nil then
-
-        -- get them from all toolchains
         for _, toolchain_inst in ipairs(toolchains) do
             local values = toolchain_inst:get(name)
             if values then
@@ -632,10 +706,7 @@ function toolchain.toolconfig(toolchains, name, opt)
                 end
             end
         end
-
-        -- cache it
-        toolconfig = toolconfig or false
-        toolconfigs[cachekey] = toolconfig
+        cache:set2(cachekey, name, toolconfig or false)
     end
     return toolconfig or nil
 end
