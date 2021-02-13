@@ -600,5 +600,45 @@ function toolchain.load_withinfo(name, info, opt)
     return instance
 end
 
+-- get tool configuration from the toolchains
+function toolchain.toolconfig(toolchains, name, opt)
+
+    -- init tool configs cache
+    opt = opt or {}
+    local toolconfigs = toolchain._TOOLCONFIGS
+    if not toolconfigs then
+        toolconfigs = {}
+        toolchain._TOOLCONFIGS = toolconfigs
+    end
+
+    -- get configuration
+    local cachekey = (opt.cachekey or "") .. name
+    local toolconfig = toolconfigs[cachekey]
+    if toolconfig == nil then
+
+        -- get them from all toolchains
+        for _, toolchain_inst in ipairs(toolchains) do
+            local values = toolchain_inst:get(name)
+            if values then
+                toolconfig = toolconfig or {}
+                table.join2(toolconfig, values)
+            end
+            local after_get = opt.after_get
+            if after_get then
+                values = after_get(toolchain_inst, name)
+                if values then
+                    toolconfig = toolconfig or {}
+                    table.join2(toolconfig, values)
+                end
+            end
+        end
+
+        -- cache it
+        toolconfig = toolconfig or false
+        toolconfigs[cachekey] = toolconfig
+    end
+    return toolconfig or nil
+end
+
 -- return module
 return toolchain

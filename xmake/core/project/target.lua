@@ -38,6 +38,7 @@ local project_package = require("project/package")
 local tool            = require("tool/tool")
 local linker          = require("tool/linker")
 local compiler        = require("tool/compiler")
+local toolchain       = require("tool/toolchain")
 local platform        = require("platform/platform")
 local environment     = require("platform/environment")
 local language        = require("language/language")
@@ -1811,49 +1812,18 @@ end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-
-    -- init tool configs
-    local toolconfigs = self._TOOLCONFIGS
-    if not toolconfigs then
-        toolconfigs = {}
-        self._TOOLCONFIGS = toolconfigs
-    end
-
-    -- get configuration
-    local toolconfig = toolconfigs[name]
-    if toolconfig == nil then
-
-        -- get them from all toolchains
-        for _, toolchain_inst in ipairs(self:toolchains()) do
-
-            -- get xxflags
-            local values = toolchain_inst:get(name)
-            if values then
-                toolconfig = toolconfig or {}
-                table.join2(toolconfig, values)
-            end
-
-            -- get flags from target.on_xxflags()
-            local script = toolchain_inst:get("target.on_" .. name)
-            if type(script) == "function" then
-                local ok, result_or_errors = utils.trycall(script, nil, self)
-                if ok then
-                    values = result_or_errors
-                    if values then
-                        toolconfig = toolconfig or {}
-                        table.join2(toolconfig, values)
-                    end
-                else
-                    os.raise(result_or_errors)
-                end
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target", after_get = function(toolchain_inst)
+        -- get flags from target.on_xxflags()
+        local script = toolchain_inst:get("target.on_" .. name)
+        if type(script) == "function" then
+            local ok, result_or_errors = utils.trycall(script, nil, self)
+            if ok then
+                return result_or_errors
+            else
+                os.raise(result_or_errors)
             end
         end
-
-        -- cache it
-        toolconfig = toolconfig or false
-        toolconfigs[name] = toolconfig
-    end
-    return toolconfig or nil
+    end})
 end
 
 -- get target apis
