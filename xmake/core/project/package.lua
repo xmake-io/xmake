@@ -19,7 +19,7 @@
 --
 
 -- define module
-local package = package or {}
+local package = {}
 
 -- load modules
 local io         = require("base/io")

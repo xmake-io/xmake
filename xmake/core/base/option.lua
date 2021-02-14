@@ -19,7 +19,7 @@
 --
 
 -- define module: option
-local option = option or {}
+local option = {}
 
 -- load modules
 local cli       = require("base/cli")

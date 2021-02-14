@@ -19,8 +19,8 @@
 --
 
 -- define module
-local option = option or {}
-local _instance = _instance or {}
+local option    = {}
+local _instance = {}
 
 -- load modules
 local io             = require("base/io")
