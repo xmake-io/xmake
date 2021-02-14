@@ -44,11 +44,12 @@ function _translate_paths(paths)
     return paths
 end
 
--- translate windows bin path
-function _translate_windows_bin_path(bin_path)
-    if bin_path then
+-- translate bin path
+function _translate_bin_path(bin_path)
+    if is_host("windows") and bin_path then
         return bin_path:gsub("\\", "/") .. ".exe"
     end
+    return bin_path
 end
 
 -- get cflags from package deps
@@ -302,26 +303,16 @@ end
 -- get configs for mingw
 function _get_configs_for_mingw(package, configs, opt)
     opt = opt or {}
+    opt.cross                      = true
     local envs                     = {}
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
-    if is_host("windows") then
-        envs.CMAKE_C_COMPILER      = _translate_windows_bin_path(package:build_getenv("cc"))
-        envs.CMAKE_CXX_COMPILER    = _translate_windows_bin_path(package:build_getenv("cxx"))
-        envs.CMAKE_ASM_COMPILER    = _translate_windows_bin_path(package:build_getenv("as"))
-        envs.CMAKE_AR              = _translate_windows_bin_path(package:build_getenv("ar"))
-        envs.CMAKE_LINKER          = _translate_windows_bin_path(package:build_getenv("ld"))
-        envs.CMAKE_RANLIB          = _translate_windows_bin_path(package:build_getenv("ranlib"))
-        envs.CMAKE_RC_COMPILER     = _translate_windows_bin_path(package:build_getenv("mrc"))
-    else
-        envs.CMAKE_C_COMPILER      = package:build_getenv("cc")
-        envs.CMAKE_CXX_COMPILER    = package:build_getenv("cxx")
-        envs.CMAKE_ASM_COMPILER    = package:build_getenv("as")
-        envs.CMAKE_AR              = package:build_getenv("ar")
-        envs.CMAKE_LINKER          = package:build_getenv("ld")
-        envs.CMAKE_RANLIB          = package:build_getenv("ranlib")
-        envs.CMAKE_RC_COMPILER     = package:build_getenv("mrc")
-    end
-    opt.cross                      = true
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
+    envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
@@ -347,15 +338,15 @@ end
 -- get configs for cross
 function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
-    local envs                     = {}
-    local sdkdir                   = package:build_getenv("sdk")
     opt.cross                      = true
-    envs.CMAKE_C_COMPILER          = package:build_getenv("cc")
-    envs.CMAKE_CXX_COMPILER        = package:build_getenv("cxx")
-    envs.CMAKE_ASM_COMPILER        = package:build_getenv("as")
-    envs.CMAKE_AR                  = package:build_getenv("ar")
-    envs.CMAKE_LINKER              = package:build_getenv("ld")
-    envs.CMAKE_RANLIB              = package:build_getenv("ranlib")
+    local envs                     = {}
+    local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
