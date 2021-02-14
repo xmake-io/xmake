@@ -35,6 +35,7 @@ local hashset        = require("base/hashset")
 local scopeinfo      = require("base/scopeinfo")
 local interpreter    = require("base/interpreter")
 local memcache       = require("cache/memcache")
+local toolchain      = require("tool/toolchain")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local platform       = require("platform/platform")
@@ -569,10 +570,10 @@ function _instance:build_envs(lazy_loading)
         setmetatable(build_envs, { __index = function (tbl, key)
             local value = config.get(key)
             if value == nil then
-                value = platform.toolconfig(key, self:plat())
+                value = self:toolconfig(key)
             end
             if value == nil then
-                value = platform.tool(key, self:plat())
+                value = self:tool(key)
             end
             value = table.unique(table.join(table.wrap(value), self:config(key)))
             if #value > 0 then
@@ -598,6 +599,45 @@ function _instance:build_envs(lazy_loading)
         end
     end
     return build_envs
+end
+
+-- get toolchains
+function _instance:toolchains()
+    local toolchains = self._TOOLCHAINS
+    if toolchains == nil then
+        for _, name in ipairs(table.wrap(self:config("toolchains"))) do
+            local toolchain_opt = {plat = self:plat(), arch = self:arch()}
+            local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
+            if not toolchain_inst and os.isfile(os.projectfile()) then
+                toolchain_inst = require("base/project").toolchain(name, toolchain_opt)
+            end
+            if not toolchain_inst then
+                os.raise(errors)
+            end
+            toolchains = toolchains or {}
+            table.insert(toolchains, toolchain_inst)
+        end
+        self._TOOLCHAINS = toolchains or false
+    end
+    return toolchains or nil
+end
+
+-- get the program and name of the given tool kind
+function _instance:tool(toolkind)
+    if self:toolchains() then
+        return toolchain.tool(self:toolchains(), toolkind, {cachekey = "package", plat = self:plat(), arch = self:arch()})
+    else
+        return platform.tool(toolkind, self:plat(), self:arch())
+    end
+end
+
+-- get tool configuration from the toolchains
+function _instance:toolconfig(name)
+    if self:toolchains() then
+        return toolchain.toolconfig(self:toolchains(), name, {cachekey = "package", plat = self:plat(), arch = self:arch()})
+    else
+        return platform.toolconfig(name, self:plat(), self:arch())
+    end
 end
 
 -- get the user private data
