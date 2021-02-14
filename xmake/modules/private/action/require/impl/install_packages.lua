@@ -249,7 +249,7 @@ function _install_packages(packages_install, packages_download)
                 -- @note we need to register the package in time,
                 -- because other packages may be used, e.g. toolchain/packages
                 if not instance:parents() then
-                    register_packages(instance)
+                    register_packages({instance})
                 end
 
                 -- mark this group as 'installed' or 'failed'
