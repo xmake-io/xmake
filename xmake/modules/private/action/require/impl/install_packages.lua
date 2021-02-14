@@ -159,6 +159,7 @@ function _install_packages(packages_install, packages_download)
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
     local packages_in_group = {}
+    local working_count = 0
     local installing_count = 0
     local parallelize = true
     runjobs("install_packages", function (index)
@@ -196,7 +197,7 @@ function _install_packages(packages_install, packages_download)
                     instance = pkg
                     table.remove(packages_pending, idx)
                     break
-                elseif installing_count == 0 then
+                elseif working_count == 0 then
                     if #packages_pending == 1 and dep_not_found then
                         raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
                     elseif #packages_pending == 1 then
@@ -209,6 +210,9 @@ function _install_packages(packages_install, packages_download)
             end
         end
         if instance then
+
+            -- update working count
+            working_count = working_count + 1
 
             -- only install the first package in same group
             local group = instance:group()
@@ -262,6 +266,9 @@ function _install_packages(packages_install, packages_download)
                 installing_count = installing_count - 1
                 packages_installing[index] = nil
             end
+
+            -- update working count
+            working_count = working_count - 1
         end
         packages_installing[index] = nil
         packages_downloading[index] = nil
