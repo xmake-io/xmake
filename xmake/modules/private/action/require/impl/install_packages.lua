@@ -148,7 +148,7 @@ function _get_confirm(packages)
 end
 
 -- install packages
-function _install_packages(packages_install, packages_download)
+function _install_packages(packages_install, packages_download, installdeps)
 
     -- we need hide wait characters if is not a tty
     local show_wait = io.isatty()
@@ -178,7 +178,7 @@ function _install_packages(packages_install, packages_download)
                 -- all dependences has been installed? we install it now
                 local ready = true
                 local dep_not_found = nil
-                for _, dep in ipairs(pkg:orderdeps()) do
+                for _, dep in pairs(installdeps[tostring(pkg)]) do
                     local installed = packages_installed[tostring(dep)]
                     if installed == false or (installed == nil and not dep:exists()) then
                         ready = false
@@ -365,6 +365,43 @@ function _disable_other_packages_in_group(packages)
     end
 end
 
+-- sort packages for installation dependencies
+function _sort_packages_for_installdeps(packages, installdeps, order_packages)
+    for _, instance in ipairs(packages) do
+        local deps = installdeps[tostring(instance)]
+        if deps then
+            _sort_packages_for_installdeps(deps, installdeps, order_packages)
+        end
+        table.insert(order_packages, instance)
+    end
+end
+
+-- get package installation dependencies
+function _get_package_installdeps(packages)
+    local installdeps = {}
+    local packagesmap = {}
+    for _, instance in ipairs(packages) do
+        -- we need use alias name first for toolchain/packages
+        packagesmap[instance:alias() or instance:name()] = instance
+    end
+    for _, instance in ipairs(packages) do
+        local deps = {}
+        if instance:deps() then
+            deps = table.copy(instance:deps())
+        end
+        -- patch toolchain/packages to installdeps, because we need install toolchain package first
+        if instance:is_toplevel() then
+            for _, toolchain in ipairs(instance:toolchains()) do
+                for _, packagename in ipairs(toolchain:config("packages")) do
+                    deps[packagename] = packagesmap[packagename]
+                end
+            end
+        end
+        installdeps[tostring(instance)] = deps
+    end
+    return installdeps
+end
+
 -- install packages
 function main(requires, opt)
 
@@ -373,6 +410,14 @@ function main(requires, opt)
 
     -- load packages
     local packages = package.load_packages(requires, opt)
+
+    -- get package installation dependencies
+    local installdeps = _get_package_installdeps(packages)
+
+    -- sort packages for installdeps
+    local order_packages = {}
+    _sort_packages_for_installdeps(packages, installdeps, order_packages)
+    packages = table.unique(order_packages)
 
     -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
@@ -434,7 +479,7 @@ function main(requires, opt)
     _sort_packages_urls(packages_download)
 
     -- install all required packages from repositories
-    _install_packages(packages_install, packages_download)
+    _install_packages(packages_install, packages_download, installdeps)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)
