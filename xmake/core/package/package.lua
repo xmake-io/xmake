@@ -316,14 +316,8 @@ function _instance:is_library()
 end
 
 -- is top level? user top requires in xmake.lua
--- @note we cannot use `not package:parents()`, because we may patch deps for toolchain/packages
 function _instance:is_toplevel()
-    return self._IS_TOPLEVEL == true
-end
-
--- mark as top level
-function _instance:mark_toplevel()
-    self._IS_TOPLEVEL = true
+    return not self:parents()
 end
 
 -- get the filelock of the whole package directory

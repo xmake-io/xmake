@@ -589,12 +589,6 @@ function _load_packages(requires, opt)
         -- maybe package not found and optional
         if package then
 
-            -- mark as top level
-            -- @note we cannot use `not package:parents()`, because we may patch deps for toolchain/packages
-            if not opt.parentinfo then
-                package:mark_toplevel()
-            end
-
             -- load dependent packages and save them first of this package
             if not package._DEPS then
                 local deps = package:get("deps")
