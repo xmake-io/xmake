@@ -447,6 +447,9 @@ function _inherit_parent_configs(requireinfo, parentinfo)
             requireinfo_configs.pic = parentinfo_configs.pic
         end
     end
+    if parentinfo.host then
+        requireinfo.host = true
+    end
     requireinfo.configs = requireinfo_configs
 end
 
