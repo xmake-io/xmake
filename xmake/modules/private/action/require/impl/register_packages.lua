@@ -114,7 +114,7 @@ end
 -- register all required root packages to local cache
 function main(packages)
     for _, instance in ipairs(packages) do
-        if not instance:parents() then
+        if instance:is_toplevel() then
             local required_packagename = instance:alias() or instance:name()
             local required_package = project.required_package(required_packagename)
             if required_package then

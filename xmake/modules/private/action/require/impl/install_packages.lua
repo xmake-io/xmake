@@ -153,6 +153,12 @@ function _install_packages(packages_install, packages_download)
     -- we need hide wait characters if is not a tty
     local show_wait = io.isatty()
 
+    -- init installed packages
+    local packages_installed = {}
+    for _, instance in ipairs(packages_install) do
+        packages_installed[tostring(instance)] = false
+    end
+
     -- do install
     local progress_helper = show_wait and progress.new() or nil
     local packages_installing = {}
@@ -173,7 +179,8 @@ function _install_packages(packages_install, packages_download)
                 local ready = true
                 local dep_not_found = nil
                 for _, dep in ipairs(pkg:orderdeps()) do
-                    if not dep:exists() then
+                    local installed = packages_installed[tostring(dep)]
+                    if installed == false or (installed == nil and not dep:exists()) then
                         ready = false
                         dep_not_found = dep
                         break
@@ -252,7 +259,7 @@ function _install_packages(packages_install, packages_download)
                 --
                 -- @note we need to register the package in time,
                 -- because other packages may be used, e.g. toolchain/packages
-                if not instance:parents() then
+                if instance:is_toplevel() then
                     register_packages({instance})
                 end
 
@@ -265,6 +272,7 @@ function _install_packages(packages_install, packages_download)
                 parallelize = true
                 installing_count = installing_count - 1
                 packages_installing[index] = nil
+                packages_installed[tostring(instance)] = true
             end
 
             -- update working count
@@ -343,7 +351,7 @@ function _disable_other_packages_in_group(packages)
     local registered_in_group = {}
     for _, instance in ipairs(packages) do
         local group = instance:group()
-        if not instance:parents() and group then
+        if instance:is_toplevel() and group then
             local required_package = project.required_package(instance:alias() or instance:name())
             if required_package then
                 if not registered_in_group[group] and required_package:enabled() then
@@ -369,7 +377,7 @@ function main(requires, opt)
     -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
-        if instance and (not option.get("force") or (option.get("shallow") and instance:parents())) then
+        if instance and (not option.get("force") or (option.get("shallow") and instance:is_toplevel())) then
             instance:envs_enter()
             instance:fetch()
             instance:envs_leave()

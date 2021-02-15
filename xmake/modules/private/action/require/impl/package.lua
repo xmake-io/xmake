@@ -548,11 +548,6 @@ function _load_package(packagename, requireinfo, opt)
     end
     _memcache():set2("cachedirs", package:cachedir(), true)
 
-    -- disable parallelize if this package is toolchain? we need install toolchain package first
-    if package:is_toolchain() then
-        package:set("parallelize", false)
-    end
-
     -- add some builtin configurations to package
     _add_package_configurations(package)
 
@@ -594,6 +589,12 @@ function _load_packages(requires, opt)
         -- maybe package not found and optional
         if package then
 
+            -- mark as top level
+            -- @note we cannot use `not package:parents()`, because we may patch deps for toolchain/packages
+            if not opt.parentinfo then
+                package:mark_toplevel()
+            end
+
             -- load dependent packages and save them first of this package
             if not package._DEPS then
                 local deps = package:get("deps")
@@ -617,15 +618,7 @@ function _load_packages(requires, opt)
             end
 
             -- save this package
-            -- @note if this root package is toolchain, we need to move it to the beginning in order to install first
-            if not package:parents() and package:is_toolchain() then
-                table.insert(packages, 1, package)
-                for _, dep in irpairs(package:orderdeps()) do
-                    table.insert(packages, 1, dep)
-                end
-            else
-                table.insert(packages, package)
-            end
+            table.insert(packages, package)
         end
     end
     return packages
