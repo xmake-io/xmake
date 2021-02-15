@@ -366,7 +366,7 @@ function main(requires, opt)
     -- load packages
     local packages = package.load_packages(requires, opt)
 
-    -- fetch packages (with system) from local first
+    -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
         if instance and (not option.get("force") or (option.get("shallow") and instance:parents())) then
@@ -375,6 +375,9 @@ function main(requires, opt)
             instance:envs_leave()
         end
     end, {total = #packages})
+
+    -- register all required root packages to local cache
+    register_packages(packages)
 
     -- filter packages
     local packages_install = {}
@@ -424,9 +427,6 @@ function main(requires, opt)
 
     -- install all required packages from repositories
     _install_packages(packages_install, packages_download)
-
-    -- register all required root packages to local cache
-    register_packages(packages)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)
