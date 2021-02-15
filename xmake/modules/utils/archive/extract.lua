@@ -276,7 +276,7 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
     end
 
     -- init argv
-    local argv = {"-o"} -- overwrite  existing  files  without  prompting
+    local argv = {"-o"} -- overwrite existing files without prompting
     if not option.get("verbose") then
         table.insert(argv, "-q")
     end

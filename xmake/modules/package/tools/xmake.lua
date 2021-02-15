@@ -21,7 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.tool.toolchain")
+import("core.project.project")
 import("core.package.repository")
+import("private.action.require.impl.package", {alias = "require_package"})
 
 -- get configs
 function _get_configs(package, configs)
@@ -79,6 +81,21 @@ function _init_argv(package, ...)
     return argv
 end
 
+-- get require info of package
+function _get_package_requireinfo(packagename)
+    if os.isfile(os.projectfile()) then
+        local requires_str, requires_extra = project.requires_str()
+        local requireitems = require_package.load_requires(requires_str, requires_extra)
+        for _, requireitem in ipairs(requireitems) do
+            local requireinfo = requireitem.info or {}
+            local requirename = requireinfo.alias or requireitem.name
+            if requirename == packagename then
+                return requireinfo
+            end
+        end
+    end
+end
+
 -- get the build environments
 function buildenvs(package, opt)
     opt = opt or {}
@@ -96,7 +113,16 @@ function buildenvs(package, opt)
         local rcfile_path = os.tmpfile() .. ".lua"
         local rcfile = io.open(rcfile_path, 'w')
         if #toolchain_packages > 0 then
-            rcfile:print("add_requires(\"%s\")", table.concat(toolchain_packages, '", "'))
+            for _, packagename in ipairs(toolchain_packages) do
+                -- pass package configurations, {configs = {}}
+                local requireinfo = _get_package_requireinfo(packagename)
+                if requireinfo then
+                    requireinfo.originstr = nil
+                    rcfile:print("add_requires(\"%s\", %s)", packagename, string.serialize(requireinfo, {strip = true, indent = false}))
+                else
+                    rcfile:print("add_requires(\"%s\")", packagename)
+                end
+            end
         end
         rcfile:print("add_toolchains(\"%s\")", table.concat(table.wrap(toolchains), '", "'))
         rcfile:close()
