@@ -1901,8 +1901,8 @@ function target.linkname(filename)
     if count == 0 then
         linkname, count = filename:gsub(target.filename("__pattern__", "shared"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
-    if count == 0 and config.is_plat("mingw") then
-        -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
+    if count == 0 then
+        -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
         local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         if count == 0 then
