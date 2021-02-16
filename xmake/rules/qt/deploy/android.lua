@@ -24,6 +24,7 @@ import("core.base.option")
 import("core.base.semver")
 import("core.project.config")
 import("core.project.depend")
+import("core.tool.toolchain")
 import("private.utils.progress")
 
 -- escape path

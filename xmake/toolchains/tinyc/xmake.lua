@@ -42,15 +42,16 @@ toolchain("tinyc")
         import("lib.detect.find_tool")
 
         -- find tcc
-        local sdkdir = config.get("sdk")
+        local sdkdir = toolchain:sdkdir()
         if not sdkdir and is_host("windows") then
             local winenv_tccsdk = path.join(os.programdir(), "winenv", "tcc")
             if os.isdir(winenv_tccsdk) then
                 sdkdir = winenv_tccsdk
             end
         end
-        if find_tool("tcc", {paths = config.get("bin") or sdkdir}) then
-            config.set("__tcc_sdkdir", sdkdir)
+        if find_tool("tcc", {paths = toolchain:bindir() or sdkdir}) then
+            toolchain:config_set("sdkdir", sdkdir)
+            toolchain:configs_save()
             return true
         end
     end)
@@ -77,7 +78,7 @@ toolchain("tinyc")
         end
 
         -- init linkdirs and sysincludedirs
-        local sdkdir = config.get("__tcc_sdkdir") or toolchain:sdkdir()
+        local sdkdir = toolchain:sdkdir()
         if sdkdir then
             local includedir = path.join(sdkdir, "include")
             if os.isdir(includedir) then

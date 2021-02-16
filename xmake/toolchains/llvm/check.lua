@@ -28,7 +28,7 @@ function _find_xcode(toolchain)
 
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
-    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
+    local xcode = find_xcode(toolchain:config("xcode") or config.get("xcode"), {force = true, verbose = true,
                                                    find_codesign = false,
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
@@ -54,8 +54,8 @@ end
 function main(toolchain)
 
     -- get sdk directory
-    local sdkdir = config.get("sdk")
-    local bindir = config.get("bin")
+    local sdkdir = toolchain:sdkdir()
+    local bindir = toolchain:bindir()
     if not sdkdir and not bindir then
         if toolchain:is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
@@ -77,8 +77,9 @@ function main(toolchain)
         end
     end
     if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
+        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:configs_save()
     else
         raise("llvm toolchain not found!")
     end

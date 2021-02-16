@@ -23,11 +23,7 @@ import("api")
 
 -- load it
 function main()
-
-    -- init apis
     _g.apis = api.apis()
-
-    -- ok
     return _g
 end
 

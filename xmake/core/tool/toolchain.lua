@@ -204,12 +204,12 @@ end
 
 -- get the cross
 function _instance:cross()
-    return config.get("cross") or self:info():get("cross")
+    return self:config("cross") or config.get("cross") or self:info():get("cross")
 end
 
 -- get the bin directory
 function _instance:bindir()
-    local bindir = config.get("bin") or self:info():get("bindir")
+    local bindir = self:config("bindir") or config.get("bin") or self:info():get("bindir")
     if not bindir and self:cross() and self:sdkdir() and os.isdir(path.join(self:sdkdir(), "bin")) then
         bindir = path.join(self:sdkdir(), "bin")
     end
@@ -218,7 +218,7 @@ end
 
 -- get the sdk directory
 function _instance:sdkdir()
-    return config.get("sdk") or self:info():get("sdkdir")
+    return self:config("sdkdir") or config.get("sdk") or self:info():get("sdkdir")
 end
 
 -- get cachekey

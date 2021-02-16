@@ -48,9 +48,10 @@ function main(toolchain)
         end
     end
     if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        config.set("sdk", cross_toolchain.sdkdir, {readonly = true, force = true})
+        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
+        toolchain:configs_save()
         -- init default target os
         if not config.get("target_os") then
             config.set("target_os", "linux", {readonly = true, force = true})

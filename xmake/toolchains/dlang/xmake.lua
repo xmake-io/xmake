@@ -35,7 +35,7 @@ toolchain("dlang")
         import("core.project.config")
 
         -- get cross prefix
-        local cross = config.get("cross") or ""
+        local cross = toolchain:cross() or ""
 
         -- set toolset
         toolchain:add("toolset", "dc",   "$(env DC)", "dmd", "ldc2", cross .. "gdc")
