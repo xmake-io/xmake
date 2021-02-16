@@ -48,7 +48,7 @@ toolchain("mingw")
         elseif toolchain:is_arch("armv7", "arm.*") then
             cross = "armv7-w64-mingw32-"
         else
-            cross = config.get("cross") or ""
+            cross = toolchain:cross() or ""
         end
 
         -- add bin search library for loading some dependent .dll files windows

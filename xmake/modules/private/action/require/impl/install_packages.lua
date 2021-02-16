@@ -148,10 +148,16 @@ function _get_confirm(packages)
 end
 
 -- install packages
-function _install_packages(packages_install, packages_download)
+function _install_packages(packages_install, packages_download, installdeps)
 
     -- we need hide wait characters if is not a tty
     local show_wait = io.isatty()
+
+    -- init installed packages
+    local packages_installed = {}
+    for _, instance in ipairs(packages_install) do
+        packages_installed[tostring(instance)] = false
+    end
 
     -- do install
     local progress_helper = show_wait and progress.new() or nil
@@ -159,6 +165,7 @@ function _install_packages(packages_install, packages_download)
     local packages_downloading = {}
     local packages_pending = table.copy(packages_install)
     local packages_in_group = {}
+    local working_count = 0
     local installing_count = 0
     local parallelize = true
     runjobs("install_packages", function (index)
@@ -171,8 +178,9 @@ function _install_packages(packages_install, packages_download)
                 -- all dependences has been installed? we install it now
                 local ready = true
                 local dep_not_found = nil
-                for _, dep in ipairs(pkg:orderdeps()) do
-                    if not dep:exists() then
+                for _, dep in pairs(installdeps[tostring(pkg)]) do
+                    local installed = packages_installed[tostring(dep)]
+                    if installed == false or (installed == nil and not dep:exists()) then
                         ready = false
                         dep_not_found = dep
                         break
@@ -196,7 +204,7 @@ function _install_packages(packages_install, packages_download)
                     instance = pkg
                     table.remove(packages_pending, idx)
                     break
-                elseif installing_count == 0 then
+                elseif working_count == 0 then
                     if #packages_pending == 1 and dep_not_found then
                         raise("package(%s): cannot be installed, there are dependencies(%s) that cannot be installed!", pkg:displayname(), dep_not_found:displayname())
                     elseif #packages_pending == 1 then
@@ -209,6 +217,9 @@ function _install_packages(packages_install, packages_download)
             end
         end
         if instance then
+
+            -- update working count
+            working_count = working_count + 1
 
             -- only install the first package in same group
             local group = instance:group()
@@ -248,8 +259,8 @@ function _install_packages(packages_install, packages_download)
                 --
                 -- @note we need to register the package in time,
                 -- because other packages may be used, e.g. toolchain/packages
-                if not instance:parents() then
-                    register_packages(instance)
+                if instance:is_toplevel() then
+                    register_packages({instance})
                 end
 
                 -- mark this group as 'installed' or 'failed'
@@ -261,7 +272,11 @@ function _install_packages(packages_install, packages_download)
                 parallelize = true
                 installing_count = installing_count - 1
                 packages_installing[index] = nil
+                packages_installed[tostring(instance)] = true
             end
+
+            -- update working count
+            working_count = working_count - 1
         end
         packages_installing[index] = nil
         packages_downloading[index] = nil
@@ -336,7 +351,7 @@ function _disable_other_packages_in_group(packages)
     local registered_in_group = {}
     for _, instance in ipairs(packages) do
         local group = instance:group()
-        if not instance:parents() and group then
+        if instance:is_toplevel() and group then
             local required_package = project.required_package(instance:alias() or instance:name())
             if required_package then
                 if not registered_in_group[group] and required_package:enabled() then
@@ -350,6 +365,43 @@ function _disable_other_packages_in_group(packages)
     end
 end
 
+-- sort packages for installation dependencies
+function _sort_packages_for_installdeps(packages, installdeps, order_packages)
+    for _, instance in ipairs(packages) do
+        local deps = installdeps[tostring(instance)]
+        if deps then
+            _sort_packages_for_installdeps(deps, installdeps, order_packages)
+        end
+        table.insert(order_packages, instance)
+    end
+end
+
+-- get package installation dependencies
+function _get_package_installdeps(packages)
+    local installdeps = {}
+    local packagesmap = {}
+    for _, instance in ipairs(packages) do
+        -- we need use alias name first for toolchain/packages
+        packagesmap[instance:alias() or instance:name()] = instance
+    end
+    for _, instance in ipairs(packages) do
+        local deps = {}
+        if instance:deps() then
+            deps = table.copy(instance:deps())
+        end
+        -- patch toolchain/packages to installdeps, because we need install toolchain package first
+        if instance:is_toplevel() then
+            for _, toolchain in ipairs(instance:toolchains()) do
+                for _, packagename in ipairs(toolchain:config("packages")) do
+                    deps[packagename] = packagesmap[packagename]
+                end
+            end
+        end
+        installdeps[tostring(instance)] = deps
+    end
+    return installdeps
+end
+
 -- install packages
 function main(requires, opt)
 
@@ -359,15 +411,26 @@ function main(requires, opt)
     -- load packages
     local packages = package.load_packages(requires, opt)
 
-    -- fetch packages (with system) from local first
+    -- get package installation dependencies
+    local installdeps = _get_package_installdeps(packages)
+
+    -- sort packages for installdeps
+    local order_packages = {}
+    _sort_packages_for_installdeps(packages, installdeps, order_packages)
+    packages = table.unique(order_packages)
+
+    -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
-        if instance and (not option.get("force") or (option.get("shallow") and instance:parents())) then
+        if instance and (not option.get("force") or (option.get("shallow") and instance:is_toplevel())) then
             instance:envs_enter()
             instance:fetch()
             instance:envs_leave()
         end
     end, {total = #packages})
+
+    -- register all required root packages to local cache
+    register_packages(packages)
 
     -- filter packages
     local packages_install = {}
@@ -416,10 +479,7 @@ function main(requires, opt)
     _sort_packages_urls(packages_download)
 
     -- install all required packages from repositories
-    _install_packages(packages_install, packages_download)
-
-    -- register all required root packages to local cache
-    register_packages(packages)
+    _install_packages(packages_install, packages_download, installdeps)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)

@@ -21,7 +21,19 @@
 -- imports
 import("core.base.option")
 import("core.tool.toolchain")
+import("core.project.project")
 import("core.package.repository")
+import("private.action.require.impl.package", {alias = "require_package"})
+
+-- get config from toolchains
+function _get_config_from_toolchains(package, name)
+    for _, toolchain_inst in ipairs(package:toolchains()) do
+        local value = toolchain_inst:config(name)
+        if value ~= nil then
+            return value
+        end
+    end
+end
 
 -- get configs
 function _get_configs(package, configs)
@@ -40,11 +52,26 @@ function _get_configs(package, configs)
             table.insert(configs, "--vs_runtime=" .. vs_runtime)
         end
     end
-    local names = {"ndk", "ndk_sdkver", "vs", "mingw", "sdk", "bin", "cross", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
-    for _, name in ipairs(names) do
-        local value = get_config(name)
-        if value ~= nil then
-            table.insert(configs, "--" .. name .. "=" .. tostring(value))
+    if package:is_plat("cross") then
+        local cross = _get_config_from_toolchains(package, "cross") or get_config("cross")
+        if cross then
+            table.insert(configs, "--cross=" .. cross)
+        end
+        local bindir = _get_config_from_toolchains(package, "bindir") or get_config("bin")
+        if cross then
+            table.insert(configs, "--bin=" .. bindir)
+        end
+        local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
+        if cross then
+            table.insert(configs, "--sdk=" .. sdkdir)
+        end
+    else
+        local names = {"ndk", "ndk_sdkver", "vs", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
+        for _, name in ipairs(names) do
+            local value = get_config(name)
+            if value ~= nil then
+                table.insert(configs, "--" .. name .. "=" .. tostring(value))
+            end
         end
     end
     if cflags then
@@ -79,6 +106,21 @@ function _init_argv(package, ...)
     return argv
 end
 
+-- get require info of package
+function _get_package_requireinfo(packagename)
+    if os.isfile(os.projectfile()) then
+        local requires_str, requires_extra = project.requires_str()
+        local requireitems = require_package.load_requires(requires_str, requires_extra)
+        for _, requireitem in ipairs(requireitems) do
+            local requireinfo = requireitem.info or {}
+            local requirename = requireinfo.alias or requireitem.name
+            if requirename == packagename then
+                return requireinfo
+            end
+        end
+    end
+end
+
 -- get the build environments
 function buildenvs(package, opt)
     opt = opt or {}
@@ -96,7 +138,16 @@ function buildenvs(package, opt)
         local rcfile_path = os.tmpfile() .. ".lua"
         local rcfile = io.open(rcfile_path, 'w')
         if #toolchain_packages > 0 then
-            rcfile:print("add_requires(\"%s\")", table.concat(toolchain_packages, '", "'))
+            for _, packagename in ipairs(toolchain_packages) do
+                -- pass package configurations, {configs = {}}
+                local requireinfo = _get_package_requireinfo(packagename)
+                if requireinfo then
+                    requireinfo.originstr = nil
+                    rcfile:print("add_requires(\"%s\", %s)", packagename, string.serialize(requireinfo, {strip = true, indent = false}))
+                else
+                    rcfile:print("add_requires(\"%s\")", packagename)
+                end
+            end
         end
         rcfile:print("add_toolchains(\"%s\")", table.concat(table.wrap(toolchains), '", "'))
         rcfile:close()

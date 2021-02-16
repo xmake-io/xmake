@@ -188,70 +188,15 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-
-    -- init tools
-    local tools = self._TOOLS
-    if not tools then
-        tools = {}
-        self._TOOLS = tools
-    end
-
-    -- get tool program
-    local program, toolname, toolchain_info
-    local toolinfo = tools[toolkind]
-    if toolinfo == nil then
-        toolinfo = {}
-        local toolchains = self:toolchains()
-        for idx, toolchain_inst in ipairs(toolchains) do
-            program, toolname = toolchain_inst:tool(toolkind)
-            if program then
-                toolchain_info = {name = toolchain_inst:name(),
-                                  plat = toolchain_inst:plat(),
-                                  arch = toolchain_inst:arch(),
-                                  cachekey = toolchain_inst:cachekey()}
-                toolinfo[1] = program
-                toolinfo[2] = toolname
-                toolinfo[3] = toolchain_info
-                break
-            end
-        end
-        tools[toolkind] = toolinfo
-    else
-        program        = toolinfo[1]
-        toolname       = toolinfo[2]
-        toolchain_info = toolinfo[3]
-    end
-    return program, toolname, toolchain_info
+    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "platform", plat = self:name(), arch = self:arch(),
+                          before_get = function ()
+        return config.get(toolkind)
+    end})
 end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-
-    -- init tool configs
-    local toolconfigs = self._TOOLCONFIGS
-    if not toolconfigs then
-        toolconfigs = {}
-        self._TOOLCONFIGS = toolconfigs
-    end
-
-    -- get configuration
-    local toolconfig = toolconfigs[name]
-    if toolconfig == nil then
-
-        -- get them from all toolchains
-        for _, toolchain_inst in ipairs(self:toolchains()) do
-            local values = toolchain_inst:get(name)
-            if values then
-                toolconfig = toolconfig or {}
-                table.join2(toolconfig, values)
-            end
-        end
-
-        -- cache it
-        toolconfig = toolconfig or false
-        toolconfigs[name] = toolconfig
-    end
-    return toolconfig or nil
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "platform", plat = self:name(), arch = self:arch()})
 end
 
 -- get the platform script
@@ -509,41 +454,12 @@ end
 -- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
 function platform.tool(toolkind, plat, arch)
-
-    -- attempt to get program from config first
-    plat = plat or config.get("plat") or os.host()
-    arch = arch or config.get("arch") or os.arch()
-    local key = toolkind .. "_" .. plat .. "_" .. arch
-    local program = config.get(toolkind) or config.get("__tool_" .. key)
-    local toolname = config.get("__toolname_" .. key)
-    local toolchain_info = config.get("__toolchain_info_" .. key)
-    if program == nil then
-
-        -- get the current platform
-        local instance, errors = platform.load(plat, arch)
-        if not instance then
-            os.raise(errors)
-        end
-
-        -- get it from the platform toolchains
-        program, toolname, toolchain_info = instance:tool(toolkind)
-        if program then
-            config.set("__tool_" .. key, program, {force = true, readonly = true})
-            config.set("__toolname_" .. key, toolname)
-            config.set("__toolchain_info_" .. key, toolchain_info)
-            config.save()
-        end
+    local instance, errors = platform.load(plat, arch)
+    if instance then
+        return instance:tool(toolkind)
+    else
+        os.raise(errors)
     end
-
-    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
-    if program and type(program) == "string" then
-        local pos = program:find('@', 1, true)
-        if pos then
-            toolname = program:sub(1, pos - 1)
-            program = program:sub(pos + 1)
-        end
-    end
-    return program, toolname, toolchain_info
 end
 
 -- get the given tool configuration

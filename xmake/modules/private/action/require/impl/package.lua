@@ -205,11 +205,6 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
-    local toolchains
-    if package:is_plat("cross") and package:is_library() then
-        -- we only can set toolchains to library package
-        toolchains = project.get("target.toolchains") or get_config("toolchain")
-    end
     local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
@@ -219,7 +214,7 @@ function _add_package_configurations(package)
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
     package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
-    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation.", default = toolchains})
+    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
 end
 
 -- select package version
@@ -338,6 +333,15 @@ function _match_requirepath(requirepath, requireconf)
     end
 end
 
+-- init requireinfo
+function _init_requireinfo(requireinfo, package, opt)
+    -- pass root toolchains to top library package
+    if opt.is_toplevel and package:is_plat("cross") and package:is_library() then
+        requireinfo.configs = requireinfo.configs or {}
+        requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
+    end
+end
+
 -- merge requireinfo from `add_requireconfs()`
 --
 -- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
@@ -436,18 +440,24 @@ end
 -- inherit some builtin configs of parent package if these config values are not default value
 -- e.g. add_requires("libpng", {configs = {vs_runtime = "MD", pic = false}})
 --
-function _inherit_parent_configs(requireinfo, parentinfo)
-    local requireinfo_configs = requireinfo.configs or {}
-    local parentinfo_configs  = parentinfo.configs or {}
-    if not requireinfo_configs.shared then
-        if requireinfo_configs.vs_runtime == nil then
-            requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+function _inherit_parent_configs(requireinfo, package, parentinfo)
+    if package:is_library() then
+        local requireinfo_configs = requireinfo.configs or {}
+        local parentinfo_configs  = parentinfo.configs or {}
+        if not requireinfo_configs.shared then
+            if requireinfo_configs.vs_runtime == nil then
+                requireinfo_configs.vs_runtime = parentinfo_configs.vs_runtime
+            end
+            if requireinfo_configs.pic == nil then
+                requireinfo_configs.pic = parentinfo_configs.pic
+            end
         end
-        if requireinfo_configs.pic == nil then
-            requireinfo_configs.pic = parentinfo_configs.pic
+        if parentinfo.host then
+            requireinfo.host = true
         end
+        requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
+        requireinfo.configs = requireinfo_configs
     end
-    requireinfo.configs = requireinfo_configs
 end
 
 -- load required packages
@@ -480,12 +490,15 @@ function _load_package(packagename, requireinfo, opt)
     -- check
     assert(package, "package(%s) not found!", packagename)
 
+    -- init requireinfo
+    _init_requireinfo(requireinfo, package, {is_toplevel = not opt.parentinfo})
+
     -- merge requireinfo from `add_requireconfs()`
     _merge_requireinfo(requireinfo, opt.requirepath)
 
     -- inherit some builtin configs of parent package, e.g. vs_runtime, pic
-    if opt.parentinfo and package:is_library() then
-        _inherit_parent_configs(requireinfo, opt.parentinfo)
+    if opt.parentinfo then
+        _inherit_parent_configs(requireinfo, package, opt.parentinfo)
     end
 
     -- select package version
@@ -544,11 +557,6 @@ function _load_package(packagename, requireinfo, opt)
         package:set("parallelize", false)
     end
     _memcache():set2("cachedirs", package:cachedir(), true)
-
-    -- disable parallelize if this package is toolchain? we need install toolchain package first
-    if package:is_toolchain() then
-        package:set("parallelize", false)
-    end
 
     -- add some builtin configurations to package
     _add_package_configurations(package)
@@ -614,12 +622,7 @@ function _load_packages(requires, opt)
             end
 
             -- save this package
-            -- @note if this root package is toolchain, we need to move it to the beginning in order to install first
-            if not opt.parentinfo and package:is_toolchain() then
-                table.insert(packages, 1, package)
-            else
-                table.insert(packages, package)
-            end
+            table.insert(packages, package)
         end
     end
     return packages

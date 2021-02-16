@@ -91,6 +91,15 @@ function _patch_pkgconfig(package)
     end
 end
 
+-- check package toolchains
+function _check_package_toolchains(package)
+    for _, toolchain_inst in pairs(package:toolchains()) do
+        if not toolchain_inst:check() then
+            raise("toolchain(\"%s\"): not found!", toolchain_inst:name())
+        end
+    end
+end
+
 -- install the given package
 function main(package)
 
@@ -154,6 +163,9 @@ function main(package)
                     for _, dep in ipairs(package:orderdeps()) do
                         dep:envs_enter()
                     end
+
+                    -- check package toolchains
+                    _check_package_toolchains(package)
 
                     -- download package resources
                     download_resources(package)

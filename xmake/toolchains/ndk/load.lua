@@ -30,11 +30,11 @@ import("core.project.config")
 function main(toolchain)
 
     -- get cross
-    local cross = config.get("cross") or ""
+    local cross = toolchain:cross() or ""
 
     -- get gcc toolchain bin directory
     local gcc_toolchain_bin = nil
-    local gcc_toolchain = config.get("gcc_toolchain")
+    local gcc_toolchain = toolchain:config("gcc_toolchain")
     if gcc_toolchain then
         gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
     end
@@ -62,7 +62,7 @@ function main(toolchain)
 
     -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
     local isllvm = false
-    local bindir = config.get("bin")
+    local bindir = toolchain:bindir()
     if bindir and bindir:find("llvm", 1, true) then
         isllvm = true
     end
@@ -91,7 +91,7 @@ function main(toolchain)
         toolchain:add("shflags", "-target " .. targets[arch])
 
         -- add gcc toolchain
-        local gcc_toolchain = config.get("gcc_toolchain")
+        local gcc_toolchain = toolchain:config("gcc_toolchain")
         if gcc_toolchain then
             toolchain:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
             toolchain:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
@@ -116,9 +116,9 @@ function main(toolchain)
     toolchain:add("binary.cxflags", "-fPIE", "-pie")
 
     -- add flags for the sdk directory of ndk
-    local ndk = config.get("ndk")
-    local ndkver = config.get("ndkver")
-    local ndk_sdkver = config.get("ndk_sdkver")
+    local ndk = toolchain:config("ndk")
+    local ndkver = toolchain:config("ndkver")
+    local ndk_sdkver = toolchain:config("ndk_sdkver")
     if ndk and ndk_sdkver then
 
         -- the sysroot archs
@@ -200,8 +200,8 @@ function main(toolchain)
 
         -- get gnu c++ stl sdk directory
         local cxxstl_sdkdir_gnustl = nil
-        if config.get("ndk_toolchains_ver") then
-            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver")))
+        if toolchain:config("ndk_toolchains_ver") then
+            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, toolchain:config("ndk_toolchains_ver")))
         end
 
         -- get stlport c++ sdk directory

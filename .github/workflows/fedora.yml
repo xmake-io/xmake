@@ -18,6 +18,7 @@ jobs:
           uname -a
           dnf -y install @development-tools @rpm-development-tools
           dnf -y install copr-cli make gcc-c++
+          dnf -y install perl
           dnf -y upgrade git
       - uses: actions/checkout@v2
         with:

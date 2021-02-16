@@ -38,6 +38,7 @@ local project_package = require("project/package")
 local tool            = require("tool/tool")
 local linker          = require("tool/linker")
 local compiler        = require("tool/compiler")
+local toolchain       = require("tool/toolchain")
 local platform        = require("platform/platform")
 local environment     = require("platform/environment")
 local language        = require("language/language")
@@ -1736,124 +1737,39 @@ end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-
-    -- init tools
-    local tools = self._TOOLS
-    if not tools then
-        tools = {}
-        self._TOOLS = tools
-    end
-
-    -- get tool program
-    local key = self:name() .. "_" .. toolkind .. "_" .. self:plat() .. "_" .. self:arch()
-    local program, toolname, toolchain_info
-    local toolinfo = tools[key]
-    if toolinfo == nil then
-        toolinfo = {}
-
+    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+                                                        before_get = function()
         -- get program from set_toolchain/set_tools (deprecated)
-        program = self:get("toolset." .. toolkind) or self:get("toolchain." .. toolkind)
+        local program = self:get("toolset." .. toolkind) or self:get("toolchain." .. toolkind)
         if not program then
             local tools = self:get("tools") -- TODO: deprecated
             if tools then
                 program = tools[toolkind]
             end
         end
-
-        -- attempt to get program from config first if no the given toolchains in target
+        -- get program from `xmake f --cc`
         if not program and not self:get("toolchains") then
-            program = config.get(toolkind) or config.get("__tool_" .. key)
-            toolname = config.get("__toolname_" .. key)
-            toolchain_info = config.get("__toolchain_info_" .. key)
+            program = config.get(toolkind)
         end
-
-        -- get program from target/toolchains
-        if not program then
-            local toolchains = self:toolchains()
-            for idx, toolchain_inst in ipairs(toolchains) do
-                program, toolname = toolchain_inst:tool(toolkind)
-                if program then
-                    toolchain_info = {name = toolchain_inst:name(),
-                                      plat = toolchain_inst:plat(),
-                                      arch = toolchain_inst:arch(),
-                                      cachekey = toolchain_inst:cachekey()}
-                    break
-                end
-            end
-        end
-
-        -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
-        if program and type(program) == "string" then
-            local pos = program:find('@', 1, true)
-            if pos then
-                toolname = program:sub(1, pos - 1)
-                program = program:sub(pos + 1)
-            end
-        end
-
-        if program then
-            toolinfo[1] = program
-            toolinfo[2] = toolname
-            toolinfo[3] = toolchain_info
-            config.set("__tool_" .. key, program, {force = true, readonly = true})
-            config.set("__toolname_" .. key, toolname)
-            config.set("__toolchain_info_" .. key, toolchain_info)
-            config.save()
-        end
-        tools[key] = toolinfo
-    else
-        program  = toolinfo[1]
-        toolname = toolinfo[2]
-        toolchain_info = toolinfo[3]
-    end
-    return program, toolname, toolchain_info
+        return program
+    end})
 end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-
-    -- init tool configs
-    local toolconfigs = self._TOOLCONFIGS
-    if not toolconfigs then
-        toolconfigs = {}
-        self._TOOLCONFIGS = toolconfigs
-    end
-
-    -- get configuration
-    local toolconfig = toolconfigs[name]
-    if toolconfig == nil then
-
-        -- get them from all toolchains
-        for _, toolchain_inst in ipairs(self:toolchains()) do
-
-            -- get xxflags
-            local values = toolchain_inst:get(name)
-            if values then
-                toolconfig = toolconfig or {}
-                table.join2(toolconfig, values)
-            end
-
-            -- get flags from target.on_xxflags()
-            local script = toolchain_inst:get("target.on_" .. name)
-            if type(script) == "function" then
-                local ok, result_or_errors = utils.trycall(script, nil, self)
-                if ok then
-                    values = result_or_errors
-                    if values then
-                        toolconfig = toolconfig or {}
-                        table.join2(toolconfig, values)
-                    end
-                else
-                    os.raise(result_or_errors)
-                end
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "target_" .. self:name(), plat = self:plat(), arch = self:arch(),
+                                                          after_get = function(toolchain_inst)
+        -- get flags from target.on_xxflags()
+        local script = toolchain_inst:get("target.on_" .. name)
+        if type(script) == "function" then
+            local ok, result_or_errors = utils.trycall(script, nil, self)
+            if ok then
+                return result_or_errors
+            else
+                os.raise(result_or_errors)
             end
         end
-
-        -- cache it
-        toolconfig = toolconfig or false
-        toolconfigs[name] = toolconfig
-    end
-    return toolconfig or nil
+    end})
 end
 
 -- get target apis
@@ -1985,8 +1901,8 @@ function target.linkname(filename)
     if count == 0 then
         linkname, count = filename:gsub(target.filename("__pattern__", "shared"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     end
-    if count == 0 and config.is_plat("mingw") then
-        -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
+    if count == 0 then
+        -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
         local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
         linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
         if count == 0 then

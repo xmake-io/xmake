@@ -58,14 +58,14 @@ function sandbox_lib_detect_find_library.main(names, paths, opt)
     opt = opt or {}
 
     -- init kinds
-    kinds = opt.kind or {"static", "shared"}
+    local kinds = opt.kind or {"static", "shared"}
 
     -- find library file from the given paths
     for _, name in ipairs(table.wrap(names)) do
         for _, kind in ipairs(table.wrap(kinds)) do
             local filepath = find_file(target.filename(name, kind), paths, opt)
-            if not filepath and config.is_plat("mingw") then
-                -- for the mingw platform, it is compatible with the libxxx.a and xxx.lib
+            if not filepath then
+                -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
                 local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
                 filepath = find_file(target.filename(name, kind, {format = formats[kind]}), paths, opt)
             end
