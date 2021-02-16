@@ -35,6 +35,9 @@ end
 -- deploy application package for android
 function main(target, opt)
 
+    -- get ndk toolchain
+    local toolchain_ndk = toolchain.load("ndk", {plat = target:plat(), arch = target:arch()})
+
     -- get target apk path
     local target_apk = path.join(target:targetdir(), target:basename() .. ".apk")
 
@@ -53,8 +56,8 @@ function main(target, opt)
     local qt = target:data("qt")
 
     -- get ndk
-    local ndk = path.translate(assert(config.get("ndk"), "cannot get NDK!"))
-    local ndk_sdkver = assert(config.get("ndk_sdkver"), "cannot get the sdk version of NDK!")
+    local ndk = path.translate(assert(toolchain_ndk:config("ndk"), "cannot get NDK!"))
+    local ndk_sdkver = assert(toolchain_ndk:config("ndk_sdkver"), "cannot get the sdk version of NDK!")
 
     -- get ndk host
     local ndk_host = os.host() .. "-" .. os.arch()
@@ -83,10 +86,10 @@ function main(target, opt)
     local java_home = assert(os.getenv("JAVA_HOME"), "please set $JAVA_HOME environment variable first!")
 
     -- get android sdk directory
-    local android_sdkdir = path.translate(assert(config.get("android_sdk"), "please run `xmake f --android_sdk=xxx` to set the android sdk directory!"))
+    local android_sdkdir = path.translate(assert(toolchain_ndk:config("android_sdk"), "please run `xmake f --android_sdk=xxx` to set the android sdk directory!"))
 
     -- get android build-tools version
-    local android_build_toolver = assert(config.get("build_toolver"), "please run `xmake f --build_toolver=xxx` to set the android build-tools version!")
+    local android_build_toolver = assert(toolchain_ndk:config("build_toolver"), "please run `xmake f --build_toolver=xxx` to set the android build-tools version!")
 
     -- get qt sdk version
     local qt_sdkver = config.get("qt_sdkver")
@@ -132,12 +135,12 @@ function main(target, opt)
     -- get stdcpp path
     local stdcpp_path = path.join(ndk, "sources/cxx-stl/llvm-libc++/libs", target_arch, "libc++_shared.so")
     if qt_sdkver and qt_sdkver:ge("5.14") then
-        local toolchain = path.directory(assert(config.get("bin"), "toolchain/bin directory not found!"))
+        local toolchain = path.directory(assert(toolchain_ndk:bindir(), "toolchain/bin directory not found!"))
         stdcpp_path = path.join(toolchain, "sysroot", "usr", "lib")
     end
 
     -- get toolchain version
-    local ndk_toolchains_ver = config.get("ndk_toolchains_ver") or "4.9"
+    local ndk_toolchains_ver = toolchain_ndk:config("ndk_toolchains_ver") or "4.9"
 
     -- generate android-deployment-settings.json file
     local android_deployment_settings = path.join(workdir, "android-deployment-settings.json")

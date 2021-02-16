@@ -49,6 +49,7 @@ function _check_android_sdk(toolchain)
     local sdk = find_android_sdk(toolchain:config("android_sdk") or config.get("android_sdk"), {force = true, verbose = true})
     if sdk then
         toolchain:config_set("android_sdk", sdk.sdkdir)
+        toolchain:config_set("build_toolver", sdk.build_toolver)
         toolchain:configs_save()
     end
 end
