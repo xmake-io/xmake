@@ -21,46 +21,59 @@
 -- imports
 import("lib.detect.find_tool")
 import("core.tool.toolchain")
+import("core.base.option")
+import("core.project.depend")
+import("private.utils.progress")
 
 -- export all symbols for dynamic library
-function main (target)
+function main (target, opt)
+
     -- @note it only supports windows/dll now
     assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target!')
-    if not target:is_plat("windows") then
+    if not target:is_plat("windows") or option.get("dry-run") then
         return
     end
 
-    -- get dumpbin
-    local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
-    local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
+    -- export all symbols
+    local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
+    local dependfile = allsymbols_filepath .. ".d"
+    depend.on_changed(function ()
 
-    -- get all symbols from object files
-    local allsymbols = {}
-    for _, objectfile in ipairs(target:objectfiles()) do
-        local objectsymbols = try { function () return os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile}) end }
-        if objectsymbols then
-            for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
-                -- 008 00000000 SECT3  notype ()    External     | add
-                if line:find("External") then
-                    local symbol = line:match(".*External%s+| (.*)")
-                    if symbol then
-                        symbol = symbol:trim()
-                        table.insert(allsymbols, symbol)
+        -- trace progress info
+        progress.show(opt.progress, "${color.build.target}exporting.$(mode) %s", path.filename(target:targetfile()))
+
+        -- get dumpbin
+        local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
+        local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
+
+        -- get all symbols from object files
+        local allsymbols = {}
+        for _, objectfile in ipairs(target:objectfiles()) do
+            local objectsymbols = try { function () return os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile}) end }
+            if objectsymbols then
+                for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
+                    -- 008 00000000 SECT3  notype ()    External     | add
+                    if line:find("External") then
+                        local symbol = line:match(".*External%s+| (.*)")
+                        if symbol then
+                            symbol = symbol:trim()
+                            table.insert(allsymbols, symbol)
+                        end
                     end
                 end
             end
         end
-    end
 
-    -- export all symbols
-    if #allsymbols > 0 then
-        local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
-        local allsymbols_file = io.open(allsymbols_filepath, 'w')
-        allsymbols_file:print("EXPORTS")
-        for _, symbol in ipairs(allsymbols) do
-            allsymbols_file:print("%s", symbol)
+        -- export all symbols
+        if #allsymbols > 0 then
+            local allsymbols_file = io.open(allsymbols_filepath, 'w')
+            allsymbols_file:print("EXPORTS")
+            for _, symbol in ipairs(allsymbols) do
+                allsymbols_file:print("%s", symbol)
+            end
+            allsymbols_file:close()
+            target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
         end
-        allsymbols_file:close()
-        target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
-    end
+
+    end, {dependfile = dependfile, files = target:objectfiles()})
 end
