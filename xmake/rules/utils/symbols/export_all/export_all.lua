@@ -34,12 +34,10 @@ function main (target)
     local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
     local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
 
-    -- export all symbols
-    local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
-    local allsymbols_file = io.open(allsymbols_filepath, 'w')
-    allsymbols_file:print("EXPORTS")
+    -- get all symbols from object files
+    local allsymbols = {}
     for _, objectfile in ipairs(target:objectfiles()) do
-        local objectsymbols = os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile})
+        local objectsymbols = try { function () return os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile}) end }
         if objectsymbols then
             for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
                 -- 008 00000000 SECT3  notype ()    External     | add
@@ -47,12 +45,22 @@ function main (target)
                     local symbol = line:match(".*External%s+| (.*)")
                     if symbol then
                         symbol = symbol:trim()
-                        allsymbols_file:print("%s", symbol)
+                        table.insert(allsymbols, symbol)
                     end
                 end
             end
         end
     end
-    allsymbols_file:close()
-    target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
+
+    -- export all symbols
+    if #allsymbols > 0 then
+        local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
+        local allsymbols_file = io.open(allsymbols_filepath, 'w')
+        allsymbols_file:print("EXPORTS")
+        for _, symbol in ipairs(allsymbols) do
+            allsymbols_file:print("%s", symbol)
+        end
+        allsymbols_file:close()
+        target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
+    end
 end
