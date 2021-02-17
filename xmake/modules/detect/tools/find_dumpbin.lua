@@ -22,7 +22,7 @@
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find cl
+-- find dumpbin
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,7 +30,7 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local cl = find_dumpbin()
+-- local dumpbin = find_dumpbin()
 --
 -- @endcode
 --
