@@ -25,6 +25,34 @@ import("core.tool.toolchain")
 -- export all symbols for dynamic library
 function main (target)
     -- @note it only supports windows/dll now
-    assert(target:is_plat("windows") and target:kind() == "shared", 'rule("utils.symbols.export_all"): only support windows/dll now')
+    assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target!')
+    if not target:is_plat("windows") then
+        return
+    end
 
+    -- get dumpbin
+    local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
+    local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
+
+    -- export all symbols
+    local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
+    local allsymbols_file = io.open(allsymbols_filepath, 'w')
+    allsymbols_file:print("EXPORTS")
+    for _, objectfile in ipairs(target:objectfiles()) do
+        local objectsymbols = os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile})
+        if objectsymbols then
+            for _, line in ipairs(objectsymbols:split('\n', {plain = true})) do
+                -- 008 00000000 SECT3  notype ()    External     | add
+                if line:find("External") then
+                    local symbol = line:match(".*External%s+| (.*)")
+                    if symbol then
+                        symbol = symbol:trim()
+                        allsymbols_file:print("%s", symbol)
+                    end
+                end
+            end
+        end
+    end
+    allsymbols_file:close()
+    target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
 end
