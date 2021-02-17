@@ -35,7 +35,7 @@ function main(target)
     end
 
     -- export links and linkdirs
-    local targetkind = target:targetkind()
+    local targetkind = target:kind()
     if targetkind == "shared" or targetkind == "static" then
         local targetfile = target:targetfile()
 
@@ -64,7 +64,7 @@ function main(target)
         local targetdir = target:targetdir()
         for _, dep in ipairs(target:orderdeps()) do
             local depinherit = target:extraconf("deps", dep:name(), "inherit")
-            if dep:targetkind() == "shared" and (depinherit == nil or depinherit) then
+            if dep:kind() == "shared" and (depinherit == nil or depinherit) then
                 local rpathdir = "@loader_path"
                 local subdir = path.relative(path.directory(dep:targetfile()), targetdir)
                 if subdir and subdir ~= '.' then

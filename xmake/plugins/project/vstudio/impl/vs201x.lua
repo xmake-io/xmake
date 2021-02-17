@@ -72,7 +72,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.symbols = target:get("symbols")
 
     -- save target kind
-    targetinfo.targetkind = target:targetkind()
+    targetinfo.targetkind = target:kind()
 
     -- save target file
     targetinfo.targetfile = target:targetfile()
@@ -108,7 +108,7 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save linker flags
-    local linkflags = linker.linkflags(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
     -- use mfc? save the mfc runtime kind
@@ -134,7 +134,7 @@ end
 function _make_targetheaders(mode, arch, target, last)
 
     -- only for static and shared target
-    local kind = target:targetkind()
+    local kind = target:kind()
     if kind == "static" or kind == "shared" then
 
         -- TODO make headers, (deprecated)
@@ -295,7 +295,7 @@ function make(outputdir, vsinfo)
 
                     -- init target info
                     _target.name = targetname
-                    _target.kind = target:targetkind()
+                    _target.kind = target:kind()
                     _target.scriptdir = target:scriptdir()
                     _target.info = _target.info or {}
                     table.insert(_target.info, _make_targetinfo(mode, arch, target))

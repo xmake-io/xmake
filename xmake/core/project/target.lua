@@ -447,6 +447,16 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the target kind
+function _instance:kind()
+    return self:get("kind") or "phony"
+end
+
+-- get the target kind (deprecated)
+function _instance:targetkind()
+    return self:kind()
+end
+
 -- get the platform of this target
 function _instance:plat()
     return self:get("plat") or config.get("plat") or os.host()
@@ -558,7 +568,7 @@ function _instance:linker()
     end
 
     -- get the linker instance
-    local instance, errors = linker.load(self:targetkind(), self:sourcekinds(), self)
+    local instance, errors = linker.load(self:kind(), self:sourcekinds(), self)
     if not instance then
         os.raise(errors)
     end
@@ -620,7 +630,7 @@ end
 function _instance:isphony()
 
     -- get target kind
-    local targetkind = self:targetkind()
+    local targetkind = self:kind()
 
     -- is phony?
     return not targetkind or targetkind == "phony"
@@ -891,11 +901,6 @@ function _instance:autogenfile(sourcefile, opt)
     return path.join(rootdir, (opt and opt.filename) and opt.filename or path.filename(sourcefile))
 end
 
--- get the target kind
-function _instance:targetkind()
-    return self:get("kind") or "phony"
-end
-
 -- get the target directory
 function _instance:targetdir()
 
@@ -934,7 +939,7 @@ function _instance:targetfile()
     local targetdir = self:targetdir()
 
     -- get target kind
-    local targetkind = self:targetkind()
+    local targetkind = self:kind()
 
     -- only compile objects? no target file
     if targetkind == "object" then
@@ -1217,7 +1222,7 @@ function _instance:objectfiles()
     -- get object files from all dependent targets (object kind)
     if self:orderdeps() then
         for _, dep in ipairs(self:orderdeps()) do
-            if dep:targetkind() == "object" then
+            if dep:kind() == "object" then
                 table.join2(objectfiles, dep:objectfiles())
                 remove_repeat = true
             end

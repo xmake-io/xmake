@@ -48,7 +48,7 @@ function main (target, opt)
 
         -- copy dependent dynamic libraries, TODO copy frameworks
         for _, dep in ipairs(target:orderdeps()) do
-            if dep:targetkind() == "shared" then
+            if dep:kind() == "shared" then
                 os.vcp(dep:targetfile(), binarydir)
             end
         end

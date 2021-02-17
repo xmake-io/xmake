@@ -45,7 +45,7 @@ rule("mode.release")
         if is_mode("release") then
 
             -- set the symbols visibility: hidden
-            if not target:get("symbols") and target:targetkind() ~= "shared" then
+            if not target:get("symbols") and target:kind() ~= "shared" then
                 target:set("symbols", "hidden")
             end
 

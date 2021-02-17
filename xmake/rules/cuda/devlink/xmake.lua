@@ -42,7 +42,7 @@ rule("cuda.build.devlink")
         end
 
         -- only for binary/shared
-        local targetkind = target:targetkind()
+        local targetkind = target:kind()
         if targetkind ~= "binary" and targetkind ~= "shared" then
             return
         end

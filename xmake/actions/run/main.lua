@@ -32,7 +32,7 @@ import("private.action.run.make_runenvs")
 function _do_run_target(target)
 
     -- only for binary program
-    if target:targetkind() ~= "binary" then
+    if target:kind() ~= "binary" then
         return
     end
 
@@ -175,7 +175,7 @@ function _check_targets(targetname)
         -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
             local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
+            if (default == nil or default == true or option.get("all")) and target:kind() == "binary" then
                 table.insert(targets, target)
             end
         end
@@ -220,7 +220,7 @@ function main()
         -- run default or all binary targets
         for _, target in ipairs(project.ordertargets()) do
             local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
+            if (default == nil or default == true or option.get("all")) and target:kind() == "binary" then
                 _run(target)
             end
         end

@@ -476,7 +476,7 @@ function _add_target(cmakelists, target)
     cmakelists:print("# target")
 
     -- is phony target?
-    local targetkind = target:targetkind()
+    local targetkind = target:kind()
     if target:isphony() then
         return _add_target_phony(cmakelists, target)
     elseif targetkind == "binary" then
@@ -486,7 +486,7 @@ function _add_target(cmakelists, target)
     elseif targetkind == "shared" then
         _add_target_shared(cmakelists, target)
     else
-        raise("unknown target kind %s", target:targetkind())
+        raise("unknown target kind %s", target:kind())
     end
 
     -- TODO export target headers (deprecated)

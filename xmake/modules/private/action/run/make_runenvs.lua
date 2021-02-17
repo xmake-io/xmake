@@ -49,7 +49,7 @@ function _make_runpath_on_windows(target)
         end
     end
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "shared" then
+        if dep:kind() == "shared" then
             insert(dep:targetdir())
         end
     end

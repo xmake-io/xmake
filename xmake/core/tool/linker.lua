@@ -231,7 +231,7 @@ function linker:linkflags(opt)
     -- get target kind
     local targetkind = opt.targetkind
     if not targetkind and target and target.targetkind then
-        targetkind = target:targetkind()
+        targetkind = target:kind()
     end
 
     -- add flags from linker/toolchains

@@ -33,7 +33,7 @@ function main(name)
 
     -- show target information
     print("The information of target(%s):", name)
-    cprint("    ${color.dump.string}kind${clear}: %s", target:targetkind())
+    cprint("    ${color.dump.string}kind${clear}: %s", target:kind())
     cprint("    ${color.dump.string}targetfile${clear}: %s", target:targetfile())
     local deps = target:get("deps")
     if deps then

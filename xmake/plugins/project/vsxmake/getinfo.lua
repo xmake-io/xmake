@@ -162,7 +162,7 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save subsystem
-    local linkflags = linker.linkflags(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     for _, linkflag in ipairs(linkflags) do
         if linkflag:lower():find("[%-/]subsystem:windows") then
             targetinfo.subsystem = "windows"
@@ -385,7 +385,7 @@ function main(outputdir, vsinfo)
                     _target.target = targetname
                     _target.vcxprojdir = path.join(vsinfo.solution_dir, targetname)
                     _target.target_id = hash.uuid4(targetname)
-                    _target.kind = target:targetkind()
+                    _target.kind = target:kind()
                     _target.scriptdir = path.relative(target:scriptdir(), _target.vcxprojdir)
                     _target.projectdir = path.relative(project.directory(), _target.vcxprojdir)
                     local targetdir = target:get("targetdir")

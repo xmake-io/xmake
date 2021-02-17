@@ -123,7 +123,7 @@ end
 -- e.g.
 -- {binary = "ld", static = "ar", shared = "sh"}
 --
-function _instance:targetkinds()
+function _instance:kinds()
     return self._INFO:get("targetkinds")
 end
 
@@ -594,7 +594,7 @@ function language.linkerinfos_of(targetkind, sourcekinds)
         for name, instance in pairs(languages) do
             for _, mixingkind in ipairs(table.wrap(instance:mixingkinds())) do
                 local targetflags = instance:targetflags()
-                for _targetkind, linkerkind in pairs(table.wrap(instance:targetkinds())) do
+                for _targetkind, linkerkind in pairs(table.wrap(instance:kinds())) do
 
                     -- init linker info
                     linkerinfos[_targetkind] = linkerinfos[_targetkind] or {}
@@ -667,7 +667,7 @@ function language.targetkinds()
     -- merge all for each language
     local targetkinds = {}
     for name, instance in pairs(languages) do
-        for targetkind, linkerkind in pairs(table.wrap(instance:targetkinds())) do
+        for targetkind, linkerkind in pairs(table.wrap(instance:kinds())) do
             targetkinds[targetkind] = targetkinds[targetkind] or {}
             table.insert(targetkinds[targetkind], linkerkind)
         end

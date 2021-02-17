@@ -31,7 +31,7 @@ import("object", {alias = "add_batchjobs_for_object"})
 function _do_link_target(target, opt)
 
     -- load linker instance
-    local linkinst = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkinst = linker.load(target:kind(), target:sourcekinds(), {target = target})
 
     -- get link flags
     local linkflags = linkinst:linkflags({target = target})
@@ -42,7 +42,7 @@ function _do_link_target(target, opt)
     -- need build this target?
     local depfiles = objectfiles
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "static" then
+        if dep:kind() == "static" then
             if depfiles == objectfiles then
                 depfiles = table.copy(objectfiles)
             end

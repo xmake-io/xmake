@@ -54,7 +54,7 @@ function main()
 
         -- add targetkinds
         if filecount > 0 then
-            for targetkind, _ in pairs(instance:targetkinds()) do
+            for targetkind, _ in pairs(instance:kinds()) do
                 targetkinds[targetkind] = true
             end
         end

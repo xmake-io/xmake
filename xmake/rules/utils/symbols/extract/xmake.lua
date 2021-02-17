@@ -27,7 +27,7 @@ rule("utils.symbols.extract")
 
         -- need generate symbols?
         local strip = target:get("strip")
-        local targetkind = target:targetkind()
+        local targetkind = target:kind()
         if target:get("symbols") == "debug" and (strip == "all" or strip == "debug")
             and (targetkind == "binary" or targetkind == "shared") and platform.tool("strip") then -- only for strip command
             target:data_set("utils.symbols.extract", true)

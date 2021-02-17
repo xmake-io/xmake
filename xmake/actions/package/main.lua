@@ -47,7 +47,7 @@ function _package_library(target)
 
     -- copy *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/787
-    if target:targetkind() == "shared" and is_plat("windows", "mingw") then
+    if target:kind() == "shared" and is_plat("windows", "mingw") then
         local targetfile = target:targetfile()
         local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
         if os.isfile(targetfile_lib) then
@@ -100,7 +100,7 @@ function _do_package_target(target)
     end
 
     -- get kind
-    local kind = target:targetkind()
+    local kind = target:kind()
 
     -- get script
     local scripts =
