@@ -22,6 +22,7 @@
 import("lib.detect.find_tool")
 import("core.tool.toolchain")
 import("core.base.option")
+import("core.base.hashset")
 import("core.project.depend")
 import("private.utils.progress")
 
@@ -29,7 +30,7 @@ import("private.utils.progress")
 function main (target, opt)
 
     -- @note it only supports windows/dll now
-    assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target!')
+    assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target(%s)!', target:name())
     if not target:is_plat("windows") or option.get("dry-run") then
         return
     end
@@ -47,7 +48,7 @@ function main (target, opt)
         local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
 
         -- get all symbols from object files
-        local allsymbols = {}
+        local allsymbols = hashset.new()
         for _, objectfile in ipairs(target:objectfiles()) do
             local objectsymbols = try { function () return os.iorunv(dumpbin.program, {"/symbols", "/nologo", objectfile}) end }
             if objectsymbols then
@@ -56,8 +57,10 @@ function main (target, opt)
                     if line:find("External") then
                         local symbol = line:match(".*External%s+| (.*)")
                         if symbol then
-                            symbol = symbol:trim()
-                            table.insert(allsymbols, symbol)
+                            symbol = symbol:split('%s')[1]
+                            if not symbol:startswith("__") then
+                                allsymbols:insert(symbol)
+                            end
                         end
                     end
                 end
@@ -65,13 +68,15 @@ function main (target, opt)
         end
 
         -- export all symbols
-        if #allsymbols > 0 then
+        if allsymbols:size() > 0 then
             local allsymbols_file = io.open(allsymbols_filepath, 'w')
             allsymbols_file:print("EXPORTS")
-            for _, symbol in ipairs(allsymbols) do
+            for _, symbol in allsymbols:keys() do
                 allsymbols_file:print("%s", symbol)
             end
             allsymbols_file:close()
+        else
+            wprint('rule("utils.symbols.export_all"): no symbols are exported for target(%s)!', target:name())
         end
 
     end, {dependfile = dependfile, files = target:objectfiles()})
