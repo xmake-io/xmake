@@ -18,7 +18,21 @@
 -- @file        xmake.lua
 --
 
--- define rule: utils.symbols.export_all
+-- export all symbols for windows/dll
+--
+-- @note: we don't need any export macros to a classes or functions!
+-- and we can't use /GL (Whole Program Optimization) when use this approach!
+--
+-- @see https://github.com/xmake-io/xmake/issues/1123
+--
 rule("utils.symbols.export_all")
+    before_load(function (target)
+        -- @note it only supports windows/dll now
+        assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target!')
+        if target:is_plat("windows") then
+            local allsymbols_filepath = path.join(target:autogendir(), "rules", "symbols", "export_all.def")
+            target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
+        end
+    end)
     before_link("export_all")
 

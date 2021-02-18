@@ -72,7 +72,6 @@ function main (target, opt)
                 allsymbols_file:print("%s", symbol)
             end
             allsymbols_file:close()
-            target:add("shflags", "/def:" .. allsymbols_filepath, {force = true})
         end
 
     end, {dependfile = dependfile, files = target:objectfiles()})
