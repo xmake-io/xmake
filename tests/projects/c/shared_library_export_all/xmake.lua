@@ -2,7 +2,7 @@ add_rules("mode.release", "mode.debug")
 
 target("foo")
     set_kind("shared")
-    add_files("src/foo.c")
+    add_files("src/foo.c", "src/bar.cpp")
     add_rules("utils.symbols.export_all")
 
 target("test")

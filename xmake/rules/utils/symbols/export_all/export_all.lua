@@ -58,7 +58,7 @@ function main (target, opt)
                         local symbol = line:match(".*External%s+| (.*)")
                         if symbol then
                             symbol = symbol:split('%s')[1]
-                            if not symbol:startswith("__") then
+                            if not symbol:startswith("__") and not symbol:startswith("?") then
                                 allsymbols:insert(symbol)
                             end
                         end
