@@ -205,8 +205,8 @@ function tty.has_emoji()
         local term = tty.term()
         local winos = require("base/winos")
 
-        -- before win7? disable it
-        if has_emoji == nil and (os.host() == "windows" and winos.version():le("win7")) then
+        -- before win8? disable it
+        if has_emoji == nil and (os.host() == "windows" and winos.version():le("win8")) then
             has_emoji = false
         end
 
@@ -257,7 +257,7 @@ function tty.has_color8()
                 local winos = require("base/winos")
                 if os.getenv("ANSICON") then
                     has_color8 = true
-                elseif winos.version():le("win7") then
+                elseif winos.version():le("win8") then
                     has_color8 = false
                 else
                     has_color8 = true
