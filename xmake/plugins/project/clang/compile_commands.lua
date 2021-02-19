@@ -20,8 +20,8 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.rule")
 import("core.project.project")
-import("core.language.language")
 
 -- escape path
 function _escape_path(p)
@@ -47,19 +47,8 @@ function _translate_arguments(arguments)
     return args
 end
 
--- make the object
-function _make_object(jsonfile, target, sourcefile, objectfile)
-
-    -- get the source file kind
-    local sourcekind = language.sourcekind_of(sourcefile)
-
-    -- make the object for the *.o/obj? ignore it directly
-    if sourcekind == "obj" or sourcekind == "lib" then
-        return
-    end
-
-    -- get compile arguments
-    local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+-- make command
+function _make_arguments(jsonfile, arguments, sourcefile)
 
     -- translate some unsupported arguments
     arguments = _translate_arguments(arguments)
@@ -82,11 +71,59 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     _g.firstline = false
 end
 
--- make objects
-function _make_objects(jsonfile, target, sourcekind, sourcebatch)
-    for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _make_object(jsonfile, target, sourcebatch.sourcefiles[index], objectfile)
+-- make commands for object rules
+function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
+
+    -- get rule
+    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+
+    -- generate commands for xx_buildcmd_files
+    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        local cmds = script(target, sourcebatch)
+        for _, cmd in ipairs(cmds) do
+            _make_arguments(jsonfile, cmd, "")
+        end
     end
+
+    -- generate commands for xx_buildcmd_file
+    if not script then
+        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local cmds = script(target, sourcefile)
+                for _, cmd in ipairs(cmds) do
+                    _make_arguments(jsonfile, cmd, sourcefile)
+                end
+            end
+        end
+    end
+end
+
+-- make commands for objects
+function _make_commands_for_objects(jsonfile, target, sourcebatch)
+    local sourcekind = sourcebatch.sourcekind
+    if sourcekind then
+        for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local objectfile = sourcebatch.objectfiles[index]
+            local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+            _make_arguments(jsonfile, arguments, sourcefile)
+        end
+        return true
+    end
+end
+
+-- make objects
+function _make_objects(jsonfile, target, sourcebatch)
+    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "before")
+    if not _make_commands_for_objects(jsonfile, target, sourcebatch) then
+        _make_commands_for_objectrules(jsonfile, target, sourcebatch)
+    end
+    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "after")
 end
 
 -- make target
@@ -99,10 +136,7 @@ function _make_target(jsonfile, target)
 
     -- build source batches
     for _, sourcebatch in pairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind then
-            _make_objects(jsonfile, target, sourcekind, sourcebatch)
-        end
+        _make_objects(jsonfile, target, sourcebatch)
     end
 end
 
