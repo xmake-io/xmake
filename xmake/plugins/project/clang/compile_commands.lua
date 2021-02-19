@@ -22,6 +22,7 @@
 import("core.tool.compiler")
 import("core.project.rule")
 import("core.project.project")
+import("core.language.language")
 
 -- escape path
 function _escape_path(p)
@@ -49,6 +50,20 @@ end
 
 -- make command
 function _make_arguments(jsonfile, arguments, sourcefile)
+
+    -- attempt to get source file from arguments
+    if not sourcefile then
+        for _, arg in ipairs(arguments) do
+            local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
+            if sourcekind and os.isfile(arg) then
+                sourcefile = arg
+                break
+            end
+        end
+        if not sourcefile then
+            return
+        end
+    end
 
     -- translate some unsupported arguments
     arguments = _translate_arguments(arguments)
@@ -84,7 +99,7 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
     if script then
         local cmds = script(target, sourcebatch)
         for _, cmd in ipairs(cmds) do
-            _make_arguments(jsonfile, cmd, "")
+            _make_arguments(jsonfile, cmd)
         end
     end
 
@@ -97,7 +112,7 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 local cmds = script(target, sourcefile)
                 for _, cmd in ipairs(cmds) do
-                    _make_arguments(jsonfile, cmd, sourcefile)
+                    _make_arguments(jsonfile, cmd)
                 end
             end
         end
