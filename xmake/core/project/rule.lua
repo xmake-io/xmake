@@ -173,6 +173,9 @@ function rule.apis()
         ,   "rule.on_package"
         ,   "rule.on_install"
         ,   "rule.on_uninstall"
+        ,   "rule.on_buildcmd"
+        ,   "rule.on_buildcmd_file"
+        ,   "rule.on_buildcmd_files"
             -- rule.before_xxx
         ,   "rule.before_run"
         ,   "rule.before_load"
@@ -184,6 +187,9 @@ function rule.apis()
         ,   "rule.before_package"
         ,   "rule.before_install"
         ,   "rule.before_uninstall"
+        ,   "rule.before_buildcmd"
+        ,   "rule.before_buildcmd_file"
+        ,   "rule.before_buildcmd_files"
             -- rule.after_xxx
         ,   "rule.after_run"
         ,   "rule.after_load"
@@ -195,6 +201,9 @@ function rule.apis()
         ,   "rule.after_package"
         ,   "rule.after_install"
         ,   "rule.after_uninstall"
+        ,   "rule.after_buildcmd"
+        ,   "rule.after_buildcmd_file"
+        ,   "rule.after_buildcmd_files"
         }
     }
 end

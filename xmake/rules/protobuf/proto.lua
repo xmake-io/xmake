@@ -27,8 +27,8 @@ import("core.tool.compiler")
 import("lib.detect.find_tool")
 import("private.utils.progress")
 
--- build protobuf file
-function main(target, sourcekind, sourcefile_proto, opt)
+-- get protoc
+function _get_protoc(target, sourcekind)
 
     -- find protoc
     local protoc = target:data("protobuf.protoc")
@@ -49,7 +49,14 @@ function main(target, sourcekind, sourcefile_proto, opt)
     end
 
     -- get protoc
-    protoc = assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
+    return assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
+end
+
+-- generate build commands
+function buildcmd(target, sourcekind, sourcefile_proto, opt)
+
+    -- get protoc
+    local protoc = _get_protoc(target, sourcekind)
 
     -- get c/c++ source file for protobuf
     local prefixdir
@@ -81,19 +88,6 @@ function main(target, sourcekind, sourcefile_proto, opt)
     -- add objectfile
     table.insert(target:objectfiles(), objectfile)
 
-    -- load dependent info
-    local dependfile = target:dependfile(objectfile)
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
-    -- need build this object?
-    local depvalues = {compinst:program(), compflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-        return
-    end
-
-    -- trace progress info
-    progress.show(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-
     -- ensure the source file directory
     if not os.isdir(sourcefile_dir) then
         os.mkdir(sourcefile_dir)
@@ -108,21 +102,90 @@ function main(target, sourcekind, sourcefile_proto, opt)
     end
     table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
 
-    -- do compile
-    os.vrunv(protoc, argv)
+    -- generate commands
+    local cmds = {}
+    table.insert(cmds, table.join(protoc, argv))
+    table.insert(cmds, table.join(compinst:compargv(sourcefile_cx, objectfile, {compflags = compflags})))
+    return cmds
+end
 
-    -- trace
-    if option.get("verbose") then
-        print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
+-- build protobuf file
+function build(target, sourcekind, sourcefile_proto, opt)
+
+    -- get protoc
+    local protoc = _get_protoc(target, sourcekind)
+
+    -- get c/c++ source file for protobuf
+    local prefixdir
+    local fileconfig = target:fileconfig(sourcefile_proto)
+    if fileconfig then
+        prefixdir = fileconfig.proto_rootdir
     end
+    local rootdir = path.join(target:autogendir(), "rules", "protobuf")
+    local filename = path.basename(sourcefile_proto) .. ".pb" .. (sourcekind == "cxx" and ".cc" or "-c.c")
+    local sourcefile_cx = target:autogenfile(sourcefile_proto, {rootdir = rootdir, filename = filename})
+    local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
-    -- compile c/c++ source file for protobuf
-    dependinfo.files = {}
-    assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+    -- add includedirs
+    target:add("includedirs", sourcefile_dir)
 
-    -- update files and values to the dependent file
-    dependinfo.values = depvalues
-    table.insert(dependinfo.files, sourcefile_proto)
-    depend.save(dependinfo, dependfile)
+    -- get object file
+    local objectfile = target:objectfile(sourcefile_cx)
+
+    -- load compiler
+    local compinst = compiler.load(sourcekind, {target = target})
+
+    -- get compile flags
+    local configs = {includedirs = sourcefile_dir}
+    if sourcekind == "cxx" then
+        configs.languages = "c++11"
+    end
+    local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx, configs = configs})
+
+    -- add objectfile
+    table.insert(target:objectfiles(), objectfile)
+
+    -- need build this object?
+    local dryrun = option.get("dry-run")
+    local depvalues = {compinst:program(), compflags}
+    depend.on_changed(function ()
+
+        -- trace progress info
+        progress.show(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
+
+        -- ensure the source file directory
+        if not os.isdir(sourcefile_dir) then
+            os.mkdir(sourcefile_dir)
+        end
+
+        -- get compilation flags
+        local argv = {sourcefile_proto}
+        if prefixdir then
+            table.insert(argv, "-I" .. prefixdir)
+        else
+            table.insert(argv, "-I" .. path.directory(sourcefile_proto))
+        end
+        table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
+
+        -- do compile
+        os.vrunv(protoc, argv)
+
+        -- trace
+        if option.get("verbose") then
+            print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
+        end
+
+        -- compile c/c++ source file for protobuf
+        if not dryrun then
+            local dependinfo = {files = {}}
+            assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+            return dependinfo
+        end
+
+    end, {  dependfile = target:dependfile(objectfile),
+            lastmtime = os.mtime(objectfile),
+            values = depvalues,
+            files = sourcefile_proto,
+            always_changed = dryrun})
 end
 
