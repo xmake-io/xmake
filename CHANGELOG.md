@@ -11,6 +11,7 @@
 * Add linuxos builtin module to get linux system information
 * [#1217](https://github.com/xmake-io/xmake/issues/1217): Support to fetch remote toolchain package when building project
 * [#1123](https://github.com/xmake-io/xmake/issues/1123): Add `rule("utils.symbols.export_all")` to export all symbols for windows/dll
+* [#1181](https://github.com/xmake-io/xmake/issues/1181): Add `utils.platform.gnu2mslib(mslib, gnulib)` module api to convert mingw/xxx.dll.a to msvc xxx.lib
 
 ### Change
 
@@ -933,6 +934,7 @@
 * 添加 linuxos 内置模块获取 linux 系统信息
 * [#1217](https://github.com/xmake-io/xmake/issues/1217): 支持当编译项目时自动拉取工具链
 * [#1123](https://github.com/xmake-io/xmake/issues/1123): 添加 `rule("utils.symbols.export_all")` 自动导出所有 windows/dll 中的符号
+* [#1181](https://github.com/xmake-io/xmake/issues/1181): 添加 `utils.platform.gnu2mslib(mslib, gnulib)` 模块接口去转换 mingw/xxx.dll.a 到 msvc xxx.lib
 
 ### 改进
 
