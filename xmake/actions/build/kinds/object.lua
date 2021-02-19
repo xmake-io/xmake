@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.project.rule")
 import("core.project.config")
+import("core.project.depend")
 import("core.project.project")
 import("private.async.runjobs")
 
@@ -65,10 +66,12 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         script = ruleinst:script(scriptname)
         if script then
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
-                local cmds = script(target, sourcebatch, {progress = (index * 100) / total})
-                for _, cmd in ipairs(cmds) do
-                    os.vrunv(cmd[1], table.slice(cmd, 2))
-                end
+                local cmds, dependopt = script(target, sourcebatch, {progress = (index * 100) / total})
+                depend.on_changed(function ()
+                    for _, cmd in ipairs(cmds) do
+                        os.vrunv(cmd[1], table.slice(cmd, 2))
+                    end
+                end, dependopt or {always_changed = true})
             end, rootjob)
         end
     end
@@ -81,10 +84,12 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
-                    local cmds = script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                    for _, cmd in ipairs(cmds) do
-                        os.vrunv(cmd[1], table.slice(cmd, 2))
-                    end
+                    local cmds, dependopt = script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                    depend.on_changed(function ()
+                        for _, cmd in ipairs(cmds) do
+                            os.vrunv(cmd[1], table.slice(cmd, 2))
+                        end
+                    end, dependopt or {always_changed = true})
                 end, rootjob)
             end
         end
