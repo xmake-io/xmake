@@ -32,7 +32,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
     local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
 
-    -- add batch jobs
+    -- add batch jobs for xx_build_files
     local scriptname = "build_files" .. (suffix and ("_" .. suffix) or "")
     local script = ruleinst:script(scriptname)
     if script then
@@ -43,7 +43,10 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                 script(target, sourcebatch, {progress = (index * 100) / total})
             end, rootjob)
         end
-    else
+    end
+
+    -- add batch jobs for xx_build_file
+    if not script then
         scriptname = "build_file" .. (suffix and ("_" .. suffix) or "")
         script = ruleinst:script(scriptname)
         if script then
@@ -51,6 +54,37 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                end, rootjob)
+            end
+        end
+    end
+
+    -- add batch jobs for xx_buildcmd_files
+    if not script then
+        scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
+                local cmds = script(target, sourcebatch, {progress = (index * 100) / total})
+                for _, cmd in ipairs(cmds) do
+                    os.vrunv(cmd[1], table.slice(cmd, 2))
+                end
+            end, rootjob)
+        end
+    end
+
+    -- add batch jobs for xx_buildcmd_file
+    if not script then
+        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                batchjobs:addjob(sourcefile, function (index, total)
+                    local cmds = script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
+                    for _, cmd in ipairs(cmds) do
+                        os.vrunv(cmd[1], table.slice(cmd, 2))
+                    end
                 end, rootjob)
             end
         end
