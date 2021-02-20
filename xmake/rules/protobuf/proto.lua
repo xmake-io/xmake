@@ -103,8 +103,8 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
 
     -- add commands
-    local progress_text = opt.progress and progress.text(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-    batchcmds:add_cmd(protoc, argv, {tips = progress_text})
+    batchcmds:add_progress_tip(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
+    batchcmds:add_cmd(protoc, argv)
     batchcmds:add_cmd(compinst:compargv(sourcefile_cx, objectfile, {compflags = compflags}))
 
     -- add deps

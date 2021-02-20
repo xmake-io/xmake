@@ -102,7 +102,9 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
             for _, cmd in ipairs(batchcmds_:cmds()) do
-                _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                if cmd.program then
+                    _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                end
             end
         end
     end
@@ -118,7 +120,9 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
                     for _, cmd in ipairs(batchcmds_:cmds()) do
-                        _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                        if cmd.program then
+                            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                        end
                     end
                 end
             end

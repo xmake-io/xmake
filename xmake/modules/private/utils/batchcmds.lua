@@ -21,10 +21,68 @@
 -- imports
 import("core.base.option")
 import("core.base.object")
+import("core.base.tty")
+import("core.base.colors")
 import("core.project.depend")
+import("core.theme.theme")
+import("private.utils.progress", {alias = "progress_utils"})
 
 -- define module
-local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_TIPS"}}
+local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_tip"}}
+
+-- show the tip message
+local function _showtip(tip, progress)
+    if option.get("verbose") then
+        cprint(tip)
+    else
+        local is_scroll = _g.is_scroll
+        if is_scroll == nil then
+            is_scroll = theme.get("text.build.progress_style") == "scroll"
+            _g.is_scroll = is_scroll
+        end
+        if is_scroll then
+            cprint(tip)
+        else
+            tty.erase_line_to_start().cr()
+            local msg = tip
+            local msg_plain = colors.translate(msg, {plain = true})
+            local maxwidth = os.getwinsize().width
+            if #msg_plain <= maxwidth then
+                cprintf(msg)
+            else
+                -- windows width is too small? strip the partial message in middle
+                local partlen = math.floor(maxwidth / 2) - 3
+                local sep = msg_plain:sub(partlen + 1, #msg_plain - partlen - 1)
+                local split = msg:split(sep, {plain = true, strict = true})
+                cprintf(table.concat(split, "..."))
+            end
+            if math.floor(progress) == 100 then
+                print("")
+                _g.showing_without_scroll = false
+            else
+                _g.showing_without_scroll = true
+            end
+            io.flush()
+        end
+    end
+end
+
+-- run the given commands
+local function _runcmds(cmds, opt)
+    for _, cmd in ipairs(cmds) do
+        local tip = cmd.tip
+        if tip then
+            _showtip(tip, cmd.progress)
+        end
+        if cmd.program then
+            if opt.dryrun then
+                vprint(os.args(table.join(cmd.program, cmd.argv)))
+            else
+                os.vrunv(cmd.program, cmd.argv, cmd.runopt)
+            end
+        end
+    end
+end
 
 -- is empty? no commands
 function batchcmds:empty()
@@ -39,6 +97,20 @@ end
 -- add command
 function batchcmds:add_cmd(program, argv, opt)
     table.insert(self:cmds(), {program = program, argv = argv, runopt = opt})
+end
+
+-- add command tip
+function batchcmds:add_tip(format, ...)
+    local tip = string.format(format, ...)
+    table.insert(self:cmds(), {tip = tip})
+end
+
+-- add command tip with progress
+function batchcmds:add_progress_tip(progress, format, ...)
+    if progress then
+        local tip = progress_utils.text(progress, format, ...)
+        table.insert(self:cmds(), {tip = tip, progress = progress})
+    end
 end
 
 -- get deps
@@ -82,27 +154,12 @@ function batchcmds:run(opt)
     if self:empty() then
         return
     end
-    local function _runcmds()
-        for _, cmd in ipairs(self:cmds()) do
-            local tips = cmd.runopt and cmd.runopt.tips
-            if tips then
-                for _, tip in ipairs(tips) do
-                    cprint(tip)
-                end
-            end
-            if opt.dryrun then
-                vprint(os.args(table.join(cmd.program, cmd.argv)))
-            else
-                os.vrunv(cmd.program, cmd.argv, cmd.runopt)
-            end
-        end
-    end
     if self:deps() then
         depend.on_changed(function ()
-            _runcmds()
+            _runcmds(self:cmds(), opt)
         end, self:deps())
     else
-        _runcmds()
+        _runcmds(self:cmds(), opt)
     end
 end
 
