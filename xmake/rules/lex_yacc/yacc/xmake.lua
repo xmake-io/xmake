@@ -20,96 +20,36 @@
 
 -- define rule: yacc
 rule("yacc")
-
-    -- set extension
     set_extensions(".y", ".yy")
-
-    -- load yacc/bison
-    before_load(function (target)
-        import("core.project.config")
-        import("lib.detect.find_tool")
-        local yacc = config.get("__yacc")
-        if not yacc then
-            yacc = find_tool("bison") or find_tool("yacc")
-            if yacc and yacc.program then
-                config.set("__yacc", yacc.program)
-                cprint("checking for Yacc ... ${color.success}%s", yacc.program)
-            else
-                cprint("checking for Yacc ... ${color.nothing}${text.nothing}")
-                raise("yacc/bison not found!")
-            end
-        end
-    end)
-
-    -- build yacc file
-    before_build_file(function (target, sourcefile_yacc, opt)
+    before_buildcmd_file(function (target, batchcmds, sourcefile_yacc, opt)
 
         -- imports
-        import("core.base.option")
-        import("core.theme.theme")
-        import("core.project.config")
-        import("core.project.depend")
-        import("core.tool.compiler")
-        import("private.utils.progress")
+        import("lib.detect.find_tool")
 
         -- get yacc
-        local yacc = assert(config.get("__yacc"), "yacc not found!")
-
-        -- get extension: .l/.ll
-        local extension = path.extension(sourcefile_yacc)
+        local yacc = assert(find_tool("bison") or find_tool("yacc"), "yacc/bison not found!")
 
         -- get c/c++ source file for yacc
-        local sourcefile_cx = path.join(target:autogendir(), "rules", "lex_yacc", path.basename(sourcefile_yacc) .. ".tab" .. (extension == ".yy" and ".cpp" or ".c"))
-        local sourcefile_dir = path.directory(sourcefile_cx)
-
-        -- get object file
-        local objectfile = target:objectfile(sourcefile_cx)
-
-        -- load compiler
-        local compinst = compiler.load((extension == ".yy" and "cxx" or "cc"), {target = target})
-
-        -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx})
+        local extension = path.extension(sourcefile_yacc)
+        local sourcefile_cx = path.join(target:autogendir(), "rules", "yacc_yacc", path.basename(sourcefile_yacc) .. ".tab" .. (extension == ".yy" and ".cpp" or ".c"))
 
         -- add objectfile
+        local objectfile = target:objectfile(sourcefile_cx)
         table.insert(target:objectfiles(), objectfile)
 
         -- add includedirs
+        local sourcefile_dir = path.directory(sourcefile_cx)
         target:add("includedirs", sourcefile_dir)
 
-        -- load dependent info
-        local dependfile = target:dependfile(objectfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
+        batchcmds:mkdir(sourcefile_dir)
+        batchcmds:vrunv(yacc.program, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
+        batchcmds:compile(sourcefile_cx, objectfile)
 
-        -- need build this object?
-        local depvalues = {compinst:program(), compflags}
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return
-        end
-
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.object}compiling.yacc %s", sourcefile_yacc)
-
-        -- ensure the source file directory
-        if not os.isdir(sourcefile_dir) then
-            os.mkdir(sourcefile_dir)
-        end
-
-        -- compile yacc
-        os.vrunv(yacc, {"-d", "-o", sourcefile_cx, sourcefile_yacc})
-
-        -- trace
-        if option.get("verbose") then
-            print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
-        end
-
-        -- compile c/c++ source file for yacc
-        dependinfo.files = {}
-        assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
-
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.insert(dependinfo.files, sourcefile_yacc)
-        depend.save(dependinfo, dependfile)
+        -- add deps
+        batchcmds:add_depfiles(sourcefile_yacc)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 

@@ -24,6 +24,9 @@ winenv/
 *.7z
 *.run
 
+# for compiler
+compile_commands.json
+
 # Makefile generation
 /core/xmake.config.h
 /core/.config.mak
