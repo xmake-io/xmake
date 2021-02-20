@@ -25,6 +25,7 @@ import("core.base.tty")
 import("core.base.colors")
 import("core.project.depend")
 import("core.theme.theme")
+import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
 import("private.utils.progress", {alias = "progress_utils"})
@@ -77,6 +78,15 @@ function _runcmd_show(cmd, opt)
     end
 end
 
+-- run command: os.runv
+function _runcmd_runv(cmd, opt)
+    if cmd.program then
+        if not opt.dryrun then
+            os.runv(cmd.program, cmd.argv, cmd.runopt)
+        end
+    end
+end
+
 -- run command: os.vrunv
 function _runcmd_vrunv(cmd, opt)
     if cmd.program then
@@ -88,10 +98,21 @@ function _runcmd_vrunv(cmd, opt)
     end
 end
 
+-- run command: os.execv
+function _runcmd_execv(cmd, opt)
+    if cmd.program then
+        if opt.dryrun then
+            print(os.args(table.join(cmd.program, cmd.argv)))
+        else
+            os.execv(cmd.program, cmd.argv, cmd.runopt)
+        end
+    end
+end
+
 -- run command: os.mkdir
 function _runcmd_mkdir(cmd, opt)
     local dir = cmd.dir
-    if not os.isdir(dir) then
+    if not opt.dryrun and not os.isdir(dir) then
         os.mkdir(dir)
     end
 end
@@ -101,9 +122,13 @@ function _runcmd(cmd, opt)
     local kind = cmd.kind
     if kind == "show" then
         _runcmd_show(cmd, opt)
+    elseif kind == "runv" then
+        _runcmd_runv(cmd, opt)
     elseif kind == "vrunv" then
         _runcmd_vrunv(cmd, opt)
-    elseif kind == "vrunv" then
+    elseif kind == "execv" then
+        _runcmd_execv(cmd, opt)
+    elseif kind == "mkdir" then
         _runcmd_mkdir(cmd, opt)
     end
 end
@@ -125,9 +150,21 @@ function batchcmds:cmds()
     return self._CMDS
 end
 
+-- add command: os.runv
+function batchcmds:runv(program, argv, opt)
+    table.insert(self:cmds(), {kind = "runv", program = program, argv = argv, runopt = opt})
+    self:add_depvalues(program, argv)
+end
+
 -- add command: os.vrunv
 function batchcmds:vrunv(program, argv, opt)
     table.insert(self:cmds(), {kind = "vrunv", program = program, argv = argv, runopt = opt})
+    self:add_depvalues(program, argv)
+end
+
+-- add command: os.execv
+function batchcmds:execv(program, argv, opt)
+    table.insert(self:cmds(), {kind = "execv", program = program, argv = argv, runopt = opt})
     self:add_depvalues(program, argv)
 end
 
@@ -149,6 +186,23 @@ function batchcmds:compile(sourcefiles, objectfile, opt)
     -- add compilation command and bind run environments of compiler
     self:mkdir(path.directory(objectfile))
     self:vrunv(program, argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
+end
+
+-- add command: linker.link
+function batchcmds:link(objectfiles, targetfile, opt)
+
+    -- bind target if exists
+    local target = self._TARGET
+    opt = opt or {}
+    opt.target = target
+
+    -- load linker and get link command
+    local linker_inst = target and target:linker() or linker.load(opt.targetkind, opt.sourcekinds, opt)
+    local program, argv = linker_inst:linkargv(objectfiles, targetfile, opt)
+
+    -- add link command and bind run environments of linker
+    self:mkdir(path.directory(targetfile))
+    self:vrunv(program, argv, {envs = table.join(linker_inst:runenvs(), opt.envs)})
 end
 
 -- add command: os.mkdir
