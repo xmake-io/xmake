@@ -82,7 +82,7 @@ end
 function _runcmd_runv(cmd, opt)
     if cmd.program then
         if not opt.dryrun then
-            os.runv(cmd.program, cmd.argv, cmd.runopt)
+            os.runv(cmd.program, cmd.argv, cmd.opt)
         end
     end
 end
@@ -93,7 +93,7 @@ function _runcmd_vrunv(cmd, opt)
         if opt.dryrun then
             vprint(os.args(table.join(cmd.program, cmd.argv)))
         else
-            os.vrunv(cmd.program, cmd.argv, cmd.runopt)
+            os.vrunv(cmd.program, cmd.argv, cmd.opt)
         end
     end
 end
@@ -104,7 +104,7 @@ function _runcmd_execv(cmd, opt)
         if opt.dryrun then
             print(os.args(table.join(cmd.program, cmd.argv)))
         else
-            os.execv(cmd.program, cmd.argv, cmd.runopt)
+            os.execv(cmd.program, cmd.argv, cmd.opt)
         end
     end
 end
@@ -117,19 +117,57 @@ function _runcmd_mkdir(cmd, opt)
     end
 end
 
+-- run command: os.rm
+function _runcmd_rm(cmd, opt)
+    local filepath = cmd.filepath
+    if not opt.dryrun then
+        os.tryrm(filepath)
+    end
+end
+
+-- run command: os.cp
+function _runcmd_cp(cmd, opt)
+    if not opt.dryrun then
+        os.cp(opt.srcpath, opt.dstpath, opt.opt)
+    end
+end
+
+-- run command: os.mv
+function _runcmd_mv(cmd, opt)
+    if not opt.dryrun then
+        os.mv(opt.srcpath, opt.dstpath, opt.opt)
+    end
+end
+
+-- run command: os.ln
+function _runcmd_ln(cmd, opt)
+    if not opt.dryrun then
+        os.ln(opt.srcpath, opt.dstpath, opt.opt)
+    end
+end
+
 -- run command
 function _runcmd(cmd, opt)
     local kind = cmd.kind
-    if kind == "show" then
-        _runcmd_show(cmd, opt)
-    elseif kind == "runv" then
-        _runcmd_runv(cmd, opt)
-    elseif kind == "vrunv" then
-        _runcmd_vrunv(cmd, opt)
-    elseif kind == "execv" then
-        _runcmd_execv(cmd, opt)
-    elseif kind == "mkdir" then
-        _runcmd_mkdir(cmd, opt)
+    local maps = _g.maps
+    if not maps then
+        maps =
+        {
+            show  = _runcmd_show,
+            runv  = _runcmd_runv,
+            vrunv = _runcmd_vrunv,
+            execv = _runcmd_execv,
+            mkdir = _runcmd_mkdir,
+            rm    = _runcmd_rm,
+            cp    = _runcmd_cp,
+            mv    = _runcmd_mv,
+            ln    = _runcmd_ln
+        }
+        _g.maps = maps
+    end
+    local script = maps[kind]
+    if script then
+        script(cmd, opt)
     end
 end
 
@@ -152,19 +190,19 @@ end
 
 -- add command: os.runv
 function batchcmds:runv(program, argv, opt)
-    table.insert(self:cmds(), {kind = "runv", program = program, argv = argv, runopt = opt})
+    table.insert(self:cmds(), {kind = "runv", program = program, argv = argv, opt = opt})
     self:add_depvalues(program, argv)
 end
 
 -- add command: os.vrunv
 function batchcmds:vrunv(program, argv, opt)
-    table.insert(self:cmds(), {kind = "vrunv", program = program, argv = argv, runopt = opt})
+    table.insert(self:cmds(), {kind = "vrunv", program = program, argv = argv, opt = opt})
     self:add_depvalues(program, argv)
 end
 
 -- add command: os.execv
 function batchcmds:execv(program, argv, opt)
-    table.insert(self:cmds(), {kind = "execv", program = program, argv = argv, runopt = opt})
+    table.insert(self:cmds(), {kind = "execv", program = program, argv = argv, opt = opt})
     self:add_depvalues(program, argv)
 end
 
@@ -208,6 +246,26 @@ end
 -- add command: os.mkdir
 function batchcmds:mkdir(dir)
     table.insert(self:cmds(), {kind = "mkdir", dir = dir})
+end
+
+-- add command: os.rm
+function batchcmds:rm(filepath)
+    table.insert(self:cmds(), {kind = "rm", filepath = filepath})
+end
+
+-- add command: os.cp
+function batchcmds:cp(srcpath, dstpath, opt)
+    table.insert(self:cmds(), {kind = "cp", srcpath = srcpath, dstpath = dstpath, opt = opt})
+end
+
+-- add command: os.mv
+function batchcmds:mv(srcpath, dstpath, opt)
+    table.insert(self:cmds(), {kind = "mv", srcpath = srcpath, dstpath = dstpath, opt = opt})
+end
+
+-- add command: os.ln
+function batchcmds:ln(srcpath, dstpath, opt)
+    table.insert(self:cmds(), {kind = "ln", srcpath = srcpath, dstpath = dstpath, opt = opt})
 end
 
 -- add command: show
