@@ -25,6 +25,7 @@ import("core.base.tty")
 import("core.base.colors")
 import("core.project.depend")
 import("core.theme.theme")
+import("core.tool.compiler")
 import("private.utils.progress", {alias = "progress_utils"})
 
 -- define module
@@ -97,6 +98,15 @@ end
 -- add command
 function batchcmds:add_cmd(program, argv, opt)
     table.insert(self:cmds(), {program = program, argv = argv, runopt = opt})
+    self:add_depvalues(program, argv)
+end
+
+-- add compilation command
+function batchcmds:add_compcmd(sourcefiles, objectfile, opt)
+    opt = opt or {}
+    opt.target = self._TARGET -- bind target if exists
+    local program, argv = compiler.compargv(sourcefiles, objectfile, opt)
+    self:add_cmd(program, argv, {envs = opt.envs})
 end
 
 -- add command tip
@@ -154,7 +164,8 @@ function batchcmds:run(opt)
     if self:empty() then
         return
     end
-    if self:deps() then
+    local deps = self:deps()
+    if deps and deps.files then
         depend.on_changed(function ()
             _runcmds(self:cmds(), opt)
         end, self:deps())

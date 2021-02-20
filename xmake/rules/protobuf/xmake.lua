@@ -24,11 +24,6 @@ rule("protobuf.cpp")
     -- set extension
     set_extensions(".proto")
 
-    -- build protobuf file
-    before_build_file(function (target, sourcefile_proto, opt)
-        import("proto").build(target, sourcefile_proto, opt, "cxx")
-    end)
-
     -- generate build commands
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
         return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
@@ -40,11 +35,6 @@ rule("protobuf.c")
 
     -- set extension
     set_extensions(".proto")
-
-    -- build protobuf file
-    before_build_file(function (target, sourcefile_proto, opt)
-        import("proto").build(target, sourcefile_proto, opt, "cc")
-    end)
 
     -- generate build commands
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
