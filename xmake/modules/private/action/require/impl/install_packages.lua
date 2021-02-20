@@ -422,7 +422,7 @@ function main(requires, opt)
     -- fetch and register packages (with system) from local first
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
-        if instance and (not option.get("force") or (option.get("shallow") and instance:is_toplevel())) then
+        if instance and (not option.get("force") or (option.get("shallow") and not instance:is_toplevel())) then
             instance:envs_enter()
             instance:fetch()
             instance:envs_leave()
