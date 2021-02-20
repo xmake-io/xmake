@@ -20,23 +20,14 @@
 
 -- define rule: protobuf.cpp
 rule("protobuf.cpp")
-
-    -- set extension
     set_extensions(".proto")
-
-    -- generate build commands
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
         return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
     end)
 
-
 -- define rule: protobuf.c
 rule("protobuf.c")
-
-    -- set extension
     set_extensions(".proto")
-
-    -- generate build commands
     before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
         return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cc")
     end)

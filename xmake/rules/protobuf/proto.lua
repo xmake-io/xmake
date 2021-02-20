@@ -19,13 +19,7 @@
 --
 
 -- imports
-import("core.base.option")
-import("core.theme.theme")
-import("core.project.config")
-import("core.project.depend")
-import("core.tool.compiler")
 import("lib.detect.find_tool")
-import("private.utils.progress")
 
 -- get protoc
 function _get_protoc(target, sourcekind)
