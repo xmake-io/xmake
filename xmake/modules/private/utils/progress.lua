@@ -111,6 +111,16 @@ function show(progress, format, ...)
     end
 end
 
+-- get the message text with process
+function text(progress, format, ...)
+    local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
+    if option.get("verbose") then
+        return string.format(progress_prefix .. "${dim}" .. format, progress, ...)
+    else
+        return string.format(progress_prefix .. format, progress, ...)
+    end
+end
+
 -- build a progress indicator
 -- @params stream - stream to write to, will use io.stdout if not provided
 -- @params opt - options

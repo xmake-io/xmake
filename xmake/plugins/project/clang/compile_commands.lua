@@ -23,6 +23,7 @@ import("core.tool.compiler")
 import("core.project.rule")
 import("core.project.project")
 import("core.language.language")
+import("private.utils.batchcmds")
 
 -- escape path
 function _escape_path(p)
@@ -97,9 +98,12 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
     local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
     local script = ruleinst:script(scriptname)
     if script then
-        local cmds = script(target, sourcebatch)
-        for _, cmd in ipairs(cmds) do
-            _make_arguments(jsonfile, cmd)
+        local batchcmds_ = batchcmds.new({target = target})
+        script(target, batchcmds_, sourcebatch, {})
+        if not batchcmds_:empty() then
+            for _, cmd in ipairs(batchcmds_:cmds()) do
+                _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+            end
         end
     end
 
@@ -110,9 +114,12 @@ function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
         if script then
             local sourcekind = sourcebatch.sourcekind
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local cmds = script(target, sourcefile)
-                for _, cmd in ipairs(cmds) do
-                    _make_arguments(jsonfile, cmd)
+                local batchcmds_ = batchcmds.new({target = target})
+                script(target, batchcmds_, sourcefile, {})
+                if not batchcmds_:empty() then
+                    for _, cmd in ipairs(batchcmds_:cmds()) do
+                        _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                    end
                 end
             end
         end

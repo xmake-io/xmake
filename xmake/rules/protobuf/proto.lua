@@ -53,7 +53,7 @@ function _get_protoc(target, sourcekind)
 end
 
 -- generate build commands
-function buildcmd(target, sourcekind, sourcefile_proto, opt)
+function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
 
     -- get protoc
     local protoc = _get_protoc(target, sourcekind)
@@ -102,15 +102,20 @@ function buildcmd(target, sourcekind, sourcefile_proto, opt)
     end
     table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
 
-    -- generate commands
-    local cmds = {}
-    table.insert(cmds, table.join(protoc, argv))
-    table.insert(cmds, table.join(compinst:compargv(sourcefile_cx, objectfile, {compflags = compflags})))
-    return cmds
+    -- add commands
+    local progress_text = opt.progress and progress.text(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
+    batchcmds:add_cmd(protoc, argv, {tips = progress_text})
+    batchcmds:add_cmd(compinst:compargv(sourcefile_cx, objectfile, {compflags = compflags}))
+
+    -- add deps
+    batchcmds:add_depfiles(sourcefile_proto)
+    batchcmds:add_depvalues(compinst:program(), compflags)
+    batchcmds:set_depmtime(os.mtime(objectfile))
+    batchcmds:set_depcache(target:dependfile(objectfile))
 end
 
 -- build protobuf file
-function build(target, sourcekind, sourcefile_proto, opt)
+function build(target, sourcefile_proto, opt, sourcekind)
 
     -- get protoc
     local protoc = _get_protoc(target, sourcekind)

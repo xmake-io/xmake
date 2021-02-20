@@ -26,12 +26,12 @@ rule("protobuf.cpp")
 
     -- build protobuf file
     before_build_file(function (target, sourcefile_proto, opt)
-        import("proto").build(target, "cxx", sourcefile_proto, opt)
+        import("proto").build(target, sourcefile_proto, opt, "cxx")
     end)
 
     -- generate build commands
-    before_buildcmd_file(function (target, sourcefile_proto, opt)
-        return import("proto").buildcmd(target, "cxx", sourcefile_proto, opt)
+    before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
+        return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cxx")
     end)
 
 
@@ -43,10 +43,10 @@ rule("protobuf.c")
 
     -- build protobuf file
     before_build_file(function (target, sourcefile_proto, opt)
-        import("proto").build(target, "cc", sourcefile_proto, opt)
+        import("proto").build(target, sourcefile_proto, opt, "cc")
     end)
 
     -- generate build commands
-    before_buildcmd_file(function (target, sourcefile_proto, opt)
-        return import("proto").buildcmd(target, "cc", sourcefile_proto, opt)
+    before_buildcmd_file(function (target, batchcmds, sourcefile_proto, opt)
+        return import("proto").buildcmd(target, batchcmds, sourcefile_proto, opt, "cc")
     end)
