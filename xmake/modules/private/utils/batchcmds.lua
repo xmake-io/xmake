@@ -26,15 +26,16 @@ import("core.base.colors")
 import("core.project.depend")
 import("core.theme.theme")
 import("core.tool.compiler")
+import("core.language.language")
 import("private.utils.progress", {alias = "progress_utils"})
 
 -- define module
 local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_tip"}}
 
--- show the tip message
-local function _showtip(tip, progress)
+-- show text
+function _show(showtext, progress)
     if option.get("verbose") then
-        cprint(tip)
+        cprint(showtext)
     else
         local is_scroll = _g.is_scroll
         if is_scroll == nil then
@@ -42,10 +43,10 @@ local function _showtip(tip, progress)
             _g.is_scroll = is_scroll
         end
         if is_scroll then
-            cprint(tip)
+            cprint(showtext)
         else
             tty.erase_line_to_start().cr()
-            local msg = tip
+            local msg = showtext
             local msg_plain = colors.translate(msg, {plain = true})
             local maxwidth = os.getwinsize().width
             if #msg_plain <= maxwidth then
@@ -68,20 +69,49 @@ local function _showtip(tip, progress)
     end
 end
 
--- run the given commands
-local function _runcmds(cmds, opt)
+-- run command: show
+function _runcmd_show(cmd, opt)
+    local showtext = cmd.showtext
+    if showtext then
+        _show(showtext, cmd.progress)
+    end
+end
+
+-- run command: os.vrunv
+function _runcmd_vrunv(cmd, opt)
+    if cmd.program then
+        if opt.dryrun then
+            vprint(os.args(table.join(cmd.program, cmd.argv)))
+        else
+            os.vrunv(cmd.program, cmd.argv, cmd.runopt)
+        end
+    end
+end
+
+-- run command: os.mkdir
+function _runcmd_mkdir(cmd, opt)
+    local dir = cmd.dir
+    if not os.isdir(dir) then
+        os.mkdir(dir)
+    end
+end
+
+-- run command
+function _runcmd(cmd, opt)
+    local kind = cmd.kind
+    if kind == "show" then
+        _runcmd_show(cmd, opt)
+    elseif kind == "vrunv" then
+        _runcmd_vrunv(cmd, opt)
+    elseif kind == "vrunv" then
+        _runcmd_mkdir(cmd, opt)
+    end
+end
+
+-- run commands
+function _runcmds(cmds, opt)
     for _, cmd in ipairs(cmds) do
-        local tip = cmd.tip
-        if tip then
-            _showtip(tip, cmd.progress)
-        end
-        if cmd.program then
-            if opt.dryrun then
-                vprint(os.args(table.join(cmd.program, cmd.argv)))
-            else
-                os.vrunv(cmd.program, cmd.argv, cmd.runopt)
-            end
-        end
+        _runcmd(cmd, opt)
     end
 end
 
@@ -95,31 +125,48 @@ function batchcmds:cmds()
     return self._CMDS
 end
 
--- add command
-function batchcmds:add_cmd(program, argv, opt)
-    table.insert(self:cmds(), {program = program, argv = argv, runopt = opt})
+-- add command: os.vrunv
+function batchcmds:vrunv(program, argv, opt)
+    table.insert(self:cmds(), {kind = "vrunv", program = program, argv = argv, runopt = opt})
     self:add_depvalues(program, argv)
 end
 
--- add compilation command
-function batchcmds:add_compcmd(sourcefiles, objectfile, opt)
+-- add command: compiler.compile
+function batchcmds:compile(sourcefiles, objectfile, opt)
+
+    -- bind target if exists
     opt = opt or {}
-    opt.target = self._TARGET -- bind target if exists
-    local program, argv = compiler.compargv(sourcefiles, objectfile, opt)
-    self:add_cmd(program, argv, {envs = opt.envs})
+    opt.target = self._TARGET
+
+    -- load compiler and get compilation command
+    local sourcekind = opt.sourcekind
+    if not sourcekind and type(sourcefiles) == "string" then
+        sourcekind = language.sourcekind_of(sourcefiles)
+    end
+    local compiler_inst = compiler.load(sourcekind, opt)
+    local program, argv = compiler_inst:compargv(sourcefiles, objectfile, opt)
+
+    -- add compilation command and bind run environments of compiler
+    self:mkdir(path.directory(objectfile))
+    self:vrunv(program, argv, {envs = table.join(compiler_inst:runenvs(), opt.envs)})
 end
 
--- add command tip
-function batchcmds:add_tip(format, ...)
-    local tip = string.format(format, ...)
-    table.insert(self:cmds(), {tip = tip})
+-- add command: os.mkdir
+function batchcmds:mkdir(dir)
+    table.insert(self:cmds(), {kind = "mkdir", dir = dir})
 end
 
--- add command tip with progress
-function batchcmds:add_progress_tip(progress, format, ...)
+-- add command: show
+function batchcmds:show(format, ...)
+    local showtext = string.format(format, ...)
+    table.insert(self:cmds(), {kind = "show", showtext = showtext})
+end
+
+-- add command: show progress
+function batchcmds:show_progress(progress, format, ...)
     if progress then
-        local tip = progress_utils.text(progress, format, ...)
-        table.insert(self:cmds(), {tip = tip, progress = progress})
+        local showtext = progress_utils.text(progress, format, ...)
+        table.insert(self:cmds(), {kind = "show", showtext = showtext, progress = progress})
     end
 end
 
@@ -159,7 +206,7 @@ function batchcmds:set_depcache(cachefile)
 end
 
 -- run cmds
-function batchcmds:run(opt)
+function batchcmds:runcmds(opt)
     opt = opt or {}
     if self:empty() then
         return

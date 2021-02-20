@@ -72,23 +72,17 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     -- add includedirs
     target:add("includedirs", sourcefile_dir)
 
-    -- get object file
-    local objectfile = target:objectfile(sourcefile_cx)
-
     -- add objectfile
+    local objectfile = target:objectfile(sourcefile_cx)
     table.insert(target:objectfiles(), objectfile)
 
-    -- ensure the source file directory
-    if not os.isdir(sourcefile_dir) then
-        os.mkdir(sourcefile_dir)
-    end
-
     -- add commands
-    batchcmds:add_progress_tip(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-    batchcmds:add_cmd(protoc, {sourcefile_proto,
+    batchcmds:mkdir(sourcefile_dir)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
+    batchcmds:vrunv(protoc, {sourcefile_proto,
         "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_proto)),
         (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
-    batchcmds:add_compcmd(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
+    batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
 
     -- add deps
     batchcmds:add_depfiles(sourcefile_proto)

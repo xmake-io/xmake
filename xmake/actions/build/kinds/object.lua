@@ -68,7 +68,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total})
-                batchcmds_:run({dryrun = option.get("dry-run")})
+                batchcmds_:runcmds({dryrun = option.get("dry-run")})
             end, rootjob)
         end
     end
@@ -83,7 +83,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                 batchjobs:addjob(sourcefile, function (index, total)
                     local batchcmds_ = batchcmds.new({target = target})
                     script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                    batchcmds_:run({dryrun = option.get("dry-run")})
+                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
                 end, rootjob)
             end
         end
