@@ -22,7 +22,7 @@
 import("lib.detect.find_file")
 import("lib.detect.find_path")
 import("lib.detect.find_library")
-import("lib.detect.pkg_config")
+import("lib.detect.pkgconfig")
 import("detect.sdks.find_xcode")
 import("core.project.config")
 
@@ -148,7 +148,7 @@ function main(name, opt)
     local version = nil
     local links = table.wrap(opt.links)
     if #links == 0 then
-        pkginfo = pkg_config.libinfo(name)
+        pkginfo = pkgconfig.libinfo(name)
         if pkginfo then
             links = table.wrap(pkginfo.links)
             version = pkginfo.version
