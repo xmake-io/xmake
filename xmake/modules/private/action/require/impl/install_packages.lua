@@ -402,6 +402,20 @@ function _get_package_installdeps(packages)
     return installdeps
 end
 
+-- should install?
+function _should_install(instance)
+    if instance:parents() then
+        -- if all the packages that depend on it already exist, then there is no need to install it
+        for _, parent in ipairs(instance:parents()) do
+            if not parent:exists() then
+                return true
+            end
+        end
+    else
+        return not instance:exists()
+    end
+end
+
 -- install packages
 function main(requires, opt)
 
@@ -437,7 +451,7 @@ function main(requires, opt)
     local packages_download = {}
     local packages_unsupported = {}
     for _, instance in ipairs(packages) do
-        if not instance:exists() then
+        if _should_install(instance) then
             if instance:supported() then
                 if #instance:urls() > 0 then
                     packages_download[tostring(instance)] = instance
