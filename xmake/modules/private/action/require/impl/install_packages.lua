@@ -404,7 +404,7 @@ end
 
 -- should install?
 function _should_install(instance)
-    if instance:parents() then
+    if instance:exists() and instance:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in ipairs(instance:parents()) do
             if not parent:exists() then
