@@ -407,7 +407,7 @@ function _should_install(instance)
     if instance:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(instance:parents()) do
-            if not parent:exists() then
+            if _should_install(parent) and not parent:exists() then
                 return true
             end
         end
