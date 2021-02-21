@@ -27,28 +27,15 @@ rule("qt.moc")
     -- set extensions
     set_extensions(".h", ".hpp")
 
-    -- before load
-    before_load(function (target)
+    -- before build file (we need compile it first if exists Q_PRIVATE_SLOT)
+    before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+
+        -- imports
+        import("core.tool.compiler")
 
         -- get moc
         local moc = path.join(target:data("qt").bindir, is_host("windows") and "moc.exe" or "moc")
         assert(moc and os.isexec(moc), "moc not found!")
-
-        -- save moc
-        target:data_set("qt.moc", moc)
-    end)
-
-    -- before build file (we need compile it first if exists Q_PRIVATE_SLOT)
-    before_build_file(function (target, sourcefile, opt)
-
-        -- imports
-        import("moc")
-        import("core.base.option")
-        import("core.theme.theme")
-        import("core.project.config")
-        import("core.tool.compiler")
-        import("core.project.depend")
-        import("private.utils.progress")
 
         -- get c++ source file for moc
         --
@@ -62,36 +49,23 @@ rule("qt.moc")
         end
         local sourcefile_moc = path.join(target:autogendir(), "rules", "qt", "moc", filename_moc)
 
-        -- get object file
-        local objectfile = target:objectfile(sourcefile_moc)
-
-        -- load compiler
-        local compinst = compiler.load("cxx", {target = target})
-
-        -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_moc})
-
         -- add objectfile
+        local objectfile = target:objectfile(sourcefile_moc)
         table.insert(target:objectfiles(), objectfile)
 
-        -- load dependent info
-        local dependfile = target:dependfile(objectfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
-
-        -- need build this object?
-        local depvalues = {compinst:program(), compflags}
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return
-        end
-
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.object}compiling.qt.moc %s", sourcefile)
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.moc %s", sourcefile)
 
         -- generate c++ source file for moc
-        moc.generate(target, sourcefile, sourcefile_moc)
+        local flags = {}
+        table.join2(flags, compiler.map_flags("cxx", "define", target:get("defines")))
+        table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("includedirs")))
+        table.join2(flags, compiler.map_flags("cxx", "sysincludedir", target:get("sysincludedirs")))
+        table.join2(flags, compiler.map_flags("cxx", "frameworkdir", target:get("frameworkdirs")))
+        batchcmds:mkdir(path.directory(sourcefile_moc))
+        batchcmds:vrunv(moc, table.join(flags, sourcefile, "-o", sourcefile_moc))
 
         -- we need compile this moc_xxx.cpp file if exists Q_PRIVATE_SLOT, @see https://github.com/xmake-io/xmake/issues/750
-        dependinfo.files = {}
         local mocdata = io.readfile(sourcefile)
         if mocdata and mocdata:find("Q_PRIVATE_SLOT") or sourcefile_moc:endswith(".moc") then
             -- add includedirs of sourcefile_moc
@@ -106,17 +80,12 @@ rule("qt.moc")
                 end
             end
         else
-            -- trace
-            if option.get("verbose") then
-                print(compinst:compcmd(sourcefile_moc, objectfile, {compflags = compflags}))
-            end
-
             -- compile c++ source file for moc
-            assert(compinst:compile(sourcefile_moc, objectfile, {dependinfo = dependinfo, compflags = compflags}))
+            batchcmds:compile(sourcefile_moc, objectfile)
         end
 
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.insert(dependinfo.files, sourcefile)
-        depend.save(dependinfo, dependfile)
+        -- add deps
+        batchcmds:add_depfiles(sourcefile)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
