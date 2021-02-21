@@ -50,27 +50,15 @@ rule("qt.ui")
     end)
 
     -- before build file
-    before_build_file(function (target, sourcefile_ui, opt)
-
-        -- imports
-        import("core.base.option")
-        import("core.theme.theme")
-        import("core.project.config")
-        import("core.project.depend")
-        import("private.utils.progress")
-
-        -- do build
+    before_buildcmd_file(function (target, batchcmds, sourcefile_ui, opt)
         local uic = target:data("qt.uic")
-        local dryrun = option.get("dry-run")
         local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
         local headerfile_ui = path.join(headerfile_dir, "ui_" .. path.basename(sourcefile_ui) .. ".h")
-        depend.on_changed(function ()
-            progress.show(opt.progress, "${color.build.object}compiling.qt.ui %s", sourcefile_ui)
-            if not dryrun then
-                if not os.isdir(headerfile_dir) then
-                    os.mkdir(headerfile_dir)
-                end
-                os.vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
-            end
-        end, {dependfile = target:dependfile(headerfile_ui), files = {sourcefile_ui}, lastmtime = os.mtime(headerfile_ui), always_changed = dryrun})
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.ui %s", sourcefile_ui)
+        batchcmds:mkdir(headerfile_dir)
+        batchcmds:vrunv(uic, {sourcefile_ui, "-o", headerfile_ui})
+        batchcmds:add_depfiles(sourcefile_ui)
+        batchcmds:set_depmtime(os.mtime(headerfile_ui))
+        batchcmds:set_depcache(target:dependfile(headerfile_ui))
     end)
+
