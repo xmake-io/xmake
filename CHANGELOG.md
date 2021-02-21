@@ -20,6 +20,8 @@
 * [#1183](https://github.com/xmake-io/xmake/issues/1183): Improve c++ lanuages to support Qt6
 * [#1237](https://github.com/xmake-io/xmake/issues/1237): Add qt.ui files for vsxmake plugin
 * Improve vs/vsxmake plugins to support precompiled header and intellisense
+* [#1090](https://github.com/xmake-io/xmake/issues/1090): Simplify integration of custom code generators
+* [#1065](https://github.com/xmake-io/xmake/issues/1065): Improve protobuf rule to support compile_commands generators
 
 ### Bugs fixed
 
@@ -944,6 +946,8 @@
 * [#1183](https://github.com/xmake-io/xmake/issues/1183): 改进 C++ 语言标准，以便支持 Qt6
 * [#1237](https://github.com/xmake-io/xmake/issues/1237): 为 vsxmake 插件添加 qt.ui 文件
 * 改进 vs/vsxmake 插件去支持预编译头文件和智能提示
+* [#1090](https://github.com/xmake-io/xmake/issues/1090): 简化自定义规则
+* [#1065](https://github.com/xmake-io/xmake/issues/1065): 改进 protobuf 规则，支持 compile_commands 生成器
 
 ### Bugs 修复
 
