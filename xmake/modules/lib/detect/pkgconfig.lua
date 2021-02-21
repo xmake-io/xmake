@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        pkg_config.lua
+-- @file        pkgconfig.lua
 --
 
 -- imports
@@ -34,8 +34,8 @@ import("detect.tools.find_pkg_config")
 function version(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkg_config = find_pkg_config()
-    if not pkg_config then
+    local pkgconfig = find_pkgconfig()
+    if not pkgconfig then
         return
     end
 
@@ -50,7 +50,7 @@ function version(name, opt)
     end
 
     -- get version
-    local version = try { function() return os.iorunv(pkg_config, {"--modversion", name}) end }
+    local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}) end }
     if version then
         version = version:trim()
     end
@@ -73,8 +73,8 @@ end
 function variables(name, variables, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkg_config = find_pkg_config()
-    if not pkg_config then
+    local pkgconfig = find_pkgconfig()
+    if not pkgconfig then
         return
     end
 
@@ -92,7 +92,7 @@ function variables(name, variables, opt)
     local result = nil
     if variables then
         for _, variable in ipairs(table.wrap(variables)) do
-            local value = try { function () return os.iorunv(pkg_config, {"--variable=" .. variable, name}) end }
+            local value = try { function () return os.iorunv(pkgconfig, {"--variable=" .. variable, name}) end }
             if value ~= nil then
                 result = result or {}
                 result[variable] = value:trim()
@@ -118,15 +118,15 @@ end
 --
 -- @code
 --
--- local libinfo = pkg_config.libinfo("openssl")
+-- local libinfo = pkgconfig.libinfo("openssl")
 --
 -- @endcode
 --
 function libinfo(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkg_config = find_pkg_config()
-    if not pkg_config then
+    local pkgconfig = find_pkg_config()
+    if not pkgconfig then
         return
     end
 
@@ -142,7 +142,7 @@ function libinfo(name, opt)
 
     -- get libs and cflags
     local result = nil
-    local flags = try { function () return os.iorunv(pkg_config, {"--libs", "--cflags", name}) end }
+    local flags = try { function () return os.iorunv(pkgconfig, {"--libs", "--cflags", name}) end }
     if flags then
 
         -- init result
@@ -172,7 +172,7 @@ function libinfo(name, opt)
     end
 
     -- get version
-    local version = try { function() return os.iorunv(pkg_config, {"--modversion", name}) end }
+    local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}) end }
     if version then
         result = result or {}
         result.version = version:trim()

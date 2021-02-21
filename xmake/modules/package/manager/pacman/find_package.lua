@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
-import("package.manager.pkg_config.find_package", {alias = "find_package_from_pkgconfig"})
+import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- find package from the system directories
 --

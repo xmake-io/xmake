@@ -22,7 +22,7 @@
 import("lib.detect.find_tool")
 import("lib.detect.find_file")
 import("lib.detect.find_path")
-import("lib.detect.pkg_config")
+import("lib.detect.pkgconfig")
 import("core.project.target")
 import("package.manager.find_package")
 
@@ -79,13 +79,13 @@ function main(name, opt)
     end
     if pcfile then
         opt.configdirs = path.directory(pcfile)
-        result = find_package("pkg_config::" .. pcname, opt)
+        result = find_package("pkgconfig::" .. pcname, opt)
         if not result then
             -- attempt to get includedir variable from pkg-config/xx.pc
-            local varinfo = pkg_config.variables(pcname, "includedir", opt)
+            local varinfo = pkgconfig.variables(pcname, "includedir", opt)
             if varinfo and varinfo.includedir then
                 result = result or {}
-                result.version = pkg_config.version(pcname, opt)
+                result.version = pkgconfig.version(pcname, opt)
                 result.includedirs = varinfo.includedir
             end
         end

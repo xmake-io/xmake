@@ -27,6 +27,20 @@ import("private.action.require.impl.environment")
 import("private.action.require.impl.install_packages")
 import("private.action.require.impl.utils.get_requires")
 
+-- should install?
+function _should_install(instance)
+    if instance:parents() then
+        -- if all the packages that depend on it already exist, then there is no need to install it
+        for _, parent in ipairs(instance:parents()) do
+            if not parent:exists() then
+                return true
+            end
+        end
+    else
+        return not instance:exists()
+    end
+end
+
 -- check missing packages
 function _check_missing_packages(packages)
 
@@ -34,7 +48,7 @@ function _check_missing_packages(packages)
     local packages_missing = {}
     local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if not instance:exists() then
+        if _should_install(instance) then
             if instance:optional() then
                 optional_missing[instance:name()] = instance
             else

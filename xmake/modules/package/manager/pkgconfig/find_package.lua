@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("lib.detect.pkg_config")
+import("lib.detect.pkgconfig")
 import("lib.detect.find_library")
 import("package.manager.system.find_package", {alias = "find_package_from_system"})
 
@@ -34,10 +34,10 @@ function main(name, opt)
     opt = opt or {}
 
     -- get library info
-    local libinfo = pkg_config.libinfo(name, opt)
+    local libinfo = pkgconfig.libinfo(name, opt)
     if not libinfo and name:startswith("lib") then
         -- libxxx? attempt to find xxx without `lib` prefix
-        libinfo = pkg_config.libinfo(name:sub(4), opt)
+        libinfo = pkgconfig.libinfo(name:sub(4), opt)
     end
     if not libinfo then
         return

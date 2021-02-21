@@ -62,7 +62,7 @@ function _find_package_with_builtin_rule(package_name, opt)
             end
 
             -- find it from pkg-config
-            table.insert(managers, "pkg_config")
+            table.insert(managers, "pkgconfig")
 
             -- find it from system
             table.insert(managers, "system")

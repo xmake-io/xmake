@@ -198,6 +198,12 @@ function _instance:alias()
     end
 end
 
+-- get external package sources, e.g. pkgconfig::xxx, system::xxx, conan::xxx
+-- we can use it to improve self:fetch() for find_package
+function _instance:extsources()
+    return self:get("extsources")
+end
+
 -- get urls
 function _instance:urls()
     return self._URLS or table.wrap(self:get("urls"))
@@ -1063,11 +1069,18 @@ function _instance:fetch(opt)
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_tool(self:name(), {cachekey = "fetch_package_system",
-                                                      require_version = require_ver,
-                                                      force = opt.force})
-            if fetchinfo then
-                isSys = true
+            local fetchnames = {self:name()}
+            if not self:is3rd() then
+                table.join2(fetchnames, self:extsources())
+            end
+            for _, fetchname in ipairs(fetchnames) do
+                fetchinfo = self._find_tool(fetchname, {cachekey = "fetch_package_system",
+                                                        require_version = require_ver,
+                                                        force = opt.force})
+                if fetchinfo then
+                    isSys = true
+                    break
+                end
             end
         end
     else
@@ -1088,18 +1101,25 @@ function _instance:fetch(opt)
             end
         end
 
-        -- fetch it from the system directories
+        -- fetch it from the system and external package sources
         if not fetchinfo and system ~= false then
-            fetchinfo = self._find_package(self:name(), {force = opt.force,
-                                                         require_version = require_ver,
-                                                         mode = self:mode(),
-                                                         pkgconfigs = self:configs(),
-                                                         buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
-                                                         cachekey = "fetch_package_system",
-                                                         external = external,
-                                                         system = true})
-            if fetchinfo then
-                isSys = true
+            local fetchnames = {self:name()}
+            if not self:is3rd() then
+                table.join2(fetchnames, self:extsources())
+            end
+            for _, fetchname in ipairs(fetchnames) do
+                fetchinfo = self._find_package(fetchname, {force = opt.force,
+                                                           require_version = require_ver,
+                                                           mode = self:mode(),
+                                                           pkgconfigs = self:configs(),
+                                                           buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
+                                                           cachekey = "fetch_package_system",
+                                                           external = external,
+                                                           system = true})
+                if fetchinfo then
+                    isSys = true
+                    break
+                end
             end
         end
     end
@@ -1511,6 +1531,7 @@ function package.apis()
         ,   "package.add_urls"
         ,   "package.add_imports"
         ,   "package.add_configs"
+        ,   "package.add_extsources"
         }
     ,   script =
         {
