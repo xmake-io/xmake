@@ -22,11 +22,11 @@
 import("core.base.option")
 import("core.base.task")
 import("lib.detect.find_tool")
+import("private.action.require.impl.package")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
 import("private.action.require.impl.install_packages")
 import("private.action.require.impl.utils.get_requires")
-import("private.action.require.impl.utils.should_install")
 
 -- check missing packages
 function _check_missing_packages(packages)
@@ -35,7 +35,7 @@ function _check_missing_packages(packages)
     local packages_missing = {}
     local optional_missing = {}
     for _, instance in ipairs(packages) do
-        if should_install(instance) then
+        if package.should_install(instance) then
             if instance:optional() then
                 optional_missing[instance:name()] = instance
             else

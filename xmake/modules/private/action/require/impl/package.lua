@@ -578,6 +578,23 @@ function _load_package(packagename, requireinfo, opt)
     return package
 end
 
+-- this package should be install?
+function should_install(package)
+    if package:exists() then
+        return false
+    end
+    if package:parents() then
+        -- if all the packages that depend on it already exist, then there is no need to install it
+        for _, parent in pairs(package:parents()) do
+            if _should_install(parent) and not parent:exists() then
+                return true
+            end
+        end
+    else
+        return true
+    end
+end
+
 -- load all required packages
 function _load_packages(requires, opt)
 

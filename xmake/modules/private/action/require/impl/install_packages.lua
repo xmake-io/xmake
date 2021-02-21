@@ -31,7 +31,6 @@ import("actions.download", {alias = "action_download"})
 import("net.fasturl")
 import("private.action.require.impl.package")
 import("private.action.require.impl.register_packages")
-import("private.action.require.impl.utils.should_install")
 
 -- sort packages urls
 function _sort_packages_urls(packages)
@@ -438,7 +437,7 @@ function main(requires, opt)
     local packages_download = {}
     local packages_unsupported = {}
     for _, instance in ipairs(packages) do
-        if should_install(instance) then
+        if package.should_install(instance) then
             if instance:supported() then
                 if #instance:urls() > 0 then
                     packages_download[tostring(instance)] = instance
