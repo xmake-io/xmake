@@ -21,6 +21,9 @@
 
 -- should install?
 function _should_install(instance)
+    if instance:exists() then
+        return false
+    end
     if instance:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(instance:parents()) do
@@ -29,7 +32,7 @@ function _should_install(instance)
             end
         end
     else
-        return not instance:exists()
+        return true
     end
 end
 
