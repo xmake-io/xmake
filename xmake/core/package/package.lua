@@ -997,6 +997,102 @@ function _instance:script(name, generic)
     return result
 end
 
+-- do fetch tool
+function _instance:_fetch_tool(opt)
+    opt = opt or {}
+    local fetchinfo
+    local on_fetch = self:script("fetch")
+    if on_fetch then
+        fetchinfo = on_fetch(self, {force = opt.force,
+                                    system = opt.system,
+                                    require_version = opt.require_version})
+    end
+    if fetchinfo == nil then
+        self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
+        if opt.system then
+            local fetchnames = {self:name()}
+            if not self:is3rd() then
+                table.join2(fetchnames, self:extsources())
+            end
+            for _, fetchname in ipairs(fetchnames) do
+                fetchinfo = self._find_tool(fetchname, {cachekey = "fetch_package_system",
+                                                        require_version = opt.require_version,
+                                                        force = opt.force})
+                if fetchinfo then
+                    break
+                end
+            end
+        else
+            fetchinfo = self._find_tool(self:name(), {require_version = opt.require_version,
+                                                      cachekey = "fetch_package_xmake",
+                                                      buildhash = self:buildhash(),
+                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
+                                                      force = opt.force})
+
+            -- may be toolset, not single tool
+            if not fetchinfo then
+                fetchinfo = self:manifest_load()
+            end
+        end
+    end
+    return fetchinfo
+end
+
+-- do fetch library
+--
+-- @param opt   the options, e.g. {force, system, external, require_version}
+--
+function _instance:_fetch_library(opt)
+    opt = opt or {}
+    local fetchinfo
+    local on_fetch = self:script("fetch")
+    if on_fetch then
+        fetchinfo = on_fetch(self, {force = opt.force,
+                                    system = opt.system,
+                                    require_version = opt.require_version})
+        if fetchinfo then
+            -- convert includedirs to sysincludedirs if external headers are enabled
+            -- in order to simplify user configuration, in the package definition, we always use includedirs
+            if opt.external then
+                fetchinfo.sysincludedirs = fetchinfo.includedirs
+                fetchinfo.includedirs = nil
+            end
+        end
+    end
+    if fetchinfo == nil then
+        self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
+        if opt.system then
+            local fetchnames = {self:name()}
+            if not self:is3rd() then
+                table.join2(fetchnames, self:extsources())
+            end
+            for _, fetchname in ipairs(fetchnames) do
+                fetchinfo = self._find_package(fetchname, {
+                                               force = opt.force,
+                                               require_version = opt.require_version,
+                                               mode = self:mode(),
+                                               pkgconfigs = self:configs(),
+                                               buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
+                                               cachekey = "fetch_package_system",
+                                               external = opt.external,
+                                               system = true})
+                if fetchinfo then
+                    break
+                end
+            end
+        else
+            fetchinfo = self._find_package("xmake::" .. self:name(), {
+                                            require_version = opt.require_version,
+                                            cachekey = "fetch_package_xmake",
+                                            buildhash = self:buildhash(),
+                                            pkgconfigs = self:configs(),
+                                            external = opt.external,
+                                            force = opt.force})
+        end
+    end
+    return fetchinfo
+end
+
 -- fetch the local package info
 --
 -- @param opt   the fetch option, e.g. {force = true, external = false}
@@ -1047,21 +1143,9 @@ function _instance:fetch(opt)
     local isSys = nil
     if self:is_binary() then
 
-        -- import find_tool
-        self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
-
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_tool(self:name(), {require_version = self:version_str(),
-                                                      cachekey = "fetch_package_xmake",
-                                                      buildhash = self:buildhash(),
-                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
-                                                      force = opt.force})
-
-            -- may be toolset, not single tool
-            if not fetchinfo then
-                fetchinfo = self:manifest_load()
-            end
+            fetchinfo = self:_fetch_tool({require_version = self:version_str(), force = opt.force})
             if fetchinfo then
                 isSys = self._isSys
             end
@@ -1069,33 +1153,16 @@ function _instance:fetch(opt)
 
         -- fetch it from the system directories
         if not fetchinfo and system ~= false then
-            local fetchnames = {self:name()}
-            if not self:is3rd() then
-                table.join2(fetchnames, self:extsources())
-            end
-            for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self._find_tool(fetchname, {cachekey = "fetch_package_system",
-                                                        require_version = require_ver,
-                                                        force = opt.force})
-                if fetchinfo then
-                    isSys = true
-                    break
-                end
+            fetchinfo = self:_fetch_tool({system = true, require_version = require_ver, force = opt.force})
+            if fetchinfo then
+                isSys = true
             end
         end
     else
 
-        -- import find_package
-        self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
-
         -- only fetch it from the xmake repository first
         if not fetchinfo and system ~= true and not self:is3rd() then
-            fetchinfo = self._find_package("xmake::" .. self:name(), {require_version = self:version_str(),
-                                                                      cachekey = "fetch_package_xmake",
-                                                                      buildhash = self:buildhash(),
-                                                                      pkgconfigs = self:configs(),
-                                                                      external = external,
-                                                                      force = opt.force})
+            fetchinfo = self:_fetch_library({require_version = self:version_str(), external = external, force = opt.force})
             if fetchinfo then
                 isSys = self._isSys
             end
@@ -1103,23 +1170,9 @@ function _instance:fetch(opt)
 
         -- fetch it from the system and external package sources
         if not fetchinfo and system ~= false then
-            local fetchnames = {self:name()}
-            if not self:is3rd() then
-                table.join2(fetchnames, self:extsources())
-            end
-            for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self._find_package(fetchname, {force = opt.force,
-                                                           require_version = require_ver,
-                                                           mode = self:mode(),
-                                                           pkgconfigs = self:configs(),
-                                                           buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
-                                                           cachekey = "fetch_package_system",
-                                                           external = external,
-                                                           system = true})
-                if fetchinfo then
-                    isSys = true
-                    break
-                end
+            fetchinfo = self:_fetch_library({system = true, require_version = require_ver, external = external, force = opt.force})
+            if fetchinfo then
+                isSys = true
             end
         end
     end
@@ -1537,6 +1590,7 @@ function package.apis()
         {
             -- package.on_xxx
             "package.on_load"
+        ,   "package.on_fetch"
         ,   "package.on_install"
         ,   "package.on_test"
 
