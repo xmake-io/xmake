@@ -14,6 +14,7 @@
 * [#1181](https://github.com/xmake-io/xmake/issues/1181): Add `utils.platform.gnu2mslib(mslib, gnulib)` module api to convert mingw/xxx.dll.a to msvc xxx.lib
 * [#1246](https://github.com/xmake-io/xmake/issues/1246): Improve rules and generators to support commands list
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): Add `add_extsources` to improve find external packages
+* [#1241](https://github.com/xmake-io/xmake/issues/1241): Support add .manifest files for windows program
 
 ### Change
 
@@ -941,6 +942,7 @@
 * [#1181](https://github.com/xmake-io/xmake/issues/1181): 添加 `utils.platform.gnu2mslib(mslib, gnulib)` 模块接口去转换 mingw/xxx.dll.a 到 msvc xxx.lib
 * [#1246](https://github.com/xmake-io/xmake/issues/1246): 改进规则支持新的批处理命令去简化自定义规则实现
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): 添加 `add_extsources` 去改进外部包的查找
+* [#1241](https://github.com/xmake-io/xmake/issues/1241): 支持为 windows 程序添加 .manifest 文件参与链接
 
 ### 改进
 

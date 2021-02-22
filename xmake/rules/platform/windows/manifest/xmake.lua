@@ -19,6 +19,7 @@
 --
 
 -- add *.manifest for windows
+-- https://github.com/xmake-io/xmake/issues/1241
 rule("platform.windows.manifest")
     set_extensions(".manifest")
     before_build_file("windows", function (target, sourcefile)
