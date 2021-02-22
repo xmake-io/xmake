@@ -24,6 +24,7 @@
 * Improve vs/vsxmake plugins to support precompiled header and intellisense
 * [#1090](https://github.com/xmake-io/xmake/issues/1090): Simplify integration of custom code generators
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): Improve protobuf rule to support compile_commands generators
+* [#1249](https://github.com/xmake-io/xmake/issues/1249): Improve vs/vsxmake generator to support startproject
 
 ### Bugs fixed
 
@@ -952,6 +953,7 @@
 * 改进 vs/vsxmake 插件去支持预编译头文件和智能提示
 * [#1090](https://github.com/xmake-io/xmake/issues/1090): 简化自定义规则
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): 改进 protobuf 规则，支持 compile_commands 生成器
+* [#1249](https://github.com/xmake-io/xmake/issues/1249): 改进 vs/vsxmake 生成器去支持启动工程设置
 
 ### Bugs 修复
 
