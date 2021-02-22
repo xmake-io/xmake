@@ -58,16 +58,19 @@ function get(self, name)
 end
 
 -- make the strip flag
-function nf_strip(self, level)
+function nf_strip(self, level, target)
     -- @note we explicitly strip some useless code, because `/debug` may keep them
     -- @see https://github.com/xmake-io/xmake/issues/907
-    --
-    local maps =
-    {
-        debug = "/opt:ref /opt:icf"
-    ,   all   = "/opt:ref /opt:icf /ltcg" -- we enable /ltcg for optimize/smallest:/Gl
-    }
-    return maps[level]
+    if level == "all" then
+        -- we enable /ltcg for optimize/smallest:/Gl
+        local flags = {"/opt:ref", "/opt:icf"}
+        if target and target:get("optimize") == "smallest" then
+            table.insert(flags, "/ltcg")
+        end
+        return flags
+    elseif level == "debug" then
+        return {"/opt:ref", "/opt:icf"}
+    end
 end
 
 -- make the symbol flag
