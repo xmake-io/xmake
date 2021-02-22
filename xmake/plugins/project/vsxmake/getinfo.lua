@@ -438,7 +438,27 @@ function main(outputdir, vsinfo)
             target._deps[v] = targets[v]
         end
     end
-    vsinfo.targets = table.keys(targets)
+
+    -- we need set startup project for default or binary target
+    -- @see https://github.com/xmake-io/xmake/issues/1249
+    local targetnames = {}
+    for targetname, target in pairs(project.targets()) do
+        if not target:isphony() then
+            if target:get("default") == true then
+                table.insert(targetnames, 1, targetname)
+            elseif target:kind() == "binary" then
+                local first_target = targetnames[1] and project.target(targetnames[1])
+                if not first_target or first_target:get("default") ~= true then
+                    table.insert(targetnames, 1, targetname)
+                else
+                    table.insert(targetnames, targetname)
+                end
+            else
+                table.insert(targetnames, targetname)
+            end
+        end
+    end
+    vsinfo.targets = targetnames
     vsinfo._targets = targets
     return vsinfo
 end

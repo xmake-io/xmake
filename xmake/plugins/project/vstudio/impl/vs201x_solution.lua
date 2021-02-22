@@ -42,21 +42,39 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all targets
     local groups = {}
+    local targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
     for targetname, target in pairs(project.targets()) do
         if not target:isphony() then
-            slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
-            for _, dep in ipairs(target:get("deps")) do
-                slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
-                slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
-                slnfile:leave("EndProjectSection")
-            end
-            slnfile:leave("EndProject")
-            local group_path = target:get("group")
-            if group_path then
-                for _, group_name in ipairs(path.split(group_path)) do
-                    groups[group_name] = hash.uuid4(group_name)
+            -- we need set startup project for default or binary target
+            -- @see https://github.com/xmake-io/xmake/issues/1249
+            if target:get("default") == true then
+                table.insert(targets, 1, target)
+            elseif target:kind() == "binary" then
+                local first_target = targets[1]
+                if not first_target or first_target:get("default") ~= true then
+                    table.insert(targets, 1, target)
+                else
+                    table.insert(targets, target)
                 end
+            else
+                table.insert(targets, target)
+            end
+        end
+    end
+    for _, target in ipairs(targets) do
+        local targetname = target:name()
+        slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcxproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
+        for _, dep in ipairs(target:get("deps")) do
+            slnfile:enter("ProjectSection(ProjectDependencies) = postProject")
+            slnfile:print("{%s} = {%s}", hash.uuid4(dep), hash.uuid4(dep))
+            slnfile:leave("EndProjectSection")
+        end
+        slnfile:leave("EndProject")
+        local group_path = target:get("group")
+        if group_path then
+            for _, group_name in ipairs(path.split(group_path)) do
+                groups[group_name] = hash.uuid4(group_name)
             end
         end
     end
