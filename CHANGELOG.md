@@ -15,6 +15,7 @@
 * [#1246](https://github.com/xmake-io/xmake/issues/1246): Improve rules and generators to support commands list
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): Add `add_extsources` to improve find external packages
 * [#1241](https://github.com/xmake-io/xmake/issues/1241): Support add .manifest files for windows program
+* Support to use `xrepo remove --all` to remove all packages
 
 ### Change
 
@@ -944,6 +945,7 @@
 * [#1246](https://github.com/xmake-io/xmake/issues/1246): 改进规则支持新的批处理命令去简化自定义规则实现
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): 添加 `add_extsources` 去改进外部包的查找
 * [#1241](https://github.com/xmake-io/xmake/issues/1241): 支持为 windows 程序添加 .manifest 文件参与链接
+* 支持使用 `xrepo remove --all` 命令去移除所有的包，并且支持模式匹配
 
 ### 改进
 
