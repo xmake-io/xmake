@@ -22,52 +22,7 @@
 import("core.base.option")
 import("core.package.package")
 import("core.cache.localcache")
-
--- clear the unused or invalid package directories
-function _clear_packagedirs(packagedir)
-
-    -- clear them
-    local package_name = path.filename(packagedir)
-    for _, versiondir in ipairs(os.dirs(path.join(packagedir, "*"))) do
-        local version = path.filename(versiondir)
-        for _, hashdir in ipairs(os.dirs(path.join(versiondir, "*"))) do
-            local hash = path.filename(hashdir)
-            local references_file = path.join(hashdir, "references.txt")
-            local referenced = false
-            local references = os.isfile(references_file) and io.load(references_file) or nil
-            if references then
-                for projectdir, refdate in pairs(references) do
-                    if os.isdir(projectdir) then
-                        referenced = true
-                        break
-                    end
-                end
-            end
-            local manifest_file = path.join(hashdir, "manifest.txt")
-            local status = nil
-            if os.emptydir(hashdir) then
-                status = "empty"
-            elseif not referenced then
-                status = "unused"
-            elseif not os.isfile(manifest_file) then
-                status = "invalid"
-            end
-            if status then
-                local description = string.format("remove this ${magenta}%s-%s${clear}/${yellow}%s${clear} (${red}%s${clear})", package_name, version, hash, status)
-                local confirm = utils.confirm({default = true, description = description})
-                if confirm then
-                    os.rm(hashdir)
-                end
-            end
-        end
-        if os.emptydir(versiondir) then
-            os.rm(versiondir)
-        end
-    end
-    if os.emptydir(packagedir) then
-        os.rm(packagedir)
-    end
-end
+import("private.action.require.impl.remove_packages")
 
 -- clean the given or all package caches
 function main(package_names)
@@ -76,18 +31,7 @@ function main(package_names)
     print("clearing packages ..")
 
     -- clear all unused packages
-    local installdir = package.installdir()
-    if package_names then
-        for _, package_name in ipairs(package_names) do
-            for _, packagedir in ipairs(os.dirs(path.join(installdir, package_name:sub(1, 1), package_name))) do
-                _clear_packagedirs(packagedir)
-            end
-        end
-    else
-        for _, packagedir in ipairs(os.dirs(path.join(installdir, "*", "*"))) do
-            _clear_packagedirs(packagedir)
-        end
-    end
+    remove_packages(package_names, {clean = true})
 
     -- trace
     print("clearing caches ..")
