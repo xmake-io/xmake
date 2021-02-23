@@ -23,6 +23,27 @@ import("core.base.option")
 import("core.package.package")
 import("core.cache.localcache")
 
+-- get package configs string
+function _get_package_configs_str(manifest_file)
+    local manifest = os.isfile(manifest_file) and io.load(manifest_file)
+    if manifest then
+        local configs = {}
+        for k, v in pairs(manifest.configs) do
+            if type(v) == "boolean" then
+                table.insert(configs, k .. ":" .. (v and "y" or "n"))
+            else
+                table.insert(configs, k .. ":" .. v)
+            end
+        end
+        local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
+        local limitwidth = os.getwinsize().width * 2 / 3
+        if #configs_str > limitwidth then
+            configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+        end
+        return configs_str
+    end
+end
+
 -- remove package directories
 function _remove_packagedirs(packagedir, opt)
 
@@ -53,7 +74,8 @@ function _remove_packagedirs(packagedir, opt)
                 status = "invalid"
             end
             if not opt.clean or status then
-                local description = string.format("remove this ${magenta}%s-%s${clear}/${yellow}%s${clear} (${red}%s${clear})", package_name, version, hash, status and status or "used")
+                local configs_str = _get_package_configs_str(manifest_file) or "[]"
+                local description = string.format("remove ${magenta}%s-%s${clear}/${yellow}%s${clear}\n  -> ${dim}%s${clear} (${red}%s${clear})", package_name, version, hash, configs_str, status and status or "used")
                 local confirm = utils.confirm({default = true, description = description})
                 if confirm then
                     os.rm(hashdir)
