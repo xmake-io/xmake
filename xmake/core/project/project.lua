@@ -360,15 +360,6 @@ function project._load_target(t, requires)
         return false, errors
     end
 
-    -- load packages
-    t._PACKAGES = t._PACKAGES or {}
-    for _, packagename in ipairs(table.wrap(t:get("packages"))) do
-        local p = requires[packagename]
-        if p then
-            table.insert(t._PACKAGES, p)
-        end
-    end
-
     -- load toolchains
     local toolchains = t:get("toolchains")
     if toolchains then

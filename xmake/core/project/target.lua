@@ -30,6 +30,7 @@ local utils           = require("base/utils")
 local table           = require("base/table")
 local baseoption      = require("base/option")
 local deprecated      = require("base/deprecated")
+local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
 local config          = require("project/config")
@@ -47,12 +48,22 @@ local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
 function _instance.new(name, info, project)
-    local instance    = table.inherit(_instance)
-    instance._NAME    = name
-    instance._INFO    = info
-    instance._PROJECT = project
-    instance._CACHEID = 1
+    local instance     = table.inherit(_instance)
+    instance._NAME     = name
+    instance._INFO     = info
+    instance._PROJECT  = project
+    instance._CACHEID  = 1
     return instance
+end
+
+-- get memcache
+function _instance:_memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.project.target." .. self:name())
+        self._MEMCACHE = cache
+    end
+    return cache
 end
 
 -- load rule, move cache to target
@@ -321,24 +332,26 @@ function _instance:get_from_deps(name, opt)
         local depinherit = self:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, opt))
+            table.join2(values, dep:get_from_opts(name, opt))
+            table.join2(values, dep:get_from_pkgs(name, opt))
         end
     end
     return values
 end
 
--- get values from target options
-function _instance:get_from_opts(name)
+-- get values from target options with {interface|public = ...}
+function _instance:get_from_opts(name, opt)
     local values = {}
-    for _, opt in ipairs(self:orderopts()) do
-        table.join2(values, table.wrap(opt:get(name)))
+    for _, opt_ in ipairs(self:orderopts(opt)) do
+        table.join2(values, table.wrap(opt_:get(name)))
     end
     return values
 end
 
--- get values from target packages
-function _instance:get_from_pkgs(name)
+-- get values from target packages with {interface|public = ...}
+function _instance:get_from_pkgs(name, opt)
     local values = {}
-    for _, pkg in ipairs(self:orderpkgs()) do
+    for _, pkg in ipairs(self:orderpkgs(opt)) do
         -- uses them instead of the builtin configs if exists extra package config
         -- e.g. `add_packages("xxx", {links = "xxx"})`
         local configinfo = self:pkgconfig(pkg:name())
@@ -659,37 +672,41 @@ function _instance:opts()
     return self._OPTS_ENABLED
 end
 
--- get the enabled ordered options
-function _instance:orderopts()
-
-    -- attempt to get it from cache first
-    if self._ORDEROPTS_ENABLED then
-        return self._ORDEROPTS_ENABLED
+-- get the enabled ordered options with {public|interface = ...}
+function _instance:orderopts(opt)
+    opt = opt or {}
+    local cachekey = "orderopts"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
+    local orderopts = self:_memcache():get(cachekey)
+    if not orderopts then
 
-    -- load options if be enabled
-    self._ORDEROPTS_ENABLED = {}
-    for _, name in ipairs(table.wrap(self:get("options"))) do
-        local opt = nil
-        if config.get(name) then opt = option.load(name) end
-        if opt then
-            table.insert(self._ORDEROPTS_ENABLED, opt)
-        end
-    end
-
-    -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-    for _, name in ipairs(table.wrap(self:get("packages"))) do
-        if not project_package.load(name) then
-            local opt = nil
-            if config.get(name) then opt = option.load(name) end
-            if opt then
-                table.insert(self._ORDEROPTS_ENABLED, opt)
+        -- load options if be enabled
+        orderopts = {}
+        for _, name in ipairs(table.wrap(self:get("options"))) do
+            local opt_ = nil
+            if config.get(name) then opt_ = option.load(name) end
+            if opt_ then
+                table.insert(orderopts, opt_)
             end
         end
-    end
 
-    -- get it
-    return self._ORDEROPTS_ENABLED
+        -- load options from packages if no require info, be compatible with the option package in (*.pkg)
+        for _, name in ipairs(table.wrap(self:get("packages"))) do
+            if not project_package.load(name) then
+                local opt_ = nil
+                if config.get(name) then opt_ = option.load(name) end
+                if opt_ then
+                    table.insert(orderopts, opt_)
+                end
+            end
+        end
+        self:_memcache():set(cachekey, orderopts)
+    end
+    return orderopts
 end
 
 -- get the enabled package
@@ -713,20 +730,30 @@ function _instance:pkgs()
     return self._PKGS_ENABLED
 end
 
--- get the required packages
-function _instance:orderpkgs()
-    if not self._ORDERPKGS_ENABLED then
-        local packages = {}
-        if self._PACKAGES then
-            for _, pkg in ipairs(self._PACKAGES) do
-                if pkg:enabled() then
+-- get the required packages with {interface|public = ..}
+function _instance:orderpkgs(opt)
+    opt = opt or {}
+    local cachekey = "orderpkgs"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
+    end
+    local packages = self:_memcache():get(cachekey)
+    if not packages then
+        packages = {}
+        local requires = self._PROJECT.required_packages()
+        if requires then
+            for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
+                local pkg = requires[packagename]
+                if pkg and pkg:enabled() then
                     table.insert(packages, pkg)
                 end
             end
         end
-        self._ORDERPKGS_ENABLED = packages
+        self:_memcache():set(cachekey, packages)
     end
-    return self._ORDERPKGS_ENABLED
+    return packages
 end
 
 -- get the environments of packages

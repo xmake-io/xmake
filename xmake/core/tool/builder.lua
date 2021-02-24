@@ -280,7 +280,7 @@ function builder:_add_flags_from_language(flags, target, getters)
                             local results = {}
                             if target:type() == "target" then
 
-                                -- get flagvalues (public or interface) of all dependent targets
+                                -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
                                 table.join2(results, target:get_from_deps(name, {interface = true}))
 
                                 -- get flagvalues of target with given flagname
@@ -372,9 +372,10 @@ function builder:_preprocess_flags(flags)
         local flags_new = {}
         for idx = count, 1, -1 do
             local flag = flags[idx]
-            if flag and not unique[flag] then
+            local flagkey = type(flag) == "table" and table.concat(flag, "") or flag
+            if flag and not unique[flagkey] then
                 table.insert(flags_new, flag)
-                unique[flag] = true
+                unique[flagkey] = true
             end
         end
         flags = flags_new
