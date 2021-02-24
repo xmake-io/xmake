@@ -364,25 +364,42 @@ end
 -- preprocess flags
 function builder:_preprocess_flags(flags)
 
-    -- remove repeat first and split flags group, e.g. "-I /xxx" => {"-I", "/xxx"}
+    -- remove repeat by right direction, because we need consider links/deps order
+    -- @note https://github.com/xmake-io/xmake/issues/1240
     local unique = {}
-    local results = {}
-    for _, flag in ipairs(flags) do
-        if type(flag) == "string" then
-            flag = flag:trim()
-            if #flag > 0 and not unique[flag] then
-                if flag:find(" ", 1, true) then
-                    table.join2(results, os.argv(flag, {splitonly = true}))
-                else
-                    table.insert(results, flag)
-                end
+    local count = #flags
+    if count > 1 then
+        local flags_new = {}
+        for idx = count, 1, -1 do
+            local flag = flags[idx]
+            if flag and not unique[flag] then
+                table.insert(flags_new, flag)
                 unique[flag] = true
             end
-        else
-            -- may be a table group? e.g. {"-I", "/xxx"}
-            if #flag > 0 and not unique[flag] then
-                table.join2(results, flag)
-                unique[flag] = true
+        end
+        flags = flags_new
+        count = #flags_new
+    end
+
+    -- remove repeat first and split flags group, e.g. "-I /xxx" => {"-I", "/xxx"}
+    local results = {}
+    if count > 0 then
+        for idx = count, 1, -1 do
+            local flag = flags[idx]
+            if type(flag) == "string" then
+                flag = flag:trim()
+                if #flag > 0 then
+                    if flag:find(" ", 1, true) then
+                        table.join2(results, os.argv(flag, {splitonly = true}))
+                    else
+                        table.insert(results, flag)
+                    end
+                end
+            else
+                -- may be a table group? e.g. {"-I", "/xxx"}
+                if #flag > 0 then
+                    table.join2(results, flag)
+                end
             end
         end
     end
