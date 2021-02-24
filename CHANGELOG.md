@@ -16,6 +16,7 @@
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): Add `add_extsources` to improve find external packages
 * [#1241](https://github.com/xmake-io/xmake/issues/1241): Support add .manifest files for windows program
 * Support to use `xrepo remove --all` to remove all packages
+* [#1254](https://github.com/xmake-io/xmake/issues/1254): Support to export packages to parent target
 
 ### Change
 
@@ -946,6 +947,7 @@
 * [#1239](https://github.com/xmake-io/xmake/issues/1239): 添加 `add_extsources` 去改进外部包的查找
 * [#1241](https://github.com/xmake-io/xmake/issues/1241): 支持为 windows 程序添加 .manifest 文件参与链接
 * 支持使用 `xrepo remove --all` 命令去移除所有的包，并且支持模式匹配
+* [#1254](https://github.com/xmake-io/xmake/issues/1254): 支持导出包配置给父 target，实现包配置的依赖继承
 
 ### 改进
 
