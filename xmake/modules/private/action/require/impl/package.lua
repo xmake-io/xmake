@@ -196,9 +196,13 @@ end
 --
 function _sort_packagedeps(package)
     local orderdeps = {}
-    for _, dep in pairs(package:deps()) do
-        table.join2(orderdeps, _sort_packagedeps(dep))
-        table.insert(orderdeps, dep)
+    local deps = package:deps()
+    if deps then
+        for _, depname in ipairs(table.orderkeys(deps)) do
+            local dep = deps[depname]
+            table.join2(orderdeps, _sort_packagedeps(dep))
+            table.insert(orderdeps, dep)
+        end
     end
     return orderdeps
 end

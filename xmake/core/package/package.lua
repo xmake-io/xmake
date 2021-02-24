@@ -838,9 +838,9 @@ function _instance:buildhash()
                     end
                 end
                 if not sourcehashs:empty() then
-                    for _, sourcehash in sourcehashs:keys() do
-                        str = str .. "_" .. sourcehash
-                    end
+                    local hashs = sourcehashs:to_array()
+                    table.sort(hashs)
+                    str = str .. "_" .. table.concat(hashs, "_")
                 end
             end
             return hash.uuid4(str):gsub('-', ''):lower()
