@@ -726,7 +726,7 @@ function _instance:orderpkgs(opt)
     if requires then
         for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
             local pkg = requires[packagename]
-            if pkg:enabled() then
+            if pkg and pkg:enabled() then
                 table.insert(packages, pkg)
             end
         end
