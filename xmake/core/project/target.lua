@@ -30,6 +30,7 @@ local utils           = require("base/utils")
 local table           = require("base/table")
 local baseoption      = require("base/option")
 local deprecated      = require("base/deprecated")
+local memcache        = require("cache/memcache")
 local rule            = require("project/rule")
 local option          = require("project/option")
 local config          = require("project/config")
@@ -47,12 +48,22 @@ local sandbox_module  = require("sandbox/modules/import/core/sandbox/module")
 
 -- new a target instance
 function _instance.new(name, info, project)
-    local instance    = table.inherit(_instance)
-    instance._NAME    = name
-    instance._INFO    = info
-    instance._PROJECT = project
-    instance._CACHEID = 1
+    local instance     = table.inherit(_instance)
+    instance._NAME     = name
+    instance._INFO     = info
+    instance._PROJECT  = project
+    instance._CACHEID  = 1
     return instance
+end
+
+-- get memcache
+function _instance:_memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.project.target." .. self:name())
+        self._MEMCACHE = cache
+    end
+    return cache
 end
 
 -- load rule, move cache to target
@@ -663,34 +674,37 @@ end
 
 -- get the enabled ordered options with {public|interface = ...}
 function _instance:orderopts(opt)
-    if not opt and self._ORDEROPTS then
-        return self._ORDEROPTS
+    opt = opt or {}
+    local cachekey = "orderopts"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
+    local orderopts = self:_memcache():get(cachekey)
+    if not orderopts then
 
-    -- load options if be enabled
-    local orderopts = {}
-    for _, name in ipairs(table.wrap(self:get("options"))) do
-        local opt_ = nil
-        if config.get(name) then opt_ = option.load(name) end
-        if opt_ then
-            table.insert(orderopts, opt_)
-        end
-    end
-
-    -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-    for _, name in ipairs(table.wrap(self:get("packages"))) do
-        if not project_package.load(name) then
+        -- load options if be enabled
+        orderopts = {}
+        for _, name in ipairs(table.wrap(self:get("options"))) do
             local opt_ = nil
             if config.get(name) then opt_ = option.load(name) end
             if opt_ then
                 table.insert(orderopts, opt_)
             end
         end
-    end
 
-    -- we only cache internal packages list
-    if not opt then
-        self._ORDEROPTS = orderopts
+        -- load options from packages if no require info, be compatible with the option package in (*.pkg)
+        for _, name in ipairs(table.wrap(self:get("packages"))) do
+            if not project_package.load(name) then
+                local opt_ = nil
+                if config.get(name) then opt_ = option.load(name) end
+                if opt_ then
+                    table.insert(orderopts, opt_)
+                end
+            end
+        end
+        self:_memcache():set(cachekey, orderopts)
     end
     return orderopts
 end
@@ -718,22 +732,26 @@ end
 
 -- get the required packages with {interface|public = ..}
 function _instance:orderpkgs(opt)
-    if not opt and self._ORDERPKGS then
-        return self._ORDERPKGS
+    opt = opt or {}
+    local cachekey = "orderpkgs"
+    if opt.public then
+        cachekey = cachekey .. "_public"
+    elseif opt.interface then
+        cachekey = cachekey .. "_interface"
     end
-    local packages = {}
-    local requires = self._PROJECT.required_packages()
-    if requires then
-        for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
-            local pkg = requires[packagename]
-            if pkg and pkg:enabled() then
-                table.insert(packages, pkg)
+    local packages = self:_memcache():get(cachekey)
+    if not packages then
+        packages = {}
+        local requires = self._PROJECT.required_packages()
+        if requires then
+            for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
+                local pkg = requires[packagename]
+                if pkg and pkg:enabled() then
+                    table.insert(packages, pkg)
+                end
             end
         end
-    end
-    -- we only cache internal packages list
-    if not opt then
-        self._ORDERPKGS = packages
+        self:_memcache():set(cachekey, packages)
     end
     return packages
 end
