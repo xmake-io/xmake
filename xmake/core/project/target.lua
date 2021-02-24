@@ -321,24 +321,26 @@ function _instance:get_from_deps(name, opt)
         local depinherit = self:extraconf("deps", dep:name(), "inherit")
         if depinherit == nil or depinherit then
             table.join2(values, dep:get(name, opt))
+            table.join2(values, dep:get_from_opts(name, opt))
+            table.join2(values, dep:get_from_pkgs(name, opt))
         end
     end
     return values
 end
 
--- get values from target options
-function _instance:get_from_opts(name)
+-- get values from target options with {interface|public = ...}
+function _instance:get_from_opts(name, opt)
     local values = {}
-    for _, opt in ipairs(self:orderopts()) do
-        table.join2(values, table.wrap(opt:get(name)))
+    for _, opt_ in ipairs(self:orderopts(opt)) do
+        table.join2(values, table.wrap(opt_:get(name)))
     end
     return values
 end
 
--- get values from target packages
-function _instance:get_from_pkgs(name)
+-- get values from target packages with {interface|public = ...}
+function _instance:get_from_pkgs(name, opt)
     local values = {}
-    for _, pkg in ipairs(self:orderpkgs()) do
+    for _, pkg in ipairs(self:orderpkgs(opt)) do
         -- uses them instead of the builtin configs if exists extra package config
         -- e.g. `add_packages("xxx", {links = "xxx"})`
         local configinfo = self:pkgconfig(pkg:name())
@@ -659,37 +661,38 @@ function _instance:opts()
     return self._OPTS_ENABLED
 end
 
--- get the enabled ordered options
-function _instance:orderopts()
-
-    -- attempt to get it from cache first
-    if self._ORDEROPTS_ENABLED then
-        return self._ORDEROPTS_ENABLED
+-- get the enabled ordered options with {public|interface = ...}
+function _instance:orderopts(opt)
+    if not opt and self._ORDEROPTS then
+        return self._ORDEROPTS
     end
 
     -- load options if be enabled
-    self._ORDEROPTS_ENABLED = {}
+    local orderopts = {}
     for _, name in ipairs(table.wrap(self:get("options"))) do
-        local opt = nil
-        if config.get(name) then opt = option.load(name) end
-        if opt then
-            table.insert(self._ORDEROPTS_ENABLED, opt)
+        local opt_ = nil
+        if config.get(name) then opt_ = option.load(name) end
+        if opt_ then
+            table.insert(orderopts, opt_)
         end
     end
 
     -- load options from packages if no require info, be compatible with the option package in (*.pkg)
     for _, name in ipairs(table.wrap(self:get("packages"))) do
         if not project_package.load(name) then
-            local opt = nil
-            if config.get(name) then opt = option.load(name) end
-            if opt then
-                table.insert(self._ORDEROPTS_ENABLED, opt)
+            local opt_ = nil
+            if config.get(name) then opt_ = option.load(name) end
+            if opt_ then
+                table.insert(orderopts, opt_)
             end
         end
     end
 
-    -- get it
-    return self._ORDEROPTS_ENABLED
+    -- we only cache internal packages list
+    if not opt then
+        self._ORDEROPTS = orderopts
+    end
+    return orderopts
 end
 
 -- get the enabled package
@@ -713,20 +716,26 @@ function _instance:pkgs()
     return self._PKGS_ENABLED
 end
 
--- get the required packages
-function _instance:orderpkgs()
-    if not self._ORDERPKGS_ENABLED then
-        local packages = {}
-        if self._PACKAGES then
-            for _, pkg in ipairs(self._PACKAGES) do
-                if pkg:enabled() then
-                    table.insert(packages, pkg)
-                end
+-- get the required packages with {interface|public = ..}
+function _instance:orderpkgs(opt)
+    if not opt and self._ORDERPKGS then
+        return self._ORDERPKGS
+    end
+    local packages = {}
+    local requires = self._PROJECT.required_packages()
+    if requires then
+        for _, packagename in ipairs(table.wrap(self:get("packages", opt))) do
+            local pkg = requires[packagename]
+            if pkg:enabled() then
+                table.insert(packages, pkg)
             end
         end
-        self._ORDERPKGS_ENABLED = packages
     end
-    return self._ORDERPKGS_ENABLED
+    -- we only cache internal packages list
+    if not opt then
+        self._ORDERPKGS = packages
+    end
+    return packages
 end
 
 -- get the environments of packages

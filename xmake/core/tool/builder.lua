@@ -280,7 +280,7 @@ function builder:_add_flags_from_language(flags, target, getters)
                             local results = {}
                             if target:type() == "target" then
 
-                                -- get flagvalues (public or interface) of all dependent targets
+                                -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
                                 table.join2(results, target:get_from_deps(name, {interface = true}))
 
                                 -- get flagvalues of target with given flagname

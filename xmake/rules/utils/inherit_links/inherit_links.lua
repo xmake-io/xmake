@@ -51,6 +51,8 @@ function main(target)
             -- we need add includedirs to support import modules for golang
             target:add("includedirs", path.directory(targetfile), {interface = true})
         end
+
+        -- we export all links and linkdirs in self/packages/options to the parent target by default
         for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
             local values = _get_values_from_target(target, name)
             if values and #values > 0 then
