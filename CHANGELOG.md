@@ -27,6 +27,7 @@
 * [#1090](https://github.com/xmake-io/xmake/issues/1090): Simplify integration of custom code generators
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): Improve protobuf rule to support compile_commands generators
 * [#1249](https://github.com/xmake-io/xmake/issues/1249): Improve vs/vsxmake generator to support startproject
+* [#605](https://github.com/xmake-io/xmake/issues/605): Improve to link orders for add_deps/add_packages
 
 ### Bugs fixed
 
@@ -958,6 +959,7 @@
 * [#1090](https://github.com/xmake-io/xmake/issues/1090): 简化自定义规则
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): 改进 protobuf 规则，支持 compile_commands 生成器
 * [#1249](https://github.com/xmake-io/xmake/issues/1249): 改进 vs/vsxmake 生成器去支持启动工程设置
+* [#605](https://github.com/xmake-io/xmake/issues/605): 改进 add_deps 和 add_packages 直接的导出 links 顺序
 
 ### Bugs 修复
 
