@@ -70,17 +70,13 @@ language("fortran")
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
-        ,   "option.rpathdirs"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "option.links"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
-        ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   shared =
@@ -89,15 +85,12 @@ language("fortran")
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
         ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "option.links"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
-        ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   static =

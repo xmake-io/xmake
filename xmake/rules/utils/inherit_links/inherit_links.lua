@@ -53,10 +53,16 @@ function main(target)
         end
 
         -- we export all links and linkdirs in self/packages/options to the parent target by default
-        for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
-            local values = _get_values_from_target(target, name)
-            if values and #values > 0 then
-                target:add(name, values, {public = true})
+        --
+        -- @note we only export links for static target,
+        -- and we need pass `{public = true}` to add_packages/add_links/... to export it if want to export links for shared target
+        --
+        if targetkind == "static" then
+            for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
+                local values = _get_values_from_target(target, name)
+                if values and #values > 0 then
+                    target:add(name, values, {public = true})
+                end
             end
         end
     end
