@@ -28,6 +28,7 @@
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): Improve protobuf rule to support compile_commands generators
 * [#1249](https://github.com/xmake-io/xmake/issues/1249): Improve vs/vsxmake generator to support startproject
 * [#605](https://github.com/xmake-io/xmake/issues/605): Improve to link orders for add_deps/add_packages
+* Remove deprecated `add_defines_h_if_ok` and `add_defines_h` apis for option
 
 ### Bugs fixed
 
@@ -960,6 +961,7 @@
 * [#1065](https://github.com/xmake-io/xmake/issues/1065): 改进 protobuf 规则，支持 compile_commands 生成器
 * [#1249](https://github.com/xmake-io/xmake/issues/1249): 改进 vs/vsxmake 生成器去支持启动工程设置
 * [#605](https://github.com/xmake-io/xmake/issues/605): 改进 add_deps 和 add_packages 直接的导出 links 顺序
+* 移除废弃的 `add_defines_h_if_ok` and `add_defines_h` 接口
 
 ### Bugs 修复
 

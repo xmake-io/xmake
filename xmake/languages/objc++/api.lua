@@ -37,8 +37,6 @@ function apis()
     ,   "target.add_shflags"
     ,   "target.add_defines"
     ,   "target.add_undefines"
-    ,   "target.add_defines_h"
-    ,   "target.add_undefines_h"
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
@@ -57,11 +55,7 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_defines"
-    ,   "option.add_defines_if_ok"
-    ,   "option.add_defines_h_if_ok"
     ,   "option.add_undefines"
-    ,   "option.add_undefines_if_ok"
-    ,   "option.add_undefines_h_if_ok"
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
         -- toolchain.add_xxx

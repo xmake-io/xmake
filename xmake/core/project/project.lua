@@ -560,20 +560,8 @@ function project._load_options(disable_filter)
     -- check options
     local options = {}
     for optionname, optioninfo in pairs(results) do
-
-        -- init an option instance
         local instance = option.new(optionname, optioninfo)
-
-        -- save it
         options[optionname] = instance
-
-        -- mark add_defines_h_if_ok and add_undefines_h_if_ok as deprecated
-        if instance:get("defines_h_if_ok") then
-            deprecated.add("add_defines_h(\"%s\")", "add_defines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("defines_h_if_ok")), "\", \""))
-        end
-        if instance:get("undefines_h_if_ok") then
-            deprecated.add("add_undefines_h(\"%s\")", "add_undefines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("undefines_h_if_ok")), "\", \""))
-        end
     end
 
     -- load and attach options deps

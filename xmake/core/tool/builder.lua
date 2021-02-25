@@ -308,16 +308,7 @@ function builder:_add_flags_from_language(flags, target, getters)
         if getter then
 
             -- get api name of tool
-            --
-            -- ignore "nf_" and "_if_ok" (deprecated)
-            --
-            -- e.g.
-            --
-            -- defines => define
-            -- defines_if_ok => define
-            -- ...
-            --
-            local apiname  = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
+            local apiname  = flagname:gsub("^nf_", "")
 
             -- use multiple values mapper if be defined in tool module
             local multival = false

@@ -80,7 +80,6 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cincludes", includes) end
-    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -134,7 +133,6 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cxxfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cxxincludes", includes) end
-    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -172,8 +170,6 @@ function apis()
     ,   "target.add_shflags"
     ,   "target.add_defines"
     ,   "target.add_undefines"
-    ,   "target.add_defines_h"
-    ,   "target.add_undefines_h"
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
@@ -192,13 +188,7 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_defines"
-    ,   "option.add_defines_h"        -- TODO deprecated
-    ,   "option.add_defines_if_ok"    -- TODO deprecated
-    ,   "option.add_defines_h_if_ok"  -- TODO deprecated
     ,   "option.add_undefines"
-    ,   "option.add_undefines_h"      -- TODO deprecated
-    ,   "option.add_undefines_if_ok"  -- TODO deprecated
-    ,   "option.add_undefines_h_if_ok"-- TODO deprecated
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
         -- package.add_xxx

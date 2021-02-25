@@ -170,42 +170,6 @@ function deprecated_project._api_target_add_headerdirs(interp)
                                         end)
 end
 
--- add_defines_h for target
-function deprecated_project._api_target_add_defines_h(interp)
-
-    -- get api function
-    local apifunc = interp:_api_within_scope("target", "add_defines_h")
-    assert(apifunc)
-
-    -- register api
-    interp:_api_within_scope_set("target", "add_defines_h", function (value, ...)
-
-                                            -- deprecated
-                                            deprecated.add("add_configfiles() and set_configvar(%s)", "add_defines_h(%s)", tostring(value))
-
-                                            -- dispatch it
-                                            apifunc(value, ...)
-                                        end)
-end
-
--- add_defines_h for option
-function deprecated_project._api_option_add_defines_h(interp)
-
-    -- get api function
-    local apifunc = interp:_api_within_scope("option", "add_defines_h")
-    assert(apifunc)
-
-    -- register api
-    interp:_api_within_scope_set("option", "add_defines_h", function (value, ...)
-
-                                            -- deprecated
-                                            deprecated.add("add_configfiles() and set_configvar(%s)", "add_defines_h(%s)", tostring(value))
-
-                                            -- dispatch it
-                                            apifunc(value, ...)
-                                        end)
-end
-
 -- set_config_header for target
 function deprecated_project._api_target_set_config_header(interp)
 
@@ -341,9 +305,7 @@ function deprecated_project.api_register(interp)
     deprecated_project._api_target_add_headers(interp)
     deprecated_project._api_target_add_headerdirs(interp)
 
-    -- register api: add_defines_h()/set_config_header() to option/target
-    deprecated_project._api_option_add_defines_h(interp)
-    deprecated_project._api_target_add_defines_h(interp)
+    -- register api: set_config_header() to option/target
     deprecated_project._api_target_set_config_header(interp)
 
     -- register api: set_headerdir() to target
