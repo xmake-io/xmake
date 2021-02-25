@@ -65,8 +65,6 @@ language("rust")
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
-        ,   "option.rpathdirs"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         }
@@ -76,7 +74,6 @@ language("rust")
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
         ,   "toolchain.linkdirs"
         }
     ,   static =

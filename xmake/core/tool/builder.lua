@@ -275,28 +275,19 @@ function builder:_add_flags_from_language(flags, target, getters)
                             end
                         end
     ,   target      =   function (name)
-
-                            -- only for target
                             local results = {}
                             if target:type() == "target" then
+
+                                -- get flagvalues of target with given flagname
+                                table.join2(results, target:get(name))
+
+                                -- get flagvalues of the attached options and packages
+                                table.join2(results, target:get_from_opts(name))
+                                table.join2(results, target:get_from_pkgs(name))
 
                                 -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
                                 table.join2(results, target:get_from_deps(name, {interface = true}))
 
-                                -- get flagvalues of target with given flagname
-                                table.join2(results, target:get(name))
-                            end
-                            return results
-                        end
-    ,   option      =   function (name)
-
-                            -- is target? get flagvalues of the attached options and packages
-                            local results = {}
-                            if target:type() == "target" then
-                                table.join2(results, target:get_from_opts(name))
-                                table.join2(results, target:get_from_pkgs(name))
-
-                            -- is option? get flagvalues of option with given flagname
                             elseif target:type() == "option" then
                                 table.join2(results, target:get(name))
                             end
