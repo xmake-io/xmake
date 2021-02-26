@@ -256,6 +256,7 @@ muslcc        The musl-based cross-compilation toolchains
 * REPL 交互式执行支持
 * 增量编译支持，头文件依赖自动分析
 * 工具链的快速切换、定制化支持
+* 自动拉取工具链以及依赖包的快速整合
 
 ## 工程类型
 
@@ -374,6 +375,56 @@ target("loop")
     add_files("src/*.cpp")
     add_rules("c++.openmp")
     add_packages("libomp")
+```
+
+#### Zig 程序
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.zig")
+```
+
+### 自动拉取远程工具链
+
+#### 拉取指定版本的 llvm 工具链
+
+我们使用 llvm-10 中的 clang 来编译项目。
+
+```lua
+add_requires("llvm 10.x", {alias = "llvm-10"})
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("llvm@llvm-10")
+````
+
+#### 拉取交叉编译工具链
+
+我们也可以拉取指定的交叉编译工具链来编译项目。
+
+```lua
+add_requires("muslcc")
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("@muslcc")
+```
+
+#### 拉取工具链并且集成对应工具链编译的依赖包
+
+我们也可以使用指定的muslcc交叉编译工具链去编译和集成所有的依赖包。
+
+```lua
+add_requires("muslcc")
+add_requires("zlib", "libogg", {system = false})
+
+set_toolchains("@muslcc")
+
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("zlib", "libogg")
 ```
 
 ## 插件

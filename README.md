@@ -248,6 +248,7 @@ muslcc        The musl-based cross-compilation toolchains
 * REPL interactive execution support
 * Incremental compilation support, automatic analysis of header dependency files
 * Fast switching toolchains
+* Automatic pull toolchain and dependency package integration
 
 ## Supported Projects
 
@@ -366,6 +367,56 @@ target("loop")
     add_files("src/*.cpp")
     add_rules("c++.openmp")
     add_packages("libomp")
+```
+
+#### Zig Program
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/*.zig")
+```
+
+### Automatically fetch remote toolchain
+
+#### fetch the special version of llvm
+
+We use clang in llvm-10 to compile the project.
+
+```lua
+add_requires("llvm 10.x", {alias = "llvm-10"})
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("llvm@llvm-10")
+````
+
+#### Fetch cross-compilation toolchain
+
+We can also pull the specified cross-compilation tool chain to compile the project.
+
+```lua
+add_requires("muslcc")
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("@muslcc")
+```
+
+#### Fetch toolchain and packages
+
+We can also use the specified muslcc cross-compilation toolchain to compile and integrate all dependent packages
+
+```lua
+add_requires("muslcc")
+add_requires("zlib", "libogg", {system = false})
+
+set_toolchains("@muslcc")
+
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("zlib", "libogg")
 ```
 
 ## Plugins
