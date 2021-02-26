@@ -228,6 +228,8 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "x64")
         end
     end
+    -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
+    -- @see https://github.com/xmake-io/xmake-repo/pull/303
     local vs_runtime = package:config("vs_runtime")
     if vs_runtime == "MT" then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
