@@ -93,6 +93,11 @@ function _find_package(manager_name, package_name, opt)
         -- trace
         dprint("finding %s from %s ..", package_name, manager_name)
 
+        -- TODO compatible with the previous version: pkg_config (deprecated)
+        if manager_name == "pkg_config" then
+            manager_name = "pkgconfig"
+        end
+
         -- find it
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)
     else
