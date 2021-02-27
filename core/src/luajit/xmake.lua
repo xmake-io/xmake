@@ -2,9 +2,11 @@
 local jit = true
 local plat = "$(plat)"
 local arch = "$(arch)"
-if is_plat("msys", "cygwin") then
+if is_plat("msys", "mingw", "cygwin") then
     plat = "windows"
     arch = is_arch("x86_64") and "x64" or "x86"
+elseif is_plat("android") then
+    plat = "linux"
 end
 if is_arch("arm64", "arm64-v8a") then
     arch = "arm64"
@@ -44,7 +46,7 @@ target("luajit")
     add_files("luajit/src/*.c|ljamalg.c|luajit.c")
     if is_plat("windows") then
         add_files(autogendir .. "/lj_vm.obj")
-    elseif is_plat("msys", "cygwin") then
+    elseif is_plat("msys", "cygwin", "mingw") then
         add_files(autogendir .. "/lj_vm.o")
     else
         add_files(autogendir .. "/*.S")
