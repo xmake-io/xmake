@@ -96,6 +96,7 @@ function _find_package(manager_name, package_name, opt)
         -- TODO compatible with the previous version: pkg_config (deprecated)
         if manager_name == "pkg_config" then
             manager_name = "pkgconfig"
+            wprint("please use find_package(\"pkgconfig::%s\") instead of `pkg_config::%s`", package_name, package_name)
         end
 
         -- find it

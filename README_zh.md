@@ -46,7 +46,8 @@
     </a>
   </div>
 
-  <p>A cross-platform build utility based on Lua</p>
+  <b>A cross-platform build utility based on Lua</b><br/>
+  <i>Modern C/C++ build tools, Simple, Fast, Powerful dependency package integration</i><br/>
 </div>
 
 ## 项目支持
