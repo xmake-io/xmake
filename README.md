@@ -524,8 +524,6 @@ Or you can also consider sponsoring us to get technical support services, [[Beco
 Some projects using xmake:
 
 * [tbox](https://github.com/tboox/tbox)
-* [gbox](https://github.com/tboox/gbox)
-* [vm86](https://github.com/tboox/vm86)
 * [more](https://github.com/xmake-io/awesome-xmake)
 
 ## Contacts

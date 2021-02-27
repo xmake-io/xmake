@@ -532,8 +532,6 @@ $ ./gradlew app:assembleDebug
 一些使用xmake的项目：
 
 * [tbox](https://github.com/tboox/tbox)
-* [gbox](https://github.com/tboox/gbox)
-* [vm86](https://github.com/tboox/vm86)
 * [更多](https://github.com/xmake-io/awesome-xmake)
 
 ## 联系方式
