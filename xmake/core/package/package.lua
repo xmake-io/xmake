@@ -1120,7 +1120,10 @@ function _instance:fetch(opt)
     -- nil: find xmake or system packages
     -- true: only find system package
     -- false: only find xmake packages
-    local system = opt.system or self:requireinfo().system
+    local system = opt.system
+    if system == nil then
+        system = self:requireinfo().system
+    end
     if self:is3rd() then
         -- we need ignore `{system = true/false}` argument if be 3rd package
         -- @see https://github.com/xmake-io/xmake/issues/726
