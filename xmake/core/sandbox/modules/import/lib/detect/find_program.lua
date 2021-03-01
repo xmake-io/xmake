@@ -44,7 +44,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
 
     -- do not attempt to run program? check it fastly
     if opt.norun then
-        return os.isfile(program) and program or nil
+        return os.isfile(program)
     end
 
     -- no check script? attempt to run it directly
@@ -53,7 +53,7 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
         if not ok and option.get("verbose") and option.get("diagnosis") then
             utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
         end
-        return ok and program or nil
+        return ok
     end
 
     -- check it
@@ -69,21 +69,25 @@ function sandbox_lib_detect_find_program._do_check(program, opt)
     if not ok and option.get("verbose") and option.get("diagnosis") then
         utils.cprint("${color.warning}checkinfo: ${clear dim}" .. errors)
     end
-    return ok and program or nil
+    return ok
 end
 
 -- check program
 function sandbox_lib_detect_find_program._check(program, opt)
+    local findname = program
     if os.subhost() == "windows" then
         if not program:endswith(".exe") and not program:endswith(".cmd") and not program:endswith(".bat") then
-            program = program .. ".exe"
+            findname = program .. ".exe"
         end
     elseif os.subhost() == "msys" and os.isfile(program) and os.filesize(program) < 256 then
         -- only a sh script on msys2? e.g. c:/msys64/usr/bin/7z
         -- we need use sh to wrap it, otherwise os.exec cannot run it
         program = "sh " .. program
+        findname = program
     end
-    return sandbox_lib_detect_find_program._do_check(program, opt)
+    if sandbox_lib_detect_find_program._do_check(findname, opt) then
+        return program
+    end
 end
 
 -- find program from the given paths
@@ -203,10 +207,11 @@ function sandbox_lib_detect_find_program._find(name, paths, opt)
 
     -- attempt to find it from the some default $PATH and system directories
     local syspaths = {}
+    --[[
     local envpaths = os.getenv("PATH")
     if envpaths then
         table.join2(syspaths, path.splitenv(envpaths))
-    end
+    end]]
     if os.host() ~= "windows" then
         table.insert(syspaths, "/usr/local/bin")
         table.insert(syspaths, "/usr/bin")
