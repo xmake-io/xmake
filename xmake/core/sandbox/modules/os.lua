@@ -427,17 +427,17 @@ end
 
 -- match directories
 function sandbox_os.dirs(pattern, callback)
-    return sandbox_os.match(pattern, 'd', callback)
+    return (sandbox_os.match(pattern, 'd', callback))
 end
 
 -- match files
 function sandbox_os.files(pattern, callback)
-    return sandbox_os.match(pattern, 'f', callback)
+    return (sandbox_os.match(pattern, 'f', callback))
 end
 
 -- match files and directories
 function sandbox_os.filedirs(pattern, callback)
-    return sandbox_os.match(pattern, 'a', callback)
+    return (sandbox_os.match(pattern, 'a', callback))
 end
 
 -- is directory?
