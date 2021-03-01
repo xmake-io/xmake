@@ -817,15 +817,17 @@ function os.isexec(filepath)
     -- TODO
     -- check permission
 
-    -- is *.exe for windows?
+    -- check executable program exist
+    if os.isfile(filepath) then
+        return true
+    end
     if os.host() == "windows" then
-        if not filepath:endswith(".exe") and not filepath:endswith(".cmd") and not filepath:endswith(".bat") then
-            filepath = filepath .. ".exe"
+        for _, suffix in ipairs({".exe", ".cmd", ".bat"}) do
+            if os.isfile(filepath .. suffix) then
+                return true
+            end
         end
     end
-
-    -- file exists?
-    return os.isfile(filepath)
 end
 
 -- get system host

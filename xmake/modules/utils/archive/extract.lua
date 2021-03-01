@@ -26,6 +26,7 @@ import("detect.tools.find_7z")
 import("detect.tools.find_tar")
 import("detect.tools.find_gzip")
 import("detect.tools.find_unzip")
+import("detect.tools.find_bzip2")
 import("extension", {alias = "get_archive_extension"})
 
 -- extract archivefile using tar
@@ -40,6 +41,11 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     local program = find_tar()
     if not program then
         return false
+    end
+
+    -- on msys2/cygwin? we need translate input path to cygwin-like path
+    if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
+        archivefile = path.cygwin_path(archivefile)
     end
 
     -- init argv
@@ -97,6 +103,11 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     if extension:startswith(".tar.") or extension == ".tgz" then
         outputdir_old = outputdir
         outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
+    end
+
+    -- on msys2/cygwin? we need translate input path to cygwin-like path
+    if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
+        archivefile = path.cygwin_path(archivefile)
     end
 
     -- init argv
@@ -314,6 +325,68 @@ function _extract_using_unzip(archivefile, outputdir, extension, opt)
     return true
 end
 
+-- extract archivefile using bzip2
+function _extract_using_bzip2(archivefile, outputdir, extension, opt)
+
+    -- find bzip2
+    local program = find_bzip2()
+    if not program then
+        return false
+    end
+
+    -- extract to *.tar file first
+    local outputdir_old = nil
+    if extension:startswith(".tar.") then
+        outputdir_old = outputdir
+        outputdir = os.tmpfile({ramdisk = false}) .. ".tar"
+    end
+
+    -- on msys2/cygwin? we need translate input path to cygwin-like path
+    if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
+        archivefile = path.cygwin_path(archivefile)
+    end
+
+    -- init temporary archivefile
+    local tmpfile = path.join(outputdir, path.filename(archivefile))
+
+    -- init argv
+    local argv = {"-d", "-f"}
+    if not option.get("verbose") then
+        table.insert(argv, "-q")
+    end
+    table.insert(argv, tmpfile)
+
+    -- ensure output directory
+    if not os.isdir(outputdir) then
+        os.mkdir(outputdir)
+    end
+
+    -- copy archivefile to outputdir first
+    if path.absolute(archivefile) ~= path.absolute(tmpfile) then
+        os.cp(archivefile, tmpfile)
+    end
+
+    -- enter outputdir
+    local oldir = os.cd(outputdir)
+
+    -- extract it
+    os.vrunv(program, argv)
+
+    -- leave outputdir
+    os.cd(oldir)
+
+    -- continue to extract *.tar file
+    if outputdir_old then
+        local tarfile = find_file("**.tar", outputdir)
+        if tarfile and os.isfile(tarfile) then
+            return _extract(tarfile, outputdir_old, ".tar", {_extract_using_7z, _extract_using_tar}, opt)
+        end
+    end
+
+    -- ok
+    return true
+end
+
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
 
@@ -346,6 +419,7 @@ function main(archivefile, outputdir, opt)
     local extractors
     if is_host("windows") then
         -- we use 7z first, becase xmake package has builtin 7z program on windows
+        -- tar/windows can not extract .bz2 ...
         extractors =
         {
             [".zip"]        = {_extract_using_7z, _extract_using_unzip, _extract_using_tar}
@@ -353,12 +427,11 @@ function main(archivefile, outputdir, opt)
         ,   [".gz"]         = {_extract_using_7z, _extract_using_gzip, _extract_using_tar}
         ,   [".xz"]         = {_extract_using_7z, _extract_using_xz, _extract_using_tar}
         ,   [".tgz"]        = {_extract_using_7z, _extract_using_tar}
-        ,   [".bz2"]        = {_extract_using_7z, _extract_using_tar}
+        ,   [".bz2"]        = {_extract_using_7z, _extract_using_bzip2}
         ,   [".tar"]        = {_extract_using_7z, _extract_using_tar}
-        -- tar/windows can not extract .tar.bz2 ...
         ,   [".tar.gz"]     = {_extract_using_7z, _extract_using_gzip}
         ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_xz}
-        ,   [".tar.bz2"]    = {_extract_using_7z}
+        ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_bzip2}
         }
     else
         extractors =
@@ -368,11 +441,11 @@ function main(archivefile, outputdir, opt)
         ,   [".gz"]         = {_extract_using_gzip, _extract_using_tar, _extract_using_7z}
         ,   [".xz"]         = {_extract_using_xz, _extract_using_tar, _extract_using_7z}
         ,   [".tgz"]        = {_extract_using_tar, _extract_using_7z}
-        ,   [".bz2"]        = {_extract_using_tar, _extract_using_7z}
+        ,   [".bz2"]        = {_extract_using_bzip2, _extract_using_tar, _extract_using_7z}
         ,   [".tar"]        = {_extract_using_tar, _extract_using_7z}
         ,   [".tar.gz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_gzip}
         ,   [".tar.xz"]     = {_extract_using_tar, _extract_using_7z, _extract_using_xz}
-        ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z}
+        ,   [".tar.bz2"]    = {_extract_using_tar, _extract_using_7z, _extract_using_bzip2}
         }
     end
 

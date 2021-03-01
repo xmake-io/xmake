@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_7z.lua
+-- @file        find_bzip2.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find 7z
+-- find bzip2
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,8 +30,8 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local 7z = find_7z()
--- local 7z, version = find_7z({version = true})
+-- local bzip2 = find_bzip2()
+-- local bzip2, version = find_bzip2({version = true})
 --
 -- @endcode
 --
@@ -43,17 +43,8 @@ function main(opt)
     opt.command = opt.command or "--help"
     opt.parse   = "(%d+%.?%d*)%s"
 
-    -- find 7z from builtin xmake/winenv
-    if is_host("windows") then
-        opt.paths = opt.paths or {}
-        table.insert(opt.paths, path.join(os.programdir(), "winenv", "bin"))
-    end
-
     -- find program
-    local program = find_program(opt.program or "7z", opt)
-    if not program and not opt.program then
-        program = find_program("7za", opt)
-    end
+    local program = find_program(opt.program or "bzip2", opt)
 
     -- find program version
     local version = nil
