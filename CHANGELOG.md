@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1259](https://github.com/xmake-io/xmake/issues/1259): Support `add_files("*.def")` to export symbols for windows/dll
+
 ## v2.5.2
 
 ### New features
@@ -936,6 +940,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1259](https://github.com/xmake-io/xmake/issues/1259): 支持 `add_files("*.def")` 添加 def 文件去导出 windows/dll 符号
 
 ## v2.5.2
 

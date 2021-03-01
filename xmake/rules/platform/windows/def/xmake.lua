@@ -18,9 +18,13 @@
 -- @file        xmake.lua
 --
 
-rule("platform.windows")
-    if is_host("windows") then
-        add_deps("platform.windows.def")
-        add_deps("platform.windows.manifest")
-    end
+-- add *.def for windows/dll
+rule("platform.windows.def")
+    set_extensions(".def")
+    before_build_file("windows", function (target, sourcefile)
+        local _, toolname = target:tool("ld")
+        if toolname == "link" then
+            target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
+        end
+    end)
 
