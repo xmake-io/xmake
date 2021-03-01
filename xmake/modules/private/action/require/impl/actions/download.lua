@@ -137,6 +137,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
+        raise("cannot extract %s", packagefile)
     end
 
     -- save original file path

@@ -75,6 +75,7 @@ function _download(package, resource_name, resource_url, resource_hash)
         os.mv(resourcedir_tmp, resourcedir)
     else
         os.tryrm(resourcedir_tmp)
+        raise("cannot extract %s", resource_file)
     end
 end
 

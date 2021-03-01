@@ -355,9 +355,10 @@ function main(archivefile, outputdir, opt)
         ,   [".tgz"]        = {_extract_using_7z, _extract_using_tar}
         ,   [".bz2"]        = {_extract_using_7z, _extract_using_tar}
         ,   [".tar"]        = {_extract_using_7z, _extract_using_tar}
-        ,   [".tar.gz"]     = {_extract_using_7z, _extract_using_tar, _extract_using_gzip}
-        ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_tar, _extract_using_xz}
-        ,   [".tar.bz2"]    = {_extract_using_7z, _extract_using_tar}
+        -- tar/windows can not extract .tar.bz2 ...
+        ,   [".tar.gz"]     = {_extract_using_7z, _extract_using_gzip}
+        ,   [".tar.xz"]     = {_extract_using_7z, _extract_using_xz}
+        ,   [".tar.bz2"]    = {_extract_using_7z}
         }
     else
         extractors =
