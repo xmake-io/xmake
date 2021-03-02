@@ -69,7 +69,7 @@ function main(toolchain)
     -- target("test")
     --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})
     --
-    local target_minver = toolchain:config("target_minver") and config.get("target_minver")
+    local target_minver = toolchain:config("target_minver") or config.get("target_minver")
     if xcode_sdkver and not target_minver then
         target_minver = xcode_sdkver
         if toolchain:is_plat("macosx") then
