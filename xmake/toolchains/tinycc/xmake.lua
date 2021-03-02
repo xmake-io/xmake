@@ -19,7 +19,7 @@
 --
 
 -- define toolchain
-toolchain("tinyc")
+toolchain("tinycc")
 
     -- set homepage
     set_homepage("https://bellard.org/tcc/")
@@ -27,12 +27,6 @@ toolchain("tinyc")
 
     -- mark as standalone toolchain
     set_kind("standalone")
-
-    -- set toolset
-    set_toolset("cc",     "tcc")
-    set_toolset("ld",     "tcc")
-    set_toolset("sh",     "tcc")
-    set_toolset("ar",     "tcc")
 
     -- check toolchain
     on_check(function (toolchain)
@@ -42,15 +36,20 @@ toolchain("tinyc")
         import("lib.detect.find_tool")
 
         -- find tcc
+        local paths = {toolchain:bindir()}
         local sdkdir = toolchain:sdkdir()
-        if not sdkdir and is_host("windows") then
-            local winenv_tccsdk = path.join(os.programdir(), "winenv", "tcc")
-            if os.isdir(winenv_tccsdk) then
-                sdkdir = winenv_tccsdk
+        if sdkdir then
+            table.insert(paths, path.join(sdkdir, "bin"))
+        end
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir then
+                table.insert(paths, path.join(installdir, "bin"))
             end
         end
-        if find_tool("tcc", {paths = toolchain:bindir() or sdkdir}) then
-            toolchain:config_set("sdkdir", sdkdir)
+        local tcc = find_tool("tcc", {paths = paths})
+        if tcc then
+            toolchain:config_set("tcc", tcc.program)
             toolchain:configs_save()
             return true
         end
@@ -77,21 +76,10 @@ toolchain("tinyc")
             toolchain:add("shflags", march)
         end
 
-        -- init linkdirs and sysincludedirs
-        local sdkdir = toolchain:sdkdir()
-        if sdkdir then
-            local includedir = path.join(sdkdir, "include")
-            if os.isdir(includedir) then
-                toolchain:add("sysincludedirs", includedir)
-            end
-            local winenv_tcc_winapi = path.join(os.programdir(), "winenv", "tcc", "winapi", "include")
-            if is_host("windows") and os.isdir(winenv_tcc_winapi) then
-                toolchain:add("sysincludedirs", winenv_tcc_winapi)
-                toolchain:add("sysincludedirs", path.join(winenv_tcc_winapi, "winapi"))
-            end
-            local linkdir = path.join(sdkdir, "lib")
-            if os.isdir(linkdir) then
-                toolchain:add("linkdirs", linkdir)
-            end
-        end
+        -- add toolset
+        local tcc = toolchain:config("tcc") or "tcc"
+        toolchain:add("toolset", "cc", tcc)
+        toolchain:add("toolset", "ld", tcc)
+        toolchain:add("toolset", "sh", tcc)
+        toolchain:add("toolset", "ar", tcc)
     end)
