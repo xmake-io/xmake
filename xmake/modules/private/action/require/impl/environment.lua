@@ -20,10 +20,9 @@
 
 -- imports
 import("core.project.config")
-import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_tool")
 import("private.action.require.impl.packagenv")
-import("private.action.require.impl.package")
+import("private.action.require.impl.install_packages")
 
 -- enter environment
 --
@@ -44,12 +43,12 @@ function enter()
     -- git not found? install it first
     local packages = {}
     if not find_tool("git") then
-        table.join2(packages, package.install_packages("git"))
+        table.join2(packages, install_packages("git"))
     end
 
     -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
     if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
-        table.join2(packages, package.install_packages("7z"))
+        table.join2(packages, install_packages("7z"))
     end
 
     -- enter the environments of installed packages
