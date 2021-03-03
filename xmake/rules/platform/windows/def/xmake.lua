@@ -21,10 +21,16 @@
 -- add *.def for windows/dll
 rule("platform.windows.def")
     set_extensions(".def")
-    before_build_file("windows", function (target, sourcefile)
+    after_load("windows", function (target)
         local _, toolname = target:tool("ld")
         if toolname == "link" then
-            target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                if sourcebatch.rulename == "platform.windows.def" then
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
+                    end
+                end
+            end
         end
     end)
 

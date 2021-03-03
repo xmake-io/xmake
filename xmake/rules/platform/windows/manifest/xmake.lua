@@ -22,10 +22,20 @@
 -- https://github.com/xmake-io/xmake/issues/1241
 rule("platform.windows.manifest")
     set_extensions(".manifest")
-    before_build_file("windows", function (target, sourcefile)
+    after_load("windows", function (target)
         local _, toolname = target:tool("ld")
         if toolname == "link" then
-            target:add("ldflags", "/manifest", "/ManifestFile:" .. path.translate(sourcefile), {force = true})
+            local manifest = false
+            for _, sourcebatch in pairs(target:sourcebatches()) do
+                if sourcebatch.rulename == "platform.windows.manifest" then
+                    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                        target:add("ldflags", "/ManifestFile:" .. path.translate(sourcefile), {force = true})
+                        manifest = true
+                    end
+                end
+            end
+            if manifest then
+                target:add("ldflags", "/manifest", {force = true})
+            end
         end
     end)
-
