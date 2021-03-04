@@ -22,6 +22,7 @@
 -- https://github.com/xmake-io/xmake/issues/1241
 rule("platform.windows.manifest")
     set_extensions(".manifest")
+    --[[FIXME
     after_load("windows", function (target)
         local _, toolname = target:tool("ld")
         if toolname == "link" then
@@ -37,5 +38,11 @@ rule("platform.windows.manifest")
             if manifest then
                 target:add("ldflags", "/manifest", {force = true})
             end
+        end
+    end)]]
+    before_build_file("windows", function (target, sourcefile)
+        local _, toolname = target:tool("ld")
+        if toolname == "link" then
+            target:add("ldflags", "/manifest", "/ManifestFile:" .. path.translate(sourcefile), {force = true})
         end
     end)
