@@ -159,6 +159,12 @@ function main(package)
                     -- clean install directory first
                     os.tryrm(package:installdir())
 
+                    -- download package resources
+                    download_resources(package)
+
+                    -- patch source codes of package
+                    patch_sources(package)
+
                     -- enter the environments of all package dependencies
                     for _, dep in ipairs(package:orderdeps()) do
                         dep:envs_enter()
@@ -166,12 +172,6 @@ function main(package)
 
                     -- check package toolchains
                     _check_package_toolchains(package)
-
-                    -- download package resources
-                    download_resources(package)
-
-                    -- patch source codes of package
-                    patch_sources(package)
 
                     -- do install
                     for i = 1, 3 do
