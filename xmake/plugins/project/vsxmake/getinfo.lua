@@ -446,7 +446,7 @@ function main(outputdir, vsinfo)
         if not target:is_phony() then
             if target:get("default") == true then
                 table.insert(targetnames, 1, targetname)
-            elseif target:kind() == "binary" then
+            elseif target:is_binary() then
                 local first_target = targetnames[1] and project.target(targetnames[1])
                 if not first_target or first_target:get("default") ~= true then
                     table.insert(targetnames, 1, targetname)

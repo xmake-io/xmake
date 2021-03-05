@@ -645,6 +645,11 @@ function _instance:is_phony()
     return not targetkind or targetkind == "phony"
 end
 
+-- is binary target?
+function _instance:is_binary()
+    return self:kind() == "binary"
+end
+
 -- is default target?
 function _instance:is_default()
     local default = self:get("default")

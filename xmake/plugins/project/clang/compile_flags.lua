@@ -74,11 +74,9 @@ end
 
 -- make all
 function _make_all()
-    -- make flags
     _g.firstline = true
     for _, target in pairs(project.targets()) do
-        local isdefault = target:get("default")
-        if not target:is_phony() and (isdefault == nil or isdefault == true) then
+        if not target:is_phony() and target:is_default() then
             _make_target(target)
         end
     end

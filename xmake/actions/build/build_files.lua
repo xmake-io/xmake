@@ -124,8 +124,7 @@ function _get_batchjobs(targetname, filepatterns)
         local depset = hashset.new()
         local targets = {}
         for _, target in pairs(project.targets()) do
-            local default = target:get("default")
-            if default == nil or default == true or option.get("all") then
+            if target:is_default() or option.get("all") then
                 for _, depname in ipairs(target:get("deps")) do
                     depset:insert(depname)
                 end

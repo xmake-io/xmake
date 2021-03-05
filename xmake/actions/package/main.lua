@@ -231,8 +231,7 @@ function main()
     else
         -- package default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if default == nil or default == true or option.get("all") then
+            if target:is_default() or option.get("all") then
                 _package_target(target)
             end
         end

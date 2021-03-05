@@ -306,8 +306,7 @@ function _add_build_for_targets(ninjafile)
     -- build default
     local default = ""
     for targetname, target in pairs(project.targets()) do
-        local isdefault = target:get("default")
-        if isdefault == nil or isdefault == true then
+        if target:is_default() then
             default = default .. " " .. targetname
         end
     end
