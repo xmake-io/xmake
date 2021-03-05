@@ -18,17 +18,10 @@
 -- @file        xmake.lua
 --
 
--- define rule: *.ui
 rule("qt.ui")
-
-    -- add rule: qt environment
     add_deps("qt.env")
-
-    -- set extensions
     set_extensions(".ui")
-
-    -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- get uic
         local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
@@ -49,7 +42,6 @@ rule("qt.ui")
         target:data_set("qt.uic", uic)
     end)
 
-    -- before build file
     before_buildcmd_file(function (target, batchcmds, sourcefile_ui, opt)
         local uic = target:data("qt.uic")
         local headerfile_dir = path.join(target:autogendir(), "rules", "qt", "ui")
