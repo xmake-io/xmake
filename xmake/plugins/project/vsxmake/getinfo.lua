@@ -291,6 +291,29 @@ function _make_vsinfo_groups()
     return groups, group_deps
 end
 
+-- config target
+function _config_target(target)
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
+end
+
 -- make vstudio project
 function main(outputdir, vsinfo)
 
@@ -365,6 +388,9 @@ function main(outputdir, vsinfo)
 
             -- install and update requires
             install_requires()
+
+            -- config targets
+            _config_targets()
 
             -- update config files
             generate_configfiles()

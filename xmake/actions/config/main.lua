@@ -346,6 +346,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- config targets
+    _config_targets(targetname)
+
     -- dump config
     if option.get("verbose") and not opt.disable_dump then
         config.dump()

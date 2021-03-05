@@ -220,6 +220,29 @@ function _make_vsinfo_archs()
     return vsinfo_archs
 end
 
+-- config target
+function _config_target(target)
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
+end
+
 -- make vstudio project
 function make(outputdir, vsinfo)
 
@@ -272,6 +295,9 @@ function make(outputdir, vsinfo)
 
                 -- install and update requires
                 install_requires()
+
+                -- config targets
+                _config_targets()
 
                 -- update config files
                 generate_configfiles()

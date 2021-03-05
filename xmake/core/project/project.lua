@@ -935,6 +935,7 @@ function project.ordertargets()
     if not ordertargets then
         -- ensure ordertargets to be cached
         project.targets()
+        ordertargets = project._memcache():get("ordertargets")
     end
     return ordertargets
 end
