@@ -30,7 +30,7 @@ import("private.utils.progress")
 function main (target, opt)
 
     -- @note it only supports windows/dll now
-    assert(target:kind() == "shared", 'rule("utils.symbols.export_all"): only for shared target(%s)!', target:name())
+    assert(target:is_shared(), 'rule("utils.symbols.export_all"): only for shared target(%s)!', target:name())
     if not target:is_plat("windows") or option.get("dry-run") then
         return
     end

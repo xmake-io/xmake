@@ -50,7 +50,7 @@ function _make_projects(slnfile, vsinfo)
             -- @see https://github.com/xmake-io/xmake/issues/1249
             if target:get("default") == true then
                 table.insert(targets, 1, target)
-            elseif target:kind() == "binary" then
+            elseif target:is_binary() then
                 local first_target = targets[1]
                 if not first_target or first_target:get("default") ~= true then
                     table.insert(targets, 1, target)

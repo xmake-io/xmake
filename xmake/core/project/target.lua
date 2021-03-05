@@ -650,6 +650,16 @@ function _instance:is_binary()
     return self:kind() == "binary"
 end
 
+-- is shared library target?
+function _instance:is_shared()
+    return self:kind() == "shared"
+end
+
+-- is static library target?
+function _instance:is_static()
+    return self:kind() == "static"
+end
+
 -- is default target?
 function _instance:is_default()
     local default = self:get("default")

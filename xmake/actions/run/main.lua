@@ -32,7 +32,7 @@ import("private.action.run.make_runenvs")
 function _do_run_target(target)
 
     -- only for binary program
-    if target:kind() ~= "binary" then
+    if not target:is_binary() then
         return
     end
 
@@ -204,7 +204,7 @@ function main()
     else
         -- run default or all binary targets
         for _, target in ipairs(project.ordertargets()) do
-            if (target:is_default() or option.get("all")) and target:kind() == "binary" then
+            if (target:is_default() or option.get("all")) and target:is_binary() then
                 _run(target)
             end
         end
