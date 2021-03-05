@@ -95,7 +95,7 @@ end
 function _do_package_target(target)
 
     -- is phony target?
-    if target:isphony() then
+    if target:is_phony() then
         return
     end
 
@@ -120,11 +120,6 @@ end
 -- package target
 function _on_package_target(target)
 
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return
-    end
-
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -142,6 +137,11 @@ end
 
 -- package the given target
 function _package_target(target)
+
+    -- has been disabled?
+    if not target:is_enabled() then
+        return
+    end
 
     -- enter project directory
     local oldir = os.cd(project.directory())

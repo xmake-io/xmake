@@ -283,7 +283,7 @@ function make(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:isphony() then
+                if not target:is_phony() then
 
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}

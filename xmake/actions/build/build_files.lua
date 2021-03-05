@@ -89,7 +89,7 @@ end
 function _add_batchjobs_for_target(batchjobs, rootjob, target, filepatterns)
 
     -- has been disabled?
-    if target:get("enabled") == false then
+    if not target:is_enabled() then
         return
     end
 

@@ -36,7 +36,7 @@ function _make_projects(slnfile, vsinfo)
 
     -- make all targets
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
 
             -- enter project
             slnfile:enter("Project(\"{%s}\") = \"%s\", \"%s\\%s.vcproj\", \"{%s}\"", vctool, targetname, targetname, targetname, hash.uuid4(targetname))
@@ -68,7 +68,7 @@ function _make_global(slnfile, vsinfo)
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             slnfile:print("{%s}.$(mode)|Win32.ActiveCfg = $(mode)|Win32", hash.uuid4(targetname))
             slnfile:print("{%s}.$(mode)|Win32.Build.0 = $(mode)|Win32", hash.uuid4(targetname))
         end

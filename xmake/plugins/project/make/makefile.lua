@@ -214,7 +214,7 @@ end
 function _make_target(makefile, target, targetflags)
 
     -- is phony target?
-    if target:isphony() then
+    if target:is_phony() then
         return _make_phony(makefile, target)
     end
 
@@ -226,7 +226,7 @@ function _make_target(makefile, target, targetflags)
     -- make dependence for the dependent targets
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
-        makefile:write(" " .. (dep:isphony() and depname or dep:targetfile()))
+        makefile:write(" " .. (dep:is_phony() and depname or dep:targetfile()))
     end
 
     -- make dependence for objects
@@ -359,7 +359,7 @@ function _make_all(makefile)
     -- make variables for target
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
 
             -- make target linker
             local program = _get_program_from_target(target, target:linker():kind())
@@ -426,7 +426,7 @@ function _clean_target(makefile, target)
     makefile:print("")
 
     -- make body
-    if not target:isphony() then
+    if not target:is_phony() then
 
         -- remove the target file
         _remove(makefile, target:targetfile())

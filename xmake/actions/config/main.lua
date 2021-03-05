@@ -100,38 +100,27 @@ function _need_check(changed)
     return changed
 end
 
--- check dependent target
-function _check_target_deps(target)
-
-    -- check
+-- check target
+function _check_target(target)
     for _, depname in ipairs(target:get("deps")) do
-
-        -- check dependent target name
         assert(depname ~= target:name(), "the target(%s) cannot depend self!", depname)
-
-        -- get dependent target
         local deptarget = project.target(depname)
-
-        -- check dependent target name
         assert(deptarget, "unknown target(%s) for %s.deps!", depname, target:name())
-
-        -- check the dependent targets
-        _check_target_deps(deptarget)
+        _check_target(deptarget)
     end
 end
 
--- check target
-function _check_target(targetname)
-    assert(targetname)
+-- check targets
+function _check_targets(targetname)
     assert(not project.is_loaded(), "project and targets may have been loaded early!")
     if targetname == "all" then
         for _, target in pairs(project.targets()) do
-            _check_target_deps(target)
+            _check_target(target)
         end
     else
         local target = project.target(targetname)
         assert(target, "unknown target: %s", targetname)
-        _check_target_deps(target)
+        _check_target(target)
     end
 end
 
@@ -140,9 +129,9 @@ function _check_target_toolchains()
     -- check toolchains configuration for all target in the current project
     -- @note we must check targets after loading options
     for _, target in pairs(project.targets()) do
-        if target:get("enabled") ~= false and (target:get("toolchains") or
-                                               not target:is_plat(config.get("plat")) or
-                                               not target:is_arch(config.get("arch"))) then
+        if target:is_enabled() and (target:get("toolchains") or
+                                    not target:is_plat(config.get("plat")) or
+                                    not target:is_arch(config.get("arch"))) then
             local target_toolchains = target:get("toolchains")
             if target_toolchains then
                 target_toolchains = hashset.from(table.wrap(target_toolchains))
@@ -160,6 +149,38 @@ function _check_target_toolchains()
                 end
             end
         end
+    end
+end
+
+-- config target
+function _config_target(target)
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function _config_targets(targetname)
+    if targetname == "all" then
+        for _, target in ipairs(project.ordertargets()) do
+            if target:is_enabled() then
+                _config_target(target)
+            end
+        end
+    else
+        local target = project.target(targetname)
+        assert(target, "unknown target: %s", targetname)
+        for _, dep in ipairs(target:orderdeps()) do
+            _config_target(dep)
+        end
+        _config_target(target)
     end
 end
 
@@ -311,7 +332,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
         -- check target and ensure to load all targets, @note we must load targets after installing required packages,
         -- otherwise has_package() will be invalid.
-        _check_target(targetname)
+        _check_targets(targetname)
 
         -- update the config files
         if recheck then

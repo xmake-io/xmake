@@ -270,7 +270,7 @@ function _make_vsinfo_groups()
     local groups = {}
     local group_deps = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             local group_path = target:get("group")
             if group_path then
                 local group_name = path.filename(group_path)
@@ -375,7 +375,7 @@ function main(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:isphony() then
+                if not target:is_phony() then
 
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
@@ -443,7 +443,7 @@ function main(outputdir, vsinfo)
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             if target:get("default") == true then
                 table.insert(targetnames, 1, targetname)
             elseif target:kind() == "binary" then

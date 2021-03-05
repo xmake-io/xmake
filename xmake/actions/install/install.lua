@@ -49,7 +49,7 @@ end
 function _install_target(target)
 
     -- has been disabled?
-    if target:get("enabled") == false then
+    if not target:is_enabled() then
         return
     end
 

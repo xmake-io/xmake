@@ -29,7 +29,7 @@ import("core.platform.platform")
 function _get_configfiles()
     local configfiles = {}
     for _, target in pairs(project.targets()) do
-        if target:get("enabled") ~= false then
+        if target:is_enabled() then
 
             -- get configuration files for target
             local srcfiles, dstfiles, fileinfos = target:configfiles()

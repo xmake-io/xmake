@@ -78,7 +78,7 @@ function _make_all()
     _g.firstline = true
     for _, target in pairs(project.targets()) do
         local isdefault = target:get("default")
-        if not target:isphony() and (isdefault == nil or isdefault == true) then
+        if not target:is_phony() and (isdefault == nil or isdefault == true) then
             _make_target(target)
         end
     end

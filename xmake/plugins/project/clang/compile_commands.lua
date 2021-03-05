@@ -175,7 +175,7 @@ function _make_all(jsonfile)
     -- make commands
     _g.firstline = true
     for _, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             _make_target(jsonfile, target)
         end
     end

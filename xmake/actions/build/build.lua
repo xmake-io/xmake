@@ -54,7 +54,7 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
     end
 
     -- uses the builtin target script
-    if not job and not target:isphony() then
+    if not job and not target:is_phony() then
         job, job_leaf = import("kinds." .. target:kind(), {anonymous = true})(batchjobs, rootjob, target)
     end
     job = job or rootjob
@@ -100,7 +100,7 @@ end
 function _add_batchjobs_for_target(batchjobs, rootjob, target)
 
     -- has been disabled?
-    if target:get("enabled") == false then
+    if not target:is_enabled() then
         return
     end
 
