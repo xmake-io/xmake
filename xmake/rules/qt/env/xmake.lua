@@ -18,11 +18,8 @@
 -- @file        xmake.lua
 --
 
--- define rule: environment
 rule("qt.env")
-
-    -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("detect.sdks.find_qt")
@@ -33,11 +30,11 @@ rule("qt.env")
             qt = assert(find_qt(nil, {verbose = true}), "Qt SDK not found!")
             target:data_set("qt", qt)
         end
-        if is_plat("windows") or (is_plat("mingw") and is_host("windows")) then
+        if target:is_plat("windows") or (target:is_plat("mingw") and is_host("windows")) then
             target:add("runenvs", "PATH", qt.bindir)
             target:set("runenv", "QML2_IMPORT_PATH", qt.qmldir)
             target:set("runenv", "QML_IMPORT_TRACE", "1")
-        elseif is_plat("msys", "cygwin") then
+        elseif target:is_plat("msys", "cygwin") then
             raise("please run `xmake f -p mingw --mingw=/mingw64` to support Qt/Mingw64 on Msys!")
         end
     end)

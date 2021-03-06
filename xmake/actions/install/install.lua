@@ -49,7 +49,7 @@ end
 function _install_target(target)
 
     -- has been disabled?
-    if target:get("enabled") == false then
+    if not target:is_enabled() then
         return
     end
 
@@ -122,8 +122,7 @@ function main(targetname)
     else
         -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if default == nil or default == true or targetname == "__all" then
+            if target:is_default() or targetname == "__all" then
                 _install_target(target)
             end
         end

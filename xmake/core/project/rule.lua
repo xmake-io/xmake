@@ -165,6 +165,7 @@ function rule.apis()
             -- rule.on_xxx
             "rule.on_run"
         ,   "rule.on_load"
+        ,   "rule.on_config"
         ,   "rule.on_link"
         ,   "rule.on_build"
         ,   "rule.on_build_file"

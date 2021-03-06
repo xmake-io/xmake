@@ -32,7 +32,7 @@ import("private.action.run.make_runenvs")
 function _do_run_target(target)
 
     -- only for binary program
-    if target:kind() ~= "binary" then
+    if not target:is_binary() then
         return
     end
 
@@ -67,11 +67,6 @@ end
 
 -- run target
 function _on_run_target(target)
-
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return
-    end
 
     -- build target with rules
     local done = false
@@ -108,6 +103,11 @@ end
 -- run the given target
 function _run(target)
 
+    -- has been disabled?
+    if not target:is_enabled() then
+        return
+    end
+
     -- enter the environments of the target packages
     local oldenvs = {}
     _add_target_pkgenvs(target, oldenvs, {})
@@ -117,13 +117,6 @@ function _run(target)
     {
         target:script("run_before")
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local before_run = r:script("run_before")
                 if before_run then
@@ -133,13 +126,6 @@ function _run(target)
         end
     ,   target:script("run", _on_run_target)
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local after_run = r:script("run_after")
                 if after_run then
@@ -174,8 +160,7 @@ function _check_targets(targetname)
     else
         -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:kind() == "binary" then
+            if (target:is_default() or option.get("all")) and target:is_binary() then
                 table.insert(targets, target)
             end
         end
@@ -184,7 +169,7 @@ function _check_targets(targetname)
     -- filter and check targets with builtin-run script
     local targetnames = {}
     for _, target in ipairs(targets) do
-        if not target:isphony() and target:get("enabled") ~= false and not target:script("run") then
+        if not target:is_phony() and target:is_enabled() and not target:script("run") then
             local targetfile = target:targetfile()
             if targetfile and not os.isfile(targetfile) then
                 table.insert(targetnames, target:name())
@@ -219,8 +204,7 @@ function main()
     else
         -- run default or all binary targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:kind() == "binary" then
+            if (target:is_default() or option.get("all")) and target:is_binary() then
                 _run(target)
             end
         end

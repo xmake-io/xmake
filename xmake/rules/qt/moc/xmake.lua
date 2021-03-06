@@ -18,16 +18,9 @@
 -- @file        xmake.lua
 --
 
--- define rule: moc
 rule("qt.moc")
-
-    -- add rule: qt environment
     add_deps("qt.env")
-
-    -- set extensions
     set_extensions(".h", ".hpp")
-
-    -- before build file (we need compile it first if exists Q_PRIVATE_SLOT)
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
 
         -- imports

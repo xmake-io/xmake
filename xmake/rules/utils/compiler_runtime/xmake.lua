@@ -20,7 +20,7 @@
 
 -- define rule: utils.compiler.runtime
 rule("utils.compiler.runtime")
-    after_load(function (target)
+    on_config(function (target)
 
         -- set vs runtime
         local vs_runtime = get_config("vs_runtime")

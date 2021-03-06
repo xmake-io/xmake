@@ -45,12 +45,12 @@ function _make_projects(slnfile, vsinfo)
     local targets = {}
     local vctool = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942"
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             -- we need set startup project for default or binary target
             -- @see https://github.com/xmake-io/xmake/issues/1249
             if target:get("default") == true then
                 table.insert(targets, 1, target)
-            elseif target:kind() == "binary" then
+            elseif target:is_binary() then
                 local first_target = targets[1]
                 if not first_target or first_target:get("default") ~= true then
                     table.insert(targets, 1, target)
@@ -105,7 +105,7 @@ function _make_global(slnfile, vsinfo)
     -- add project configuration platforms
     slnfile:enter("GlobalSection(ProjectConfigurationPlatforms) = postSolution")
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             for _, mode in ipairs(vsinfo.modes) do
                 for _, arch in ipairs(vsinfo.archs) do
                     local vs_arch = _vs_arch(arch)
@@ -126,7 +126,7 @@ function _make_global(slnfile, vsinfo)
     slnfile:enter("GlobalSection(NestedProjects) = preSolution")
     local subgroups = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             local group_path = target:get("group")
             if group_path then
                 -- target -> group

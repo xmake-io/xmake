@@ -270,7 +270,7 @@ function _make_vsinfo_groups()
     local groups = {}
     local group_deps = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             local group_path = target:get("group")
             if group_path then
                 local group_name = path.filename(group_path)
@@ -289,6 +289,29 @@ function _make_vsinfo_groups()
         end
     end
     return groups, group_deps
+end
+
+-- config target
+function _config_target(target)
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
 end
 
 -- make vstudio project
@@ -366,6 +389,9 @@ function main(outputdir, vsinfo)
             -- install and update requires
             install_requires()
 
+            -- config targets
+            _config_targets()
+
             -- update config files
             generate_configfiles()
             generate_configheader()
@@ -375,7 +401,7 @@ function main(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:isphony() then
+                if not target:is_phony() then
 
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
@@ -443,10 +469,10 @@ function main(outputdir, vsinfo)
     -- @see https://github.com/xmake-io/xmake/issues/1249
     local targetnames = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             if target:get("default") == true then
                 table.insert(targetnames, 1, targetname)
-            elseif target:kind() == "binary" then
+            elseif target:is_binary() then
                 local first_target = targetnames[1] and project.target(targetnames[1])
                 if not first_target or first_target:get("default") ~= true then
                     table.insert(targetnames, 1, targetname)

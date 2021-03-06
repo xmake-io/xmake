@@ -18,17 +18,10 @@
 -- @file        xmake.lua
 --
 
--- define rule: *.qrc
 rule("qt.qrc")
-
-    -- add rule: qt environment
     add_deps("qt.env")
-
-    -- set extensions
     set_extensions(".qrc")
-
-    -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- get rcc
         local rcc = path.join(target:data("qt").bindir, is_host("windows") and "rcc.exe" or "rcc")
@@ -38,7 +31,6 @@ rule("qt.qrc")
         target:data_set("qt.rcc", rcc)
     end)
 
-    -- on build file
     on_buildcmd_file(function (target, batchcmds, sourcefile_qrc, opt)
 
         -- get rcc

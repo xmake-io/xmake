@@ -21,8 +21,7 @@
 -- add *.def for windows/dll
 rule("platform.windows.def")
     set_extensions(".def")
-    --[[FIXME
-    after_load("windows", function (target)
+    on_config("windows", function (target)
         local _, toolname = target:tool("ld")
         if toolname == "link" then
             for _, sourcebatch in pairs(target:sourcebatches()) do
@@ -32,12 +31,6 @@ rule("platform.windows.def")
                     end
                 end
             end
-        end
-    end)]]
-    before_build_file("windows", function (target, sourcefile)
-        local _, toolname = target:tool("ld")
-        if toolname == "link" then
-            target:add("shflags", "/def:" .. path.translate(sourcefile), {force = true})
         end
     end)
 

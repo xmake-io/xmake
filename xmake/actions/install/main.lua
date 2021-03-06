@@ -37,8 +37,7 @@ function _check_targets(targetname)
     else
         -- install default or all targets
         for _, target in pairs(project.targets()) do
-            local default = target:get("default")
-            if default == nil or default == true or targetname == "__all" then
+            if target:is_default() or targetname == "__all" then
                 table.insert(targets, target)
             end
         end
@@ -47,7 +46,7 @@ function _check_targets(targetname)
     -- filter and check targets with builtin-install script
     local targetnames = {}
     for _, target in ipairs(targets) do
-        if not target:isphony() and target:get("enabled") ~= false and not target:script("install") then
+        if not target:is_phony() and target:is_enabled() and not target:script("install") then
             local targetfile = target:targetfile()
             if targetfile and not os.isfile(targetfile) then
                 table.insert(targetnames, target:name())

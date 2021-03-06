@@ -41,11 +41,11 @@ rule("qt.static")
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
+    on_load(function (target)
         target:set("kind", "static")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
         import("load")(target, {frameworks = {"QtCore"}})
     end)
 
@@ -54,11 +54,11 @@ rule("qt.shared")
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
+    on_load(function (target)
         target:set("kind", "shared")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
         import("load")(target, {frameworks = {"QtCore"}})
     end)
 
@@ -67,11 +67,11 @@ rule("qt.console")
     add_deps("qt.qrc", "qt.ui", "qt.moc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
+    on_load(function (target)
         target:set("kind", "binary")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
         import("load")(target, {frameworks = {"QtCore"}})
     end)
 
@@ -82,11 +82,11 @@ rule("qt.widgetapp")
     add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", is_plat("android") and "shared" or "binary")
+    on_load(function (target)
+        target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
     end)
 
@@ -103,11 +103,11 @@ rule("qt.widgetapp_static")
     add_deps("qt.ui", "qt.moc", "qt._wasm_app", "qt.qrc")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", is_plat("android") and "shared" or "binary")
+    on_load(function (target)
+        target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
 
         -- get qt sdk version
         local qt = target:data("qt")
@@ -153,11 +153,11 @@ rule("qt.quickapp")
     add_deps("qt.qrc", "qt.moc", "qt._wasm_app")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", is_plat("android") and "shared" or "binary")
+    on_load(function (target)
+        target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
         import("load")(target, {gui = true, frameworks = {"QtGui", "QtQuick", "QtQml", "QtCore", "QtNetwork"}})
     end)
 
@@ -174,11 +174,11 @@ rule("qt.quickapp_static")
     add_deps("qt.qrc", "qt.moc", "qt._wasm_app")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
-        target:set("kind", is_plat("android") and "shared" or "binary")
+    on_load(function (target)
+        target:set("kind", target:is_plat("android") and "shared" or "binary")
     end)
 
-    after_load(function (target)
+    on_config(function (target)
 
         -- get qt sdk version
         local qt = target:data("qt")

@@ -477,7 +477,7 @@ function _add_target(cmakelists, target)
 
     -- is phony target?
     local targetkind = target:kind()
-    if target:isphony() then
+    if target:is_phony() then
         return _add_target_phony(cmakelists, target)
     elseif targetkind == "binary" then
         _add_target_binary(cmakelists, target)

@@ -640,13 +640,35 @@ function _instance:rule(name)
 end
 
 -- is phony target?
-function _instance:isphony()
-
-    -- get target kind
+function _instance:is_phony()
     local targetkind = self:kind()
-
-    -- is phony?
     return not targetkind or targetkind == "phony"
+end
+
+-- is binary target?
+function _instance:is_binary()
+    return self:kind() == "binary"
+end
+
+-- is shared library target?
+function _instance:is_shared()
+    return self:kind() == "shared"
+end
+
+-- is static library target?
+function _instance:is_static()
+    return self:kind() == "static"
+end
+
+-- is default target?
+function _instance:is_default()
+    local default = self:get("default")
+    return default == nil or default == true
+end
+
+-- is enabled?
+function _instance:is_enabled()
+    return self:get("enabled") ~= false
 end
 
 -- get the enabled option
@@ -1883,6 +1905,7 @@ function target.apis()
             -- target.on_xxx
             "target.on_run"
         ,   "target.on_load"
+        ,   "target.on_config"
         ,   "target.on_link"
         ,   "target.on_build"
         ,   "target.on_build_file"
