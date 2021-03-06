@@ -92,9 +92,8 @@ function _get_configs(package, configs)
     return configs
 end
 
--- init arguments and inherit some global options from the parent xmake
-function _init_argv(package, ...)
-    local argv = {...}
+-- set some builtin global options from the parent xmake
+function _set_builtin_argv(argv)
     for _, name in ipairs({"diagnosis", "verbose", "quiet", "yes", "confirm", "root"}) do
         local value = option.get(name)
         if type(value) == "boolean" then
@@ -103,7 +102,6 @@ function _init_argv(package, ...)
             table.insert(argv, "--" .. name .. "=" .. value)
         end
     end
-    return argv
 end
 
 -- get require info of package
@@ -164,11 +162,15 @@ function install(package, configs, opt)
     -- pass local repositories
     opt = opt or {}
     for _, repo in ipairs(repository.repositories()) do
-        os.vrunv("xmake", {"repo", "--add", repo:name(), repo:url(), repo:branch()})
+        local repo_argv = {"repo"}
+        _set_builtin_argv(repo_argv)
+        table.join2(repo_argv, {"--add", repo:name(), repo:directory()})
+        os.vrunv("xmake", repo_argv)
     end
 
     -- pass configurations
-    local argv = _init_argv(package, "f", "-y", "-c")
+    local argv = {"f", "-y", "-c"}
+    _set_builtin_argv(argv)
     for name, value in pairs(_get_configs(package, configs)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -187,10 +189,12 @@ function install(package, configs, opt)
     os.vrunv("xmake", argv, {envs = envs})
 
     -- do build
-    argv = _init_argv(package)
+    argv = {}
+    _set_builtin_argv(argv)
     os.vrunv("xmake", argv, {envs = envs})
 
     -- do install
-    argv = _init_argv(package, "install", "-y", "-o", package:installdir())
+    argv = {"install", "-y", "-o", package:installdir()}
+    _set_builtin_argv(argv)
     os.vrunv("xmake", argv, {envs = envs})
 end
