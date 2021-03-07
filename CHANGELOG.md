@@ -5,6 +5,7 @@
 ### New features
 
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): Support `add_files("*.def")` to export symbols for windows/dll
+* [#1267](https://github.com/xmake-io/xmake/issues/1267): add `find_package("nvtx")`
 
 ### Bugs fixed
 
@@ -948,6 +949,7 @@
 ### 新特性
 
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): 支持 `add_files("*.def")` 添加 def 文件去导出 windows/dll 符号
+* [#1267](https://github.com/xmake-io/xmake/issues/1267): 添加 `find_package("nvtx")`
 
 ## Bugs 修复
 
