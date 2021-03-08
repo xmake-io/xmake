@@ -1105,7 +1105,10 @@ function _instance:filerules(sourcefile)
     end
 
     -- get target rules from the given sourcekind or extension
-    for _, r in ipairs(table.wrap(key2rules[self:sourcekind_of(sourcefile)] or key2rules[path.extension(sourcefile):lower()])) do
+    local filename = path.filename(sourcefile):lower()
+    for _, r in ipairs(table.wrap(key2rules[path.extension(filename, 2)] or
+                                  key2rules[path.extension(filename)] or
+                                  key2rules[self:sourcekind_of(filename)])) do
         table.insert(rules, r)
     end
     return rules

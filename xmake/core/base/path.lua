@@ -69,9 +69,12 @@ function path.basename(p)
 end
 
 -- get the file extension of the path: .xxx
-function path.extension(p)
+function path.extension(p, level)
     local i = p:lastof(".", true)
     if i then
+        if level and level > 1 then
+            return path.extension(p:sub(1, i - 1), level - 1) .. p:sub(i)
+        end
         return p:sub(i)
     else
         return ""
