@@ -136,6 +136,9 @@ function _make_targetinfo(mode, arch, target)
     -- save target kind
     targetinfo.kind          = target:get("kind")
 
+    -- is default?
+    targetinfo.default       = tostring(target:is_default())
+
     -- save target file
     targetinfo.basename      = _escape(target:get("basename"))
     targetinfo.filename      = _escape(target:get("filename"))

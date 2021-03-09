@@ -5,6 +5,7 @@
     <XmakePlat>#plat#</XmakePlat>
     <XmakeArch>#arch#</XmakeArch>
     <XmakeKind>#kind#</XmakeKind>
+    <XmakeDefault>#default#</XmakeDefault>
     <XmakeDefines>#defines#</XmakeDefines>
     <XmakeLanguages>#languages#</XmakeLanguages>
     <XmakeSubSystem>#subsystem#</XmakeSubSystem>
