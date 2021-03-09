@@ -70,10 +70,14 @@ function _checkout(package, url, sourcedir, url_alias)
     else
 
         -- clone whole history and tags
-        git.clone(url, {outputdir = packagedir, recursive = true})
+        git.clone(url, {outputdir = packagedir})
 
         -- attempt to checkout the given version
-        git.checkout(package:revision(url_alias) or package:tag() or package:version_str(), {repodir = packagedir})
+        local revision = package:revision(url_alias) or package:tag() or package:version_str()
+        git.checkout(revision, {repodir = packagedir})
+
+        -- update all submodules
+        git.submodule.update({init = true, recursive = true, repodir = packagedir})
     end
 
     -- move to source directory

@@ -30,8 +30,8 @@ import("lib.detect.find_tool")
 --
 -- import("devel.git.submodule")
 --
--- submodule.update("master", {repodir = "/tmp/xmake", init = true, remote = true})
--- submodule.update("v1.0.1", {repodir = "/tmp/xmake", recursive = true, reference = "xxx", paths = "xxx"})
+-- submodule.update({repodir = "/tmp/xmake", init = true, remote = true})
+-- submodule.update({repodir = "/tmp/xmake", recursive = true, reference = "xxx", paths = "xxx"})
 --
 -- @endcode
 --
