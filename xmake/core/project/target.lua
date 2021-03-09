@@ -60,7 +60,7 @@ end
 function _instance:_memcache()
     local cache = self._MEMCACHE
     if not cache then
-        cache = memcache.cache("core.project.target." .. self:name())
+        cache = memcache.cache("core.project.target." .. tostring(self))
         self._MEMCACHE = cache
     end
     return cache
@@ -1784,10 +1784,10 @@ end
 
 -- get the toolchains
 function _instance:toolchains()
-    local toolchains = self._TOOLCHAINS
+    local toolchains = self:_memcache():get("toolchains")
     if toolchains == nil then
         toolchains = self:platform():toolchains()
-        self._TOOLCHAINS = toolchains
+        self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
