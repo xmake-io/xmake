@@ -1207,12 +1207,14 @@ function _instance:fetchdeps()
         local total = #orderdeps
         for idx, _ in ipairs(orderdeps) do
             local dep = orderdeps[total + 1 - idx]
-            local depinfo = dep:fetch()
-            if depinfo then
-                for name, values in pairs(depinfo) do
-                    if name ~= "license" and name ~= "version" then
-                        fetchinfo[name] = table.wrap(fetchinfo[name])
-                        table.join2(fetchinfo[name], values)
+            if dep:is_library() then
+                local depinfo = dep:fetch()
+                if depinfo then
+                    for name, values in pairs(depinfo) do
+                        if name ~= "license" and name ~= "version" then
+                            fetchinfo[name] = table.wrap(fetchinfo[name])
+                            table.join2(fetchinfo[name], values)
+                        end
                     end
                 end
             end
