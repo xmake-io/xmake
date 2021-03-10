@@ -1,0 +1,12 @@
+add_rules("mode.release", "mode.debug")
+add_requires("linux-tools", {alias = "bpf", configs = {bpf = true}})
+add_requires("linux-headers")
+
+target("minimal")
+    set_kind("binary")
+    add_rules("platform.linux.bpf")
+    add_files("src/minimal.c")
+    add_files("src/minimal.bpf.c")
+    add_packages("bpf", "linux-headers")
+    set_toolchains("clang")
+    set_license("GPL-2.0")
