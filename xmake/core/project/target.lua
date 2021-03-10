@@ -60,7 +60,7 @@ end
 function _instance:_memcache()
     local cache = self._MEMCACHE
     if not cache then
-        cache = memcache.cache("core.project.target." .. self:name())
+        cache = memcache.cache("core.project.target." .. tostring(self))
         self._MEMCACHE = cache
     end
     return cache
@@ -1784,10 +1784,32 @@ end
 
 -- get the toolchains
 function _instance:toolchains()
-    local toolchains = self._TOOLCHAINS
+    local toolchains = self:_memcache():get("toolchains")
     if toolchains == nil then
-        toolchains = self:platform():toolchains()
-        self._TOOLCHAINS = toolchains
+
+        -- load target toolchains
+        local target_toolchains = self:get("toolchains")
+        if target_toolchains then
+            toolchains = {}
+            for _, name in ipairs(table.wrap(target_toolchains)) do
+                local toolchain_opt = table.copy(self:extraconf("toolchains", name))
+                toolchain_opt.arch = self:arch()
+                toolchain_opt.plat = self:plat()
+                local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
+                -- attempt to load toolchain from project
+                if not toolchain_inst and self._PROJECT then
+                    toolchain_inst = self._PROJECT.toolchain(name, toolchain_opt)
+                end
+                if not toolchain_inst then
+                    os.raise(errors)
+                end
+                table.insert(toolchains, toolchain_inst)
+            end
+        else
+            -- load platform toolchains
+            toolchains = self:platform():toolchains()
+        end
+        self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
@@ -1977,3 +1999,4 @@ end
 
 -- return module
 return target
+

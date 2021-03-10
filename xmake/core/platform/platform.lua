@@ -29,6 +29,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local interpreter    = require("base/interpreter")
 local toolchain      = require("tool/toolchain")
+local memcache       = require("cache/memcache")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
@@ -40,6 +41,16 @@ function _instance.new(name, arch, info)
     instance._ARCH    = arch
     instance._INFO    = info
     return instance
+end
+
+-- get memcache
+function _instance:_memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.platform.platform." .. tostring(self))
+        self._MEMCACHE = cache
+    end
+    return cache
 end
 
 -- get platform name
@@ -138,7 +149,7 @@ end
 
 -- get the toolchains
 function _instance:toolchains(opt)
-    local toolchains = self._TOOLCHAINS
+    local toolchains = self:_memcache():get("toolchains")
     if not toolchains then
 
         -- get current valid toolchains from configuration cache
@@ -181,7 +192,7 @@ function _instance:toolchains(opt)
                 table.insert(toolchains, toolchain_inst)
             end
         end
-        self._TOOLCHAINS = toolchains
+        self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
@@ -345,6 +356,11 @@ function platform._apis()
     }
 end
 
+-- get memcache
+function platform._memcache()
+    return memcache.cache("core.platform.platform")
+end
+
 -- get platform directories
 function platform.directories()
 
@@ -499,26 +515,22 @@ end
 
 -- get the all toolchains
 function platform.toolchains()
-
-    -- return it directly if exists
-    if platform._TOOLCHAINS then
-        return platform._TOOLCHAINS
-    end
-
-    -- get all toolchains
-    local toolchains = {}
-    local dirs  = toolchain.directories()
-    for _, dir in ipairs(dirs) do
-        local dirs = os.dirs(path.join(dir, "*"))
-        if dirs then
-            for _, dir in ipairs(dirs) do
-                if os.isfile(path.join(dir, "xmake.lua")) then
-                    table.insert(toolchains, path.basename(dir))
+    local toolchains = self._memcache():get("toolchains")
+    if not toolchains then
+        toolchains = {}
+        local dirs  = toolchain.directories()
+        for _, dir in ipairs(dirs) do
+            local dirs = os.dirs(path.join(dir, "*"))
+            if dirs then
+                for _, dir in ipairs(dirs) do
+                    if os.isfile(path.join(dir, "xmake.lua")) then
+                        table.insert(toolchains, path.basename(dir))
+                    end
                 end
             end
         end
+        self._memcache():set("toolchains", toolchains)
     end
-    platform._TOOLCHAINS = toolchains
     return toolchains
 end
 

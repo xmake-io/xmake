@@ -535,15 +535,16 @@ function toolchain.load(name, opt)
     name, packages = toolchain._parsename(name)
     opt.packages = opt.packages or packages
 
-    -- get cache key
+    -- get cache
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
+    local cache = toolchain._memcache()
     local cachekey = toolchain._cachekey(name, opt)
 
     -- get it directly from cache dirst
-    toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
-    if toolchain._TOOLCHAINS[cachekey] then
-        return toolchain._TOOLCHAINS[cachekey]
+    local instance = cache:get(cachekey)
+    if instance then
+        return instance
     end
 
     -- find the toolchain script path
@@ -580,8 +581,8 @@ function toolchain.load(name, opt)
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, result, cachekey, opt)
-    toolchain._TOOLCHAINS[cachekey] = instance
+    instance = _instance.new(name, result, cachekey, opt)
+    cache:set(cachekey, instance)
     return instance
 end
 
@@ -597,17 +598,18 @@ function toolchain.load_withinfo(name, info, opt)
     -- get cache key
     opt.plat = opt.plat or config.get("plat") or os.host()
     opt.arch = opt.arch or config.get("arch") or os.arch()
+    local cache = toolchain._memcache()
     local cachekey = toolchain._cachekey(name, opt)
 
     -- get it directly from cache dirst
-    toolchain._TOOLCHAINS = toolchain._TOOLCHAINS or {}
-    if toolchain._TOOLCHAINS[cachekey] then
-        return toolchain._TOOLCHAINS[cachekey]
+    local instance = cache:get(cachekey)
+    if instance then
+        return instance
     end
 
     -- save instance to the cache
-    local instance = _instance.new(name, info, cachekey, opt)
-    toolchain._TOOLCHAINS[cachekey] = instance
+    instance = _instance.new(name, info, cachekey, opt)
+    cache:set(cachekey, instance)
     return instance
 end
 
@@ -620,7 +622,7 @@ function toolchain.tool(toolchains, toolkind, opt)
     local arch = opt.arch or config.get("arch") or os.arch()
 
     -- get cache and cachekey
-    local cache = toolchain:_localcache()
+    local cache = toolchain._localcache()
     local cachekey = "tool_" .. (opt.cachekey or "") .. "_" .. plat .. "_" .. arch .. "_" .. toolkind
     local updatecache = false
 

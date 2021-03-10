@@ -136,6 +136,9 @@ function _make_targetinfo(mode, arch, target)
     -- save target kind
     targetinfo.kind          = target:get("kind")
 
+    -- is default?
+    targetinfo.default       = tostring(target:is_default())
+
     -- save target file
     targetinfo.basename      = _escape(target:get("basename"))
     targetinfo.filename      = _escape(target:get("filename"))
@@ -474,7 +477,7 @@ function main(outputdir, vsinfo)
                 table.insert(targetnames, 1, targetname)
             elseif target:is_binary() then
                 local first_target = targetnames[1] and project.target(targetnames[1])
-                if not first_target or first_target:get("default") ~= true then
+                if not first_target or first_target:is_default() then
                     table.insert(targetnames, 1, targetname)
                 else
                     table.insert(targetnames, targetname)
