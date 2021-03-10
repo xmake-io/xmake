@@ -7,6 +7,10 @@
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): Support `add_files("*.def")` to export symbols for windows/dll
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): add `find_package("nvtx")`
 
+### Change
+
+* [#1275](https://github.com/xmake-io/xmake/issues/1275): Support conditionnal targets for vsxmake plugin
+
 ### Bugs fixed
 
 * [#1266](https://github.com/xmake-io/xmake/issues/1266): Fix relative repo path in `add_repositories`
@@ -950,6 +954,10 @@
 
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): 支持 `add_files("*.def")` 添加 def 文件去导出 windows/dll 符号
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): 添加 `find_package("nvtx")`
+
+## 改进
+
+* [#1275](https://github.com/xmake-io/xmake/issues/1275): 改进 vsxmake 生成器，支持条件化编译 targets
 
 ## Bugs 修复
 
