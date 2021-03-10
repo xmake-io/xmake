@@ -20,7 +20,7 @@
 
 -- define rule: win.sdk.resource
 rule("win.sdk.resource")
-    set_extensions(".rc")
+    set_sourcekinds("mrc")
     on_build_files("private.action.build.object", {batch = true})
 
 -- define rule: application

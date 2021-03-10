@@ -1574,7 +1574,7 @@ function _instance:sourcebatches()
 
             -- attempt to get source kind from the builtin languages
             local sourcekind = self:sourcekind_of(sourcefile)
-            if sourcekind and not override then
+            if sourcekind and target:get("sourcekinds") and not override then
 
                 -- save source kind
                 sourcebatch.sourcekind = sourcekind
