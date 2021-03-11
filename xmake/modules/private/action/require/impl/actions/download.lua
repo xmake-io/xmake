@@ -239,7 +239,7 @@ function main(package)
                     table.insert(urls_failed, url)
 
                     -- failed? break it
-                    if idx == #urls and not package:optional() then
+                    if idx == #urls and not package:is_optional() then
                         if #urls_failed > 0 then
                             print("")
                             print("we can also download these packages manually:")

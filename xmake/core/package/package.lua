@@ -343,6 +343,38 @@ function _instance:is_fetchonly()
     return self:get("fetch") and not self:get("install")
 end
 
+-- is optional package?
+function _instance:is_optional()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.optional or false
+end
+
+-- verify sha256sum and versions?
+function _instance:verify()
+    local requireinfo = self:requireinfo()
+    local verify = requireinfo and requireinfo.verify
+    if verify == nil then
+        verify = true
+    end
+    return verify
+end
+
+-- is debug package?
+function _instance:debug()
+    return self:config("debug")
+end
+
+-- is the supported package?
+function _instance:supported()
+    -- attempt to get the install script with the current plat/arch
+    return self:script("install") ~= nil
+end
+
+-- support parallelize for installation?
+function _instance:parallelize()
+    return self:get("parallelize") ~= false
+end
+
 -- get the filelock of the whole package directory
 function _instance:filelock()
     local filelock = self._FILELOCK
@@ -906,38 +938,6 @@ function _instance:group()
     if requireinfo then
         return requireinfo.group
     end
-end
-
--- is optional package?
-function _instance:optional()
-    local requireinfo = self:requireinfo()
-    return requireinfo and requireinfo.optional or false
-end
-
--- verify sha256sum and versions?
-function _instance:verify()
-    local requireinfo = self:requireinfo()
-    local verify = requireinfo and requireinfo.verify
-    if verify == nil then
-        verify = true
-    end
-    return verify
-end
-
--- is debug package?
-function _instance:debug()
-    return self:config("debug")
-end
-
--- is the supported package?
-function _instance:supported()
-    -- attempt to get the install script with the current plat/arch
-    return self:script("install") ~= nil
-end
-
--- support parallelize for installation?
-function _instance:parallelize()
-    return self:get("parallelize") ~= false
 end
 
 -- get xxx_script

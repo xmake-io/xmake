@@ -64,7 +64,7 @@ end
 -- get package configs string
 function _get_package_configs_str(instance)
     local configs = {}
-    if instance:optional() then
+    if instance:is_optional() then
         table.insert(configs, "optional")
     end
     local requireinfo = instance:requireinfo()
@@ -443,7 +443,7 @@ function main(requires, opt)
                     packages_download[tostring(instance)] = instance
                 end
                 table.insert(packages_install, instance)
-            elseif not instance:optional() then
+            elseif not instance:is_optional() then
                 table.insert(packages_unsupported, instance)
             end
         end
@@ -463,7 +463,7 @@ function main(requires, opt)
     if not _get_confirm(packages_install) then
         local packages_must = {}
         for _, instance in ipairs(packages_install) do
-            if not instance:optional() then
+            if not instance:is_optional() then
                 table.insert(packages_must, instance:displayname())
             end
         end

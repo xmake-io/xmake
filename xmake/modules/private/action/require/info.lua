@@ -59,7 +59,7 @@ end
 function _info(instance)
     local info = instance:version_str() and instance:version_str() or "no version"
     info = info .. _from(instance)
-    info = info .. (instance:optional() and ", ${yellow}optional${clear}" or "")
+    info = info .. (instance:is_optional() and ", ${yellow}optional${clear}" or "")
     return info
 end
 
