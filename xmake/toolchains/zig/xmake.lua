@@ -66,7 +66,7 @@ toolchain("zig")
         elseif toolchain:is_plat("wasm") then
             toolchain:set("toolset", "ld",    zig .. " wasm-ld")
         else
-            toolchain:set("toolset", "ld",    zig .. " zig c++")
+            toolchain:set("toolset", "ld",    zig .. " c++")
         end
         toolchain:set("toolset", "sh",    zig .. " c++")
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
