@@ -57,7 +57,17 @@ toolchain("zig")
         local zig = toolchain:config("zig") or "zig"
         toolchain:set("toolset", "cc",    zig .. " cc")
         toolchain:set("toolset", "cxx",   zig .. " c++")
-        toolchain:set("toolset", "ld",    zig .. " c++")
+        if toolchain:is_plat("macosx") then
+            toolchain:set("toolset", "ld",    zig .. " ld64.lld")
+        elseif toolchain:is_plat("linux") then
+            toolchain:set("toolset", "ld",    zig .. " ld.lld")
+        elseif toolchain:is_plat("windows") then
+            toolchain:set("toolset", "ld",    zig .. " lld.link")
+        elseif toolchain:is_plat("wasm") then
+            toolchain:set("toolset", "ld",    zig .. " wasm-ld")
+        else
+            toolchain:set("toolset", "ld",    zig .. " zig c++")
+        end
         toolchain:set("toolset", "sh",    zig .. " c++")
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
         toolchain:set("toolset", "zcar", "$(env ZC)", zig)
