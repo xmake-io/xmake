@@ -166,7 +166,7 @@ end
 function _package_addenvs(envs, instance)
 
     -- only for xmake::package
-    if instance:isSys() then
+    if instance:is_system() then
         return
     end
 

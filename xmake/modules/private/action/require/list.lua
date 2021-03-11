@@ -29,16 +29,16 @@ import("private.action.require.impl.environment")
 function _from(instance)
     local fetchinfo = instance:fetch()
     if fetchinfo then
-        if instance:is3rd() then
+        if instance:is_thirdparty() then
             return ", ${green}3rd${clear}"
-        elseif instance:isSys() then
+        elseif instance:is_system() then
             return ", ${green}system${clear}"
         else
             return ""
         end
     elseif #instance:urls() > 0 then
         return instance:supported() and format(", ${yellow}remote${clear}(in %s)", instance:repo():name()) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", instance:repo():name())
-    elseif instance:isSys() then
+    elseif instance:is_system() then
         return ", ${red}missing${clear}"
     else
         return ""

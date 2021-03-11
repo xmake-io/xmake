@@ -587,6 +587,10 @@ function should_install(package)
     if package:exists() then
         return false
     end
+    -- we need not install it if this package need only be fetched
+    if package:is_fetchonly() then
+        return false
+    end
     if package:parents() then
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(package:parents()) do

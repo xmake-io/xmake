@@ -37,9 +37,9 @@ import("private.action.require.impl.utils.get_requires")
 function _from(instance)
     local fetchinfo = instance:fetch()
     if fetchinfo then
-        if instance:is3rd() then
+        if instance:is_thirdparty() then
             return ", ${green}3rd${clear}"
-        elseif instance:isSys() then
+        elseif instance:is_system() then
             return ", ${green}system${clear}"
         else
             return ""
@@ -48,7 +48,7 @@ function _from(instance)
         local repo = instance:repo()
         local reponame = repo and repo:name() or "unknown"
         return instance:supported() and format(", ${yellow}remote${clear}(in %s)", reponame) or format(", ${yellow}remote${clear}(${red}unsupported${clear} in %s)", reponame)
-    elseif instance:isSys() then
+    elseif instance:is_system() then
         return ", ${red}missing${clear}"
     else
         return ""

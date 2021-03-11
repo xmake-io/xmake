@@ -146,7 +146,7 @@ function main(package)
 
             -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
             local installed_now = false
-            if package:is3rd() then
+            if package:is_thirdparty() then
                 local script = package:script("install")
                 if script ~= nil then
                     filter.call(script, package)

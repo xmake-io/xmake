@@ -105,8 +105,8 @@ function _get_confirm(packages)
         local packages_group = {}
         for _, instance in ipairs(packages) do
             -- achive packages by repository
-            local reponame = instance:repo() and instance:repo():name() or (instance:isSys() and "system" or "")
-            if instance:is3rd() then
+            local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
+            if instance:is_thirdparty() then
                 reponame = instance:name():lower():split("::")[1]
             end
             packages_repo[reponame] = packages_repo[reponame] or {}

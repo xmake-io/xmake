@@ -326,6 +326,23 @@ function _instance:is_toplevel()
     return not self:parents()
 end
 
+-- is the system package?
+function _instance:is_system()
+    return self._is_system
+end
+
+-- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
+-- we need install and find package by third-party package manager directly
+--
+function _instance:is_thirdparty()
+    return self._is_thirdparty
+end
+
+-- is fetch only?
+function _instance:is_fetchonly()
+    return self:get("fetch") and not self:get("install")
+end
+
 -- get the filelock of the whole package directory
 function _instance:filelock()
     local filelock = self._FILELOCK
@@ -702,7 +719,7 @@ end
 
 -- get the version string
 function _instance:version_str()
-    if self:is3rd() then
+    if self:is_thirdparty() then
         local requireinfo = self:requireinfo()
         if requireinfo then
             return requireinfo.version
@@ -923,18 +940,6 @@ function _instance:parallelize()
     return self:get("parallelize") ~= false
 end
 
--- is the third-party package? e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
--- we need install and find package by third-party package manager directly
---
-function _instance:is3rd()
-    return self._is3rd
-end
-
--- is the system package?
-function _instance:isSys()
-    return self._isSys
-end
-
 -- get xxx_script
 function _instance:script(name, generic)
 
@@ -1011,7 +1016,7 @@ function _instance:_fetch_tool(opt)
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
         if opt.system then
             local fetchnames = {self:name()}
-            if not self:is3rd() then
+            if not self:is_thirdparty() then
                 table.join2(fetchnames, self:extsources())
             end
             for _, fetchname in ipairs(fetchnames) do
@@ -1063,7 +1068,7 @@ function _instance:_fetch_library(opt)
         self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
         if opt.system then
             local fetchnames = {self:name()}
-            if not self:is3rd() then
+            if not self:is_thirdparty() then
                 table.join2(fetchnames, self:extsources())
             end
             for _, fetchname in ipairs(fetchnames) do
@@ -1072,7 +1077,7 @@ function _instance:_fetch_library(opt)
                                                require_version = opt.require_version,
                                                mode = self:mode(),
                                                pkgconfigs = self:configs(),
-                                               buildhash = self:is3rd() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
+                                               buildhash = self:is_thirdparty() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
                                                cachekey = "fetch_package_system",
                                                external = opt.external,
                                                system = true})
@@ -1112,7 +1117,7 @@ function _instance:fetch(opt)
 
     -- fetch the require version
     local require_ver = opt.version or self:requireinfo().version
-    if not self:is3rd() and not require_ver:find('.', 1, true) then
+    if not self:is_thirdparty() and not require_ver:find('.', 1, true) then
         -- strip branch version only system package
         require_ver = nil
     end
@@ -1124,7 +1129,7 @@ function _instance:fetch(opt)
     if system == nil then
         system = self:requireinfo().system
     end
-    if self:is3rd() then
+    if self:is_thirdparty() then
         -- we need ignore `{system = true/false}` argument if be 3rd package
         -- @see https://github.com/xmake-io/xmake/issues/726
         system = nil
@@ -1143,14 +1148,14 @@ function _instance:fetch(opt)
 
     -- fetch binary tool?
     fetchinfo = nil
-    local isSys = nil
+    local is_system = nil
     if self:is_binary() then
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is3rd() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() then
             fetchinfo = self:_fetch_tool({require_version = self:version_str(), force = opt.force})
             if fetchinfo then
-                isSys = self._isSys
+                is_system = self._is_system
             end
         end
 
@@ -1158,16 +1163,16 @@ function _instance:fetch(opt)
         if not fetchinfo and system ~= false then
             fetchinfo = self:_fetch_tool({system = true, require_version = require_ver, force = opt.force})
             if fetchinfo then
-                isSys = true
+                is_system = true
             end
         end
     else
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is3rd() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() then
             fetchinfo = self:_fetch_library({require_version = self:version_str(), external = external, force = opt.force})
             if fetchinfo then
-                isSys = self._isSys
+                is_system = self._is_system
             end
         end
 
@@ -1175,7 +1180,7 @@ function _instance:fetch(opt)
         if not fetchinfo and system ~= false then
             fetchinfo = self:_fetch_library({system = true, require_version = require_ver, external = external, force = opt.force})
             if fetchinfo then
-                isSys = true
+                is_system = true
             end
         end
     end
@@ -1184,8 +1189,8 @@ function _instance:fetch(opt)
     self._FETCHINFO = fetchinfo
 
     -- mark as system package?
-    if isSys ~= nil then
-        self._isSys = isSys
+    if is_system ~= nil then
+        self._is_system = is_system
     end
     return fetchinfo
 end
@@ -1658,7 +1663,7 @@ function package.load_from_system(packagename)
 
     -- get package info
     local packageinfo = {}
-    local is3rd = false
+    local is_thirdparty = false
     if packagename:find("::", 1, true) then
 
         -- get interpreter
@@ -1686,7 +1691,7 @@ function package.load_from_system(packagename)
 
         -- is third-party package?
         if not packagename:startswith("xmake::") then
-            is3rd = true
+            is_thirdparty = true
         end
     end
 
@@ -1694,10 +1699,10 @@ function package.load_from_system(packagename)
     instance = _instance.new(packagename, scopeinfo.new("package", packageinfo))
 
     -- mark as system or 3rd package
-    instance._isSys = true
-    instance._is3rd = is3rd
+    instance._is_system = true
+    instance._is_thirdparty = is_thirdparty
 
-    if is3rd then
+    if is_thirdparty then
         -- add configurations for the 3rd package
         local install_package = sandbox_module.import("package.manager." .. packagename:split("::")[1]:lower() .. ".install_package", {try = true, anonymous = true})
         if install_package and install_package.configurations then

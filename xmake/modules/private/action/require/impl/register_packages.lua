@@ -68,7 +68,7 @@ end
 
 -- register the base info of required package
 function _register_required_package_base(instance, required_package)
-    if not instance:isSys() and not instance:is3rd() then
+    if not instance:is_system() and not instance:is_thirdparty() then
         required_package:set("__installdir", instance:installdir())
     end
 end
