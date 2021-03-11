@@ -452,7 +452,7 @@ function buildenvs(package, opt)
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
     for _, dep in ipairs(package:orderdeps()) do
-        if dep:isSys() then
+        if dep:is_system() then
             local fetchinfo = dep:fetch()
             if fetchinfo then
                 table.join2(CMAKE_LIBRARY_PATH, fetchinfo.linkdirs)
