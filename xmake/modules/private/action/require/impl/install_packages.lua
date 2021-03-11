@@ -438,7 +438,7 @@ function main(requires, opt)
     local packages_unsupported = {}
     for _, instance in ipairs(packages) do
         if package.should_install(instance) then
-            if instance:supported() then
+            if instance:is_supported() then
                 if #instance:urls() > 0 then
                     packages_download[tostring(instance)] = instance
                 end

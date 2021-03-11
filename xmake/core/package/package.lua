@@ -350,7 +350,7 @@ function _instance:is_optional()
 end
 
 -- verify sha256sum and versions?
-function _instance:verify()
+function _instance:is_verify()
     local requireinfo = self:requireinfo()
     local verify = requireinfo and requireinfo.verify
     if verify == nil then
@@ -365,7 +365,7 @@ function _instance:debug()
 end
 
 -- is the supported package?
-function _instance:supported()
+function _instance:is_supported()
     -- attempt to get the install script with the current plat/arch
     return self:script("install") ~= nil
 end
