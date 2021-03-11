@@ -142,7 +142,7 @@ end
 
 -- get the build mode
 function _instance:mode()
-    return self:debug() and "debug" or "release"
+    return self:is_debug() and "debug" or "release"
 end
 
 -- get the repository of this package
@@ -360,7 +360,7 @@ function _instance:is_verify()
 end
 
 -- is debug package?
-function _instance:debug()
+function _instance:is_debug()
     return self:config("debug")
 end
 
@@ -371,8 +371,13 @@ function _instance:is_supported()
 end
 
 -- support parallelize for installation?
-function _instance:parallelize()
+function _instance:is_parallelize()
     return self:get("parallelize") ~= false
+end
+
+-- is debug package? (deprecated)
+function _instance:debug()
+    return self:is_debug()
 end
 
 -- get the filelock of the whole package directory
@@ -1672,7 +1677,7 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = table.copy(pkg:configs())
-            opt.mode            = pkg:debug() and "debug" or "release"
+            opt.mode            = pkg:is_debug() and "debug" or "release"
             opt.plat            = pkg:plat()
             opt.arch            = pkg:arch()
             opt.require_version = pkg:version_str()

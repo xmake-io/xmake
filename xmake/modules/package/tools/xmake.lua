@@ -45,7 +45,7 @@ function _get_configs(package, configs)
     local ldflags  = table.join(table.wrap(package:config("ldflags")),  get_config("ldflags"))
     table.insert(configs, "--plat=" .. package:plat())
     table.insert(configs, "--arch=" .. package:arch())
-    table.insert(configs, "--mode=" .. (package:debug() and "debug" or "release"))
+    table.insert(configs, "--mode=" .. (package:is_debug() and "debug" or "release"))
     if package:is_plat("windows") then
         local vs_runtime = package:config("vs_runtime")
         if vs_runtime then

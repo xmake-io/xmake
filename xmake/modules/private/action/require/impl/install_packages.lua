@@ -226,7 +226,7 @@ function _install_packages(packages_install, packages_download, installdeps)
             if not group or not packages_in_group[group] then
 
                 -- disable parallelize?
-                if not instance:parallelize() then
+                if not instance:is_parallelize() then
                     parallelize = false
                 end
                 if not parallelize then
