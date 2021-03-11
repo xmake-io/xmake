@@ -1157,7 +1157,7 @@ function _instance:fetch(opt)
     if self:is_binary() then
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is_thirdparty() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() and not self:is_fetchonly() then
             fetchinfo = self:_fetch_tool({require_version = self:version_str(), force = opt.force})
             if fetchinfo then
                 is_system = self._is_system
@@ -1174,7 +1174,7 @@ function _instance:fetch(opt)
     else
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is_thirdparty() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() and not self:is_fetchonly() then
             fetchinfo = self:_fetch_library({require_version = self:version_str(), external = external, force = opt.force})
             if fetchinfo then
                 is_system = self._is_system
