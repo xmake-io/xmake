@@ -7,6 +7,7 @@
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): Support `add_files("*.def")` to export symbols for windows/dll
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): add `find_package("nvtx")`
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): add `platform.linux.bpf` rule to build linux/bpf program
+* [#1280](https://github.com/xmake-io/xmake/issues/1280): Support fetchonly package to improve find_package
 
 ### Change
 
@@ -956,6 +957,7 @@
 * [#1259](https://github.com/xmake-io/xmake/issues/1259): 支持 `add_files("*.def")` 添加 def 文件去导出 windows/dll 符号
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): 添加 `find_package("nvtx")`
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): 添加 `platform.linux.bpf` 规则去构建 linux/bpf 程序
+* [#1280](https://github.com/xmake-io/xmake/issues/1280): 支持 fetchonly 包去扩展改进 find_package
 
 ## 改进
 
