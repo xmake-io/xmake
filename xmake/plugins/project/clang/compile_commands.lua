@@ -34,6 +34,7 @@ end
 -- https://github.com/xmake-io/xmake/issues/1050
 function _translate_arguments(arguments)
     local args = {}
+    local is_msvc = path.basename(arguments[1]):lower() == "cl"
     for _, arg in ipairs(arguments) do
         if arg:find("-isystem", 1, true) then
             arg = arg:replace("-isystem", "-I")
@@ -41,6 +42,11 @@ function _translate_arguments(arguments)
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
             arg = nil
+        end
+        -- @see use msvc-style flags for msvc to support language-server better
+        -- https://github.com/xmake-io/xmake/issues/1284
+        if is_msvc and arg and arg:startswith("-") then
+            arg = arg:gsub("^%-", "/")
         end
         if arg then
             table.insert(args, arg)
