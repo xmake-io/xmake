@@ -380,6 +380,16 @@ function _instance:debug()
     return self:is_debug()
 end
 
+-- is cross-compilation?
+function _instance:is_cross()
+    if not self:is_plat(os.host()) and not self:is_plat(os.subhost()) then
+        return true
+    end
+    if not self:is_arch(os.arch()) and not self:is_arch(os.subarch()) then
+        return true
+    end
+end
+
 -- get the filelock of the whole package directory
 function _instance:filelock()
     local filelock = self._FILELOCK
@@ -1138,6 +1148,9 @@ function _instance:fetch(opt)
         -- we need ignore `{system = true/false}` argument if be 3rd package
         -- @see https://github.com/xmake-io/xmake/issues/726
         system = nil
+    elseif self:is_cross() then
+        -- we need disable system package for cross-compilation
+        system = false
     end
 
     -- use sysincludedirs/-isystem instead of -I?

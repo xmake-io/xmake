@@ -344,10 +344,10 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         if recheck then
             _check_target_toolchains()
         end
-    end
 
-    -- config targets
-    _config_targets(targetname)
+        -- config targets
+        _config_targets(targetname)
+    end
 
     -- dump config
     if option.get("verbose") and not opt.disable_dump then
