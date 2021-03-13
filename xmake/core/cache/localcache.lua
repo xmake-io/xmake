@@ -50,7 +50,7 @@ end
 
 -- load cache
 function _instance:load()
-    if os.isfile(os.projectfile()) then
+    if os.isdir(config.directory()) then
         local result = io.load(path.join(config.cachedir(), self:name()))
         if result ~= nil then
             self._DATA = result
@@ -60,7 +60,7 @@ end
 
 -- save cache
 function _instance:save()
-    if os.isfile(os.projectfile()) then
+    if os.isdir(config.directory()) then
         local ok, errors = io.save(path.join(config.cachedir(), self:name()), self._DATA)
         if not ok then
             os.raise(errors)
