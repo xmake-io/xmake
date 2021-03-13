@@ -456,8 +456,11 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
                 requireinfo_configs.pic = parentinfo_configs.pic
             end
         end
-        if parentinfo.host then
-            requireinfo.host = true
+        if parentinfo.plat then
+            requireinfo.plat = parentinfo.plat
+        end
+        if parentinfo.arch then
+            requireinfo.arch = parentinfo.arch
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo.configs = requireinfo_configs
