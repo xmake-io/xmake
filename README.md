@@ -52,7 +52,9 @@
 
 ## Supporting the project
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏 [[Become a sponsor](https://xmake.io/#/about/sponsor)]
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏
+
+- [Become a sponsor](https://xmake.io/#/about/sponsor)
 
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 
