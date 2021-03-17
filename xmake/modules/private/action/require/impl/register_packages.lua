@@ -94,7 +94,10 @@ function _register_required_package(instance, required_package)
             for idx, _ in ipairs(orderdeps) do
                 local dep = orderdeps[total + 1 - idx]
                 if dep then
-                    _register_required_package_libs(dep, required_package, true)
+                    -- we can only inherit all link deps of library package
+                    if instance:is_library() then
+                        _register_required_package_libs(dep, required_package, true)
+                    end
                     _register_required_package_envs(dep, envs)
                 end
             end
