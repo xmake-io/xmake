@@ -251,6 +251,7 @@ function main(toolchain)
                 toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
                     toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
@@ -264,11 +265,13 @@ function main(toolchain)
                     toolchain:add("sysincludedirs", after_r13)
                 end
             elseif ndk_cxxstl:startswith("gnustl") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
                     toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
             elseif ndk_cxxstl:startswith("stlport") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/stlport", cxxstl_sdkdir))
             end
 
