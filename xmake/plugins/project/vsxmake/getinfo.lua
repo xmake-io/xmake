@@ -175,15 +175,6 @@ function _make_targetinfo(mode, arch, target)
         targetinfo.subsystem = "console"
     end
 
-    -- save config flags
-    local flags = {}
-    for k, v in pairs(localcache.get("config", "options_" .. target:name())) do
-        if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
-            table.insert(flags, "--" .. k .. "=" .. tostring(v));
-        end
-    end
-    targetinfo.configflags   = os.args(flags)
-
     -- save runenvs
     local runenvs = {}
     local addrunenvs, setrunenvs = make_runenvs(target)
@@ -352,6 +343,15 @@ function main(outputdir, vsinfo)
     vsinfo.group_deps        = table.keys(group_deps)
     vsinfo._groups           = groups
     vsinfo._group_deps       = group_deps
+
+    -- init config flags
+    local flags = {}
+    for k, v in pairs(localcache.get("config", "options")) do
+        if k ~= "plat" and k ~= "mode" and k ~= "arch" and k ~= "clean" and k ~= "buildir" then
+            table.insert(flags, "--" .. k .. "=" .. tostring(v))
+        end
+    end
+    vsinfo.configflags = os.args(flags)
 
     -- load targets
     local targets = {}
