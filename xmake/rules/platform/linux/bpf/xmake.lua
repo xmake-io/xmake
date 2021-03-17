@@ -23,6 +23,7 @@
 rule("platform.linux.bpf")
     set_extensions(".bpf.c")
     on_config(function (target)
+        assert(is_host("linux"), 'rule("platform.linux.bpf"): only supported on linux!')
         local headerdir = path.join(target:autogendir(), "rules", "bpf")
         target:add("includedirs", headerdir)
     end)
