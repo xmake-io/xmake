@@ -135,8 +135,8 @@ function main(target, opt)
     -- get stdcpp path
     local stdcpp_path = path.join(ndk, "sources/cxx-stl/llvm-libc++/libs", target_arch, "libc++_shared.so")
     if qt_sdkver and qt_sdkver:ge("5.14") then
-        local toolchain = path.directory(assert(toolchain_ndk:bindir(), "toolchain/bin directory not found!"))
-        stdcpp_path = path.join(toolchain, "sysroot", "usr", "lib")
+        local ndk_sysroot = assert(toolchain_ndk:config("ndk_sysroot"), "NDK sysroot directory not found!")
+        stdcpp_path = path.join(ndk_sysroot, "usr", "lib")
     end
 
     -- get toolchain version

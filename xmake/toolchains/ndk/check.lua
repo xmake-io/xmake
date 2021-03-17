@@ -34,6 +34,7 @@ function _check_ndk(toolchain)
         toolchain:config_set("ndkver", ndk.ndkver)
         toolchain:config_set("ndk_sdkver", ndk.sdkver)
         toolchain:config_set("ndk_toolchains_ver", ndk.toolchains_ver)
+        toolchain:config_set("ndk_sysroot", ndk.sysroot)
         toolchain:configs_save()
     else
         -- failed

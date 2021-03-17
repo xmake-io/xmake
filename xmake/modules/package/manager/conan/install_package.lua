@@ -271,10 +271,11 @@ function main(name, opt)
         envs.ARFLAGS   = table.concat(table.wrap(_conan_get_build_env("arflags", opt.plat)), ' ')
         envs.LDFLAGS   = table.concat(table.wrap(_conan_get_build_env("ldflags", opt.plat)), ' ')
         envs.SHFLAGS   = table.concat(table.wrap(_conan_get_build_env("shflags", opt.plat)), ' ')
-        local ndk = config.get("ndk")
-        if ndk then
+        local toolchain_ndk = toolchain.load("ndk", {plat = opt.plat, arch = opt.arch})
+        local ndk_sysroot = toolchain_ndk:config("ndk_sysroot")
+        if ndk_sysroot then
             table.insert(argv, "-e")
-            table.insert(argv, "CONAN_CMAKE_FIND_ROOT_PATH=" .. path.join(ndk, "sysroot"))
+            table.insert(argv, "CONAN_CMAKE_FIND_ROOT_PATH=" .. ndk_sysroot)
         end
         for k, v in pairs(envs) do
             table.insert(argv, "-e")
