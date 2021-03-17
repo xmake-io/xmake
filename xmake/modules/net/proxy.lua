@@ -88,6 +88,9 @@ function get(url)
         if proxy_pac and proxy_pac(url, host) then
             return global.get("proxy")
         end
+        if not proxy_pac and not proxy_hosts then
+            return global.get("proxy")
+        end 
         return
     end
 
