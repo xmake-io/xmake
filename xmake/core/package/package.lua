@@ -1552,7 +1552,7 @@ end
 
 -- get global target platform of package
 function package._target_plat()
-    local plat = package._PLAT
+    local plat = package._memcache():get("target_plat")
     if plat == nil then
         if not plat and os.isfile(os.projectfile()) then
             local project = require("project/project")
@@ -1564,14 +1564,14 @@ function package._target_plat()
         if not plat then
             plat = config.get("plat") or os.host()
         end
-        package._PLAT = plat
+        package._memcache():set("target_plat", plat)
     end
     return plat
 end
 
 -- get global target architecture of pacakge
 function package._target_arch()
-    local arch = package._ARCH
+    local arch = package._memcache():get("target_arch")
     if arch == nil then
         if not arch and os.isfile(os.projectfile()) then
             local project = require("project/project")
@@ -1583,7 +1583,7 @@ function package._target_arch()
         if not arch then
             arch = config.get("arch") or os.arch()
         end
-        package._ARCH = arch
+        package._memcache():set("target_arch", arch)
     end
     return arch
 end
