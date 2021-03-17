@@ -17,6 +17,7 @@
 ### Bugs fixed
 
 * [#1266](https://github.com/xmake-io/xmake/issues/1266): Fix relative repo path in `add_repositories`
+* [#1288](https://github.com/xmake-io/xmake/issues/1288): Fix vsxmake generator with option configs
 
 ## v2.5.2
 
@@ -968,6 +969,7 @@
 ## Bugs 修复
 
 * [#1266](https://github.com/xmake-io/xmake/issues/1266): 修复在 `add_repositories` 中的 repo 相对路径
+* [#1288](https://github.com/xmake-io/xmake/issues/1288): 修复 vsxmake 插件处理 option 配置问题
 
 ## v2.5.2
 
