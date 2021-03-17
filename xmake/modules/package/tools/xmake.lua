@@ -74,19 +74,19 @@ function _get_configs(package, configs)
             end
         end
     end
-    if cflags then
+    if cflags and #cflags > 0 then
         table.insert(configs, "--cflags=" .. table.concat(cflags, ' '))
     end
-    if cxflags then
+    if cxflags and #cxflags > 0 then
         table.insert(configs, "--cxflags=" .. table.concat(cxflags, ' '))
     end
-    if cxxflags then
+    if cxxflags and #cxxflags > 0 then
         table.insert(configs, "--cxxflags=" .. table.concat(cxxflags, ' '))
     end
-    if asflags then
+    if asflags and #asflags > 0 then
         table.insert(configs, "--asflags=" .. table.concat(asflags, ' '))
     end
-    if ldflags then
+    if ldflags and #ldflags > 0 then
         table.insert(configs, "--ldflags=" .. table.concat(ldflags, ' '))
     end
     return configs

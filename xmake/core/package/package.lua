@@ -645,12 +645,9 @@ function _instance:build_envs(lazy_loading)
         setmetatable(build_envs, { __index = function (tbl, key)
             local value = config.get(key)
             if value == nil then
-                value = self:toolconfig(key)
-            end
-            if value == nil then
                 value = self:tool(key)
             end
-            value = table.unique(table.join(table.wrap(value), self:config(key)))
+            value = table.unique(table.join(table.wrap(value), table.wrap(self:config(key)), self:toolconfig(key)))
             if #value > 0 then
                 value = table.unwrap(value)
                 rawset(tbl, key, value)
