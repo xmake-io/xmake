@@ -69,6 +69,12 @@ function _get_package_configs_str(instance)
     end
     local requireinfo = instance:requireinfo()
     if requireinfo then
+        if requireinfo.plat then
+            table.insert(configs, requireinfo.plat)
+        end
+        if requireinfo.arch then
+            table.insert(configs, requireinfo.arch)
+        end
         for k, v in pairs(requireinfo.configs) do
             if type(v) == "boolean" then
                 table.insert(configs, k .. ":" .. (v and "y" or "n"))

@@ -429,6 +429,12 @@ end
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
     local key = packagename .. "/" .. (version or requireinfo.version)
+    if requireinfo.plat then
+        key = key .. "/" .. requireinfo.plat
+    end
+    if requireinfo.arch then
+        key = key .. "/" .. requireinfo.arch
+    end
     local configs = requireinfo.configs
     if configs then
         local configs_order = {}
