@@ -360,26 +360,6 @@ function project._load_target(t, requires)
         return false, errors
     end
 
-    -- load toolchains
-    local toolchains = t:get("toolchains")
-    if toolchains then
-        t._TOOLCHAINS = {}
-        for _, name in ipairs(table.wrap(toolchains)) do
-            local toolchain_opt = table.copy(t:extraconf("toolchains", name))
-            toolchain_opt.arch = t:arch()
-            toolchain_opt.plat = t:plat()
-            local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
-            -- attempt to load toolchain from project
-            if not toolchain_inst then
-                toolchain_inst = project.toolchain(name, toolchain_opt)
-            end
-            if not toolchain_inst then
-                return false, errors
-            end
-            table.insert(t._TOOLCHAINS, toolchain_inst)
-        end
-    end
-
     -- do after_load() for target and all rules
     ok, errors = t:_load_after()
     if not ok then
