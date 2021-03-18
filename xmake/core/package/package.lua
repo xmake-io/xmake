@@ -1362,8 +1362,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cfuncs(funcs, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1379,8 +1379,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxfuncs(funcs, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1396,8 +1396,8 @@ end
 -- @return          true or false
 --
 function _instance:has_ctypes(types, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1413,8 +1413,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxtypes(types, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1430,8 +1430,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cincludes(includes, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1447,8 +1447,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxincludes(includes, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1464,8 +1464,8 @@ end
 -- @return          true or false
 --
 function _instance:check_csnippets(snippets, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}
@@ -1481,8 +1481,8 @@ end
 -- @return          true or false
 --
 function _instance:check_cxxsnippets(snippets, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
+    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
+        -- TODO we also need check it later for package with custom toolchains
         return true
     end
     opt = opt or {}

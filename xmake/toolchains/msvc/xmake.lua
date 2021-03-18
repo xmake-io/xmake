@@ -18,7 +18,17 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
+-- msvc toolchain
+--
+-- @param vs    the vs version
+--
+-- @code
+-- target("test")
+--     ...
+--     set_toolchains("msvc")
+--     set_toolchains("msvc", {vs = "2019"})
+-- @endcode
+--
 toolchain("msvc")
 
     -- set homepage

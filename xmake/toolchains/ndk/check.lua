@@ -25,13 +25,13 @@ import("detect.sdks.find_android_sdk")
 
 -- check the ndk toolchain
 function _check_ndk(toolchain)
-    local ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true})
+    local ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true, sdkver = toolchain:config("sdkver")})
     if not ndk then
         -- find it from packages
         for _, package in ipairs(toolchain:packages()) do
             local installdir = package:installdir()
             if installdir and os.isdir(installdir) then
-                ndk = find_ndk(installdir, {force = true, verbose = true})
+                ndk = find_ndk(installdir, {force = true, verbose = true, sdkver = toolchain:config("sdkver")})
                 if ndk then
                     break
                 end
@@ -49,11 +49,12 @@ function _check_ndk(toolchain)
         toolchain:config_set("ndk_sysroot", ndk.sysroot)
         toolchain:configs_save()
     else
+        --[[TODO
         -- failed
         cprint("${bright color.error}please run:")
         cprint("    - xmake config --ndk=xxx")
         cprint("or  - xmake global --ndk=xxx")
-        raise()
+        raise()]]
     end
 end
 

@@ -18,7 +18,17 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
+-- android ndk toolchain
+--
+-- @param sdkver    the platform sdk version
+--
+-- @code
+-- target("test")
+--     ...
+--     set_toolchains("ndk")
+--     set_toolchains("ndk", {sdkver = "23"})
+-- @endcode
+--
 toolchain("ndk")
 
     -- set homepage
