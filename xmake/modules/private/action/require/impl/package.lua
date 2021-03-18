@@ -43,6 +43,7 @@ end
 --
 -- semver
 -- - add_requires("tbox >=1.5.1", "zlib >=1.2.11")
+-- - add_requires("tbox", {version = ">=1.5.1"})
 --
 -- git branch/tag
 -- - add_requires("zlib master")
@@ -149,7 +150,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
     {
         originstr        = require_str,
         reponame         = reponame,
-        version          = version,
+        version          = require_extra.version or version,
         plat             = require_extra.plat,      -- require package in the given platform
         arch             = require_extra.arch,      -- require package in the given architecture
         targetos         = require_extra.targetos,  -- require package in the given target os
