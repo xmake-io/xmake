@@ -48,8 +48,9 @@ function _check_ndk(toolchain)
         toolchain:config_set("ndk_toolchains_ver", ndk.toolchains_ver)
         toolchain:config_set("ndk_sysroot", ndk.sysroot)
         toolchain:configs_save()
+        return true
     else
-        --[[TODO
+        --[[TODO we need also add this tips when use remote ndk toolchain
         -- failed
         cprint("${bright color.error}please run:")
         cprint("    - xmake config --ndk=xxx")
@@ -72,5 +73,7 @@ end
 function main(toolchain)
     _check_android_sdk(toolchain)
     _check_ndk(toolchain)
+    -- TODO we should return the check result, but we need support builder with package first
+    -- so we need improve remote ndk toolchain
     return true
 end

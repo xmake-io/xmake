@@ -142,7 +142,7 @@ function buildenvs(package, opt)
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
         table.join2(shflags,  opt.shflags)
-        table.join2(cflags,   compiler.map_flags("c", "define", defines))
+        table.join2(cflags,   compiler.map_flags("c", "define", defines)) -- TODO we need use package/toolchains
         table.join2(cflags,   compiler.map_flags("c", "includedir", includedirs))
         table.join2(cflags,   compiler.map_flags("c", "sysincludedir", sysincludedirs))
         table.join2(asflags,  compiler.map_flags("as", "define", defines))
