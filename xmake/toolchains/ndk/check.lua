@@ -26,6 +26,18 @@ import("detect.sdks.find_android_sdk")
 -- check the ndk toolchain
 function _check_ndk(toolchain)
     local ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true})
+    if not ndk then
+        -- find it from packages
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                ndk = find_ndk(installdir, {force = true, verbose = true})
+                if ndk then
+                    break
+                end
+            end
+        end
+    end
     if ndk then
         toolchain:config_set("ndk", ndk.sdkdir)
         toolchain:config_set("bindir", ndk.bindir)
