@@ -260,7 +260,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {"-I", path.translate(dir)}
+    return {"-I" .. path.translate(dir)}
 end
 
 -- make the sysincludedir flag
