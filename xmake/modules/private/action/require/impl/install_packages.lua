@@ -398,7 +398,9 @@ function _get_package_installdeps(packages)
         -- patch toolchain/packages to installdeps, because we need install toolchain package first
         for _, toolchain in ipairs(instance:toolchains()) do
             for _, packagename in ipairs(toolchain:config("packages")) do
-                table.insert(deps, packagesmap[packagename])
+                if packagesmap[packagename] ~= instance then -- avoid loop recursion
+                    table.insert(deps, packagesmap[packagename])
+                end
             end
         end
         installdeps[tostring(instance)] = deps
