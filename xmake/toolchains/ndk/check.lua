@@ -30,14 +30,20 @@ function _check_ndk(toolchain)
     for _, package in ipairs(toolchain:packages()) do
         local installdir = package:installdir()
         if installdir and os.isdir(installdir) then
-            ndk = find_ndk(installdir, {force = true, verbose = option.get("verbose"), sdkver = toolchain:config("sdkver")})
+            ndk = find_ndk(installdir, {force = true, verbose = option.get("verbose"),
+                                        plat = toolchain:plat(),
+                                        arch = toolchain:arch(),
+                                        sdkver = toolchain:config("sdkver")})
             if ndk then
                 break
             end
         end
     end
     if not ndk then
-        ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true, sdkver = toolchain:config("sdkver")})
+        ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true,
+                                                                      plat = toolchain:plat(),
+                                                                      arch = toolchain:arch(),
+                                                                      sdkver = toolchain:config("sdkver")})
     end
     if ndk then
         toolchain:config_set("ndk", ndk.sdkdir)
