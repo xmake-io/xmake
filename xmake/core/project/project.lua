@@ -194,10 +194,8 @@ function project._load(force, disable_filter)
     end
 
     -- save the root info
-    for name, value in pairs(rootinfo_target:info()) do
-        rootinfo:set("target." .. name, value)
-    end
     project._memcache():set("rootinfo", rootinfo)
+    project._memcache():set("rootinfo_target", rootinfo_target)
 
     -- leave the project directory
     oldir, errors = os.cd(oldir)
@@ -844,10 +842,28 @@ function project.filelock()
     return filelock, errors
 end
 
--- get the project info from the given name
+-- get the root configuration
 function project.get(name)
-    local rootinfo = project._memcache():get("rootinfo")
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
     return rootinfo and rootinfo:get(name) or nil
+end
+
+-- get the root extra configuration
+function project.extraconf(name, item, key)
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
+    return rootinfo and rootinfo:extraconf(name, item, key) or nil
 end
 
 -- get the project name

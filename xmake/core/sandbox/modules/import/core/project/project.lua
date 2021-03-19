@@ -37,6 +37,7 @@ local import      = require("sandbox/modules/import")
 
 -- export some readonly interfaces
 sandbox_core_project.get               = project.get
+sandbox_core_project.extraconf         = project.extraconf
 sandbox_core_project.rule              = project.rule
 sandbox_core_project.rules             = project.rules
 sandbox_core_project.toolchain         = project.toolchain
