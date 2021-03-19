@@ -152,7 +152,6 @@ function _check_target_toolchains()
             -- we only abort it when we know that toolchains of platform and target do not found
             local toolchain_found
             for _, toolchain_inst in pairs(target:toolchains()) do
-                print(toolchain_inst:name())
                 if toolchain_inst:is_standalone() then
                     toolchain_found = true
                 end
