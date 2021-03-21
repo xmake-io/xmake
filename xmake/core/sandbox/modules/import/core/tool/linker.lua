@@ -28,14 +28,10 @@ local raise     = require("sandbox/modules/raise")
 
 -- load the linker from the given target kind
 function sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
-
-    -- get the linker instance
     local instance, errors = linker.load(targetkind, sourcekinds, opt and opt.target or nil)
     if not instance then
         raise(errors)
     end
-
-    -- ok
     return instance
 end
 
@@ -46,14 +42,8 @@ end
 
 -- make arguments list for linking target file
 function sandbox_core_tool_linker.linkargv(targetkind, sourcekinds, objectfiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- get the linker instance
     local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
-
-    -- make arguments list
     return instance:linkargv(objectfiles, targetfile, opt)
 end
 
@@ -78,14 +68,8 @@ end
 
 -- link target file
 function sandbox_core_tool_linker.link(targetkind, sourcekinds, objectfiles, targetfile, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- get the linker instance
     local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
-
-    -- link it
     local ok, errors = instance:link(objectfiles, targetfile, opt)
     if not ok then
         raise(errors)
@@ -102,14 +86,8 @@ end
 -- @return              the supported flags or nil
 --
 function sandbox_core_tool_linker.has_flags(targetkind, sourcekinds, flags, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- get the linker instance
     local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
-
-    -- has flags?
     return instance:has_flags(flags)
 end
 
@@ -123,14 +101,8 @@ end
 -- @return              flags or nil
 --
 function sandbox_core_tool_linker.map_flags(targetkind, sourcekinds, name, values, opt)
-
-    -- init options
     opt = opt or {}
-
-    -- get the linker instance
     local instance = sandbox_core_tool_linker.load(targetkind, sourcekinds, opt)
-
-    -- map flags
     return instance:map_flags(name, values, opt)
 end
 

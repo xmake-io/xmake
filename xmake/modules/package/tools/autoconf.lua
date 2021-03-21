@@ -41,6 +41,16 @@ function _translate_windows_bin_path(bin_path)
     end
 end
 
+-- map compiler flags
+function _map_compflags(package, langkind, name, values)
+    return compiler.map_flags(langkind, name, values, {target = package})
+end
+
+-- map linker flags
+function _map_linkflags(package, targetkind, sourcekinds, name, values)
+    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
+end
+
 -- get configs
 function _get_configs(package, configs)
 
@@ -142,21 +152,21 @@ function buildenvs(package, opt)
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
         table.join2(shflags,  opt.shflags)
-        table.join2(cflags,   compiler.map_flags("c", "define", defines)) -- TODO we need use package/toolchains
-        table.join2(cflags,   compiler.map_flags("c", "includedir", includedirs))
-        table.join2(cflags,   compiler.map_flags("c", "sysincludedir", sysincludedirs))
-        table.join2(asflags,  compiler.map_flags("as", "define", defines))
-        table.join2(asflags,  compiler.map_flags("as", "includedir", includedirs))
-        table.join2(asflags,  compiler.map_flags("as", "sysincludedir", sysincludedirs))
-        table.join2(cxxflags, compiler.map_flags("cxx", "define", defines))
-        table.join2(cxxflags, compiler.map_flags("cxx", "includedir", includedirs))
-        table.join2(cxxflags, compiler.map_flags("cxx", "sysincludedir", sysincludedirs))
-        table.join2(ldflags,  linker.map_flags("binary", {"cxx"}, "link", links))
-        table.join2(ldflags,  linker.map_flags("binary", {"cxx"}, "syslink", syslinks))
-        table.join2(ldflags,  linker.map_flags("binary", {"cxx"}, "linkdir", linkdirs))
-        table.join2(shflags,  linker.map_flags("shared", {"cxx"}, "link", links))
-        table.join2(shflags,  linker.map_flags("shared", {"cxx"}, "syslink", syslinks))
-        table.join2(shflags,  linker.map_flags("shared", {"cxx"}, "linkdir", linkdirs))
+        table.join2(cflags,   _map_compflags(package, "c", "define", defines))
+        table.join2(cflags,   _map_compflags(package, "c", "includedir", includedirs))
+        table.join2(cflags,   _map_compflags(package, "c", "sysincludedir", sysincludedirs))
+        table.join2(asflags,  _map_compflags(package, "as", "define", defines))
+        table.join2(asflags,  _map_compflags(package, "as", "includedir", includedirs))
+        table.join2(asflags,  _map_compflags(package, "as", "sysincludedir", sysincludedirs))
+        table.join2(cxxflags, _map_compflags(package, "cxx", "define", defines))
+        table.join2(cxxflags, _map_compflags(package, "cxx", "includedir", includedirs))
+        table.join2(cxxflags, _map_compflags(package, "cxx", "sysincludedir", sysincludedirs))
+        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "link", links))
+        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "syslink", syslinks))
+        table.join2(ldflags,  _map_linkflags(package, "binary", {"cxx"}, "linkdir", linkdirs))
+        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "link", links))
+        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "syslink", syslinks))
+        table.join2(shflags,  _map_linkflags(package, "shared", {"cxx"}, "linkdir", linkdirs))
         envs.CC        = package:build_getenv("cc")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")

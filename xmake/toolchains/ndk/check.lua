@@ -79,8 +79,5 @@ end
 -- main entry
 function main(toolchain)
     _check_android_sdk(toolchain)
-    _check_ndk(toolchain)
-    -- TODO we should return the check result, but we need support builder with package first
-    -- so we need improve remote ndk toolchain
-    return true
+    return _check_ndk(toolchain)
 end
