@@ -1370,11 +1370,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cfuncs(funcs, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
 end
@@ -1387,11 +1384,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxfuncs(funcs, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
@@ -1404,11 +1398,8 @@ end
 -- @return          true or false
 --
 function _instance:has_ctypes(types, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_ctypes", {anonymous = true})(types, opt)
 end
@@ -1421,11 +1412,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxtypes(types, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxtypes", {anonymous = true})(types, opt)
 end
@@ -1438,11 +1426,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cincludes(includes, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
 end
@@ -1455,11 +1440,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxincludes(includes, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
 end
@@ -1472,11 +1454,8 @@ end
 -- @return          true or false
 --
 function _instance:check_csnippets(snippets, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
 end
@@ -1489,11 +1468,8 @@ end
 -- @return          true or false
 --
 function _instance:check_cxxsnippets(snippets, opt)
-    if not self:is_plat(config.get("plat")) or self:config("toolchains") then
-        -- TODO we also need check it later for package with custom toolchains
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end

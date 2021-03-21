@@ -181,6 +181,12 @@ function builder:_add_flags_from_target(flags, target)
         return
     end
 
+    -- only for target and option
+    local target_type = target:type()
+    if target_type ~= "target" and target_type ~= "option" then
+        return
+    end
+
     -- init cache
     self._TARGETFLAGS = self._TARGETFLAGS or {}
     local cache = self._TARGETFLAGS
@@ -195,7 +201,7 @@ function builder:_add_flags_from_target(flags, target)
         self:_add_flags_from_language(targetflags, target)
 
         -- add flags for the target
-        if target:type() == "target" then
+        if target_type == "target" then
 
             -- add flags from options
             self:_add_flags_from_targetopts(targetflags, target)

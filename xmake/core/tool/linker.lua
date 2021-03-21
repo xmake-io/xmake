@@ -86,7 +86,7 @@ function linker._load_tool(targetkind, sourcekinds, target)
 
         -- get program from target
         local program, toolname, toolchain_info
-        if target and target:type() == "target" then
+        if target and target.tool then
             program, toolname, toolchain_info = target:tool(_linkerinfo.linkerkind)
         end
 
@@ -185,7 +185,7 @@ function linker.load(targetkind, sourcekinds, target)
     -- add special lanugage flags first, e.g. go.gcldflags or gcc.ldflags or gcldflags or ldflags
     local toolkind = linkertool:kind()
     local toolname = linkertool:name()
-    if target and target:type() == "target" then
+    if target and target.toolconfig then
         for _, flagkind in ipairs(instance:_flagkinds()) do
             linkertool:add(toolkind .. 'flags', target:toolconfig(toolname .. '.' .. toolkind .. 'flags') or target:toolconfig(toolkind .. 'flags'))
             linkertool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
