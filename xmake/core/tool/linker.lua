@@ -43,7 +43,7 @@ function linker:_add_flags_from_toolchains(flags, targetkind, target)
     if targetkind then
         local toolkind = self:kind()
         local toolname = self:name()
-        if target and target:type() == "target" then
+        if target and target.toolconfig then
             for _, flagkind in ipairs(self:_flagkinds()) do
                 local toolflags = target:toolconfig(targetkind .. '.' .. toolname .. '.' .. toolkind .. 'flags') or target:toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
                 table.join2(flags, toolflags or target:toolconfig(targetkind .. '.' .. toolkind .. 'flags') or target:toolconfig(targetkind .. '.' .. flagkind))
