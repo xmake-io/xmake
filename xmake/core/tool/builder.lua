@@ -237,7 +237,16 @@ function builder:_add_flags_from_argument(flags, target, args)
     -- add flags (named) from the language
     self:_add_flags_from_language(flags, nil, {
         target = function (name) return args[name] end,
-        toolchain = function (name) return platform.toolconfig(name) end})
+        toolchain = function (name)
+            local plat, arch
+            if target and target.plat then
+                plat = target:plat()
+            end
+            if target and target.arch then
+                arch = target:arch()
+            end
+            return platform.toolconfig(name, plat, arch)
+        end})
 end
 
 -- add flags from the language
