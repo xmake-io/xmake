@@ -230,7 +230,7 @@ function linker:linkflags(opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and target and target.targetkind then
+    if not targetkind and target and target:type() == "target" then
         targetkind = target:kind()
     end
 

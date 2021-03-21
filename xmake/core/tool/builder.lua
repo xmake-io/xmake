@@ -155,17 +155,21 @@ function builder:_add_flags_from_config(flags)
     end
 end
 
--- add flags from the option
-function builder:_add_flags_from_option(flags, opt)
-    for _, flagkind in ipairs(self:_flagkinds()) do
-        self:_add_flags_from_flagkind(flags, opt, flagkind)
+-- add flags from the target options
+function builder:_add_flags_from_targetopts(flags, target)
+    for _, opt in ipairs(target:orderopts()) do
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            self:_add_flags_from_flagkind(flags, opt, flagkind)
+        end
     end
 end
 
--- add flags from the package
-function builder:_add_flags_from_package(flags, pkg, target)
-    for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+-- add flags from the target packages
+function builder:_add_flags_from_targetpkgs(flags, target)
+    for _, pkg in ipairs(target:orderpkgs()) do
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+        end
     end
 end
 
@@ -194,14 +198,10 @@ function builder:_add_flags_from_target(flags, target)
         if target:type() == "target" then
 
             -- add flags from options
-            for _, opt in ipairs(target:orderopts()) do
-                self:_add_flags_from_option(targetflags, opt)
-            end
+            self:_add_flags_from_targetopts(targetflags, target)
 
             -- add flags from packages
-            for _, pkg in ipairs(target:orderpkgs()) do
-                self:_add_flags_from_package(targetflags, pkg, target)
-            end
+            self:_add_flags_from_targetpkgs(targetflags, target)
 
             -- inherit flags (public/interface) from all dependent targets
             self:_inherit_flags_from_targetdeps(targetflags, target)
@@ -211,12 +211,8 @@ function builder:_add_flags_from_target(flags, target)
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
-
-        -- cache it
         cache[key] = targetflags
     end
-
-    -- add flags
     table.join2(flags, targetflags)
 end
 
@@ -225,11 +221,7 @@ function builder:_add_flags_from_argument(flags, target, args)
 
     -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
-
-        -- add auto mapping flags
         table.join2(flags, self:_mapflags(args[flagkind], flagkind, target))
-
-        -- add original flags
         local original_flags = (args.force or {})[flagkind]
         if original_flags then
             table.join2(flags, original_flags)
@@ -237,16 +229,9 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
-    if target then
-        local key = target:type()
-        self:_add_flags_from_language(flags, target, {
-            [key] = function (name) return args[name] end,
-            toolchain = function (name) return platform.toolconfig(name) end})
-    else
-        self:_add_flags_from_language(flags, nil, {
-            target = function (name) return args[name] end,
-            toolchain = function (name) return platform.toolconfig(name) end})
-    end
+    self:_add_flags_from_language(flags, nil, {
+        target = function (name) return args[name] end,
+        toolchain = function (name) return platform.toolconfig(name) end})
 end
 
 -- add flags from the language

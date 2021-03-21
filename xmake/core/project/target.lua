@@ -450,7 +450,7 @@ function _instance:info()
     return self._INFO:info()
 end
 
--- get the type: option
+-- get the type: target
 function _instance:type()
     return "target"
 end

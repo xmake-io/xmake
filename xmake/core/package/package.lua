@@ -60,6 +60,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the type: package
+function _instance:type()
+    return "package"
+end
+
 -- get the package configure
 function _instance:get(name)
 
