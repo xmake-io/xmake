@@ -33,10 +33,22 @@ rule("platform.linux.bpf")
     before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         local headerfile = path.join(target:autogendir(), "rules", "bpf", (path.filename(sourcefile):gsub("%.bpf%.c", ".skel.h")))
         local objectfile = path.join(target:autogendir(), "rules", "bpf", (path.filename(sourcefile):gsub("%.bpf%.c", ".bpf.o")))
+        local targetarch
+        if target:is_arch("x86_64", "i386") then
+            targetarch = "__TARGET_ARCH_x86"
+        elseif target:is_arch("arm64", "arm64-v8a") then
+            targetarch = "__TARGET_ARCH_arm64"
+        elseif target:is_arch("arm.*") then
+            targetarch = "__TARGET_ARCH_arm"
+        elseif target:is_arch("mips64", "mips") then
+            targetarch = "__TARGET_ARCH_mips"
+        elseif target:is_arch("ppc64", "ppc") then
+            targetarch = "__TARGET_ARCH_powerpc"
+        end
         target:add("includedirs", path.directory(headerfile))
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.bpf %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
-        batchcmds:compile(sourcefile, objectfile, {configs = {force = {cxflags = {"-target bpf", "-g"}, defines = "__TARGET_ARCH_x86"}}})
+        batchcmds:compile(sourcefile, objectfile, {configs = {force = {cxflags = {"-target bpf", "-g"}, defines = targetarch}}})
         batchcmds:mkdir(path.directory(headerfile))
         batchcmds:execv("bpftool", {"gen", "skeleton", objectfile}, {stdout = headerfile})
         batchcmds:add_depfiles(sourcefile)
