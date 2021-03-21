@@ -61,7 +61,9 @@ function generate(package, configs, opt)
     table.insert(argv, _get_buildir(opt))
     for name, value in pairs(_get_configs(package, configs, opt)) do
         if type(value) == "string" then
-            table.insert(args, name .. '=\"' .. value .. "\"")
+            table.insert(args, name .. "=\"" .. value .. "\"")
+        elseif type(value) == "table" then
+            table.insert(args, name .. "=[\"" .. table.concat(value, "\",\"") .. "\"]")
         else
             table.insert(args, name .. "=" .. tostring(value))
         end
