@@ -8,6 +8,7 @@
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): add `find_package("nvtx")`
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): add `platform.linux.bpf` rule to build linux/bpf program
 * [#1280](https://github.com/xmake-io/xmake/issues/1280): Support fetchonly package to improve find_package
+* Support to fetch remote ndk toolchain package
 
 ### Change
 
@@ -960,6 +961,7 @@
 * [#1267](https://github.com/xmake-io/xmake/issues/1267): 添加 `find_package("nvtx")`
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): 添加 `platform.linux.bpf` 规则去构建 linux/bpf 程序
 * [#1280](https://github.com/xmake-io/xmake/issues/1280): 支持 fetchonly 包去扩展改进 find_package
+* 支持自动拉取远程 ndk 工具链包和集成
 
 ## 改进
 
