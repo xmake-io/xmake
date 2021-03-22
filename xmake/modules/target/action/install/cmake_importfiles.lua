@@ -15,17 +15,15 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        cmake_importfiles.lua
 --
 
--- install pkg-config/*.pc import files
-rule("utils.install.pkgconfig_importfiles")
-    after_install(function (target, opt)
-        import("target.action.install.pkgconfig_importfiles")(target, opt)
-    end)
+-- install .cmake import files
+function main(target, opt)
 
--- install *.cmake import files
-rule("utils.install.cmake_importfiles")
-    after_install(function (target, opt)
-        import("target.action.install.cmake_importfiles")(target, opt)
-    end)
+    -- check
+    opt = opt or {}
+    assert(target:is_library(), 'cmake_importfiles: only support for library target(%s)!', target:name())
+
+end
+

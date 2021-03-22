@@ -15,15 +15,15 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        pkgconfig.lua
+-- @file        pkgconfig_importfiles.lua
 --
 
--- install pkgconfig/.pc files
+-- install pkgconfig/.pc import files
 function main(target, opt)
 
     -- check
     opt = opt or {}
-    assert(target:is_library(), 'rule("utils.install.pkgconfig_files"): only support for library target!')
+    assert(target:is_library(), 'pkgconfig_importfiles: only support for library target(%s)!', target:name())
 
     -- only for unix platform
     local installdir = target:installdir()
