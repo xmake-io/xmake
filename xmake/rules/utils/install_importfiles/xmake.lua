@@ -18,8 +18,8 @@
 -- @file        xmake.lua
 --
 
--- install pkg-config/*.pc files
-rule("utils.install.pkgconfig_files")
+-- install pkg-config/*.pc import files
+rule("utils.install.pkgconfig_importfiles")
     after_install(function (target, opt)
         import("target.action.install.pkgconfig")(target, opt)
     end)

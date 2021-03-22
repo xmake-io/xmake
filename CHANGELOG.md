@@ -9,7 +9,7 @@
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): add `platform.linux.bpf` rule to build linux/bpf program
 * [#1280](https://github.com/xmake-io/xmake/issues/1280): Support fetchonly package to improve find_package
 * Support to fetch remote ndk toolchain package
-* [#1268](https://github.com/xmake-io/xmake/issues/1268): Add `utils.install.pkgconfig_files` rule to install `*.pc` file
+* [#1268](https://github.com/xmake-io/xmake/issues/1268): Add `utils.install.pkgconfig_importfiles` rule to install `*.pc` file
 
 ### Change
 
@@ -963,7 +963,7 @@
 * [#1274](https://github.com/xmake-io/xmake/issues/1274): 添加 `platform.linux.bpf` 规则去构建 linux/bpf 程序
 * [#1280](https://github.com/xmake-io/xmake/issues/1280): 支持 fetchonly 包去扩展改进 find_package
 * 支持自动拉取远程 ndk 工具链包和集成
-* [#1268](https://github.com/xmake-io/xmake/issues/1268): 添加 `utils.install.pkgconfig_files` 规则去安装 `*.pc` 文件
+* [#1268](https://github.com/xmake-io/xmake/issues/1268): 添加 `utils.install.pkgconfig_importfiles` 规则去安装 `*.pc` 文件
 
 ## 改进
 
