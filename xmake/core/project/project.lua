@@ -194,10 +194,8 @@ function project._load(force, disable_filter)
     end
 
     -- save the root info
-    for name, value in pairs(rootinfo_target:info()) do
-        rootinfo:set("target." .. name, value)
-    end
     project._memcache():set("rootinfo", rootinfo)
+    project._memcache():set("rootinfo_target", rootinfo_target)
 
     -- leave the project directory
     oldir, errors = os.cd(oldir)
@@ -358,26 +356,6 @@ function project._load_target(t, requires)
     ok, errors = t:_load()
     if not ok then
         return false, errors
-    end
-
-    -- load toolchains
-    local toolchains = t:get("toolchains")
-    if toolchains then
-        t._TOOLCHAINS = {}
-        for _, name in ipairs(table.wrap(toolchains)) do
-            local toolchain_opt = table.copy(t:extraconf("toolchains", name))
-            toolchain_opt.arch = t:arch()
-            toolchain_opt.plat = t:plat()
-            local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
-            -- attempt to load toolchain from project
-            if not toolchain_inst then
-                toolchain_inst = project.toolchain(name, toolchain_opt)
-            end
-            if not toolchain_inst then
-                return false, errors
-            end
-            table.insert(t._TOOLCHAINS, toolchain_inst)
-        end
     end
 
     -- do after_load() for target and all rules
@@ -864,10 +842,28 @@ function project.filelock()
     return filelock, errors
 end
 
--- get the project info from the given name
+-- get the root configuration
 function project.get(name)
-    local rootinfo = project._memcache():get("rootinfo")
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
     return rootinfo and rootinfo:get(name) or nil
+end
+
+-- get the root extra configuration
+function project.extraconf(name, item, key)
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
+    return rootinfo and rootinfo:extraconf(name, item, key) or nil
 end
 
 -- get the project name

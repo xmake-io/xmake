@@ -392,14 +392,14 @@ function _get_package_installdeps(packages)
     end
     for _, instance in ipairs(packages) do
         local deps = {}
-        if instance:deps() then
-            deps = table.copy(instance:deps())
+        if instance:orderdeps() then
+            deps = table.copy(instance:orderdeps())
         end
         -- patch toolchain/packages to installdeps, because we need install toolchain package first
-        if instance:is_toplevel() then
-            for _, toolchain in ipairs(instance:toolchains()) do
-                for _, packagename in ipairs(toolchain:config("packages")) do
-                    deps[packagename] = packagesmap[packagename]
+        for _, toolchain in ipairs(instance:toolchains()) do
+            for _, packagename in ipairs(toolchain:config("packages")) do
+                if packagesmap[packagename] ~= instance then -- avoid loop recursion
+                    table.insert(deps, packagesmap[packagename])
                 end
             end
         end

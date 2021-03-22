@@ -60,6 +60,11 @@ function _instance:name()
     return self._NAME
 end
 
+-- get the type: package
+function _instance:type()
+    return "package"
+end
+
 -- get the package configure
 function _instance:get(name)
 
@@ -677,11 +682,14 @@ end
 function _instance:toolchains()
     local toolchains = self._TOOLCHAINS
     if toolchains == nil then
+        local project = package._project()
         for _, name in ipairs(table.wrap(self:config("toolchains"))) do
-            local toolchain_opt = {plat = self:plat(), arch = self:arch()}
+            local toolchain_opt = project and project.extraconf("target.toolchains", name) or {}
+            toolchain_opt.plat = self:plat()
+            toolchain_opt.arch = self:arch()
             local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
-            if not toolchain_inst and os.isfile(os.projectfile()) then
-                toolchain_inst = require("base/project").toolchain(name, toolchain_opt)
+            if not toolchain_inst and project then
+                toolchain_inst = project.toolchain(name, toolchain_opt)
             end
             if not toolchain_inst then
                 os.raise(errors)
@@ -1362,11 +1370,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cfuncs(funcs, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cfuncs", {anonymous = true})(funcs, opt)
 end
@@ -1379,11 +1384,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxfuncs(funcs, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxfuncs", {anonymous = true})(funcs, opt)
 end
@@ -1396,11 +1398,8 @@ end
 -- @return          true or false
 --
 function _instance:has_ctypes(types, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_ctypes", {anonymous = true})(types, opt)
 end
@@ -1413,11 +1412,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxtypes(types, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxtypes", {anonymous = true})(types, opt)
 end
@@ -1430,11 +1426,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cincludes(includes, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cincludes", {anonymous = true})(includes, opt)
 end
@@ -1447,11 +1440,8 @@ end
 -- @return          true or false
 --
 function _instance:has_cxxincludes(includes, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.has_cxxincludes", {anonymous = true})(includes, opt)
 end
@@ -1464,11 +1454,8 @@ end
 -- @return          true or false
 --
 function _instance:check_csnippets(snippets, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_csnippets", {anonymous = true})(snippets, opt)
 end
@@ -1481,11 +1468,8 @@ end
 -- @return          true or false
 --
 function _instance:check_cxxsnippets(snippets, opt)
-    if self:plat() ~= config.get("plat") then
-        -- TODO
-        return true
-    end
     opt = opt or {}
+    opt.target = self
     opt.configs = self:_generate_build_configs(opt.configs)
     return sandbox_module.import("lib.detect.check_cxxsnippets", {anonymous = true})(snippets, opt)
 end
@@ -1550,13 +1534,23 @@ function package._memcache()
     return memcache.cache("core.base.package")
 end
 
+-- get project
+function package._project()
+    local project = package._PROJECT
+    if not project then
+        if os.isfile(os.projectfile()) then
+            project = require("project/project")
+        end
+    end
+    return project
+end
+
 -- get global target platform of package
 function package._target_plat()
     local plat = package._memcache():get("target_plat")
     if plat == nil then
-        if not plat and os.isfile(os.projectfile()) then
-            local project = require("project/project")
-            local targetplat_root = project.get("target.plat")
+        if not plat and package._project() then
+            local targetplat_root = package._project().get("target.plat")
             if targetplat_root then
                 plat = targetplat_root
             end
@@ -1573,9 +1567,8 @@ end
 function package._target_arch()
     local arch = package._memcache():get("target_arch")
     if arch == nil then
-        if not arch and os.isfile(os.projectfile()) then
-            local project = require("project/project")
-            local targetarch_root = project.get("target.arch")
+        if not arch and package._project() then
+            local targetarch_root = package._project().get("target.arch")
             if targetarch_root then
                 arch = targetarch_root
             end
