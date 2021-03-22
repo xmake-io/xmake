@@ -660,6 +660,11 @@ function _instance:is_static()
     return self:kind() == "static"
 end
 
+-- is library target?
+function _instance:is_library()
+    return self:is_static() or self:is_shared()
+end
+
 -- is default target?
 function _instance:is_default()
     local default = self:get("default")
