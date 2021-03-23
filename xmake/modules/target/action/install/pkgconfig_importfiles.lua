@@ -70,6 +70,7 @@ function main(target, opt)
         file:print("includedir=${prefix}/include")
         file:print("")
         file:print("Name: %s", target:name())
+        file:print("Description: %s", target:name())
         local version = target:get("version")
         if version then
             file:print("Version: %s", version)
