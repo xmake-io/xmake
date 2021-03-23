@@ -21,22 +21,13 @@
 -- imports
 import("core.project.project")
 
--- translate path
-function _translate_path(p)
-    if is_host("windows") then
-        return (p:gsub("\\", "/"))
-    end
-    return p
-end
-
 -- get the builtin variables
 function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILE      = _translate_path(path.absolute(target:targetfile())),
+            TARGETFILENAME  = path.filename(target:targetfile()),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
-            PACKAGE_VERSION = target:get("version") or "1.0.0",
-            IMPORT_PREFIX   = _translate_path(path.absolute(installdir))}
+            PACKAGE_VERSION = target:get("version") or "1.0.0"}
 end
 
 -- install cmake import file
