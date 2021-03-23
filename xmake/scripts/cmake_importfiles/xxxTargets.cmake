@@ -16,7 +16,7 @@ set(CMAKE_IMPORT_FILE_VERSION 1)
 set(_targetsDefined)
 set(_targetsNotDefined)
 set(_expectedTargets)
-foreach(_expectedTarget @TARGETNAME@::@TARGETBASENAME@)
+foreach(_expectedTarget @PROJECTNAME@::@TARGETNAME@)
   list(APPEND _expectedTargets ${_expectedTarget})
   if(NOT TARGET ${_expectedTarget})
     list(APPEND _targetsNotDefined ${_expectedTarget})
@@ -44,10 +44,10 @@ unset(_expectedTargets)
 # The installation prefix configured by this project.
 set(_IMPORT_PREFIX "@IMPORT_PREFIX@")
 
-# Create imported target @TARGETNAME@::@TARGETBASENAME@
-add_library(@TARGETNAME@::@TARGETBASENAME@ @TARGETKIND@ IMPORTED)
+# Create imported target @PROJECTNAME@::@TARGETNAME@
+add_library(@PROJECTNAME@::@TARGETNAME@ @TARGETKIND@ IMPORTED)
 
-set_target_properties(@TARGETNAME@::@TARGETBASENAME@ PROPERTIES
+set_target_properties(@PROJECTNAME@::@TARGETNAME@ PROPERTIES
   INTERFACE_INCLUDE_DIRECTORIES "${_IMPORT_PREFIX}/include"
 )
 

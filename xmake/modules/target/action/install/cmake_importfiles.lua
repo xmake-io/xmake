@@ -18,10 +18,13 @@
 -- @file        cmake_importfiles.lua
 --
 
+-- imports
+import("core.project.project")
+
 -- get the builtin variables
 function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
-            TARGETBASENAME  = target:basename(),
+            PROJECTNAME     = project.name() or target:name(),
             TARGETFILE      = path.absolute(target:targetfile()),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
@@ -32,8 +35,9 @@ end
 function _install_cmake_importfile(target, installdir, filename, opt)
 
     -- get import file path
+    local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
-    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", target:name(), (filename:gsub("xxx", target:name())))
+    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", projectname)))
 
     -- trace
     vprint("generating %s ..", importfile_dst)
