@@ -18,6 +18,41 @@
 -- @file        cmake_importfiles.lua
 --
 
+-- get the builtin variables
+function _get_builtinvars(target, installdir)
+    return {TARGETNAME      = target:name(),
+            TARGETBASENAME  = target:basename(),
+            TARGETFILE      = path.absolute(target:targetfile()),
+            TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
+            PACKAGE_VERSION = target:get("version") or "1.0.0",
+            IMPORT_PREFIX   = path.absolute(installdir)}
+end
+
+-- install cmake import file
+function _install_cmake_importfile(target, installdir, filename, opt)
+
+    -- get import file path
+    local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
+    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", target:name(), (filename:gsub("xxx", target:name())))
+
+    -- trace
+    vprint("generating %s ..", importfile_dst)
+
+    -- get the builtin variables
+    local builtinvars = _get_builtinvars(target, installdir)
+
+    -- copy and replace builtin variables
+    local content = io.readfile(importfile_src)
+    if content then
+        content = content:gsub("(@(.-)@)", function(_, variable)
+            variable = variable:trim()
+            local value = builtinvars[variable]
+            return type(value) == "function" and value() or value
+        end)
+        io.writefile(importfile_dst, content)
+    end
+end
+
 -- install .cmake import files
 function main(target, opt)
 
@@ -25,5 +60,20 @@ function main(target, opt)
     opt = opt or {}
     assert(target:is_library(), 'cmake_importfiles: only support for library target(%s)!', target:name())
 
+    -- get install directory
+    local installdir = target:installdir()
+    if not installdir then
+        return
+    end
+
+    -- do install
+    _install_cmake_importfile(target, installdir, "xxxConfig.cmake", opt)
+    _install_cmake_importfile(target, installdir, "xxxConfigVersion.cmake", opt)
+    _install_cmake_importfile(target, installdir, "xxxTargets.cmake", opt)
+    if is_mode("debug") then
+        _install_cmake_importfile(target, installdir, "xxxTargets-debug.cmake", opt)
+    else
+        _install_cmake_importfile(target, installdir, "xxxTargets-release.cmake", opt)
+    end
 end
 
