@@ -33,7 +33,7 @@
 #   include <windows.h>
 #   include <io.h>
 #   include <fcntl.h>
-#elif defined(TB_CONFIG_OS_MACOSX)
+#elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
 #   include <unistd.h>
 #   include <mach-o/dyld.h>
 #elif defined(TB_CONFIG_OS_LINUX) || defined(TB_CONFIG_OS_BSD) || defined(TB_CONFIG_OS_ANDROID)
@@ -483,7 +483,7 @@ static tb_size_t xm_engine_get_program_file(xm_engine_t* engine, tb_char_t* path
         // ok
         ok = tb_true;
 
-#elif defined(TB_CONFIG_OS_MACOSX)
+#elif defined(TB_CONFIG_OS_MACOSX) || defined(TB_CONFIG_OS_IOS)
         /*
          * _NSGetExecutablePath() copies the path of the main executable into the buffer. The bufsize parameter
          * should initially be the size of the buffer.  The function returns 0 if the path was successfully copied,
@@ -552,7 +552,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
         if (programfile)
         {
             // get real program file path from the symbol link
-#ifndef TB_CONFIG_OS_WINDOWS
+#if !defined(TB_CONFIG_OS_WINDOWS) && !defined(TB_CONFIG_OS_IOS)
             tb_char_t programpath[TB_PATH_MAXN];
             tb_long_t size = readlink(programfile, programpath, sizeof(programpath));
             if (size >= 0 && size < sizeof(programpath))

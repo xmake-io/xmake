@@ -292,6 +292,10 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/windows/interface/iphlpapi \
 						tbox/src/tbox/platform/windows/interface/interface 
 endif
+ifeq ($(PLAT),iphoneos)
+tbox_M_FILES 			+= \
+						tbox/src/tbox/platform/mach/ios/directory
+endif
 
 # includes
 tbox_INC_DIRS 			+= \

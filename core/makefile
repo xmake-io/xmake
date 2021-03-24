@@ -53,23 +53,11 @@ install : .null
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR)
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR) install
 
-# make lipo
-lipo : .null
-	./tool/lipo $(PRO_NAME) $(DEBUG) $(SDK) $(ARCH1) $(ARCH2)
-
 # make clean
 clean : .null
 	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo clean $(PRO_NAME)
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR) clean
-
-# make update
-update : .null
-	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
-	@echo update $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) update
-	@$(MAKE) --no-print-directory -C $(SRC_DIR)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) install
 
 # make output
 output : .null
@@ -171,7 +159,7 @@ BUILD_ARCH 	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUI
 BUILD_ARCH 	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
@@ -312,6 +300,9 @@ luajit_JIT :=nojit
 endif
 else
 luajit_JIT :=jit
+endif
+ifeq ($(PLAT),iphoneos)
+luajit_JIT :=nojit
 endif
 
 # select package directory

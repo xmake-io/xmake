@@ -15,14 +15,14 @@ DLL_SUFFIX			= .dylib
 
 ASM_SUFFIX			= .S
 
-# cpu bits
-BITS				:= $(if $(findstring x86_64,$(BUILD_ARCH)),64,$(BITS))
-BITS				:= $(if $(findstring arm64,$(BUILD_ARCH)),64,$(BITS))
-BITS				:= $(if $(findstring i386,$(BUILD_ARCH)),32,$(BITS))
-BITS				:= $(if $(BITS),$(BITS),$(shell getconf LONG_BIT))
+# target arch
+TARGETARCH			:= $(if $(findstring x86_64,$(BUILD_ARCH)),-arch x86_64,$(TARGETARCH))
+TARGETARCH			:= $(if $(findstring arm64,$(BUILD_ARCH)),-arch arm64,$(TARGETARCH))
+TARGETARCH			:= $(if $(findstring i386,$(BUILD_ARCH)),-arch i386,$(TARGETARCH))
+TARGETARCH 			+= -miphoneos-version-min=10.0
 
 # prefix
-PRE_				:= $(if $(BIN),$(BIN)/$(PRE),xcrun -sdk macosx )
+PRE_				:= $(if $(BIN),$(BIN)/$(PRE),xcrun -sdk iphoneos )
 
 # cc
 CC					= $(PRE_)clang
@@ -56,7 +56,7 @@ MAKE				= make -r
 # cxflags: .c/.cc/.cpp files
 CXFLAGS_RELEASE		= -fvisibility=hidden
 CXFLAGS_DEBUG		= -g -D__tb_debug__
-CXFLAGS				= -m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments -mssse3
+CXFLAGS				= $(TARGETARCH) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments
 CXFLAGS-I			= -I
 CXFLAGS-o			= -o
 
@@ -94,8 +94,8 @@ CCFLAGS				= \
 MXFLAGS_RELEASE		= -fvisibility=hidden
 MXFLAGS_DEBUG		= -g -D__tb_debug__
 MXFLAGS				= \
-					-m$(BITS) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments \
-					-mssse3 $(ARCH_CXFLAGS) -fmessage-length=0 -pipe -fpascal-strings \
+					$(TARGETARCH) -c -Wall -Werror -Wno-error=deprecated-declarations -Qunused-arguments \
+					$(ARCH_CXFLAGS) -fmessage-length=0 -pipe -fpascal-strings \
 					"-DIBOutlet=__attribute__((iboutlet))" \
 					"-DIBOutletCollection(ClassName)=__attribute__((iboutletcollection(ClassName)))" \
 					"-DIBAction=void)__attribute__((ibaction)"
@@ -131,7 +131,7 @@ MMFLAGS				=
 LDFLAGS_ARCH		:= $(if $(findstring arm64,$(BUILD_ARCH)),,-pagezero_size 10000 -image_base 100000000)
 LDFLAGS_RELEASE		=
 LDFLAGS_DEBUG		=
-LDFLAGS				= -m$(BITS) -all_load $(LDFLAGS_ARCH) -mmacosx-version-min=10.7
+LDFLAGS				= $(TARGETARCH) -all_load $(LDFLAGS_ARCH) -framework CoreFoundation -framework Foundation
 LDFLAGS-L			= -L
 LDFLAGS-l			= -l
 LDFLAGS-f			=
@@ -147,7 +147,7 @@ endif
 # asflags
 ASFLAGS_RELEASE		=
 ASFLAGS_DEBUG		=
-ASFLAGS				= -m$(BITS) -c -Wall
+ASFLAGS				= $(TARGETARCH) -c -Wall
 ASFLAGS-I			= -I
 ASFLAGS-o			= -o
 
@@ -159,13 +159,7 @@ ARFLAGS-o			=
 
 # shflags
 SHFLAGS_RELEASE		= -s
-SHFLAGS				= $(ARCH_LDFLAGS) -dynamiclib -mmacosx-version-min=10.7
-
-# include directory
-INC_DIR				+= /usr/include /usr/local/include
-
-# library directory
-LIB_DIR				+= /usr/lib /usr/local/lib
+SHFLAGS				= $(ARCH_LDFLAGS) -dynamiclib
 
 # config
 include				$(PLAT_DIR)/config.mak
