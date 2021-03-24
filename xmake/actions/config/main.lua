@@ -31,7 +31,8 @@ import("scangen")
 import("menuconf", {alias = "menuconf_show"})
 import("configfiles", {alias = "generate_configfiles"})
 import("configheader", {alias = "generate_configheader"})
-import("private.action.require.install", {alias = "install_requires"})
+import("private.action.require.check", {alias = "check_packages"})
+import("private.action.require.install", {alias = "install_packages"})
 
 -- filter option
 function _option_filter(name)
@@ -333,10 +334,14 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     -- only config for building project using third-party buildsystem
     if not trybuild then
 
-        -- install and update requires
+        -- install and update packages
         local require_enable = option.boolean(option.get("require"))
-        if (recheck or require_enable) and require_enable ~= false then
-            install_requires()
+        if (recheck or require_enable) then
+            if require_enable ~= false then
+                install_packages()
+            else
+                check_packages()
+            end
         end
 
         -- check target and ensure to load all targets, @note we must load targets after installing required packages,
