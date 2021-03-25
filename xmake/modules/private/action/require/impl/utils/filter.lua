@@ -109,7 +109,7 @@ function _handler(package, strval)
 end
 
 -- attach filter to the given script and call it
-function call(script, package)
+function call(script, package, opt)
 
     -- get sandbox filter and handlers of the given script
     local sandbox_filter   = sandbox.filter(script)
@@ -122,7 +122,7 @@ function call(script, package)
     sandbox_filter:register("package", _handler(package))
 
     -- call it
-    script(package)
+    script(package, opt)
 
     -- restore handlers
     sandbox_filter:set_handlers(sandbox_handlers)

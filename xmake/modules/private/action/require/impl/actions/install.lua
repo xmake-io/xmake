@@ -158,6 +158,7 @@ function main(package)
                     patch_sources(package)
 
                     -- enter the environments of all package dependencies
+                    local oldenvs = os.getenvs()
                     for _, dep in ipairs(package:orderdeps()) do
                         dep:envs_enter()
                     end
@@ -167,7 +168,7 @@ function main(package)
 
                     -- do install
                     if script ~= nil then
-                        filter.call(script, package)
+                        filter.call(script, package, {oldenvs = oldenvs})
                     end
 
                     -- leave the environments of all package dependencies
