@@ -195,14 +195,18 @@ end
 --
 -- orderdeps: c -> b -> a
 --
-function _sort_packagedeps(package)
+function _sort_packagedeps(package, onlylink)
+    -- we must use native deps list instead of package:deps() to generate correct linkdeps
+    -- TODO filter package name
     local orderdeps = {}
-    local deps = package:deps()
+    local deps = package:get("deps")
     if deps then
-        for _, depname in ipairs(table.orderkeys(deps)) do
-            local dep = deps[depname]
-            table.join2(orderdeps, _sort_packagedeps(dep))
-            table.insert(orderdeps, dep)
+        for _, depname in ipairs(deps) do
+            local dep = package:dep(depname)
+            if dep and (onlylink ~= true or dep:is_library()) then
+                table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
+                table.insert(orderdeps, dep)
+            end
         end
     end
     return orderdeps
@@ -654,6 +658,7 @@ function _load_packages(requires, opt)
                     end
                     package._DEPS = packagedeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
+                    package._LINKDEPS = table.unique(_sort_packagedeps(package, true))
                 end
             end
 
