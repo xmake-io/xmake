@@ -59,6 +59,23 @@ function main(toolchain)
         end
     end
 
+    -- save xcode sysroot directory
+    local xcode_sysroot
+    if xcode.sdkdir and xcode_sdkver then
+        if toolchain:is_plat("macosx") then
+            xcode_sysroot = xcode.sdkdir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+        elseif toolchain:is_plat("iphoneos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "iPhoneSimulator" or "iPhoneOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        elseif toolchain:is_plat("watchos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "WatchSimulator" or "WatchOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        end
+    end
+    if xcode_sysroot then
+        toolchain:config_set("xcode_sysroot", xcode_sysroot)
+    end
+
     -- save target minver
     --
     -- @note we need to differentiate the version for the system,
