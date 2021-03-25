@@ -1611,14 +1611,6 @@ function package.apis()
         ,   "package.on_fetch"
         ,   "package.on_install"
         ,   "package.on_test"
-
-            -- package.before_xxx
-        ,   "package.before_install"
-        ,   "package.before_test"
-
-            -- package.before_xxx
-        ,   "package.after_install"
-        ,   "package.after_test"
         }
     ,   keyvalues =
         {

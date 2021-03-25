@@ -136,18 +136,10 @@ function main(package)
     {
         function ()
 
-            -- the package scripts
-            local scripts =
-            {
-                package:script("install_before")
-            ,   package:script("install")
-            ,   package:script("install_after")
-            }
-
             -- install the third-party package directly, e.g. brew::pcre2/libpcre2-8, conan::OpenSSL/1.0.2n@conan/stable
             local installed_now = false
+            local script = package:script("install")
             if package:is_thirdparty() then
-                local script = package:script("install")
                 if script ~= nil then
                     filter.call(script, package)
                 end
@@ -174,11 +166,8 @@ function main(package)
                     _check_package_toolchains(package)
 
                     -- do install
-                    for i = 1, 3 do
-                        local script = scripts[i]
-                        if script ~= nil then
-                            filter.call(script, package)
-                        end
+                    if script ~= nil then
+                        filter.call(script, package)
                     end
 
                     -- leave the environments of all package dependencies

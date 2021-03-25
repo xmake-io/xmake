@@ -25,14 +25,6 @@ import("private.action.require.impl.utils.filter")
 -- test the given package
 function main(package)
 
-    -- the package scripts
-    local scripts =
-    {
-        package:script("test_before")
-    ,   package:script("test")
-    ,   package:script("test_after")
-    }
-
     -- enter the test directory
     local testdir = path.join(os.tmpdir(), "pkgtest", package:name(), package:version_str() or "latest")
     if os.isdir(testdir) then
@@ -44,11 +36,9 @@ function main(package)
     local oldir = os.cd(testdir)
 
     -- test it
-    for i = 1, 3 do
-        local script = scripts[i]
-        if script ~= nil then
-            filter.call(script, package)
-        end
+    local script = package:script("test")
+    if script ~= nil then
+        filter.call(script, package)
     end
 
     -- restore the current directory
