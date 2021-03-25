@@ -20,7 +20,37 @@
 
 -- imports
 import("core.base.option")
+import("core.tool.toolchain")
 import("lib.detect.find_tool")
+
+-- get the build environments
+function buildenvs(package, opt)
+    opt = opt or {}
+    local envs = {}
+    if package:is_plat("android") then
+        local ndk = toolchain.load("ndk", {plat = package:plat(), arch = package:arch()})
+        envs.ANDROID_NDK_ROOT = ndk:config("ndk")
+    end
+    local ACLOCAL_PATH = {}
+    local PKG_CONFIG_PATH = {}
+    for _, dep in ipairs(package:orderdeps()) do
+        local pkgconfig = path.join(dep:installdir(), "lib", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
+        end
+        pkgconfig = path.join(dep:installdir(), "share", "pkgconfig")
+        if os.isdir(pkgconfig) then
+            table.insert(PKG_CONFIG_PATH, pkgconfig)
+        end
+        local aclocal = path.join(dep:installdir(), "share", "aclocal")
+        if os.isdir(aclocal) then
+            table.insert(ACLOCAL_PATH, aclocal)
+        end
+    end
+    envs.ACLOCAL_PATH    = path.joinenv(ACLOCAL_PATH)
+    envs.PKG_CONFIG_PATH = path.joinenv(PKG_CONFIG_PATH)
+    return envs
+end
 
 -- build package
 function build(package, configs, opt)
@@ -32,5 +62,5 @@ function build(package, configs, opt)
     if configs then
         table.join2(argv, configs)
     end
-    os.vrunv(scons.program, argv, {envs = opt.envs})
+    os.vrunv(scons.program, argv, {envs = opt.envs or buildenvs(package, opt)})
 end
