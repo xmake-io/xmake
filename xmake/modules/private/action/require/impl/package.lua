@@ -74,7 +74,7 @@ end
 --   false: only get local packages
 --
 --
-function _parse_require(require_str, requires_extra, parentinfo)
+function _parse_require(require_str)
 
     -- split package and version info
     local splitinfo = require_str:split('%s+')
@@ -109,11 +109,7 @@ function _parse_require(require_str, requires_extra, parentinfo)
         -- get repository name, package name and package url
         local pos = packageinfo:lastof('@', true)
         if pos then
-
-            -- get package name
             packagename = packageinfo:sub(pos + 1)
-
-            -- get reponame
             reponame = packageinfo:sub(1, pos - 1)
         else
             packagename = packageinfo
@@ -122,6 +118,14 @@ function _parse_require(require_str, requires_extra, parentinfo)
 
     -- check package name
     assert(packagename, "require(\"%s\"): the package name not found!", require_str)
+    return packagename, version, reponame
+end
+
+-- load require info
+function _load_require(require_str, requires_extra, parentinfo)
+
+    -- parse require
+    local packagename, version, reponame = _parse_require(require_str)
 
     -- get require extra
     local require_extra = {}
@@ -197,12 +201,12 @@ end
 --
 function _sort_packagedeps(package, onlylink)
     -- we must use native deps list instead of package:deps() to generate correct linkdeps
-    -- TODO filter package name
     local orderdeps = {}
     local deps = package:get("deps")
     if deps then
         for _, depname in ipairs(deps) do
-            local dep = package:dep(depname)
+            local packagename = _parse_require(depname)
+            local dep = package:dep(packagename)
             if dep and (onlylink ~= true or dep:is_library()) then
                 table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
                 table.insert(orderdeps, dep)
@@ -679,7 +683,7 @@ function load_requires(requires, requires_extra, opt)
     opt = opt or {}
     local requireitems = {}
     for _, require_str in ipairs(requires) do
-        local packagename, requireinfo = _parse_require(require_str, requires_extra, opt.parentinfo)
+        local packagename, requireinfo = _load_require(require_str, requires_extra, opt.parentinfo)
         table.insert(requireitems, {name = packagename, info = requireinfo})
     end
     return requireitems

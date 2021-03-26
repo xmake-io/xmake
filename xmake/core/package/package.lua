@@ -1228,8 +1228,8 @@ function _instance:exists()
     return self._FETCHINFO ~= nil
 end
 
--- fetch all local info with dependencies
-function _instance:fetchdeps()
+-- fetch link info of dependencies
+function _instance:fetch_linkdeps()
     local fetchinfo = self:fetch()
     if not fetchinfo then
         return
@@ -1349,7 +1349,7 @@ end
 
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs)
-    configs = table.join(self:fetchdeps(), configs)
+    configs = table.join(self:fetch_linkdeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
         local vs_runtime = self:config("vs_runtime")
