@@ -41,15 +41,19 @@ function main(opt)
     opt = opt or {}
     if is_host("windows") then
         opt.paths = opt.paths or {}
-        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7\\InstallPath;ExecutablePath)")
-        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.7-32\\InstallPath;ExecutablePath)")
-        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6\\InstallPath;ExecutablePath)")
-        table.insert(opt.paths, "$(reg HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.6-32\\InstallPath;ExecutablePath)")
+        local keys = winos.registry_keys("HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.*\\InstallPath")
+        for _, key in ipairs(keys) do
+            local value = winos.registry_query(key .. ";ExecutablePath")
+            if value and os.isfile(value) then
+                table.insert(opt.paths, value)
+            end
+        end
     end
 
     -- find program
     local program = find_program(opt.program or "python3", opt)
     if not program then
+        opt.force = true
         program = find_program("python", opt)
         opt.version = true
     end
@@ -68,8 +72,5 @@ function main(opt)
     if version and not version:startswith("3.") then
         return
     end
-
-    -- ok?
     return program, version
-
 end
