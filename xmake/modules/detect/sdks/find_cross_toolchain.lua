@@ -31,7 +31,6 @@ function _find_bindir(sdkdir, opt)
         table.insert(bindirs, opt.bindir)
     end
     table.insert(bindirs, path.join(sdkdir, "bin"))
-    table.insert(bindirs, path.join(sdkdir, "**", "bin"))
 
     -- attempt to find *-[gcc|clang|ld]
     for _, toolname in ipairs({"gcc", "clang", "ld"}) do
