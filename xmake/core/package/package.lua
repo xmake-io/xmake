@@ -252,6 +252,11 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
+-- get link deps
+function _instance:linkdeps()
+    return self._LINKDEPS
+end
+
 -- get parents
 function _instance:parents()
     return self._PARENTS
@@ -1223,26 +1228,24 @@ function _instance:exists()
     return self._FETCHINFO ~= nil
 end
 
--- fetch all local info with dependencies
-function _instance:fetchdeps()
+-- fetch link info of dependencies
+function _instance:fetch_linkdeps()
     local fetchinfo = self:fetch()
     if not fetchinfo then
         return
     end
     fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
-    local orderdeps = self:orderdeps()
-    if orderdeps then
-        local total = #orderdeps
-        for idx, _ in ipairs(orderdeps) do
-            local dep = orderdeps[total + 1 - idx]
-            if dep:is_library() then
-                local depinfo = dep:fetch()
-                if depinfo then
-                    for name, values in pairs(depinfo) do
-                        if name ~= "license" and name ~= "version" then
-                            fetchinfo[name] = table.wrap(fetchinfo[name])
-                            table.join2(fetchinfo[name], values)
-                        end
+    local linkdeps = self:linkdeps()
+    if linkdeps then
+        local total = #linkdeps
+        for idx, _ in ipairs(linkdeps) do
+            local dep = linkdeps[total + 1 - idx]
+            local depinfo = dep:fetch()
+            if depinfo then
+                for name, values in pairs(depinfo) do
+                    if name ~= "license" and name ~= "version" then
+                        fetchinfo[name] = table.wrap(fetchinfo[name])
+                        table.join2(fetchinfo[name], values)
                     end
                 end
             end
@@ -1346,7 +1349,7 @@ end
 
 -- generate building configs for has_xxx/check_xxx
 function _instance:_generate_build_configs(configs)
-    configs = table.join(self:fetchdeps(), configs)
+    configs = table.join(self:fetch_linkdeps(), configs)
     if self:is_plat("windows") then
         local ld = self:build_getenv("ld")
         local vs_runtime = self:config("vs_runtime")
