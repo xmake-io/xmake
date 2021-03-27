@@ -82,7 +82,11 @@ function main()
         local fetchinfo = instance:fetch()
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
-                cprint("      -> ${magenta}%s${clear}: %s", name, table.concat(table.wrap(info), " "))
+                if type(info) == "table" then
+                    cprint("      -> ${magenta}%s${clear}: %s", name, table.concat(info, " "))
+                else
+                    cprint("      -> ${magenta}%s${clear}: %s", name, tostring(info))
+                end
             end
         end
     end
