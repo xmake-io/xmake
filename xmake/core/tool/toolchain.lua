@@ -472,7 +472,7 @@ end
 -- format: toolchain@package
 -- e.g. "clang@llvm-10", "@muslcc", zig
 --
-function toolchain._parsename(name)
+function toolchain.parsename(name)
     local splitinfo = name:split('@', {plain = true, strict = true})
     local toolchain_name = splitinfo[1]
     if toolchain_name == "" then
@@ -532,7 +532,7 @@ function toolchain.load(name, opt)
     -- get toolchain name and packages
     opt = opt or {}
     local packages
-    name, packages = toolchain._parsename(name)
+    name, packages = toolchain.parsename(name)
     opt.packages = opt.packages or packages
 
     -- get cache
@@ -592,7 +592,7 @@ function toolchain.load_withinfo(name, info, opt)
     -- get toolchain name and packages
     opt = opt or {}
     local packages
-    name, packages = toolchain._parsename(name)
+    name, packages = toolchain.parsename(name)
     opt.packages = opt.packages or packages
 
     -- get cache key

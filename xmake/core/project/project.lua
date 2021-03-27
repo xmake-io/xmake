@@ -1028,7 +1028,8 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
-    local info = project._toolchains()[name]
+    local toolchain_name = toolchain.parsename(name) -- we need ignore `@packagename`
+    local info = project._toolchains()[toolchain_name]
     if info then
         return toolchain.load_withinfo(name, info, opt)
     end
