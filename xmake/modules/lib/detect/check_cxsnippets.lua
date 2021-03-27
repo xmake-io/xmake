@@ -145,16 +145,17 @@ function main(snippets, opt)
 
     -- get links
     local links = {}
+    local target = opt.target
     if configs and configs.links then
         table.join2(links, configs.links)
     end
-    if opt.target then
-        table.join2(links, opt.target:get("links"))
+    if target and target:type() ~= "package" then
+        table.join2(links, target:get("links"))
     end
     if configs and configs.syslinks then
         table.join2(links, configs.syslinks)
     end
-    if opt.target then
+    if target and target:type() ~= "package" then
         table.join2(links, opt.target:get("syslinks"))
     end
 
@@ -237,8 +238,6 @@ function main(snippets, opt)
     if errors and option.get("diagnosis") and #tostring(errors) > 0 then
         cprint("${color.warning}checkinfo:${clear dim} %s", errors)
     end
-
-    -- ok?
     return ok
 end
 
