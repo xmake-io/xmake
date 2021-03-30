@@ -178,6 +178,10 @@ function _make_targetinfo(mode, arch, target)
     -- save runenvs
     local runenvs = {}
     local addrunenvs, setrunenvs = make_runenvs(target)
+    for k, v in pairs(target:pkgenvs()) do
+        addrunenvs = addrunenvs or {}
+        addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), v)
+    end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
             runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", _make_dirs(v), k)
