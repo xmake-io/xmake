@@ -506,7 +506,11 @@ function _load_package(packagename, requireinfo, opt)
     end
 
     -- load package from system
-    if not package and opt.system ~= false then
+    local system = requireinfo.system
+    if system == nil then
+        system = opt.system
+    end
+    if not package and system ~= false then
         package = _load_package_from_system(packagename)
     end
 
