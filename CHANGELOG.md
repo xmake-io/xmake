@@ -16,6 +16,7 @@
 
 * [#1275](https://github.com/xmake-io/xmake/issues/1275): Support conditionnal targets for vsxmake plugin
 * [#1290](https://github.com/xmake-io/xmake/pull/1290): Improve android ndk to support >= r22
+* [#1311](https://github.com/xmake-io/xmake/issues/1311): Add packages lib folder to PATH for vsxmake project
 
 ### Bugs fixed
 
@@ -971,6 +972,7 @@
 
 * [#1275](https://github.com/xmake-io/xmake/issues/1275): 改进 vsxmake 生成器，支持条件化编译 targets
 * [#1290](https://github.com/xmake-io/xmake/pull/1290): 增加对 Android ndk r22 以上版本支持
+* [#1311](https://github.com/xmake-io/xmake/issues/1311): 为 vsxmake 工程添加包 dll 路径，确保调试运行加载正常
 
 ## Bugs 修复
 
