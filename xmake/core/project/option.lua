@@ -387,6 +387,7 @@ function option.apis()
         ,   "option.set_description"
             -- option.add_xxx
         ,   "option.add_deps"
+        ,   "option.add_rules"
         ,   "option.add_imports"
         ,   "option.add_vectorexts"
         ,   "option.add_features"

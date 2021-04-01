@@ -33,7 +33,7 @@ import("net.proxy")
 -- import("devel.git")
 --
 -- git.clone("git@github.com:xmake-io/xmake.git")
--- git.clone("git@github.com:xmake-io/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake"})
+-- git.clone("git@github.com:xmake-io/xmake.git", {depth = 1, branch = "master", outputdir = "/tmp/xmake", longpaths = true})
 --
 -- @endcode
 --
@@ -69,6 +69,12 @@ function main(url, opt)
     end
     if opt.shallow_submodules then
         table.insert(argv, "--shallow-submodules")
+    end
+
+    -- use longpaths, we need it on windows
+    if opt.longpaths then
+        table.insert(argv, "-c")
+        table.insert(argv, "core.longpaths=true")
     end
 
     -- set outputdir
