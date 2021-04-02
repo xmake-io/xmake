@@ -59,25 +59,28 @@ function _checkout(package, url, sourcedir, url_alias)
     -- remove temporary directory
     os.rm(sourcedir .. ".tmp")
 
+    -- we need enable longpaths on windows
+    local longpaths = package:policy("platform.longpaths")
+
     -- download package from branches?
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     if package:branch() then
 
         -- only shadow clone this branch
-        git.clone(url, {depth = 1, recursive = true, longpaths = true, branch = package:branch(), outputdir = packagedir})
+        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
     else
 
         -- clone whole history and tags
-        git.clone(url, {longpaths = true, outputdir = packagedir})
+        git.clone(url, {longpaths = longpaths, outputdir = packagedir})
 
         -- attempt to checkout the given version
         local revision = package:revision(url_alias) or package:tag() or package:version_str()
         git.checkout(revision, {repodir = packagedir})
 
         -- update all submodules
-        git.submodule.update({init = true, recursive = true, repodir = packagedir})
+        git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
     end
 
     -- move to source directory

@@ -31,7 +31,7 @@ import("lib.detect.find_tool")
 -- import("devel.git.submodule")
 --
 -- submodule.update({repodir = "/tmp/xmake", init = true, remote = true})
--- submodule.update({repodir = "/tmp/xmake", recursive = true, reference = "xxx", paths = "xxx"})
+-- submodule.update({repodir = "/tmp/xmake", recursive = true, longpaths = true, reference = "xxx", paths = "xxx"})
 --
 -- @endcode
 --
@@ -64,8 +64,28 @@ function main(opt)
         oldir = os.cd(opt.repodir)
     end
 
+    -- enable long paths
+    local longpaths_old
+    local longpaths_changed = false
+    if opt.longpaths then
+        local longpaths_old = try {function () return os.iorunv(git.program, {"config", "--get", "--global", "core.longpaths"}) end}
+        if not longpaths_old or not longpaths_old:find("true") then
+            os.vrunv(git.program, {"config", "--global", "core.longpaths", "true"})
+            longpaths_changed = true
+        end
+    end
+
     -- submodule it
     os.vrunv(git.program, argv)
+
+    -- restore old long paths configuration
+    if longpaths_changed then
+        if longpaths_old and longpaths_old:find("false") then
+            os.vrunv(git.program, {"config", "--global", "core.longpaths", "false"})
+        else
+            os.vrunv(git.program, {"config", "--global", "--unset", "core.longpaths"})
+        end
+    end
 
     -- leave repository directory
     if oldir then

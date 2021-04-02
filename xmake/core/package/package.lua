@@ -38,6 +38,7 @@ local memcache       = require("cache/memcache")
 local toolchain      = require("tool/toolchain")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
+local policy         = require("project/policy")
 local platform       = require("platform/platform")
 local platform_menu  = require("platform/menu")
 local language       = require("language/language")
@@ -297,6 +298,24 @@ function _instance:revision(url_alias)
         -- it will be sha256 of tar/gz file, not commit number if longer than 40 characters
         return revision
     end
+end
+
+-- get the package policy
+function _instance:policy(name)
+    local policies = self._POLICIES
+    if not policies then
+        policies = self:get("policy")
+        self._POLICIES = policies
+        if policies then
+            local defined_policies = policy.policies()
+            for name, _ in pairs(policies) do
+                if not defined_policies[name] then
+                    utils.warning("unknown policy(%s), please run `xmake l core.project.policy.policies` if you want to all policies", name)
+                end
+            end
+        end
+    end
+    return policy.check(name, policies and policies[name])
 end
 
 -- get the package kind
@@ -1617,8 +1636,10 @@ function package.apis()
         }
     ,   keyvalues =
         {
+            -- package.set_xxx
+            "package.set_policy"
             -- package.add_xxx
-            "package.add_patches"
+        ,   "package.add_patches"
         ,   "package.add_resources"
         }
     ,   dictionary =
