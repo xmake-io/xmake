@@ -11,6 +11,7 @@
 * Support to fetch remote ndk toolchain package
 * [#1268](https://github.com/xmake-io/xmake/issues/1268): Add `utils.install.pkgconfig_importfiles` rule to install `*.pc` import file
 * [#1268](https://github.com/xmake-io/xmake/issues/1268): Add `utils.install.cmake_importfiles` rule to install `*.cmake` import files
+* [#348](https://github.com/xmake-io/xmake-repo/pull/348): Add `platform.longpaths` policy to support git longpaths
 
 ### Change
 
@@ -967,6 +968,7 @@
 * 支持自动拉取远程 ndk 工具链包和集成
 * [#1268](https://github.com/xmake-io/xmake/issues/1268): 添加 `utils.install.pkgconfig_importfiles` 规则去安装 `*.pc` 文件
 * [#1268](https://github.com/xmake-io/xmake/issues/1268): 添加 `utils.install.cmake_importfiles` 规则去安装 `*.cmake` 导入文件
+* [#348](https://github.com/xmake-io/xmake-repo/pull/348): 添加 `platform.longpaths` 策略去支持 git longpaths
 
 ## 改进
 
