@@ -53,7 +53,7 @@ rule("qt.moc")
         local flags = {}
         table.join2(flags, compiler.map_flags("cxx", "define", target:get("defines")))
         table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("includedirs")))
-        table.join2(flags, compiler.map_flags("cxx", "sysincludedir", target:get("sysincludedirs")))
+        table.join2(flags, compiler.map_flags("cxx", "includedir", target:get("sysincludedirs"))) -- for now, moc process doesn't support MSVC external includes flags and will fail
         table.join2(flags, compiler.map_flags("cxx", "frameworkdir", target:get("frameworkdirs")))
         batchcmds:mkdir(path.directory(sourcefile_moc))
         batchcmds:vrunv(moc, table.join(flags, sourcefile, "-o", sourcefile_moc))

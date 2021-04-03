@@ -88,7 +88,7 @@ end
 function _add_includedirs(target, includedirs)
     for _, includedir in ipairs(includedirs) do
         if os.isdir(includedir) then
-            target:add("includedirs", includedir)
+            target:add("sysincludedirs", includedir)
         end
     end
 end
