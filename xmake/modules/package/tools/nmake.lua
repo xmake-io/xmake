@@ -24,13 +24,24 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
+-- get the build environments
+function buildenvs(package, opt)
+    local envs = {}
+    for name, values in pairs(toolchain.load("msvc"):runenvs()) do
+        local oldvalues = os.getenv(name)
+        if oldvalues then
+            values = values .. path.envsep() .. oldvalues
+        end
+        envs[name] = values
+    end
+    return envs
+end
+
 -- build package
 function build(package, configs, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- pass configurations
+    opt = opt or {}
     local argv = {}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -47,15 +58,16 @@ function build(package, configs, opt)
     end
 
     -- do build
-    local runenvs = toolchain.load("msvc"):runenvs()
+    local runenvs = opt.envs or buildenvs(package, opt)
     local nmake = find_tool("nmake", {envs = runenvs})
     os.vrunv(nmake.program, argv, {envs = runenvs})
 end
 
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
 
     -- pass configurations
+    opt = opt or {}
     local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -72,7 +84,7 @@ function install(package, configs)
     end
 
     -- do install
-    local runenvs = toolchain.load("msvc"):runenvs()
+    local runenvs = opt.envs or buildenvs(package, opt)
     local nmake = find_tool("nmake", {envs = runenvs})
     os.vrunv(nmake.program, argv, {envs = runenvs})
 end
