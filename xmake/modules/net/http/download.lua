@@ -53,7 +53,7 @@ function _get_user_agent()
 end
 
 -- download url using curl
-function _curl_download(tool, url, outputfile)
+function _curl_download(tool, url, outputfile, opt)
 
     -- set basic arguments
     local argv = {}
@@ -80,6 +80,12 @@ function _curl_download(tool, url, outputfile)
         table.insert(argv, user_agent)
     end
 
+    -- continue to download?
+    if opt.continue then
+        table.insert(argv, "-C")
+        table.insert(argv, "-")
+    end
+
     -- set url
     table.insert(argv, url)
 
@@ -98,7 +104,7 @@ function _curl_download(tool, url, outputfile)
 end
 
 -- download url using wget
-function _wget_download(tool, url, outputfile)
+function _wget_download(tool, url, outputfile, opt)
 
     -- ensure output directory
     local argv = {url}
@@ -134,6 +140,11 @@ function _wget_download(tool, url, outputfile)
         table.insert(argv, user_agent)
     end
 
+    -- continue to download?
+    if opt.continue then
+        table.insert(argv, "-c")
+    end
+
     -- set outputfile
     table.insert(argv, "-O")
     table.insert(argv, outputfile)
@@ -146,22 +157,24 @@ end
 --
 -- @param url           the input url
 -- @param outputfile    the output file
+-- @param opt           the option, {continue = true}
 --
 --
-function main(url, outputfile)
+function main(url, outputfile, opt)
 
     -- init output file
+    opt = opt or {}
     outputfile = outputfile or path.filename(url):gsub("%?.+$", "")
 
     -- attempt to download url using curl first
     local tool = find_tool("curl", {version = true})
     if tool then
-        return _curl_download(tool, url, outputfile)
+        return _curl_download(tool, url, outputfile, opt)
     end
 
     -- download url using wget
     tool = find_tool("wget", {version = true})
     if tool then
-        return _wget_download(tool, url, outputfile)
+        return _wget_download(tool, url, outputfile, opt)
     end
 end
