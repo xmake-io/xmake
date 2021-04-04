@@ -510,7 +510,7 @@ function _load_package(packagename, requireinfo, opt)
     if system == nil then
         system = opt.system
     end
-    if not package and system ~= false then
+    if not package and (system ~= false or packagename:find("::", 1, true)) then
         package = _load_package_from_system(packagename)
     end
 
