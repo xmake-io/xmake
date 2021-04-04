@@ -134,15 +134,15 @@ function libinfo(name, opt)
     opt = opt or {}
 
     -- init PKG_CONFIG_PATH
-    local configdirs_old = os.getenv("PKG_CONFIG_PATH")
+    local envs = {}
     local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+        envs.PKG_CONFIG_PATH = path.joinenv(configdirs)
     end
 
     -- get libs and cflags
     local result = nil
-    local flags = try { function () return os.iorunv(pkgconfig, {"--libs", "--cflags", name}) end }
+    local flags = try { function () return os.iorunv(pkgconfig, {"--libs", "--cflags", name}, {envs = envs}) end }
     if flags then
 
         -- init result
@@ -172,15 +172,10 @@ function libinfo(name, opt)
     end
 
     -- get version
-    local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}) end }
+    local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}, {envs = envs}) end }
     if version then
         result = result or {}
         result.version = version:trim()
-    end
-
-    -- restore PKG_CONFIG_PATH
-    if configdirs_old then
-        os.setenv("PKG_CONFIG_PATH", configdirs_old)
     end
     return result
 end
