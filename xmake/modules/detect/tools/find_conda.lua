@@ -42,10 +42,8 @@ function main(opt)
 
     -- find program
     if is_host("windows") then
-        local home = os.getenv("USERPROFILE")
-        if home then
-            opt.paths = {path.join(home, "miniconda3", "condabin")}
-        end
+        opt.paths = {"$(env CONDA_BAT)",
+                     "$(env USERPROFILE)/miniconda3/condabin"}
     end
     local program = find_program(opt.program or (is_host("windows") and "conda.bat" or "conda"), opt)
 
