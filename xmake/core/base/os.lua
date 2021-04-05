@@ -1077,8 +1077,8 @@ function os.pbcopy(data)
 end
 
 -- get cpu info
-function os.cpuinfo()
-    return require("base/cpu").info()
+function os.cpuinfo(name)
+    return require("base/cpu").info(name)
 end
 
 -- read the content of symlink

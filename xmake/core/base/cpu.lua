@@ -260,14 +260,14 @@ function cpu.number()
 end
 
 -- get cpu info
-function cpu.info()
+function cpu.info(name)
     local cpuinfo = {}
     cpuinfo.vendor = cpu.vendor()
     cpuinfo.model  = cpu.model()
     cpuinfo.family = cpu.family()
     cpuinfo.march  = cpu.march()
     cpuinfo.ncpu   = cpu.number()
-    return cpuinfo
+    return name and cpuinfo[name] or cpuinfo
 end
 
 -- return module
