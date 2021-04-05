@@ -172,7 +172,7 @@ function cpu._info()
     if cpuinfo == nil then
         cpuinfo = {}
         if os.host() == "macosx" then
-            local ok, sysctl_result = os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features")
+            local ok, sysctl_result = try {function() os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features") end}
             if ok and sysctl_result then
                 sysctl_result = sysctl_result:trim():split('\n', {plain = true})
                 cpuinfo.vendor_id    = sysctl_result[1]
@@ -186,7 +186,7 @@ function cpu._info()
         elseif os.host() == "linux" then
             -- FIXME
             -- local proc_cpuinfo = io.readfile("/proc/cpuinfo")
-            local ok, proc_cpuinfo = os.iorun("cat /proc/cpuinfo")
+            local ok, proc_cpuinfo = try {function () return os.iorun("cat /proc/cpuinfo") end}
             if ok and proc_cpuinfo then
                 for _, line in ipairs(proc_cpuinfo:split('\n', {plain = true})) do
                     if not cpuinfo.vendor_id and line:startswith("vendor_id") then
@@ -216,19 +216,19 @@ function cpu._info()
                 cpuinfo.cpu_model  = cpu_model
             end
         elseif os.host() == "bsd" then
-            local ok, dmesginfo = os.iorun("dmesg")
+            local ok, dmesginfo = try {function() return os.iorun("dmesg") end}
             if ok and dmesginfo then
                 for _, line in ipairs(dmesginfo:split('\n', {plain = true})) do
-                    if not cpuinfo.vendor_id and line:startswith("Origin=") then
+                    if not cpuinfo.vendor_id and line:find("Origin=", 1, true) then
                         cpuinfo.vendor_id = line:match("Origin=\"(.-)\"")
                     end
-                    if not cpuinfo.cpu_model and line:startswith("Model=") then
+                    if not cpuinfo.cpu_model and line:find("Model=", 1, true) then
                         cpuinfo.cpu_model = line:match("Model=([%d%w]+)")
                     end
-                    if not cpuinfo.cpu_family and line:startswith("Family=") then
+                    if not cpuinfo.cpu_family and line:find("Family=", 1, true) then
                         cpuinfo.cpu_family = line:match("Family=([%d%w]+)")
                     end
-                    if line:startswith("Features=") then
+                    if line:find("Features=", 1, true) then
                         local cpu_features = line:match("Features=.*<(.-)>")
                         if cpu_features then
                             cpuinfo.cpu_features = (cpuinfo.cpu_features or "") .. " " .. cpu_features
