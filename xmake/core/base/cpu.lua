@@ -231,12 +231,16 @@ function cpu._info()
                     if line:find("Features=", 1, true) then
                         local cpu_features = line:match("Features=.*<(.-)>")
                         if cpu_features then
-                            cpuinfo.cpu_features = (cpuinfo.cpu_features or "") .. " " .. cpu_features
+                            if cpuinfo.cpu_features then
+                                cpuinfo.cpu_features = cpuinfo.cpu_features .. "," .. cpu_features
+                            else
+                                cpuinfo.cpu_features = cpu_features
+                            end
                         end
                     end
                 end
                 if cpuinfo.cpu_features then
-                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower()
+                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower():gsub(",", " ")
                 end
             end
         end
