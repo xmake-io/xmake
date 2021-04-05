@@ -218,7 +218,7 @@ function cpu._info()
         elseif os.host() == "bsd" then
             local ok, dmesginfo = os.iorun("dmesg")
             if ok and dmesginfo then
-                for _, line in ipairs(proc_cpuinfo:split('\n', {plain = true})) do
+                for _, line in ipairs(dmesginfo:split('\n', {plain = true})) do
                     if not cpuinfo.vendor_id and line:startswith("Origin=") then
                         cpuinfo.vendor_id = line:match("Origin=\"(.-)\"")
                     end
