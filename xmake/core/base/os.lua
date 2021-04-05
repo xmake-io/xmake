@@ -39,6 +39,7 @@ os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
 os._setenv      = os._setenv or os.setenv
 os._getenvs     = os._getenvs or os.getenvs
+os._cpuinfo     = os._cpuinfo or os.cpuinfo
 os._readlink    = os._readlink or os.readlink
 
 -- syserror code
@@ -1073,6 +1074,11 @@ function os.pbcopy(data)
     else
         -- TODO
     end
+end
+
+-- get cpu info
+function os.cpuinfo()
+    return require("base/cpu").info()
 end
 
 -- read the content of symlink

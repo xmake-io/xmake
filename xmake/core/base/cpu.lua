@@ -199,7 +199,7 @@ end
 
 -- get cpu number
 function cpu.number()
-    return os.cpuinfo().ncpu
+    return os._cpuinfo().ncpu
 end
 
 -- get cpu info
@@ -209,7 +209,7 @@ function cpu.info()
     cpuinfo.model  = cpu.model()
     cpuinfo.family = cpu.family()
     cpuinfo.march  = cpu.march()
-    cpuinfo.number = cpu.number()
+    cpuinfo.ncpu   = cpu.number()
     return cpuinfo
 end
 
