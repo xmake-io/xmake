@@ -215,6 +215,30 @@ function cpu._info()
                 cpuinfo.cpu_family = cpu_family
                 cpuinfo.cpu_model  = cpu_model
             end
+        elseif os.host() == "bsd" then
+            local ok, dmesginfo = os.iorun("dmesg")
+            if ok and dmesginfo then
+                for _, line in ipairs(proc_cpuinfo:split('\n', {plain = true})) do
+                    if not cpuinfo.vendor_id and line:startswith("Origin=") then
+                        cpuinfo.vendor_id = line:match("Origin=\"(.-)\"")
+                    end
+                    if not cpuinfo.cpu_model and line:startswith("Model=") then
+                        cpuinfo.cpu_model = line:match("Model=([%d%w]+)")
+                    end
+                    if not cpuinfo.cpu_family and line:startswith("Family=") then
+                        cpuinfo.cpu_family = line:match("Family=([%d%w]+)")
+                    end
+                    if line:startswith("Features=") then
+                        local cpu_features = line:match("Features=.*<(.-)>")
+                        if cpu_features then
+                            cpuinfo.cpu_features = (cpuinfo.cpu_features or "") .. " " .. cpu_features
+                        end
+                    end
+                end
+                if cpuinfo.cpu_features then
+                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower()
+                end
+            end
         end
         cpu._CPUINFO = cpuinfo
     end
