@@ -30,7 +30,6 @@ import("detect.sdks.find_cuda")
 -- @return      see the return value of find_package()
 --
 function main(opt)
-    
     if opt.plat == "windows" then
 
         -- init bits
@@ -38,7 +37,8 @@ function main(opt)
         local libname = (opt.arch == "x64" and "nvToolsExt64_1" or "nvToolsExt32_1")
 
         -- init search paths
-        local paths = {
+        local paths =
+        {
             "$(env NVTOOLSEXT_PATH)",
             "$(env PROGRAMFILES)/NVIDIA Corporation/NvToolsExt"
         }
@@ -59,12 +59,8 @@ function main(opt)
 
         -- find include
         table.insert(result.includedirs, find_path("nvToolsExt.h", paths, {suffixes = "include"}))
-
-        -- ok
         return result
     else
-
-        -- find cuda
         local cuda = find_cuda()
         if cuda then
             local result = {links = {}, linkdirs = {}, includedirs = {}}
@@ -78,11 +74,7 @@ function main(opt)
                 return
             end
             table.join2(result.includedirs, cuda.includedirs)
-
-            -- ok
             return result
-        else
-            return
         end
     end
 end

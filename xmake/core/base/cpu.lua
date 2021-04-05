@@ -31,80 +31,140 @@ local io    = require("base/io")
 -- @see https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
 -- http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
 -- https://github.com/tesseract-ocr/tesseract/blob/master/cmake/OptimizeForArchitecture.cmake
+-- https://en.wikichip.org/wiki/intel/cpuid
 --
 function cpu._march_intel()
-    local maps = {}
     local cpu_family = cpu.family()
     local cpu_model  = cpu.model()
-    if cpu_family == 6 then
-        maps[0x0E] = "core"
-        maps[0x0F] = "merom"
-        maps[0x17] = "penryn"
-        maps[0x1D] = "penryn"
-        maps[0x1A] = "nehalem"
-        maps[0x1C] = "atom"
-        maps[0x1E] = "nehalem"
-        maps[0x1F] = "nehalem"
-        maps[0x25] = "westmere"
-        maps[0x2A] = "sandy-bridge"
-        maps[0x2C] = "westmere"
-        maps[0x2D] = "sandy-bridge"
-        maps[0x2E] = "nehalem"
-        maps[0x2F] = "westmere"
-        maps[0x3A] = "ivy-bridge"
-        maps[0x3C] = "haswell"
-        maps[0x3D] = "broadwell"
-        maps[0x3E] = "ivy-bridge"
-        maps[0x3F] = "haswell"
-        maps[0x45] = "haswell"
-        maps[0x46] = "haswell"
-        maps[0x47] = "broadwell"
-        maps[0x4c] = "silvermont"
-        maps[0x4E] = "skylake"
-        maps[0x4F] = "broadwell"
-        maps[0x55] = "skylake-avx512"
-        maps[0x56] = "broadwell"
-        maps[0x57] = "knights-landing"
-        maps[0x5a] = "silvermont"
-        maps[0x5c] = "goldmont"
-        maps[0x5E] = "skylake"
-        maps[0x66] = "cannonlake"
-        maps[0x8E] = "kaby-lake"
-        maps[0x9E] = "kaby-lake"
+    if cpu_family == 3 then
+        return "80386"
+    elseif cpu_family == 4 then
+        if cpu_model >= 1 and cpu_model <= 9 then
+            return "80486"
+        end
+    elseif cpu_family == 5 then
+        if cpu_model == 9 or cpu_model == 10 then
+            return "Lakemont"
+        elseif cpu_model == 1 or cpu_model == 2 or
+                cpu_model == 4 or cpu_model == 7 or cpu_model == 8 then
+            return "P5"
+        end
+    elseif cpu_family == 6 then
+        -- mic architecture
+        if cpu_model == 133 then
+            return "Knights Mill"
+        elseif cpu_model == 87 then
+            return "Knights Landing"
+        end
+
+        -- small cores
+        if cpu_model == 134 then
+            return "Tremont"
+        elseif cpu_model == 122 then
+            return "Goldmont Plus"
+        elseif cpu_model == 95 or cpu_model == 92 then
+            return "Goldmont"
+        elseif cpu_model == 76 then
+            return "Airmont"
+        elseif cpu_model == 93 or cpu_model == 90 or
+                cpu_model == 77 or cpu_model == 74 or cpu_model == 55 then
+            return "Silvermont"
+        elseif cpu_model == 54 or cpu_model == 53 or cpu_model == 39 then
+            return "Saltwell"
+        elseif cpu_model == 38 or cpu_model == 28 then
+            return "Bonnell"
+        end
+
+        -- big cores
+        if cpu_model == 140 then
+            return "Tiger Lake"
+        elseif cpu_model == 126 or cpu_model == 125 then
+            return "Ice Lake"
+        elseif cpu_model == 165 then
+            return "Comet Lake"
+        elseif cpu_model == 102 then
+            return "Cannon Lake"
+        elseif cpu_model == 142 or cpu_model == 158 then
+            return "Kaby Lake"
+        elseif cpu_model == 94 or cpu_model == 78 or cpu_model == 85 then
+            return "Skylake"
+        elseif cpu_model == 71 or cpu_model == 61 or cpu_model == 79 or cpu_model == 86 then
+            return "Broadwell"
+        elseif cpu_model == 70 or cpu_model == 69 or cpu_model == 60 or cpu_model == 63 then
+            return "Haswell"
+        elseif cpu_model == 58 or cpu_model == 62 then
+            return "Ivy Bridge"
+        elseif cpu_model == 42 or cpu_model == 45 then
+            return "Sandy Bridge"
+        elseif cpu_model == 37 or cpu_model == 44 or cpu_model == 47 then
+            return "Westmere"
+        elseif cpu_model == 31 or cpu_model == 30 or cpu_model == 46 or cpu_model == 26 then
+            return "Nehalem"
+        elseif cpu_model == 23 or cpu_model == 29 then
+            return "Penryn"
+        elseif cpu_model == 22 or cpu_model == 15 then
+            return "Core"
+        elseif cpu_model == 14 then
+            return "Modified Pentium M"
+        elseif cpu_model == 21 or cpu_model == 13 or cpu_model == 9 then
+            return "Pentium M"
+        elseif cpu_model == 11 or cpu_model == 10 or cpu_model == 8 or cpu_model == 7 or
+                cpu_model == 6 or cpu_model == 5 or cpu_model == 1 then
+            return "P6"
+        end
     elseif cpu_family == 7 then
         -- TODO Itanium
+    elseif cpu_family == 11 then
+        if cpu_model == 0 then
+            return "knights-ferry"
+        elseif cpu_model == 1 then
+            return "knights-corner"
+        end
     elseif cpu_family == 15 then
-        -- TODO NetBurst
+        if cpu_model <= 6 then
+            return "netburst"
+        end
     end
-    return cpu_model and maps[cpu_model]
 end
 
 -- get cpu micro architecture for AMD
 --
 -- @see https://en.wikipedia.org/wiki/List_of_AMD_CPU_microarchitectures
+-- https://en.wikichip.org/wiki/amd/cpuid
 --
 function cpu._march_amd()
     local cpu_family = cpu.family()
     local cpu_model  = cpu.model()
-    if cpu_family == 23 then
-        return "zen"
+    if cpu_family == 25 then
+        return "Zen 3"
+    elseif cpu_family == 24 then
+        return "Zen"
+    elseif cpu_family == 23 then
+        if cpu_model == 144 or cpu_model == 113 or cpu_model == 96 or cpu_model == 49 then
+            return "Zen 2"
+        elseif cpu_model == 24 or cpu_model == 8 then
+            return "Zen+"
+        else
+            return "Zen"
+        end
     elseif cpu_family == 22 then
         return "AMD 16h"
     elseif cpu_family == 21 then
         if cpu_model < 2 then
-            return "bulldozer"
+            return "Bulldozer"
         else
-            return "piledriver"
+            -- TODO and Steamroller, Excavator ..
+            return "Piledriver"
         end
     elseif cpu_family == 20 then
-        return "AMD 14h"
+        return "Bobcat"
     elseif cpu_family == 16 then
-        return "barcelona"
+        return "K10"
     elseif cpu_family == 15 then
         if cpu_model > 64 then
-            return "k8-sse3"
+            return "K8-sse3"
         else
-            return "k8"
+            return "K8"
         end
     end
 end

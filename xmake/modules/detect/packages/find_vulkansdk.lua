@@ -31,14 +31,14 @@ import("lib.detect.find_library")
 function main(opt)
 
     -- init search paths
-    local paths = {
+    local paths =
+    {
         "$(env VK_SDK_PATH)",
         "$(env VULKAN_SDK)"
     }
 
     -- find library
     local result = {links = {}, linkdirs = {}, includedirs = {}}
-
     local libname = (opt.plat == "windows" and "vulkan-1" or "vulkan")
     local libsuffix = ((opt.plat == "windows" and opt.arch == "x86") and "lib32" or "lib")
     local binsuffix = ((opt.plat == "windows" and opt.arch == "x86") and "bin32" or "bin")
@@ -55,7 +55,5 @@ function main(opt)
 
     -- find include
     table.insert(result.includedirs, find_path(path.join("vulkan", "vulkan.h"), paths, {suffixes = "include"}))
-
-    -- ok
     return result
 end

@@ -46,7 +46,6 @@ function main(opt)
         local result = {links = {}, linkdirs = {}, includedirs = {}, threading = ""}
         local linkinfo = find_library("mkl_core", paths, {suffixes = path.join("lib", rdir)})
         if not linkinfo then
-            -- not found?
             return
         end
         table.insert(result.linkdirs, linkinfo.linkdir)
@@ -69,8 +68,6 @@ function main(opt)
 
         -- find include
         table.insert(result.includedirs, find_path("mkl.h", paths, {suffixes = "include"}))
-
-        -- ok
         return result
     end
 end
