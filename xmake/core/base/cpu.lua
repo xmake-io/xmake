@@ -175,12 +175,12 @@ function cpu._info()
             local ok, sysctl_result = os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features")
             if ok and sysctl_result then
                 sysctl_result = sysctl_result:trim():split('\n', {plain = true})
-                cpuinfo.vendor_id  = sysctl_result[1]
-                cpuinfo.cpu_model  = sysctl_result[2]
-                cpuinfo.cpu_family = sysctl_result[3]
-                cpuinfo.cpu_flags  = sysctl_result[4]
-                if cpuinfo.cpu_flags then
-                    cpuinfo.cpu_flags = cpuinfo.cpu_flags:lower():gsub("%.", "_")
+                cpuinfo.vendor_id    = sysctl_result[1]
+                cpuinfo.cpu_model    = sysctl_result[2]
+                cpuinfo.cpu_family   = sysctl_result[3]
+                cpuinfo.cpu_features = sysctl_result[4]
+                if cpuinfo.cpu_features then
+                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower()
                 end
             end
         elseif os.host() == "linux" then
@@ -198,8 +198,12 @@ function cpu._info()
                     if not cpuinfo.cpu_family and line:startswith("cpu family") then
                         cpuinfo.cpu_family = line:match("cpu family%s+:%s+(.*)")
                     end
-                    if not cpuinfo.cpu_flags and line:startswith("flags") then
-                        cpuinfo.cpu_flags = line:match("flags%s+:%s+(.*)")
+                    if not cpuinfo.cpu_features and line:startswith("flags") then
+                        cpuinfo.cpu_features = line:match("flags%s+:%s+(.*)")
+                    end
+                    -- termux on android
+                    if not cpuinfo.cpu_features and line:startswith("Features") then
+                        cpuinfo.cpu_features = line:match("Features%s+:%s+(.*)")
                     end
                 end
             end
@@ -234,6 +238,11 @@ function cpu.family()
     return cpu_family and tonumber(cpu_family)
 end
 
+-- get cpu features
+function cpu.features()
+    return cpu._info().cpu_features
+end
+
 -- get cpu micro architecture
 function cpu.march()
     local march = cpu._MARCH
@@ -262,11 +271,12 @@ end
 -- get cpu info
 function cpu.info(name)
     local cpuinfo = {}
-    cpuinfo.vendor = cpu.vendor()
-    cpuinfo.model  = cpu.model()
-    cpuinfo.family = cpu.family()
-    cpuinfo.march  = cpu.march()
-    cpuinfo.ncpu   = cpu.number()
+    cpuinfo.vendor   = cpu.vendor()
+    cpuinfo.model    = cpu.model()
+    cpuinfo.family   = cpu.family()
+    cpuinfo.march    = cpu.march()
+    cpuinfo.ncpu     = cpu.number()
+    cpuinfo.features = cpu.features()
     return name and cpuinfo[name] or cpuinfo
 end
 
