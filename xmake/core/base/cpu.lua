@@ -172,7 +172,7 @@ function cpu._info()
     if cpuinfo == nil then
         cpuinfo = {}
         if os.host() == "macosx" then
-            local ok, sysctl_result = try {function() os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features") end}
+            local ok, sysctl_result = os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features")
             if ok and sysctl_result then
                 sysctl_result = sysctl_result:trim():split('\n', {plain = true})
                 cpuinfo.vendor_id    = sysctl_result[1]
@@ -186,7 +186,7 @@ function cpu._info()
         elseif os.host() == "linux" then
             -- FIXME
             -- local proc_cpuinfo = io.readfile("/proc/cpuinfo")
-            local ok, proc_cpuinfo = try {function () return os.iorun("cat /proc/cpuinfo") end}
+            local ok, proc_cpuinfo = os.iorun("cat /proc/cpuinfo")
             if ok and proc_cpuinfo then
                 for _, line in ipairs(proc_cpuinfo:split('\n', {plain = true})) do
                     if not cpuinfo.vendor_id and line:startswith("vendor_id") then
@@ -216,7 +216,7 @@ function cpu._info()
                 cpuinfo.cpu_model  = cpu_model
             end
         elseif os.host() == "bsd" then
-            local ok, dmesginfo = try {function() return os.iorun("dmesg") end}
+            local ok, dmesginfo = os.iorun("dmesg")
             if ok and dmesginfo then
                 for _, line in ipairs(dmesginfo:split('\n', {plain = true})) do
                     if not cpuinfo.vendor_id and line:find("Origin=", 1, true) then
