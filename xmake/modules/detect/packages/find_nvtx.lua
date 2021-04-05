@@ -21,6 +21,7 @@
 -- imports
 import("lib.detect.find_path")
 import("lib.detect.find_library")
+import("detect.sdks.find_cuda")
 
 -- find nvtx
 --
@@ -29,8 +30,7 @@ import("lib.detect.find_library")
 -- @return      see the return value of find_package()
 --
 function main(opt)
-
-    -- for windows platform
+    
     if opt.plat == "windows" then
 
         -- init bits
@@ -62,5 +62,27 @@ function main(opt)
 
         -- ok
         return result
+    else
+
+        -- find cuda
+        local cuda = find_cuda()
+        if cuda then
+            local result = {links = {}, linkdirs = {}, includedirs = {}}
+
+            -- find library
+            local linkinfo = find_library("nvToolsExt", cuda.linkdirs)
+            if linkinfo then
+                table.insert(result.links, "nvToolsExt")
+                table.insert(result.linkdirs, linkinfo.linkdir)
+            else
+                return
+            end
+            table.join2(result.includedirs, cuda.includedirs)
+
+            -- ok
+            return result
+        else
+            return
+        end
     end
 end
