@@ -28,10 +28,8 @@ local io    = require("base/io")
 
 -- get cpu micro architecture for Intel
 --
--- @see https://en.wikipedia.org/wiki/List_of_Intel_CPU_microarchitectures
--- http://www.intel.com/content/www/us/en/processors/architectures-software-developer-manuals.html
--- https://github.com/tesseract-ocr/tesseract/blob/master/cmake/OptimizeForArchitecture.cmake
--- https://en.wikichip.org/wiki/intel/cpuid
+-- @see https://en.wikichip.org/wiki/intel/cpuid
+-- https://github.com/xmake-io/xmake/issues/1120
 --
 function cpu._march_intel()
     local cpu_family = cpu.family()
@@ -129,8 +127,7 @@ end
 
 -- get cpu micro architecture for AMD
 --
--- @see https://en.wikipedia.org/wiki/List_of_AMD_CPU_microarchitectures
--- https://en.wikichip.org/wiki/amd/cpuid
+-- @see https://en.wikichip.org/wiki/amd/cpuid
 --
 function cpu._march_amd()
     local cpu_family = cpu.family()
