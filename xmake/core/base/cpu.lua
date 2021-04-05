@@ -192,6 +192,11 @@ function cpu.march()
     return march
 end
 
+-- get cpu vector extensions
+-- TODO
+function cpu.vectorexts()
+end
+
 -- get cpu number
 function cpu.number()
     return os.cpuinfo().ncpu
