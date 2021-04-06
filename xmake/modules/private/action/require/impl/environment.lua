@@ -44,11 +44,13 @@ function enter()
     local packages = {}
     if not find_tool("git") then
         table.join2(packages, install_packages("git"))
+        find_tool("git", {force = true}) -- we need force to detect and flush detect cache
     end
 
     -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
     if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
         table.join2(packages, install_packages("7z"))
+        find_tool("7z", {force = true})
     end
 
     -- enter the environments of installed packages
