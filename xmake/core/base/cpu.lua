@@ -246,6 +246,7 @@ function cpu._info()
                 if cpuinfo.cpu_features then
                     cpuinfo.cpu_features = cpuinfo.cpu_features:lower():gsub(",", " ")
                 end
+                cpuinfo.model_name = os.iorun("sysctl -n hw.model")
             end
         end
         cpu._CPUINFO = cpuinfo
