@@ -22,9 +22,10 @@
 local cpu = cpu or {}
 
 -- load modules
-local os    = require("base/os")
-local winos = require("base/winos")
-local io    = require("base/io")
+local os      = require("base/os")
+local winos   = require("base/winos")
+local io      = require("base/io")
+local hashset = require("base/hashset")
 
 -- get cpu micro architecture for Intel
 --
@@ -283,6 +284,19 @@ end
 -- get cpu features
 function cpu.features()
     return cpu._info().cpu_features
+end
+
+-- has the given feature?
+function cpu.has_feature(name)
+    local features = cpu._FEATURES
+    if not features then
+        features = cpu.features()
+        if features then
+            features = hashset.from(features:split('%s'))
+        end
+        cpu._FEATURES = features
+    end
+    return features:has(name)
 end
 
 -- get cpu micro architecture
