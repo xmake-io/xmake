@@ -172,16 +172,17 @@ function cpu._info()
     if cpuinfo == nil then
         cpuinfo = {}
         if os.host() == "macosx" then
-            local ok, sysctl_result = os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features")
+            local ok, sysctl_result = os.iorun("/usr/sbin/sysctl -n machdep.cpu.vendor machdep.cpu.model machdep.cpu.family machdep.cpu.features machdep.cpu.brand_string")
             if ok and sysctl_result then
                 sysctl_result = sysctl_result:trim():split('\n', {plain = true})
-                cpuinfo.vendor_id    = sysctl_result[1]
-                cpuinfo.cpu_model    = sysctl_result[2]
-                cpuinfo.cpu_family   = sysctl_result[3]
-                cpuinfo.cpu_features = sysctl_result[4]
+                cpuinfo.vendor_id      = sysctl_result[1]
+                cpuinfo.cpu_model      = sysctl_result[2]
+                cpuinfo.cpu_family     = sysctl_result[3]
+                cpuinfo.cpu_features   = sysctl_result[4]
                 if cpuinfo.cpu_features then
-                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower()
+                    cpuinfo.cpu_features = cpuinfo.cpu_features:lower():gsub("%.", "_")
                 end
+                cpuinfo.cpu_model_name = sysctl_result[5]
             end
         elseif os.host() == "linux" then
             -- FIXME
@@ -194,6 +195,9 @@ function cpu._info()
                     end
                     if not cpuinfo.cpu_model and line:startswith("model") then
                         cpuinfo.cpu_model = line:match("model%s+:%s+(.*)")
+                    end
+                    if not cpuinfo.cpu_model_name and line:startswith("model name") then
+                        cpuinfo.cpu_model_name = line:match("model name%s+:%s+(.*)")
                     end
                     if not cpuinfo.cpu_family and line:startswith("cpu family") then
                         cpuinfo.cpu_family = line:match("cpu family%s+:%s+(.*)")
@@ -260,6 +264,11 @@ function cpu.model()
     return cpu_model and tonumber(cpu_model)
 end
 
+-- get cpu model name
+function cpu.model_name()
+    return cpu._info().cpu_model_name
+end
+
 -- get cpu family
 function cpu.family()
     local cpu_family = cpu._info().cpu_family
@@ -294,12 +303,13 @@ end
 -- get cpu info
 function cpu.info(name)
     local cpuinfo = {}
-    cpuinfo.vendor   = cpu.vendor()
-    cpuinfo.model    = cpu.model()
-    cpuinfo.family   = cpu.family()
-    cpuinfo.march    = cpu.march()
-    cpuinfo.ncpu     = cpu.number()
-    cpuinfo.features = cpu.features()
+    cpuinfo.vendor     = cpu.vendor()
+    cpuinfo.model      = cpu.model()
+    cpuinfo.family     = cpu.family()
+    cpuinfo.march      = cpu.march()
+    cpuinfo.ncpu       = cpu.number()
+    cpuinfo.features   = cpu.features()
+    cpuinfo.model_name = cpu.model_name()
     return name and cpuinfo[name] or cpuinfo
 end
 
