@@ -212,7 +212,8 @@ function cpu._info()
                 end
             end
         elseif os.host() == "windows" then
-            cpuinfo.vendor_id  = winos.registry_query("HKEY_LOCAL_MACHINE\\Hardware\\Description\\System\\CentralProcessor\\0;VendorIdentifier")
+            cpuinfo.vendor_id      = winos.registry_query("HKEY_LOCAL_MACHINE\\Hardware\\Description\\System\\CentralProcessor\\0;VendorIdentifier")
+            cpuinfo.cpu_model_name = winos.registry_query("HKEY_LOCAL_MACHINE\\Hardware\\Description\\System\\CentralProcessor\\0;ProcessorNameString")
             local cpu_id = winos.registry_query("HKEY_LOCAL_MACHINE\\Hardware\\Description\\System\\CentralProcessor\\0;Identifier")
             if cpu_id then
                 local cpu_family, cpu_model = cpu_id:match("Family (%d+) Model (%d+)")
@@ -248,7 +249,7 @@ function cpu._info()
                 end
                 local ok, cpu_model_name = os.iorun("sysctl -n hw.model")
                 if ok and cpu_model_name then
-                    cpuinfo.cpu_model_name = cpu_model_name
+                    cpuinfo.cpu_model_name = cpu_model_name:trim()
                 end
             end
         end
