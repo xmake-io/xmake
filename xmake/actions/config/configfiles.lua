@@ -96,7 +96,7 @@ function _get_builtinvars_git(builtinvars)
         GIT_BRANCH      = {"rev-parse", "--abbrev-ref", "HEAD"},
         GIT_COMMIT      = {"rev-parse", "--short", "HEAD"},
         GIT_COMMIT_LONG = {"rev-parse", "HEAD"},
-        GIT_COMMIT_DATE = {"log", "-1", "--date=format:\"%Y%m%d%H%M%S\"", "--format=\"%ad\""}
+        GIT_COMMIT_DATE = {"log", "-1", "--date=format:%Y%m%d%H%M%S", "--format=%ad"}
     }
     for name, argv in pairs(cmds) do
         builtinvars[name] = function ()
