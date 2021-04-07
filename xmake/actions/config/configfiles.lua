@@ -24,6 +24,7 @@ import("core.base.semver")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
+import("lib.detect.find_tool")
 
 -- get all configuration files
 function _get_configfiles()
@@ -86,6 +87,34 @@ function _get_builtinvars_target(target)
     return builtinvars
 end
 
+-- get the git builtin variables
+function _get_builtinvars_git(builtinvars)
+    local cmds =
+    {
+        GIT_TAG         = {"describe", "--tags"},
+        GIT_TAG_LONG    = {"describe", "--tags", "--long"},
+        GIT_BRANCH      = {"rev-parse", "--abbrev-ref", "HEAD"},
+        GIT_COMMIT      = {"rev-parse", "--short", "HEAD"},
+        GIT_COMMIT_LONG = {"rev-parse", "HEAD"},
+        GIT_COMMIT_DATE = {"log", "-1", "--date=format:\"%Y%m%d%H%M%S\"", "--format=\"%ad\""}
+    }
+    for name, argv in pairs(cmds) do
+        builtinvars[name] = function ()
+            local result
+            local git = find_tool("git")
+            if git then
+                result = try {function ()
+                    return os.iorunv(git.program, argv)
+                end}
+            end
+            if not result then
+                result = "none"
+            end
+            return result:trim()
+        end
+    end
+end
+
 -- get the global builtin variables
 function _get_builtinvars_global()
     local builtinvars = _g.builtinvars_global
@@ -104,6 +133,7 @@ function _get_builtinvars_global()
             builtinvars_upper[name:upper()] = type(value) == "string" and value:upper() or value
         end
         table.join2(builtinvars, builtinvars_upper)
+        _get_builtinvars_git(builtinvars)
         _g.builtinvars_global = builtinvars
     end
     return builtinvars
@@ -161,6 +191,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 
             -- get the builtin variables from the target
             for name, value in pairs(_get_builtinvars_target(target)) do
+                if type(value) == "function" then
+                    value = value()
+                end
                 if variables[name] == nil then
                     variables[name] = value
                 end
@@ -168,6 +201,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
         end
         -- get the global builtin variables
         for name, value in pairs(_get_builtinvars_global()) do
+            if type(value) == "function" then
+                value = value()
+            end
             if variables[name] == nil then
                 variables[name] = value
             end

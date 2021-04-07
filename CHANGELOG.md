@@ -14,6 +14,7 @@
 * [#348](https://github.com/xmake-io/xmake-repo/pull/348): Add `platform.longpaths` policy to support git longpaths
 * [#1314](https://github.com/xmake-io/xmake/issues/1314): Support to install and use conda packages
 * [#1120](https://github.com/xmake-io/xmake/issues/1120): Add `core.base.cpu` module and improve `os.cpuinfo()`
+* [#1325](https://github.com/xmake-io/xmake/issues/1325): Add builtin git variables for `add_configfiles`
 
 ### Change
 
@@ -973,6 +974,7 @@
 * [#348](https://github.com/xmake-io/xmake-repo/pull/348): 添加 `platform.longpaths` 策略去支持 git longpaths
 * [#1314](https://github.com/xmake-io/xmake/issues/1314): 支持安装使用 conda 包
 * [#1120](https://github.com/xmake-io/xmake/issues/1120): 添加 `core.base.cpu` 模块并且改进 `os.cpuinfo()`
+* [#1325](https://github.com/xmake-io/xmake/issues/1325): 为 `add_configfiles` 添加内建的 git 变量
 
 ## 改进
 
