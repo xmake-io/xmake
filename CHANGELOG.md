@@ -980,13 +980,13 @@
 * [#1120](https://github.com/xmake-io/xmake/issues/1120): 添加 `core.base.cpu` 模块并且改进 `os.cpuinfo()`
 * [#1325](https://github.com/xmake-io/xmake/issues/1325): 为 `add_configfiles` 添加内建的 git 变量
 
-## 改进
+### 改进
 
 * [#1275](https://github.com/xmake-io/xmake/issues/1275): 改进 vsxmake 生成器，支持条件化编译 targets
 * [#1290](https://github.com/xmake-io/xmake/pull/1290): 增加对 Android ndk r22 以上版本支持
 * [#1311](https://github.com/xmake-io/xmake/issues/1311): 为 vsxmake 工程添加包 dll 路径，确保调试运行加载正常
 
-## Bugs 修复
+### Bugs 修复
 
 * [#1266](https://github.com/xmake-io/xmake/issues/1266): 修复在 `add_repositories` 中的 repo 相对路径
 * [#1288](https://github.com/xmake-io/xmake/issues/1288): 修复 vsxmake 插件处理 option 配置问题

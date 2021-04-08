@@ -1047,24 +1047,16 @@ end
 function _instance:installdir()
 
     -- get it from the cache
-    local installdir = self._INSTALLDIR
+    local installdir = baseoption.get("installdir")
     if not installdir then
 
-        -- get it from target
-        installdir = baseoption.get("installdir")
-        if not installdir then
-
-            -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
-            installdir = self:get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
-            if installdir then
-                installdir = installdir:trim()
-            end
+        -- DESTDIR: be compatible with https://www.gnu.org/prep/standards/html_node/DESTDIR.html
+        installdir = self:get("installdir") or os.getenv("INSTALLDIR") or os.getenv("PREFIX") or os.getenv("DESTDIR") or platform.get("installdir")
+        if installdir then
+            installdir = installdir:trim()
         end
-        self._INSTALLDIR = installdir or false
     end
-
-    -- ok
-    return installdir or nil
+    return installdir
 end
 
 -- get rules of the source file
