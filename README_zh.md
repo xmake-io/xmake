@@ -530,7 +530,7 @@ $ ./gradlew app:assembleDebug
 
 或者你也可以考虑赞助我们也获取技术支持服务，[[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
-## 谁在使用
+## 谁在使用 Xmake?
 
 请点击 [用户列表](https://xmake.io/#/zh-cn/about/who_is_using_xmake) 查看完整用户使用列表。
 

@@ -522,7 +522,7 @@ We also provide paid technical support to help users quickly solve related probl
 
 Or you can also consider sponsoring us to get technical support services, [[Become a sponsor](https://xmake.io/#/about/sponsor)]
 
-## Who is using
+## Who is using Xmake?
 
 Please click [User List](https://xmake.io/#/about/who_is_using_xmake) to view the complete user list.
 
