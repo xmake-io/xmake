@@ -43,7 +43,6 @@ function init(self)
 
         -- others
     ,   ["-ftrapv"]             = ""
-    ,   ["-fsanitize=address"]  = ""
     })
 end
 
