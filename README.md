@@ -522,12 +522,14 @@ We also provide paid technical support to help users quickly solve related probl
 
 Or you can also consider sponsoring us to get technical support services, [[Become a sponsor](https://xmake.io/#/about/sponsor)]
 
-## Project Examples
+## Who is using
 
-Some projects using xmake:
+Please click [User List](https://xmake.io/#/about/who_is_using_xmake) to view the complete user list.
 
-* [tbox](https://github.com/tboox/tbox)
-* [more](https://github.com/xmake-io/awesome-xmake)
+If you are using xmake, welcome to submit the information to the above list through PR, so that let more users can known how many users are using xmake.
+
+Ihis also let users to use xmake more confidently, and we will also have more motivation to maintain it continuously,
+so that the xmake project and the community will grow stronger.
 
 ## Contacts
 

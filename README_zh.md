@@ -530,12 +530,13 @@ $ ./gradlew app:assembleDebug
 
 或者你也可以考虑赞助我们也获取技术支持服务，[[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
-## 项目例子
+## 谁在使用
 
-一些使用xmake的项目：
+请点击 [用户列表](https://xmake.io/#/zh-cn/about/who_is_using_xmake) 查看完整用户使用列表。
 
-* [tbox](https://github.com/tboox/tbox)
-* [更多](https://github.com/xmake-io/awesome-xmake)
+如果您在使用 xmake，也欢迎通过 PR 将信息提交至上面的列表，让更多的用户了解有多少用户在使用 xmake，也能让用户更加安心使用 xmake。
+
+我们也会有更多的动力去持续投入，让 xmake 项目和社区更加繁荣。
 
 ## 联系方式
 
