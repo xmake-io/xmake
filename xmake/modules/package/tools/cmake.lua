@@ -425,9 +425,22 @@ function _get_configs_for_generator(package, configs, opt)
     end
 end
 
+-- get configs for installation
+function _get_configs_for_install(package, configs, opt)
+    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
+    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
+    --
+    table.insert(configs, "-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"))
+    if not opt._configs_str:find("CMAKE_INSTALL_LIBDIR") then
+        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib"))
+    end
+end
+
 -- get configs
 function _get_configs(package, configs, opt)
     configs = configs or {}
+    opt._configs_str = string.serialize(configs, {indent = false, strip = true})
+    _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
@@ -605,13 +618,6 @@ function build(package, configs, opt)
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
-    -- init arguments
-    --
-    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
-    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    --
-    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-
     -- exists $CMAKE_GENERATOR? use it
     local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
     if not opt.cmake_generator and cmake_generator_env then
@@ -619,6 +625,7 @@ function build(package, configs, opt)
     end
 
     -- pass configurations
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -626,7 +633,7 @@ function build(package, configs, opt)
                 table.insert(argv, value)
             end
         else
-            table.insert(argv, "--" .. name .. "=" .. value)
+            table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
     table.insert(argv, oldir)
@@ -670,14 +677,8 @@ function install(package, configs, opt)
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
-    -- init arguments
-    --
-    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
-    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    --
-    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-
     -- pass configurations
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -685,7 +686,7 @@ function install(package, configs, opt)
                 table.insert(argv, value)
             end
         else
-            table.insert(argv, "--" .. name .. "=" .. value)
+            table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
     table.insert(argv, oldir)
