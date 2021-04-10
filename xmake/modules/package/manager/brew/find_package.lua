@@ -80,7 +80,7 @@ function main(name, opt)
     if pcfile then
         opt.configdirs = path.directory(pcfile)
         result = find_package("pkgconfig::" .. pcname, opt)
-        if not result then
+        if not result or not result.includedirs then
             -- attempt to get includedir variable from pkg-config/xx.pc
             local varinfo = pkgconfig.variables(pcname, "includedir", opt)
             if varinfo and varinfo.includedir then
