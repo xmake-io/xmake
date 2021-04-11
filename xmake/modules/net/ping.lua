@@ -21,7 +21,6 @@
 -- imports
 import("core.cache.detectcache")
 import("detect.tools.find_ping")
-import("detect.tools.find_nmap")
 import("private.async.runjobs")
 
 -- send ping to hosts
@@ -77,21 +76,6 @@ function main(hosts, opt)
                 local timeval = "65535"
                 if data then
                     timeval = data:match("time=([%d%s%.]-)ms", 1, true) or data:match("=([%d%s%.]-)ms TTL", 1, true) or "65535"
-                end
-                if timeval == "65535" then
-                    local nmap = find_nmap()
-                    if nmap then
-                        data = try { function() return os.iorun("%s -T5 --max-retries 1 -p 80 --max-rtt-timeout 1 %s", nmap, host) end }
-                        if data then
-                            local timeval_s = data:match("in ([%d%.]-) seconds")
-                            if timeval_s then
-                                timeval_s = tonumber(timeval_s:trim()) * 1000
-                                if timeval_s > 0 then
-                                    timeval = tostring(timeval_s)
-                                end
-                            end
-                        end
-                    end
                 end
 
                 -- save results
