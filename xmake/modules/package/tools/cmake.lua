@@ -430,9 +430,9 @@ function _get_configs_for_install(package, configs, opt)
     -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
     -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
     --
-    table.insert(configs, "-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"))
+    table.insert(configs, "-DCMAKE_INSTALL_PREFIX=" .. package:installdir())
     if not opt._configs_str:find("CMAKE_INSTALL_LIBDIR") then
-        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib"))
+        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=" .. package:installdir("lib"))
     end
 end
 
@@ -550,25 +550,6 @@ function _install_for_msvc(package, configs, opt)
     end
 end
 
--- install files for cmake
-function _install_files_for_cmake(package, opt)
-
-    -- patch _IMPORT_PREFIX to the real path
-    --
-    -- e.g. set(_IMPORT_PREFIX "/Users/ruki/.xmake/cache/packages/2009/x/xxx/master/source/xxx/build_C8AA35F0/install")
-    --
-    for _, cmakefile in ipairs(os.files("install/lib/cmake/*/*.cmake")) do
-        vprint("patching %s ..", cmakefile)
-        local prefixdir_old = path.absolute("install")
-        local prefixdir_new = package:installdir()
-        io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
-    end
-    os.trycp("install/bin", package:installdir())
-    os.trycp("install/lib", package:installdir())
-    os.trycp("install/share", package:installdir())
-    os.trycp("install/include", package:installdir())
-end
-
 -- do install for make
 function _install_for_make(package, configs, opt)
     local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
@@ -588,14 +569,12 @@ function _install_for_make(package, configs, opt)
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
     end
-    _install_files_for_cmake(package, opt)
 end
 
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt)})
-    _install_files_for_cmake(package, opt)
 end
 
 -- do install for cmake/build
@@ -604,7 +583,6 @@ function _install_for_cmakebuild(package, configs, opt)
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
     os.vrunv(cmake.program, {"--install", os.curdir()})
-    _install_files_for_cmake(package, opt)
 end
 
 -- build package
