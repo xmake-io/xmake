@@ -108,9 +108,6 @@ function main(name, opt)
     local packagedir = metainfo.extracted_package_dir
     for _, line in ipairs(metainfo.files) do
         line = line:trim()
-        if plat == "windows" then
-            line = line:lower()
-        end
 
         -- get includedirs
         local pos = line:find("include/", 1, true)
@@ -132,7 +129,7 @@ function main(name, opt)
         end
 
         -- add shared library directory (/bin/) to linkdirs for running with PATH on windows
-        if plat == "windows" and line:endswith(".dll") then
+        if opt.plat == "windows" and line:endswith(".dll") then
             result = result or {}
             result.linkdirs = result.linkdirs or {}
             result.libfiles = result.libfiles or {}
