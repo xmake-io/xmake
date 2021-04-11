@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1323](https://github.com/xmake-io/xmake/issues/1323): Support find and install package from `apt`, `add_requires("apt::zlib1g-dev")`
+
 ### v2.5.3
 
 ### New features
@@ -963,6 +967,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1323](https://github.com/xmake-io/xmake/issues/1323): 支持从 apt 查找安装包，`add_requires("apt::zlib1g-dev")`
 
 ## v2.5.3
 
