@@ -1064,19 +1064,16 @@ function _instance:_fetch_tool(opt)
                 table.join2(fetchnames, self:extsources())
             end
             for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self._find_tool(fetchname, {cachekey = "fetch_package_system",
-                                                        require_version = opt.require_version,
-                                                        force = opt.force})
+                fetchinfo = self:find_tool(fetchname, opt)
                 if fetchinfo then
                     break
                 end
             end
         else
-            fetchinfo = self._find_tool(self:name(), {require_version = opt.require_version,
-                                                      cachekey = "fetch_package_xmake",
-                                                      buildhash = self:buildhash(),
-                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
-                                                      force = opt.force})
+            fetchinfo = self:find_tool(self:name(), {require_version = opt.require_version,
+                                                     cachekey = "fetch_package_xmake",
+                                                     norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
+                                                     force = opt.force})
 
             -- may be toolset, not single tool
             if not fetchinfo then
@@ -1084,7 +1081,7 @@ function _instance:_fetch_tool(opt)
             end
         end
     end
-    return fetchinfo
+    return fetchinfo or nil
 end
 
 -- do fetch library
@@ -1109,37 +1106,57 @@ function _instance:_fetch_library(opt)
         end
     end
     if fetchinfo == nil then
-        self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
         if opt.system then
             local fetchnames = {self:name()}
             if not self:is_thirdparty() then
                 table.join2(fetchnames, self:extsources())
             end
             for _, fetchname in ipairs(fetchnames) do
-                fetchinfo = self._find_package(fetchname, {
-                                               force = opt.force,
-                                               require_version = opt.require_version,
-                                               mode = self:mode(),
-                                               pkgconfigs = self:configs(),
-                                               buildhash = self:is_thirdparty() and self:buildhash(), -- only for 3rd package manager, e.g. go:: ..
-                                               cachekey = "fetch_package_system",
-                                               external = opt.external,
-                                               system = true})
+                fetchinfo = self:find_package(fetchname, opt)
                 if fetchinfo then
                     break
                 end
             end
         else
-            fetchinfo = self._find_package("xmake::" .. self:name(), {
-                                            require_version = opt.require_version,
-                                            cachekey = "fetch_package_xmake",
-                                            buildhash = self:buildhash(),
-                                            pkgconfigs = self:configs(),
-                                            external = opt.external,
-                                            force = opt.force})
+            fetchinfo = self:find_package("xmake::" .. self:name(), {
+                                           require_version = opt.require_version,
+                                           cachekey = "fetch_package_xmake",
+                                           external = opt.external,
+                                           force = opt.force})
         end
     end
-    return fetchinfo
+    return fetchinfo or nil
+end
+
+-- find tool
+function _instance:find_tool(name, opt)
+    opt = opt or {}
+    self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
+    return self._find_tool(name, {cachekey = opt.cachekey or "fetch_package_system",
+                                  require_version = opt.require_version,
+                                  norun = opt.norun,
+                                  force = opt.force})
+end
+
+-- find package
+function _instance:find_package(name, opt)
+    opt = opt or {}
+    self._find_package = self._find_package or sandbox_module.import("lib.detect.find_package", {anonymous = true})
+    local system = opt.system
+    if system == nil and not name:startswith("xmake::") then
+        system = true -- find system package by default
+    end
+    return self._find_package(name, {
+                              force = opt.force,
+                              require_version = opt.require_version,
+                              mode = self:mode(),
+                              plat = self:plat(),
+                              arch = self:arch(),
+                              pkgconfigs = self:configs(),
+                              buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
+                              cachekey = opt.cachekey or "fetch_package_system",
+                              external = opt.external,
+                              system = system})
 end
 
 -- fetch the local package info
