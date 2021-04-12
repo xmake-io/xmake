@@ -43,7 +43,7 @@ function main(opt)
         opt.paths = opt.paths or {}
         local keys = winos.registry_keys("HKEY_CURRENT_USER\\SOFTWARE\\Python\\PythonCore\\3.*\\InstallPath")
         for _, key in ipairs(keys) do
-            local value = winos.registry_query(key .. ";ExecutablePath")
+            local value = try {function () return winos.registry_query(key .. ";ExecutablePath") end}
             if value and os.isfile(value) then
                 table.insert(opt.paths, value)
             end
