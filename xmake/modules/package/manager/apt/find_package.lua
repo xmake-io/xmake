@@ -51,12 +51,14 @@ function main(name, opt)
             line = line:trim()
 
             -- get includedirs
+            -- we need not add it, gcc/clang will use /usr/ as default sysroot
+            --[[
             local pos = line:find("include/", 1, true)
             if pos then
                 result = result or {}
                 result.includedirs = result.includedirs or {}
                 table.insert(result.includedirs, line:sub(1, pos + 7))
-            end
+            end]]
 
             -- get linkdirs and links
             if line:endswith(".a") or line:endswith(".so") then

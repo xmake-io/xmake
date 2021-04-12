@@ -1095,15 +1095,8 @@ function _instance:_fetch_library(opt)
     if on_fetch then
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
+                                    external = opt.external,
                                     require_version = opt.require_version})
-        if fetchinfo then
-            -- convert includedirs to sysincludedirs if external headers are enabled
-            -- in order to simplify user configuration, in the package definition, we always use includedirs
-            if opt.external then
-                fetchinfo.sysincludedirs = fetchinfo.includedirs
-                fetchinfo.includedirs = nil
-            end
-        end
     end
     if fetchinfo == nil then
         if opt.system then
