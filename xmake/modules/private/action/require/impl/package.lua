@@ -69,9 +69,9 @@ end
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
 -- {system = nil/true/false}:
---   nil: get local or system packages
+--   nil: get remote or system packages
 --   true: only get system package
---   false: only get local packages
+--   false: only get remote packages
 --
 --
 function _parse_require(require_str)
@@ -612,6 +612,11 @@ function should_install(package)
     end
     -- we need not install it if this package need only be fetched
     if package:is_fetchonly() then
+        return false
+    end
+    -- only get system package? e.g. add_requires("xxx", {system = true})
+    local requireinfo = package:requireinfo()
+    if requireinfo and requireinfo.system then
         return false
     end
     if package:parents() then
