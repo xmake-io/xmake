@@ -181,6 +181,11 @@ function os._ramdir()
     return ramdir_root or nil
 end
 
+-- set on change environments callback for scheduler
+function os._sched_chenvs_set(envs)
+    os._SCHED_CHENVS = envs
+end
+
 -- set on change directory callback for scheduler
 function os._sched_chdir_set(chdir)
     os._SCHED_CHDIR = chdir
@@ -480,7 +485,7 @@ function os.cd(dir)
 
     -- do chdir callback for scheduler
     if os._SCHED_CHDIR then
-        os._SCHED_CHDIR(oldir, os.curdir())
+        os._SCHED_CHDIR(os.curdir())
     end
 
     -- ok
@@ -1001,42 +1006,63 @@ end
 -- set all current environment variables
 function os.setenvs(envs)
     if envs then
+        local changed = false
         -- remove new added values
         local curenvs = os.getenvs()
         for name, _ in pairs(curenvs) do
             if not envs[name] then
-                os.setenv(name, nil)
+                os._setenv(name, "")
+                changed = true
             end
         end
         -- change values
         for name, values in pairs(envs) do
-            os.setenv(name, values)
+            if curenvs[name] ~= values then
+                os._setenv(name, values)
+                changed = true
+            end
+        end
+        -- update envs for scheduler
+        if changed and os._SCHED_CHENVS then
+            os._SCHED_CHENVS(envs)
         end
     end
 end
 
 -- set values to environment variable
 function os.setenv(name, ...)
+    local ok
     local values = {...}
     if #values <= 1 then
         -- keep compatible with original implementation
-        return os._setenv(name, values[1] or "")
+        ok = os._setenv(name, values[1] or "")
     else
-        return os._setenv(name, path.joinenv(values))
+        ok = os._setenv(name, path.joinenv(values))
     end
+    -- update envs for scheduler
+    if ok and os._SCHED_CHENVS then
+        os._SCHED_CHENVS()
+    end
+    return ok
 end
 
 -- add values to environment variable
 function os.addenv(name, ...)
     local values = {...}
     if #values > 0 then
+        local ok
         local oldenv = os.getenv(name)
         local appendenv = path.joinenv(values)
         if oldenv == "" or oldenv == nil then
-            return os._setenv(name, appendenv)
+            ok = os._setenv(name, appendenv)
         else
-            return os._setenv(name, appendenv .. path.envsep() .. oldenv)
+            ok = os._setenv(name, appendenv .. path.envsep() .. oldenv)
         end
+        -- update envs for scheduler
+        if ok and os._SCHED_CHENVS then
+            os._SCHED_CHENVS()
+        end
+        return ok
     else
         return true
     end
@@ -1045,7 +1071,12 @@ end
 -- set values to environment variable with the given seperator
 function os.setenvp(name, values, sep)
     sep = sep or path.envsep()
-    return os._setenv(name, table.concat(table.wrap(values), sep))
+    local ok = os._setenv(name, table.concat(table.wrap(values), sep))
+    -- update envs for scheduler
+    if ok and os._SCHED_CHENVS then
+        os._SCHED_CHENVS()
+    end
+    return ok
 end
 
 -- add values to environment variable with the given seperator
@@ -1053,13 +1084,19 @@ function os.addenvp(name, values, sep)
     sep = sep or path.envsep()
     values = table.wrap(values)
     if #values > 0 then
+        local ok
         local oldenv = os.getenv(name)
         local appendenv = table.concat(values, sep)
         if oldenv == "" or oldenv == nil then
-            return os._setenv(name, appendenv)
+            ok = os._setenv(name, appendenv)
         else
-            return os._setenv(name, appendenv .. sep .. oldenv)
+            ok = os._setenv(name, appendenv .. sep .. oldenv)
         end
+        -- update envs for scheduler
+        if ok and os._SCHED_CHENVS then
+            os._SCHED_CHENVS()
+        end
+        return ok
     else
         return true
     end

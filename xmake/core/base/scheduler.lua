@@ -241,7 +241,7 @@ function scheduler:_co_curdir_update(curdir)
     -- save the current directory hash
     curdir = curdir or os.curdir()
     local curdir_hash = hash.uuid4(path.absolute(curdir)):sub(1, 8)
-    self._CO_CURDIR = curdir_hash
+    self._CO_CURDIR_HASH = curdir_hash
 
     -- save the current directory for each coroutine
     local running = self:co_running()
@@ -252,6 +252,30 @@ function scheduler:_co_curdir_update(curdir)
             self._CO_CURDIRS = co_curdirs
         end
         co_curdirs[running] = {curdir_hash, curdir}
+    end
+end
+
+-- update the current environments hash of current coroutine
+function scheduler:_co_curenvs_update(envs)
+
+    -- save the current directory hash
+    local envs_hash = ""
+    envs = envs or os.getenvs()
+    for _, key in ipairs(table.orderkeys(envs)) do
+        envs_hash = envs_hash .. key:upper() .. envs[key]
+    end
+    envs_hash = hash.uuid4(envs_hash):sub(1, 8)
+    self._CO_CURENVS_HASH = envs_hash
+
+    -- save the current directory for each coroutine
+    local running = self:co_running()
+    if running then
+        local co_curenvs = self._CO_CURENVS
+        if not co_curenvs then
+            co_curenvs = {}
+            self._CO_CURENVS = co_curenvs
+        end
+        co_curenvs[running] = {envs_hash, envs}
     end
 end
 
@@ -314,6 +338,7 @@ function scheduler:co_start_named(coname, cotask, ...)
     local co
     co = _coroutine.new(coname, coroutine.create(function(...)
         self:_co_curdir_update()
+        self:_co_curenvs_update()
         cotask(...)
         self:co_tasks()[co:thread()] = nil
         if self:co_count() > 0 then
@@ -355,10 +380,17 @@ function scheduler:co_suspend(...)
 
     -- if the current directory has been changed? restore it
     local running = assert(self:co_running())
-    local curdir = self._CO_CURDIR
+    local curdir = self._CO_CURDIR_HASH
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
     if olddir and curdir ~= olddir[1] then -- hash changed?
         os.cd(olddir[2])
+    end
+
+    -- if the current environments has been changed? restore it
+    local curenvs = self._CO_CURENVS_HASH
+    local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
+    if oldenvs and curenvs ~= oldenvs[1] then -- hash changed?
+        os.setenvs(oldenvs[2])
     end
 
     -- return results
@@ -750,8 +782,13 @@ function scheduler:runloop()
     end
 
     -- set on change directory callback for scheduler
-    os._sched_chdir_set(function (oldir, curdir)
+    os._sched_chdir_set(function (curdir)
         self:_co_curdir_update(curdir)
+    end)
+
+    -- set on change environments callback for scheduler
+    os._sched_chenvs_set(function (envs)
+        self:_co_curenvs_update(envs)
     end)
 
     -- start all ready coroutine tasks
