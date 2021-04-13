@@ -85,7 +85,7 @@ function main()
     end
 
     -- clean up the previous month package cache files, @see package.cachedir()
-    local cachedir = path.join(global.cachedir(), "packages", os.date("%y%m", os.time() - 31 * 24 * 3600))
+    local cachedir = path.join(package.cachedir({rootonly = true}), os.date("%y%m", os.time() - 31 * 24 * 3600))
     if os.isdir(cachedir) and cachedir ~= package.cachedir() then
         print("cleanup %s ..", cachedir)
         os.tryrm(cachedir)

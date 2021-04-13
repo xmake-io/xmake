@@ -1641,13 +1641,27 @@ function package.apis()
 end
 
 -- the cache directory
-function package.cachedir()
-    return path.join(global.cachedir(), "packages", os.date("%y%m"))
+function package.cachedir(opt)
+    opt = opt or {}
+    local cachedir = package._CACHEDIR
+    if not cachedir then
+        cachedir = os.getenv("XMAKE_PKG_CACHEDIR") or path.join(global.cachedir(), "packages")
+        package._CACHEDIR = cachedir
+    end
+    if opt.rootonly then
+        return cachedir
+    end
+    return path.join(cachedir, os.date("%y%m"))
 end
 
 -- the install directory
 function package.installdir()
-    return global.get("pkg_installdir") or path.join(global.directory(), "packages")
+    local installdir = package._INSTALLDIR
+    if not installdir then
+        installdir = os.getenv("XMAKE_PKG_INSTALLDIR") or global.get("pkg_installdir") or path.join(global.directory(), "packages")
+        package._INSTALLDIR = installdir
+    end
+    return installdir
 end
 
 -- the search directories
