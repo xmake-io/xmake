@@ -40,7 +40,7 @@ function main(name, opt)
     -- find dpkg
     local dpkg = find_tool("dpkg")
     if not dpkg then
-        raise("dpkg not found!")
+        return
     end
 
     -- find package

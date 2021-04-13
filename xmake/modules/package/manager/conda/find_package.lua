@@ -65,7 +65,7 @@ function main(name, opt)
     -- find conda
     local conda = find_tool("conda")
     if not conda then
-        raise("conda not found!")
+        return
     end
 
     -- find package
