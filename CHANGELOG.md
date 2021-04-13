@@ -5,6 +5,7 @@
 ### New features
 
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): Support find and install package from `apt`, `add_requires("apt::zlib1g-dev")`
+* [#1337](https://github.com/xmake-io/xmake/issues/1337): Add environment vars to change package directories
 
 ### Change
 
@@ -975,6 +976,7 @@
 ### 新特性
 
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): 支持从 apt 查找安装包，`add_requires("apt::zlib1g-dev")`
+* [#1337](https://github.com/xmake-io/xmake/issues/1337): 添加环境变量去改进包安装和缓存目录
 
 ### 改进
 
