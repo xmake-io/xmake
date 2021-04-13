@@ -429,9 +429,10 @@ function main(requires, opt)
     runjobs("fetch_packages", function (index)
         local instance = packages[index]
         if instance and (not option.get("force") or (option.get("shallow") and not instance:is_toplevel())) then
+            local oldenvs = os.getenvs()
             instance:envs_enter()
             instance:fetch()
-            instance:envs_leave()
+            os.setenvs(oldenvs)
         end
     end, {total = #packages})
 

@@ -54,6 +54,7 @@ function enter()
     end
 
     -- enter the environments of installed packages
+    _g._OLDENVS = os.getenvs()
     for _, instance in ipairs(packages) do
         instance:envs_enter()
     end
@@ -64,9 +65,8 @@ end
 function leave()
 
     -- leave the environments of installed packages
-    for _, instance in irpairs(_g._PACKAGES) do
-        instance:envs_leave()
-    end
+    os.setenvs(_g._OLDENVS)
+    _g._OLDENVS = nil
     _g._PACKAGES = nil
 
     -- leave the environments of git

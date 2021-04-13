@@ -998,6 +998,23 @@ function os.getenvs()
     return envs
 end
 
+-- set all current environment variables
+function os.setenvs(envs)
+    if envs then
+        -- remove new added values
+        local curenvs = os.getenvs()
+        for name, _ in pairs(curenvs) do
+            if not envs[name] then
+                os.setenv(name, nil)
+            end
+        end
+        -- change values
+        for name, values in pairs(envs) do
+            os.setenv(name, values)
+        end
+    end
+end
+
 -- set values to environment variable
 function os.setenv(name, ...)
     local values = {...}
