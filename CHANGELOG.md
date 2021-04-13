@@ -6,6 +6,10 @@
 
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): Support find and install package from `apt`, `add_requires("apt::zlib1g-dev")`
 
+### Change
+
+* Improve `find_package` and add `package:find_package` for xmake package
+
 ### v2.5.3
 
 ### New features
@@ -971,6 +975,10 @@
 ### 新特性
 
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): 支持从 apt 查找安装包，`add_requires("apt::zlib1g-dev")`
+
+### 改进
+
+* 改进 `find_package` 并且添加 `package:find_package` 接口在包定义中方便查找包
 
 ## v2.5.3
 

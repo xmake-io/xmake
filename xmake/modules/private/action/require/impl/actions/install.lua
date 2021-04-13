@@ -132,6 +132,7 @@ function main(package)
     end
 
     -- install it
+    local oldenvs = os.getenvs()
     try
     {
         function ()
@@ -158,7 +159,6 @@ function main(package)
                     patch_sources(package)
 
                     -- enter the environments of all package dependencies
-                    local oldenvs = os.getenvs()
                     for _, dep in ipairs(package:orderdeps()) do
                         dep:envs_enter()
                     end
@@ -172,9 +172,7 @@ function main(package)
                     end
 
                     -- leave the environments of all package dependencies
-                    for _, dep in irpairs(package:orderdeps()) do
-                        dep:envs_leave()
-                    end
+                    os.setenvs(oldenvs)
 
                     -- save the package info to the manifest file
                     package:manifest_save()
@@ -206,10 +204,7 @@ function main(package)
             end
 
             -- leave the package environments
-            package:envs_leave()
-            for _, dep in irpairs(package:orderdeps()) do
-                dep:envs_leave()
-            end
+            os.setenvs(oldenvs)
 
             -- trace
             tty.erase_line_to_start().cr()
@@ -235,7 +230,7 @@ function main(package)
                 cprint("${yellow}  => ${clear}install %s %s .. ${color.failure}${text.failure}", package:displayname(), package:version_str() or "")
 
                 -- leave the package environments
-                package:envs_leave()
+                os.setenvs(oldenvs)
 
                 -- copy the invalid package directory to cache
                 local installdir = package:installdir()

@@ -591,18 +591,8 @@ end
 
 -- enter the package environments
 function _instance:envs_enter()
-
-    -- save the old environments
-    local oldenvs = self._OLDENVS
-    if not oldenvs then
-        oldenvs = {}
-        self._OLDENVS = oldenvs
-    end
-
-    -- add the new environments
     local installdir = self:installdir()
     for name, values in pairs(self:envs()) do
-        oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
@@ -614,24 +604,6 @@ function _instance:envs_enter()
         else
             os.addenv(name, unpack(table.wrap(values)))
         end
-    end
-end
-
--- leave the package environments
-function _instance:envs_leave()
-    local oldenvs = self._OLDENVS
-    if oldenvs then
-        -- remove new added values
-        for name, _ in pairs(self:envs()) do
-            if not oldenvs[name] then
-                os.setenv(name, nil)
-            end
-        end
-        -- restore old values
-        for name, values in pairs(oldenvs) do
-            os.setenv(name, values)
-        end
-        self._OLDENVS = nil
     end
 end
 
