@@ -81,7 +81,7 @@ task("require")
                                                          "    $ xmake require --export tbox zlib",
                                                          "    $ xmake require --export --exportdir=packagesdir zlib",
                                                          "    $ xmake require --export --extra=\"{debug=true}\" tbox"          }
-                ,   {nil, "exportdir",  "kv", "packages","Set the exported packages directory."                                }
+                ,   {nil, "packagedir", "kv", "packages","Set the packages directory for exporting and importing."                                }
                 ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                     }
                 ,   {                                                                                                          }
                 ,   {nil, "requires",   "vs", nil,       "The package requires.",

@@ -28,8 +28,8 @@ function main(requires, opt)
     -- init options
     opt = opt or {}
 
-    -- get the export directory
-    local exportdir = assert(opt.exportdir)
+    -- get the package directory
+    local packagedir = assert(opt.packagedir)
 
     -- export all packages
     local packages = {}
@@ -38,7 +38,7 @@ function main(requires, opt)
         -- get export path
         local installdir = instance:installdir()
         local rootdir = core_package.installdir()
-        local exportpath, count = installdir:replace(rootdir, exportdir, {plain = true})
+        local exportpath, count = installdir:replace(rootdir, packagedir, {plain = true})
 
         -- export this package
         if exportpath and count == 1 and instance:fetch() then

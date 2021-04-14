@@ -45,8 +45,8 @@ function main(requires_raw)
     end
 
     -- export packages
-    local exportdir = option.get("exportdir")
-    local packages  = export_packages(requires, {requires_extra = requires_extra, exportdir = exportdir})
+    local packagedir = option.get("packagedir")
+    local packages  = export_packages(requires, {requires_extra = requires_extra, packagedir = packagedir})
     if not packages or #packages == 0 then
         cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
         if os.getenv("XREPO_WORKING") then
