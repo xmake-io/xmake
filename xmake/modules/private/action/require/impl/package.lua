@@ -605,32 +605,6 @@ function _load_package(packagename, requireinfo, opt)
     return package
 end
 
--- this package should be install?
-function should_install(package)
-    if package:exists() then
-        return false
-    end
-    -- we need not install it if this package need only be fetched
-    if package:is_fetchonly() then
-        return false
-    end
-    -- only get system package? e.g. add_requires("xxx", {system = true})
-    local requireinfo = package:requireinfo()
-    if requireinfo and requireinfo.system then
-        return false
-    end
-    if package:parents() then
-        -- if all the packages that depend on it already exist, then there is no need to install it
-        for _, parent in pairs(package:parents()) do
-            if should_install(parent) and not parent:exists() then
-                return true
-            end
-        end
-    else
-        return true
-    end
-end
-
 -- load all required packages
 function _load_packages(requires, opt)
 
@@ -685,6 +659,81 @@ end
 -- the cache directory
 function cachedir()
     return path.join(global.directory(), "cache", "packages")
+end
+
+-- this package should be install?
+function should_install(package)
+    if package:exists() then
+        return false
+    end
+    -- we need not install it if this package need only be fetched
+    if package:is_fetchonly() then
+        return false
+    end
+    -- only get system package? e.g. add_requires("xxx", {system = true})
+    local requireinfo = package:requireinfo()
+    if requireinfo and requireinfo.system then
+        return false
+    end
+    if package:parents() then
+        -- if all the packages that depend on it already exist, then there is no need to install it
+        for _, parent in pairs(package:parents()) do
+            if should_install(parent) and not parent:exists() then
+                return true
+            end
+        end
+    else
+        return true
+    end
+end
+
+-- get package parents string
+function _get_parents_str(package)
+    local parents = package:parents()
+    if parents then
+        local parentnames = {}
+        for _, parent in pairs(parents) do
+            table.insert(parentnames, parent:displayname())
+        end
+        if #parentnames == 0 then
+            return
+        end
+        return table.concat(parentnames, ",")
+    end
+end
+
+-- get package configs string
+function get_configs_str(package)
+    local configs = {}
+    if package:is_optional() then
+        table.insert(configs, "optional")
+    end
+    local requireinfo = package:requireinfo()
+    if requireinfo then
+        if requireinfo.plat then
+            table.insert(configs, requireinfo.plat)
+        end
+        if requireinfo.arch then
+            table.insert(configs, requireinfo.arch)
+        end
+        for k, v in pairs(requireinfo.configs) do
+            if type(v) == "boolean" then
+                table.insert(configs, k .. ":" .. (v and "y" or "n"))
+            else
+                table.insert(configs, k .. ":" .. v)
+            end
+        end
+    end
+    local parents_str = _get_parents_str(package)
+    if parents_str then
+        table.insert(configs, "from:" .. parents_str)
+    end
+    local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
+    local limitwidth = os.getwinsize().width * 2 / 3
+    if #configs_str > limitwidth then
+        configs_str = configs_str:sub(1, limitwidth) .. " ..)"
+    end
+    return configs_str
 end
 
 -- load requires

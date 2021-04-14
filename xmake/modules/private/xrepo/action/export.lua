@@ -72,13 +72,15 @@ function _export_packages(packages)
 
     -- enter working project directory
     local oldir = os.curdir()
-    local workdir = path.join(os.tmpdir(), "xrepo", "working")
-    if not os.isdir(workdir) then
-        os.mkdir(workdir)
-        os.cd(workdir)
-        os.vrunv("xmake", {"create", "-P", "."})
-    else
-        os.cd(workdir)
+    if packages or not os.isfile(os.projectfile()) then
+        local workdir = path.join(os.tmpdir(), "xrepo", "working")
+        if not os.isdir(workdir) then
+            os.mkdir(workdir)
+            os.cd(workdir)
+            os.vrunv("xmake", {"create", "-P", "."})
+        else
+            os.cd(workdir)
+        end
     end
 
     -- do configure first
@@ -149,14 +151,16 @@ function _export_packages(packages)
         local extra_str = string.serialize(extra, {indent = false, strip = true})
         table.insert(require_argv, "--extra=" .. extra_str)
     end
-    table.join2(require_argv, packages)
+    if packages then
+        table.join2(require_argv, packages)
+    end
     os.vexecv("xmake", require_argv)
 end
 
 -- main entry
 function main()
     local packages = option.get("packages")
-    if packages then
+    if packages or os.isfile(os.projectfile()) then
         _export_packages(packages)
     else
         raise("please specify the packages to be exported.")

@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.package.package", {alias = "core_package"})
 import("private.action.require.impl.package")
 
 -- export packages
@@ -34,16 +35,16 @@ function main(requires, opt)
     local packages = {}
     for _, instance in ipairs(package.load_packages(requires, opt)) do
 
-        -- get the exported name
-        local name = instance:name():lower():gsub("::", "_")
-        if instance:version_str() then
-            name = name .. "_" .. instance:version_str()
-        end
-        name = name .. "_" .. instance:buildhash()
+        -- get export path
+        local installdir = instance:installdir()
+        local rootdir = core_package.installdir()
+        local exportpath, count = installdir:replace(rootdir, exportdir, {plain = true})
 
         -- export this package
-        if instance:fetch() then
-            os.cp(instance:installdir(), path.join(exportdir, name))
+        if exportpath and count == 1 and instance:fetch() then
+            print("exporting %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
+            cprint("  ${yellow}->${clear} %s", exportpath)
+            os.cp(instance:installdir(), exportpath)
             table.insert(packages, instance)
         end
     end

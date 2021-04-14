@@ -46,55 +46,6 @@ function _sort_packages_urls(packages)
     end
 end
 
--- get package parents string
-function _get_package_parents_str(instance)
-    local parents = instance:parents()
-    if parents then
-        local parentnames = {}
-        for _, parent in pairs(parents) do
-            table.insert(parentnames, parent:displayname())
-        end
-        if #parentnames == 0 then
-            return
-        end
-        return table.concat(parentnames, ",")
-    end
-end
-
--- get package configs string
-function _get_package_configs_str(instance)
-    local configs = {}
-    if instance:is_optional() then
-        table.insert(configs, "optional")
-    end
-    local requireinfo = instance:requireinfo()
-    if requireinfo then
-        if requireinfo.plat then
-            table.insert(configs, requireinfo.plat)
-        end
-        if requireinfo.arch then
-            table.insert(configs, requireinfo.arch)
-        end
-        for k, v in pairs(requireinfo.configs) do
-            if type(v) == "boolean" then
-                table.insert(configs, k .. ":" .. (v and "y" or "n"))
-            else
-                table.insert(configs, k .. ":" .. v)
-            end
-        end
-    end
-    local parents_str = _get_package_parents_str(instance)
-    if parents_str then
-        table.insert(configs, "from:" .. parents_str)
-    end
-    local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
-    local limitwidth = os.getwinsize().width * 2 / 3
-    if #configs_str > limitwidth then
-        configs_str = configs_str:sub(1, limitwidth) .. " ..)"
-    end
-    return configs_str
-end
-
 -- get user confirm
 function _get_confirm(packages)
 
@@ -138,12 +89,12 @@ function _get_confirm(packages)
                     local group = instance:group()
                     if group and packages_group[group] and #packages_group[group] > 1 then
                         for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", _get_package_configs_str(package_in_group))
+                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
                             packages_showed[tostring(package_in_group)] = true
                         end
                         packages_group[group] = nil
                     else
-                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", _get_package_configs_str(instance))
+                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
                         packages_showed[tostring(instance)] = true
                     end
                 end
