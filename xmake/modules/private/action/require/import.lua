@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        export.lua
+-- @file        import.lua
 --
 
 -- imports
@@ -23,10 +23,10 @@ import("core.base.task")
 import("core.base.option")
 import("private.action.require.impl.repository")
 import("private.action.require.impl.environment")
-import("private.action.require.impl.export_packages")
+import("private.action.require.impl.import_packages")
 import("private.action.require.impl.utils.get_requires")
 
--- export the given packages
+-- import the given packages
 function main(requires_raw)
 
     -- enter environment
@@ -44,20 +44,20 @@ function main(requires_raw)
         return
     end
 
-    -- export packages
+    -- import packages
     local packagedir = option.get("packagedir")
-    local packages  = export_packages(requires, {requires_extra = requires_extra, packagedir = packagedir})
+    local packages  = import_packages(requires, {requires_extra = requires_extra, packagedir = packagedir})
     if not packages or #packages == 0 then
         if requires_raw then
-            cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration ", table.concat(requires_raw, ", "))
+            cprint("${bright}packages(%s) cannot be imported, maybe they don’t exactly match the configuration.", table.concat(requires_raw, ", "))
             if os.getenv("XREPO_WORKING") then
-                print("please attempt to export them with `-f/--configs=` option, e.g.")
-                print("    - xrepo export -f \"name=value, ...\" package")
-                print("    - xrepo export -m debug -k shared -f \"name=value, ...\" package")
+                print("please attempt to import them with `-f/--configs=` option, e.g.")
+                print("    - xrepo import -f \"name=value, ...\" package")
+                print("    - xrepo import -m debug -k shared -f \"name=value, ...\" package")
             else
-                print("please attempt to export them with `--extra=` option, e.g.")
-                print("    - xmake require --export --extra=\"{configs={...}}\" package")
-                print("    - xmake require --export --extra=\"{debug=true,configs={shared=true}}\" package")
+                print("please attempt to import them with `--extra=` option, e.g.")
+                print("    - xmake require --import --extra=\"{configs={...}}\" package")
+                print("    - xmake require --import --extra=\"{debug=true,configs={shared=true}}\" package")
             end
         end
     end

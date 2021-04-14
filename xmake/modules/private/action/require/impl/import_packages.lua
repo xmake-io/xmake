@@ -15,30 +15,31 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        export_packages.lua
+-- @file        import_packages.lua
 --
 
 -- imports
 import("core.package.package", {alias = "core_package"})
 import("private.action.require.impl.package")
 
--- export packages
+-- import packages
 function main(requires, opt)
     opt = opt or {}
     local packages = {}
     local packagedir = assert(opt.packagedir)
     for _, instance in ipairs(package.load_packages(requires, opt)) do
 
-        -- get export path
+        -- get import path
         local installdir = instance:installdir()
         local rootdir = core_package.installdir()
-        local exportpath, count = installdir:replace(rootdir, packagedir, {plain = true})
+        local importpath, count = installdir:replace(rootdir, packagedir, {plain = true})
 
-        -- export this package
-        if exportpath and count == 1 and instance:fetch({force = true}) then
-            print("exporting %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
-            cprint("  ${yellow}->${clear} %s", exportpath)
-            os.cp(installdir, exportpath)
+        -- import this package
+        if importpath and count == 1 and not instance:fetch({force = true}) then
+            print("importing %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
+            cprint("  ${yellow}<-${clear} %s", importpath)
+            os.tryrm(installdir)
+            os.cp(importpath, installdir)
             table.insert(packages, instance)
         end
     end

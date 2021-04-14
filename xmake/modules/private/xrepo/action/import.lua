@@ -15,7 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        export.lua
+-- @file        import.lua
 --
 
 -- imports
@@ -26,7 +26,7 @@ import("core.base.task")
 function menu_options()
 
     -- description
-    local description = "Export the given packages."
+    local description = "Import the given packages."
 
     -- menu options
     local options =
@@ -39,37 +39,37 @@ function menu_options()
                                        values = {"release", "debug"}         },
         {'f', "configs",    "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
-                                       "    - xrepo export -f \"vs_runtime=MD\" zlib",
-                                       "    - xrepo export -f \"regex=true,thread=true\" boost"},
+                                       "    - xrepo import -f \"vs_runtime=MD\" zlib",
+                                       "    - xrepo import -f \"regex=true,thread=true\" boost"},
         {},
-        {'o', "packagedir",  "kv", "packages","Set the exported packages directory."},
+        {'i', "packagedir",  "kv", "packages","Set the imported packages directory."},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
-                                       "    - xrepo export zlib boost",
-                                       "    - xrepo export -p iphoneos -a arm64 \"zlib >=1.2.0\"",
-                                       "    - xrepo export -p android -m debug \"pcre2 10.x\"",
-                                       "    - xrepo export -p mingw -k shared zlib",
-                                       "    - xrepo export conan::zlib/1.2.11 vcpkg::zlib"}
+                                       "    - xrepo import zlib boost",
+                                       "    - xrepo import -p iphoneos -a arm64 \"zlib >=1.2.0\"",
+                                       "    - xrepo import -p android -m debug \"pcre2 10.x\"",
+                                       "    - xrepo import -p mingw -k shared zlib",
+                                       "    - xrepo import conan::zlib/1.2.11 vcpkg::zlib"}
     }
 
     -- show menu options
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo export [options] packages")
+        cprint("${bright}Usage: $${clear cyan}xrepo import [options] packages")
 
         -- show description
         print("")
         print(description)
 
         -- show options
-        option.show_options(options, "export")
+        option.show_options(options, "import")
     end
     return options, show_options, description
 end
 
--- export packages
-function _export_packages(packages)
+-- import packages
+function _import_packages(packages)
 
     -- enter working project directory
     local oldir = os.curdir()
@@ -110,8 +110,8 @@ function _export_packages(packages)
     end
     os.vrunv("xmake", config_argv)
 
-    -- do export
-    local require_argv = {"require", "--export"}
+    -- do import
+    local require_argv = {"require", "--import"}
     if option.get("yes") then
         table.insert(require_argv, "-y")
     end
@@ -154,11 +154,11 @@ function _export_packages(packages)
     os.vexecv("xmake", require_argv)
 end
 
--- export packages in current project
-function _export_current_packages(packages)
+-- import packages in current project
+function _import_current_packages(packages)
 
-    -- do export
-    local require_argv = {export = true}
+    -- do import
+    local require_argv = {import = true}
     if option.get("yes") then
         require_argv.yes = true
     end
@@ -204,10 +204,11 @@ end
 function main()
     local packages = option.get("packages")
     if packages then
-        _export_packages(packages)
+        _import_packages(packages)
     elseif os.isfile(os.projectfile()) then
-        _export_current_packages()
+        _import_current_packages()
     else
-        raise("please specify the packages to be exported.")
+        raise("please specify the packages to be imported.")
     end
 end
+

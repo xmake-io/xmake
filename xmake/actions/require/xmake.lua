@@ -79,8 +79,14 @@ task("require")
                                                          "e.g.",
                                                          "    $ xmake require --export",
                                                          "    $ xmake require --export tbox zlib",
-                                                         "    $ xmake require --export --exportdir=packagesdir zlib",
+                                                         "    $ xmake require --export --packagedir=packagesdir zlib",
                                                          "    $ xmake require --export --extra=\"{debug=true}\" tbox"          }
+                ,   {nil, "import",     "k", nil,        "Import the installed packages and their dependencies.",
+                                                         "e.g.",
+                                                         "    $ xmake require --import",
+                                                         "    $ xmake require --import tbox zlib",
+                                                         "    $ xmake require --import --packagedir=packagesdir zlib",
+                                                         "    $ xmake require --import --extra=\"{debug=true}\" tbox"          }
                 ,   {nil, "packagedir", "kv", "packages","Set the packages directory for exporting and importing."                                }
                 ,   {nil, "extra",      "kv", nil,       "Set the extra info of packages."                                     }
                 ,   {                                                                                                          }
