@@ -247,7 +247,7 @@ function apis()
     _g.dictionary =
     {
         -- option.add_xxx
-    ,   "option.add_csnippets"
+        "option.add_csnippets"
     ,   "option.add_cxxsnippets"
     }
     _g.custom =
