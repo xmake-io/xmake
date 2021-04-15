@@ -116,24 +116,6 @@ function deprecated_project._api_set_modes(interp, ...)
                                         end)
 end
 
--- add_csnippet/add_cxxsnippet for option
-function deprecated_project._api_option_add_cxsnippet(interp, apiname)
-
-    -- get api function
-    local apifunc = interp:_api_within_scope("option", apiname)
-    assert(apifunc)
-
-    -- register api
-    interp:_api_within_scope_set("option", apiname, function (...)
-
-                                            -- deprecated
-                                            deprecated.add(apiname .. "s(...)", apiname .. "(...)")
-
-                                            -- dispatch it
-                                            apifunc(...)
-                                        end)
-end
-
 -- add_headers for target
 function deprecated_project._api_target_add_headers(interp)
 
@@ -278,10 +260,6 @@ function deprecated_project.api_register(interp)
 
     -- register api: set_modes() to root
     deprecated_project._api_set_modes(interp)
-
-    -- register api: add_csnippet/add_cxxsnippet() to option
-    deprecated_project._api_option_add_cxsnippet(interp, "add_csnippet")
-    deprecated_project._api_option_add_cxsnippet(interp, "add_cxxsnippet")
 
     -- register api: add_headers() to target
     deprecated_project._api_target_add_headers(interp)
