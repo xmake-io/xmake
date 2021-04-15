@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.task")
 import("core.project.config")
+import("lib.detect.find_tool")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
 
@@ -55,6 +56,8 @@ function menu_options()
         {nil, "program",    "v",  nil, "Set the program name to be run",
                                        "e.g.",
                                        "    - xrepo env",
+                                       "    - xrepo env bash",
+                                       "    - xrepo env shell (it will load bash/sh/cmd automatically)",
                                        "    - xrepo env python",
                                        "    - xrepo env -p android luajit xx.lua"},
         {nil, "arguments",  "vs", nil, "Set the program arguments to be run"}
@@ -229,6 +232,18 @@ function _package_getenvs()
     return envs
 end
 
+-- run shell
+function _run_shell(envs)
+    local shell = find_tool("bash") or find_tool("sh")
+    if shell then
+        local prompt = "xrepo> "
+        os.execv(shell.program, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
+    elseif is_host("windows") then
+        local prompt = "xrepo$G "
+        os.execv("cmd", table.join({"/k", "prompt " .. prompt}, option.get("arguments")), {envs = envs})
+    end
+end
+
 -- main entry
 function main()
     local envs = _package_getenvs()
@@ -237,7 +252,11 @@ function main()
         if envs and envs.PATH then
             os.setenv("PATH", envs.PATH)
         end
-        os.execv(program, option.get("arguments"), {envs = envs})
+        if program == "shell" then
+            _run_shell(envs)
+        else
+            os.execv(program, option.get("arguments"), {envs = envs})
+        end
     else
         print(envs)
     end
