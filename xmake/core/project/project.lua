@@ -907,7 +907,8 @@ end
 
 -- get the given target
 function project.target(name)
-    return project.targets()[name]
+    local targets = project.targets()
+    return targets and targets[name]
 end
 
 -- get targets
@@ -916,7 +917,7 @@ function project.targets()
     if not targets then
         local ordertargets, errors
         targets, ordertargets, errors = project._load_targets()
-        if not targets or not ordertargets then
+        if errors then
             os.raise(errors)
         end
         project._memcache():set("targets", targets)

@@ -78,16 +78,12 @@ end
 
 -- make the configure file for the given target and dependents
 function _make_for_target_with_deps(targetname)
-
-    -- the target
     local target = project.target(targetname)
-
-    -- make configure for the target
-    _make_for_target(target)
-
-    -- make configure for the dependent targets?
-    for _, dep in ipairs(target:get("deps")) do
-        _make_for_target_with_deps(dep)
+    if target then
+        _make_for_target(target)
+        for _, dep in ipairs(target:get("deps")) do
+            _make_for_target_with_deps(dep)
+        end
     end
 end
 
