@@ -162,14 +162,6 @@ function _add_target_include_directories(cmakelists, target)
     end
 
     -- TODO deprecated
-    local headerdirs = target:get("headerdirs")
-    if headerdirs then
-        cmakelists:print("target_include_directories(%s PUBLIC", target:name())
-        for _, headerdir in ipairs(headerdirs) do
-            cmakelists:print("    " .. _get_unix_path(headerdir))
-        end
-        cmakelists:print(")")
-    end
     local includedirs_interface = target:get("includedirs", {interface = true})
     if includedirs_interface then
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())

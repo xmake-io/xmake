@@ -1687,11 +1687,6 @@ function _instance:configprefix()
     if type(configheader_extra) == "table" then
         configprefix = table.wrap(configheader_extra[configheader]).prefix
     end
-    if not configprefix then
-        configprefix = self:get("config_h_prefix") or (self:name():upper() .. "_CONFIG")
-    end
-
-    -- ok?
     return configprefix
 end
 
@@ -1699,14 +1694,9 @@ end
 function _instance:configheader(outputdir)
 
     -- get config header
-    local configheader = self:get("config_header") or self:get("config_h")
+    local configheader = self:get("config_header")
     if not configheader then
         return
-    end
-
-    -- mark as deprecated
-    if self:get("config_h") then
-        deprecated.add("set_config_header(\"%s\", {prefix = \"...\"})", "set_config_h(\"%s\")", path.relative(self:get("config_h"), os.projectdir()))
     end
 
     -- get the root directory

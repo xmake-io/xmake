@@ -24,10 +24,8 @@ function apis()
     -- init apis
     _g.values =
     {
-        -- target.set_xxx
-        "target.set_config_h_prefix" -- deprecated
         -- target.add_xxx
-    ,   "target.add_links"
+        "target.add_links"
     ,   "target.add_syslinks"
     ,   "target.add_mflags"
     ,   "target.add_mxflags"
@@ -80,13 +78,11 @@ function apis()
     {
         -- target.set_xxx
         "target.set_headerdir"      -- TODO deprecated
-    ,   "target.set_config_h"       -- TODO deprecated
     ,   "target.set_config_header"
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
     ,   "target.add_headers"        -- TODO deprecated
-    ,   "target.add_headerdirs"
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"

@@ -12,6 +12,7 @@
 ### Change
 
 * Improve `find_package` and add `package:find_package` for xmake package
+* Remove deprecated `set_config_h` and `set_config_h_prefix` apis
 
 ### v2.5.3
 
@@ -985,6 +986,7 @@
 ### 改进
 
 * 改进 `find_package` 并且添加 `package:find_package` 接口在包定义中方便查找包
+* 移除废弃的 `set_config_h` 和 `set_config_h_prefix` 接口
 
 ## v2.5.3
 
