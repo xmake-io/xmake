@@ -232,15 +232,40 @@ function _package_getenvs()
     return envs
 end
 
+-- get current shell
+function _get_shell()
+    local shell = os.getenv("SHELL")
+    if shell then
+        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+            if shell:find(shellname) then
+                return shellname
+            end
+        end
+    end
+    local term = os.term()
+    if term == "cmd" then
+        return "cmd"
+    elseif term == "powershell" then
+        return "powershell"
+    end
+    return "sh"
+end
+
 -- run shell
 function _run_shell(envs)
-    local shell = find_tool("bash") or find_tool("sh")
-    if shell then
-        local prompt = "xrepo> "
-        os.execv(shell.program, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
-    elseif is_host("windows") then
-        local prompt = "xrepo$G "
+    local shell = _get_shell()
+    local projectname = path.filename(os.projectdir())
+    if shell:endswith("sh") then
+        local prompt = projectname .. "> "
+        os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
+    elseif shell == "powershell" then
+        -- TODO
+        os.execv("powershell", option.get("arguments"), {envs = envs})
+    elseif shell == "cmd" or is_host("windows") then
+        local prompt = projectname .. "$G "
         os.execv("cmd", table.join({"/k", "prompt " .. prompt}, option.get("arguments")), {envs = envs})
+    else
+        assert("shell not found!")
     end
 end
 
