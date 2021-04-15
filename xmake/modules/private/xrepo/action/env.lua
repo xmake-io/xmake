@@ -20,8 +20,10 @@
 
 -- imports
 import("core.base.option")
+import("core.base.task")
 import("core.project.config")
 import("private.action.require.impl.package")
+import("private.action.require.impl.utils.get_requires")
 
 -- get menu options
 function menu_options()
@@ -207,13 +209,20 @@ end
 -- get package environments
 function _package_getenvs()
     local envs = os.getenvs()
-    local packages = option.get("packages") or option.get("program")
-    if packages then
-        _enter_project()
-        packages = packages:split(',', {plain = true})
-        local requires, requires_extra = _get_requires(packages)
+    if os.isfile(os.projectfile()) and not option.get("packages") then
+        local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
+        end
+    else
+        local packages = option.get("packages") or option.get("program")
+        if packages then
+            _enter_project()
+            packages = packages:split(',', {plain = true})
+            local requires, requires_extra = _get_requires(packages)
+            for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+                _package_addenvs(envs, instance)
+            end
         end
     end
     return envs
