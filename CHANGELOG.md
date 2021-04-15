@@ -7,6 +7,7 @@
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): Support find and install package from `apt`, `add_requires("apt::zlib1g-dev")`
 * [#1337](https://github.com/xmake-io/xmake/issues/1337): Add environment vars to change package directories
 * [#1338](https://github.com/xmake-io/xmake/issues/1338): Support import and export installed packages
+* [#1087](https://github.com/xmake-io/xmake/issues/1087): Add `xrepo env shell` and support load envs from `add_requires/xmake.lua`
 
 ### Change
 
@@ -979,6 +980,7 @@
 * [#1323](https://github.com/xmake-io/xmake/issues/1323): 支持从 apt 查找安装包，`add_requires("apt::zlib1g-dev")`
 * [#1337](https://github.com/xmake-io/xmake/issues/1337): 添加环境变量去改进包安装和缓存目录
 * [#1338](https://github.com/xmake-io/xmake/issues/1338): 支持导入导出已安装的包
+* [#1087](https://github.com/xmake-io/xmake/issues/1087): 添加 `xrepo env shell` 并且支持从 `add_requires/xmake.lua` 加载包环境
 
 ### 改进
 
