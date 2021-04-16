@@ -127,28 +127,34 @@ end
 
 -- get shell name
 function tty.shell()
-    local shell = os.getenv("SHELL")
-    if shell then
-        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
-            if shell:find(shellname) then
-                return shellname
-            end
-        end
-    end
-    local subhost = xmake._SUBHOST
-    if subhost == "windows" then
-        if os.getenv("PROMPT") then
-            return "cmd"
-        else
-            local ok, result = os.iorun("pwsh -v")
-            if ok then
-                return "pwsh"
+    local shell = tty._SHELL
+    if shell == nil then
+        local subhost = xmake._SUBHOST
+        if subhost == "windows" then
+            if os.getenv("PROMPT") then
+                shell = "cmd"
             else
-                return "powershell"
+                local ok, result = os.iorun("pwsh -v")
+                if ok then
+                    shell = "pwsh"
+                else
+                    shell = "powershell"
+                end
+            end
+        else
+            shell = os.getenv("SHELL")
+            if shell then
+                for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+                    if shell:find(shellname) then
+                        shell = shellname
+                        break
+                    end
+                end
             end
         end
+        tty._SHELL = shell or "sh"
     end
-    return "sh"
+    return tty._SHELL
 end
 
 -- get terminal name
@@ -219,7 +225,7 @@ function tty.term()
         end
         tty._TERM = term or "unknown"
     end
-    return term
+    return tty._TERM
 end
 
 -- has emoji?
