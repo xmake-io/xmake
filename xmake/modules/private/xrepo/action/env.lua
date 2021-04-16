@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.config")
 import("lib.detect.find_tool")
+import("lib.detect.find_program")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
 
@@ -242,10 +243,11 @@ function _get_shell()
             end
         end
     end
-    local term = os.term()
-    if term == "cmd" then
+    if os.getenv("PROMPT") then
         return "cmd"
-    elseif term == "powershell" then
+    elseif find_program("pwsh") then
+        return "pwsh"
+    else
         return "powershell"
     end
     return "sh"
@@ -256,14 +258,18 @@ function _run_shell(envs)
     local shell = _get_shell()
     local projectname = path.filename(os.projectdir())
     if shell:endswith("sh") then
-        local prompt = projectname .. "> "
+        local prompt = "[" .. projectname .. "] " .. os.getenv("PS1")
         os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
+    elseif shell == "pwsh" then
+        local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
+        os.execv("pwsh", args, {envs = envs})
     elseif shell == "powershell" then
-        -- TODO
-        os.execv("powershell", option.get("arguments"), {envs = envs})
+        local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
+        os.execv("powershell", args, {envs = envs})
     elseif shell == "cmd" or is_host("windows") then
-        local prompt = projectname .. "$G "
-        os.execv("cmd", table.join({"/k", "prompt " .. prompt}, option.get("arguments")), {envs = envs})
+        local prompt = "[" .. projectname .. "] $P$G"
+        local args = table.join({"/k", "set PROMPT=[" .. projectname .. "] $P$G"}, option.get("arguments"))
+        os.execv("cmd", args, {envs = envs})
     else
         assert("shell not found!")
     end
