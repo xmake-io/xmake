@@ -33,6 +33,7 @@ local vformat   = require("sandbox/modules/vformat")
 local sandbox_os = sandbox_os or {}
 
 -- inherit some builtin interfaces
+sandbox_os.shell        = os.shell
 sandbox_os.term         = os.term
 sandbox_os.host         = os.host
 sandbox_os.arch         = os.arch
