@@ -233,36 +233,16 @@ function _package_getenvs()
     return envs
 end
 
--- get current shell
-function _get_shell()
-    local shell = os.getenv("SHELL")
-    if shell then
-        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
-            if shell:find(shellname) then
-                return shellname
-            end
-        end
-    end
-    if os.getenv("PROMPT") then
-        return "cmd"
-    elseif find_program("pwsh") then
-        return "pwsh"
-    else
-        return "powershell"
-    end
-    return "sh"
-end
-
 -- run shell
 function _run_shell(envs)
-    local shell = _get_shell()
+    local shell = os.shell()
     local projectname = path.filename(os.projectdir())
-    if shell:endswith("sh") then
-        local prompt = "[" .. projectname .. "] " .. os.getenv("PS1")
-        os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
-    elseif shell == "pwsh" then
+    if shell == "pwsh" then
         local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
         os.execv("pwsh", args, {envs = envs})
+    elseif shell:endswith("sh") then
+        local prompt = "[" .. projectname .. "] " .. (os.getenv("PS1") or "\\W $ ")
+        os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
     elseif shell == "powershell" then
         local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
         os.execv("powershell", args, {envs = envs})

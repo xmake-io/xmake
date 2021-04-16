@@ -125,6 +125,32 @@ function tty.flush()
     return tty
 end
 
+-- get shell name
+function tty.shell()
+    local shell = os.getenv("SHELL")
+    if shell then
+        for _, shellname in ipairs({"zsh", "bash", "sh"}) do
+            if shell:find(shellname) then
+                return shellname
+            end
+        end
+    end
+    local subhost = xmake._SUBHOST
+    if subhost == "windows" then
+        if os.getenv("PROMPT") then
+            return "cmd"
+        else
+            local ok, result = os.iorun("pwsh -v")
+            if ok then
+                return "pwsh"
+            else
+                return "powershell"
+            end
+        end
+    end
+    return "sh"
+end
+
 -- get terminal name
 --  - xterm
 --  - cmd
@@ -132,6 +158,7 @@ end
 --  - vscode (in vscode)
 --  - msys2
 --  - cygwin
+--  - pwsh
 --  - powershell
 --  - mintty
 --  - windows-terminal
@@ -179,11 +206,8 @@ function tty.term()
                     term = "vstudio"
                 elseif os.getenv("WT_SESSION") then
                     term = "windows-terminal"
-                elseif os.getenv("PROMPT") then -- $PROMPT == "$P$G"
-                    term = "cmd"
                 else
-                    -- TODO maybe powershell if no $PROMPT, we need improve it
-                    term = "powershell"
+                    term = tty.shell()
                 end
             elseif subhost == "msys" then
                 term = "msys2"

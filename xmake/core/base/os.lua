@@ -979,6 +979,11 @@ function os.fscase()
     return os._FSCASE
 end
 
+-- get shell
+function os.shell()
+    return require("base/tty").shell()
+end
+
 -- get term
 function os.term()
     return require("base/tty").term()
