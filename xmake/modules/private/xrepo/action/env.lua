@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.base.task")
 import("core.project.config")
 import("lib.detect.find_tool")
-import("lib.detect.find_program")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
 
