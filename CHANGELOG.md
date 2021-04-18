@@ -13,6 +13,7 @@
 
 * Improve `find_package` and add `package:find_package` for xmake package
 * Remove deprecated `set_config_h` and `set_config_h_prefix` apis
+* [#1343](https://github.com/xmake-io/xmake/issues/1343): Improve to search local package files
 
 ### v2.5.3
 
@@ -987,6 +988,7 @@
 
 * 改进 `find_package` 并且添加 `package:find_package` 接口在包定义中方便查找包
 * 移除废弃的 `set_config_h` 和 `set_config_h_prefix` 接口
+* [#1343](https://github.com/xmake-io/xmake/issues/1343): 改进搜索本地包文件
 
 ## v2.5.3
 
