@@ -223,7 +223,7 @@ function build()
         if os.isfile("autogen.sh") then
             os.vexecv("sh", {"./autogen.sh"})
         elseif os.isfile("configure.ac") then
-            os.vexec("autoreconf --install --symlink")
+            os.vexecv("sh", {"autoreconf", "--install", "--symlink"})
         end
     end
 
