@@ -154,6 +154,10 @@ function main(requires_raw)
         local searchnames = hashset.new()
         for _, url in ipairs(instance:urls()) do
             url = filter.handle(url, instance)
+            local extension = archive.extension(url)
+            if extension then
+                searchnames:insert(instance:name() .. "-" .. instance:version_str() .. extension)
+            end
             searchnames:insert(url_filename(url))
         end
         cprint("      -> ${magenta}searchnames${clear}: %s", table.concat(searchnames:to_array(), ", "))

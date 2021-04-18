@@ -118,14 +118,24 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         os.tryrm(packagefile)
 
         -- download or copy package file
-        local localfile = find_file(path.filename(packagefile), core_package.searchdirs())
         if os.isfile(url) then
             os.cp(url, packagefile)
-        elseif localfile and os.isfile(localfile) then
-            -- we can use local package from the search directories directly if network is too slow
-            os.cp(localfile, packagefile)
         else
-            http.download(url, packagefile)
+            local localfile
+            local searchnames = {package:name() .. "-" .. package:version_str() .. archive.extension(url),
+                                 packagefile}
+            for _, searchname in ipairs(searchnames) do
+                localfile = find_file(searchname, core_package.searchdirs())
+                if localfile then
+                    break
+                end
+            end
+            if localfile and os.isfile(localfile) then
+                -- we can use local package from the search directories directly if network is too slow
+                os.cp(localfile, packagefile)
+            else
+                http.download(url, packagefile)
+            end
         end
 
         -- check hash
