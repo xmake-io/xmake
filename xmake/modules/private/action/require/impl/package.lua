@@ -222,7 +222,6 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
-    local vs_runtime = project.get("target.runtimes") or get_config("vs_runtime") or "MT"
     package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
@@ -230,7 +229,7 @@ function _add_package_configurations(package)
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
     package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
-    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", default = vs_runtime, values = {"MT", "MTd", "MD", "MDd"}})
+    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
     package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
 end
 
@@ -353,10 +352,16 @@ end
 -- init requireinfo
 function _init_requireinfo(requireinfo, package, opt)
     -- pass root toolchains to top library package
-    if opt.is_toplevel and package:is_cross() and package:is_library() then
-        requireinfo.configs = requireinfo.configs or {}
-        -- TODO get extra configs of toolchain
-        requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
+    requireinfo.configs = requireinfo.configs or {}
+    if opt.is_toplevel then
+        if package:is_cross() and package:is_library() then
+            -- TODO get extra configs of toolchain
+            requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
+        end
+        requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
+    end
+    if requireinfo.configs.vs_runtime == nil then
+        requireinfo.configs.vs_runtime = "MT"
     end
 end
 
@@ -486,6 +491,7 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
             requireinfo.private = parentinfo.private
         end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
+        requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo.configs = requireinfo_configs
     end
 end
