@@ -68,6 +68,9 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
+-- private package, only for installation, do not export any links/includes and environments to target
+-- - add_requires("zlib", {private = true})
+--
 -- {system = nil/true/false}:
 --   nil: get remote or system packages
 --   true: only get system package
@@ -168,6 +171,7 @@ function _load_require(require_str, requires_extra, parentinfo)
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
         external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
+        private          = require_extra.private    -- default: false, private package, only for installation, do not export any links/includes and environments
     }
     return required.packagename, required.requireinfo
 end
@@ -207,7 +211,7 @@ function _sort_packagedeps(package, onlylink)
         for _, depname in ipairs(deps) do
             local packagename = _parse_require(depname)
             local dep = package:dep(packagename)
-            if dep and (onlylink ~= true or dep:is_library()) then
+            if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
                 table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
                 table.insert(orderdeps, dep)
             end
@@ -478,6 +482,9 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         if parentinfo.arch then
             requireinfo.arch = parentinfo.arch
         end
+        if parentinfo.private ~= nil then
+            requireinfo.private = parentinfo.private
+        end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo.configs = requireinfo_configs
     end
@@ -707,6 +714,9 @@ function get_configs_str(package)
     local configs = {}
     if package:is_optional() then
         table.insert(configs, "optional")
+    end
+    if package:is_private() then
+        table.insert(configs, "private")
     end
     local requireinfo = package:requireinfo()
     if requireinfo then

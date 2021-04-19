@@ -378,6 +378,12 @@ function _instance:is_optional()
     return requireinfo and requireinfo.optional or false
 end
 
+-- is private package?
+function _instance:is_private()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.private or false
+end
+
 -- verify sha256sum and versions?
 function _instance:is_verify()
     local requireinfo = self:requireinfo()
