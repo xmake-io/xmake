@@ -68,6 +68,9 @@ end
 -- - add_requires("zlib~debug", {debug = true})
 -- - add_requires("zlib~shared", {configs = {shared = true}, alias = "zlib_shared"})
 --
+-- - add_requires("zlib~label1")
+-- - add_requires("zlib", {label = "label2"})
+--
 -- private package, only for installation, do not export any links/includes and environments to target
 -- - add_requires("zlib", {private = true})
 --
