@@ -177,20 +177,21 @@ function _load_require(require_str, requires_extra, parentinfo)
 end
 
 -- load package package from system
-function _load_package_from_system(packagename)
-    return core_package.load_from_system(packagename)
+function _load_package_from_system(packagename, opt)
+    return core_package.load_from_system(packagename, opt)
 end
 
 -- load package package from project
-function _load_package_from_project(packagename)
-    return core_package.load_from_project(packagename)
+function _load_package_from_project(packagename, opt)
+    return core_package.load_from_project(packagename, opt)
 end
 
 -- load package package from repositories
-function _load_package_from_repository(packagename, reponame)
-    local packagedir, repo = repository.packagedir(packagename, reponame)
+function _load_package_from_repository(packagename, opt)
+    opt = opt or {}
+    local packagedir, repo = repository.packagedir(packagename, opt.reponame)
     if packagedir then
-        return core_package.load_from_repository(packagename, repo, packagedir)
+        return core_package.load_from_repository(packagename, repo, packagedir, opt)
     end
 end
 
@@ -360,7 +361,7 @@ function _init_requireinfo(requireinfo, package, opt)
         end
         requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
     end
-    if requireinfo.configs.vs_runtime == nil then
+    if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
         requireinfo.configs.vs_runtime = "MT"
     end
 end
@@ -454,6 +455,9 @@ function _get_packagekey(packagename, requireinfo, version)
     if requireinfo.arch then
         key = key .. "/" .. requireinfo.arch
     end
+    if requireinfo.label then
+        key = key .. "/" .. requireinfo.label
+    end
     local configs = requireinfo.configs
     if configs then
         local configs_order = {}
@@ -503,8 +507,10 @@ function _load_package(packagename, requireinfo, opt)
     local displayname
     if packagename:find('~', 1, true) then
         displayname = packagename
-        packagename = packagename:gsub("~.+$", "")
+        local splitinfo = packagename:split('~', {plain = true, limit = 2})
+        packagename = splitinfo[1]
         requireinfo.alias = requireinfo.alias or displayname
+        requireinfo.label = splitinfo[2]
     end
 
     -- load package from project first
@@ -515,7 +521,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- load package from repositories
     if not package then
-        package = _load_package_from_repository(packagename, requireinfo.reponame)
+        package = _load_package_from_repository(packagename, {reponame = requireinfo.reponame})
     end
 
     -- load package from system

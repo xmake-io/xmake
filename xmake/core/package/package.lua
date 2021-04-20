@@ -48,11 +48,13 @@ local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
-function _instance.new(name, info, scriptdir)
+function _instance.new(name, info, opt)
+    opt = opt or {}
     local instance = table.inherit(_instance)
-    instance._NAME = name
-    instance._INFO = info
-    instance._SCRIPTDIR = scriptdir and path.absolute(scriptdir)
+    instance._NAME      = name
+    instance._INFO      = info
+    instance._REPO      = opt.repo
+    instance._SCRIPTDIR = opt.scriptdir and path.absolute(opt.scriptdir)
     return instance
 end
 
@@ -828,6 +830,12 @@ function _instance:requireinfo_set(requireinfo)
     self._REQUIREINFO = requireinfo
 end
 
+-- get label
+function _instance:label()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.label
+end
+
 -- get the display name
 function _instance:displayname()
     return self._DISPLAYNAME
@@ -885,6 +893,10 @@ function _instance:buildhash()
         local function _get_buildhash(configs, opt)
             opt = opt or {}
             local str = self:plat() .. self:arch()
+            local label = self:label()
+            if label then
+                str = str .. label
+            end
             if configs then
                 -- since luajit v2.1, the key order of the table is random and undefined.
                 -- We cannot directly deserialize the table, so the result may be different each time
@@ -1389,7 +1401,7 @@ end
 -- has the given c++ funcs?
 --
 -- @param funcs     the funcs
--- @param opt       the argument options, e.g. { includes = ""}
+-- @param opt       the argument options, e.g. {includes = ""}
 --
 -- @return          true or false
 --
@@ -1679,7 +1691,7 @@ function package.searchdirs()
 end
 
 -- load the package from the system directories
-function package.load_from_system(packagename)
+function package.load_from_system(packagename, opt)
 
     -- get it directly from cache first
     local instance = package._memcache():get2("packages", packagename)
@@ -1747,9 +1759,10 @@ function package.load_from_system(packagename)
 end
 
 -- load the package from the project file
-function package.load_from_project(packagename, project)
+function package.load_from_project(packagename, project, opt)
 
     -- get it directly from cache first
+    opt = opt or {}
     local instance = package._memcache():get2("packages", packagename)
     if instance then
         return instance
@@ -1780,9 +1793,10 @@ function package.load_from_project(packagename, project)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, repo, packagedir, packagefile)
+function package.load_from_repository(packagename, repo, packagedir, opt)
 
     -- get it directly from cache first
+    opt = opt or {}
     local instance = package._memcache():get2("packages", packagename)
     if instance then
         return instance
@@ -1794,8 +1808,8 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- find the package script path
-    local scriptpath = packagefile
-    if not packagefile and packagedir then
+    local scriptpath
+    if packagedir then
         scriptpath = path.join(packagedir, "xmake.lua")
     end
     if not scriptpath or not os.isfile(scriptpath) then
@@ -1820,7 +1834,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     -- get the package info
     local packageinfo = nil
     for _, info in pairs(results) do
-        -- @note we cannot use the name of package(), because we need support `xxx~tag` for add_requires("zlib~xxx")
+        -- @note we cannot use the name of package() to index it, because we need support `xxx~tag` for add_requires("zlib~xxx")
         -- so we use `xxx~tag` as the real package
         packageinfo = info
         break
@@ -1832,10 +1846,7 @@ function package.load_from_repository(packagename, repo, packagedir, packagefile
     end
 
     -- new an instance
-    instance = _instance.new(packagename, packageinfo, path.directory(scriptpath))
-
-    -- save repository
-    instance._REPO = repo
+    instance = _instance.new(packagename, packageinfo, {scriptdir = path.directory(scriptpath), repo = repo})
 
     -- save instance to the cache
     package._memcache():set2("packages", instance)
