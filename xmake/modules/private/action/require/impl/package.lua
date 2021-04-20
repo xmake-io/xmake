@@ -180,21 +180,20 @@ function _load_require(require_str, requires_extra, parentinfo)
 end
 
 -- load package package from system
-function _load_package_from_system(packagename, opt)
-    return core_package.load_from_system(packagename, opt)
+function _load_package_from_system(packagename)
+    return core_package.load_from_system(packagename)
 end
 
 -- load package package from project
-function _load_package_from_project(packagename, opt)
-    return core_package.load_from_project(packagename, opt)
+function _load_package_from_project(packagename)
+    return core_package.load_from_project(packagename)
 end
 
 -- load package package from repositories
-function _load_package_from_repository(packagename, opt)
-    opt = opt or {}
-    local packagedir, repo = repository.packagedir(packagename, opt.reponame)
+function _load_package_from_repository(packagename, reponame)
+    local packagedir, repo = repository.packagedir(packagename, reponame)
     if packagedir then
-        return core_package.load_from_repository(packagename, repo, packagedir, opt)
+        return core_package.load_from_repository(packagename, repo, packagedir)
     end
 end
 
@@ -524,7 +523,7 @@ function _load_package(packagename, requireinfo, opt)
 
     -- load package from repositories
     if not package then
-        package = _load_package_from_repository(packagename, {reponame = requireinfo.reponame})
+        package = _load_package_from_repository(packagename, requireinfo.reponame)
     end
 
     -- load package from system

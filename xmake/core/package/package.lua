@@ -1691,7 +1691,7 @@ function package.searchdirs()
 end
 
 -- load the package from the system directories
-function package.load_from_system(packagename, opt)
+function package.load_from_system(packagename)
 
     -- get it directly from cache first
     local instance = package._memcache():get2("packages", packagename)
@@ -1759,10 +1759,9 @@ function package.load_from_system(packagename, opt)
 end
 
 -- load the package from the project file
-function package.load_from_project(packagename, project, opt)
+function package.load_from_project(packagename, project)
 
     -- get it directly from cache first
-    opt = opt or {}
     local instance = package._memcache():get2("packages", packagename)
     if instance then
         return instance
@@ -1787,10 +1786,9 @@ function package.load_from_project(packagename, project, opt)
 end
 
 -- load the package from the package directory or package description file
-function package.load_from_repository(packagename, repo, packagedir, opt)
+function package.load_from_repository(packagename, repo, packagedir, packagefile)
 
     -- get it directly from cache first
-    opt = opt or {}
     local instance = package._memcache():get2("packages", packagename)
     if instance then
         return instance
@@ -1802,12 +1800,12 @@ function package.load_from_repository(packagename, repo, packagedir, opt)
     end
 
     -- find the package script path
-    local scriptpath
-    if packagedir then
+    local scriptpath = packagefile
+    if not packagefile and packagedir then
         scriptpath = path.join(packagedir, "xmake.lua")
     end
     if not scriptpath or not os.isfile(scriptpath) then
-        return nil, string.format("the package %s not found!", packagename)
+        return nil, string.format("package %s not found!", packagename)
     end
 
     -- get interpreter

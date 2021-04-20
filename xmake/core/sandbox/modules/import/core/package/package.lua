@@ -42,8 +42,8 @@ function sandbox_core_package_package.searchdirs()
 end
 
 -- load the package from the project file
-function sandbox_core_package_package.load_from_project(packagename, opt)
-    local instance, errors = package.load_from_project(packagename, project, opt)
+function sandbox_core_package_package.load_from_project(packagename)
+    local instance, errors = package.load_from_project(packagename, project)
     if errors then
         raise(errors)
     end
@@ -51,8 +51,8 @@ function sandbox_core_package_package.load_from_project(packagename, opt)
 end
 
 -- load the package from the system
-function sandbox_core_package_package.load_from_system(packagename, opt)
-    local instance, errors = package.load_from_system(packagename, opt)
+function sandbox_core_package_package.load_from_system(packagename)
+    local instance, errors = package.load_from_system(packagename)
     if errors then
         raise(errors)
     end
@@ -60,8 +60,8 @@ function sandbox_core_package_package.load_from_system(packagename, opt)
 end
 
 -- load the package from repositories
-function sandbox_core_package_package.load_from_repository(packagename, repo, packagedir, opt)
-    local instance, errors = package.load_from_repository(packagename, repo, packagedir, opt)
+function sandbox_core_package_package.load_from_repository(packagename, repo, packagedir, packagefile)
+    local instance, errors = package.load_from_repository(packagename, repo, packagedir, packagefile)
     if not instance then
         raise(errors)
     end
