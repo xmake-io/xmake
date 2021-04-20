@@ -240,7 +240,15 @@ function _run_shell(envs)
         local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
         os.execv("pwsh", args, {envs = envs})
     elseif shell:endswith("sh") then
-        local prompt = "[" .. projectname .. "] " .. (os.getenv("PS1") or "> ")
+        local prompt = "[" .. projectname .. "] "
+        local ps1 = os.getenv("PS1")
+        if ps1 then
+            prompt = prompt .. ps1
+        elseif is_host("macosx") then
+            prompt = prompt .. "\\W > "
+        else
+            prompt = prompt .. "> "
+        end
         os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
     elseif shell == "powershell" then
         local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
