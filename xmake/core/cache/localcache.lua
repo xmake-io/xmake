@@ -84,7 +84,7 @@ end
 
 -- get cache value in level/3
 function _instance:get3(key1, key2, key3)
-    local value2 = self:get2(key1)
+    local value2 = self:get2(key1, key2)
     if value2 ~= nil then
         return value2[key3]
     end
