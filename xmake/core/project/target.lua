@@ -1180,6 +1180,7 @@ function _instance:sourcefiles()
     local sourcefiles_deleted = {}
     local sourcefiles_inserted = {}
     local deleted_count = 0
+    local targetcache = memcache.cache("core.project.target")
     for _, file in ipairs(table.wrap(files)) do
 
         -- mark as deleted files?
@@ -1189,13 +1190,18 @@ function _instance:sourcefiles()
             deleted = true
         end
 
-        -- find source files
-        local results = os.files(file)
-        if #results == 0 then
-            -- attempt to find source directories if maybe compile it as directory with the custom rules
-            if #self:filerules(file) > 0 then
-                results = os.dirs(file)
+        -- find source files and try to cache the matching results of os.match across targets
+        -- @see https://github.com/xmake-io/xmake/issues/1353
+        local results = targetcache:get2("sourcefiles", file)
+        if not results then
+            results = os.files(file)
+            if #results == 0 then
+                -- attempt to find source directories if maybe compile it as directory with the custom rules
+                if #self:filerules(file) > 0 then
+                    results = os.dirs(file)
+                end
             end
+            targetcache:set2("sourcefiles", file, results)
         end
         if #results == 0 then
             local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}

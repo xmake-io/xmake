@@ -260,10 +260,12 @@ function language.load(name)
 
     -- load all languages
     if not name then
-        for _, name in ipairs(table.wrap(os.match(path.join(language._directory(), "*"), true))) do
-            local instance, errors = language.load(path.basename(name))
-            if not instance then
-                return nil, errors
+        if not language._LANGUAGES then
+            for _, name in ipairs(table.wrap(os.match(path.join(language._directory(), "*"), true))) do
+                local instance, errors = language.load(path.basename(name))
+                if not instance then
+                    return nil, errors
+                end
             end
         end
         return language._LANGUAGES
