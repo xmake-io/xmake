@@ -363,9 +363,6 @@ function _init_requireinfo(requireinfo, package, opt)
         end
         requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
     end
-    if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
-        requireinfo.configs.vs_runtime = "MT"
-    end
 end
 
 -- merge requireinfo from `add_requireconfs()`
@@ -499,6 +496,9 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo.configs = requireinfo_configs
+    end
+    if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
+        requireinfo.configs.vs_runtime = "MT"
     end
 end
 
