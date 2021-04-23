@@ -213,7 +213,7 @@ function _sort_packagedeps(package, onlylink)
     if deps then
         for _, depname in ipairs(deps) do
             local packagename = _parse_require(depname)
-            local dep = package:dep(packagename)
+            local dep = package:dep(packagename) -- TODO we need get correct package with different configs for checking deps conflicts
             if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
                 table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
                 table.insert(orderdeps, dep)
@@ -566,27 +566,6 @@ function _load_package(packagename, requireinfo, opt)
     -- get package key
     local packagekey = _get_packagekey(packagename, requireinfo, version)
 
-    -- It exists conflict for dependent packages for each root packages? resolve it first
-    -- e.g.
-    -- add_requires("foo") -> bar -> zlib 1.2.10
-    --                     -> xyz -> zlib 1.2.11 or other configs
-    --
-    -- add_requires("ddd") -> zlib
-    --
-    -- We assume that there is no conflict between `foo` and `ddd`.
-    --
-    -- Of course, conflicts caused by `add_packages("foo", "ddd")`
-    -- cannot be detected at present and can only be resolved by the user
-    --
-    local rootkey = opt.rootkey
-    local packagekey_prev = _memcache():get3("packages_root", rootkey, packagename)
-    if packagekey_prev then
-        if packagekey_prev and packagekey_prev ~= packagekey then
-            raise("package(%s): conflict dependences with package(%s)!", packagekey, packagekey_prev)
-        end
-    end
-    _memcache():set3("packages_root", rootkey, packagename, packagekey)
-
     -- get package from cache first
     local package_cached = _memcache():get2("packages", packagekey)
     if package_cached then
@@ -647,10 +626,9 @@ function _load_packages(requires, opt)
     for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt)) do
 
         -- load package
-        local rootkey     = opt.rootkey or requireitem.name
         local requireinfo = requireitem.info
         local requirepath = opt.requirepath and (opt.requirepath .. "." .. requireitem.name) or requireitem.name
-        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {rootkey = rootkey, requirepath = requirepath}))
+        local package     = _load_package(requireitem.name, requireinfo, table.join(opt, {requirepath = requirepath}))
 
         -- maybe package not found and optional
         if package then
@@ -662,8 +640,7 @@ function _load_packages(requires, opt)
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {rootkey = rootkey,
-                                                               requirepath = requirepath,
+                    for _, dep in ipairs(_load_packages(deps, {requirepath = requirepath,
                                                                requires_extra = package:extraconf("deps") or {},
                                                                parentinfo = requireinfo,
                                                                nodeps = opt.nodeps,
@@ -683,6 +660,48 @@ function _load_packages(requires, opt)
         end
     end
     return packages
+end
+
+-- get package parents string
+function _get_parents_str(package)
+    local parents = package:parents()
+    if parents then
+        local parentnames = {}
+        for _, parent in pairs(parents) do
+            table.insert(parentnames, parent:displayname())
+        end
+        if #parentnames == 0 then
+            return
+        end
+        return table.concat(parentnames, ",")
+    end
+end
+
+-- check dependences conflicts
+--
+-- It exists conflict for dependent packages for each root packages? resolve it first
+-- e.g.
+-- add_requires("foo") -> bar -> zlib 1.2.10
+--                     -> xyz -> zlib 1.2.11 or other configs
+--
+-- add_requires("ddd") -> zlib
+--
+-- We assume that there is no conflict between `foo` and `ddd`.
+--
+-- Of course, conflicts caused by `add_packages("foo", "ddd")`
+-- cannot be detected at present and can only be resolved by the user
+--
+function _check_package_depconflicts(package)
+    local packagekeys = {}
+    for _, dep in ipairs(package:linkdeps()) do
+        local key = _get_packagekey(dep:name(), dep:requireinfo())
+        local prevkey = packagekeys[dep:name()]
+        if prevkey then
+            assert(key == prevkey, "package(%s): conflict dependences with package(%s)!", key, prevkey)
+        else
+            packagekeys[dep:name()] = key
+        end
+    end
 end
 
 -- the cache directory
@@ -713,21 +732,6 @@ function should_install(package)
         end
     else
         return true
-    end
-end
-
--- get package parents string
-function _get_parents_str(package)
-    local parents = package:parents()
-    if parents then
-        local parentnames = {}
-        for _, parent in pairs(parents) do
-            table.insert(parentnames, parent:displayname())
-        end
-        if #parentnames == 0 then
-            return
-        end
-        return table.concat(parentnames, ",")
     end
 end
 
@@ -785,6 +789,9 @@ function load_packages(requires, opt)
     local unique = {}
     local packages = {}
     for _, package in ipairs(_load_packages(requires, opt)) do
+        if package:is_toplevel() then
+            _check_package_depconflicts(package)
+        end
         local key = _get_packagekey(package:name(), package:requireinfo())
         if not unique[key] then
             table.insert(packages, package)
