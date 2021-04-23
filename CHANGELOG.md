@@ -9,6 +9,7 @@
 * [#1338](https://github.com/xmake-io/xmake/issues/1338): Support import and export installed packages
 * [#1087](https://github.com/xmake-io/xmake/issues/1087): Add `xrepo env shell` and support load envs from `add_requires/xmake.lua`
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): Support private package for `add_requires/add_deps`
+* [#1358](https://github.com/xmake-io/xmake/issues/1358): Support to set mirror url to speedup download package
 
 ### Change
 
@@ -986,6 +987,7 @@
 * [#1338](https://github.com/xmake-io/xmake/issues/1338): 支持导入导出已安装的包
 * [#1087](https://github.com/xmake-io/xmake/issues/1087): 添加 `xrepo env shell` 并且支持从 `add_requires/xmake.lua` 加载包环境
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): 为 `add_requires/add_deps` 添加私有包支持
+* [#1358](https://github.com/xmake-io/xmake/issues/1358): 支持设置镜像 url 站点加速包下载
 
 ### 改进
 

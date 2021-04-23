@@ -84,7 +84,7 @@ function main(url, opt)
 
     -- use proxy?
     local envs
-    local proxy_conf = proxy.get(url)
+    local proxy_conf = proxy.config(url)
     if proxy_conf then
         envs = {ALL_PROXY = proxy_conf}
     end

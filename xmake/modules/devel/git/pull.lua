@@ -66,7 +66,7 @@ function main(opt)
 
     -- use proxy?
     local envs
-    local proxy_conf = proxy.get()
+    local proxy_conf = proxy.config()
     if proxy_conf then
         -- get proxy configuration from the current remote url
         local remoteinfo = try { function() return os.iorunv(git.program, {"remote", "-v"}) end }
@@ -76,7 +76,7 @@ function main(opt)
                 if #splitinfo > 1 and splitinfo[1] == (opt.remote or "origin") then
                     local url = splitinfo[2]
                     if url then
-                        proxy_conf = proxy.get(url)
+                        proxy_conf = proxy.config(url)
                     end
                     break
                 end

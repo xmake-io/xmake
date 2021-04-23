@@ -64,7 +64,7 @@ function _curl_download(tool, url, outputfile, opt)
     end
 
     -- use proxy?
-    local proxy_conf = proxy.get(url)
+    local proxy_conf = proxy.config(url)
     if proxy_conf then
         table.insert(argv, "-x")
         table.insert(argv, proxy_conf)
@@ -114,7 +114,7 @@ function _wget_download(tool, url, outputfile, opt)
     end
 
     -- use proxy?
-    local proxy_conf = proxy.get(url)
+    local proxy_conf = proxy.config(url)
     if proxy_conf then
         table.insert(argv, "-e")
         table.insert(argv, "use_proxy=yes")

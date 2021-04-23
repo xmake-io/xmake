@@ -39,6 +39,9 @@ end
 -- pac.lua
 --
 -- @code
+-- function mirror(url)
+--     return url:gsub("github.com", "hub.fastgit.org")
+-- end
 -- function main(url, host)
 --    if host:find("bintray.com") then
 --        return true
@@ -75,11 +78,20 @@ function _host_pattern(pattern)
     return pattern
 end
 
+-- get proxy mirror url
+function mirror(url)
+    local proxy_pac = _proxy_pac()
+    if proxy_pac and proxy_pac.mirror then
+        return proxy_pac.mirror(url)
+    end
+    return url
+end
+
 -- get proxy configuration from the given url, [protocol://]host[:port]
 --
 -- @see https://github.com/xmake-io/xmake/issues/854
 --
-function get(url)
+function config(url)
 
     -- enable proxy for the given url and configuration pattern
     if url then

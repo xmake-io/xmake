@@ -29,6 +29,7 @@ import("lib.detect.find_directory")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl..utils.url_filename")
 import("net.http")
+import("net.proxy")
 import("devel.git")
 import("utils.archive")
 
@@ -67,13 +68,13 @@ function _checkout(package, url, sourcedir, url_alias)
     if package:branch() then
 
         -- only shadow clone this branch
-        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
+        git.clone(proxy.mirror(url), {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
     else
 
         -- clone whole history and tags
-        git.clone(url, {longpaths = longpaths, outputdir = packagedir})
+        git.clone(proxy.mirror(url), {longpaths = longpaths, outputdir = packagedir})
 
         -- attempt to checkout the given version
         local revision = package:revision(url_alias) or package:tag() or package:version_str()
@@ -134,7 +135,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
                 -- we can use local package from the search directories directly if network is too slow
                 os.cp(localfile, packagefile)
             else
-                http.download(url, packagefile)
+                http.download(proxy.mirror(url), packagefile)
             end
         end
 
