@@ -406,12 +406,22 @@ function _instance:_checktool(toolkind, toolpath)
         end
     end
 
-    -- find tool program
+    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
+    -- https://github.com/xmake-io/xmake/issues/1361
     local program, toolname
-    local tool = find_tool(toolpath, {cachekey = cachekey, program = toolpath, paths = self:bindir(), envs = self:get("runenvs")})
+    if toolpath then
+        local pos = toolpath:find('@', 1, true)
+        if pos then
+            toolname = toolpath:sub(1, pos - 1)
+            program = toolpath:sub(pos + 1)
+        end
+    end
+
+    -- find tool program
+    local tool = find_tool(toolpath, {cachekey = cachekey, program = program or toolpath, paths = self:bindir(), envs = self:get("runenvs")})
     if tool then
         program = tool.program
-        toolname = tool.name
+        toolname = toolname or tool.name
     end
 
     -- get tool description from the tool kind
