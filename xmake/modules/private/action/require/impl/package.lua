@@ -209,15 +209,10 @@ end
 function _sort_packagedeps(package, onlylink)
     -- we must use native deps list instead of package:deps() to generate correct linkdeps
     local orderdeps = {}
-    local deps = package:get("deps")
-    if deps then
-        for _, depname in ipairs(deps) do
-            local packagename = _parse_require(depname)
-            local dep = package:dep(packagename) -- TODO we need get correct package with different configs for checking deps conflicts
-            if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
-                table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
-                table.insert(orderdeps, dep)
-            end
+    for _, dep in ipairs(package:plaindeps()) do
+        if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
+            table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
+            table.insert(orderdeps, dep)
         end
     end
     return orderdeps
@@ -623,6 +618,7 @@ function _load_packages(requires, opt)
 
     -- load packages
     local packages = {}
+    local packages_nodeps = {}
     for _, requireitem in ipairs(load_requires(requires, opt.requires_extra, opt)) do
 
         -- load package
@@ -635,21 +631,22 @@ function _load_packages(requires, opt)
 
             -- load dependent packages and save them first of this package
             if not package._DEPS then
-                local deps = package:get("deps")
-                if deps and opt.nodeps ~= true then
+                if package:get("deps") and opt.nodeps ~= true then
 
                     -- load dependent packages and do not load system/3rd packages for package/deps()
                     local packagedeps = {}
-                    for _, dep in ipairs(_load_packages(deps, {requirepath = requirepath,
-                                                               requires_extra = package:extraconf("deps") or {},
-                                                               parentinfo = requireinfo,
-                                                               nodeps = opt.nodeps,
-                                                               system = false})) do
+                    local deps, plaindeps = _load_packages(package:get("deps"), {requirepath = requirepath,
+                                                        requires_extra = package:extraconf("deps") or {},
+                                                        parentinfo = requireinfo,
+                                                        nodeps = opt.nodeps,
+                                                        system = false})
+                    for _, dep in ipairs(deps) do
                         dep:parents_add(package)
                         table.insert(packages, dep)
                         packagedeps[dep:name()] = dep
                     end
                     package._DEPS = packagedeps
+                    package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
                     package._LINKDEPS = table.unique(_sort_packagedeps(package, true))
                 end
@@ -657,9 +654,10 @@ function _load_packages(requires, opt)
 
             -- save this package
             table.insert(packages, package)
+            table.insert(packages_nodeps, package)
         end
     end
-    return packages
+    return packages, packages_nodeps
 end
 
 -- get package parents string
@@ -788,7 +786,7 @@ function load_packages(requires, opt)
     opt = opt or {}
     local unique = {}
     local packages = {}
-    for _, package in ipairs(_load_packages(requires, opt)) do
+    for _, package in ipairs((_load_packages(requires, opt))) do
         if package:is_toplevel() then
             _check_package_depconflicts(package)
         end

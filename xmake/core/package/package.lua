@@ -255,6 +255,11 @@ function _instance:orderdeps()
     return self._ORDERDEPS
 end
 
+-- get plain deps
+function _instance:plaindeps()
+    return self._PLAINDEPS
+end
+
 -- get link deps
 function _instance:linkdeps()
     return self._LINKDEPS
