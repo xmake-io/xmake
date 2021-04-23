@@ -365,6 +365,14 @@ function _init_requireinfo(requireinfo, package, opt)
     end
 end
 
+-- set default requireinfo
+function _set_requireinfo_default(requireinfo, package)
+    requireinfo.configs = requireinfo.configs or {}
+    if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
+        requireinfo.configs.vs_runtime = "MT"
+    end
+end
+
 -- merge requireinfo from `add_requireconfs()`
 --
 -- add_requireconfs("*",                         {system = false, configs = {vs_runtime = "MD"}})
@@ -497,9 +505,6 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo.configs = requireinfo_configs
     end
-    if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
-        requireinfo.configs.vs_runtime = "MT"
-    end
 end
 
 -- load required packages
@@ -548,6 +553,9 @@ function _load_package(packagename, requireinfo, opt)
     if opt.parentinfo then
         _inherit_parent_configs(requireinfo, package, opt.parentinfo)
     end
+
+    -- set default requireinfo
+    _set_requireinfo_default(requireinfo, package)
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
