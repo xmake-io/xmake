@@ -116,13 +116,8 @@ function _get_cflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    for i, flag in ipairs(result) do
-        if flag:match(" ") then
-            result[i] = '"' .. flag .. '"'
-        end
-    end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -146,13 +141,8 @@ function _get_cxxflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    for i, flag in ipairs(result) do
-        if flag:match(" ") then
-            result[i] = '"' .. flag .. '"'
-        end
-    end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -170,13 +160,8 @@ function _get_asflags(package, opt)
     if opt.asflags then
         table.join2(result, opt.asflags)
     end
-    for i, flag in ipairs(result) do
-        if flag:match(" ") then
-            result[i] = '"' .. flag .. '"'
-        end
-    end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -194,13 +179,8 @@ function _get_ldflags(package, opt)
     if opt.ldflags then
         table.join2(result, opt.ldflags)
     end
-    for i, flag in ipairs(result) do
-        if flag:match(" ") then
-            result[i] = '"' .. flag .. '"'
-        end
-    end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -218,13 +198,8 @@ function _get_shflags(package, opt)
     if opt.shflags then
         table.join2(result, opt.shflags)
     end
-    for i, flag in ipairs(result) do
-        if flag:match(" ") then
-            result[i] = '"' .. flag .. '"'
-        end
-    end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
