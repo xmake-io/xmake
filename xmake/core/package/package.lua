@@ -1040,11 +1040,15 @@ end
 function _instance:_fetch_tool(opt)
     opt = opt or {}
     local fetchinfo
+    local require_version = opt.require_version
+    if require_version and not require_version:find(".", 1, true) then
+        require_version = nil
+    end
     local on_fetch = self:script("fetch")
     if on_fetch then
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
-                                    require_version = opt.require_version})
+                                    require_version = require_version})
     end
     if fetchinfo == nil then
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
@@ -1060,7 +1064,7 @@ function _instance:_fetch_tool(opt)
                 end
             end
         else
-            fetchinfo = self:find_tool(self:name(), {require_version = opt.require_version,
+            fetchinfo = self:find_tool(self:name(), {require_version = require_version,
                                                      cachekey = "fetch_package_xmake",
                                                      norun = true, -- we need not run it to check for xmake/packages, @see https://github.com/xmake-io/xmake-repo/issues/66
                                                      force = opt.force})
@@ -1081,12 +1085,16 @@ end
 function _instance:_fetch_library(opt)
     opt = opt or {}
     local fetchinfo
+    local require_version = opt.require_version
+    if require_version and not require_version:find(".", 1, true) then
+        require_version = nil
+    end
     local on_fetch = self:script("fetch")
     if on_fetch then
         fetchinfo = on_fetch(self, {force = opt.force,
                                     system = opt.system,
                                     external = opt.external,
-                                    require_version = opt.require_version})
+                                    require_version = require_version})
     end
     if fetchinfo == nil then
         if opt.system then
@@ -1102,7 +1110,7 @@ function _instance:_fetch_library(opt)
             end
         else
             fetchinfo = self:find_package("xmake::" .. self:name(), {
-                                           require_version = opt.require_version,
+                                           require_version = require_version,
                                            cachekey = "fetch_package_xmake",
                                            external = opt.external,
                                            force = opt.force})
