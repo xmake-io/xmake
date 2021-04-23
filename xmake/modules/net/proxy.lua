@@ -35,6 +35,17 @@ function _proxy_hosts()
 end
 
 -- get proxy pac file
+--
+-- pac.lua
+--
+-- @code
+-- function main(url, host)
+--    if host:find("bintray.com") then
+--        return true
+--    end
+-- end
+-- @endcode
+--
 function _proxy_pac()
     local proxy_pac = _g._PROXY_PAC
     if proxy_pac == nil then
@@ -65,6 +76,9 @@ function _host_pattern(pattern)
 end
 
 -- get proxy configuration from the given url, [protocol://]host[:port]
+--
+-- @see https://github.com/xmake-io/xmake/issues/854
+--
 function get(url)
 
     -- enable proxy for the given url and configuration pattern
@@ -90,7 +104,7 @@ function get(url)
         end
         if not proxy_pac and not proxy_hosts then
             return global.get("proxy")
-        end 
+        end
         return
     end
 
