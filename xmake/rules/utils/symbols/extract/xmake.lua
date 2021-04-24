@@ -49,7 +49,7 @@ rule("utils.symbols.extract")
         import("private.utils.progress")
 
         -- get strip
-        local strip = platform.tool("strip")
+        local strip = target:tool("strip")
         if not strip then
             return
         end
@@ -57,7 +57,7 @@ rule("utils.symbols.extract")
         -- get dsymutil
         local dsymutil
         if is_plat("macosx", "iphoneos", "watchos") then
-            dsymutil = platform.tool("dsymutil")
+            dsymutil = target:tool("dsymutil")
             if not dsymutil then
                 return
             end
