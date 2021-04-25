@@ -983,7 +983,7 @@ function interpreter:api_register_scope(...)
             for name, values in pairs(scope_info) do
                 local apifunc = self:api_func("set_" .. name) or self:api_func("add_" .. name) or self:api_func("on_" .. name) or self:api_func(name)
                 if apifunc then
-                    apifunc(values)
+                    apifunc(table.unpack(table.wrap(values)))
                 else
                     os.raise("unknown %s for %s(\"%s\")", name, scope_kind, scope_name)
                 end
