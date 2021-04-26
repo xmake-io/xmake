@@ -1194,11 +1194,15 @@ function _instance:sourcefiles()
         -- @see https://github.com/xmake-io/xmake/issues/1353
         local results = targetcache:get2("sourcefiles", file)
         if not results then
-            results = os.files(file)
-            if #results == 0 then
-                -- attempt to find source directories if maybe compile it as directory with the custom rules
-                if #self:filerules(file) > 0 then
-                    results = os.dirs(file)
+            if deleted then
+                results = {file}
+            else
+                results = os.files(file)
+                if #results == 0 then
+                    -- attempt to find source directories if maybe compile it as directory with the custom rules
+                    if #self:filerules(file) > 0 then
+                        results = os.dirs(file)
+                    end
                 end
             end
             targetcache:set2("sourcefiles", file, results)
@@ -1219,7 +1223,7 @@ function _instance:sourcefiles()
             -- add or delete it
             if deleted then
                 deleted_count = deleted_count + 1
-                sourcefiles_deleted[sourcefile] = true
+                table.insert(sourcefiles_deleted, sourcefile)
             elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
                 sourcefiles_inserted[sourcefile] = true
@@ -1231,8 +1235,15 @@ function _instance:sourcefiles()
     if deleted_count > 0 then
         for i = #sourcefiles, 1, -1 do
             local sourcefile = sourcefiles[i]
-            if sourcefiles_deleted[sourcefile] then
-                table.remove(sourcefiles, i)
+            for _, deletefile in ipairs(sourcefiles_deleted) do
+                local pattern = path.translate(deletefile:gsub("|.*$", ""))
+                if pattern:sub(1, 2):find('%.[/\\]') then
+                    pattern = pattern:sub(3)
+                end
+                pattern = path.pattern(pattern)
+                if sourcefile:match(pattern) then
+                    table.remove(sourcefiles, i)
+                end
             end
         end
     end
