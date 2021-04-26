@@ -17,6 +17,7 @@
 * Remove deprecated `set_config_h` and `set_config_h_prefix` apis
 * [#1343](https://github.com/xmake-io/xmake/issues/1343): Improve to search local package files
 * [#1347](https://github.com/xmake-io/xmake/issues/1347): Improve to vs_runtime configs for binary package
+* [#1353](https://github.com/xmake-io/xmake/issues/1353): Improve del_files() to speedup matching files
 
 ### v2.5.3
 
@@ -995,6 +996,7 @@
 * 移除废弃的 `set_config_h` 和 `set_config_h_prefix` 接口
 * [#1343](https://github.com/xmake-io/xmake/issues/1343): 改进搜索本地包文件
 * [#1347](https://github.com/xmake-io/xmake/issues/1347): 针对 binary 包改进 vs_runtime 配置
+* [#1353](https://github.com/xmake-io/xmake/issues/1353): 改进 del_files() 去加速匹配文件
 
 ## v2.5.3
 
