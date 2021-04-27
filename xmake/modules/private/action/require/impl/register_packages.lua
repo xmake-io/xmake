@@ -94,7 +94,9 @@ function _register_required_package(instance, required_package)
             for idx, _ in ipairs(linkdeps) do
                 local dep = linkdeps[total + 1 - idx]
                 if dep then
-                    _register_required_package_libs(dep, required_package, true)
+                    if instance:is_library() then
+                        _register_required_package_libs(dep, required_package, true)
+                    end
                 end
             end
         end
