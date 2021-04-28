@@ -238,17 +238,21 @@ function _get_env_script(envs, shell)
     local prefix = ""
     local connector = "="
     local suffix = ""
+    local default = ""
     if shell == "powershell" or shell == "pwsh" then
         prefix = "[Environment]::SetEnvironmentVariable('"
         connector = "','"
         suffix = "')"
+        default = "$Null"
+    elseif shell == "cmd" then
+        prefix = "@set \""
+        suffix = "\""
     end
     local ret = ""
-    local modified = hashset.of("PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "ACLOCAL_PATH", "PKG_CONFIG_PATH", "CMAKE_PREFIX_PATH")
-    for name, value in pairs(envs) do
-        if modified:has(name) then
-            ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
-        end
+    local modified = {"PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "ACLOCAL_PATH", "PKG_CONFIG_PATH", "CMAKE_PREFIX_PATH"}
+    for _, name in ipairs(modified) do
+        local value = envs[name] or default
+        ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
     end
     return ret
 end
@@ -257,9 +261,14 @@ end
 function info(key)
     if key == "prompt" then
         print("[%s]", path.filename(os.projectdir()))
+    elseif key == "envfile" then
+        print("%s", os.tmpfile())
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
-        print(_get_env_script(envs, shell))
+        print(_get_env_script(_package_getenvs(), shell))
+    elseif key:startswith("backup.") then
+        local shell = key:match("backup%.(.+)")
+        print(_get_env_script(os.getenvs(), shell))
     end
 end
 
