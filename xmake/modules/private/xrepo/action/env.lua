@@ -53,7 +53,6 @@ function menu_options()
                                        "    - xrepo env -b \"llvm 11.x\" bash",
                                        "      $ clang --version",
                                        "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
-        {nil, "info",       "k",  nil, "Get the information of the virtual environment."},
         {},
         {nil, "program",    "v",  nil, "Set the program name to be run",
                                        "e.g.",
@@ -254,6 +253,16 @@ function _get_env_script(envs, shell)
     return ret
 end
 
+-- get information of current virtual environment
+function info(key)
+    if key == "prompt" then
+        print("[%s]", path.filename(os.projectdir()))
+    elseif key:startswith("script.") then
+        local shell = key:match("script%.(.+)")
+        print(_get_env_script(envs, shell))
+    end
+end
+
 -- run shell
 function _run_shell(envs)
     local shell = os.shell()
@@ -284,18 +293,7 @@ end
 function main()
     local envs = _package_getenvs()
     local program = option.get("program")
-    if option.get("info") then
-        if program then
-            if program == "prompt" then
-                print(format("[%s]", path.filename(os.projectdir())))
-            elseif program:startswith("script.") then
-                local shell = program:match("script%.(.+)")
-                print(_get_env_script(envs, shell))
-            end
-        else
-            return
-        end
-    elseif program and not option.get("show") then
+    if program and not option.get("show") then
         if envs and envs.PATH then
             os.setenv("PATH", envs.PATH)
         end

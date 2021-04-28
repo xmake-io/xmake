@@ -3,7 +3,7 @@
 
 <#
     .SYNOPSIS
-        Activates a xrepo environment based on your current project.
+        Enter a xrepo environment based on your current project.
 
     .EXAMPLE
         Enter-XrepoEnvironment
@@ -14,8 +14,8 @@ function Enter-XrepoEnvironment {
 
     begin {
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
-        $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo env --info prompt | Out-String);
-        $activateCommand = (& $Env:XMAKE_EXE lua private.xrepo env --info script.powershell | Out-String);
+        $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info prompt | Out-String);
+        $activateCommand = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info script.powershell | Out-String);
 
         Write-Verbose "[xrepo env script.powershell]`n$activateCommand";
         Invoke-Expression -Command $activateCommand;
@@ -29,7 +29,7 @@ function Enter-XrepoEnvironment {
 
 <#
     .SYNOPSIS
-        Deactivates the current xrepo environment, if any.
+        Exit the current xrepo environment, if any.
 
     .EXAMPLE
         Exit-XrepoEnvironment
