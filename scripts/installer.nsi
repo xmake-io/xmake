@@ -237,6 +237,7 @@ Section "XMake (required)" InstallExeutable
   File "..\*.md"
   File "..\core\build\xmake.exe"
   File "..\scripts\xrepo.bat"
+  File "..\scripts\xrepo.ps1"
   File /r /x ".DS_Store" "..\winenv"
 
   WriteUninstaller "uninstall.exe"
