@@ -87,7 +87,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return {"-I", dir}
+    return {"-I" .. dir}
 end
 
 -- make the sysincludedir flag

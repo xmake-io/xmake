@@ -88,18 +88,21 @@ function _register_required_package(instance, required_package)
         _register_required_package_base(instance, required_package)
         _register_required_package_libs(instance, required_package)
         _register_required_package_envs(instance, envs)
-        local orderdeps = instance:orderdeps()
-        if orderdeps then
-            local total = #orderdeps
-            for idx, _ in ipairs(orderdeps) do
-                local dep = orderdeps[total + 1 - idx]
+        local linkdeps = instance:linkdeps()
+        if linkdeps then
+            local total = #linkdeps
+            for idx, _ in ipairs(linkdeps) do
+                local dep = linkdeps[total + 1 - idx]
                 if dep then
-                    -- we can only inherit all link deps of library package
                     if instance:is_library() then
                         _register_required_package_libs(dep, required_package, true)
                     end
-                    _register_required_package_envs(dep, envs)
                 end
+            end
+        end
+        for _, dep in ipairs(instance:orderdeps()) do
+            if not dep:is_private() then
+                _register_required_package_envs(dep, envs)
             end
         end
         if #table.keys(envs) > 0 then
