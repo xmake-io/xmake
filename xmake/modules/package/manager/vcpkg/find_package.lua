@@ -85,21 +85,23 @@ function main(name, opt)
         plat = "osx"
     end
 
-    -- mapping arch
-    if arch == "x86_64" then
-        arch = "x64"
-    elseif arch == "i386" then
-        arch = "x86"
+    -- archs mapping for vcpkg
+    local archs = {
+        x86_64          = "x64",
+        i386            = "x86",
+
         -- android: armeabi armeabi-v7a arm64-v8a x86 x86_64 mips mip64
-        -- vcpkg triplets not support plat_android, but offers a doc: https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md
-    elseif arch == "arm64-v8a" then
-        arch = "arm64"
-    elseif arch == "armeabi-v7a" then
-        arch = "arm"
+        -- Offers a doc: https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md
+        ["armeabi-v7a"] = "arm",
+        ["arm64-v8a"]   = "arm64",
+
         -- ios: arm64 armv7 armv7s i386
-    elseif arch == "armv7" or arch == "armv7s" then
-        arch = "arm"
-    end
+        armv7           = "arm",
+        armv7s          = "arm",
+        arm64           = "arm64",
+    }
+    -- mapping arch
+    arch = archs[arch] or arch
 
     -- get the vcpkg installed directory
     local installdir = path.join(vcpkgdir, "installed")
