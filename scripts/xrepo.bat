@@ -1,6 +1,6 @@
 @echo off
 
-@set "XMAKE_EXE=%~dp0xmake.exe"
+@set "XMAKE_EXE=xmake"
 @if [%1]==[env] (
     if [%2]==[quit] (
         if defined XMAKE_PROMPT_BACKUP (

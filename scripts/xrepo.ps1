@@ -4,7 +4,7 @@ $Env:XMAKE_EXE = Join-Path $BASE_DIR xmake.exe
 
 
 if ($Args.Count -eq 0) {
-    # No args, just call the underlying conda executable.
+    # No args, just call the underlying xmake executable.
     & $Env:XMAKE_EXE lua private.xrepo;
 } else {
     $Command = $Args[0];
