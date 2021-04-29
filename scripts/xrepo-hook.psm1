@@ -15,6 +15,10 @@ function Enter-XrepoEnvironment {
     begin {
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
         $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info prompt | Out-String);
+        if (-not $?) {
+            Write-Host $xrepoPrompt
+            Exit 1
+        }
         $activateCommand = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info script.powershell | Out-String);
 
         Write-Verbose "[xrepo env script.powershell]`n$activateCommand";
@@ -39,7 +43,9 @@ function Exit-XrepoEnvironment {
     param();
 
     begin {
-        # Write-Host $script:xrepoOldEnvs;
+        ForEach ($p in (Get-ChildItem Env:)) {
+            [Environment]::SetEnvironmentVariable($p.Name, $Null);
+        }
         ForEach ($p in $script:xrepoOldEnvs) {
             [Environment]::SetEnvironmentVariable($p.Name, $p.Value);
         }

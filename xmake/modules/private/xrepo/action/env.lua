@@ -234,7 +234,7 @@ function _package_getenvs()
 end
 
 -- get environment setting script
-function _get_env_script(envs, shell)
+function _get_env_script(envs, shell, del)
     local prefix = ""
     local connector = "="
     local suffix = ""
@@ -249,10 +249,14 @@ function _get_env_script(envs, shell)
         suffix = "\""
     end
     local ret = ""
-    local modified = {"PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "ACLOCAL_PATH", "PKG_CONFIG_PATH", "CMAKE_PREFIX_PATH"}
-    for _, name in ipairs(modified) do
-        local value = envs[name] or default
-        ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
+    if del then
+        for name, _ in pairs(envs) do
+            ret = ret .. prefix .. name .. connector .. default .. suffix .. "\n"
+        end
+    else
+        for name, value in pairs(envs) do
+            ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
+        end
     end
     return ret
 end
@@ -260,15 +264,19 @@ end
 -- get information of current virtual environment
 function info(key)
     if key == "prompt" then
+        assert(os.isfile(os.projectfile()), "xmake.lua not found!")
         print("[%s]", path.filename(os.projectdir()))
     elseif key == "envfile" then
         print("%s", os.tmpfile())
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
-        print(_get_env_script(_package_getenvs(), shell))
+        print(_get_env_script(_package_getenvs(), shell, false))
     elseif key:startswith("backup.") then
         local shell = key:match("backup%.(.+)")
-        print(_get_env_script(os.getenvs(), shell))
+        
+        -- remove current environment variables first
+        print(_get_env_script(_package_getenvs(), shell, true))
+        print(_get_env_script(os.getenvs(), shell, false))
     end
 end
 
