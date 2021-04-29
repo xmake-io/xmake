@@ -182,6 +182,12 @@ function _make_targetinfo(mode, arch, target)
         addrunenvs = addrunenvs or {}
         addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), v)
     end
+    for _, dep in ipairs(target:orderdeps()) do
+        for k, v in pairs(dep:pkgenvs()) do
+            addrunenvs = addrunenvs or {}
+            addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), v)
+        end
+    end
     for k, v in pairs(addrunenvs) do
         if k:upper() == "PATH" then
             runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", _make_dirs(v), k)
