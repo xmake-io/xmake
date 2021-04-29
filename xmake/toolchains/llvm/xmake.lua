@@ -48,7 +48,16 @@ toolchain("llvm")
 
         -- add march flags
         local march
-        if toolchain:is_arch("x86_64", "x64") then
+        if toolchain:is_plat("windows") and not is_host("windows") then
+            -- cross-compilation for windows
+            if toolchain:is_arch("i386", "x86") then
+                march = "-target i386-pc-windows-msvc"
+            else
+                march = "-target x86_64-pc-windows-msvc"
+            end
+            toolchain:add("ldflags", "-fuse-ld=lld")
+            toolchain:add("shflags", "-fuse-ld=lld")
+        elseif toolchain:is_arch("x86_64", "x64") then
             march = "-m64"
         elseif toolchain:is_arch("i386", "x86") then
             march = "-m32"
