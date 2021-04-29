@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("lib.detect.find_path")
 import("detect.sdks.find_xcode")
 import("detect.sdks.find_cross_toolchain")
 
@@ -57,8 +58,13 @@ function main(toolchain)
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     if not sdkdir and not bindir then
-        if toolchain:is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
+        if is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
+        elseif is_host("macosx") then
+            local bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
+            if bindir then
+                sdkdir = path.directory(bindir)
+            end
         end
     end
 
