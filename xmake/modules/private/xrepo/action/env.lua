@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
+import("core.base.hashset")
 import("core.project.config")
 import("lib.detect.find_tool")
 import("private.action.require.impl.package")
@@ -175,7 +176,7 @@ function _package_addenvs(envs, instance)
         return
     end
 
-    -- add run envs, e.g. PATH, LD_LIBRARY_PATH, ..
+    -- add run envs, e.g. PATH, LD_LIBRARY_PATH, DYLD_LIBRARY_PATH
     local installdir = instance:installdir()
     for name, values in pairs(instance:envs()) do
         if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
@@ -191,7 +192,7 @@ function _package_addenvs(envs, instance)
         end
     end
 
-    -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH ..
+    -- add library envs, e.g. ACLOCAL_PATH, PKG_CONFIG_PATH, CMAKE_PREFIX_PATH
     if instance:is_library() then
         local pkgconfig = path.join(installdir, "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
@@ -232,13 +233,42 @@ function _package_getenvs()
     return envs
 end
 
+-- get environment setting script
+function _get_env_script(envs, shell)
+    local prefix = ""
+    local connector = "="
+    local suffix = ""
+    if shell == "powershell" or shell == "pwsh" then
+        prefix = "[Environment]::SetEnvironmentVariable('"
+        connector = "','"
+        suffix = "')"
+    end
+    local ret = ""
+    local modified = hashset.of("PATH", "LD_LIBRARY_PATH", "DYLD_LIBRARY_PATH", "ACLOCAL_PATH", "PKG_CONFIG_PATH", "CMAKE_PREFIX_PATH")
+    for name, value in pairs(envs) do
+        if modified:has(name) then
+            ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
+        end
+    end
+    return ret
+end
+
+-- get information of current virtual environment
+function info(key)
+    if key == "prompt" then
+        print("[%s]", path.filename(os.projectdir()))
+    elseif key:startswith("script.") then
+        local shell = key:match("script%.(.+)")
+        print(_get_env_script(envs, shell))
+    end
+end
+
 -- run shell
 function _run_shell(envs)
     local shell = os.shell()
     local projectname = path.filename(os.projectdir())
-    if shell == "pwsh" then
-        local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
-        os.execv("pwsh", args, {envs = envs})
+    if shell == "pwsh" or shell == "powershell" then
+        os.execv("pwsh", option.get("arguments"), {envs = envs})
     elseif shell:endswith("sh") then
         local prompt = "[" .. projectname .. "] "
         local ps1 = os.getenv("PS1")
@@ -250,9 +280,6 @@ function _run_shell(envs)
             prompt = prompt .. "> "
         end
         os.execv(shell, option.get("arguments"), {envs = table.join({PS1 = prompt}, envs)})
-    elseif shell == "powershell" then
-        local args = table.join({"-c", "'function prompt { \\\"[" .. projectname .. "] \\\" + $(Get-Location) + \\\"> \\\" }'"}, option.get("arguments"))
-        os.execv("powershell", args, {envs = envs})
     elseif shell == "cmd" or is_host("windows") then
         local prompt = "[" .. projectname .. "] $P$G"
         local args = table.join({"/k", "set PROMPT=[" .. projectname .. "] $P$G"}, option.get("arguments"))
