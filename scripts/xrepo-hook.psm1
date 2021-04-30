@@ -14,11 +14,17 @@ function Enter-XrepoEnvironment {
 
     begin {
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
+
+        & $Env:XMAKE_EXE config
+
+        $xmakeColorTermBackup, $Env:XMAKE_COLORTERM = $Env:XMAKE_COLORTERM, "nocolor";
         $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info prompt | Out-String);
-        if (-not $?) {
-            Write-Host $xrepoPrompt
-            Exit 1
+        $Env:XMAKE_COLORTERM = $xmakeColorTermBackup;
+        if (-not $xrepoPrompt.StartsWith("[")) {
+            Write-Host $xrepoPrompt;
+            Exit 1;
         }
+
         $activateCommand = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info script.powershell | Out-String);
 
         Write-Verbose "[xrepo env script.powershell]`n$activateCommand";
