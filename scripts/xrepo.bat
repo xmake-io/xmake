@@ -18,7 +18,7 @@
             call %XMAKE_ENV_BACKUP%
             setlocal EnableDelayedExpansion
             if !errorlevel! neq 0 exit /B !errorlevel!
-            %XMAKE_EXE% config
+            %XMAKE_EXE% lua private.xrepo.action.env.info config
             @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
@@ -32,7 +32,7 @@
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
-            %XMAKE_EXE% config
+            %XMAKE_EXE% lua private.xrepo.action.env.info config
             @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!

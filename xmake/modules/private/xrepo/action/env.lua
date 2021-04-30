@@ -268,6 +268,10 @@ function info(key)
         print("[%s]", path.filename(os.projectdir()))
     elseif key == "envfile" then
         print(os.tmpfile())
+    elseif key == "config" then
+        if os.isfile(os.projectfile()) then
+            task.run("config", {target = "all"}, {disable_dump = true})
+        end
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
         print(_get_env_script(_package_getenvs(), shell, false))

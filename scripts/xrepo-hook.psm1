@@ -15,7 +15,7 @@ function Enter-XrepoEnvironment {
     begin {
         $script:xrepoOldEnvs = (Get-ChildItem -Path Env:);
 
-        & $Env:XMAKE_EXE config
+        & $Env:XMAKE_EXE lua private.xrepo.action.env.info config;
 
         $xmakeColorTermBackup, $Env:XMAKE_COLORTERM = $Env:XMAKE_COLORTERM, "nocolor";
         $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info prompt | Out-String);
