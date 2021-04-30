@@ -10,6 +10,7 @@
 * [#1087](https://github.com/xmake-io/xmake/issues/1087): Add `xrepo env shell` and support load envs from `add_requires/xmake.lua`
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): Support private package for `add_requires/add_deps`
 * [#1358](https://github.com/xmake-io/xmake/issues/1358): Support to set mirror url to speedup download package
+* [#1369](https://github.com/xmake-io/xmake/pull/1369): Support arm/arm64 packages for vcpkg
 
 ### Change
 
@@ -18,6 +19,7 @@
 * [#1343](https://github.com/xmake-io/xmake/issues/1343): Improve to search local package files
 * [#1347](https://github.com/xmake-io/xmake/issues/1347): Improve to vs_runtime configs for binary package
 * [#1353](https://github.com/xmake-io/xmake/issues/1353): Improve del_files() to speedup matching files
+* [#1349](https://github.com/xmake-io/xmake/issues/1349): Improve `xrepo env shell` to support powershell
 
 ### v2.5.3
 
@@ -989,6 +991,7 @@
 * [#1087](https://github.com/xmake-io/xmake/issues/1087): 添加 `xrepo env shell` 并且支持从 `add_requires/xmake.lua` 加载包环境
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): 为 `add_requires/add_deps` 添加私有包支持
 * [#1358](https://github.com/xmake-io/xmake/issues/1358): 支持设置镜像 url 站点加速包下载
+* [#1369](https://github.com/xmake-io/xmake/pull/1369): 为 vcpkg 增加 arm/arm64 包集成支持
 
 ### 改进
 
@@ -997,6 +1000,7 @@
 * [#1343](https://github.com/xmake-io/xmake/issues/1343): 改进搜索本地包文件
 * [#1347](https://github.com/xmake-io/xmake/issues/1347): 针对 binary 包改进 vs_runtime 配置
 * [#1353](https://github.com/xmake-io/xmake/issues/1353): 改进 del_files() 去加速匹配文件
+* [#1349](https://github.com/xmake-io/xmake/issues/1349): 改进 xrepo env shell 支持，更好的支持 powershell
 
 ## v2.5.3
 
