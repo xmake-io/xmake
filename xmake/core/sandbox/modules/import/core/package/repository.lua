@@ -24,6 +24,7 @@ local sandbox_core_package_repository = sandbox_core_package_repository or {}
 -- load modules
 local global        = require("base/global")
 local project       = require("project/project")
+local localcache    = require("cache/localcache")
 local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
 local import        = require("sandbox/modules/import")
@@ -109,13 +110,16 @@ function sandbox_core_package_repository.repositories(is_global)
     -- add main global xmake repository
     if is_global and global.get("network") ~= "private" then
 
-        -- import fasturl
-        import("net.fasturl")
-
-        -- sort main urls
-        local mainurls = {"https://github.com/xmake-io/xmake-repo.git", "https://gitlab.com/tboox/xmake-repo.git", "https://gitee.com/tboox/xmake-repo.git"}
-        fasturl.add(mainurls)
-        mainurls = fasturl.sort(mainurls)
+        -- get sorted main urls
+        local mainurls = localcache.cache("repository"):get("mainurls")
+        if not mainurls then
+            import("net.fasturl")
+            mainurls = {"https://github.com/xmake-io/xmake-repo.git", "https://gitlab.com/tboox/xmake-repo.git", "https://gitee.com/tboox/xmake-repo.git"}
+            fasturl.add(mainurls)
+            mainurls = fasturl.sort(mainurls)
+            localcache.cache("repository"):set("mainurls", mainurls)
+            localcache.cache("repository"):save()
+        end
 
         -- add main url
         if #mainurls > 0 then
