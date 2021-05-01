@@ -19,6 +19,9 @@
             setlocal EnableDelayedExpansion
             if !errorlevel! neq 0 exit /B !errorlevel!
             %XMAKE_EXE% lua private.xrepo.action.env.info config
+            if !errorlevel! neq 0 (
+                exit /B !errorlevel!
+            )
             @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
@@ -33,6 +36,9 @@
         ) else (
             setlocal EnableDelayedExpansion
             %XMAKE_EXE% lua private.xrepo.action.env.info config
+            if !errorlevel! neq 0 (
+                exit /B !errorlevel!
+            )
             @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
