@@ -29,6 +29,5 @@ if ($Args.Count -eq 0) {
         }
     }
 
-    $OtherArgs = @();
-    & $Env:XMAKE_EXE lua private.xrepo $Command @OtherArgs;
+    & $Env:XMAKE_EXE lua private.xrepo $Args;
 }
