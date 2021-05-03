@@ -125,25 +125,13 @@ end
 
 -- the tracing handler
 function profiler._tracing_handler(hooktype)
-
-    -- the function info
-    local funcinfo = debug.getinfo(2, 'nS')
-
-    -- is call?
     if hooktype == "call" then
-
-        -- is xmake function?
+        local funcinfo = debug.getinfo(2, 'nS')
         local name = funcinfo.name
         local source = funcinfo.short_src or 'C_FUNC'
         if name and os.isfile(source) then
-
-            -- the function line
             local line = string.format("%d", funcinfo.linedefined or 0)
-
-            -- get the relative source
             source = path.relative(source, xmake._PROGRAM_DIR)
-
-            -- trace it
             utils.print("%-30s: %s: %s", name, source, line)
         end
     end
@@ -151,20 +139,13 @@ end
 
 -- start profiling
 function profiler:start()
-
-    -- trace?
     local mode = self:mode()
     if mode and mode == "trace" then
         debug.sethook(profiler._tracing_handler, 'cr', 0)
     else
-        -- init reports
         self._REPORTS           = {}
         self._REPORTS_BY_TITLE  = {}
-
-        -- save the start time
         self._STARTIME = os.clock()
-
-        -- start to hook
         debug.sethook(profiler._profiling_handler, 'cr', 0)
     end
 end
