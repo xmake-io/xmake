@@ -38,15 +38,11 @@ local theme         = require("theme/theme")
 local config        = require("project/config")
 local project       = require("project/project")
 local localcache    = require("cache/localcache")
---local profiler      = require("base/profiler")
 
 -- init the option menu
 local menu =
 {
-    -- title
     title = "${bright}xmake v" .. _VERSION .. ", A cross-platform build utility based on Lua${clear}"
-
-    -- copyright
 ,   copyright = "Copyright (C) 2015-present Ruki Wang, ${underline}tboox.org${clear}, ${underline}xmake.io${clear}"
 
     -- the tasks: xmake [task]
@@ -63,33 +59,17 @@ local menu =
 
 -- show help and version info
 function main._show_help()
-
-    -- show help
     if option.get("help") then
-
-        -- print menu
         option.show_menu(option.taskname())
-
-        -- ok
         return true
-
-    -- show version
     elseif option.get("version") then
-
-        -- show title
         if menu.title then
             utils.cprint(menu.title)
         end
-
-        -- show copyright
         if menu.copyright then
             utils.cprint(menu.copyright)
         end
-
-        -- show logo
         option.show_logo()
-
-        -- ok
         return true
     end
 end
@@ -260,7 +240,12 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- start profiling
-    -- profiler:start()
+    local profiler
+    local profile_mode = os.getenv("XMAKE_PROFILE")
+    if profile_mode then
+        profiler = require("base/profiler")
+        profiler:start(profile_mode)
+    end
 
     -- show help?
     if main._show_help() then
@@ -300,7 +285,9 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- stop profiling
-    -- profiler:stop()
+    if profiler then
+        profiler:stop()
+    end
 
     -- exit normally
     return main._exit()
