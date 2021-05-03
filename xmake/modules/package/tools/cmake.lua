@@ -225,6 +225,9 @@ function _get_configs_for_generic(package, configs, opt)
     if shflags then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
     end
+    if package:config("pic") ~= false then
+        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+    end
 end
 
 -- get configs for windows
