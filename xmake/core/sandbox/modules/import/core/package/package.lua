@@ -27,8 +27,8 @@ local package    = require("package/package")
 local raise      = require("sandbox/modules/raise")
 
 -- get cache directory
-function sandbox_core_package_package.cachedir()
-    return package.cachedir()
+function sandbox_core_package_package.cachedir(opt)
+    return package.cachedir(opt)
 end
 
 -- the install directory
