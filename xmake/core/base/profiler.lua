@@ -30,79 +30,43 @@ local string    = require("base/string")
 
 -- get the function title
 function profiler:_func_title(funcinfo)
-
-    -- check
-    assert(funcinfo)
-
-    -- the function name
     local name = funcinfo.name or 'anonymous'
-
-    -- the function line
     local line = string.format("%d", funcinfo.linedefined or 0)
-
-    -- the function source
     local source = funcinfo.short_src or 'C_FUNC'
     if os.isfile(source) then
         source = path.relative(source, xmake._PROGRAM_DIR)
     end
-
-    -- make title
     return string.format("%-30s: %s: %s", name, source, line)
 end
 
 -- get the function report
 function profiler:_func_report(funcinfo)
-
-    -- get the function title
     local title = self:_func_title(funcinfo)
-
-    -- get the function report
     local report = self._REPORTS_BY_TITLE[title]
     if not report then
-
-        -- init report
         report =
         {
             title       = self:_func_title(funcinfo)
         ,   callcount   = 0
         ,   totaltime   = 0
         }
-
-        -- save it
         self._REPORTS_BY_TITLE[title] = report
         table.insert(self._REPORTS, report)
     end
-
-    -- ok?
     return report
 end
 
 -- profiling call
 function profiler:_profiling_call(funcinfo)
-
-    -- get the function report
     local report = self:_func_report(funcinfo)
-    assert(report)
-
-    -- save the call time
     report.calltime    = os.clock()
-
-    -- update the call count
     report.callcount   = report.callcount + 1
-
 end
 
 -- profiling return
 function profiler:_profiling_return(funcinfo)
-
-    -- get the stoptime
     local stoptime = os.clock()
-
-    -- get the function report
     local report = self:_func_report(funcinfo)
-    assert(report)
-
-    -- update the total time
     if report.calltime and report.calltime > 0 then
 		report.totaltime = report.totaltime + (stoptime - report.calltime)
         report.calltime = 0
@@ -111,11 +75,7 @@ end
 
 -- the profiling handler
 function profiler._profiling_handler(hooktype)
-
-    -- the function info
     local funcinfo = debug.getinfo(2, 'nS')
-
-    -- dispatch it
     if hooktype == "call" then
         profiler:_profiling_call(funcinfo)
     elseif hooktype == "return" then
@@ -125,8 +85,8 @@ end
 
 -- the tracing handler
 function profiler._tracing_handler(hooktype)
+    local funcinfo = debug.getinfo(2, 'nS')
     if hooktype == "call" then
-        local funcinfo = debug.getinfo(2, 'nS')
         local name = funcinfo.name
         local source = funcinfo.short_src or 'C_FUNC'
         if name and os.isfile(source) then
