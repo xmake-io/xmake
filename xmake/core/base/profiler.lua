@@ -88,10 +88,9 @@ function profiler._tracing_handler(hooktype)
     local funcinfo = debug.getinfo(2, 'nS')
     if hooktype == "call" then
         local name = funcinfo.name
-        local source = funcinfo.short_src or 'C_FUNC'
-        if name and os.isfile(source) then
+        local source = funcinfo.short_src
+        if name and source and source:endswith(".lua") then
             local line = string.format("%d", funcinfo.linedefined or 0)
-            source = path.relative(source, xmake._PROGRAM_DIR)
             utils.print("%-30s: %s: %s", name, source, line)
         end
     end
