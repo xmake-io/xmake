@@ -38,6 +38,7 @@ local theme         = require("theme/theme")
 local config        = require("project/config")
 local project       = require("project/project")
 local localcache    = require("cache/localcache")
+local profiler      = require("base/profiler")
 
 -- init the option menu
 local menu =
@@ -240,11 +241,8 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- start profiling
-    local profiler
-    local profile_mode = os.getenv("XMAKE_PROFILE")
-    if profile_mode then
-        profiler = require("base/profiler")
-        profiler:start(profile_mode)
+    if profiler:enabled() then
+        profiler:start()
     end
 
     -- show help?
@@ -285,7 +283,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- stop profiling
-    if profiler then
+    if profiler:enabled() then
         profiler:stop()
     end
 

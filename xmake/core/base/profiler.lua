@@ -150,9 +150,10 @@ function profiler._tracing_handler(hooktype)
 end
 
 -- start profiling
-function profiler:start(mode)
+function profiler:start()
 
     -- trace?
+    local mode = self:mode()
     if mode and mode == "trace" then
         debug.sethook(profiler._tracing_handler, 'cr', 0)
     else
@@ -169,14 +170,13 @@ function profiler:start(mode)
 end
 
 -- stop profiling
-function profiler:stop(mode)
+function profiler:stop()
 
     -- trace?
+    local mode = self:mode()
     if mode and mode == "trace" then
-
         -- stop to hook
         debug.sethook()
-
     else
 
         -- save the stop time
@@ -206,6 +206,21 @@ function profiler:stop(mode)
             utils.print("%6.3f, %6.2f%%, %7d, %s", report.totaltime, percent, report.callcount, report.title)
         end
    end
+end
+
+-- get profiler mode
+function profiler:mode()
+    local mode = self._MODE
+    if not mode then
+        mode = os.getenv("XMAKE_PROFILE")
+        self._MODE = mode
+    end
+    return mode
+end
+
+-- profiler is enabled?
+function profiler:enabled()
+    return self:mode() ~= nil
 end
 
 -- return module
