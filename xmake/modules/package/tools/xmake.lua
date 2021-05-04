@@ -74,6 +74,9 @@ function _get_configs(package, configs)
             end
         end
     end
+    if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
+        table.insert(cxflags, "-fPIC")
+    end
     if cflags and #cflags > 0 then
         table.insert(configs, "--cflags=" .. table.concat(cflags, ' '))
     end
