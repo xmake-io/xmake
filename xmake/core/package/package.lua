@@ -359,7 +359,8 @@ end
 
 -- is top level? user top requires in xmake.lua
 function _instance:is_toplevel()
-    return not self:parents()
+    local requireinfo = self:requireinfo()
+    return requireinfo and requireinfo.is_toplevel
 end
 
 -- is the system package?

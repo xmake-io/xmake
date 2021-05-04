@@ -352,6 +352,7 @@ function _init_requireinfo(requireinfo, package, opt)
     -- pass root toolchains to top library package
     requireinfo.configs = requireinfo.configs or {}
     if opt.is_toplevel then
+        requireinfo.is_toplevel = true
         if package:is_cross() and package:is_library() then
             -- TODO get extra configs of toolchain
             requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
