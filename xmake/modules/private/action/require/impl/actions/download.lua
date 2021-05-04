@@ -53,6 +53,8 @@ function _checkout(package, url, sourcedir, url_alias)
     local localdir = find_directory(package:name() .. archive.extension(url), core_package.searchdirs())
     if localdir and os.isdir(localdir) then
         git.clean({repodir = localdir, force = true, all = true})
+        git.reset({repodir = localdir, hard = true})
+        os.cp(localdir, packagedir)
         tty.erase_line_to_start().cr()
         return
     end
