@@ -21,6 +21,11 @@
 * [#1353](https://github.com/xmake-io/xmake/issues/1353): Improve del_files() to speedup matching files
 * [#1349](https://github.com/xmake-io/xmake/issues/1349): Improve `xrepo env shell` to support powershell
 
+### Bugs fixed
+
+* [#1380](https://github.com/xmake-io/xmake/issues/1380): Fix add packages errors
+* [#1381](https://github.com/xmake-io/xmake/issues/1381): Fix add local git source for package
+
 ### v2.5.3
 
 ### New features
@@ -1001,6 +1006,11 @@
 * [#1347](https://github.com/xmake-io/xmake/issues/1347): 针对 binary 包改进 vs_runtime 配置
 * [#1353](https://github.com/xmake-io/xmake/issues/1353): 改进 del_files() 去加速匹配文件
 * [#1349](https://github.com/xmake-io/xmake/issues/1349): 改进 xrepo env shell 支持，更好的支持 powershell
+
+### Bugs 修复
+
+* [#1380](https://github.com/xmake-io/xmake/issues/1380): 修复 `add_packages()` 失败问题
+* [#1381](https://github.com/xmake-io/xmake/issues/1381): 修复添加本地 git 包源问题
 
 ## v2.5.3
 
