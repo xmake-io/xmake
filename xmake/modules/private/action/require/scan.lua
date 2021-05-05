@@ -33,7 +33,7 @@ function _scan_package(packagedir)
     local package_name = path.filename(packagedir)
     for _, versiondir in ipairs(os.dirs(path.join(packagedir, "*"))) do
         local version = path.filename(versiondir)
-        cprint("${magenta}%s-%s${clear}:", package_name, version)
+        cprint("${color.dump.string}%s-%s${clear}:", package_name, version)
 
         -- show package hash
         for _, hashdir in ipairs(os.dirs(path.join(versiondir, "*"))) do
