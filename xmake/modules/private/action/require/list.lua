@@ -75,17 +75,17 @@ function main()
 
     -- list all required packages
     for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-        cprint("    ${magenta}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
+        cprint("    ${color.dump.string_quote}require${clear}(%s): %s", instance:requireinfo().originstr, _info(instance))
         for _, dep in ipairs(instance:orderdeps()) do
-            cprint("      -> ${magenta}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
+            cprint("      -> ${color.dump.string_quote}dep${clear}(%s): %s", dep:requireinfo().originstr, _info(dep))
         end
         local fetchinfo = instance:fetch()
         if fetchinfo then
             for name, info in pairs(fetchinfo) do
                 if type(info) == "table" then
-                    cprint("      -> ${magenta}%s${clear}: %s", name, table.concat(info, " "))
+                    cprint("      -> ${color.dump.string_quote}%s${clear}: %s", name, table.concat(info, " "))
                 else
-                    cprint("      -> ${magenta}%s${clear}: %s", name, tostring(info))
+                    cprint("      -> ${color.dump.string_quote}%s${clear}: %s", name, tostring(info))
                 end
             end
         end

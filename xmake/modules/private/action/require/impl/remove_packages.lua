@@ -75,7 +75,7 @@ function _remove_packagedirs(packagedir, opt)
             end
             if not opt.clean or status then
                 local configs_str = _get_package_configs_str(manifest_file) or "[]"
-                local description = string.format("remove ${magenta}%s-%s${clear}/${yellow}%s${clear}\n  -> ${dim}%s${clear} (${red}%s${clear})", package_name, version, hash, configs_str, status and status or "used")
+                local description = string.format("remove ${color.dump.string}%s-%s${clear}/${yellow}%s${clear}\n  -> ${dim}%s${clear} (${red}%s${clear})", package_name, version, hash, configs_str, status and status or "used")
                 local confirm = utils.confirm({default = true, description = description})
                 if confirm then
                     os.rm(hashdir)

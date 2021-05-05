@@ -54,7 +54,7 @@ function main(names)
             -- show packages
             for _, instance in ipairs(packages) do
                 local repo = instance:repo()
-                cprint("      -> ${magenta}%s${clear}: %s %s", instance:name(), instance:get("description") or "", repo and ("(in " .. repo:name() .. ")") or "")
+                cprint("      -> ${color.dump.string}%s${clear}: %s %s", instance:name(), instance:get("description") or "", repo and ("(in " .. repo:name() .. ")") or "")
             end
         end
     end

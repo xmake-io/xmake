@@ -288,10 +288,10 @@ function _install_packages(packages_install, packages_download, installdeps)
         tty.erase_line_to_start().cr()
         cprintf("${yellow}  => ")
         if #downloading > 0 then
-            cprintf("downloading ${magenta}%s", table.concat(downloading, ", "))
+            cprintf("downloading ${color.dump.string}%s", table.concat(downloading, ", "))
         end
         if #installing > 0 then
-            cprintf("%sinstalling ${magenta}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
+            cprintf("%sinstalling ${color.dump.string}%s", #downloading > 0 and ", " or "", table.concat(installing, ", "))
         end
         cprintf(" .. %s", tips and ("${dim}" .. tips .. "${clear} ") or "")
         progress_helper:write()
