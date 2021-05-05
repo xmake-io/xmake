@@ -69,30 +69,6 @@ after_build:
           .\scripts\installer.nsi
   - ps: Push-AppveyorArtifact .\scripts\xmake.exe -FileName xmake-installer.exe -DeploymentName "xmake-installer"
   - ps: (Get-FileHash .\scripts\xmake.exe -Algorithm SHA256).Hash.ToLower() + " *xmake-installer.exe`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
-  # publish zip archive
-  - ps: Copy-Item .\*.md .\xmake
-  - ps: Copy-Item C:\winenv\ .\xmake -Recurse
-  - ps: Copy-Item .\core\build\xmake.exe .\xmake
-  - ps: |-
-        Add-Type -AssemblyName System.Text.Encoding
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-
-        class FixedEncoder : System.Text.UTF8Encoding {
-            FixedEncoder() : base($true) { }
-
-            [byte[]] GetBytes([string] $s)
-            {
-                $s = $s.Replace("\", "/")
-                return ([System.Text.UTF8Encoding]$this).GetBytes($s)
-            }
-        }
-        Copy-Item .\xmake .\archive\xmake -Recurse
-
-        [System.IO.Compression.ZipFile]::CreateFromDirectory("$PWD\archive", "$PWD\archive.zip", [System.IO.Compression.CompressionLevel]::Optimal, $false, [FixedEncoder]::new())
-  - ps: Push-AppveyorArtifact .\archive.zip -FileName xmake.zip -DeploymentName "xmake-archive"
-  - ps: (Get-FileHash .\archive.zip -Algorithm SHA256).Hash.ToLower() + " *xmake.zip`n" | Out-File ./shafile -Encoding ASCII -NoNewLine -Append
-  # publish sha file
-  - ps: Push-AppveyorArtifact ./shafile -FileName xmake.sha256 -DeploymentName "xmake-shafile"
 
 test_script:
   - ps: xmake --version
