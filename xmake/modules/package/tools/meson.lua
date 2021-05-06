@@ -34,14 +34,14 @@ function _get_buildir(opt)
 end
 
 -- get configs
-function _get_configs(package, configs)
+function _get_configs(package, configs, opt)
 
     -- add prefix
     local configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
 
     -- add build directory
-    table.insert(configs, _get_buildir())
+    table.insert(configs, _get_buildir(opt))
     return configs
 end
 
@@ -100,7 +100,7 @@ function generate(package, configs, opt)
 
     -- pass configurations
     local argv = {}
-    for name, value in pairs(_get_configs(package, configs)) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if value ~= "" then
             if type(name) == "number" then
