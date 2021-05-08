@@ -238,10 +238,7 @@ Section "XMake (required)" InstallExeutable
   File "..\core\build\xmake.exe"
   File "..\scripts\xrepo.bat"
   File "..\scripts\xrepo.ps1"
-  File "..\scripts\xrepo-hook.psm1"
   File /r /x ".DS_Store" "..\winenv"
-  CreateDirectory "$InstDir\scripts"
-  Rename "$InstDir\xrepo-hook.psm1" "$InstDir\scripts\xrepo-hook.psm1"
 
   WriteUninstaller "uninstall.exe"
 

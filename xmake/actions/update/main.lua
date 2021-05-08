@@ -223,7 +223,7 @@ function _install_script(sourcedir)
                 local script_original = path.join(os.programdir(), "scripts", "update-script.bat")
                 local script = os.tmpfile() .. ".bat"
                 os.cp(script_original, script)
-                local params = { "/c", script, os.programdir(),  source }
+                local params = { "/c", script, os.programdir(), source }
                 os.tryrm(script_original .. ".bak")
                 local access = os.trymv(script_original, script_original .. ".bak")
                 _run_win_v("cmd", params, not access)
