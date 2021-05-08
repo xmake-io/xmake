@@ -317,12 +317,14 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                     compflags = table.join(compflags, "-MMD", "-MF", depfile)
                 elseif _has_flags_mm(self) then
                     -- since -MD is not supported, run nvcc twice
-                    os.runv(compargv(self, sourcefile, depfile, table.join(flags, "-MM")))
+                    local program, argv = compargv(self, sourcefile, depfile, table.join(flags, "-MM"))
+                    os.runv(program, argv, {envs = self:runenvs()})
                 end
             end
 
             -- do compile
-            local outdata, errdata = os.iorunv(compargv(self, sourcefile, objectfile, compflags))
+            local program, argv = compargv(self, sourcefile, objectfile, compflags)
+            local outdata, errdata = os.iorunv(program, argv, {envs = self:runenvs()})
             return (outdata or "") .. (errdata or "")
         end,
         catch
