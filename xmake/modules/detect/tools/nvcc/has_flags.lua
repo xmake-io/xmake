@@ -37,10 +37,9 @@ function _islinker(flags, opt)
 end
 
 -- try running
-function _try_running(...)
-    local argv = {...}
+function _try_running(program, argv, opt)
     local errors = nil
-    return try { function () os.runv(unpack(argv)); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
+    return try { function () os.runv(program, argv, opt); return true end, catch { function (errs) errors = (errs or ""):trim() end }}, errors
 end
 
 -- attempt to check it from the argument list
@@ -124,7 +123,7 @@ function _check_try_running(flags, opt, islinker)
     end
 
     -- check flags
-    return _try_running(opt.program, table.join(flags, args))
+    return _try_running(opt.program, table.join(flags, args), opt)
 end
 
 -- has_flags(flags)?
