@@ -270,7 +270,8 @@ end
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+    local program, argv = linkargv(self, objectfiles, targetkind, targetfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
 end
 
 -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
