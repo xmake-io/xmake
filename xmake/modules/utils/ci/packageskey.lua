@@ -54,7 +54,7 @@ function main(requires_raw)
     end
     table.sort(keys)
     keys = table.concat(keys, ",")
-    return hash.uuid4(keys):gsub('-', ''):lower()
+    print(hash.uuid4(keys):gsub('-', ''):lower())
 end
 
 
