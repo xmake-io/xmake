@@ -25,6 +25,7 @@
 
 * [#1380](https://github.com/xmake-io/xmake/issues/1380): Fix add packages errors
 * [#1381](https://github.com/xmake-io/xmake/issues/1381): Fix add local git source for package
+* [#1391](https://github.com/xmake-io/xmake/issues/1391): Fix cuda/nvcc toolchain
 
 ### v2.5.3
 
@@ -1011,6 +1012,7 @@
 
 * [#1380](https://github.com/xmake-io/xmake/issues/1380): 修复 `add_packages()` 失败问题
 * [#1381](https://github.com/xmake-io/xmake/issues/1381): 修复添加本地 git 包源问题
+* [#1391](https://github.com/xmake-io/xmake/issues/1391): 修复 cuda/nvcc 工具链
 
 ## v2.5.3
 
