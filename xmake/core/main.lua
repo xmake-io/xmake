@@ -180,13 +180,15 @@ function main._init()
 end
 
 -- exit main program
-function main._exit(errors)
+function main._exit(ok, errors)
 
     -- show errors
     local retval = 0
-    if errors then
+    if not ok then
         retval = -1
-        utils.error(errors)
+        if errors then
+            utils.error(errors)
+        end
     end
 
     -- show warnings
@@ -205,13 +207,13 @@ function main.entry()
     -- init
     local ok, errors = main._init()
     if not ok then
-        return main._exit(errors)
+        return main._exit(ok, errors)
     end
 
     -- load global configuration
     ok, errors = global.load()
     if not ok then
-        return main._exit(errors)
+        return main._exit(ok, errors)
     end
 
     -- load theme
@@ -223,7 +225,7 @@ function main.entry()
     -- init option
     ok, errors = option.init(menu)
     if not ok then
-        return main._exit(errors)
+        return main._exit(ok, errors)
     end
 
     -- check run command as root
@@ -235,7 +237,7 @@ As xmake does not drop privileges on installation you would be giving all
 build scripts full access to your system.
 Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
                 ]]
-                return main._exit(errors)
+                return main._exit(false, errors)
             end
         end
     end
@@ -247,7 +249,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
 
     -- show help?
     if main._show_help() then
-        return main._exit()
+        return main._exit(true)
     end
 
     -- save command lines to history and we need to make sure that the .xmake directory is not generated everywhere
@@ -266,7 +268,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     local taskname = option.taskname() or "build"
     local taskinst = task.task(taskname) or project.task(taskname)
     if not taskinst then
-        return main._exit(string.format("do unknown task(%s)!", taskname))
+        return main._exit(false, string.format("do unknown task(%s)!", taskname))
     end
 
     -- run task
@@ -279,7 +281,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end)
     ok, errors = scheduler:runloop()
     if not ok then
-        return main._exit(errors)
+        return main._exit(ok, errors)
     end
 
     -- stop profiling
@@ -288,7 +290,7 @@ Or you can add `--root` option or XMAKE_ROOT=y to allow run as root temporarily.
     end
 
     -- exit normally
-    return main._exit()
+    return main._exit(true)
 end
 
 -- return module: main
