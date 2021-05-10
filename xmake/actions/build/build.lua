@@ -105,7 +105,6 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     end
 
     -- add after_build job for target
-    local oldenvs = {}
     local job_after_build = batchjobs:addjob(target:name() .. "/after_build", function (index, total)
 
         -- do after_build
@@ -120,11 +119,6 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
                 after_build(target, {progress = progress})
             end
         end
-
-        -- leave the environments of the target packages
-        for name, values in pairs(oldenvs) do
-            os.setenv(name, values)
-        end
     end, rootjob)
 
     -- add batch jobs for target, @note only on_build script support batch jobs
@@ -134,10 +128,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
     local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
 
         -- enter the environments of the target packages
-        for name, values in pairs(target:pkgenvs()) do
-            oldenvs[name] = os.getenv(name)
-            os.addenv(name, unpack(values))
-        end
+        os.addenvs(target:pkgenvs())
 
         -- clean target if rebuild
         if option.get("rebuild") and not option.get("dry-run") then

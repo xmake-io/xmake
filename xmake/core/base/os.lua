@@ -1012,11 +1012,11 @@ end
 -- set all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.setenvs(envs)
+    local oldenvs = os.getenvs()
     if envs then
         local changed = false
         -- remove new added values
-        local curenvs = os.getenvs()
-        for name, _ in pairs(curenvs) do
+        for name, _ in pairs(oldenvs) do
             if not envs[name] then
                 if os._setenv(name, "") then
                     changed = true
@@ -1025,7 +1025,7 @@ function os.setenvs(envs)
         end
         -- change values
         for name, values in pairs(envs) do
-            if curenvs[name] ~= values then
+            if oldenvs[name] ~= values then
                 if os._setenv(name, values) then
                     changed = true
                 end
@@ -1036,22 +1036,25 @@ function os.setenvs(envs)
             os._SCHED_CHENVS(envs)
         end
     end
+    return oldenvs
 end
 
 -- add environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.addenvs(envs)
+    local oldenvs = os.getenvs()
     if envs then
-        local changed = false
+        local newenvs = {}
         for name, values in pairs(envs) do
-            local ok
-            local oldenv = os.getenv(name)
-            if oldenv == "" or oldenv == nil then
-                ok = os._setenv(name, values)
+            if newenvs[name] then
+                newenvs[name] = values .. path.envsep() .. newenvs[name]
             else
-                ok = os._setenv(name, values .. path.envsep() .. oldenv)
+                newenvs[name] = oldenvs[name]
             end
-            if ok then
+        end
+        local changed = false
+        for name, values in pairs(newenvs) do
+            if os._setenv(name, values) then
                 changed = true
             end
         end
@@ -1060,6 +1063,7 @@ function os.addenvs(envs)
             os._SCHED_CHENVS()
         end
     end
+    return oldenvs
 end
 
 -- set values to environment variable

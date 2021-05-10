@@ -56,11 +56,7 @@ function _clean_target(target)
     end
 
     -- enter the environments of the target packages
-    local oldenvs = {}
-    for name, values in pairs(target:pkgenvs()) do
-        oldenvs[name] = os.getenv(name)
-        os.addenv(name, unpack(values))
-    end
+    local oldenvs = os.addenvs(target:pkgenvs())
 
     -- the target scripts
     local scripts =
@@ -95,9 +91,7 @@ function _clean_target(target)
     end
 
     -- leave the environments of the target packages
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
+    os.setenvs(oldenvs)
 end
 
 -- clean the given targets

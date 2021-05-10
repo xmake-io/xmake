@@ -140,10 +140,7 @@ end
 function _instance:_load_after()
 
     -- enter the environments of the target packages
-    local oldenvs = os.getenvs()
-    for name, values in pairs(self:pkgenvs()) do
-        os.addenv(name, unpack(values))
-    end
+    local oldenvs = os.addenvs(self:pkgenvs())
 
     -- do after_load with target rules
     local ok, errors = self:_load_rules("after")
@@ -792,8 +789,14 @@ function _instance:pkgenvs()
                 local envs = pkg:get("envs")
                 if envs then
                     for name, values in pairs(envs) do
-                        pkgenvs[name] = pkgenvs[name] or {}
-                        table.join2(pkgenvs[name], values)
+                        if type(values) == "table" then
+                            values = path.joinenv(values)
+                        end
+                        if pkgenvs[name] then
+                            pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
+                        else
+                            pkgenvs[name] = values
+                        end
                     end
                 end
             end
