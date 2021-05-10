@@ -60,6 +60,7 @@ sandbox_os.setenvp      = os.setenvp
 sandbox_os.addenvp      = os.addenvp
 sandbox_os.getenvs      = os.getenvs
 sandbox_os.setenvs      = os.setenvs
+sandbox_os.addenvs      = os.addenvs
 sandbox_os.pbpaste      = os.pbpaste
 sandbox_os.pbcopy       = os.pbcopy
 sandbox_os.cpuinfo      = os.cpuinfo

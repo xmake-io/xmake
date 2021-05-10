@@ -990,6 +990,7 @@ function os.term()
 end
 
 -- get all current environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
     local envs = {}
     for _, line in ipairs(os._getenvs()) do
@@ -1009,6 +1010,7 @@ function os.getenvs()
 end
 
 -- set all current environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.setenvs(envs)
     if envs then
         local changed = false
@@ -1016,20 +1018,46 @@ function os.setenvs(envs)
         local curenvs = os.getenvs()
         for name, _ in pairs(curenvs) do
             if not envs[name] then
-                os._setenv(name, "")
-                changed = true
+                if os._setenv(name, "") then
+                    changed = true
+                end
             end
         end
         -- change values
         for name, values in pairs(envs) do
             if curenvs[name] ~= values then
-                os._setenv(name, values)
-                changed = true
+                if os._setenv(name, values) then
+                    changed = true
+                end
             end
         end
         -- update envs for scheduler
         if changed and os._SCHED_CHENVS then
             os._SCHED_CHENVS(envs)
+        end
+    end
+end
+
+-- add environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
+function os.addenvs(envs)
+    if envs then
+        local changed = false
+        for name, values in pairs(envs) do
+            local ok
+            local oldenv = os.getenv(name)
+            if oldenv == "" or oldenv == nil then
+                ok = os._setenv(name, values)
+            else
+                ok = os._setenv(name, values .. path.envsep() .. oldenv)
+            end
+            if ok then
+                changed = true
+            end
+        end
+        -- update envs for scheduler
+        if changed and os._SCHED_CHENVS then
+            os._SCHED_CHENVS()
         end
     end
 end
