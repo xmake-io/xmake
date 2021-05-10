@@ -1044,17 +1044,16 @@ end
 function os.addenvs(envs)
     local oldenvs = os.getenvs()
     if envs then
-        local newenvs = {}
-        for name, values in pairs(envs) do
-            if newenvs[name] then
-                newenvs[name] = values .. path.envsep() .. newenvs[name]
-            else
-                newenvs[name] = oldenvs[name]
-            end
-        end
         local changed = false
-        for name, values in pairs(newenvs) do
-            if os._setenv(name, values) then
+        for name, values in pairs(envs) do
+            local ok
+            local oldenv = oldenvs[name]
+            if oldenv == "" or oldenv == nil then
+                ok = os._setenv(name, values)
+            else
+                ok = os._setenv(name, values .. path.envsep() .. oldenv)
+            end
+            if ok then
                 changed = true
             end
         end

@@ -148,7 +148,7 @@ function main(name, jobs, opt)
             while index < max do
 
                 -- uses job pool?
-                local jobname
+                local jobname, jobenvs
                 if not jobs_cb then
 
                     -- get job priority
@@ -175,6 +175,7 @@ function main(name, jobs, opt)
                     -- get run function
                     jobfunc = job.run
                     jobname = job.name
+                    jobenvs = job.envs
                 else
                     jobname = tostring(index)
                 end
@@ -189,6 +190,9 @@ function main(name, jobs, opt)
                             if jobfunc then
                                 if opt.curdir then
                                     os.cd(opt.curdir)
+                                end
+                                if jobenvs then
+                                    os.addenvs(jobenvs)
                                 end
                                 jobfunc(count_as_index and count or i, total)
                                 count = count + 1
