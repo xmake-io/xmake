@@ -140,9 +140,8 @@ end
 function _instance:_load_after()
 
     -- enter the environments of the target packages
-    local oldenvs = {}
+    local oldenvs = os.getenvs()
     for name, values in pairs(self:pkgenvs()) do
-        oldenvs[name] = os.getenv(name)
         os.addenv(name, unpack(values))
     end
 
@@ -153,9 +152,7 @@ function _instance:_load_after()
     end
 
     -- leave the environments of the target packages
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
+    os.setenvs(oldenvs)
     return true
 end
 
