@@ -48,7 +48,7 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
             else
                 job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
                     script(target, {progress = (index * 100) / total})
-                end, job or rootjob)
+                end, {rootjob = job or rootjob, envs = target:pkgenvs()})
             end
         end
     end
@@ -76,7 +76,7 @@ function _add_batchjobs(batchjobs, rootjob, target)
         --     on_build(function (target, batchjobs, opt)
         --         return batchjobs:addjob("test", function (idx, total)
         --             print("build it")
-        --         end, opt.rootjob)
+        --         end, {rootjob = opt.rootjob})
         --     end, {batch = true})
         --
         job, job_leaf = assert(script(target, batchjobs, {rootjob = rootjob}), "target(%s):on_build(): no returned job!", target:name())
@@ -91,7 +91,7 @@ function _add_batchjobs(batchjobs, rootjob, target)
         --
         job = batchjobs:addjob(target:name() .. "/build", function (index, total)
             script(target, {progress = (index * 100) / total})
-        end, rootjob)
+        end, {rootjob = rootjob, envs = target:pkgenvs()})
     end
     return job, job_leaf or job
 end
@@ -119,16 +119,13 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
                 after_build(target, {progress = progress})
             end
         end
-    end, rootjob)
+    end, {rootjob = rootjob, envs = target:pkgenvs()})
 
     -- add batch jobs for target, @note only on_build script support batch jobs
     local job_build, job_build_leaf = _add_batchjobs(batchjobs, job_after_build, target)
 
     -- add before_build job for target
     local job_build_before = batchjobs:addjob(target:name() .. "/before_build", function (index, total)
-
-        -- enter the environments of the target packages
-        os.addenvs(target:pkgenvs())
 
         -- clean target if rebuild
         if option.get("rebuild") and not option.get("dry-run") then
@@ -147,7 +144,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
                 before_build(target, {progress = progress})
             end
         end
-    end, job_build_leaf)
+    end, {rootjob = job_build_leaf, envs = target:pkgenvs()})
 
     -- we need do build_before after all dependent targets if across_targets_in_parallel is disabled
     return target:policy("build.across_targets_in_parallel") == false and job_build_before or job_build, job_after_build

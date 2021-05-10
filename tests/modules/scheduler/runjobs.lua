@@ -28,11 +28,11 @@ function main()
     for i = 1, 3 do
         local job = jobs:addjob("job/" .. i, function (idx, total)
             _jobfunc(idx, total)
-        end, root)
+        end, {rootjob = root})
         for j = 1, 50 do
             jobs:addjob("job/" .. i .. "/" .. j, function (idx, total)
                 _jobfunc(idx, total)
-            end, job)
+            end, {rootjob = job})
         end
     end
     t = os.mclock()

@@ -39,10 +39,11 @@ end
 --
 -- @param name      the job name
 -- @param run       the run command/script
--- @param rootjob   the root job node (optional)
+-- @param opt       the options (rootjob, envs)
 --
-function jobpool:addjob(name, run, rootjob)
-    return self:add({name = name, run = run}, rootjob)
+function jobpool:addjob(name, run, opt)
+    opt = opt or {}
+    return self:add({name = name, run = run, envs = opt.envs}, opt.rootjob)
 end
 
 -- add job to the given job node

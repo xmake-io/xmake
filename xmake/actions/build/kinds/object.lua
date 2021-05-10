@@ -42,7 +42,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
         else
             batchjobs:addjob("rule/" .. rulename .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
-            end, rootjob)
+            end, {rootjob = rootjob, envs = target:pkgenvs()})
         end
     end
 
@@ -55,7 +55,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                end, rootjob)
+                end, {rootjob = rootjob, envs = target:pkgenvs()})
             end
         end
     end
@@ -69,7 +69,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                 local batchcmds_ = batchcmds.new({target = target})
                 script(target, batchcmds_, sourcebatch, {progress = (index * 100) / total})
                 batchcmds_:runcmds({dryrun = option.get("dry-run")})
-            end, rootjob)
+            end, {rootjob = rootjob, envs = target:pkgenvs()})
         end
     end
 
@@ -84,7 +84,7 @@ function _add_batchjobs_for_rule(batchjobs, rootjob, target, sourcebatch, suffix
                     local batchcmds_ = batchcmds.new({target = target})
                     script(target, batchcmds_, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
                     batchcmds_:runcmds({dryrun = option.get("dry-run")})
-                end, rootjob)
+                end, {rootjob = rootjob, envs = target:pkgenvs()})
             end
         end
     end
@@ -102,7 +102,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
         else
             batchjobs:addjob(target:name() .. "/" .. scriptname, function (index, total)
                 script(target, sourcebatch, {progress = (index * 100) / total})
-            end, rootjob)
+            end, {rootjob = rootjob, envs = target:pkgenvs()})
         end
         return true
     else
@@ -113,7 +113,7 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target, sourcebatch, suff
             for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                 batchjobs:addjob(sourcefile, function (index, total)
                     script(target, sourcefile, {sourcekind = sourcekind, progress = (index * 100) / total})
-                end, rootjob)
+                end, {rootjob = rootjob, envs = target:pkgenvs()})
             end
             return true
         end

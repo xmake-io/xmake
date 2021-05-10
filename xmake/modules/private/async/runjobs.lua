@@ -46,7 +46,7 @@ end
 -- for i = 1, 3 do
 --     local job = jobs:addjob("job/" .. i, function (idx, total)
 --         print(idx, total)
---     end, root)
+--     end, {rootjob = root})
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 --
