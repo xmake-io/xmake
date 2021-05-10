@@ -240,8 +240,8 @@ function tty.has_emoji()
             has_emoji = false
         end
 
-        -- on msys2/cygwin? disable it
-        if has_emoji == nil and (term == "msys2" or term == "cygwin") then
+        -- on msys2/cygwin/powershell? disable it
+        if has_emoji == nil and (term == "msys2" or term == "cygwin" or term == "powershell") then
             has_emoji = false
         end
 
