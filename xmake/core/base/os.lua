@@ -193,7 +193,6 @@ end
 
 -- notify envs have been changed
 function os._notify_envs_changed(envs)
-    os._CURENVS = nil
     if os._SCHED_CHENVS then
         os._SCHED_CHENVS(envs)
     end
@@ -1000,23 +999,19 @@ end
 -- get all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
-    local envs --= os._CURENVS
-    if not envs then
-        envs = {}
-        for _, line in ipairs(os._getenvs()) do
-            local p = line:find('=', 1, true)
-            if p then
-                local key = line:sub(1, p - 1):trim()
-                if os.host() == "windows" then
-                    key = key:upper()
-                end
-                local values = line:sub(p + 1):trim()
-                if #key > 0 then
-                    envs[key] = values
-                end
+    local envs = {}
+    for _, line in ipairs(os._getenvs()) do
+        local p = line:find('=', 1, true)
+        if p then
+            local key = line:sub(1, p - 1):trim()
+            if os.host() == "windows" then
+                key = key:upper()
+            end
+            local values = line:sub(p + 1):trim()
+            if #key > 0 then
+                envs[key] = values
             end
         end
-        os._CURENVS = envs
     end
     return envs
 end
