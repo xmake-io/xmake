@@ -1000,7 +1000,7 @@ end
 -- get all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
-    local envs = os._CURENVS
+    local envs --= os._CURENVS
     if not envs then
         envs = {}
         for _, line in ipairs(os._getenvs()) do
