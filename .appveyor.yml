@@ -75,7 +75,6 @@ after_build:
   - ps: Copy-Item .\core\build\xmake.exe .\xmake
   - ps: Copy-Item .\scripts\xrepo.bat .\xmake\xrepo.bat
   - ps: Copy-Item .\scripts\xrepo.ps1 .\xmake\xrepo.ps1
-  - ps: Copy-Item .\scripts\xrepo-hook.psm1 .\xmake\scripts\xrepo-hook.psm1
   - ps: |-
         Add-Type -AssemblyName System.Text.Encoding
         Add-Type -AssemblyName System.IO.Compression.FileSystem

@@ -191,6 +191,13 @@ function os._sched_chdir_set(chdir)
     os._SCHED_CHDIR = chdir
 end
 
+-- notify envs have been changed
+function os._notify_envs_changed(envs)
+    if os._SCHED_CHENVS then
+        os._SCHED_CHENVS(envs)
+    end
+end
+
 -- the current host is belong to the given hosts?
 function os._is_host(host, ...)
 
@@ -1012,11 +1019,11 @@ end
 -- set all current environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.setenvs(envs)
+    local oldenvs = os.getenvs()
     if envs then
         local changed = false
         -- remove new added values
-        local curenvs = os.getenvs()
-        for name, _ in pairs(curenvs) do
+        for name, _ in pairs(oldenvs) do
             if not envs[name] then
                 if os._setenv(name, "") then
                     changed = true
@@ -1025,41 +1032,42 @@ function os.setenvs(envs)
         end
         -- change values
         for name, values in pairs(envs) do
-            if curenvs[name] ~= values then
+            if oldenvs[name] ~= values then
                 if os._setenv(name, values) then
                     changed = true
                 end
             end
         end
-        -- update envs for scheduler
-        if changed and os._SCHED_CHENVS then
-            os._SCHED_CHENVS(envs)
+        if changed then
+            os._notify_envs_changed(envs)
         end
     end
+    return oldenvs
 end
 
 -- add environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.addenvs(envs)
+    local oldenvs = os.getenvs()
     if envs then
         local changed = false
         for name, values in pairs(envs) do
             local ok
-            local oldenv = os.getenv(name)
+            local oldenv = oldenvs[name]
             if oldenv == "" or oldenv == nil then
                 ok = os._setenv(name, values)
-            else
+            elseif not oldenv:startswith(values) then
                 ok = os._setenv(name, values .. path.envsep() .. oldenv)
             end
             if ok then
                 changed = true
             end
         end
-        -- update envs for scheduler
-        if changed and os._SCHED_CHENVS then
-            os._SCHED_CHENVS()
+        if changed then
+            os._notify_envs_changed()
         end
     end
+    return oldenvs
 end
 
 -- set values to environment variable
@@ -1072,9 +1080,8 @@ function os.setenv(name, ...)
     else
         ok = os._setenv(name, path.joinenv(values))
     end
-    -- update envs for scheduler
-    if ok and os._SCHED_CHENVS then
-        os._SCHED_CHENVS()
+    if ok then
+        os._notify_envs_changed()
     end
     return ok
 end
@@ -1084,16 +1091,24 @@ function os.addenv(name, ...)
     local values = {...}
     if #values > 0 then
         local ok
+        local changed = false
         local oldenv = os.getenv(name)
         local appendenv = path.joinenv(values)
         if oldenv == "" or oldenv == nil then
             ok = os._setenv(name, appendenv)
-        else
+            if ok then
+                changed = true
+            end
+        elseif not oldenv:startswith(appendenv) then
             ok = os._setenv(name, appendenv .. path.envsep() .. oldenv)
+            if ok then
+                changed = true
+            end
+        else
+            ok = true
         end
-        -- update envs for scheduler
-        if ok and os._SCHED_CHENVS then
-            os._SCHED_CHENVS()
+        if changed then
+            os._notify_envs_changed()
         end
         return ok
     else
@@ -1105,9 +1120,8 @@ end
 function os.setenvp(name, values, sep)
     sep = sep or path.envsep()
     local ok = os._setenv(name, table.concat(table.wrap(values), sep))
-    -- update envs for scheduler
-    if ok and os._SCHED_CHENVS then
-        os._SCHED_CHENVS()
+    if ok then
+        os._notify_envs_changed()
     end
     return ok
 end
@@ -1118,16 +1132,24 @@ function os.addenvp(name, values, sep)
     values = table.wrap(values)
     if #values > 0 then
         local ok
+        local changed = false
         local oldenv = os.getenv(name)
         local appendenv = table.concat(values, sep)
         if oldenv == "" or oldenv == nil then
             ok = os._setenv(name, appendenv)
-        else
+            if ok then
+                changed = true
+            end
+        elseif not oldenv:startswith(appendenv) then
             ok = os._setenv(name, appendenv .. sep .. oldenv)
+            if ok then
+                changed = true
+            end
+        else
+            ok = true
         end
-        -- update envs for scheduler
-        if ok and os._SCHED_CHENVS then
-            os._SCHED_CHENVS()
+        if changed then
+            os._notify_envs_changed()
         end
         return ok
     else

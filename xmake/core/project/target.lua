@@ -140,10 +140,7 @@ end
 function _instance:_load_after()
 
     -- enter the environments of the target packages
-    local oldenvs = os.getenvs()
-    for name, values in pairs(self:pkgenvs()) do
-        os.addenv(name, unpack(values))
-    end
+    local oldenvs = os.addenvs(self:pkgenvs())
 
     -- do after_load with target rules
     local ok, errors = self:_load_rules("after")
@@ -783,23 +780,29 @@ end
 -- get the environments of packages
 function _instance:pkgenvs()
     local pkgenvs = self._PKGENVS
-    if not pkgenvs then
-        pkgenvs = {}
-        self._PKGENVS = pkgenvs
+    if pkgenvs == nil then
         for _, pkgname in ipairs(table.wrap(self:get("packages"))) do
             local pkg = self:pkg(pkgname)
             if pkg then
                 local envs = pkg:get("envs")
                 if envs then
                     for name, values in pairs(envs) do
-                        pkgenvs[name] = pkgenvs[name] or {}
-                        table.join2(pkgenvs[name], values)
+                        if type(values) == "table" then
+                            values = path.joinenv(values)
+                        end
+                        pkgenvs = pkgenvs or {}
+                        if pkgenvs[name] then
+                            pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
+                        else
+                            pkgenvs[name] = values
+                        end
                     end
                 end
             end
         end
+        self._PKGENVS = pkgenvs or false
     end
-    return pkgenvs
+    return pkgenvs or nil
 end
 
 -- get the config info of the given package

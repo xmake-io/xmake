@@ -180,12 +180,12 @@ function _make_targetinfo(mode, arch, target)
     local addrunenvs, setrunenvs = make_runenvs(target)
     for k, v in pairs(target:pkgenvs()) do
         addrunenvs = addrunenvs or {}
-        addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), v)
+        addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
     end
     for _, dep in ipairs(target:orderdeps()) do
         for k, v in pairs(dep:pkgenvs()) do
             addrunenvs = addrunenvs or {}
-            addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), v)
+            addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
         end
     end
     for k, v in pairs(addrunenvs) do

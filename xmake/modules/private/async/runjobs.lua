@@ -46,7 +46,7 @@ end
 -- for i = 1, 3 do
 --     local job = jobs:addjob("job/" .. i, function (idx, total)
 --         print(idx, total)
---     end, root)
+--     end, {rootjob = root})
 -- end
 -- runjobs("test", jobs, {comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 --
@@ -77,7 +77,7 @@ function main(name, jobs, opt)
     local stop = false
     local running_jobs_indices = {}
     if opt.on_timer then
-        scheduler.co_start_named(name .. "/timer", function ()
+        scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
@@ -90,7 +90,7 @@ function main(name, jobs, opt)
             end
         end)
     elseif showprogress then
-        scheduler.co_start_named(name .. "/tips", function ()
+        scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
@@ -181,7 +181,7 @@ function main(name, jobs, opt)
 
                 -- start this job
                 index = index + 1
-                scheduler.co_start_named(name .. '/' .. jobname, function(i)
+                scheduler.co_start_withopt({name = name .. '/' .. jobname, isolate = opt.isolate}, function(i)
                     try
                     {
                         function()

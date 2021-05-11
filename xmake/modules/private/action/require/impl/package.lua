@@ -22,7 +22,6 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
-import("private.async.runjobs")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
