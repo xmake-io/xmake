@@ -194,6 +194,7 @@ function main(name, jobs, opt)
                                     os.cd(opt.curdir)
                                 end
                                 if jobenvs then
+                                    --print("jobenvs", jobenvs)
                                     os.addenvs(jobenvs)
                                 end
                                 jobfunc(count_as_index and count or i, total)

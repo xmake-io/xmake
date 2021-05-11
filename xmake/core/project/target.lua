@@ -780,9 +780,7 @@ end
 -- get the environments of packages
 function _instance:pkgenvs()
     local pkgenvs = self._PKGENVS
-    if not pkgenvs then
-        pkgenvs = {}
-        self._PKGENVS = pkgenvs
+    if pkgenvs == nil then
         for _, pkgname in ipairs(table.wrap(self:get("packages"))) do
             local pkg = self:pkg(pkgname)
             if pkg then
@@ -792,6 +790,7 @@ function _instance:pkgenvs()
                         if type(values) == "table" then
                             values = path.joinenv(values)
                         end
+                        pkgenvs = pkgenvs or {}
                         if pkgenvs[name] then
                             pkgenvs[name] = pkgenvs[name] .. path.envsep() .. values
                         else
@@ -801,8 +800,9 @@ function _instance:pkgenvs()
                 end
             end
         end
+        self._PKGENVS = pkgenvs or false
     end
-    return pkgenvs
+    return pkgenvs or nil
 end
 
 -- get the config info of the given package
