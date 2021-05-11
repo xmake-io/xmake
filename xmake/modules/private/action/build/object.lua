@@ -114,6 +114,6 @@ function main(target, batchjobs, sourcebatch, opt)
         batchjobs:addjob(sourcefile, function (index, total)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total}, opt)
             _build_object(target, sourcefile, build_opt)
-        end, rootjob)
+        end, {rootjob = rootjob, envs = target:pkgenvs()})
     end
 end

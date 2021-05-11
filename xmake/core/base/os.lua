@@ -1039,6 +1039,19 @@ function os.setenvs(envs)
     return oldenvs
 end
 
+--[[
+os._setenv2 = os._setenv
+os._setenv = function (name, value)
+    print("setenv", name, value)
+    os._setenv2(name, value)
+end
+
+os._getenv = os.getenv
+os.getenv = function (name)
+    print("getenv", name)
+    return os._getenv(name)
+end]]
+
 -- add environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.addenvs(envs)

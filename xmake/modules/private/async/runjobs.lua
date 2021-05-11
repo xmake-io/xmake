@@ -188,6 +188,8 @@ function main(name, jobs, opt)
                         function()
                             running_jobs_indices[i] = i
                             if jobfunc then
+                                -- the curdir and envs of each coroutine are isolated.
+                                -- after the coroutine is finished, they will be automatically restored.
                                 if opt.curdir then
                                     os.cd(opt.curdir)
                                 end
