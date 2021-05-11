@@ -37,7 +37,7 @@ toolchain("nasm")
             elseif toolchain:is_arch("i386") then
                 asflags = "-f macho32"
             end
-        elseif toolchain:is_plat("linux", "bsd") then
+        elseif toolchain:is_plat("linux", "android", "bsd") then
             if toolchain:is_arch("x86_64") then
                 asflags = "-f elf64"
             elseif toolchain:is_arch("i386") then
