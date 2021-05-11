@@ -87,6 +87,17 @@ function _coroutine:is_suspended()
     return self:status() == "suspended"
 end
 
+-- is trampoline?
+function _coroutine:is_trampoline()
+    return self._TRAMPOLINE
+end
+
+-- mark this coroutine as trampoline,
+-- envs and curdir will not be changed when switch to this coroutine
+function _coroutine:set_trampoline(trampoline)
+    self._TRAMPOLINE = trampoline
+end
+
 -- get the current timer task
 function _coroutine:_timer_task()
     return self._TIMER_TASK
@@ -382,14 +393,14 @@ function scheduler:co_suspend(...)
     local running = assert(self:co_running())
     local curdir = self._CO_CURDIR_HASH
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
-    if olddir and curdir ~= olddir[1] then -- hash changed?
+    if olddir and curdir ~= olddir[1] and not running:is_trampoline() then -- hash changed?
         os.cd(olddir[2])
     end
 
     -- if the current environments has been changed? restore it
     local curenvs = self._CO_CURENVS_HASH
     local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
-    if oldenvs and curenvs ~= oldenvs[1] then -- hash changed?
+    if oldenvs and curenvs ~= oldenvs[1] and not running:is_trampoline() then -- hash changed?
         os.setenvs(oldenvs[2])
     end
 

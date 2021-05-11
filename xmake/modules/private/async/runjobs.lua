@@ -73,6 +73,12 @@ function main(name, jobs, opt)
         progress_helper = progress.new(nil, opt)
     end
 
+    -- mark current main coroutine as trampoline to avoid change envs/curdir
+    local co_running = scheduler.co_running()
+    if co_running then
+        co_running:set_trampoline(true)
+    end
+
     -- run timer
     local stop = false
     local running_jobs_indices = {}
@@ -194,7 +200,6 @@ function main(name, jobs, opt)
                                     os.cd(opt.curdir)
                                 end
                                 if jobenvs then
-                                    --print("jobenvs", jobenvs)
                                     os.addenvs(jobenvs)
                                 end
                                 jobfunc(count_as_index and count or i, total)
@@ -249,6 +254,11 @@ function main(name, jobs, opt)
     if showprogress then
         _print_backchars(backnum)
         progress_helper:stop()
+    end
+
+    -- restore current main coroutine
+    if co_running then
+        co_running:set_trampoline(false)
     end
 
     -- do exit callback

@@ -1002,7 +1002,7 @@ end
 function os.getenvs()
     local envs = os._CURENVS
     if not envs then
-        --print("os.getenvs")
+--        print("os.getenvs")
         envs = {}
         for _, line in ipairs(os._getenvs()) do
             local p = line:find('=', 1, true)
@@ -1055,7 +1055,7 @@ end
 os._setenv2 = os._setenv
 os._setenv = function (name, value)
     print("setenv", name, value)
-    os._setenv2(name, value)
+    return os._setenv2(name, value)
 end
 
 os._getenv = os.getenv
