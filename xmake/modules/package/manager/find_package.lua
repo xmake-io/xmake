@@ -61,6 +61,11 @@ function _find_package_with_builtin_rule(package_name, opt)
                 table.insert(managers, "pacman")
             end
 
+            -- find it from portage
+            if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("emerge") then
+                table.insert(managers, "portage")
+            end
+
             -- find it from pkg-config
             table.insert(managers, "pkgconfig")
 

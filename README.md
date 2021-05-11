@@ -176,6 +176,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Apt on ubuntu/debian (apt::zlib1g-dev)
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
+* Portage on Gentoo/Linux (portage::libhandy)
 
 ## Supported platforms
 

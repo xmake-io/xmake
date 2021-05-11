@@ -38,6 +38,7 @@ function _install_package(manager_name, package_name, opt)
         table.insert(managers, "apt")
         table.insert(managers, "yum")
         table.insert(managers, "pacman")
+        table.insert(managers, "portage")
         table.insert(managers, "brew")
     elseif is_host("macosx") then
         table.insert(managers, "vcpkg")
