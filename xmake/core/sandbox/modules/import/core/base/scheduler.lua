@@ -49,6 +49,15 @@ function sandbox_core_base_scheduler.co_start_named(coname, cotask, ...)
     return co
 end
 
+-- start a new coroutine task with options
+function sandbox_core_base_scheduler.co_start_withopt(opt, cotask, ...)
+    local co, errors = scheduler:co_start_withopt(opt, cotask, ...)
+    if not co then
+        raise(errors)
+    end
+    return co
+end
+
 -- resume the given coroutine
 function sandbox_core_base_scheduler.co_resume(co, ...)
     return scheduler:resume(co:thread(), ...)

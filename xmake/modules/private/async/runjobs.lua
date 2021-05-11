@@ -73,10 +73,12 @@ function main(name, jobs, opt)
         progress_helper = progress.new(nil, opt)
     end
 
-    -- mark current main coroutine as trampoline to avoid change envs/curdir
+    -- avoid main coroutine to change environments
+    local main_isolated
     local co_running = scheduler.co_running()
     if co_running then
-        co_running:set_trampoline(true)
+        main_isolated = co_running:is_isolated()
+        co_running:isolate(false)
     end
 
     -- run timer
@@ -154,7 +156,7 @@ function main(name, jobs, opt)
             while index < max do
 
                 -- uses job pool?
-                local jobname, jobenvs
+                local jobname
                 if not jobs_cb then
 
                     -- get job priority
@@ -181,26 +183,20 @@ function main(name, jobs, opt)
                     -- get run function
                     jobfunc = job.run
                     jobname = job.name
-                    jobenvs = job.envs
                 else
                     jobname = tostring(index)
                 end
 
                 -- start this job
                 index = index + 1
-                scheduler.co_start_named(name .. '/' .. jobname, function(i)
+                scheduler.co_start_withopt({name = name .. '/' .. jobname, isolate = opt.isolate}, function(i)
                     try
                     {
                         function()
                             running_jobs_indices[i] = i
                             if jobfunc then
-                                -- the curdir and envs of each coroutine are isolated.
-                                -- after the coroutine is finished, they will be automatically restored.
                                 if opt.curdir then
                                     os.cd(opt.curdir)
-                                end
-                                if jobenvs then
-                                    os.addenvs(jobenvs)
                                 end
                                 jobfunc(count_as_index and count or i, total)
                                 count = count + 1
@@ -257,8 +253,8 @@ function main(name, jobs, opt)
     end
 
     -- restore current main coroutine
-    if co_running then
-        co_running:set_trampoline(false)
+    if main_isolated ~= nil then
+        co_running:isolate(main_isolated)
     end
 
     -- do exit callback

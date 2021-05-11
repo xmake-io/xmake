@@ -150,7 +150,7 @@ function main(batchjobs, rootjob, target)
     -- add link job
     local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
         _link_target(target, {progress = (index * 100) / total})
-    end, {rootjob = rootjob, envs = target:pkgenvs()})
+    end, {rootjob = rootjob})
 
     -- we need only return and depend the link job for each target,
     -- so we can compile the source files for each target in parallel
