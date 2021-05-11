@@ -238,7 +238,10 @@ function _install_packages(packages_install, packages_download, installdeps)
         packages_installing[index] = nil
         packages_downloading[index] = nil
 
-    end, {total = #packages_install, comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4, on_timer = function (running_jobs_indices)
+    end, {total = #packages_install,
+          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+          isolate = true,
+          on_timer = function (running_jobs_indices)
 
         -- do not print progress info if be verbose
         if option.get("verbose") or not show_wait then
@@ -385,7 +388,7 @@ function main(requires, opt)
             instance:fetch()
             os.setenvs(oldenvs)
         end
-    end, {total = #packages})
+    end, {total = #packages, isolate = true})
 
     -- register all required root packages to local cache
     register_packages(packages)

@@ -48,7 +48,7 @@ function main(requires_raw)
                 instance:fetch()
                 os.setenvs(oldenvs)
             end
-        end, {total = #packages})
+        end, {total = #packages, isolate = true})
 
         -- register all required root packages to local cache
         register_packages(packages)

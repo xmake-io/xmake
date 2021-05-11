@@ -1002,7 +1002,6 @@ end
 function os.getenvs()
     local envs = os._CURENVS
     if not envs then
-        print("os.getenvs")
         envs = {}
         for _, line in ipairs(os._getenvs()) do
             local p = line:find('=', 1, true)
@@ -1051,18 +1050,6 @@ function os.setenvs(envs)
     return oldenvs
 end
 
-os._setenv2 = os._setenv
-os._setenv = function (name, value)
-    print("setenv", name, value)
-    return os._setenv2(name, value)
-end
-
-os._getenv = os.getenv
-os.getenv = function (name)
-    print("getenv", name)
-    return os._getenv(name)
-end
-
 -- add environment variables
 -- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.addenvs(envs)
@@ -1072,7 +1059,6 @@ function os.addenvs(envs)
         for name, values in pairs(envs) do
             local ok
             local oldenv = oldenvs[name]
-            print("oldenv", name, oldenv)
             if oldenv == "" or oldenv == nil then
                 ok = os._setenv(name, values)
             elseif not oldenv:startswith(values) then
