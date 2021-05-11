@@ -73,19 +73,11 @@ function main(name, jobs, opt)
         progress_helper = progress.new(nil, opt)
     end
 
-    -- avoid main coroutine to change environments
-    local main_isolated
-    local co_running = scheduler.co_running()
-    if co_running then
-        main_isolated = co_running:is_isolated()
-        co_running:isolate(false)
-    end
-
     -- run timer
     local stop = false
     local running_jobs_indices = {}
     if opt.on_timer then
-        scheduler.co_start_named(name .. "/timer", function ()
+        scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
@@ -98,7 +90,7 @@ function main(name, jobs, opt)
             end
         end)
     elseif showprogress then
-        scheduler.co_start_named(name .. "/tips", function ()
+        scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
             while not stop do
                 os.sleep(timeout)
                 if not stop then
@@ -250,11 +242,6 @@ function main(name, jobs, opt)
     if showprogress then
         _print_backchars(backnum)
         progress_helper:stop()
-    end
-
-    -- restore current main coroutine
-    if main_isolated ~= nil then
-        co_running:isolate(main_isolated)
     end
 
     -- do exit callback
