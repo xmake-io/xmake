@@ -43,7 +43,7 @@ function main(name, opt)
     local file_path = "/var/db/pkg/*/" .. name .. "-*/"
     local file = find_file("CONTENTS", file_path)
     local file_contents = try { function() return io.readfile(file) end }
-   
+
     -- if the file contents couldn't be obtained, the package isn't installed
     if not file_contents then
         return
@@ -61,7 +61,7 @@ function main(name, opt)
             end
         end
     end
-    
+
     -- create an initial empty string for the list
     local list = ""
     for _, value in pairs(list_table) do
