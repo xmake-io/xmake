@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
@@ -33,20 +34,41 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
-    -- find equery
-    local equery = find_tool("equery")
-    if not equery then
-        return
-    end
-
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
     if opt.plat == "mingw" then
         name = "mingw64-runtime" -- there is only one package for mingw
     end
 
     -- get package files list
-    -- gentoolkit package is required until I can do what it does in pure lua
-    local list = try { function() return os.iorunv(equery.program, {"f", name}) end }
+    local file_path = "/var/db/pkg/*/" .. name .. "-*/"
+    local file = find_file("CONTENTS", file_path)
+    local file_contents = try { function() return io.readfile(file) end }
+   
+    -- if the file contents couldn't be obtained, the package isn't installed
+    if not file_contents then
+        return
+    end
+
+    -- create a table for the list
+    local list_table = {}
+    -- split entries based on newlines
+    for entry in file_contents:gmatch("(.-)\n") do
+        -- then split those entries based on spaces
+        for split_entry in entry:gmatch("(.-) ") do
+            -- then append to the table if the entry contains a `/`
+            if string.match(split_entry, "/") then
+                table.insert(list_table, split_entry)
+            end
+        end
+    end
+    
+    -- create an initial empty string for the list
+    local list = ""
+    for _, value in pairs(list_table) do
+        -- append the values of the table elements to the string along with a newline
+        list = list .. value .. "\n"
+    end
+    
     if not list then
         return
     end
