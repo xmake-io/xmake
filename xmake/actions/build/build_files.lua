@@ -207,6 +207,8 @@ function main(targetname, sourcefiles)
         local curdir = os.curdir()
         runjobs("build_files", batchjobs, {comax = option.get("jobs") or 1, curdir = curdir, count_as_index = true})
         os.cd(curdir)
+    else
+        wprint("%s not found!", sourcefiles)
     end
 end
 
