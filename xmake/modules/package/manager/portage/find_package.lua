@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
@@ -33,23 +34,37 @@ function main(name, opt)
     -- init options
     opt = opt or {}
 
-    -- find equery
-    local equery = find_tool("equery")
-    if not equery then
-        return
-    end
-
     -- for msys2/mingw? mingw-w64-[i686|x86_64]-xxx
     if opt.plat == "mingw" then
         name = "mingw64-runtime" -- there is only one package for mingw
     end
 
     -- get package files list
-    -- gentoolkit package is required until I can do what it does in pure lua
-    local list = try { function() return os.iorunv(equery.program, {"f", name}) end }
-    if not list then
+    local file_path = "/var/db/pkg/*/" .. name .. "-*/"
+    local file = find_file("CONTENTS", file_path)
+
+    -- if the file couldn't be found, then the package isn't installed
+    if not file then
         return
     end
+
+    local file_contents = io.readfile(file)
+
+    -- create a table for the list
+    local list_table = {}
+
+    -- split entries based on newlines
+    local entries = file_contents:split("\n")
+
+    -- iterate over the table created by split()
+    for _, entry in pairs(entries) do
+        -- the file path is the second element after being delimited by spaces
+        local split_entry = entry:split(" ")[2]
+        table.insert(list_table, split_entry)
+    end
+
+    -- create a string out of list_table called list
+    local list = table.concat(list_table, "\n")
 
     -- parse package files list
     local pkgconfig_dir = nil
