@@ -52,18 +52,18 @@ function main(name, opt)
 
     -- create a table for the list
     local list_table = {}
+
     -- split entries based on newlines
-    for entry in file_contents:gmatch("(.-)\n") do
-        -- then split those entries based on spaces
-        for split_entry in entry:gmatch("(.-) ") do
-            -- then append to the table if the entry contains a `/`
-            if string.match(split_entry, "/") then
-                table.insert(list_table, split_entry)
-            end
-        end
+    local entries = file_contents:split("\n")
+
+    -- iterate over the table created by split()
+    for _, entry in pairs(entries) do
+        -- the file path is the second element after being delimited by spaces
+        local split_entry = entry:split(" ")[2]
+        table.insert(list_table, split_entry)
     end
 
-    -- create an initial empty string for the list
+    -- create a string out of list_table called list
     local list = table.concat(list_table, "\n")
 
     -- parse package files list
