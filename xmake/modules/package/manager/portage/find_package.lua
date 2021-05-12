@@ -42,12 +42,13 @@ function main(name, opt)
     -- get package files list
     local file_path = "/var/db/pkg/*/" .. name .. "-*/"
     local file = find_file("CONTENTS", file_path)
-    local file_contents = try { function() return io.readfile(file) end }
 
-    -- if the file contents couldn't be obtained, the package isn't installed
-    if not file_contents then
+    -- if the file couldn't be found, then the package isn't installed
+    if not file then
         return
     end
+
+    local file_contents = io.readfile(file)
 
     -- create a table for the list
     local list_table = {}
@@ -63,15 +64,7 @@ function main(name, opt)
     end
 
     -- create an initial empty string for the list
-    local list = ""
-    for _, value in pairs(list_table) do
-        -- append the values of the table elements to the string along with a newline
-        list = list .. value .. "\n"
-    end
-    
-    if not list then
-        return
-    end
+    local list = table.concat(list_table, "\n")
 
     -- parse package files list
     local pkgconfig_dir = nil
