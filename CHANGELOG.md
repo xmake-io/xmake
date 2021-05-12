@@ -11,6 +11,7 @@
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): Support private package for `add_requires/add_deps`
 * [#1358](https://github.com/xmake-io/xmake/issues/1358): Support to set mirror url to speedup download package
 * [#1369](https://github.com/xmake-io/xmake/pull/1369): Support arm/arm64 packages for vcpkg
+* [#1405](https://github.com/xmake-io/xmake/pull/1405): Add portage package manager support
 
 ### Change
 
@@ -998,6 +999,7 @@
 * [#1313](https://github.com/xmake-io/xmake/issues/1313): 为 `add_requires/add_deps` 添加私有包支持
 * [#1358](https://github.com/xmake-io/xmake/issues/1358): 支持设置镜像 url 站点加速包下载
 * [#1369](https://github.com/xmake-io/xmake/pull/1369): 为 vcpkg 增加 arm/arm64 包集成支持
+* [#1405](https://github.com/xmake-io/xmake/pull/1405): 添加 portage 包管理器支持
 
 ### 改进
 
