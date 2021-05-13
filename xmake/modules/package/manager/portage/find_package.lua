@@ -39,39 +39,29 @@ function main(name, opt)
         name = "mingw64-runtime" -- there is only one package for mingw
     end
 
-    -- get package files list
-    local file_path = "/var/db/pkg/*/" .. name .. "-*/"
-    local file = find_file("CONTENTS", file_path)
-
-    -- if the file couldn't be found, then the package isn't installed
+    -- get package contents file
+    local file = find_file("CONTENTS", "/var/db/pkg/*/" .. name .. "-*")
     if not file then
         return
     end
 
+    -- get package files list
+    local list = {}
     local file_contents = io.readfile(file)
-
-    -- create a table for the list
-    local list_table = {}
-
-    -- split entries based on newlines
-    local entries = file_contents:split("\n")
-
-    -- iterate over the table created by split()
-    for _, entry in pairs(entries) do
+    for _, entry in pairs(file_contents:split("\n")) do
         -- the file path is the second element after being delimited by spaces
         local split_entry = entry:split(" ")[2]
-        table.insert(list_table, split_entry)
+        if split_entry then
+            table.insert(list, split_entry)
+        end
     end
 
-    -- create a string out of list_table called list
-    local list = table.concat(list_table, "\n")
-
     -- parse package files list
-    local pkgconfig_dir = nil
-    local pkgconfig_name = nil
+    local pkgconfig_dir
+    local pkgconfig_name
     local linkdirs = {}
     local has_includes = false
-    for _, line in ipairs(list:split('\n', {plain = true})) do
+    for _, line in ipairs(list) do
         line = line:trim():split('%s+')[1]
         if not pkgconfig_dir and line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
             pkgconfig_dir  = path.directory(line)
