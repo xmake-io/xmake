@@ -82,10 +82,11 @@ function _find_xcode(sdkdir, opt)
     end
 
     -- find codesign
+    local codesign_identity, mobile_provision
     if opt.find_codesign then
 
         -- find codesign identity
-        local codesign_identity = config.get("xcode_codesign_identity")
+        codesign_identity = config.get("xcode_codesign_identity")
         if codesign_identity == nil then -- we will disable codesign_identity if be false
             codesign_identity = global.get("xcode_codesign_identity")
         end
@@ -100,7 +101,6 @@ function _find_xcode(sdkdir, opt)
         end
 
         -- find mobile provision only for iphoneos
-        local mobile_provision
         if opt.plat == "iphoneos" then
             local mobile_provisions = codesign.mobile_provisions()
             if mobile_provisions then
