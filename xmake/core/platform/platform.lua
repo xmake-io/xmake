@@ -515,7 +515,7 @@ end
 
 -- get the all toolchains
 function platform.toolchains()
-    local toolchains = self._memcache():get("toolchains")
+    local toolchains = platform._memcache():get("toolchains")
     if not toolchains then
         toolchains = {}
         local dirs  = toolchain.directories()
@@ -529,7 +529,7 @@ function platform.toolchains()
                 end
             end
         end
-        self._memcache():set("toolchains", toolchains)
+        platform._memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
