@@ -59,6 +59,9 @@ function main (target, opt)
                         if symbol then
                             symbol = symbol:split('%s')[1]
                             if not symbol:startswith("__") and not symbol:startswith("?") then
+                                if target:is_arch("x86") and symbol:startswith("_") then
+                                    symbol = symbol:sub(2)
+                                end
                                 allsymbols:insert(symbol)
                             end
                         end
