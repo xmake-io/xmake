@@ -277,7 +277,7 @@ end
 -- support `-MMD -MF depfile.d`? some old gcc does not support it at same time
 function _has_flags_mmd_mf(self)
     local has_mmd_mf = _g._HAS_MMD_MF
-    if has_mmd_mf == nil then
+    if has_mmd_mf == nil and not is_host("windows") then
        has_mmd_mf = self:has_flags({"-MMD", "-MF", os.nuldev()}, "cuflags", { flagskey = "-MMD -MF" }) or false
         _g._HAS_MMD_MF = has_mmd_mf
     end
@@ -287,7 +287,7 @@ end
 -- support `-MM -o depfile.d`?
 function _has_flags_mm(self)
     local has_mm = _g._HAS_MM
-    if not has_mmd_mf and has_mm == nil then
+    if not has_mmd_mf and has_mm == nil and not is_host("windows") then
         has_mm = self:has_flags("-MM", "cuflags", { flagskey = "-MM" }) or false
         _g._HAS_MM = has_mm
     end
