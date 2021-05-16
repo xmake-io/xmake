@@ -77,7 +77,7 @@ rule("xmake.cli")
             os.setenv("XMAKE_MODULES_DIR", scriptdir)
         end
         local libxmake = target:pkg("libxmake")
-        local programdir = path.join(path.directory(libxmake:get("linkdirs")), "share", "xmake")
+        local programdir = path.join(libxmake:installdir(), "share", "xmake")
         assert(os.isdir(programdir), "%s not found!", programdir)
         os.setenv("XMAKE_PROGRAM_DIR", programdir)
     end)
