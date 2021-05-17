@@ -82,4 +82,13 @@ toolchain("tinycc")
         toolchain:add("toolset", "ld", tcc)
         toolchain:add("toolset", "sh", tcc)
         toolchain:add("toolset", "ar", tcc)
+
+        -- add includedirs and linkdirs
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir then
+                toolchain:add("sysincludedirs", path.join(installdir, "include"))
+                toolchain:add("linkdirs", path.join(installdir, "lib"))
+            end
+        end
     end)
