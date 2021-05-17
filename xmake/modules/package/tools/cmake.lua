@@ -62,6 +62,13 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
+-- get msvc run environments
+function _msvc_runenvs(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc:runenvs()
+end
+
 -- get cflags from package deps
 function _get_cflags_from_packagedeps(package, opt)
     local result = {}
@@ -470,7 +477,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cmake_generator = opt.cmake_generator
     if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
-        table.join2(envs, toolchain.load("msvc"):runenvs())
+        table.join2(envs, _msvc_runenvs(package))
     end
 
     -- add environments for cmake/find_packages
@@ -498,8 +505,7 @@ end
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-    local msbuild = find_tool("msbuild", {envs = runenvs})
+    local msbuild = find_tool("msbuild", {envs = _msvc_runenvs(package)})
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
@@ -536,8 +542,7 @@ end
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-    local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
+    local msbuild = assert(find_tool("msbuild", {envs = _msvc_runenvs(package)}), "msbuild not found!")
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
