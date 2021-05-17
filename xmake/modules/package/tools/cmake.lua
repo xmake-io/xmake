@@ -62,11 +62,16 @@ function _map_linkflags(package, targetkind, sourcekinds, name, values)
     return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
--- get msvc run environments
-function _msvc_runenvs(package)
+-- get msvc
+function _get_msvc(package)
     local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
     assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
-    return msvc:runenvs()
+    return msvc
+end
+
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return _get_msvc(package):runenvs()
 end
 
 -- get cflags from package deps
@@ -393,7 +398,7 @@ function _get_configs_for_cross(package, configs, opt)
 end
 
 -- get cmake generator for msvc
-function _get_cmake_generator_for_msvc()
+function _get_cmake_generator_for_msvc(package)
     local vsvers =
     {
         ["2019"] = "16",
@@ -404,7 +409,7 @@ function _get_cmake_generator_for_msvc()
         ["2010"] = "10",
         ["2008"] = "9"
     }
-    local vs = config.get("vs")
+    local vs = _get_msvc(package):config("vs") or config.get("vs")
     assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
     return "Visual Studio " .. vsvers[vs] .. " " .. vs
 end
@@ -416,7 +421,7 @@ function _get_configs_for_generator(package, configs, opt)
     local cmake_generator = opt.cmake_generator
     if cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
-            cmake_generator = _get_cmake_generator_for_msvc()
+            cmake_generator = _get_cmake_generator_for_msvc(package)
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
@@ -428,7 +433,7 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "MinGW Makefiles")
     elseif package:is_plat("windows") then
         table.insert(configs, "-G")
-        table.insert(configs, _get_cmake_generator_for_msvc())
+        table.insert(configs, _get_cmake_generator_for_msvc(package))
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
@@ -477,7 +482,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cmake_generator = opt.cmake_generator
     if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
-        table.join2(envs, _msvc_runenvs(package))
+        table.join2(envs, _get_msvc_runenvs(package))
     end
 
     -- add environments for cmake/find_packages
@@ -505,7 +510,7 @@ end
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local msbuild = find_tool("msbuild", {envs = _msvc_runenvs(package)})
+    local msbuild = find_tool("msbuild", {envs = _get_msvc_runenvs(package)})
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
@@ -542,7 +547,7 @@ end
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local msbuild = assert(find_tool("msbuild", {envs = _msvc_runenvs(package)}), "msbuild not found!")
+    local msbuild = assert(find_tool("msbuild", {envs = _get_msvc_runenvs(package)}), "msbuild not found!")
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
