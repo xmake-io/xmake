@@ -537,7 +537,7 @@ end
 function _install_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-    local msbuild = find_tool("msbuild", {envs = runenvs})
+    local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
