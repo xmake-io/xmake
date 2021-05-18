@@ -37,15 +37,15 @@ function main(toolchain)
     local target_minver_flags = (simulator and "-mios-simulator-version-min=" or "-miphoneos-version-min=") .. target_minver
 
     -- init flags for c/c++
-    toolchain:add("cxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sysroot)
-    toolchain:add("ldflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sysroot)
-    toolchain:add("shflags", "-arch " .. arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot " .. xcode_sysroot)
+    toolchain:add("cxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
+    toolchain:add("ldflags", "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
+    toolchain:add("shflags", "-arch", arch, "-ObjC", "-lstdc++", "-fobjc-link-runtime", target_minver_flags, "-isysroot", xcode_sysroot)
 
     -- init flags for objc/c++
-    toolchain:add("mxflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sysroot)
+    toolchain:add("mxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
 
     -- init flags for asm
-    toolchain:add("asflags", "-arch " .. arch, target_minver_flags, "-isysroot " .. xcode_sysroot)
+    toolchain:add("asflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
 
     -- init flags for swift (with toolchain:add("ldflags and toolchain:add("shflags)
     toolchain:add("scflags", format("-target %s-apple-ios%s", arch, target_minver) , "-sdk " .. xcode_sysroot)

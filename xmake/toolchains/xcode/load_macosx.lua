@@ -30,9 +30,9 @@ function main(toolchain)
     local xcode_sysroot = toolchain:config("xcode_sysroot")
 
     -- init flags for c/c++
-    toolchain:add("cxflags", "-arch " .. arch)
-    toolchain:add("ldflags", "-arch " .. arch)
-    toolchain:add("shflags", "-arch " .. arch)
+    toolchain:add("cxflags", "-arch", arch)
+    toolchain:add("ldflags", "-arch", arch)
+    toolchain:add("shflags", "-arch", arch)
     if target_minver then
         toolchain:add("cxflags", "-mmacosx-version-min=" .. target_minver)
         toolchain:add("mxflags", "-mmacosx-version-min=" .. target_minver)
@@ -40,24 +40,24 @@ function main(toolchain)
         toolchain:add("shflags", "-mmacosx-version-min=" .. target_minver)
     end
     if xcode_sysroot then
-        toolchain:add("cxflags", "-isysroot " .. xcode_sysroot)
-        toolchain:add("ldflags", "-isysroot " .. xcode_sysroot)
-        toolchain:add("shflags", "-isysroot " .. xcode_sysroot)
+        toolchain:add("cxflags", "-isysroot", xcode_sysroot)
+        toolchain:add("ldflags", "-isysroot", xcode_sysroot)
+        toolchain:add("shflags", "-isysroot", xcode_sysroot)
     end
     toolchain:add("ldflags", "-stdlib=libc++")
     toolchain:add("shflags", "-stdlib=libc++")
     toolchain:add("syslinks", "z")
 
     -- init flags for objc/c++ (with ldflags and shflags)
-    toolchain:add("mxflags", "-arch " .. arch)
+    toolchain:add("mxflags", "-arch", arch)
     if xcode_sysroot then
-        toolchain:add("mxflags", "-isysroot " .. xcode_sysroot)
+        toolchain:add("mxflags", "-isysroot", xcode_sysroot)
     end
 
     -- init flags for asm
-    toolchain:add("asflags", "-arch " .. arch)
+    toolchain:add("asflags", "-arch", arch)
     if xcode_sysroot then
-        toolchain:add("asflags", "-isysroot " .. xcode_sysroot)
+        toolchain:add("asflags", "-isysroot", xcode_sysroot)
     end
 
     -- init flags for swift
