@@ -112,7 +112,7 @@ end
 function _instance:plat()
     -- @note we uses os.host() instead of them for the binary package
     if self:is_binary() then
-        return os.host()
+        return os.subhost()
     end
     local requireinfo = self:requireinfo()
     if not plat and requireinfo and requireinfo.plat then
@@ -125,7 +125,7 @@ end
 function _instance:arch()
     -- @note we uses os.arch() instead of them for the binary package
     if self:is_binary() then
-        return os.arch()
+        return os.subarch()
     end
     return self:targetarch()
 end
@@ -1605,7 +1605,7 @@ function package._target_plat()
             end
         end
         if not plat then
-            plat = config.get("plat") or os.host()
+            plat = config.get("plat") or os.subhost()
         end
         package._memcache():set("target_plat", plat)
     end
@@ -1623,7 +1623,7 @@ function package._target_arch()
             end
         end
         if not arch then
-            arch = config.get("arch") or os.arch()
+            arch = config.get("arch") or os.subarch()
         end
         package._memcache():set("target_arch", arch)
     end
