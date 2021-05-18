@@ -139,6 +139,7 @@ function buildenvs(package, opt)
         local asflags        = table.copy(table.wrap(package:build_getenv("asflags")))
         local ldflags        = table.copy(table.wrap(package:build_getenv("ldflags")))
         local shflags        = table.copy(table.wrap(package:build_getenv("shflags")))
+        local arflags        = table.copy(table.wrap(package:build_getenv("arflags")))
         local defines        = package:build_getenv("defines")
         local includedirs    = package:build_getenv("includedirs")
         local sysincludedirs = package:build_getenv("sysincludedirs")
@@ -177,7 +178,7 @@ function buildenvs(package, opt)
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(asflags, ' ')
-        envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
+        envs.ARFLAGS   = table.concat(arflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
         envs.SHFLAGS   = table.concat(shflags, ' ')
         if package:is_plat("mingw") then
@@ -204,6 +205,9 @@ function buildenvs(package, opt)
         elseif package:is_plat("cross") then
             -- only for cross-toolchain
             envs.CXX = package:build_getenv("cxx")
+            if not envs.ARFLAGS or envs.ARFLAGS == "" then
+                envs.ARFLAGS = "-cr"
+            end
         end
     end
     local ACLOCAL_PATH = {}
