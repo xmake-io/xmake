@@ -388,7 +388,9 @@ function main(requires, opt)
             instance:fetch()
             os.setenvs(oldenvs)
         end
-    end, {total = #packages, isolate = true})
+    end, {total = #packages,
+          comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
+          isolate = true})
 
     -- register all required root packages to local cache
     register_packages(packages)

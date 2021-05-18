@@ -56,7 +56,7 @@ function main(name, jobs, opt)
     -- init options
     op = opt or {}
     local total = opt.total or (type(jobs) == "table" and jobs:size()) or 1
-    local comax = opt.comax or total
+    local comax = opt.comax or math.min(total, 4)
     local timeout = opt.timeout or 500
     local group_name = name
     local jobs_cb = type(jobs) == "function" and jobs or nil
