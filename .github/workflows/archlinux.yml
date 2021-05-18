@@ -1,4 +1,4 @@
-name: Fedora
+name: Archlinux
 
 on:
   pull_request:
@@ -9,17 +9,13 @@ on:
 jobs:
   build:
 
-    container: fedora:latest
+    container: archlinux:latest
     runs-on: ubuntu-latest
 
     steps:
       - name: prepare build tools
         run: |
-          uname -a
-          dnf -y install @development-tools @rpm-development-tools
-          dnf -y install copr-cli make gcc-c++
-          dnf -y install perl
-          dnf -y upgrade git
+          pacman -Sy --noconfirm --needed git base-devel perl make unzip
       - uses: actions/checkout@v2
         with:
           submodules: true
