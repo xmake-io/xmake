@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#1413](https://github.com/xmake-io/xmake/issues/1413): Fix hangs on fetching packages
+
 ## v2.5.4
 
 ### New features
@@ -991,6 +995,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#1413](https://github.com/xmake-io/xmake/issues/1413): 修复查找包过程中出现的挂起卡死问题
 
 ## v2.5.4
 

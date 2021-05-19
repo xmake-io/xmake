@@ -273,7 +273,7 @@ function scheduler:_co_curenvs_update(envs)
 
     -- get running coroutine
     local running = self:co_running()
-    if not running or not running:is_isolated() then
+    if not running then
         return
     end
 

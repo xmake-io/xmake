@@ -73,6 +73,14 @@ function main(name, jobs, opt)
         progress_helper = progress.new(nil, opt)
     end
 
+    -- isolate environments
+    local is_isolated = false
+    local co_running = scheduler.co_running()
+    if co_running and opt.isolate then
+        is_isolated = co_running:is_isolated()
+        co_running:isolate(true)
+    end
+
     -- run timer
     local stop = false
     local running_jobs_indices = {}
@@ -234,6 +242,11 @@ function main(name, jobs, opt)
 
     -- wait all jobs exited
     scheduler.co_group_wait(group_name)
+
+    -- restore isolated environments
+    if co_running and opt.isolate then
+        co_running:isolate(is_isolated)
+    end
 
     -- stop timer
     stop = true
