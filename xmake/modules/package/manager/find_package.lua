@@ -56,6 +56,9 @@ function _find_package_with_builtin_rule(package_name, opt)
         -- only support the current sub-host platform and sub-architecture, e.g. linux, macosx, or msys (subsystem)
         if opt.plat == os.subhost() and opt.arch == os.subarch() then
 
+            -- find it from pkg-config
+            table.insert(managers, "pkgconfig")
+
             -- find it from pacman
             if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("pacman") then
                 table.insert(managers, "pacman")
@@ -65,9 +68,6 @@ function _find_package_with_builtin_rule(package_name, opt)
             if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("emerge") then
                 table.insert(managers, "portage")
             end
-
-            -- find it from pkg-config
-            table.insert(managers, "pkgconfig")
 
             -- find it from system
             table.insert(managers, "system")
