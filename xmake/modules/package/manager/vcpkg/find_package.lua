@@ -79,7 +79,7 @@ function main(name, opt)
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-    
+
     -- mapping plat
     if plat == "macosx" then
         plat = "osx"

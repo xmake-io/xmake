@@ -56,7 +56,7 @@ function main(name, opt)
     local pkgconfig_files = {}
     for _, line in ipairs(list:split('\n', {plain = true})) do
         line = line:trim():split('%s+')[2]
-        if not pkgconfig_dir and line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
+        if line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
             pkgconfig_files[path.basename(line)] = line
         end
         if line:endswith(".so") or line:endswith(".a") or line:endswith(".lib") then
