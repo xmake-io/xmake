@@ -40,7 +40,7 @@ function main(target)
         local targetfile = target:targetfile()
 
         -- we need move target link to head
-        target:add("links", target:basename(), {interface = true})
+        target:add("links", target:linkname(), {interface = true})
         local links = target:get("links", {rawref = true})
         if links and type(links) == "table" and #links > 1 then
             table.swap(links, 1, #links)

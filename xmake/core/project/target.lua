@@ -998,13 +998,34 @@ function _instance:filename()
     -- make the target file name and attempt to use the format of linker first
     local filename = self:get("filename")
     if not filename then
-        --[[
-        local prefixname = self:get("prefixname") or ""
-        local suffixname = self:get("suffixname") or ""
-        ]]
-        filename = target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
+        local prefixname = self:get("prefixname")
+        local suffixname = self:get("suffixname")
+        local extension  = self:get("extension")
+        filename = target.filename(self:basename(), targetkind, {
+            plat = self:plat(), arch = self:arch(),
+            prefixname = prefixname,
+            suffixname = suffixname,
+            extension = extension,
+            format = self:linker():format(targetkind)})
     end
     return filename
+end
+
+-- get the link name only for static/shared library
+function _instance:linkname()
+    if self:is_static() or self:is_shared() then
+        local filename = self:get("filename")
+        if filename then
+            return target.linkname(filename)
+        else
+            local linkname = self:basename()
+            local suffixname = self:get("suffixname")
+            if suffixname then
+                linkname = linkname .. suffixname
+            end
+            return linkname
+        end
+    end
 end
 
 -- get the target file
@@ -1884,6 +1905,7 @@ function target.apis()
         ,   "target.set_symbols"
         ,   "target.set_filename"
         ,   "target.set_basename"
+        ,   "target.set_extension"
         ,   "target.set_prefixname"
         ,   "target.set_suffixname"
         ,   "target.set_warnings"
@@ -1984,8 +2006,30 @@ function target.filename(targetname, targetkind, opt)
     assert(targetname and targetkind)
 
     -- make filename by format
+    local filename = targetname
     local format = opt.format or platform.format(targetkind, opt.plat, opt.arch)
-    return format and (format:gsub("%$%(name%)", targetname)) or targetname
+    if format then
+        local splitinfo = format:split("$(name)", {plain = true, strict = true})
+        local prefixname = splitinfo[1] or ""
+        local suffixname = ""
+        local extension = splitinfo[2] or ""
+        splitinfo = extension:split('.', {plain = true, limit = 2, strict = true})
+        if #splitinfo == 2 and splitinfo[1] ~= "" then
+            suffixname = splitinfo[1]
+            extension  = "." .. splitinfo[2]
+        end
+        if opt.prefixname then
+            prefixname = opt.prefixname
+        end
+        if opt.suffixname then
+            suffixname = opt.suffixname
+        end
+        if opt.extension then
+            extension = opt.extension
+        end
+        filename = prefixname .. targetname .. suffixname .. extension
+    end
+    return filename
 end
 
 -- get the link name of the target file
