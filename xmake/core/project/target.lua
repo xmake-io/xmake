@@ -998,6 +998,10 @@ function _instance:filename()
     -- make the target file name and attempt to use the format of linker first
     local filename = self:get("filename")
     if not filename then
+        --[[
+        local prefixname = self:get("prefixname") or ""
+        local suffixname = self:get("suffixname") or ""
+        ]]
         filename = target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
     end
     return filename
@@ -1880,6 +1884,8 @@ function target.apis()
         ,   "target.set_symbols"
         ,   "target.set_filename"
         ,   "target.set_basename"
+        ,   "target.set_prefixname"
+        ,   "target.set_suffixname"
         ,   "target.set_warnings"
         ,   "target.set_fpmodels"
         ,   "target.set_optimize"
