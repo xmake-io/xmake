@@ -986,26 +986,29 @@ function _instance:targetdir()
     return targetdir
 end
 
--- get the target file
-function _instance:targetfile()
-
-    -- the target directory
-    local targetdir = self:targetdir()
-
-    -- get target kind
-    local targetkind = self:kind()
+-- get the target file name
+function _instance:filename()
 
     -- only compile objects? no target file
+    local targetkind = self:kind()
     if targetkind == "object" then
         return
     end
 
     -- make the target file name and attempt to use the format of linker first
-    local filename = self:get("filename") or target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
-    assert(filename)
+    local filename = self:get("filename")
+    if not filename then
+        filename = target.filename(self:basename(), targetkind, {plat = self:plat(), arch = self:arch(), format = self:linker():format(targetkind)})
+    end
+    return filename
+end
 
-    -- make the target file path
-    return path.join(targetdir, filename)
+-- get the target file
+function _instance:targetfile()
+    local filename = self:filename()
+    if filename then
+        return path.join(self:targetdir(), filename)
+    end
 end
 
 -- get the symbol file
