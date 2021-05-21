@@ -171,24 +171,6 @@ function libinfo(name, opt)
         end
     end
 
-    -- get includedirs
-    if not result or not result.includedirs then
-        local varinfo = variables(name, "includedir", opt)
-        if varinfo and varinfo.includedir then
-            result = result or {}
-            result.includedirs = varinfo.includedir
-        end
-    end
-
-    -- get linkdirs
-    if not result or not result.linkdirs then
-        local varinfo = variables(name, "libdir", opt)
-        if varinfo and varinfo.libdir then
-            result = result or {}
-            result.linkdirs = varinfo.libdir
-        end
-    end
-
     -- get version
     local version = try { function() return os.iorunv(pkgconfig, {"--modversion", name}, {envs = envs}) end }
     if version then
