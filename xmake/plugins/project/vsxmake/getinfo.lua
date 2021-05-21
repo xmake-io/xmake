@@ -134,7 +134,7 @@ function _make_targetinfo(mode, arch, target)
     -- use target:get("xxx") rather than target:xxx()
 
     -- save target kind
-    targetinfo.kind          = target:get("kind")
+    targetinfo.kind          = target:kind()
 
     -- is default?
     targetinfo.default       = tostring(target:is_default())

@@ -42,7 +42,7 @@ function runable_targets()
             local targets = project.targets()
             local runable = {}
             for k, v in pairs(targets) do
-                if v:script("run") or v:get("kind") == "binary" then
+                if v:script("run") or v:is_binary() then
                     table.insert(runable, k)
                 end
             end

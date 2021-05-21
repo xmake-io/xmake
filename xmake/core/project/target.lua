@@ -456,7 +456,7 @@ end
 
 -- get the target kind
 function _instance:kind()
-    return self:get("kind") or "phony"
+    return self:get("kind") or "binary"
 end
 
 -- get the target kind (deprecated)
