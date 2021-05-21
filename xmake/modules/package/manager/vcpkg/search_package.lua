@@ -50,7 +50,7 @@ function main(name)
             end
         end
         if packagename:find(name) and not packagename:find('%[.*' .. name .. '.*%]') then
-            table.insert(results, {name = packagename, version = version, description = description})
+            table.insert(results, {name = "vcpkg::" .. packagename, version = version, description = description})
         end
     end
     return results

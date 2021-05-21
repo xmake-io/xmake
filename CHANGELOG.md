@@ -5,6 +5,7 @@
 ### New features
 
 * [#1421](https://github.com/xmake-io/xmake/issues/1421): Add prefix, suffix and extension options for target names
+* [#1422](https://github.com/xmake-io/xmake/issues/1422): Support search packages from vcpkg
 
 ### Bugs fixed
 
@@ -1003,6 +1004,7 @@
 ### 新特性
 
 * [#1421](https://github.com/xmake-io/xmake/issues/1421): 针对 target 目标，增加目标文件名的前缀，后缀和扩展名设置接口。
+* [#1422](https://github.com/xmake-io/xmake/issues/1422): 支持从 vcpkg 中搜索包
 
 ### Bugs 修复
 
