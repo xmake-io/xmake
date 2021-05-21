@@ -18,19 +18,23 @@
 -- @file        search_packages.lua
 --
 
--- imports
-import("core.package.package", {alias = "core_package"})
-import("private.action.require.impl.repository")
-
 -- search packages from repositories
 function _search_packages(name)
 
+    -- get package manager name
+    local manager_name, package_name = unpack(name:split("::", {plain = true, strict = true}))
+    if package_name == nil then
+        package_name = manager_name
+        manager_name = "xmake"
+    else
+        manager_name = manager_name:lower():trim()
+    end
+
+    -- search packages
     local packages = {}
-    for _, packageinfo in ipairs(repository.searchdirs(name)) do
-        local package = core_package.load_from_repository(packageinfo.name, packageinfo.repo, packageinfo.packagedir)
-        if package then
-            table.insert(packages, package)
-        end
+    local result = import("package.manager." .. manager_name .. ".search_package", {anonymous = true})(package_name)
+    if result then
+        table.join2(packages, result)
     end
     return packages
 end

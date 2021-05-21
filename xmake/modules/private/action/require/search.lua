@@ -52,9 +52,12 @@ function main(names)
             print("    %s: ", name)
 
             -- show packages
-            for _, instance in ipairs(packages) do
-                local repo = instance:repo()
-                cprint("      -> ${color.dump.string}%s${clear}: %s %s", instance:name(), instance:get("description") or "", repo and ("(in " .. repo:name() .. ")") or "")
+            for _, result in ipairs(packages) do
+                local name = result.name
+                local version = result.version
+                local reponame = result.reponame
+                local description = result.description
+                cprint("      -> ${color.dump.string}%s%s${clear}: %s %s", name, version and ("-" .. version) or "", description or "", reponame and ("(in " .. reponame .. ")") or "")
             end
         end
     end
