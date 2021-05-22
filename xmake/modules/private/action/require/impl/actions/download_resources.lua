@@ -56,7 +56,7 @@ function _download(package, resource_name, resource_url, resource_hash)
             -- we can use local resource from the search directories directly if network is too slow
             os.cp(localfile, resource_file)
         elseif resource_url:find(string.ipattern("https-://")) or resource_url:find(string.ipattern("ftps-://")) then
-            http.download(proxy.mirror(resource_url), resource_file)
+            http.download(proxy.mirror(resource_url) or resource_url, resource_file)
         else
             raise("invalid resource url(%s)", resource_url)
         end

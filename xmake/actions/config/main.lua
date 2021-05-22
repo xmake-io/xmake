@@ -65,17 +65,12 @@ function _need_check(changed)
         changed = option.get("clean")
     end
 
-    -- get the current mtimes
+    -- check for all project files
     local mtimes = project.mtimes()
-
-    -- get the previous mtimes
     if not changed then
         local mtimes_prev = localcache.get("config", "mtimes")
         if mtimes_prev then
-
-            -- check for all project files
             for file, mtime in pairs(mtimes) do
-
                 -- modified? reconfig and rebuild it
                 local mtime_prev = mtimes_prev[file]
                 if not mtime_prev or mtime > mtime_prev then
@@ -84,6 +79,11 @@ function _need_check(changed)
                 end
             end
         end
+    end
+
+    -- unfinished config/recheck
+    if not changed and localcache.get("config", "recheck") then
+        changed = true
     end
 
     -- xmake has been updated? force to check config again
@@ -96,8 +96,6 @@ function _need_check(changed)
 
     -- update mtimes
     localcache.set("config", "mtimes", mtimes)
-
-    -- changed?
     return changed
 end
 
@@ -314,6 +312,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         localcache.clear("option")
         localcache.clear("package")
         localcache.clear("toolchain")
+        localcache.set("config", "recheck", true)
         localcache.save()
 
         -- check platform
@@ -369,6 +368,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     end
 
     -- save options and config cache
+    localcache.set("config", "recheck", false)
     config.save()
     localcache.set("config", "options", options)
     localcache.save("config")
