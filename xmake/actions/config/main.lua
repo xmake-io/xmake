@@ -93,9 +93,6 @@ function _need_check(changed)
             changed = true
         end
     end
-
-    -- update mtimes
-    localcache.set("config", "mtimes", mtimes)
     return changed
 end
 
@@ -369,6 +366,7 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
 
     -- save options and config cache
     localcache.set("config", "recheck", false)
+    localcache.set("config", "mtimes", project.mtimes())
     config.save()
     localcache.set("config", "options", options)
     localcache.save("config")
