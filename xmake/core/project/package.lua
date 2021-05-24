@@ -113,6 +113,11 @@ function package:installdir()
     return self:get("__installdir")
 end
 
+-- get library files
+function package:libraryfiles()
+    return self:get("libfiles")
+end
+
 -- get the extra info from the given name
 function package:extra(name)
     local extrainfo = self:extrainfo()
