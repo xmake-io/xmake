@@ -46,6 +46,10 @@ function _sort_packages_urls(packages)
     end
 end
 
+-- get user confirm from 3rd package sources
+function _get_confirm_from_3rd(packages)
+end
+
 -- get user confirm
 function _get_confirm(packages)
 
@@ -100,7 +104,22 @@ function _get_confirm(packages)
                 end
             end
         end
+    end, answer = function ()
+        cprint("please input: ${bright}y${clear} (y/n/more)")
+        io.flush()
+        return (io.read() or "false"):trim()
     end})
+
+    -- more? get confirm from 3rd package sources
+    if confirm == "more" or confirm == "m" then
+        return _get_confirm_from_3rd(packages)
+    end
+
+    -- get confirm result
+    confirm = option.boolean(confirm)
+    if type(confirm) ~= "boolean" then
+        confirm = true
+    end
     return confirm
 end
 
