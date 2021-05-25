@@ -41,6 +41,19 @@ function _get_configs(package, configs, opt)
     local configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
 
+    -- set build type
+    table.insert(configs, "--buildtype=" .. (package:debug() and "debug" or "release"))
+
+    -- add -fpic
+    if package:is_plat("linux") and package:config("pic") then
+        table.insert(configs, "-Db_staticpic=true")
+    end
+
+    -- add vs_runtime flags
+    if package:is_plat("windows") then
+        table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
+    end
+
     -- add build directory
     table.insert(configs, _get_buildir(opt))
     return configs
@@ -58,6 +71,13 @@ function _get_msvc_runenvs(package)
     return _get_msvc(package):runenvs()
 end
 
+-- fix libname on windows
+function _fix_libname_on_windows(package)
+    for _, lib in ipairs(os.files(path.join(package:installdir("lib"), "lib*.a"))) do
+        os.mv(lib, lib:gsub("(.+)lib(.-)%.a", "%1%2.lib"))
+    end
+end
+
 -- get the build environments
 function buildenvs(package)
     local envs = {}
@@ -68,7 +88,13 @@ function buildenvs(package)
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
         if package:is_plat("windows") then
-            table.join2(envs, _get_msvc_runenvs(package))
+            for name, values in pairs(_get_msvc_runenvs(package)) do
+                local oldvalues = os.getenv(name)
+                if oldvalues then
+                    values = values .. path.envsep() .. oldvalues
+                end
+                envs[name] = values
+            end
         end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
@@ -153,4 +179,9 @@ function install(package, configs, opt)
     -- do build and install
     local buildir = _get_buildir(opt)
     ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+
+    -- fix static libname on windows
+    if package:is_plat("windows") and not package:config("shared") then
+        _fix_libname_on_windows(package)
+    end
 end
