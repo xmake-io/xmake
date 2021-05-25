@@ -51,7 +51,7 @@ function _get_configs(package, configs, opt)
 
     -- add vs_runtime flags
     if package:is_plat("windows") then
-        table.insert(configs, "-Db_vscrt=" .. (package:config("vs_runtime"):startswith("MT") and "mt" or "md"))
+        table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
     end
 
     -- add build directory
