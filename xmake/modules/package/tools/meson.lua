@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tool.toolchain")
 import("package.tools.ninja")
 
 -- get build directory
@@ -45,6 +46,18 @@ function _get_configs(package, configs, opt)
     return configs
 end
 
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return _get_msvc(package):runenvs()
+end
+
 -- get the build environments
 function buildenvs(package)
     local envs = {}
@@ -54,6 +67,9 @@ function buildenvs(package)
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
+        if package:is_plat("windows") then
+            table.join2(envs, _get_msvc_runenvs(package))
+        end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
