@@ -58,67 +58,71 @@ function _get_confirm(packages)
         return true
     end
 
-    -- get confirm
-    local confirm = utils.confirm({default = true, description = function ()
+    local confirm
+    while confirm == nil do
+        -- get confirm
+        confirm = utils.confirm({default = true, description = function ()
 
-        -- get packages for each repositories
-        local packages_repo = {}
-        local packages_group = {}
-        for _, instance in ipairs(packages) do
-            -- achive packages by repository
-            local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
-            if instance:is_thirdparty() then
-                reponame = instance:name():lower():split("::")[1]
-            end
-            packages_repo[reponame] = packages_repo[reponame] or {}
-            table.insert(packages_repo[reponame], instance)
-
-            -- achive packages by group
-            local group = instance:group()
-            if group then
-                packages_group[group] = packages_group[group] or {}
-                table.insert(packages_group[group], instance)
-            end
-        end
-
-        -- show tips
-        cprint("${bright color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
-        for reponame, packages in pairs(packages_repo) do
-            if reponame ~= "" then
-                print("in %s:", reponame)
-            end
-            local packages_showed = {}
+            -- get packages for each repositories
+            local packages_repo = {}
+            local packages_group = {}
             for _, instance in ipairs(packages) do
-                if not packages_showed[tostring(instance)] then
-                    local group = instance:group()
-                    if group and packages_group[group] and #packages_group[group] > 1 then
-                        for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
-                            packages_showed[tostring(package_in_group)] = true
+                -- achive packages by repository
+                local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
+                if instance:is_thirdparty() then
+                    reponame = instance:name():lower():split("::")[1]
+                end
+                packages_repo[reponame] = packages_repo[reponame] or {}
+                table.insert(packages_repo[reponame], instance)
+
+                -- achive packages by group
+                local group = instance:group()
+                if group then
+                    packages_group[group] = packages_group[group] or {}
+                    table.insert(packages_group[group], instance)
+                end
+            end
+
+            -- show tips
+            cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            for reponame, packages in pairs(packages_repo) do
+                if reponame ~= "" then
+                    print("in %s:", reponame)
+                end
+                local packages_showed = {}
+                for _, instance in ipairs(packages) do
+                    if not packages_showed[tostring(instance)] then
+                        local group = instance:group()
+                        if group and packages_group[group] and #packages_group[group] > 1 then
+                            for idx, package_in_group in ipairs(packages_group[group]) do
+                                cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
+                                packages_showed[tostring(package_in_group)] = true
+                            end
+                            packages_group[group] = nil
+                        else
+                            cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
+                            packages_showed[tostring(instance)] = true
                         end
-                        packages_group[group] = nil
-                    else
-                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
-                        packages_showed[tostring(instance)] = true
                     end
                 end
             end
+        end, answer = function ()
+            cprint("please input: ${bright}y${clear} (y/n/m)")
+            io.flush()
+            return (io.read() or "false"):trim()
+        end})
+
+        -- modify to select 3rd packages?
+        if confirm == "m" then
+            _get_confirm_from_3rd(packages)
+            confirm = nil
+        else
+            -- get confirm result
+            confirm = option.boolean(confirm)
+            if type(confirm) ~= "boolean" then
+                confirm = true
+            end
         end
-    end, answer = function ()
-        cprint("please input: ${bright}y${clear} (y/n/more)")
-        io.flush()
-        return (io.read() or "false"):trim()
-    end})
-
-    -- more? get confirm from 3rd package sources
-    if confirm == "more" or confirm == "m" then
-        return _get_confirm_from_3rd(packages)
-    end
-
-    -- get confirm result
-    confirm = option.boolean(confirm)
-    if type(confirm) ~= "boolean" then
-        confirm = true
     end
     return confirm
 end
