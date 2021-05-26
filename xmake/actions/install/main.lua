@@ -78,7 +78,7 @@ function main()
         function ()
 
             -- install target
-            install(targetname or ifelse(option.get("all"), "__all", "__def"))
+            install(targetname or (option.get("all") and "__all" or "__def"))
 
             -- trace
             cprint("${color.success}install ok!")
@@ -96,7 +96,7 @@ function main()
                         function ()
 
                             -- install target
-                            install(targetname or ifelse(option.get("all"), "__all", "__def"))
+                            install(targetname or (option.get("all") and "__all" or "__def"))
 
                             -- trace
                             cprint("${color.success}install ok!")
@@ -118,7 +118,7 @@ function main()
                 if sudo.has() and option.get("admin") then
 
                     -- install target with administrator permission
-                    sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or ifelse(option.get("all"), "__all", "__def"), option.get("installdir"), option.get("prefix")})
+                    sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or (option.get("all") and "__all" or "__def"), option.get("installdir"), option.get("prefix")})
 
                     -- trace
                     cprint("${color.success}install ok!")
