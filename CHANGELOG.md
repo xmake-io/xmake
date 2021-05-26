@@ -8,6 +8,10 @@
 * [#1422](https://github.com/xmake-io/xmake/issues/1422): Support search packages from vcpkg, conan
 * [#1424](https://github.com/xmake-io/xmake/issues/1424): Set binary as default target kind
 
+### Change
+
+* [#1425](https://github.com/xmake-io/xmake/issues/1425): Improve tools/meson to load msvc envirnoments
+
 ### Bugs fixed
 
 * [#1413](https://github.com/xmake-io/xmake/issues/1413): Fix hangs on fetching packages
@@ -1007,6 +1011,10 @@
 * [#1421](https://github.com/xmake-io/xmake/issues/1421): 针对 target 目标，增加目标文件名的前缀，后缀和扩展名设置接口。
 * [#1422](https://github.com/xmake-io/xmake/issues/1422): 支持从 vcpkg, conan 中搜索包
 * [#1424](https://github.com/xmake-io/xmake/issues/1424): 设置 binary 作为默认的 target 目标类型
+
+### 改进
+
+* [#1425](https://github.com/xmake-io/xmake/issues/1425): 改进 tools/meson 去加载 msvc 环境，并且增加一些内置配置。
 
 ### Bugs 修复
 
