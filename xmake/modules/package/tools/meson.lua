@@ -38,8 +38,9 @@ end
 function _get_configs(package, configs, opt)
 
     -- add prefix
-    local configs = configs or {}
+    configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
+    table.insert(configs, "--libdir=lib")
 
     -- set build type
     table.insert(configs, "--buildtype=" .. (package:debug() and "debug" or "release"))
