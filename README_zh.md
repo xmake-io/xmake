@@ -387,7 +387,7 @@ target("loop")
 ```lua
 target("test")
     set_kind("binary")
-    add_files("src/*.zig")
+    add_files("src/main.zig")
 ```
 
 ### 自动拉取远程工具链
@@ -486,7 +486,7 @@ $ xmake l
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.0.6'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
 }
 
 android {

@@ -380,7 +380,7 @@ target("loop")
 ```lua
 target("test")
     set_kind("binary")
-    add_files("src/*.zig")
+    add_files("src/main.zig")
 ```
 
 ### Automatically fetch remote toolchain
@@ -479,7 +479,7 @@ We can uses [xmake-gradle](https://github.com/xmake-io/xmake-gradle) plugin to c
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.0.6'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
 }
 
 android {
