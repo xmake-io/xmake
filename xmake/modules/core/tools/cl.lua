@@ -466,7 +466,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                             end
                         end
                         if #lines > 0 then
-                            local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\r\n")
+                            local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\r\n")
                             if progress.showing_without_scroll() then
                                 print("")
                             end

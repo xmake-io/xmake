@@ -473,7 +473,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                     -- get 16 lines of errors
                     if start > 0 then
-                        lines = table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start))
+                        lines = table.slice(lines, start, start + ((#lines - start > 16) and 16 or (#lines - start)))
                     end
                 end
 
@@ -488,7 +488,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
-                        local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
+                        local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
                         if progress.showing_without_scroll() then
                             print("")
                         end

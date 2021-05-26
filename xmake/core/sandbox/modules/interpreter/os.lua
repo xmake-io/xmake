@@ -66,12 +66,8 @@ end
 
 -- get the script directory
 function sandbox_os.scriptdir()
-
-    -- get the current interpreter instance
     local instance = interpreter.instance()
     assert(instance)
-
-    -- get the script directory
     return instance:scriptdir()
 end
 
