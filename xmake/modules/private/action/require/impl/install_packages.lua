@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
 import("core.project.project")
+import("core.package.package", {alias = "core_package"})
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
@@ -90,6 +91,8 @@ function _get_confirm_from_3rd(packages)
     for _, confirmed_extsource in ipairs(confirmed_extsources) do
         local instance = confirmed_extsource.instance
         local extsource = confirmed_extsource.extsource
+        local extinstance = core_package.load_from_system(extsource)
+        print("xx", extinstance:name())
     end
 end
 
