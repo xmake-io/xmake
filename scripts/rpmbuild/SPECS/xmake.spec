@@ -7,7 +7,7 @@
 %undefine   _disable_source_fetch
 
 Name:       xmake
-Version:    2.5.3
+Version:    2.5.4
 Release:    1%{?dist}
 Summary:    A cross-platform build utility based on Lua
 BuildArch:  noarch
