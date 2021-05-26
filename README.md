@@ -554,3 +554,4 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
 * [OpportunityLiu](https://github.com/OpportunityLiu): improve cuda, tests and ci
+* [xq144](https://github.com/xq114): Improve `xrepo env shell`, and contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.

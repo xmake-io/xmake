@@ -557,7 +557,8 @@ $ ./gradlew app:assembleDebug
 感谢所有对xmake有所[贡献](CONTRIBUTING.md)的人:
 <a href="https://github.com/xmake-io/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
 
-* [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本
-* [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)
-* [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci
+* [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本。
+* [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)。
+* [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci。
+* [xq144](https://github.com/xq114): 改进 `xrepo env shell`，并贡献大量包到 [xmake-repo](https://github.com/xmake-io/xmake-repo) 仓库。
 
