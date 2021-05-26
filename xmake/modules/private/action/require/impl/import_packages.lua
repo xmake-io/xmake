@@ -35,7 +35,7 @@ function main(requires, opt)
         local importpath, count = installdir:replace(rootdir, packagedir, {plain = true})
 
         -- import this package
-        if importpath and count == 1 and not instance:fetch({force = true}) then
+        if importpath and count == 1 then
             print("importing %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
             cprint("  ${yellow}<-${clear} %s", importpath)
             os.tryrm(installdir)

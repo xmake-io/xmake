@@ -19,12 +19,23 @@
 --
 
 -- imports
+import("core.base.task")
 import("core.base.option")
+import("private.action.require.impl.repository")
+import("private.action.require.impl.environment")
 import("private.action.require.impl.import_packages")
 import("private.action.require.impl.utils.get_requires")
 
 -- import the given packages
 function main(requires_raw)
+
+    -- enter environment
+    environment.enter()
+
+    -- pull all repositories first if not exists
+    if not repository.pulled() then
+        task.run("repo", {update = true})
+    end
 
     -- get requires and extra config
     local requires_extra = nil
@@ -50,5 +61,8 @@ function main(requires_raw)
             end
         end
     end
+
+    -- leave environment
+    environment.leave()
 end
 

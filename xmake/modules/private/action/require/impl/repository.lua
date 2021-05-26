@@ -19,33 +19,29 @@
 --
 
 -- imports
+import("core.base.global")
 import("core.package.repository")
 
 -- get all repositories
 function repositories()
-
-    -- get it from cache it
     if _g._REPOSITORIES then
         return _g._REPOSITORIES
     end
-
     -- get all repositories (local first)
     local repos = table.join(repository.repositories(false), repository.repositories(true))
-
-    -- save repositories
     _g._REPOSITORIES = repos
-
-    -- ok
     return repos
 end
 
 -- the remote repositories have been pulled?
 function pulled()
-    for _, repo in ipairs(repositories()) do
-        -- repository not found? or xmake has been re-installed
-        local updatefile = path.join(repo:directory(), "updated")
-        if not os.isdir(repo:directory()) or (os.isfile(updatefile) and os.mtime(os.programfile()) > os.mtime(updatefile)) then
-            return false
+    if global.get("network") ~= "private" then
+        for _, repo in ipairs(repositories()) do
+            -- repository not found? or xmake has been re-installed
+            local updatefile = path.join(repo:directory(), "updated")
+            if not os.isdir(repo:directory()) or (os.isfile(updatefile) and os.mtime(os.programfile()) > os.mtime(updatefile)) then
+                return false
+            end
         end
     end
     return true

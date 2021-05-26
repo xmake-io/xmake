@@ -108,17 +108,19 @@ function sandbox_core_package_repository.repositories(is_global)
     end
 
     -- add main global xmake repository
-    if is_global and global.get("network") ~= "private" then
+    if is_global then
 
         -- get sorted main urls
         local mainurls = localcache.cache("repository"):get("mainurls")
         if not mainurls then
-            import("net.fasturl")
             mainurls = {"https://github.com/xmake-io/xmake-repo.git", "https://gitlab.com/tboox/xmake-repo.git", "https://gitee.com/tboox/xmake-repo.git"}
-            fasturl.add(mainurls)
-            mainurls = fasturl.sort(mainurls)
-            localcache.cache("repository"):set("mainurls", mainurls)
-            localcache.cache("repository"):save()
+            if global.get("network") ~= "private" then
+                import("net.fasturl")
+                fasturl.add(mainurls)
+                mainurls = fasturl.sort(mainurls)
+                localcache.cache("repository"):set("mainurls", mainurls)
+                localcache.cache("repository"):save()
+            end
         end
 
         -- add main url
