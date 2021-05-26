@@ -48,6 +48,49 @@ end
 
 -- get user confirm from 3rd package sources
 function _get_confirm_from_3rd(packages)
+
+    -- get package extsources
+    local package_extsources = {}
+    for _, instance in ipairs(packages) do
+        for _, extsource in ipairs(instance:get("extsources")) do
+            table.insert(package_extsources, {extsource = extsource, instance = instance})
+        end
+    end
+
+    -- get confirm result
+    local result = utils.confirm({description = function ()
+        cprint("${bright color.warning}note: ${clear}select the following 3rd packages")
+        for idx, package_extsource in ipairs(package_extsources) do
+            local instance = package_extsource.instance
+            local extsource = package_extsource.extsource
+            cprint("  ${yellow}%d.${clear} %s ${yellow}->${clear} %s %s ${dim}%s",
+                idx, extsource,
+                instance:displayname(),
+                instance:version_str() or "",
+                package.get_configs_str(instance))
+        end
+    end, answer = function ()
+        cprint("please input number list: ${bright}n${clear} (1,2,..)")
+        io.flush()
+        return (io.read() or "n"):trim()
+    end})
+
+    -- get confirmed extsources
+    local confirmed_extsources = {}
+    if result and result ~= "n" then
+        for _, idx in ipairs(result:split(',')) do
+            idx = tonumber(idx)
+            if package_extsources[idx] then
+                table.insert(confirmed_extsources, package_extsources[idx])
+            end
+        end
+    end
+
+    -- modify packages
+    for _, confirmed_extsource in ipairs(confirmed_extsources) do
+        local instance = confirmed_extsource.instance
+        local extsource = confirmed_extsource.extsource
+    end
 end
 
 -- get user confirm
@@ -58,10 +101,10 @@ function _get_confirm(packages)
         return true
     end
 
-    local confirm
-    while confirm == nil do
-        -- get confirm
-        confirm = utils.confirm({default = true, description = function ()
+    local result
+    while result == nil do
+        -- get confirm result
+        result = utils.confirm({default = true, description = function ()
 
             -- get packages for each repositories
             local packages_repo = {}
@@ -113,18 +156,18 @@ function _get_confirm(packages)
         end})
 
         -- modify to select 3rd packages?
-        if confirm == "m" then
+        if result == "m" then
             _get_confirm_from_3rd(packages)
-            confirm = nil
+            result = nil
         else
             -- get confirm result
-            confirm = option.boolean(confirm)
-            if type(confirm) ~= "boolean" then
-                confirm = true
+            result = option.boolean(result)
+            if type(result) ~= "boolean" then
+                result = true
             end
         end
     end
-    return confirm
+    return result
 end
 
 -- install packages
