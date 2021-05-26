@@ -15,6 +15,7 @@
 ### Bugs fixed
 
 * [#1413](https://github.com/xmake-io/xmake/issues/1413): Fix hangs on fetching packages
+* [#1420](https://github.com/xmake-io/xmake/issues/1420): Fix config and packages cache
 
 ## v2.5.4
 
@@ -1019,6 +1020,7 @@
 ### Bugs 修复
 
 * [#1413](https://github.com/xmake-io/xmake/issues/1413): 修复查找包过程中出现的挂起卡死问题
+* [#1420](https://github.com/xmake-io/xmake/issues/1420): 修复包检测和配置缓存
 
 ## v2.5.4
 
