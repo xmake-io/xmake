@@ -94,22 +94,14 @@ function main()
                     local ok = try
                     {
                         function ()
-
-                            -- install target
                             install(targetname or (option.get("all") and "__all" or "__def"))
-
-                            -- trace
                             cprint("${color.success}install ok!")
-
-                            -- ok
                             return true
                         end
                     }
 
                     -- release privilege
                     privilege.store()
-
-                    -- ok?
                     if ok then return end
                 end
 
@@ -119,8 +111,6 @@ function main()
 
                     -- install target with administrator permission
                     sudo.runl(path.join(os.scriptdir(), "install_admin.lua"), {targetname or (option.get("all") and "__all" or "__def"), option.get("installdir"), option.get("prefix")})
-
-                    -- trace
                     cprint("${color.success}install ok!")
                     ok = true
                 end
