@@ -16,7 +16,7 @@ jobs:
         with:
           submodules: true
 
-      - name: tests
+      - name: Tests
         uses: vmactions/freebsd-vm@v0.1.3
         with:
           usesh: true

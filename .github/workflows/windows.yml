@@ -31,12 +31,9 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-        # prepare
-      - name: prepare
+      - name: Prepare
         run: |
-          # xmake
           xmake show
-          # nsis
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
@@ -46,14 +43,12 @@ jobs:
           Expand-Archive ./nsis-uac.zip -DestinationPath ./nsis -Force
           Move-Item ./nsis/UAC.nsh ./nsis/Include/
 
-        # build
-      - name: build
+      - name: Build
         run: |
           xmake f -vD -P core -a ${{ matrix.arch }}
           xmake -vD -P core
 
-        # tests
-      - name: tests
+      - name: Tests
         run: |
           Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
@@ -65,15 +60,14 @@ jobs:
           #xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
 
-        # build artifacts
-      - name: set release arch name
+      - name: Set release arch name
         run: |
           if ("${{ matrix.arch }}" -eq "x64") {
             Write-Output "RELEASE_NAME=win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } else {
             Write-Output "RELEASE_NAME=win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           }
-      - name: artifact
+      - name: Artifact
         run: |
           # build installer
           (New-Item ./winenv/bin -ItemType Directory).FullName
@@ -141,7 +135,7 @@ jobs:
           overwrite: true
 
         # publish release
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -152,7 +146,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -163,7 +157,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.zip
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:

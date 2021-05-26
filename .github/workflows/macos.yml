@@ -23,18 +23,15 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-        # installation
       - name: Installation
         run: |
           brew install dmd
 
-        # tests
       - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
 
-        # build artifacts
       - name: Artifact
         run: |
           brew install gnu-tar
@@ -42,7 +39,6 @@ jobs:
           scripts/makepkg osxpkg
           scripts/archive-all
           scripts/makeself/build-runfile.sh
-        # upload artifacts
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.macosx.pkg
@@ -64,7 +60,6 @@ jobs:
           name: xmake-latest.zip
           path: artifacts/xmake.zip
 
-        # publish release
       - name: Publish package
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
