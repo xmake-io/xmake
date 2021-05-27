@@ -23,7 +23,6 @@ import("core.base.option")
 import("core.base.hashset")
 import("core.base.scheduler")
 import("core.project.project")
-import("core.package.package", {alias = "core_package"})
 import("core.base.tty")
 import("private.async.runjobs")
 import("private.utils.progress")
@@ -47,25 +46,53 @@ function _sort_packages_urls(packages)
     end
 end
 
+-- replace modified package
+function _replace_package(packages, instance, extinstance)
+    for idx, rawinstance in ipairs(packages) do
+        if rawinstance == instance then
+            packages[idx] = extinstance
+        end
+    end
+end
+
+-- replace modified packages
+function _replace_packages(packages, packages_modified)
+    for _, package_modified in ipairs(packages_modified) do
+        local instance = package_modified.instance
+        local extinstance = package_modified.extinstance
+        _replace_package(packages, instance, extinstance)
+    end
+end
+
 -- get user confirm from 3rd package sources
+-- @see https://github.com/xmake-io/xmake/issues/1140
 function _get_confirm_from_3rd(packages)
 
-    -- get package extsources
-    local package_extsources = {}
-    for _, instance in ipairs(packages) do
-        for _, extsource in ipairs(instance:get("extsources")) do
-            table.insert(package_extsources, {extsource = extsource, instance = instance})
+    -- get extpackages list
+    local extpackages_list = _g.extpackages_list
+    if not extpackages_list then
+        extpackages_list = {}
+        for _, instance in ipairs(packages) do
+            local extsources = instance:get("extsources")
+            local extsources_extra = instance:extraconf("extsources")
+            if extsources then
+                local extpackages = package.load_packages(extsources, extsources_extra)
+                for _, extinstance in ipairs(extpackages) do
+                    table.insert(extpackages_list, {instance = instance, extinstance = extinstance})
+                end
+            end
         end
+        _g.extpackages_list = extpackages_list
     end
 
     -- get confirm result
     local result = utils.confirm({description = function ()
         cprint("${bright color.warning}note: ${clear}select the following 3rd packages")
-        for idx, package_extsource in ipairs(package_extsources) do
-            local instance = package_extsource.instance
-            local extsource = package_extsource.extsource
+        for idx, extinstance in ipairs(extpackages_list) do
+            local instance = extinstance.instance
+            local extinstance = extinstance.extinstance
             cprint("  ${yellow}%d.${clear} %s ${yellow}->${clear} %s %s ${dim}%s",
-                idx, extsource,
+                idx, extinstance:name(),
                 instance:displayname(),
                 instance:version_str() or "",
                 package.get_configs_str(instance))
@@ -76,23 +103,21 @@ function _get_confirm_from_3rd(packages)
         return (io.read() or "n"):trim()
     end})
 
-    -- get confirmed extsources
-    local confirmed_extsources = {}
+    -- get confirmed extpackages
+    local confirmed_extpackages = {}
     if result and result ~= "n" then
         for _, idx in ipairs(result:split(',')) do
             idx = tonumber(idx)
-            if package_extsources[idx] then
-                table.insert(confirmed_extsources, package_extsources[idx])
+            if extpackages_list[idx] then
+                table.insert(confirmed_extpackages, extpackages_list[idx])
             end
         end
     end
 
     -- modify packages
-    for _, confirmed_extsource in ipairs(confirmed_extsources) do
-        local instance = confirmed_extsource.instance
-        local extsource = confirmed_extsource.extsource
-        local extinstance = core_package.load_from_system(extsource)
-        print("xx", extinstance:name())
+    if #confirmed_extpackages > 0 then
+        _replace_packages(packages, confirmed_extpackages)
+        return confirmed_extpackages
     end
 end
 
@@ -105,6 +130,7 @@ function _get_confirm(packages)
     end
 
     local result
+    local packages_modified
     while result == nil do
         -- get confirm result
         result = utils.confirm({default = true, description = function ()
@@ -160,7 +186,7 @@ function _get_confirm(packages)
 
         -- modify to select 3rd packages?
         if result == "m" then
-            _get_confirm_from_3rd(packages)
+            packages_modified = _get_confirm_from_3rd(packages)
             result = nil
         else
             -- get confirm result
@@ -170,7 +196,7 @@ function _get_confirm(packages)
             end
         end
     end
-    return result
+    return result, packages_modified
 end
 
 -- install packages
@@ -492,7 +518,8 @@ function main(requires, opt)
     end
 
     -- get user confirm
-    if not _get_confirm(packages_install) then
+    local confirm, packages_modified = _get_confirm(packages_install)
+    if not confirm then
         local packages_must = {}
         for _, instance in ipairs(packages_install) do
             if not instance:is_optional() then
@@ -506,6 +533,15 @@ function main(requires, opt)
             return
         end
     end
+
+    -- some packages are modified? we need fix packages list and all deps
+    if packages_modified then
+        order_packages = {}
+        _replace_packages(packages, packages_modified)
+        installdeps = _get_package_installdeps(packages)
+        _sort_packages_for_installdeps(packages, installdeps, order_packages)
+        packages = table.unique(order_packages)
+     end
 
     -- sort package urls
     _sort_packages_urls(packages_download)
