@@ -46,6 +46,118 @@ function _sort_packages_urls(packages)
     end
 end
 
+-- replace modified package
+function _replace_package(packages, instance, extinstance)
+    for idx, rawinstance in ipairs(packages) do
+        if rawinstance == instance then
+            packages[idx] = extinstance
+        end
+        local deps = rawinstance._DEPS
+        for name, dep in pairs(deps) do
+            if dep == instance then
+                deps[name] = nil
+                deps[extinstance:name()] = extinstance
+                break
+            end
+        end
+        local parents = rawinstance._PARENTS
+        for name, parent in pairs(parents) do
+            if parent == instance then
+                parents[name] = nil
+                parents[extinstance:name()] = extinstance
+                break
+            end
+        end
+        local orderdeps = rawinstance._ORDERDEPS
+        for depidx, dep in ipairs(orderdeps) do
+            if dep == instance then
+                orderdeps[depidx] = extinstance
+                break
+            end
+        end
+        local linkdeps = rawinstance._LINKDEPS
+        for depidx, dep in ipairs(linkdeps) do
+            if dep == instance then
+                linkdeps[depidx] = extinstance
+                break
+            end
+        end
+        local plaindeps = rawinstance._PLAINDEPS
+        for depidx, dep in ipairs(rawinstance._PLAINDEPS) do
+            if dep == instance then
+                plaindeps[depidx] = extinstance
+                break
+            end
+        end
+    end
+end
+
+-- replace modified packages
+function _replace_packages(packages, packages_modified)
+    for _, package_modified in ipairs(packages_modified) do
+        local instance = package_modified.instance
+        local extinstance = package_modified.extinstance
+        _replace_package(packages, instance, extinstance)
+    end
+end
+
+-- get user confirm from 3rd package sources
+-- @see https://github.com/xmake-io/xmake/issues/1140
+function _get_confirm_from_3rd(packages)
+
+    -- get extpackages list
+    local extpackages_list = _g.extpackages_list
+    if not extpackages_list then
+        extpackages_list = {}
+        for _, instance in ipairs(packages) do
+            local extsources = instance:get("extsources")
+            local extsources_extra = instance:extraconf("extsources")
+            if extsources then
+                local extpackages = package.load_packages(extsources, extsources_extra)
+                for _, extinstance in ipairs(extpackages) do
+                    table.insert(extpackages_list, {instance = instance, extinstance = extinstance})
+                end
+            end
+        end
+        _g.extpackages_list = extpackages_list
+    end
+
+    -- get confirm result
+    local result = utils.confirm({description = function ()
+        cprint("${bright color.warning}note: ${clear}select the following 3rd packages")
+        for idx, extinstance in ipairs(extpackages_list) do
+            local instance = extinstance.instance
+            local extinstance = extinstance.extinstance
+            cprint("  ${yellow}%d.${clear} %s ${yellow}->${clear} %s %s ${dim}%s",
+                idx, extinstance:name(),
+                instance:displayname(),
+                instance:version_str() or "",
+                package.get_configs_str(instance))
+        end
+    end, answer = function ()
+        cprint("please input number list: ${bright}n${clear} (1,2,..)")
+        io.flush()
+        return (io.read() or "n"):trim()
+    end})
+
+    -- get confirmed extpackages
+    local confirmed_extpackages = {}
+    if result and result ~= "n" then
+        for _, idx in ipairs(result:split(',')) do
+            idx = tonumber(idx)
+            if extpackages_list[idx] then
+                table.insert(confirmed_extpackages, extpackages_list[idx])
+            end
+        end
+    end
+
+    -- modify packages
+    if #confirmed_extpackages > 0 then
+        _replace_packages(packages, confirmed_extpackages)
+        return confirmed_extpackages
+    end
+end
+
 -- get user confirm
 function _get_confirm(packages)
 
@@ -54,54 +166,74 @@ function _get_confirm(packages)
         return true
     end
 
-    -- get confirm
-    local confirm = utils.confirm({default = true, description = function ()
+    local result
+    local packages_modified
+    while result == nil do
+        -- get confirm result
+        result = utils.confirm({default = true, description = function ()
 
-        -- get packages for each repositories
-        local packages_repo = {}
-        local packages_group = {}
-        for _, instance in ipairs(packages) do
-            -- achive packages by repository
-            local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
-            if instance:is_thirdparty() then
-                reponame = instance:name():lower():split("::")[1]
-            end
-            packages_repo[reponame] = packages_repo[reponame] or {}
-            table.insert(packages_repo[reponame], instance)
-
-            -- achive packages by group
-            local group = instance:group()
-            if group then
-                packages_group[group] = packages_group[group] or {}
-                table.insert(packages_group[group], instance)
-            end
-        end
-
-        -- show tips
-        cprint("${bright color.warning}note: ${clear}try installing these packages (pass -y to skip confirm)?")
-        for reponame, packages in pairs(packages_repo) do
-            if reponame ~= "" then
-                print("in %s:", reponame)
-            end
-            local packages_showed = {}
+            -- get packages for each repositories
+            local packages_repo = {}
+            local packages_group = {}
             for _, instance in ipairs(packages) do
-                if not packages_showed[tostring(instance)] then
-                    local group = instance:group()
-                    if group and packages_group[group] and #packages_group[group] > 1 then
-                        for idx, package_in_group in ipairs(packages_group[group]) do
-                            cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
-                            packages_showed[tostring(package_in_group)] = true
+                -- achive packages by repository
+                local reponame = instance:repo() and instance:repo():name() or (instance:is_system() and "system" or "")
+                if instance:is_thirdparty() then
+                    reponame = instance:name():lower():split("::")[1]
+                end
+                packages_repo[reponame] = packages_repo[reponame] or {}
+                table.insert(packages_repo[reponame], instance)
+
+                -- achive packages by group
+                local group = instance:group()
+                if group then
+                    packages_group[group] = packages_group[group] or {}
+                    table.insert(packages_group[group], instance)
+                end
+            end
+
+            -- show tips
+            cprint("${bright color.warning}note: ${clear}install or modify (m) these packages (pass -y to skip confirm)?")
+            for reponame, packages in pairs(packages_repo) do
+                if reponame ~= "" then
+                    print("in %s:", reponame)
+                end
+                local packages_showed = {}
+                for _, instance in ipairs(packages) do
+                    if not packages_showed[tostring(instance)] then
+                        local group = instance:group()
+                        if group and packages_group[group] and #packages_group[group] > 1 then
+                            for idx, package_in_group in ipairs(packages_group[group]) do
+                                cprint("  ${yellow}%s${clear} %s %s ${dim}%s", idx == 1 and "->" or "   or", package_in_group:displayname(), package_in_group:version_str() or "", package.get_configs_str(package_in_group))
+                                packages_showed[tostring(package_in_group)] = true
+                            end
+                            packages_group[group] = nil
+                        else
+                            cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
+                            packages_showed[tostring(instance)] = true
                         end
-                        packages_group[group] = nil
-                    else
-                        cprint("  ${yellow}->${clear} %s %s ${dim}%s", instance:displayname(), instance:version_str() or "", package.get_configs_str(instance))
-                        packages_showed[tostring(instance)] = true
                     end
                 end
             end
+        end, answer = function ()
+            cprint("please input: ${bright}y${clear} (y/n/m)")
+            io.flush()
+            return (io.read() or "false"):trim()
+        end})
+
+        -- modify to select 3rd packages?
+        if result == "m" then
+            packages_modified = _get_confirm_from_3rd(packages)
+            result = nil
+        else
+            -- get confirm result
+            result = option.boolean(result)
+            if type(result) ~= "boolean" then
+                result = true
+            end
         end
-    end})
-    return confirm
+    end
+    return result, packages_modified
 end
 
 -- install packages
@@ -423,7 +555,8 @@ function main(requires, opt)
     end
 
     -- get user confirm
-    if not _get_confirm(packages_install) then
+    local confirm, packages_modified = _get_confirm(packages_install)
+    if not confirm then
         local packages_must = {}
         for _, instance in ipairs(packages_install) do
             if not instance:is_optional() then
@@ -437,6 +570,15 @@ function main(requires, opt)
             return
         end
     end
+
+    -- some packages are modified? we need fix packages list and all deps
+    if packages_modified then
+        order_packages = {}
+        _replace_packages(packages, packages_modified)
+        installdeps = _get_package_installdeps(packages)
+        _sort_packages_for_installdeps(packages, installdeps, order_packages)
+        packages = table.unique(order_packages)
+     end
 
     -- sort package urls
     _sort_packages_urls(packages_download)
