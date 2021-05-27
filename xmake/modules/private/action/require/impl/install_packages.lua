@@ -52,6 +52,43 @@ function _replace_package(packages, instance, extinstance)
         if rawinstance == instance then
             packages[idx] = extinstance
         end
+        local deps = rawinstance._DEPS
+        for name, dep in pairs(deps) do
+            if dep == instance then
+                deps[name] = nil
+                deps[extinstance:name()] = extinstance
+                break
+            end
+        end
+        local parents = rawinstance._PARENTS
+        for name, parent in pairs(parents) do
+            if parent == instance then
+                parents[name] = nil
+                parents[extinstance:name()] = extinstance
+                break
+            end
+        end
+        local orderdeps = rawinstance._ORDERDEPS
+        for depidx, dep in ipairs(orderdeps) do
+            if dep == instance then
+                orderdeps[depidx] = extinstance
+                break
+            end
+        end
+        local linkdeps = rawinstance._LINKDEPS
+        for depidx, dep in ipairs(linkdeps) do
+            if dep == instance then
+                linkdeps[depidx] = extinstance
+                break
+            end
+        end
+        local plaindeps = rawinstance._PLAINDEPS
+        for depidx, dep in ipairs(rawinstance._PLAINDEPS) do
+            if dep == instance then
+                plaindeps[depidx] = extinstance
+                break
+            end
+        end
     end
 end
 
