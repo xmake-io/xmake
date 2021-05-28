@@ -162,11 +162,7 @@ function _get_file_patterns(sourcefiles)
             local _excludes = {}
             for _, exclude in ipairs(excludes) do
                 exclude = path.translate(exclude)
-                exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-                exclude = exclude:gsub("%*%*", "\001")
-                exclude = exclude:gsub("%*", "\002")
-                exclude = exclude:gsub("\001", ".*")
-                exclude = exclude:gsub("\002", "[^/]*")
+                exclude = path.pattern(exclude)
                 table.insert(_excludes, exclude)
             end
             excludes = _excludes

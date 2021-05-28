@@ -191,7 +191,11 @@ function path.pattern(pattern)
     pattern = pattern:gsub("%*%*", "\001")
     pattern = pattern:gsub("%*", "\002")
     pattern = pattern:gsub("\001", ".*")
-    pattern = pattern:gsub("\002", "[^/]*")
+    if path.sep() == '\\' then
+        pattern = pattern:gsub("\002", "[^/\\]*")
+    else
+        pattern = pattern:gsub("\002", "[^/]*")
+    end
 
     -- case-insensitive filesystem?
     if not os.fscase() then
