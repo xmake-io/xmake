@@ -439,7 +439,7 @@ function _instance:filelock()
     if filelock == nil then
         filelock = io.openlock(path.join(self:cachedir(), "package.lock"))
         if not filelock then
-            os.raise("cannot create filelock for package(%s)!", package:name())
+            os.raise("cannot create filelock for package(%s)!", self:name())
         end
         self._FILELOCK = filelock
     end
