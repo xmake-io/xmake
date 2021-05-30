@@ -45,7 +45,7 @@ function main(opt)
     if is_host("windows") then
         table.insert(paths, "$(reg HKEY_LOCAL_MACHINE\\SOFTWARE\\GitForWindows;InstallPath)\\usr\\bin")
     end
-    opt.pathes = paths
+    opt.paths = paths
 
     -- find program
     local program = find_program(opt.program or "perl", opt)
