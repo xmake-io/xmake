@@ -78,6 +78,18 @@ function _host_pattern(pattern)
     return pattern
 end
 
+-- has main entry? it will be callable directly
+function _is_callable(func)
+    if type(func) == "function" then
+        return true
+    elseif type(func) == "table" then
+        local meta = debug.getmetatable(func)
+        if meta and meta.__call then
+            return true
+        end
+    end
+end
+
 -- get proxy mirror url
 function mirror(url)
     local proxy_pac = _proxy_pac()
@@ -111,7 +123,7 @@ function config(url)
 
         -- get proxy from the pac file
         local proxy_pac = _proxy_pac()
-        if proxy_pac and proxy_pac(url, host) then
+        if proxy_pac and _is_callable(proxy_pac) and proxy_pac(url, host) then
             return global.get("proxy")
         end
         if not proxy_pac and not proxy_hosts then
