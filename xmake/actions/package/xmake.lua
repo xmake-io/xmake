@@ -26,15 +26,15 @@ task("package")
         description = "Package target.",
         shortname = 'p',
         options = {
-            {'o', "outputdir",  "kv", nil,     "Set the output directory."},
-            {'a', "all",        "k",  nil,     "Package all targets."},
-            {'f', "format",     "kv", "local", "Set the package format.",
-                                                values = {"dotpkg", "local"}},
+            {'o', "outputdir",  "kv", nil,          "Set the output directory."},
+            {'a', "all",        "k",  nil,          "Package all targets."},
+            {'f', "format",     "kv", "localpkg",   "Set the package format.",
+                                                    values = {"oldpkg", "localpkg"}},
             {},
-            {nil, "target",     "v",  nil,     "The target name. It will package all default targets if this parameter is not specified.",
-                                                values = function (complete, opt)
-                                                    return import("private.utils.complete_helper.targets")(complete, opt)
-                                                end }
+            {nil, "target",     "v",  nil,          "The target name. It will package all default targets if this parameter is not specified.",
+                                                    values = function (complete, opt)
+                                                        return import("private.utils.complete_helper.targets")(complete, opt)
+                                                    end }
         }
     }
 
