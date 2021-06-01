@@ -18,36 +18,25 @@
 -- @file        xmake.lua
 --
 
--- define task
 task("package")
-
-    -- set category
     set_category("action")
-
-    -- on run
     on_run("main")
-
-    -- set menu
     set_menu {
-                -- usage
-                usage = "xmake package|p [options] [target]"
-
-                -- description
-            ,   description = "Package target."
-
-                -- xmake p
-            ,   shortname = 'p'
-
-                -- options
-            ,   options =
-                {
-                    {'o', "outputdir",  "kv", nil   , "Set the output directory."                                     }
-                ,   {'a', "all",        "k",  nil   , "Package all targets."                                          }
-                ,   {}
-                ,   {nil, "target",     "v",  nil   , "The target name. It will package all default targets if this parameter is not specified."
-                                                    , values = function (complete, opt) return import("private.utils.complete_helper.targets")(complete, opt) end }
-                }
-            }
+        usage = "xmake package|p [options] [target]",
+        description = "Package target.",
+        shortname = 'p',
+        options = {
+            {'o', "outputdir",  "kv", nil,     "Set the output directory."},
+            {'a', "all",        "k",  nil,     "Package all targets."},
+            {'f', "format",     "kv", "local", "Set the package format.",
+                                                values = {"dotpkg", "local"}},
+            {},
+            {nil, "target",     "v",  nil,     "The target name. It will package all default targets if this parameter is not specified.",
+                                                values = function (complete, opt)
+                                                    return import("private.utils.complete_helper.targets")(complete, opt)
+                                                end }
+        }
+    }
 
 
 
