@@ -21,11 +21,9 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.base.global")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.platform")
 
 -- package library
 function _package_library(target)
@@ -47,7 +45,7 @@ function _package_library(target)
 
     -- copy *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/787
-    if target:kind() == "shared" and is_plat("windows", "mingw") then
+    if target:is_shared() and target:is_plat("windows", "mingw") then
         local targetfile = target:targetfile()
         local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
         if os.isfile(targetfile_lib) then
@@ -93,34 +91,21 @@ end
 
 -- do package target
 function _do_package_target(target)
-
-    -- is phony target?
-    if target:is_phony() then
-        return
+    if not target:is_phony() then
+        local scripts =
+        {
+            binary = function (target) end
+        ,   static = _package_library
+        ,   shared = _package_library
+        }
+        local kind = target:kind()
+        assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
+        scripts[kind](target)
     end
-
-    -- get kind
-    local kind = target:kind()
-
-    -- get script
-    local scripts =
-    {
-        binary = function (target) end
-    ,   static = _package_library
-    ,   shared = _package_library
-    }
-
-    -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
-
-    -- package it
-    scripts[kind](target)
 end
 
 -- package target
 function _on_package_target(target)
-
-    -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
         local on_package = r:script("package")
@@ -130,8 +115,6 @@ function _on_package_target(target)
         end
     end
     if done then return end
-
-    -- do package
     _do_package_target(target)
 end
 

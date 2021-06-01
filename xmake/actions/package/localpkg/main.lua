@@ -21,106 +21,19 @@
 -- imports
 import("core.base.option")
 import("core.base.task")
-import("core.base.global")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("core.platform.platform")
-
--- package library
-function _package_library(target)
-
-    -- the output directory
-    local outputdir = option.get("outputdir") or config.buildir()
-
-    -- the target name
-    local targetname = target:name()
-
-    -- copy the library file to the output directory
-    os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile())))
-
-    -- copy the symbol file to the output directory
-    local symbolfile = target:symbolfile()
-    if os.isfile(symbolfile) then
-        os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile)))
-    end
-
-    -- copy *.lib for shared/windows (*.dll) target
-    -- @see https://github.com/xmake-io/xmake/issues/787
-    if target:kind() == "shared" and is_plat("windows", "mingw") then
-        local targetfile = target:targetfile()
-        local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
-        if os.isfile(targetfile_lib) then
-            os.vcp(targetfile_lib, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/", outputdir, targetname))
-        end
-    end
-
-    -- copy the config.h to the output directory (deprecated)
-    local configheader = target:configheader()
-    if configheader then
-        os.vcp(configheader, format("%s/%s.pkg/$(plat)/$(arch)/include/%s", outputdir, targetname, path.filename(configheader)))
-    end
-
-    -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(format("%s/%s.pkg/$(plat)/$(arch)/include", outputdir, targetname))
-    if srcheaders and dstheaders then
-        local i = 1
-        for _, srcheader in ipairs(srcheaders) do
-            local dstheader = dstheaders[i]
-            if dstheader then
-                os.vcp(srcheader, dstheader)
-            end
-            i = i + 1
-        end
-    end
-
-    -- make xmake.lua
-    local file = io.open(format("%s/%s.pkg/xmake.lua", outputdir, targetname), "w")
-    if file then
-        file:print("option(\"%s\")", targetname)
-        file:print("    set_showmenu(true)")
-        file:print("    set_category(\"package\")")
-        file:print("    add_links(\"%s\")", target:basename())
-        file:write("    add_linkdirs(\"$(plat)/$(arch)/lib/$(mode)\")\n")
-        file:write("    add_includedirs(\"$(plat)/$(arch)/include\")\n")
-        local languages = target:get("languages")
-        if languages then
-            file:print("    set_languages(\"%s\")", table.concat(table.wrap(languages), "\", \""))
-        end
-        file:close()
-    end
-end
 
 -- do package target
 function _do_package_target(target)
-
-    -- is phony target?
     if target:is_phony() then
         return
     end
-
-    -- get kind
-    local kind = target:kind()
-
-    -- get script
-    local scripts =
-    {
-        binary = function (target) end
-    ,   static = _package_library
-    ,   shared = _package_library
-    }
-
-    -- check
-    assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
-
-    -- package it
-    scripts[kind](target)
 end
 
 -- package target
 function _on_package_target(target)
-
-    -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
         local on_package = r:script("package")
@@ -130,8 +43,6 @@ function _on_package_target(target)
         end
     end
     if done then return end
-
-    -- do package
     _do_package_target(target)
 end
 
