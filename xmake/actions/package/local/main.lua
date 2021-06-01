@@ -90,9 +90,27 @@ function _package_library(target)
     if file then
         file:print("package(\"%s\")", packagename)
         file:print("    set_description(\"%s\")", "The " .. packagename .. " package.")
+        if target:is_shared() and target:is_plat("windows", "mingw") then
+            file:print("    on_load(function (package)")
+            file:print("        package:addenv(\"PATH\", path.join(os.scriptdir(), \"bin\", package:plat(), package:arch(), package:mode()))")
+            file:print("    end)")
+        end
         file:print("    on_fetch(function (package, opt)")
         file:print("        local result = {}")
+        if target:is_shared() and target:is_plat("windows", "mingw") then
+            file:print("        local librarydir = path.join(os.scriptdir(), \"bin\", package:plat(), package:arch(), package:mode())")
+        else
+            file:print("        local librarydir = path.join(os.scriptdir(), \"lib\", package:plat(), package:arch(), package:mode())")
+        end
+        if target:is_shared() then
+            file:print("        result.shared = true")
+        else
+            file:print("        result.static = true")
+        end
         file:print("        result.links = \"%s\"", target:linkname())
+        file:print("        result.linkdirs = librarydir")
+        file:print("        result.libfiles = os.files(path.join(librarydir, \"*\"))")
+        file:print("        result.includedirs = path.join(os.scriptdir(), \"include\")")
         if target:version() then
             file:print("        result.version = \"%s\"", (target:version()))
         end
