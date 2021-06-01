@@ -37,7 +37,7 @@ rule("plugin.vsxmake.autoupdate")
         import("core.base.task")
 
         -- run only once for all xmake process in vs
-        local tmpfile = os.tmpfile(path.join(os.projectdir(), "plugin.vsxmake.autoupdate"))
+        local tmpfile = path.join(os.projectdir(), ".xmake", "plugin.vsxmake.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
         if lockfile:trylock() then
