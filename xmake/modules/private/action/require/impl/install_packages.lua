@@ -122,6 +122,12 @@ function _get_confirm_from_3rd(packages)
         _g.extpackages_list = extpackages_list
     end
 
+    -- no extpackages?
+    if #extpackages_list == 0 then
+        print("no more packages!")
+        return
+    end
+
     -- get confirm result
     local result = utils.confirm({description = function ()
         cprint("${bright color.warning}note: ${clear}select the following 3rd packages")
