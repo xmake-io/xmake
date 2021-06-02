@@ -111,8 +111,13 @@ function _package_library(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
+        local deps = {}
+        for _, dep in ipairs(target:orderdeps()) do
+            table.insert(deps, dep:name())
+        end
         file:print([[package("%s")
     set_description("%s")
+    %s
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
@@ -124,6 +129,7 @@ function _package_library(target)
         return result
     end)]], packagename,
             "The " .. packagename .. " package",
+            #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "",
             target:linkname(),
             path.filename(targetfile))
         file:close()
