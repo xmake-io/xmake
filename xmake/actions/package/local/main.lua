@@ -29,18 +29,35 @@ import("core.project.project")
 function _package_binary(target)
 
     -- get the output directory
-    local outputdir = option.get("outputdir") or config.buildir()
+    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagename = target:name():lower()
+    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
+    local binarydir   = path.join(packagedir, "bin", target:plat(), target:arch(), config.mode())
+
+    -- copy the binary file to the output directory
+    local targetfile = target:targetfile()
+    os.mkdir(binarydir)
+    os.vcp(targetfile, binarydir)
+    os.trycp(target:symbolfile(), binarydir)
 
     -- generate xmake.lua
-    local packagename = target:name():lower()
-    local file = io.open(path.join(outputdir, "packages", packagename:sub(1, 1), packagename, "xmake.lua"), "w")
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        file:print("package(\"%s\")", packagename)
-        file:print("    set_description(\"%s\")", "The " .. packagename .. " package.")
-        file:print("    set_kind(\"binary\")")
-        file:print("    on_fetch(function (package, opt)")
-        file:print("        return {program = \"%s\"}", target:targetfile())
-        file:print("    end)")
+        file:print([[package("%s")
+    set_kind("binary")
+    set_description("%s")
+    on_load("windows", "mingw", function (package)
+        if package:config("shared") then
+            package:addenv("PATH", path.join(os.scriptdir(), "bin", package:plat(), package:arch(), package:mode()))
+        end
+    end)
+    on_fetch(function (package)
+        local result = {}
+        result.program = path.join(os.scriptdir(), "bin", package:plat(), package:arch(), package:mode(), "%s")
+        return result
+    end)]], packagename,
+            "The " .. packagename .. " package",
+            path.filename(targetfile))
         file:close()
     end
 end
@@ -52,24 +69,18 @@ function _package_library(target)
     local outputdir   = option.get("outputdir") or config.buildir()
     local packagename = target:name():lower()
     local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
-    local binarydir   = path.join(packagedir, "bin", target:plat(), target:arch(), config.mode())
     local librarydir  = path.join(packagedir, "lib", target:plat(), target:arch(), config.mode())
 
     -- copy the library file to the output directory
     local targetfile = target:targetfile()
+    os.mkdir(librarydir)
+    os.vcp(targetfile, librarydir)
+    os.trycp(target:symbolfile(), librarydir)
     if target:is_shared() and target:is_plat("windows", "mingw") then
-        os.mkdir(binarydir)
-        os.vcp(targetfile, binarydir)
-        os.trycp(target:symbolfile(), binarydir)
         local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
         if os.isfile(targetfile_lib) then
-            os.mkdir(librarydir)
             os.vcp(targetfile_lib, librarydir)
         end
-    else
-        os.mkdir(librarydir)
-        os.vcp(targetfile, librarydir)
-        os.trycp(target:symbolfile(), librarydir)
     end
 
     -- copy headers
@@ -88,34 +99,32 @@ function _package_library(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        file:print("package(\"%s\")", packagename)
-        file:print("    set_description(\"%s\")", "The " .. packagename .. " package.")
-        if target:is_shared() and target:is_plat("windows", "mingw") then
-            file:print("    on_load(function (package)")
-            file:print("        package:addenv(\"PATH\", path.join(os.scriptdir(), \"bin\", package:plat(), package:arch(), package:mode()))")
-            file:print("    end)")
+        file:print([[package("%s")
+    set_description("%s")
+    on_load(function (package)
+        if package:config("shared") then
+            local librarydir = path.join(os.scriptdir(), "lib", package:plat(), package:arch(), package:mode())
+            if package:is_plat("windows", "mingw") then
+                package:addenv("PATH", librarydir)
+            elseif package:is_plat("macosx") then
+                package:addenv("DYLD_LIBRARY_PATH", librarydir)
+            else
+                package:addenv("LD_LIBRARY_PATH", librarydir)
+            end
         end
-        file:print("    on_fetch(function (package, opt)")
-        file:print("        local result = {}")
-        if target:is_shared() and target:is_plat("windows", "mingw") then
-            file:print("        local librarydir = path.join(os.scriptdir(), \"bin\", package:plat(), package:arch(), package:mode())")
-        else
-            file:print("        local librarydir = path.join(os.scriptdir(), \"lib\", package:plat(), package:arch(), package:mode())")
-        end
-        if target:is_shared() then
-            file:print("        result.shared = true")
-        else
-            file:print("        result.static = true")
-        end
-        file:print("        result.links = \"%s\"", target:linkname())
-        file:print("        result.linkdirs = librarydir")
-        file:print("        result.libfiles = os.files(path.join(librarydir, \"*\"))")
-        file:print("        result.includedirs = path.join(os.scriptdir(), \"include\")")
-        if target:version() then
-            file:print("        result.version = \"%s\"", (target:version()))
-        end
-        file:print("        return result")
-        file:print("    end)")
+    end)
+    on_fetch(function (package)
+        local result = {}
+        local librarydir = path.join(os.scriptdir(), "lib", package:plat(), package:arch(), package:mode())
+        result.links = "%s"
+        result.linkdirs = librarydir
+        result.libfiles = path.join(librarydir, "%s")
+        result.includedirs = path.join(os.scriptdir(), "include")
+        return result
+    end)]], packagename,
+            "The " .. packagename .. " package",
+            target:linkname(),
+            path.filename(targetfile))
         file:close()
     end
 end
