@@ -8,6 +8,7 @@
 * [#1422](https://github.com/xmake-io/xmake/issues/1422): Support search packages from vcpkg, conan
 * [#1424](https://github.com/xmake-io/xmake/issues/1424): Set binary as default target kind
 * [#1140](https://github.com/xmake-io/xmake/issues/1140): Add a way to ask xmake to try to download dependencies from a certain package manager
+* [#1339](https://github.com/xmake-io/xmake/issues/1339): Improve `xmake package` to generate new local/remote packages
 
 ### Change
 
@@ -1014,6 +1015,7 @@
 * [#1422](https://github.com/xmake-io/xmake/issues/1422): 支持从 vcpkg, conan 中搜索包
 * [#1424](https://github.com/xmake-io/xmake/issues/1424): 设置 binary 作为默认的 target 目标类型
 * [#1140](https://github.com/xmake-io/xmake/issues/1140): 支持安装时候，手动选择从第三包包管理器安装包
+* [#1339](https://github.com/xmake-io/xmake/issues/1339): 改进 `xmake package` 去产生新的本地包格式，无缝集成 `add_requires`，并且新增生成远程包支持
 
 ### 改进
 
