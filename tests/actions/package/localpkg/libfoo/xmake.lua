@@ -1,4 +1,5 @@
 add_rules("mode.debug", "mode.release")
+set_license("Apache-2.0")
 
 target("sub")
     set_kind("static")

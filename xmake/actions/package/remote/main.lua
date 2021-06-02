@@ -45,13 +45,22 @@ function _package_remote(target)
         for _, dep in ipairs(target:orderdeps()) do
             table.insert(deps, dep:name())
         end
-        file:print([[package("%s")
-    %s
-    set_description("%s")
-
+        file:print("package(\"%s\")", packagename)
+        if target:is_binary() then
+            file:print("    set_kind(\"binary\")")
+        end
+        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
     add_urls("https://github.com/myrepo/foo.git")
     add_versions("%s", "<shasum256 or gitcommit>")
-    %s
+
     on_install(function (package)
         local configs = {}
         if package:config("shared") then
@@ -63,11 +72,7 @@ function _package_remote(target)
     on_test(function (package)
         -- TODO check includes and interfaces
         -- assert(package:has_cfuncs("foo", {includes = "foo.h"})
-    end)]], packagename,
-            target:is_binary() and "set_kind(\"binary\")" or "",
-            "The " .. packagename .. " package",
-            target:version() and (target:version()) or "1.0",
-            #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "")
+    end)]], target:version() and (target:version()) or "1.0")
         file:close()
     end
 

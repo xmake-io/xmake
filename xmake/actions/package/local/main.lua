@@ -52,18 +52,23 @@ function _package_binary(target)
         for _, dep in ipairs(target:orderdeps()) do
             table.insert(deps, dep:name())
         end
-        file:print([[package("%s")
-    set_kind("binary")
-    set_description("%s")
-    %s
+        file:print("package(\"%s\")", packagename)
+        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
+
     on_fetch(function (package)
         return {program = path.join(package:installdir("bin"), "%s")}
-    end)]], packagename,
-            "The " .. packagename .. " package",
-            #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "",
+    end)]], #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "",
             path.filename(targetfile))
         file:close()
     end
@@ -124,22 +129,27 @@ function _package_library(target)
         for _, dep in ipairs(target:orderdeps()) do
             table.insert(deps, dep:name())
         end
-        file:print([[package("%s")
-    set_description("%s")
-    %s
+        file:print("package(\"%s\")", packagename)
+        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
+
     on_fetch(function (package)
         local result = {}
         result.links = "%s"
         result.linkdirs = package:installdir("lib")
         result.includedirs = package:installdir("include")
         return result
-    end)]], packagename,
-            "The " .. packagename .. " package",
-            #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "",
-            target:linkname(),
+    end)]], target:linkname(),
             path.filename(targetfile))
         file:close()
     end
