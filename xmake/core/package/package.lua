@@ -475,12 +475,20 @@ end
 
 -- get the installed directory of this package
 function _instance:installdir(...)
-    local name = self:name():lower():gsub("::", "_")
-    local dir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
-    if self:version_str() then
-        dir = path.join(dir, self:version_str())
+    local installdir = self._INSTALLDIR
+    if not installdir then
+        installdir = self:get("installdir")
+        if not installdir then
+            local name = self:name():lower():gsub("::", "_")
+            installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+            if self:version_str() then
+                installdir = path.join(installdir, self:version_str())
+            end
+            installdir = path.join(installdir, self:buildhash())
+        end
+        self._INSTALLDIR = installdir
     end
-    dir = path.join(dir, self:buildhash(), ...)
+    local dir = path.join(installdir, ...)
     if not os.isdir(dir) then
         os.mkdir(dir)
     end
@@ -1226,7 +1234,7 @@ function _instance:fetch(opt)
     if self:is_binary() then
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is_thirdparty() and not self:is_fetchonly() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() then
             fetchinfo = self:_fetch_tool({require_version = self:version_str(), force = opt.force})
             if fetchinfo then
                 is_system = self._is_system
@@ -1243,7 +1251,7 @@ function _instance:fetch(opt)
     else
 
         -- only fetch it from the xmake repository first
-        if not fetchinfo and system ~= true and not self:is_thirdparty() and not self:is_fetchonly() then
+        if not fetchinfo and system ~= true and not self:is_thirdparty() then
             fetchinfo = self:_fetch_library({require_version = self:version_str(), external = external, force = opt.force})
             if fetchinfo then
                 is_system = self._is_system
@@ -1646,6 +1654,7 @@ function package.apis()
         ,   "package.set_homepage"
         ,   "package.set_description"
         ,   "package.set_parallelize"
+        ,   "package.set_installdir"
             -- package.add_xxx
         ,   "package.add_deps"
         ,   "package.add_urls"
