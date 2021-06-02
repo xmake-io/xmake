@@ -32,12 +32,13 @@ rule("plugin.vsxmake.autoupdate")
     after_build(function (opt)
 
         -- imports
+        import("core.project.config")
         import("core.project.depend")
         import("core.project.project")
         import("core.base.task")
 
         -- run only once for all xmake process in vs
-        local tmpfile = os.tmpfile(path.join(os.projectdir(), "plugin.vsxmake.autoupdate"))
+        local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.vsxmake.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
         if lockfile:trylock() then
@@ -59,4 +60,3 @@ rule("plugin.vsxmake.autoupdate")
             lockfile:close()
         end
     end)
-
