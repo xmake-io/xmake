@@ -53,7 +53,12 @@ function _package_binary(target)
             table.insert(deps, dep:name())
         end
         file:print("package(\"%s\")", packagename)
-        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
         if target:license() then
             file:print("    set_license(\"%s\")", target:license())
         end
@@ -130,7 +135,12 @@ function _package_library(target)
             table.insert(deps, dep:name())
         end
         file:print("package(\"%s\")", packagename)
-        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
         if target:license() then
             file:print("    set_license(\"%s\")", target:license())
         end

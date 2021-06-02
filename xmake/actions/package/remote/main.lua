@@ -49,7 +49,12 @@ function _package_remote(target)
         if target:is_binary() then
             file:print("    set_kind(\"binary\")")
         end
-        file:print("    set_description(\"%s\")", "The " .. packagename .. " package")
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
         if target:license() then
             file:print("    set_license(\"%s\")", target:license())
         end
@@ -57,10 +62,13 @@ function _package_remote(target)
             file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
         end
         file:print("")
+        local url = option.get("url") or "https://github.com/myrepo/foo.git"
+        local version = option.get("version") or target:version() and (target:version()) or "1.0"
+        local shasum = option.get("shasum") or "<shasum256 or gitcommit>"
+        file:print("    add_urls(\"%s\")", url)
+        file:print("    add_versions(\"%s\", \"%s\")", version, shasum)
+        file:print("")
         file:print([[
-    add_urls("https://github.com/myrepo/foo.git")
-    add_versions("%s", "<shasum256 or gitcommit>")
-
     on_install(function (package)
         local configs = {}
         if package:config("shared") then
@@ -72,7 +80,7 @@ function _package_remote(target)
     on_test(function (package)
         -- TODO check includes and interfaces
         -- assert(package:has_cfuncs("foo", {includes = "foo.h"})
-    end)]], target:version() and (target:version()) or "1.0")
+    end)]])
         file:close()
     end
 
