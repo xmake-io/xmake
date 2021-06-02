@@ -59,7 +59,7 @@ function _package_remote(target)
             file:print("    set_license(\"%s\")", target:license())
         end
         if #deps > 0 then
-            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
         end
         file:print("")
         local url = option.get("url") or "https://github.com/myrepo/foo.git"

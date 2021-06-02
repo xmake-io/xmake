@@ -63,7 +63,7 @@ function _package_binary(target)
             file:print("    set_license(\"%s\")", target:license())
         end
         if #deps > 0 then
-            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
         end
         file:print("")
         file:print([[
@@ -145,7 +145,7 @@ function _package_library(target)
             file:print("    set_license(\"%s\")", target:license())
         end
         if #deps > 0 then
-            file:print("    set_deps(\"%s\")", table.concat(deps, "\", \""))
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
         end
         file:print("")
         file:print([[

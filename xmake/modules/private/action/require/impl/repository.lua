@@ -70,17 +70,9 @@ function packagedir(packagename, reponame)
             break
         end
     end
-
-    -- found?
     if foundir then
-
-        -- save package directory
         packagedirs[packagename] = foundir
-
-        -- update cache
         _g._PACKAGEDIRS = packagedirs
-
-        -- ok
         return foundir[1], foundir[2]
     end
 end
