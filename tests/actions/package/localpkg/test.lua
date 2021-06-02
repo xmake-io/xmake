@@ -1,8 +1,10 @@
 function main(t)
+    os.exec("xmake g --network=private")
     os.cd("libfoo")
     os.exec("xmake package -vD -o ../bar/build")
     os.cd("../bar")
     os.exec("xmake f -c -vD")
     os.exec("xmake -vD")
     os.exec("xmake run")
+    os.exec("xmake g --network=public")
 end
