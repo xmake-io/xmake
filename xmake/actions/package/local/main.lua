@@ -24,6 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
+import("lib.luajit.bit")
 
 -- package binary
 function _package_binary(target)
@@ -31,6 +32,10 @@ function _package_binary(target)
     -- get the output directory
     local outputdir   = option.get("outputdir") or config.buildir()
     local packagename = target:name():lower()
+    if bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
+        return
+    end
     local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
 
@@ -64,6 +69,10 @@ function _package_library(target)
     -- get the output directory
     local outputdir   = option.get("outputdir") or config.buildir()
     local packagename = target:name():lower()
+    if bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
+        return
+    end
     local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
     local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
