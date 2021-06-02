@@ -67,6 +67,9 @@ function _package_binary(target)
             path.filename(targetfile))
         file:close()
     end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
 end
 
 -- package library
@@ -140,6 +143,9 @@ function _package_library(target)
             path.filename(targetfile))
         file:close()
     end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
 end
 
 -- do package target

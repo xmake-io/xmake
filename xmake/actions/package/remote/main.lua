@@ -24,79 +24,70 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
+import("lib.luajit.bit")
 
--- do package target
-function _do_package_target(target)
-    if target:is_phony() then
+-- package remote
+function _package_remote(target)
+
+    -- get the output directory
+    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagename = target:name():lower()
+    if bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
         return
     end
+    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
+
+    -- generate xmake.lua
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
+    if file then
+        local deps = {}
+        for _, dep in ipairs(target:orderdeps()) do
+            table.insert(deps, dep:name())
+        end
+        file:print([[package("%s")
+    %s
+    set_description("%s")
+
+    add_urls("https://github.com/myrepo/foo.git")
+    add_versions("%s", "<shasum256 or gitcommit>")
+    %s
+    on_install(function (package)
+        local configs = {}
+        if package:config("shared") then
+            configs.kind = "shared"
+        end
+        import("package.tools.xmake").install(package, configs)
+    end)
+
+    on_test(function (package)
+        -- TODO check includes and interfaces
+        -- assert(package:has_cfuncs("foo", {includes = "foo.h"})
+    end)]], packagename,
+            target:is_binary() and "set_kind(\"binary\")" or "",
+            "The " .. packagename .. " package",
+            target:version() and (target:version()) or "1.0",
+            #deps > 0 and ("add_deps(\"" .. table.concat(deps, "\", \"") .. "\")") or "")
+        file:close()
+    end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
 end
 
 -- package target
-function _on_package_target(target)
-    local done = false
-    for _, r in ipairs(target:orderules()) do
-        local on_package = r:script("package")
-        if on_package then
-            on_package(target)
-            done = true
-        end
-    end
-    if done then return end
-    _do_package_target(target)
-end
-
--- package the given target
 function _package_target(target)
-
-    -- has been disabled?
-    if not target:is_enabled() then
-        return
+    if not target:is_phony() then
+        local scripts =
+        {
+            binary = _package_remote
+        ,   static = _package_remote
+        ,   shared = _package_remote
+        }
+        local kind = target:kind()
+        assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)
+        scripts[kind](target)
     end
-
-    -- enter project directory
-    local oldir = os.cd(project.directory())
-
-    -- enter the environments of the target packages
-    local oldenvs = os.addenvs(target:pkgenvs())
-
-    -- the target scripts
-    local scripts =
-    {
-        target:script("package_before")
-    ,   function (target)
-            for _, r in ipairs(target:orderules()) do
-                local before_package = r:script("package_before")
-                if before_package then
-                    before_package(target)
-                end
-            end
-        end
-    ,   target:script("package", _on_package_target)
-    ,   function (target)
-            for _, r in ipairs(target:orderules()) do
-                local after_package = r:script("package_after")
-                if after_package then
-                    after_package(target)
-                end
-            end
-        end
-    ,   target:script("package_after")
-    }
-
-    -- package the target scripts
-    for i = 1, 5 do
-        local script = scripts[i]
-        if script ~= nil then
-            script(target)
-        end
-    end
-
-    -- leave the environments of the target packages
-    os.setenvs(oldenvs)
-
-    -- leave project directory
-    os.cd(oldir)
 end
 
 -- package the given targets
@@ -112,13 +103,8 @@ function main()
     -- lock the whole project
     project.lock()
 
-    -- get the target name
-    local targetname = option.get("target")
-
-    -- build it first
-    task.run("build", {target = targetname, all = option.get("all")})
-
     -- package the given target?
+    local targetname = option.get("target")
     if targetname then
         local target = project.target(targetname)
         _package_targets(target:orderdeps())
@@ -135,3 +121,4 @@ function main()
     -- unlock the whole project
     project.unlock()
 end
+
