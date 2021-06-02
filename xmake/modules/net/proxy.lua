@@ -108,7 +108,7 @@ function config(url)
     -- enable proxy for the given url and configuration pattern
     if url then
 
-        -- get proxy from the given hosts pattern
+        -- filter proxy host from the given hosts pattern
         local host = url:match("://(.-)/") or url:match("@(.-):")
         local proxy_hosts = _proxy_hosts()
         if host and proxy_hosts then
@@ -121,11 +121,13 @@ function config(url)
             end
         end
 
-        -- get proxy from the pac file
+        -- filter proxy host from the pac file
         local proxy_pac = _proxy_pac()
-        if proxy_pac and _is_callable(proxy_pac) and proxy_pac(url, host) then
+        if proxy_pac and host and _is_callable(proxy_pac) and proxy_pac(url, host) then
             return global.get("proxy")
         end
+
+        -- use global proxy
         if not proxy_pac and not proxy_hosts then
             return global.get("proxy")
         end

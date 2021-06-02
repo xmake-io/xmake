@@ -67,6 +67,7 @@ function _package_library(target)
     local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
     local binarydir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "bin")
     local librarydir  = path.join(packagedir, target:plat(), target:arch(), config.mode(), "lib")
+    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
 
     -- copy the library file to the output directory
     local targetfile = target:targetfile()
@@ -86,7 +87,7 @@ function _package_library(target)
     end
 
     -- copy headers
-    local srcheaders, dstheaders = target:headerfiles(path.join(packagedir, "include"))
+    local srcheaders, dstheaders = target:headerfiles(headerdir)
     if srcheaders and dstheaders then
         local i = 1
         for _, srcheader in ipairs(srcheaders) do
