@@ -23,18 +23,7 @@ import("core.package.package", {alias = "core_package"})
 
 -- enter the package environments
 function _enter_package(package_name, envs, installdir)
-
-    -- save the old environments
-    _g._OLDENVS = _g._OLDENVS or {}
-    local oldenvs = _g._OLDENVS[package_name]
-    if not oldenvs then
-        oldenvs = {}
-        _g._OLDENVS[package_name] = oldenvs
-    end
-
-    -- add the new environments
     for name, values in pairs(envs) do
-        oldenvs[name] = oldenvs[name] or os.getenv(name)
         if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
@@ -49,20 +38,9 @@ function _enter_package(package_name, envs, installdir)
     end
 end
 
--- leave the package environments
-function _leave_package(package_name)
-    _g._OLDENVS = _g._OLDENVS or {}
-    local oldenvs = _g._OLDENVS[package_name]
-    if oldenvs then
-        for name, values in pairs(oldenvs) do
-            os.setenv(name, values)
-        end
-        _g._OLDENVS[package_name] = nil
-    end
-end
-
 -- enter environment of the given binary packages, git, 7z, ..
 function enter(...)
+    local oldenvs = os.getenvs()
     for _, name in ipairs({...}) do
         for _, manifest_file in ipairs(os.files(path.join(core_package.installdir(), name:sub(1, 1), name, "*", "*", "manifest.txt"))) do
             local manifest = io.load(manifest_file)
@@ -71,11 +49,6 @@ function enter(...)
             end
         end
     end
+    return oldenvs
 end
 
--- leave environment of the given binary packages, git, 7z, ..
-function leave(...)
-    for _, name in ipairs({...}) do
-        _leave_package(name)
-    end
-end

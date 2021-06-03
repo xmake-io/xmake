@@ -38,37 +38,39 @@ function enter()
     end
 
     -- enter the environments of git
-    packagenv.enter("git")
+    _g._OLDENVS = packagenv.enter("git")
 
     -- git not found? install it first
     local packages = {}
-    if not find_tool("git") then
+    local git = find_tool("git")
+    if not git then
         table.join2(packages, install_packages("git"))
-        find_tool("git", {force = true}) -- we need force to detect and flush detect cache
     end
 
     -- missing the necessary unarchivers for *.gz, *.7z? install them first, e.g. gzip, 7z, tar ..
-    if not ((find_tool("gzip") and find_tool("tar")) or find_tool("7z")) then
+    local zip = (find_tool("gzip") and find_tool("tar")) or find_tool("7z")
+    if not zip then
         table.join2(packages, install_packages("7z"))
-        find_tool("7z", {force = true})
     end
 
     -- enter the environments of installed packages
-    _g._OLDENVS = os.getenvs()
     for _, instance in ipairs(packages) do
         instance:envs_enter()
     end
-    _g._PACKAGES = packages
+
+    -- we need force to detect and flush detect cache after loading all environments
+    if not git then
+        find_tool("git", {force = true})
+    end
+    if not zip then
+        find_tool("7z", {force = true})
+    end
 end
 
 -- leave environment
 function leave()
-
-    -- leave the environments of installed packages
-    os.setenvs(_g._OLDENVS)
-    _g._OLDENVS = nil
-    _g._PACKAGES = nil
-
-    -- leave the environments of git
-    packagenv.leave("git")
+    local oldenvs = _g._OLDENVS
+    if oldenvs then
+        os.setenvs(oldenvs)
+    end
 end
