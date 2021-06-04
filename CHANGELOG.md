@@ -13,6 +13,7 @@
 ### Change
 
 * [#1425](https://github.com/xmake-io/xmake/issues/1425): Improve tools/meson to load msvc envirnoments
+* [#1442](https://github.com/xmake-io/xmake/issues/1442): Support to clone package resources from git url
 
 ### Bugs fixed
 
@@ -1020,6 +1021,7 @@
 ### 改进
 
 * [#1425](https://github.com/xmake-io/xmake/issues/1425): 改进 tools/meson 去加载 msvc 环境，并且增加一些内置配置。
+* [#1442](https://github.com/xmake-io/xmake/issues/1442): 支持从 git url 去下载包资源文件
 
 ### Bugs 修复
 
