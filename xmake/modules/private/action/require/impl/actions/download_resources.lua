@@ -22,9 +22,51 @@
 import("core.base.option")
 import("core.package.package", {alias = "core_package"})
 import("lib.detect.find_file")
+import("lib.detect.find_directory")
 import("net.http")
 import("net.proxy")
+import("devel.git")
 import("utils.archive")
+
+-- checkout resources
+function _checkout(package, resource_name, resource_url, resource_revision)
+
+    -- trace
+    vprint("cloning resource(%s: %s) to %s-%s ..", resource_name, resource_revision, package:name(), package:version_str())
+
+    -- get the resource directory
+    local resourcedir = assert(package:resourcefile(resource_name), "invalid resource directory!")
+
+    -- use previous resource directory if exists
+    if os.isdir(resourcedir) and not option.get("force") then
+        -- clean the previous build files
+        git.clean({repodir = resourcedir, force = true, all = true})
+        -- reset the previous modified files
+        git.reset({repodir = resourcedir, hard = true})
+        return
+    end
+
+    -- we can use local package from the search directories directly if network is too slow
+    local localdir = find_directory(path.filename(resourcedir), core_package.searchdirs())
+    if localdir and os.isdir(localdir) then
+        git.clean({repodir = localdir, force = true, all = true})
+        git.reset({repodir = localdir, hard = true})
+        os.cp(localdir, resourcedir)
+        return
+    end
+
+    -- we need enable longpaths on windows
+    local longpaths = package:policy("platform.longpaths")
+
+    -- clone whole history and tags
+    git.clone(proxy.mirror(resource_url) or resource_url, {longpaths = longpaths, outputdir = resourcedir})
+
+    -- attempt to checkout the given version
+    git.checkout(resource_revision, {repodir = resourcedir})
+
+    -- update all submodules
+    git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = resourcedir})
+end
 
 -- download resources
 function _download(package, resource_name, resource_url, resource_hash)
@@ -91,8 +133,10 @@ function main(package)
 
     -- download all resources
     for name, resourceinfo in pairs(resources) do
-        -- we use wrap to support urls table and only get the first url now
-        -- TODO maybe we will download resource from the multiple urls in the future
-        _download(package, name, table.wrap(resourceinfo.url)[1], resourceinfo.sha256)
+        if git.checkurl(resourceinfo.url) then
+            _checkout(package, name, resourceinfo.url, resourceinfo.sha256)
+        else
+            _download(package, name, resourceinfo.url, resourceinfo.sha256)
+        end
     end
 end
