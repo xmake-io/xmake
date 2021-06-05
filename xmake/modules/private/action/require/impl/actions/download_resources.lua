@@ -55,6 +55,9 @@ function _checkout(package, resource_name, resource_url, resource_revision)
         return
     end
 
+    -- remove temporary directory
+    os.rm(resourcedir)
+
     -- we need enable longpaths on windows
     local longpaths = package:policy("platform.longpaths")
 
