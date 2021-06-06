@@ -23,6 +23,8 @@ import("core.base.option")
 import("core.base.task")
 import("core.base.hashset")
 import("core.project.config")
+import("core.project.project")
+import("core.tool.toolchain")
 import("lib.detect.find_tool")
 import("private.action.require.impl.package")
 import("private.action.require.impl.utils.get_requires")
@@ -155,7 +157,7 @@ function _enter_project()
 end
 
 -- add values to environment variable
-function _package_addenv(envs, name, ...)
+function _addenvs(envs, name, ...)
     local values = {...}
     if #values > 0 then
         local oldenv = envs[name]
@@ -182,13 +184,13 @@ function _package_addenvs(envs, instance)
         if name == "PATH" or name == "LD_LIBRARY_PATH" or name == "DYLD_LIBRARY_PATH" then
             for _, value in ipairs(values) do
                 if path.is_absolute(value) then
-                    _package_addenv(envs, name, value)
+                    _addenvs(envs, name, value)
                 else
-                    _package_addenv(envs, name, path.join(installdir, value))
+                    _addenvs(envs, name, path.join(installdir, value))
                 end
             end
         else
-            _package_addenv(envs, name, unpack(table.wrap(values)))
+            _addenvs(envs, name, unpack(table.wrap(values)))
         end
     end
 
@@ -196,17 +198,30 @@ function _package_addenvs(envs, instance)
     if instance:is_library() then
         local pkgconfig = path.join(installdir, "lib", "pkgconfig")
         if os.isdir(pkgconfig) then
-            _package_addenv(envs, "PKG_CONFIG_PATH", pkgconfig)
+            _addenvs(envs, "PKG_CONFIG_PATH", pkgconfig)
         end
         pkgconfig = path.join(installdir, "share", "pkgconfig")
         if os.isdir(pkgconfig) then
-            _package_addenv(envs, "PKG_CONFIG_PATH", pkgconfig)
+            _addenvs(envs, "PKG_CONFIG_PATH", pkgconfig)
         end
         local aclocal = path.join(installdir, "share", "aclocal")
         if os.isdir(aclocal) then
-            _package_addenv(envs, "ACLOCAL_PATH", aclocal)
+            _addenvs(envs, "ACLOCAL_PATH", aclocal)
         end
-        _package_addenv(envs, "CMAKE_PREFIX_PATH", installdir)
+        _addenvs(envs, "CMAKE_PREFIX_PATH", installdir)
+    end
+end
+
+-- add toolcjhain environments
+function _toolchain_addenvs(envs)
+    for _, name in ipairs(project.get("target.toolchains")) do
+        local toolchain_opt = project.extraconf("target.toolchains", name)
+        local toolchain_inst = toolchain.load(name, toolchain_opt)
+        if toolchain_inst then
+            for k, v in pairs(toolchain_inst:runenvs()) do
+                _addenvs(envs, k, v)
+            end
+        end
     end
 end
 
@@ -219,6 +234,7 @@ function _package_getenvs()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
+        _toolchain_addenvs(envs)
     else
         local packages = option.get("packages") or option.get("program")
         if packages then
