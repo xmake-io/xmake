@@ -77,8 +77,6 @@ function main(target, filepath, mode)
         table.insert(argv, thumbprint)
     end
     local store = target:values("wdk.sign.store")
-    if not store and mode == "test" then
-    end
     if store then
         table.insert(argv, "/a")
         table.insert(argv, "/s")
