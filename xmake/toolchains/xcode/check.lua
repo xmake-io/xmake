@@ -70,6 +70,9 @@ function main(toolchain)
         elseif toolchain:is_plat("watchos") then
             local platname = toolchain:is_arch("i386", "x86_64") and "WatchSimulator" or "WatchOS"
             xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        elseif toolchain:is_plat("appletvos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "AppleTVSimulator" or "AppleTVOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
         end
     end
     if xcode_sysroot then

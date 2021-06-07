@@ -53,6 +53,12 @@ function _find_xcode_sdkver(sdkdir, opt)
         else
             platsdkdir = "Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.*.sdk"
         end
+    elseif plat == "appletvos" then
+        if arch == "i386" or arch == "x86_64" then
+            platsdkdir = "Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator*.*.sdk"
+        else
+            platsdkdir = "Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS*.*.sdk"
+        end
     else
         platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"
     end

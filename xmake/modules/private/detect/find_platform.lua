@@ -83,7 +83,7 @@ function _find_arch(plat, arch)
     if not arch then
         if plat == "android" then
             arch = "armeabi-v7a"
-        elseif plat == "iphoneos" then
+        elseif plat == "iphoneos" or plat == "appletvos" then
             arch = "arm64"
         elseif plat == "watchos" then
             arch = "armv7k"
