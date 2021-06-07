@@ -78,6 +78,7 @@ toolchain("llvm")
             if xcode_dir and xcode_sdkver then
                 xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
                 toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
+                toolchain:add("mxflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
             else
@@ -85,10 +86,12 @@ toolchain("llvm")
                 local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
                 if os.exists(macsdk) then
                     toolchain:add("cxflags", "-isysroot " .. macsdk)
+                    toolchain:add("mxflags", "-isysroot " .. macsdk)
                     toolchain:add("ldflags", "-isysroot " .. macsdk)
                     toolchain:add("shflags", "-isysroot " .. macsdk)
                 end
             end
+            toolchain:add("mxflags", "-fobjc-arc")
         end
 
         -- add bin search library for loading some dependent .dll files windows

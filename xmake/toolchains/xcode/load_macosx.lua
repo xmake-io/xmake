@@ -53,6 +53,8 @@ function main(toolchain)
     if xcode_sysroot then
         toolchain:add("mxflags", "-isysroot", xcode_sysroot)
     end
+    -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
+    toolchain:add("mxflags", "-fobjc-arc")
 
     -- init flags for asm
     toolchain:add("asflags", "-arch", arch)

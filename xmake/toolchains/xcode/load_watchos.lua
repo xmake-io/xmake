@@ -40,6 +40,8 @@ function main(toolchain)
 
     -- init flags for objc/c++
     toolchain:add("mxflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
+    -- we can use `add_mxflags("-fno-objc-arc")` to override it in xmake.lua
+    toolchain:add("mxflags", "-fobjc-arc")
 
     -- init flags for asm
     toolchain:add("asflags", "-arch", arch, target_minver_flags, "-isysroot", xcode_sysroot)
