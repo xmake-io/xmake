@@ -88,7 +88,7 @@ function post()
     try
     {
         function ()
-            process.openv("xmake", argv, {stdout = path.join(os.tmpdir(), projectname .. ".stats.log")}, {detach = true}):close()
+            process.openv("xmake", argv, {stdout = path.join(os.tmpdir(), projectname .. ".stats.log"), detach = true}):close()
         end
     }
 
