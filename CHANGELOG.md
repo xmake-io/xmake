@@ -16,6 +16,7 @@
 * [#1425](https://github.com/xmake-io/xmake/issues/1425): Improve tools/meson to load msvc envirnoments
 * [#1442](https://github.com/xmake-io/xmake/issues/1442): Support to clone package resources from git url
 * [#1389](https://github.com/xmake-io/xmake/issues/1389): Support to add toolchain envs to `xrepo env`
+* [#1453](https://github.com/xmake-io/xmake/issues/1453): Support to export protobuf includedirs
 
 ### Bugs fixed
 
@@ -1026,6 +1027,7 @@
 * [#1425](https://github.com/xmake-io/xmake/issues/1425): 改进 tools/meson 去加载 msvc 环境，并且增加一些内置配置。
 * [#1442](https://github.com/xmake-io/xmake/issues/1442): 支持从 git url 去下载包资源文件
 * [#1389](https://github.com/xmake-io/xmake/issues/1389): 支持添加工具链环境到 `xrepo env`
+* [#1453](https://github.com/xmake-io/xmake/issues/1453): 支持 protobuf 规则导出头文件搜索目录
 
 ### Bugs 修复
 
