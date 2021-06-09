@@ -54,8 +54,10 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
 
     -- get c/c++ source file for protobuf
     local prefixdir
+    local public
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
+        public = fileconfig.proto_public
         prefixdir = fileconfig.proto_rootdir
     end
     local rootdir = path.join(target:autogendir(), "rules", "protobuf")
@@ -64,7 +66,7 @@ function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
     local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
     -- add includedirs
-    target:add("includedirs", sourcefile_dir)
+    target:add("includedirs", sourcefile_dir, {public = public})
 
     -- add objectfile
     local objectfile = target:objectfile(sourcefile_cx)
