@@ -39,6 +39,7 @@ function main(requires, opt)
             print("exporting %s-%s %s", instance:displayname(), instance:version_str(), package.get_configs_str(instance))
             cprint("  ${yellow}->${clear} %s", exportpath)
             os.cp(installdir, exportpath)
+            os.tryrm(path.join(exportpath, "references.txt"))
             table.insert(packages, instance)
         end
     end
