@@ -43,7 +43,8 @@ function main(target)
         target:add("links", target:linkname(), {interface = true})
         local links = target:get("links", {rawref = true})
         if links and type(links) == "table" and #links > 1 then
-            table.swap(links, 1, #links)
+            table.insert(links, 1, links[#links])
+            table.remove(links, #links)
         end
 
         target:add("linkdirs", path.directory(targetfile), {interface = true})
