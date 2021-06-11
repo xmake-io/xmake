@@ -357,6 +357,11 @@ function _instance:is_library()
     return self:kind() == nil or self:kind() == "library"
 end
 
+-- is header only?
+function _instance:is_headeronly()
+    return self:is_library() and self:extraconf("kind", "library", "headeronly")
+end
+
 -- is top level? user top requires in xmake.lua
 function _instance:is_toplevel()
     local requireinfo = self:requireinfo()
