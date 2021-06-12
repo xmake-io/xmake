@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("net.http")
+import("net.proxy")
 import("devel.git")
 
 -- check sha256
@@ -71,7 +72,7 @@ function _patch(package, patch_url, patch_hash)
 
         -- download the patch file
         if patch_url:find(string.ipattern("https-://")) or patch_url:find(string.ipattern("ftps-://")) then
-            http.download(patch_url, patch_file)
+            http.download(proxy.mirror(patch_url) or patch_url, patch_file)
         else
             -- copy the patch file
             if os.isfile(patch_url) then
