@@ -161,6 +161,9 @@ end
 -- make target
 function _make_target(jsonfile, target)
 
+    -- enter package environments
+    local oldenvs = os.addenvs(target:pkgenvs())
+
     -- TODO
     -- disable precompiled header first
     target:set("pcheader", nil)
@@ -170,6 +173,9 @@ function _make_target(jsonfile, target)
     for _, sourcebatch in pairs(target:sourcebatches()) do
         _make_objects(jsonfile, target, sourcebatch)
     end
+
+    -- restore package environments
+    os.setenvs(oldenvs)
 end
 
 -- make all
