@@ -220,19 +220,19 @@ end
 -- add some builtin configurations to package
 function _add_package_configurations(package)
     -- we can define configs to override it and it's default value in package()
-    if package:config("debug") == nil then
+    if package:extraconf("configs", "debug", "default") == nil then
         package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     end
-    if package:config("shared") == nil then
+    if package:extraconf("configs", "shared", "default") == nil then
         package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = false, type = "boolean"})
     end
-    if package:config("pic") == nil then
+    if package:extraconf("configs", "pic", "default") == nil then
         package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
     end
-    if package:config("vs_runtime") == nil then
+    if package:extraconf("configs", "vs_runtime", "default") == nil then
         package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
     end
-    if package:config("toolchains") == nil then
+    if package:extraconf("configs", "toolchains", "default") == nil then
         package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
     end
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
@@ -382,7 +382,7 @@ function _finish_requireinfo(requireinfo, package)
     end
     -- we need ensure readonly configs
     for _, name in ipairs(table.keys(requireinfo.configs)) do
-        if package:config(name) ~= nil and package:extraconf("configs", name, "readonly") then
+        if package:extraconf("configs", name, "readonly") then
             -- package:config() will use default value after loading package
             requireinfo.configs[name] = nil
         end
