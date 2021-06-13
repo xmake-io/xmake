@@ -224,7 +224,7 @@ function _add_package_configurations(package)
         package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
     end
     if package:config("shared") == nil then
-        package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
+        package:add("configs", "shared", {builtin = true, description = "Build shared library.", default = false, type = "boolean"})
     end
     if package:config("pic") == nil then
         package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
