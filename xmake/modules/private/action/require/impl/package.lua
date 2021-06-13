@@ -365,7 +365,6 @@ function _init_requireinfo(requireinfo, package, opt)
         requireinfo.is_toplevel = true
         if not package:is_headeronly() then
             if package:is_cross() and package:is_library() then
-                -- TODO get extra configs of toolchain
                 requireinfo.configs.toolchains = requireinfo.configs.toolchains or project.get("target.toolchains") or get_config("toolchain")
             end
             requireinfo.configs.vs_runtime = requireinfo.configs.vs_runtime or project.get("target.runtimes") or get_config("vs_runtime")
@@ -379,6 +378,13 @@ function _set_requireinfo_default(requireinfo, package)
     if not package:is_headeronly() then
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
             requireinfo.configs.vs_runtime = "MT"
+        end
+    end
+    -- we need ensure readonly configs
+    for _, name in ipairs(table.keys(requireinfo.configs)) do
+        if package:config(name) ~= nil and package:extraconf("configs", name, "readonly") then
+            -- package:config() will use default value after loading package
+            requireinfo.configs[name] = nil
         end
     end
 end
