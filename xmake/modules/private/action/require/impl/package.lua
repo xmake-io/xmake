@@ -372,8 +372,8 @@ function _init_requireinfo(requireinfo, package, opt)
     end
 end
 
--- set default requireinfo
-function _set_requireinfo_default(requireinfo, package)
+-- finish requireinfo
+function _finish_requireinfo(requireinfo, package)
     requireinfo.configs = requireinfo.configs or {}
     if not package:is_headeronly() then
         if requireinfo.configs.vs_runtime == nil and package:is_plat("windows") then
@@ -570,8 +570,8 @@ function _load_package(packagename, requireinfo, opt)
         _inherit_parent_configs(requireinfo, package, opt.parentinfo)
     end
 
-    -- set default requireinfo
-    _set_requireinfo_default(requireinfo, package)
+    -- finish requireinfo
+    _finish_requireinfo(requireinfo, package)
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
