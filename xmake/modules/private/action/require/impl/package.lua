@@ -219,15 +219,26 @@ end
 
 -- add some builtin configurations to package
 function _add_package_configurations(package)
-    package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
-    package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
+    -- we can define configs to override it and it's default value in package()
+    if package:config("debug") ~= nil then
+        package:add("configs", "debug", {builtin = true, description = "Enable debug symbols.", default = false, type = "boolean"})
+    end
+    if package:config("shared") ~= nil then
+        package:add("configs", "shared", {builtin = true, description = "Enable shared library.", default = false, type = "boolean"})
+    end
+    if package:config("pic") ~= nil then
+        package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
+    end
+    if package:config("vs_runtime") ~= nil then
+        package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
+    end
+    if package:config("toolchains") ~= nil then
+        package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
+    end
     package:add("configs", "cflags", {builtin = true, description = "Set the C compiler flags."})
     package:add("configs", "cxflags", {builtin = true, description = "Set the C/C++ compiler flags."})
     package:add("configs", "cxxflags", {builtin = true, description = "Set the C++ compiler flags."})
     package:add("configs", "asflags", {builtin = true, description = "Set the assembler flags."})
-    package:add("configs", "pic", {builtin = true, description = "Enable the position independent code.", default = true, type = "boolean"})
-    package:add("configs", "vs_runtime", {builtin = true, description = "Set vs compiler runtime.", values = {"MT", "MTd", "MD", "MDd"}})
-    package:add("configs", "toolchains", {builtin = true, description = "Set package toolchains only for cross-compilation."})
 end
 
 -- select package version
