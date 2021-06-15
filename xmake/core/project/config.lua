@@ -137,10 +137,11 @@ function config.directory()
 end
 
 -- load the project configuration
-function config.load()
+function config.load(filepath)
     local configs, errors
-    if os.isfile(config.filepath()) then
-        configs, errors = io.load(config.filepath())
+    filepath = filepath or config.filepath()
+    if os.isfile(filepath) then
+        configs, errors = io.load(filepath)
         if not configs then
             utils.error(errors)
             return false
@@ -160,8 +161,20 @@ function config.load()
 end
 
 -- save the project configuration
-function config.save()
-    return io.save(config.filepath(), config.options())
+function config.save(filepath, opt)
+    opt = opt or {}
+    filepath = filepath or config.filepath()
+    if opt.public then
+        local configs = {}
+        for name, value in pairs(config.options()) do
+            if not name:startswith("__") then
+                configs[name] = value
+            end
+        end
+        return io.save(filepath, configs)
+    else
+        return io.save(filepath, config.options())
+    end
 end
 
 -- read value from the configuration file directly

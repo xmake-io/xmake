@@ -87,13 +87,13 @@ function sandbox_core_project_config.readonly(name)
 end
 
 -- load the configuration
-function sandbox_core_project_config.load()
-    return config.load()
+function sandbox_core_project_config.load(filepath)
+    return config.load(filepath)
 end
 
 -- save the configuration
-function sandbox_core_project_config.save()
-    local ok, errors = config.save()
+function sandbox_core_project_config.save(filepath, opt)
+    local ok, errors = config.save(filepath, opt)
     if not ok then
         raise(errors)
     end

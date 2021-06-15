@@ -383,6 +383,7 @@ function _finish_requireinfo(requireinfo, package)
     -- we need ensure readonly configs
     for _, name in ipairs(table.keys(requireinfo.configs)) do
         if package:extraconf("configs", name, "readonly") then
+            print(name, requireinfo.configs[name], package:extraconf("configs", name, "default"))
             -- package:config() will use default value after loading package
             requireinfo.configs[name] = nil
         end
