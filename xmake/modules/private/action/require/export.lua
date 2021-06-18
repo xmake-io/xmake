@@ -46,7 +46,8 @@ function main(requires_raw)
 
     -- export packages
     local packagedir = option.get("packagedir")
-    local packages  = export_packages(requires, {requires_extra = requires_extra, packagedir = packagedir})
+    local nodeps     = option.get("shallow") and true or false
+    local packages   = export_packages(requires, {requires_extra = requires_extra, packagedir = packagedir, nodeps = nodeps})
     if not packages or #packages == 0 then
         if requires_raw then
             cprint("${bright}packages(%s) not found, maybe they don’t exactly match the configuration ", table.concat(requires_raw, ", "))

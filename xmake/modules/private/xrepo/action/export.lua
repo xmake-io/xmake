@@ -42,7 +42,8 @@ function menu_options()
                                        "    - xrepo export -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo export -f \"regex=true,thread=true\" boost"},
         {},
-        {'o', "packagedir",  "kv", "packages","Set the exported packages directory."},
+        {nil, "shallow",    "k",  nil, "Does not export dependent packages."},
+        {'o', "packagedir", "kv", "packages","Set the exported packages directory."},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo export zlib boost",
@@ -120,6 +121,9 @@ function _export_packages(packages)
     end
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
+    end
+    if option.get("shallow") then
+        table.insert(require_argv, "--shallow")
     end
     local packagedir = option.get("packagedir")
     if packagedir and not path.is_absolute(packagedir) then
