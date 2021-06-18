@@ -47,8 +47,8 @@ function main (target, opt)
         local msvc = toolchain.load("msvc", {plat = target:plat(), arch = target:arch()})
         local dumpbin = assert(find_tool("dumpbin", {envs = msvc:runenvs()}), "dumpbin not found!")
 
-        -- export with c++ class?
-        local export_with_classes = target:extraconf("rules", "utils.symbols.export_all", "with_classes")
+        -- export c++ class?
+        local export_classes = target:extraconf("rules", "utils.symbols.export_all", "export_classes")
 
         -- get all symbols from object files
         local allsymbols = hashset.new()
@@ -65,7 +65,7 @@ function main (target, opt)
                                 if target:is_arch("x86") and symbol:startswith("_") then
                                     symbol = symbol:sub(2)
                                 end
-                                if export_with_classes or not symbol:startswith("?") then
+                                if export_classes or not symbol:startswith("?") then
                                     allsymbols:insert(symbol)
                                 end
                             end
