@@ -33,28 +33,11 @@ json.null = cjson.null
 --
 -- @param jsonstr       the json string
 -- @param opt           the options
---                      - max_depth
---                      - invalid_numbers
 --
 -- @return              the lua table
 --
 function json.decode(jsonstr, opt)
-    local cjsonobj = cjson
-    if opt then
-        if opt.max_depth then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.decode_max_depth(opt.max_depth)
-        end
-        if opt.invalid_numbers then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.decode_invalid_numbers(opt.invalid_numbers)
-        end
-    end
-    local ok, luatable_or_errors = utils.trycall(cjsonobj.decode, nil, jsonstr)
+    local ok, luatable_or_errors = utils.trycall(cjson.decode, nil, jsonstr)
     if not ok then
         return nil, string.format("decode json failed, %s", luatable_or_errors)
     end
@@ -65,42 +48,11 @@ end
 --
 -- @param luatable      the lua table
 -- @param opt           the options
---                      - max_depth
---                      - invalid_numbers
---                      - keep_buffer
---                      - number_precision
 --
 -- @return              the json string
 --
 function json.encode(luatable, opt)
-    local cjsonobj = cjson
-    if opt then
-        if opt.max_depth then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.encode_max_depth(opt.max_depth)
-        end
-        if opt.invalid_numbers then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.encode_invalid_numbers(opt.invalid_numbers)
-        end
-        if opt.keep_buffer then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.encode_keep_buffer(opt.keep_buffer)
-        end
-        if opt.number_precision then
-            if cjsonobj == cjson then
-                cjsonobj = cjson.new()
-            end
-            cjsonobj.encode_number_precision(opt.number_precision)
-        end
-    end
-    local ok, jsonstr_or_errors = utils.trycall(cjsonobj.encode, nil, luatable)
+    local ok, jsonstr_or_errors = utils.trycall(cjson.encode, nil, luatable)
     if not ok then
         return nil, string.format("encode json failed, %s", jsonstr_or_errors)
     end
@@ -113,8 +65,6 @@ end
 -- @param opt           the options
 --                      - encoding for io/file, e.g. utf8, utf16, utf16le, utf16be ..
 --                      - continuation for io/read (concat string with the given continuation characters)
---                      - max_depth
---                      - invalid_numbers
 --
 -- @return              the lua table
 --
@@ -132,10 +82,6 @@ end
 -- @param luatable      the lua table
 -- @param opt           the options
 --                      - encoding for io/file, e.g. utf8, utf16, utf16le, utf16be ..
---                      - max_depth
---                      - invalid_numbers
---                      - keep_buffer
---                      - number_precision
 --
 -- @return              the json string
 --
