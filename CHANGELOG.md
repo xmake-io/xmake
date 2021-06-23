@@ -25,6 +25,7 @@
 * [#1413](https://github.com/xmake-io/xmake/issues/1413): Fix hangs on fetching packages
 * [#1420](https://github.com/xmake-io/xmake/issues/1420): Fix config and packages cache
 * [#1445](https://github.com/xmake-io/xmake/issues/1445): Fix WDK driver sign error
+* [#1465](https://github.com/xmake-io/xmake/issues/1465): Fix missing link directory
 
 ## v2.5.4
 
@@ -1039,6 +1040,7 @@
 * [#1413](https://github.com/xmake-io/xmake/issues/1413): 修复查找包过程中出现的挂起卡死问题
 * [#1420](https://github.com/xmake-io/xmake/issues/1420): 修复包检测和配置缓存
 * [#1445](https://github.com/xmake-io/xmake/issues/1445): 修复 WDK 驱动签名错误
+* [#1465](https://github.com/xmake-io/xmake/issues/1465): 修复缺失的链接目录
 
 ## v2.5.4
 
