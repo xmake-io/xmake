@@ -66,6 +66,7 @@ function menu_options()
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
+        {nil, "build",         "k",  nil, "Always build and install packages from source."},
         {},
         {nil, "packages",      "vs", nil, "The packages list.",
                                        "e.g.",
