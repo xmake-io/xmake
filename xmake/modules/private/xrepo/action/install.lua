@@ -194,6 +194,9 @@ function _install_packages(packages)
     if option.get("shallow") then
         table.insert(require_argv, "--shallow")
     end
+    if option.get("build") then
+        table.insert(require_argv, "--build")
+    end
     local extra = {system = false}
     if mode == "debug" then
         extra.debug = true
