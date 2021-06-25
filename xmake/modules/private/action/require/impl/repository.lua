@@ -51,6 +51,7 @@ end
 function packagedir(packagename, reponame)
 
     -- strip trailng ~tag, e.g. zlib~debug
+    packagename = packagename:lower()
     if packagename:find('~', 1, true) then
         packagename = packagename:gsub("~.+$", "")
     end
@@ -64,8 +65,8 @@ function packagedir(packagename, reponame)
 
     -- find the package directory from repositories
     for _, repo in ipairs(repositories()) do
-        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1):lower(), packagename)
-        if os.isdir(dir) and (not reponame or reponame == repo:name()) then
+        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
+        if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) and (not reponame or reponame == repo:name()) then
             foundir = {dir, repo}
             break
         end
@@ -74,6 +75,17 @@ function packagedir(packagename, reponame)
         packagedirs[packagename] = foundir
         _g._PACKAGEDIRS = packagedirs
         return foundir[1], foundir[2]
+    end
+end
+
+-- get artifacts manifest from repositories
+function artifacts_manifest(packagename, version)
+    packagename = packagename:lower()
+    for _, repo in ipairs(repositories()) do
+        local manifestfile = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename, version, "manifest.txt")
+        if os.isfile(manifestfile) then
+            return io.load(manifestfile)
+        end
     end
 end
 

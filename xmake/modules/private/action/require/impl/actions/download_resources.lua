@@ -128,6 +128,11 @@ end
 -- download all resources of the given package
 function main(package)
 
+    -- we need not download it if we use the precompiled artifacts to install package
+    if not package:is_built() then
+        return
+    end
+
     -- no resources?
     local resources = package:resources()
     if not resources then

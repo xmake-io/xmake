@@ -237,6 +237,30 @@ function _instance:url_excludes(url)
     return self:extraconf("urls", url, "excludes")
 end
 
+-- set artifacts info
+function _instance:artifacts_set(artifacts_info)
+    local versions = self:get("versions")
+    if versions then
+        -- we switch to urls of the precompiled artifacts
+        self:urls_set(table.wrap(artifacts_info.urls))
+        versions[self:version_str()] = artifacts_info.sha256
+        self:set("install", function (package)
+            sandbox_module.import("lib.detect.find_path")
+            local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
+            if not rootdir then
+                os.raise("package(%s): manifest.txt not found when installing artifacts!", self:displayname())
+            end
+            os.cp(path.join(rootdir, "*"), package:installdir())
+        end)
+        self._IS_PRECOMPILED = true
+    end
+end
+
+-- is this package built?
+function _instance:is_built()
+    return not self._IS_PRECOMPILED
+end
+
 -- get the given dependent package
 function _instance:dep(name)
     local deps = self:deps()
@@ -283,7 +307,6 @@ function _instance:sourcehash(url_alias)
     local versions    = self:get("versions")
     local version_str = self:version_str()
     if versions and version_str then
-
         local sourcehash = nil
         if url_alias then
             sourcehash = versions[url_alias .. ":" ..version_str]
@@ -1050,8 +1073,6 @@ function _instance:script(name, generic)
             end
         end
     end
-
-    -- ok
     return result
 end
 

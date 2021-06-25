@@ -78,6 +78,7 @@ end
 --   true: only get system package
 --   false: only get remote packages
 --
+-- {build = true}: always build packages, we do not use the precompiled artifacts
 --
 function _parse_require(require_str)
 
@@ -173,7 +174,8 @@ function _load_require(require_str, requires_extra, parentinfo)
         optional         = parentinfo.optional or require_extra.optional, -- default: false, inherit parentinfo.optional
         verify           = require_extra.verify,    -- default: true, we can set false to ignore sha256sum and select any version
         external         = require_extra.external,  -- default: true, we use sysincludedirs/-isystem instead of -I/xxx
-        private          = require_extra.private    -- default: false, private package, only for installation, do not export any links/includes and environments
+        private          = require_extra.private,   -- default: false, private package, only for installation, do not export any links/includes and environments
+        build            = require_extra.build      -- default: false, always build packages, we do not use the precompiled artifacts
     }
     return required.packagename, required.requireinfo
 end
@@ -544,8 +546,12 @@ function _load_package(packagename, requireinfo, opt)
     end
 
     -- load package from repositories
+    local from_repo = false
     if not package then
         package = _load_package_from_repository(packagename, requireinfo.reponame)
+        if package then
+            from_repo = true
+        end
     end
 
     -- load package from system
@@ -615,6 +621,18 @@ function _load_package(packagename, requireinfo, opt)
 
     -- check package configurations
     _check_package_configurations(package)
+
+    -- save artifacts info, we need add it at last before buildhash need depend on package configurations
+    if from_repo and not option.get("build") and not requireinfo.build then
+        local artifacts_manifest = repository.artifacts_manifest(packagename, version)
+        if artifacts_manifest then
+            local buildid = package:plat() .. "-" .. package:arch() .. "-" .. package:buildhash()
+            local artifacts_info = artifacts_manifest[buildid]
+            if artifacts_info then
+                package:artifacts_set(artifacts_info)
+            end
+        end
+    end
 
     -- do load
     local on_load = package:script("load")

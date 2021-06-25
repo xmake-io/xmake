@@ -107,13 +107,36 @@ function sandbox_core_package_repository.repositories(is_global)
         end
     end
 
-    -- add main global xmake repository
+    -- add global xmake repositories
     if is_global then
 
-        -- get sorted main urls
+        -- add artifacts urls
+        local artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
+        if not artifacts_urls then
+            artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
+                              "https://gitlab.com/xmake-mirror/build-artifacts.git",
+                              "https://gitee.com/xmake-mirror/build-artifacts.git"}
+            if global.get("network") ~= "private" then
+                import("net.fasturl")
+                fasturl.add(artifacts_urls)
+                artifacts_urls = fasturl.sort(artifacts_urls)
+                localcache.cache("repository"):set("artifacts_urls", artifacts_urls)
+                localcache.cache("repository"):save()
+            end
+        end
+        if #artifacts_urls > 0 then
+            local repo = repository.load("build-artifacts", artifacts_urls[1], "main", true)
+            if repo then
+                table.insert(repositories, repo)
+            end
+        end
+
+        -- add main urls
         local mainurls = localcache.cache("repository"):get("mainurls")
         if not mainurls then
-            mainurls = {"https://github.com/xmake-io/xmake-repo.git", "https://gitlab.com/tboox/xmake-repo.git", "https://gitee.com/tboox/xmake-repo.git"}
+            mainurls = {"https://github.com/xmake-io/xmake-repo.git",
+                        "https://gitlab.com/tboox/xmake-repo.git",
+                        "https://gitee.com/tboox/xmake-repo.git"}
             if global.get("network") ~= "private" then
                 import("net.fasturl")
                 fasturl.add(mainurls)
@@ -122,8 +145,6 @@ function sandbox_core_package_repository.repositories(is_global)
                 localcache.cache("repository"):save()
             end
         end
-
-        -- add main url
         if #mainurls > 0 then
             local repo = repository.load("xmake-repo", mainurls[1], "master", true)
             if repo then
