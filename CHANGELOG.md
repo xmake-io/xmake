@@ -12,6 +12,7 @@
 * Add `appletvos` platform support for AppleTV, `xmake f -p appletvos`
 * [#1437](https://github.com/xmake-io/xmake/issues/1437): Add headeronly library type for package to ignore `vs_runtime`
 * [#1351](https://github.com/xmake-io/xmake/issues/1351): Support export/import current configs
+* [#1454](https://github.com/xmake-io/xmake/issues/1454): Support to download and install precompiled image packages from xmake-mirror
 
 ### Change
 
@@ -1027,6 +1028,7 @@
 * 添加 `appletvos` 编译平台支持, `xmake f -p appletvos`
 * [#1437](https://github.com/xmake-io/xmake/issues/1437): 为包添加 headeronly 库类型去忽略 `vs_runtime`
 * [#1351](https://github.com/xmake-io/xmake/issues/1351): 支持导入导出当前配置
+* [#1454](https://github.com/xmake-io/xmake/issues/1454): 支持下载安装 windows 预编译包
 
 ### 改进
 
