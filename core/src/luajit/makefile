@@ -137,6 +137,14 @@ luajit_CXFLAGS 			+= -fPIE
 endif
 endif
 
+# use system luajit library?
+ifdef LUAJIT_LIBS
+luajit_C_FILES 			:=
+luajit_ASM_FILES 		:=
+luajit_INC_FILES 		:=
+luajit_OBJ_FILES 		:=
+endif
+
 # suffix
 include $(PRO_DIR)/suffix.mak
 

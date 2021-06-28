@@ -23,6 +23,11 @@ sv_C_FILES 				+= \
 # includes
 sv_INC_DIRS  			+= sv/include
 
+# use system luajit library?
+ifdef LIBSV_LIBS
+sv_C_FILES 				:=
+sv_INC_DIRS 			:=
+endif
 
 # suffix
 include $(PRO_DIR)/suffix.mak

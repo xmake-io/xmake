@@ -1,27 +1,63 @@
-# preifx
 include $(PRO_DIR)/prefix.mak
 
-# module name
-NAMES 											= demo
+NAMES 				= demo
+demo_TYPE 			= BIN
+demo_C_FILES 		+= xmake
+demo_PKGS-$(BASE)  	+= base
+demo_CXFLAGS 		+= -D__tb_prefix__=\"xmake\"
 
-# type
-demo_TYPE 										= BIN
+demo_LIBS 			+= xmake$(DTYPE)
+demo_LIB_DIRS 		+= ../xmake
 
-# files
-demo_C_FILES 									+= xmake
+# lcurses
+demo_LIBS 			+= lcurses$(DTYPE)
+demo_LIB_DIRS 		+= ../lcurses
 
-# packages
-demo_PKGS-$(BASE)  								+= base
+# tbox
+tbox_DTYPE 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(DTYPE))
+demo_LIBS 			+= tbox$(tbox_DTYPE)
+demo_INC_DIRS 		+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT)
+demo_LIB_DIRS 	    += ../tbox
 
-# debug suffix
-tbox_DTYPE 										:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(DTYPE))
+# luajit
+ifndef LUAJIT_LIBS
+LUAJIT_LIBS 		:= luajit$(DTYPE)
+endif
+ifndef LUAJIT_INC_DIRS
+LUAJIT_INC_DIRS 	:= ../luajit/luajit/src
+endif
+ifndef LUAJIT_LIB_DIRS
+LUAJIT_LIB_DIRS 	:= ../luajit
+endif
+demo_LIBS 			+= $(LUAJIT_LIBS)
+demo_INC_DIRS 	    += $(LUAJIT_INC_DIRS)
+demo_LIB_DIRS 		+= $(LUAJIT_LIB_DIRS)
 
-# others
-demo_LIBS 										+= xmake$(DTYPE) lcurses$(DTYPE) tbox$(tbox_DTYPE) luajit$(DTYPE) sv$(DTYPE) lua-cjson$(DTYPE) $(BASE_LIBS)
-demo_INC_DIRS 									+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT) ../luajit/luajit/src ../sv/sv/include
-demo_LIB_DIRS 									+= ../xmake ../tbox ../luajit ../sv ../lcurses ../lua-cjson
-demo_CXFLAGS 									+= -D__tb_prefix__=\"xmake\"
+# sv
+ifndef LIBSV_LIBS
+LIBSV_LIBS 			:= sv$(DTYPE)
+endif
+ifndef LIBSV_INC_DIRS
+LIBSV_INC_DIRS 		:= ../sv/sv/include
+endif
+ifndef LIBSV_LIB_DIRS
+LIBSV_LIB_DIRS 		:= ../sv
+endif
+demo_LIBS 			+= $(LIBSV_LIBS)
+demo_INC_DIRS 		+= $(LIBSV_INC_DIRS)
+demo_LIB_DIRS 		+= $(LIBSV_LIB_DIRS)
 
-# suffix
+# lua-cjson
+ifndef LUA_CJSON_LIBS
+LUA_CJSON_LIBS 		:= lua-cjson$(DTYPE)
+endif
+ifndef LUA_CJSON_LIB_DIRS
+LUA_CJSON_LIB_DIRS 	:= ../lua-cjson
+endif
+demo_LIBS 			+= $(LUA_CJSON_LIBS)
+demo_LIB_DIRS 		+= $(LUA_CJSON_LIB_DIRS)
+
+demo_LIBS 			+= $(BASE_LIBS)
+
 include $(PRO_DIR)/suffix.mak
 
