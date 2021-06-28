@@ -25,7 +25,7 @@ lua-cjson_CFLAGS 		+= -DNDEBUG -DUSE_INTERNAL_FPCONV
 lua-cjson_INC_DIRS 		+= \
 						../luajit/luajit/src
 
-# use system luajit library?
+# use given lua-cjson library?
 ifdef LUA_CJSON_LIBS
 lua-cjson_C_FILES 		:=
 lua-cjson_INC_DIRS 		:=

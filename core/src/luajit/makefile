@@ -137,7 +137,7 @@ luajit_CXFLAGS 			+= -fPIE
 endif
 endif
 
-# use system luajit library?
+# use given luajit library?
 ifdef LUAJIT_LIBS
 luajit_C_FILES 			:=
 luajit_ASM_FILES 		:=

@@ -23,8 +23,8 @@ sv_C_FILES 				+= \
 # includes
 sv_INC_DIRS  			+= sv/include
 
-# use system luajit library?
-ifdef LIBSV_LIBS
+# use given sv library?
+ifdef SV_LIBS
 sv_C_FILES 				:=
 sv_INC_DIRS 			:=
 endif

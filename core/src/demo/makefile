@@ -34,18 +34,18 @@ demo_INC_DIRS 	    += $(LUAJIT_INC_DIRS)
 demo_LIB_DIRS 		+= $(LUAJIT_LIB_DIRS)
 
 # sv
-ifndef LIBSV_LIBS
-LIBSV_LIBS 			:= sv$(DTYPE)
+ifndef SV_LIBS
+SV_LIBS 			:= sv$(DTYPE)
 endif
-ifndef LIBSV_INC_DIRS
-LIBSV_INC_DIRS 		:= ../sv/sv/include
+ifndef SV_INC_DIRS
+SV_INC_DIRS 		:= ../sv/sv/include
 endif
-ifndef LIBSV_LIB_DIRS
-LIBSV_LIB_DIRS 		:= ../sv
+ifndef SV_LIB_DIRS
+SV_LIB_DIRS 		:= ../sv
 endif
-demo_LIBS 			+= $(LIBSV_LIBS)
-demo_INC_DIRS 		+= $(LIBSV_INC_DIRS)
-demo_LIB_DIRS 		+= $(LIBSV_LIB_DIRS)
+demo_LIBS 			+= $(SV_LIBS)
+demo_INC_DIRS 		+= $(SV_INC_DIRS)
+demo_LIB_DIRS 		+= $(SV_LIB_DIRS)
 
 # lua-cjson
 ifndef LUA_CJSON_LIBS
