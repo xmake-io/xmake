@@ -510,8 +510,11 @@ end
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local msbuild = find_tool("msbuild", {envs = _get_msvc_runenvs(package)})
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local runenvs = _get_msvc_runenvs(package)
+    local msbuild = find_tool("msbuild", {envs = runenvs})
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m",
+            "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
+            "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
 -- do build for make
@@ -547,8 +550,11 @@ end
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local msbuild = assert(find_tool("msbuild", {envs = _get_msvc_runenvs(package)}), "msbuild not found!")
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local runenvs = _get_msvc_runenvs(package)
+    local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m",
+        "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
+        "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
         os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:is_debug() and "Debug" or "Release")}, {envs = runenvs})
