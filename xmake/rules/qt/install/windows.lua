@@ -29,7 +29,7 @@ function main(target, opt)
 
     local targetfile = target:targetfile()
     local installfile = path.join(target:installdir(), "bin", path.filename(targetfile))
-    
+
     -- get qt sdk
     local qt = target:data("qt")
 

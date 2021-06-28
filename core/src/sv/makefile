@@ -23,7 +23,7 @@ sv_C_FILES 				+= \
 # includes
 sv_INC_DIRS  			+= sv/include
 
-										
+
 # suffix
 include $(PRO_DIR)/suffix.mak
 

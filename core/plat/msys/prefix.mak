@@ -1,10 +1,10 @@
 # architecture makefile configure
 
 # prefix & suffix
-BIN_PREFIX			= 
+BIN_PREFIX			=
 BIN_SUFFIX			= .b
 
-OBJ_PREFIX			= 
+OBJ_PREFIX			=
 OBJ_SUFFIX			= .o
 
 LIB_PREFIX			= lib
@@ -24,7 +24,7 @@ LD					= $(PRE_)gcc
 AR					= $(PRE_)ar
 STRIP				= $(PRE_)strip
 RANLIB				= $(PRE_)ranlib
-AS					= $(CC) 
+AS					= $(CC)
 RM					= rm -f
 RMDIR				= rm -rf
 CP					= cp
@@ -40,7 +40,7 @@ AHFLAGS				:= $(if $(AHFLAGS),$(AHFLAGS),$(if $(findstring i386,$(BUILD_ARCH)),-
 ifneq ($(AHFLAGS),)
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
-CXFLAGS_CHECK		:= 
+CXFLAGS_CHECK		:=
 export CXFLAGS_CHECK
 endif
 
@@ -52,9 +52,9 @@ endif
 endif
 
 # cxflags: .c/.cc/.cpp files
-CXFLAGS_RELEASE		= 
+CXFLAGS_RELEASE		=
 CXFLAGS_DEBUG		= -g -D__tb_debug__
-CXFLAGS				= $(AHFLAGS) $(CXFLAGS_CHECK) -c -Wall	
+CXFLAGS				= $(AHFLAGS) $(CXFLAGS_CHECK) -c -Wall
 CXFLAGS-I			= -I
 CXFLAGS-o			= -o
 
@@ -70,28 +70,28 @@ endif
 
 # profile
 ifeq ($(PROF),y)
-CXFLAGS				+= -g -pg -fno-omit-frame-pointer 
+CXFLAGS				+= -g -pg -fno-omit-frame-pointer
 else
-CXFLAGS_RELEASE		+= -fomit-frame-pointer 
+CXFLAGS_RELEASE		+= -fomit-frame-pointer
 CXFLAGS_DEBUG		+= -fno-omit-frame-pointer
 endif
 
 # cflags: .c files
-CFLAGS_RELEASE		= 
-CFLAGS_DEBUG		= 
+CFLAGS_RELEASE		=
+CFLAGS_DEBUG		=
 CFLAGS				= \
 					-std=gnu99 \
 					-D_GNU_SOURCE=1 -D_REENTRANT \
-					-fno-math-errno 
+					-fno-math-errno
 
 # ccflags: .cc/.cpp files
 CCFLAGS_RELEASE		= -fno-rtti
-CCFLAGS_DEBUG		= 
+CCFLAGS_DEBUG		=
 CCFLAGS				= -D_ISOC99_SOURCE -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_POSIX_C_SOURCE=200112 -D_XOPEN_SOURCE=600
 
 # ldflags
-LDFLAGS_RELEASE		= 
-LDFLAGS_DEBUG		=  
+LDFLAGS_RELEASE		=
+LDFLAGS_DEBUG		=
 LDFLAGS				= $(AHFLAGS) $(LDFLAGS_CHECK) -static-libgcc
 LDFLAGS-L			= -L
 LDFLAGS-l			= -l
@@ -100,24 +100,24 @@ LDFLAGS-o			= -o
 
 # prof
 ifeq ($(PROF),y)
-LDFLAGS				+= -pg 
+LDFLAGS				+= -pg
 else
 LDFLAGS_RELEASE		+= -s
-LDFLAGS_DEBUG		+= 
+LDFLAGS_DEBUG		+=
 endif
 
 # asflags
-ASFLAGS_RELEASE		= 
-ASFLAGS_DEBUG		= 
+ASFLAGS_RELEASE		=
+ASFLAGS_DEBUG		=
 ASFLAGS				= -c $(AHFLAGS)
 ASFLAGS-I			= -I
 ASFLAGS-o			= -o
 
 # arflags
-ARFLAGS_RELEASE		= 
-ARFLAGS_DEBUG		= 
+ARFLAGS_RELEASE		=
+ARFLAGS_DEBUG		=
 ARFLAGS				= -cr
-ARFLAGS-o			= 
+ARFLAGS-o			=
 
 # shflags
 SHFLAGS_RELEASE		= -s

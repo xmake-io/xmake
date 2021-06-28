@@ -263,7 +263,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/charset/utf32 \
 						tbox/src/tbox/charset/ucs2 \
 						tbox/src/tbox/charset/ucs4 \
-						tbox/src/tbox/charset/iso8859 
+						tbox/src/tbox/charset/iso8859
 
 iswin =
 ifeq ($(PLAT),windows)
@@ -290,7 +290,7 @@ tbox_C_FILES 			+= \
 						tbox/src/tbox/platform/windows/interface/mswsock \
 						tbox/src/tbox/platform/windows/interface/kernel32 \
 						tbox/src/tbox/platform/windows/interface/iphlpapi \
-						tbox/src/tbox/platform/windows/interface/interface 
+						tbox/src/tbox/platform/windows/interface/interface
 endif
 ifeq ($(PLAT),iphoneos)
 tbox_M_FILES 			+= \
@@ -302,7 +302,7 @@ tbox_INC_DIRS 			+= \
 						tbox/src \
 						inc/$(PLAT)
 
-										
+
 # suffix
 include $(PRO_DIR)/suffix.mak
 

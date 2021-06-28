@@ -18,7 +18,7 @@ lua-cjson_C_FILES 		+= \
 						lua-cjson/lua_cjson
 
 # cflags
-# Use internal strtod() / g_fmt() code for performance and disable multi-thread 
+# Use internal strtod() / g_fmt() code for performance and disable multi-thread
 lua-cjson_CFLAGS 		+= -DNDEBUG -DUSE_INTERNAL_FPCONV
 
 # includes
