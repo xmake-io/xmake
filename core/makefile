@@ -277,6 +277,7 @@ base_LIBPATH 	:=
 base_LIBNAMES 	:=
 base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES 	+= m dl
 else

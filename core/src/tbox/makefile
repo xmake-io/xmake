@@ -302,6 +302,11 @@ tbox_INC_DIRS 			+= \
 						tbox/src \
 						inc/$(PLAT)
 
+# use system tbox library?
+tbox_C_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_C_FILES))
+tbox_M_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_M_FILES))
+tbox_INC_FILES 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(tbox_INC_FILES))
+
 
 # suffix
 include $(PRO_DIR)/suffix.mak
