@@ -1,9 +1,10 @@
 # is debug?
 debug  		:=n
-verbose 	:=
 
-#debug   	:=y
-#verbose 	:=-v
+# verbose
+ifneq ($(VERBOSE),y)
+VECHO = @
+endif
 
 # prefix
 ifeq ($(prefix),) # compatible with brew script (make install PREFIX=xxx DESTDIR=/xxx)
