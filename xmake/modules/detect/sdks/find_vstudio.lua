@@ -254,7 +254,7 @@ function main(opt)
         local vswhere_VCAuxiliaryBuildDir = nil
         if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
-            local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-version", vswhere_vrange})
+            local result = os.iorunv(vswhere.program, {"-prerelease", "-property", "installationpath", "-version", vswhere_vrange})
             if result then
                 vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
             end
