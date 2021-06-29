@@ -425,6 +425,15 @@ function _get_configs_for_generator(package, configs, opt)
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
+        if cmake_generator:find("Ninja", 1, true) then
+            local jobs = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+            local linkjobs = opt.linkjobs or option.get("linkjobs")
+            if linkjobs then
+                table.insert(configs, "-DCMAKE_JOB_POOL_COMPILE:STRING=compile")
+                table.insert(configs, "-DCMAKE_JOB_POOL_LINK:STRING=link")
+                table.insert(configs, ("-DCMAKE_JOB_POOLS:STRING=compile=%s;link=%s"):format(jobs, linkjobs))
+            end
+        end
     elseif package:is_plat("mingw") and is_subhost("msys") then
         table.insert(configs, "-G")
         table.insert(configs, "MSYS Makefiles")

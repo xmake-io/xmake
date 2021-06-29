@@ -48,7 +48,8 @@ task("build")
 
                 ,   {}
                 ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
-                                                      "Specifies the number of jobs to build simultaneously."         }
+                                                      "Set the number of parallel compilation jobs."                  }
+                ,   {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."                         }
                 ,   {'w', "warning",    "k",  false , "Enable the warnings output."                                   }
                 ,   {nil, "files",      "kv", nil   , "Build the given source files.",
                                                       "e.g. ",
