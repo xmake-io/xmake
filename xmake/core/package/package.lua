@@ -578,6 +578,16 @@ function _instance:manifest_save()
     manifest.configs     = self:configs()
     manifest.envs        = self:envs()
 
+    -- save enabled link deps
+    if self:linkdeps() then
+        manifest.linkdeps = {}
+        for _, dep in ipairs(self:linkdeps()) do
+            if dep:exists() then
+                table.insert(manifest.linkdeps, dep:name())
+            end
+        end
+    end
+
     -- save variables
     local vars = {}
     local apis = language.apis()

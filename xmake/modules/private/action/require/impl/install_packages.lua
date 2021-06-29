@@ -530,7 +530,7 @@ function main(requires, opt)
           comax = (option.get("verbose") or option.get("diagnosis")) and 1 or 4,
           isolate = true})
 
-    -- register all required root packages to local cache
+    -- register all installed root packages to local cache
     register_packages(packages)
 
     -- filter packages
@@ -594,6 +594,10 @@ function main(requires, opt)
 
     -- disable other packages in same group
     _disable_other_packages_in_group(packages)
+
+    -- re-register and refresh all root packages to local cache,
+    -- because there may be some missing optional dependencies reinstalled
+    register_packages(packages)
     return packages
 end
 

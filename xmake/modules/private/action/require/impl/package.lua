@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.base.option")
 import("core.base.global")
+import("core.base.hashset")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
@@ -742,6 +743,15 @@ function _check_package_depconflicts(package)
     end
 end
 
+-- must depend on the given package?
+function _must_depend_on(package, dep)
+    local manifest = package:manifest_load()
+    if manifest and manifest.linkdeps then
+        local linkdeps = hashset.from(manifest.linkdeps)
+        return linkdeps:has(dep:name())
+    end
+end
+
 -- the cache directory
 function cachedir()
     return path.join(global.directory(), "cache", "packages")
@@ -765,6 +775,15 @@ function should_install(package)
         -- if all the packages that depend on it already exist, then there is no need to install it
         for _, parent in pairs(package:parents()) do
             if should_install(parent) and not parent:exists() then
+                return true
+            end
+
+            -- if the existing parent package is already using it,
+            -- then even if it is an optional package, you must make sure to install it
+            --
+            -- @see https://github.com/xmake-io/xmake/issues/1460
+            --
+            if parent:exists() and _must_depend_on(parent, package) then
                 return true
             end
         end
