@@ -90,24 +90,14 @@ function main()
             cprint("target(${magenta}%s${clear}): %s", targetname, targetkind)
 
             -- add rules
-            file:print("-- add rules: debug/release")
             file:print("add_rules(\"mode.debug\", \"mode.release\")")
             file:print("")
 
             -- add target
-            file:print("-- define target")
             file:print("target(\"%s\")", targetname)
-            file:print("")
-            file:print("    -- set kind")
             file:print("    set_kind(\"%s\")", targetkind)
-            file:print("")
-            file:print("    -- add files")
             for _, sourcefile in ipairs(sourcefiles) do
-
-                -- trace
                 cprint("    ${green}[+]: ${clear}%s", sourcefile)
-
-                -- add file
                 file:print("    add_files(\"%s\")", sourcefile)
             end
             file:print("")
@@ -125,19 +115,13 @@ function main()
             cprint("    ${green}[+]: ${clear}%s", sourcefile)
 
             -- add target
-            file:print("-- define target")
             file:print("target(\"%s\")", name)
-            file:print("")
-            file:print("    -- set kind")
             file:print("    set_kind(\"binary\")")
-            file:print("")
-            file:print("    -- add files")
             file:print("    add_files(\"%s\")", sourcefile)
             file:print("")
 
             -- add deps
             if #sourcefiles > 0 then
-                file:print("    -- add deps")
                 file:print("    add_deps(\"%s\")", targetname)
                 file:print("")
             end

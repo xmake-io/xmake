@@ -1,4 +1,3 @@
--- add target
 target("demo")
 
     -- disable this target if only build libaries
