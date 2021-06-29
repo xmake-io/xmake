@@ -20,18 +20,10 @@ demo_INC_DIRS 		+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT)
 demo_LIB_DIRS 	    += ../tbox
 
 # luajit
-ifndef LUAJIT_LIBS
-LUAJIT_LIBS 		:= luajit$(DTYPE)
-endif
-ifndef LUAJIT_INC_DIRS
-LUAJIT_INC_DIRS 	:= ../luajit/luajit/src
-endif
-ifndef LUAJIT_LIB_DIRS
-LUAJIT_LIB_DIRS 	:= ../luajit
-endif
-demo_LIBS 			+= $(LUAJIT_LIBS)
-demo_INC_DIRS 	    += $(LUAJIT_INC_DIRS)
-demo_LIB_DIRS 		+= $(LUAJIT_LIB_DIRS)
+luajit_LIBS 	   	:= $(if $(findstring luajit,$(base_LIBNAMES)),,luajit$(DTYPE))
+demo_LIBS 			+= $(luajit_LIBS)
+demo_INC_DIRS 	    += ../luajit/luajit/src
+demo_LIB_DIRS 		+= ../luajit
 
 # sv
 ifndef SV_LIBS
