@@ -278,7 +278,9 @@ base_LIBNAMES 	:=
 base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
 base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
 base_LIBNAMES 	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
+ifeq ($(LUAJIT_SYSTEM),y)
 base_LIBNAMES 	+= $(shell if { cat detect/luajit.c | $(CC) -xc - $(shell pkg-config --libs --cflags luajit) -o /dev/null 2>/dev/null; }; then echo luajit-5.1; fi )
+endif
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES 	+= m dl
 else
