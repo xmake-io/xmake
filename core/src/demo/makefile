@@ -26,18 +26,10 @@ demo_INC_DIRS 	    += ../luajit/luajit/src
 demo_LIB_DIRS 		+= ../luajit
 
 # sv
-ifndef SV_LIBS
-SV_LIBS 			:= sv$(DTYPE)
-endif
-ifndef SV_INC_DIRS
-SV_INC_DIRS 		:= ../sv/sv/include
-endif
-ifndef SV_LIB_DIRS
-SV_LIB_DIRS 		:= ../sv
-endif
-demo_LIBS 			+= $(SV_LIBS)
-demo_INC_DIRS 		+= $(SV_INC_DIRS)
-demo_LIB_DIRS 		+= $(SV_LIB_DIRS)
+sv_DTYPE 			:= $(if $(findstring sv,$(base_LIBNAMES)),,$(DTYPE))
+demo_LIBS 			+= sv$(sv_DTYPE)
+demo_INC_DIRS 		+= ../sv/sv/include
+demo_LIB_DIRS 		+= ../sv
 
 # lua-cjson
 lua-cjson_LIBS 	   	:= $(if $(findstring cjson,$(base_LIBNAMES)),,lua-cjson$(DTYPE))

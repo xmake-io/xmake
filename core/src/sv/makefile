@@ -23,11 +23,9 @@ sv_C_FILES 				+= \
 # includes
 sv_INC_DIRS  			+= sv/include
 
-# use given sv library?
-ifdef SV_LIBS
-sv_C_FILES 				:=
-sv_INC_DIRS 			:=
-endif
+# use system tbox library?
+sv_C_FILES 				:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(sv_C_FILES))
+sv_INC_DIRS 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(sv_INC_DIRS))
 
 # suffix
 include $(PRO_DIR)/suffix.mak
