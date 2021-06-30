@@ -783,7 +783,12 @@ function should_install(package)
             --
             -- @see https://github.com/xmake-io/xmake/issues/1460
             --
-            if parent:exists() and _must_depend_on(parent, package) then
+            if parent:exists() and not option.get("force") and _must_depend_on(parent, package) then
+                -- mark this package as non-optional because parent package need it
+                local requireinfo = package:requireinfo()
+                if requireinfo.optional then
+                    requireinfo.optional = nil
+                end
                 return true
             end
         end
