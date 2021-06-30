@@ -25,11 +25,9 @@ lua-cjson_CFLAGS 		+= -DNDEBUG -DUSE_INTERNAL_FPCONV
 lua-cjson_INC_DIRS 		+= \
 						../luajit/luajit/src
 
-# use given lua-cjson library?
-ifdef LUA_CJSON_LIBS
-lua-cjson_C_FILES 		:=
-lua-cjson_INC_DIRS 		:=
-endif
+# use given system library?
+lua-cjson_C_FILES  		:= $(if $(findstring cjson,$(base_LIBNAMES)),,$(lua-cjson_C_FILES))
+lua-cjson_INC_FILES  	:= $(if $(findstring cjson,$(base_LIBNAMES)),,$(lua-cjson_INC_FILES))
 
 # suffix
 include $(PRO_DIR)/suffix.mak

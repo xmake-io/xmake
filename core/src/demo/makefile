@@ -40,14 +40,9 @@ demo_INC_DIRS 		+= $(SV_INC_DIRS)
 demo_LIB_DIRS 		+= $(SV_LIB_DIRS)
 
 # lua-cjson
-ifndef LUA_CJSON_LIBS
-LUA_CJSON_LIBS 		:= lua-cjson$(DTYPE)
-endif
-ifndef LUA_CJSON_LIB_DIRS
-LUA_CJSON_LIB_DIRS 	:= ../lua-cjson
-endif
-demo_LIBS 			+= $(LUA_CJSON_LIBS)
-demo_LIB_DIRS 		+= $(LUA_CJSON_LIB_DIRS)
+lua-cjson_LIBS 	   	:= $(if $(findstring cjson,$(base_LIBNAMES)),,lua-cjson$(DTYPE))
+demo_LIBS 			+= $(lua-cjson_LIBS)
+demo_LIB_DIRS 		+= ../lua-cjson
 
 demo_LIBS 			+= $(BASE_LIBS)
 
