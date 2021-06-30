@@ -20,6 +20,7 @@
 * [#1442](https://github.com/xmake-io/xmake/issues/1442): Support to clone package resources from git url
 * [#1389](https://github.com/xmake-io/xmake/issues/1389): Support to add toolchain envs to `xrepo env`
 * [#1453](https://github.com/xmake-io/xmake/issues/1453): Support to export protobuf includedirs
+* Support vs2022
 
 ### Bugs fixed
 
@@ -1036,6 +1037,7 @@
 * [#1442](https://github.com/xmake-io/xmake/issues/1442): 支持从 git url 去下载包资源文件
 * [#1389](https://github.com/xmake-io/xmake/issues/1389): 支持添加工具链环境到 `xrepo env`
 * [#1453](https://github.com/xmake-io/xmake/issues/1453): 支持 protobuf 规则导出头文件搜索目录
+* 新增对 vs2022 的支持
 
 ### Bugs 修复
 
