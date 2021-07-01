@@ -254,7 +254,13 @@ function _instance:artifacts_set(artifacts_info)
             local manifest = package:manifest_load()
             if not manifest then
                 os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
-            end                
+            end
+            local vars = manifest.vars
+            if vars then
+                for k, v in pairs(vars) do
+                    package:set(k, v)
+                end
+            end
         end)
         self._IS_PRECOMPILED = true
     end
