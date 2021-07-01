@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.5.5
+
 ### New features
 
 * [#1421](https://github.com/xmake-io/xmake/issues/1421): Add prefix, suffix and extension options for target names
@@ -1018,6 +1020,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.5.5
 
 ### 新特性
 
