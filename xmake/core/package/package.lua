@@ -248,9 +248,13 @@ function _instance:artifacts_set(artifacts_info)
             sandbox_module.import("lib.detect.find_path")
             local rootdir = find_path("manifest.txt", path.join(os.curdir(), "*", "*", "*"))
             if not rootdir then
-                os.raise("package(%s): manifest.txt not found when installing artifacts!", self:displayname())
+                os.raise("package(%s): manifest.txt not found when installing artifacts!", package:displayname())
             end
             os.cp(path.join(rootdir, "*"), package:installdir())
+            local manifest = package:manifest_load()
+            if not manifest then
+                os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
+            end                
         end)
         self._IS_PRECOMPILED = true
     end
