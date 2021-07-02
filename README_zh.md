@@ -255,7 +255,8 @@ muslcc        The musl-based cross-compilation toolchains
 * 多任务并行编译支持
 * C++20 Module-TS 支持
 * 支持跨平台的 C/C++ 依赖包快速集成
-* 自建分布式包仓库，第三方包仓库支持
+* 自建分布式包仓库，支持安装云端预编译包
+* 第三方包仓库支持，例如：vcpkg, conan, conda 等等
 * 多语言混合编译支持
 * 灵活的 lua 脚本，丰富的扩展模块，可实现高度定制化
 * 丰富的插件支持，内置 vs/cmake/makefile/compile_commands 等生成插件

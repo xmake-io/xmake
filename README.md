@@ -248,7 +248,9 @@ muslcc        The musl-based cross-compilation toolchains
 * Multi-task parallel compilation support
 * C++20 Module-TS support
 * Support cross-platform C/C++ dependency packages
-* Support self-built distributed and third-party package repositories
+* Support self-built distributed package repositories
+* Support the installation of cloud pre-compiled packages
+* Support third-party package repositories, such as: vcpkg, conan, conda, etc.
 * Support multi-language mixed compilation
 * Flexible lua scripts, rich extension modules
 * Support for generating vsproj/cmake/makefile/compile_commands files
