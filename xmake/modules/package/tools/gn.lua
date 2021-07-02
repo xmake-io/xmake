@@ -39,11 +39,18 @@ function _get_configs(package, configs, opt)
     return configs
 end
 
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
 -- get the build environments
 function buildenvs(package, opt)
     local envs = {}
     if package:is_plat("windows") then
-        table.join2(envs, toolchain.load("msvc"):runenvs())
+        envs = os.joinenvs(_get_msvc(package):runenvs())
     end
     return envs
 end

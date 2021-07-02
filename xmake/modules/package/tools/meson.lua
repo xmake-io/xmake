@@ -69,7 +69,7 @@ end
 
 -- get msvc run environments
 function _get_msvc_runenvs(package)
-    return _get_msvc(package):runenvs()
+    return os.joinenvs(_get_msvc(package):runenvs())
 end
 
 -- fix libname on windows
@@ -89,13 +89,7 @@ function buildenvs(package)
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
         if package:is_plat("windows") then
-            for name, values in pairs(_get_msvc_runenvs(package)) do
-                local oldvalues = os.getenv(name)
-                if oldvalues then
-                    values = values .. path.envsep() .. oldvalues
-                end
-                envs[name] = values
-            end
+            envs = os.joinenvs(envs, _get_msvc_runenvs(package))
         end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))

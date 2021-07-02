@@ -696,7 +696,6 @@ function os.execv(program, argv, opt)
     if opt.envs then
         local envars = os.getenvs()
         for k, v in pairs(opt.envs) do
-            -- TODO
             if type(v) == "table" then
                 v = path.joinenv(v)
             end
@@ -1064,6 +1063,24 @@ function os.addenvs(envs)
         end
     end
     return oldenvs
+end
+
+-- join environment variables
+function os.joinenvs(envs, oldenvs)
+    oldenvs = oldenvs or os.getenvs()
+    local newenvs = oldenvs
+    if envs then
+        newenvs = table.copy(oldenvs)
+        for name, values in pairs(envs) do
+            local oldenv = oldenvs[name]
+            if oldenv == "" or oldenv == nil then
+                newenvs[name] = values
+            elseif not oldenv:startswith(values) then
+                newenvs[name] = values .. path.envsep() .. oldenv
+            end
+        end
+    end
+    return newenvs
 end
 
 -- set values to environment variable

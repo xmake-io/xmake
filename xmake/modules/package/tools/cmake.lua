@@ -71,7 +71,7 @@ end
 
 -- get msvc run environments
 function _get_msvc_runenvs(package)
-    return _get_msvc(package):runenvs()
+    return os.joinenvs(_get_msvc(package):runenvs())
 end
 
 -- get cflags from package deps
@@ -491,7 +491,7 @@ function buildenvs(package, opt)
     local envs = {}
     local cmake_generator = opt.cmake_generator
     if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
-        table.join2(envs, _get_msvc_runenvs(package))
+        envs = _get_msvc_runenvs(package)
     end
 
     -- add environments for cmake/find_packages
