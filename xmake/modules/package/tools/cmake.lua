@@ -518,10 +518,12 @@ end
 
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
+    local njob = opt.jobs or option.get("jobs") or nil
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = _get_msvc_runenvs(package)
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m",
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
+            (njob ~= nil and format("-m:%d", njob) or "-m"),
             "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
             "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
@@ -558,10 +560,12 @@ end
 
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
+    local njob = opt.jobs or option.get("jobs") or nil
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = _get_msvc_runenvs(package)
     local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m",
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
+        (njob ~= nil and format("-m:%d", njob) or "-m"),
         "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
         "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
