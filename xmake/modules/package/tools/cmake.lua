@@ -28,6 +28,11 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
 
+-- get the number of parallel jobs
+function _get_parallel_njobs(opt)
+    return opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+end
+
 -- translate paths
 function _translate_paths(paths)
     if is_host("windows") then
@@ -426,7 +431,7 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
         if cmake_generator:find("Ninja", 1, true) then
-            local jobs = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+            local jobs = _get_parallel_njobs(opt)
             local linkjobs = opt.linkjobs or option.get("linkjobs")
             if linkjobs then
                 table.insert(configs, "-DCMAKE_JOB_POOL_COMPILE:STRING=compile")
@@ -518,20 +523,20 @@ end
 
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
-    local njob = opt.jobs or option.get("jobs") or nil
+    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = _get_msvc_runenvs(package)
     local msbuild = find_tool("msbuild", {envs = runenvs})
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
-            (njob ~= nil and format("-m:%d", njob) or "-m"),
+            (jobs ~= nil and format("-m:%d", jobs) or "-m"),
             "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
             "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
 -- do build for make
 function _build_for_make(package, configs, opt)
-    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local argv = {"-j" .. njob}
+    local jobs = _get_parallel_njobs(opt)
+    local argv = {"-j" .. jobs}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
@@ -560,12 +565,12 @@ end
 
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
-    local njob = opt.jobs or option.get("jobs") or nil
+    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
     local runenvs = _get_msvc_runenvs(package)
     local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
     os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
-        (njob ~= nil and format("-m:%d", njob) or "-m"),
+        (jobs ~= nil and format("-m:%d", jobs) or "-m"),
         "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
         "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
@@ -584,8 +589,8 @@ end
 
 -- do install for make
 function _install_for_make(package, configs, opt)
-    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local argv = {"-j" .. njob}
+    local jobs = _get_parallel_njobs(opt)
+    local argv = {"-j" .. jobs}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
