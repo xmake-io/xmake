@@ -490,12 +490,11 @@ end
 -- get build environments
 function buildenvs(package, opt)
 
-    -- use ninja generator for windows platform? we need bind msvc environments manually
+    -- we need bind msvc environments manually
     -- @see https://github.com/xmake-io/xmake/issues/1057
     opt = opt or {}
     local envs = {}
-    local cmake_generator = opt.cmake_generator
-    if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
+    if package:is_plat("windows") then
         envs = _get_msvc_runenvs(package)
     end
 
