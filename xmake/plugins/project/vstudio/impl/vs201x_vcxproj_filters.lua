@@ -38,6 +38,7 @@ function _make_header(filtersfile, vsinfo)
     ,   vs2015 = '14.0'
     ,   vs2017 = '15.0'
     ,   vs2019 = '16.0'
+    ,   vs2022 = '17.0'
     }
 
     -- make header

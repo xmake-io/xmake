@@ -46,9 +46,8 @@ task("project")
                                                         ,   "    - xcode (need cmake)"
                                                         ,   "    - compile_flags"
                                                         ,   "    - compile_commands (clang compilation database with json format)"
-                                                        ,   "    - vs (auto detect), vs2002, vs2003, vs2005, vs2008"
-                                                        ,   "    - vs2010, vs2012, vs2013, vs2015, vs2017, vs2019"
-                                                        ,   "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2019"
+                                                        ,   "    - vs (auto detect), vs2002 - vs2022"
+                                                        ,   "    - vsxmake (auto detect), vsxmake2010 ~ vsxmake2022"
                                                         ,   values = function (complete, opt)
                                                                 if not complete then return end
 
