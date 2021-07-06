@@ -91,7 +91,7 @@ local vsinfo =
     ,   filters_version     = "4.0"
     ,   solution_version    = "12"
     ,   toolset_version     = "v142"
-    ,   sdk_version         = "10.0.17763.0" -- TODO
+    ,   sdk_version         = "10.0.19041.0"
     }
 }
 
