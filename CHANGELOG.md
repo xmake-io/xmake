@@ -6,6 +6,10 @@
 
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): Add `os.joinenvs()` and improve package tools envirnoments
 
+### Change
+
+* Improve vs/vsxmake project generator to support vs2022
+
 ## v2.5.5
 
 ### New features
@@ -1028,6 +1032,10 @@
 ### 新特性
 
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): 添加 `os.joinenvs()` 和改进包工具环境
+
+### 改进
+
+* 改进 vs/vsxmake 工程插件支持 vs2022
 
 ## v2.5.5
 
