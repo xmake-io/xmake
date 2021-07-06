@@ -22,6 +22,7 @@
 import("lib.detect.find_file")
 import("lib.detect.find_library")
 import("lib.detect.find_tool")
+import("core.base.option")
 import("core.project.config")
 import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
@@ -36,6 +37,9 @@ function main(name, opt)
     -- attempt to find vcpkg directory
     local vcpkgdir = find_vcpkgdir()
     if not vcpkgdir then
+        if option.get("diagnosis") then
+            cprint("${color.warning}checkinfo: ${clear dim}vcpkg root directory not found, maybe you need set $VCPKG_ROOT!")
+        end
         return
     end
 
