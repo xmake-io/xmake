@@ -48,8 +48,8 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     local public
     local fileconfig = target:fileconfig(sourcefile_capnp)
     if fileconfig then
-        public = fileconfig.proto_public
-        prefixdir = fileconfig.proto_rootdir
+        public = fileconfig.capnp_public
+        prefixdir = fileconfig.capnp_rootdir
     end
     local rootdir = path.join(target:autogendir(), "rules", "capnproto")
     local filename = path.basename(sourcefile_capnp) .. ".capnp.c++"
@@ -65,7 +65,7 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
 
     -- add commands
     batchcmds:mkdir(sourcefile_dir)
-    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_capnp)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.capnp %s", sourcefile_capnp)
     local capnproto = target:pkg("capnproto")
     local includes = capnproto:get("sysincludedirs")
     local argv = {"compile"}
