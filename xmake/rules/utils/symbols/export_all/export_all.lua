@@ -66,7 +66,13 @@ function main (target, opt)
                                     symbol = symbol:sub(2)
                                 end
                                 if export_classes or not symbol:startswith("?") then
-                                    allsymbols:insert(symbol)
+                                    if export_classes then
+                                        if not symbol:startswith("??_G") and not symbol:startswith("??_E") then
+                                            allsymbols:insert(symbol)
+                                        end
+                                    else
+                                        allsymbols:insert(symbol)
+                                    end
                                 end
                             end
                         end
