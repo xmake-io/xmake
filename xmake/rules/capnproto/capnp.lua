@@ -73,6 +73,9 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
         table.insert(argv, "-I" .. value)
     end
     table.insert(argv, "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_capnp)))
+    if prefixdir then
+        table.insert(argv, "--src-prefix=" .. prefixdir)
+    end
     table.insert(argv, "-o")
     table.insert(argv, "c++:" .. sourcefile_dir)
     table.insert(argv, sourcefile_capnp)
