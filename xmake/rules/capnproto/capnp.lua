@@ -81,7 +81,7 @@ function buildcmd(target, batchcmds, sourcefile_capnp, opt)
     table.insert(argv, sourcefile_capnp)
     batchcmds:vrunv(capnp, argv)
     local configs = {includedirs = sourcefile_dir, languages = "c++14"}
-    if package:is_plat("windows") then
+    if target:is_plat("windows") then
         configs.cxflags = "/TP"
     end
     batchcmds:compile(sourcefile_cx, objectfile, {sourcekind = "cxx", configs = configs})
