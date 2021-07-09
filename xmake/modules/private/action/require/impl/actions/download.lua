@@ -83,7 +83,9 @@ function _checkout(package, url, sourcedir, url_alias)
         git.checkout(revision, {repodir = packagedir})
 
         -- update all submodules
-        git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
+        if os.isdir(".gitmodules") then
+            git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = packagedir})
+        end
     end
 
     -- move to source directory
