@@ -551,7 +551,7 @@ end
 -- get waiting objects for the given group name
 function scheduler:co_group_waitobjs(name)
     local objs = hashset.new()
-    for _, co in ipairs(self:co_group(name)) do
+    for _, co in ipairs(table.wrap(self:co_group(name))) do
         if not co:is_dead() then
             local obj = co:waitobj()
             if obj then

@@ -84,60 +84,67 @@ function main(name, jobs, opt)
     -- run timer
     local stop = false
     local running_jobs_indices = {}
+    local group_timer
     if opt.on_timer then
-        scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
-            while not stop do
-                os.sleep(timeout)
-                if not stop then
-                    local indices
-                    if running_jobs_indices then
-                        indices = table.keys(running_jobs_indices)
+        group_timer = group_name .. "/timer"
+        scheduler.co_group_begin(group_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/timer", isolate = opt.isolate}, function ()
+                while not stop do
+                    os.sleep(timeout)
+                    if not stop then
+                        local indices
+                        if running_jobs_indices then
+                            indices = table.keys(running_jobs_indices)
+                        end
+                        opt.on_timer(indices)
                     end
-                    opt.on_timer(indices)
                 end
-            end
+            end)
         end)
     elseif showprogress then
-        scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
-            while not stop do
-                os.sleep(timeout)
-                if not stop then
+        group_timer = group_name .. "/timer"
+        scheduler.co_group_begin(group_timer, function (co_group)
+            scheduler.co_start_withopt({name = name .. "/tips", isolate = opt.isolate}, function ()
+                while not stop do
+                    os.sleep(timeout)
+                    if not stop then
 
-                    -- show waitchars
-                    local tips = nil
-                    local waitobjs = scheduler.co_group_waitobjs(group_name)
-                    if waitobjs:size() > 0 then
-                        local names = {}
-                        for _, obj in waitobjs:keys() do
-                            if obj:otype() == scheduler.OT_PROC then
-                                table.insert(names, obj:name())
-                            elseif obj:otype() == scheduler.OT_SOCK then
-                                table.insert(names, "sock")
-                            elseif obj:otype() == scheduler.OT_PIPE then
-                                table.insert(names, "pipe")
+                        -- show waitchars
+                        local tips = nil
+                        local waitobjs = scheduler.co_group_waitobjs(group_name)
+                        if waitobjs:size() > 0 then
+                            local names = {}
+                            for _, obj in waitobjs:keys() do
+                                if obj:otype() == scheduler.OT_PROC then
+                                    table.insert(names, obj:name())
+                                elseif obj:otype() == scheduler.OT_SOCK then
+                                    table.insert(names, "sock")
+                                elseif obj:otype() == scheduler.OT_PIPE then
+                                    table.insert(names, "pipe")
+                                end
+                            end
+                            names = table.unique(names)
+                            if #names > 0 then
+                                names = table.concat(names, ",")
+                                if #names > 16 then
+                                    names = names:sub(1, 16) .. ".."
+                                end
+                                tips = string.format("(%d/%s)", waitobjs:size(), names)
                             end
                         end
-                        names = table.unique(names)
-                        if #names > 0 then
-                            names = table.concat(names, ",")
-                            if #names > 16 then
-                                names = names:sub(1, 16) .. ".."
-                            end
-                            tips = string.format("(%d/%s)", waitobjs:size(), names)
+
+                        -- print back characters
+                        progress_helper:clear()
+                        _print_backchars(backnum)
+
+                        if tips then
+                            cprintf("${dim}%s${clear} ", tips)
+                            backnum = #tips + 1
                         end
+                        progress_helper:write()
                     end
-
-                    -- print back characters
-                    progress_helper:clear()
-                    _print_backchars(backnum)
-
-                    if tips then
-                        cprintf("${dim}%s${clear} ", tips)
-                        backnum = #tips + 1
-                    end
-                    progress_helper:write()
                 end
-            end
+            end)
         end)
     end
 
@@ -243,13 +250,16 @@ function main(name, jobs, opt)
     -- wait all jobs exited
     scheduler.co_group_wait(group_name)
 
+    -- wait timer job exited
+    if group_timer then
+        stop = true
+        scheduler.co_group_wait(group_timer)
+    end
+
     -- restore isolated environments
     if co_running and opt.isolate then
         co_running:isolate(is_isolated)
     end
-
-    -- stop timer
-    stop = true
 
     -- remove wait charactor
     if showprogress then
