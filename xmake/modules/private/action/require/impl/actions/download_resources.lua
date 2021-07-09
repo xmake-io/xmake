@@ -68,7 +68,9 @@ function _checkout(package, resource_name, resource_url, resource_revision)
     git.checkout(resource_revision, {repodir = resourcedir})
 
     -- update all submodules
-    git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = resourcedir})
+    if os.isdir(".gitmodules") then
+        git.submodule.update({init = true, recursive = true, longpaths = longpaths, repodir = resourcedir})
+    end
 end
 
 -- download resources
