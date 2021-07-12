@@ -220,8 +220,17 @@ function _make_target(makefile, target, targetflags)
 
     -- make head
     local targetfile = target:targetfile()
-    makefile:print("%s: %s", target:name(), targetfile)
-    makefile:printf("%s:", targetfile)
+    local targetname = target:name()
+
+    -- rules like `./target` and `target` are equivalent and can causes issues
+    -- for cases where targetdir is .
+    -- in these cases, the targetfile rule is not created
+    if targetfile == "./" .. targetname then
+        makefile:printf("%s:", targetname)
+    else
+        makefile:print("%s: %s", targetname, targetfile)
+        makefile:printf("%s:", targetfile)
+    end
 
     -- make dependence for the dependent targets
     for _, depname in ipairs(target:get("deps")) do
