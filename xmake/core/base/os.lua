@@ -238,6 +238,37 @@ function os._match_wildcard_pathes(v)
     return v
 end
 
+-- split too long path environment variable for windows
+--
+-- @see https://github.com/xmake-io/xmake-repo/pull/489
+-- https://stackoverflow.com/questions/34491244/environment-variable-is-too-large-on-windows-10
+--
+function os._split_long_pathenv(envs, name)
+    local value = envs[name]
+    if value and #value > 4096 then
+        local value_more = {}
+        local value_left = {}
+        local more_length = 0
+        for _, item in ipairs(path.splitenv(value)) do
+            if #value - more_length > 4096 then
+                table.insert(value_more, item)
+                more_length = more_length + #item + 1
+            else
+                table.insert(value_left, item)
+            end
+        end
+        if #value_left > 0 and #value_more > 0 then
+            -- fix long path
+            -- PATH="%__MORE_PATH__%;left values"
+            -- __MORE_PATH__="more values"
+            local morename = "__MORE_" .. name:upper() .. "__"
+            table.insert(value_left, 1, "%" .. morename .. "%")
+            envs[morename] = path.joinenv(value_more)
+            envs[name] = path.joinenv(value_left)
+        end
+    end
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern
@@ -700,6 +731,10 @@ function os.execv(program, argv, opt)
                 v = path.joinenv(v)
             end
             envars[k] = v
+            -- we need fix too long value before running process
+            if os.host() == "windows" and #v > 4096 then
+                os._split_long_pathenv(envars, k)
+            end
         end
         envs = {}
         for k, v in pairs(envars) do
