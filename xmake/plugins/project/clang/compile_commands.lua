@@ -42,6 +42,10 @@ function _translate_arguments(arguments)
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
             arg = nil
+        -- escape '"' for the defines
+        -- https://github.com/xmake-io/xmake/issues/1506
+        elseif arg:find("^-D") then
+            arg = arg:gsub("\"", "\\\"")
         end
         -- @see use msvc-style flags for msvc to support language-server better
         -- https://github.com/xmake-io/xmake/issues/1284
