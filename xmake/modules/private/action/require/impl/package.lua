@@ -275,7 +275,7 @@ function _select_package_version(package, requireinfo)
         elseif has_giturl then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
         else
-            raise("package(%s %s): not found!", package:displayname(), require_version)
+            raise("package(%s %s): not found!", package:name(), require_version)
         end
         return version, source
     end
