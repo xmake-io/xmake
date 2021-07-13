@@ -10,6 +10,10 @@
 
 * Improve vs/vsxmake project generator to support vs2022
 
+### Bugs fixed
+
+* [#489](https://github.com/xmake-io/xmake-repo/pull/489): Fix run os.execv with too long envirnoment value on windows
+
 ## v2.5.5
 
 ### New features
@@ -1036,6 +1040,11 @@
 ### 改进
 
 * 改进 vs/vsxmake 工程插件支持 vs2022
+
+### Bugs 修复
+
+* [#489](https://github.com/xmake-io/xmake-repo/pull/489): 修复 run os.execv 带有过长环境变量值出现的一些问题
+
 
 ## v2.5.5
 
