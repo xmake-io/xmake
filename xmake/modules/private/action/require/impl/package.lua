@@ -270,12 +270,14 @@ function _select_package_version(package, requireinfo)
             -- https://github.com/xmake-io/xmake/issues/1009
             version = require_version
             source = "versions"
-        elseif #package:versions() > 0 and (require_version == "latest" or require_version:find('.', 1, true)) then -- select version?
-            version, source = semver.select(require_version, package:versions())
-        elseif has_giturl then -- select branch?
+        elseif #package:versions() > 0 then -- select version?
+            version, source = try { function () return semver.select(require_version, package:versions()) end }
+        end
+        if not version and has_giturl and not require_version:find('.', 1, true) then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branches"
-        else
-            raise("package(%s %s): not found!", package:name(), require_version)
+        end
+        if not version then
+            raise("package(%s): version(%s) not found!", package:name(), require_version)
         end
         return version, source
     end
