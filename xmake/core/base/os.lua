@@ -243,31 +243,23 @@ end
 -- @see https://github.com/xmake-io/xmake-repo/pull/489
 -- https://stackoverflow.com/questions/34491244/environment-variable-is-too-large-on-windows-10
 --
-function os._split_long_pathenv(envs, name)
-    local value = envs[name]
+function os._remove_repeat_pathenv(value)
     if value and #value > 4096 then
-        local value_more = {}
-        local value_left = {}
-        local more_length = 0
+        local itemset = {}
+        local results = {}
         for _, item in ipairs(path.splitenv(value)) do
-            if #value - more_length > 4096 then
-                table.insert(value_more, item)
-                more_length = more_length + #item + 1
-            else
-                table.insert(value_left, item)
+            if not itemset[item] then
+                table.insert(results, item)
+                itemset[item] = true
             end
         end
-        if #value_left > 0 and #value_more > 0 then
-            -- fix long path
-            -- PATH="%__MORE_PATH__%;left values"
-            -- __MORE_PATH__="more values"
-            local morename = "__MORE_" .. name:upper() .. "__"
-            table.insert(value_left, 1, "%" .. morename .. "%")
-            envs[morename] = path.joinenv(value_more)
-            envs[name] = path.joinenv(value_left)
+        if #results > 0 then
+            value = path.joinenv(results)
         end
     end
+    return value
 end
+
 
 -- match files or directories
 --
@@ -730,12 +722,11 @@ function os.execv(program, argv, opt)
             if type(v) == "table" then
                 v = path.joinenv(v)
             end
-            envars[k] = v
-            -- we need fix too long value before running process
-            --[[
+            -- we try to fix too long value before running process
             if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                os._split_long_pathenv(envars, k)
-            end]]
+                v = os._remove_repeat_pathenv(v)
+            end
+            envars[k] = v
         end
         envs = {}
         for k, v in pairs(envars) do
