@@ -732,9 +732,10 @@ function os.execv(program, argv, opt)
             end
             envars[k] = v
             -- we need fix too long value before running process
+            --[[
             if type(v) == "string" and #v > 4096 and os.host() == "windows" then
                 os._split_long_pathenv(envars, k)
-            end
+            end]]
         end
         envs = {}
         for k, v in pairs(envars) do
