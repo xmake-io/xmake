@@ -156,6 +156,24 @@ function _enter_project()
     config.load()
 end
 
+-- remove repeat environment values
+function _remove_repeat_pathenv(value)
+    if value then
+        local itemset = {}
+        local results = {}
+        for _, item in ipairs(path.splitenv(value)) do
+            if not itemset[item] then
+                table.insert(results, item)
+                itemset[item] = true
+            end
+        end
+        if #results > 0 then
+            value = path.joinenv(results)
+        end
+    end
+    return value
+end
+
 -- add values to environment variable
 function _addenvs(envs, name, ...)
     local values = {...}
@@ -246,7 +264,11 @@ function _package_getenvs()
             end
         end
     end
-    return envs
+    local results = {}
+    for k, v in pairs(envs) do
+        results[k] = _remove_repeat_pathenv(v)
+    end
+    return results
 end
 
 -- get environment setting script

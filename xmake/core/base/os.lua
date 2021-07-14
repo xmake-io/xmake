@@ -260,7 +260,6 @@ function os._remove_repeat_pathenv(value)
     return value
 end
 
-
 -- match files or directories
 --
 -- @param pattern   the search pattern
