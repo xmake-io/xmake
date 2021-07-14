@@ -219,7 +219,7 @@ function _toolchain_addenvs(envs)
         local toolchain_inst = toolchain.load(name, toolchain_opt)
         if toolchain_inst then
             for k, v in pairs(toolchain_inst:runenvs()) do
-                _addenvs(envs, k, v)
+                _addenvs(envs, k, unpack(path.splitenv(v)))
             end
         end
     end
