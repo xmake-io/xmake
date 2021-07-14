@@ -248,11 +248,11 @@ function _package_getenvs()
     local envs = os.getenvs()
     if os.isfile(os.projectfile()) and not option.get("packages") then
         task.run("config", {target = "all"}, {disable_dump = true})
+        _toolchain_addenvs(envs)
         local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
-        _toolchain_addenvs(envs)
     else
         local packages = option.get("packages") or option.get("program")
         if packages then
