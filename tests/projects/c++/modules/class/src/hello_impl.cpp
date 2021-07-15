@@ -1,8 +1,7 @@
-// module;
-#include <iostream>
 module hello;
 
-// import std.core;
+#include <iostream>
+
 using namespace std;
 
 namespace hello {

@@ -1,6 +1,7 @@
-// module;
-#include <cstdio>
 export module hello;
+
+#include <cstdio>
+
 using namespace std;
 
 export namespace hello {

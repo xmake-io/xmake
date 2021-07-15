@@ -1,6 +1,6 @@
-// module;
-#include <cstdio>
 export module hello;
+
+#include <cstdio>
 
 export namespace hello {
     inline void say_hello() {
