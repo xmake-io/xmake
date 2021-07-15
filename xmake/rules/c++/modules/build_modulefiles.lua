@@ -124,10 +124,10 @@ end
 function main(target, sourcebatch, opt)
 
     -- do compile
-    local modulesflag = "-fmodules"
+    local modulesflag = nil
     local _, toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    if toolname == "clang" or toolname == "gcc" then
+    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) then
         if compinst:has_flags("-fmodules") then
             modulesflag = "-fmodules"
         elseif compinst:has_flags("-fmodules-ts") then
