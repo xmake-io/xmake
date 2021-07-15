@@ -1,6 +1,6 @@
-// module;
-#include <iostream>
 module hello;
+
+#include <iostream>
 import mod;
 
 void inner() {

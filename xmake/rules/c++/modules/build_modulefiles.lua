@@ -35,7 +35,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 
     -- compile module files to *.pcm
-    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "--precompile", "-x c++-module"}}}})
+    opt = table.join(opt, {configs = {force = {cxxflags = {opt.modulesflag, "--precompile", "-x c++-module"}}}})
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- compile *.pcm to object files
@@ -48,12 +48,12 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {modulesflag}}
+    opt.configs = {cxxflags = {opt.modulesflag}}
     opt.quiet   = true
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
-    target:add("cxxflags", modulesflag)
+    target:add("cxxflags", opt.modulesflag)
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodule-file=" .. modulefile)
     end
@@ -140,9 +140,9 @@ function main(target, sourcebatch, opt)
     end
     if modulesflag then
         opt.modulesflag = modulesflag
-        if toolname == "clang" then
+        if string.find(toolname, "clang") then
             _build_modulefiles_clang(target, sourcebatch, opt)
-        elseif toolname == "gcc" then
+        elseif string.find(toolname, "gcc") then
             _build_modulefiles_gcc(target, sourcebatch, opt)
         elseif toolname == "cl" then
             _build_modulefiles_msvc(target, sourcebatch, opt)
