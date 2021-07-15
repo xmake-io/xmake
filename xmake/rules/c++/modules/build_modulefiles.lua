@@ -140,9 +140,9 @@ function main(target, sourcebatch, opt)
     end
     if modulesflag then
         opt.modulesflag = modulesflag
-        if string.find(toolname, "clang") then
+        if toolname:find("clang", 1, true) then
             _build_modulefiles_clang(target, sourcebatch, opt)
-        elseif string.find(toolname, "gcc") then
+        elseif toolname:find("gcc", 1, true) then
             _build_modulefiles_gcc(target, sourcebatch, opt)
         elseif toolname == "cl" then
             _build_modulefiles_msvc(target, sourcebatch, opt)
