@@ -547,7 +547,7 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
         if vs_toolset and semver.is_valid(vs_toolset) then
             local vs_toolset_semver = semver.new(vs_toolset)
             local msvc_version = "vc" .. vs_toolset_semver:major() .. tostring(vs_toolset_semver:minor()):sub(1, 1)
-            if package:config("shared") then
+            if package:config("shared") or package:is_binary() then
                 for key, artifacts_info in pairs(artifacts_manifest) do
                     if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
                         return artifacts_info
