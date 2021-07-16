@@ -26,6 +26,7 @@ import("core.base.hashset")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
+import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
@@ -528,6 +529,64 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
     end
 end
 
+-- select artifacts for msvc
+function _select_artifacts_for_msvc(package, artifacts_manifest)
+    local msvc
+    for _, instance in ipairs(package:toolchains()) do
+        if instance:name() == "msvc" then
+            msvc = instance
+            break
+        end
+    end
+    if not msvc then
+        msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    end
+    local vcvars = msvc:config("vcvars")
+    if vcvars then
+        local vs_toolset = vcvars.VCToolsVersion
+        if vs_toolset and semver.is_valid(vs_toolset) then
+            local vs_toolset_semver = semver.new(vs_toolset)
+            local msvc_version = "vc" .. vs_toolset_semver:major() .. tostring(vs_toolset_semver:minor()):sub(1, 1)
+            local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
+            local artifacts_info = artifacts_manifest[buildid]
+            if artifacts_info then
+                -- toolset is backwards compatible
+                --
+                -- @see https://github.com/xmake-io/xmake/issues/1513
+                -- https://docs.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-160
+                if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) < 0 then
+                    return
+                end
+                local vs_sdkver = vcvars.WindowsSDKVersion
+                if vs_sdkver and artifacts_info.sdkver and semver.compare(vs_sdkver, artifacts_info.sdkver) < 0 then
+                    return
+                end
+                return artifacts_info
+            end
+        end
+    end
+end
+
+-- select artifacts for generic
+function _select_artifacts_for_generic(package, artifacts_manifest)
+    local buildid = package:plat() .. "-" .. package:arch() .. "-" .. package:buildhash()
+    return artifacts_manifest[buildid]
+end
+
+-- select to use precompiled artifacts?
+function _select_artifacts(package, artifacts_manifest)
+    local artifacts_info
+    local _, toolname = package:tool("ld")
+    if toolname == "link" then -- for msvc
+        artifacts_info = _select_artifacts_for_msvc(package, artifacts_manifest)
+    else
+        artifacts_info = _select_artifacts_for_generic(package, artifacts_manifest)
+    end
+    if artifacts_info then
+        package:artifacts_set(artifacts_info)
+    end
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
@@ -625,14 +684,11 @@ function _load_package(packagename, requireinfo, opt)
     _check_package_configurations(package)
 
     -- save artifacts info, we need add it at last before buildhash need depend on package configurations
+    -- it will switch to install precompiled binary package from xmake-mirror/build-artifacts
     if from_repo and not option.get("build") and not requireinfo.build then
         local artifacts_manifest = repository.artifacts_manifest(packagename, version)
         if artifacts_manifest then
-            local buildid = package:plat() .. "-" .. package:arch() .. "-" .. package:buildhash()
-            local artifacts_info = artifacts_manifest[buildid]
-            if artifacts_info then
-                package:artifacts_set(artifacts_info)
-            end
+            _select_artifacts(package, artifacts_manifest)
         end
     end
 
