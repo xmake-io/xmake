@@ -547,17 +547,25 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
         if vs_toolset and semver.is_valid(vs_toolset) then
             local vs_toolset_semver = semver.new(vs_toolset)
             local msvc_version = "vc" .. vs_toolset_semver:major() .. tostring(vs_toolset_semver:minor()):sub(1, 1)
-            local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
-            local artifacts_info = artifacts_manifest[buildid]
-            if artifacts_info then
-                -- toolset is backwards compatible
-                --
-                -- @see https://github.com/xmake-io/xmake/issues/1513
-                -- https://docs.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-160
-                if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) < 0 then
-                    return
+            if package:config("shared") then
+                for key, artifacts_info in pairs(artifacts_manifest) do
+                    if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
+                        return artifacts_info
+                    end
                 end
-                return artifacts_info
+            else
+                local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
+                local artifacts_info = artifacts_manifest[buildid]
+                if artifacts_info then
+                    -- toolset is backwards compatible
+                    --
+                    -- @see https://github.com/xmake-io/xmake/issues/1513
+                    -- https://docs.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-160
+                    if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) < 0 then
+                        return
+                    end
+                    return artifacts_info
+                end
             end
         end
     end
