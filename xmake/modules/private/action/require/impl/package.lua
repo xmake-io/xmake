@@ -576,8 +576,7 @@ end
 -- select to use precompiled artifacts?
 function _select_artifacts(package, artifacts_manifest)
     local artifacts_info
-    local _, toolname = package:tool("ld")
-    if toolname == "link" then -- for msvc
+    if package:is_plat("windows") then -- for msvc
         artifacts_info = _select_artifacts_for_msvc(package, artifacts_manifest)
     else
         artifacts_info = _select_artifacts_for_generic(package, artifacts_manifest)
