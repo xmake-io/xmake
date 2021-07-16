@@ -24,7 +24,11 @@ rule("qt.ui")
     on_load(function (target)
 
         -- get uic
-        local uic = path.join(target:data("qt").bindir, is_host("windows") and "uic.exe" or "uic")
+        local qt = assert(target:data("qt"), "qt not found!")
+        local uic = path.join(qt.bindir, is_host("windows") and "uic.exe" or "uic")
+        if not os.isexec(uic) and qt.libexecdir then
+            uic = path.join(qt.libexecdir, is_host("windows") and "uic.exe" or "uic")
+        end
         assert(uic and os.isexec(uic), "uic not found!")
 
         -- add includedirs, @note we need create this directory first to suppress warning (file not found).
