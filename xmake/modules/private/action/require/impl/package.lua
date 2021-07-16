@@ -557,10 +557,6 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
                 if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) < 0 then
                     return
                 end
-                local vs_sdkver = vcvars.WindowsSDKVersion
-                if vs_sdkver and artifacts_info.sdkver and semver.compare(vs_sdkver, artifacts_info.sdkver) < 0 then
-                    return
-                end
                 return artifacts_info
             end
         end
