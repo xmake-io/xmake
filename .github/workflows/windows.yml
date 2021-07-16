@@ -17,6 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
+          # WyriHaximus/github-action-get-previous-tag@master need it
+          fetch-depth: 0
           submodules: true
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
@@ -29,12 +31,9 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-        # prepare
-      - name: prepare
+      - name: Prepare
         run: |
-          # xmake
           xmake show
-          # nsis
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04.zip" -UseBasicParsing -OutFile ./nsis.zip
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/nsis-3.04-strlen_8192.zip" -UseBasicParsing -OutFile ./nsis-longstr.zip
           Invoke-WebRequest "https://github.com/xmake-mirror/nsis/releases/download/v30b3/UAC.zip" -UseBasicParsing -OutFile ./nsis-uac.zip
@@ -44,17 +43,16 @@ jobs:
           Expand-Archive ./nsis-uac.zip -DestinationPath ./nsis -Force
           Move-Item ./nsis/UAC.nsh ./nsis/Include/
 
-        # build
-      - name: build
+      - name: Build
         run: |
           xmake f -vD -P core -a ${{ matrix.arch }}
           xmake -vD -P core
 
-        # tests
-      - name: tests
+      - name: Tests
         run: |
           Copy-Item ./core/build/xmake.exe ./xmake
           Copy-Item ./scripts/xrepo.bat ./xmake
+          Copy-Item ./scripts/xrepo.ps1 ./xmake
           $Env:XMAKE_PROGRAM_DIR = $(Resolve-Path ./xmake)
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
           xrepo --version
@@ -62,15 +60,14 @@ jobs:
           #xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
 
-        # build artifacts
-      - name: set release arch name
+      - name: Set release arch name
         run: |
           if ("${{ matrix.arch }}" -eq "x64") {
             Write-Output "RELEASE_NAME=win64" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           } else {
             Write-Output "RELEASE_NAME=win32" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf-8 -Append
           }
-      - name: artifact
+      - name: Artifact
         run: |
           # build installer
           (New-Item ./winenv/bin -ItemType Directory).FullName
@@ -78,29 +75,14 @@ jobs:
           Expand-Archive ./7zip.zip -DestinationPath ./7zip
           Copy-Item ./7zip/7z.exe ./winenv/bin
           Copy-Item ./7zip/7z.dll ./winenv/bin
-          Invoke-WebRequest "https://github.com/xmake-io/xmake-win64env/raw/master/bin/curl.exe" -UseBasicParsing -OutFile .\curl.exe
-          Invoke-WebRequest "https://raw.githubusercontent.com/xmake-io/xmake-win64env/master/bin/curl-ca-bundle.crt" -UseBasicParsing -OutFile .\curl-ca-bundle.crt
-          Copy-Item ./curl.exe ./winenv/bin
-          Copy-Item ./curl-ca-bundle.crt ./winenv/bin
+          Invoke-WebRequest "https://curl.se/windows/dl-7.75.0_3/curl-7.75.0_3-win32-mingw.zip" -UseBasicParsing -OutFile .\curl.zip
+          Expand-Archive ./curl.zip -DestinationPath ./curl
+          Copy-Item ./curl/curl-7.75.0-win32-mingw/bin/curl.exe ./winenv/bin
+          Copy-Item ./curl/curl-7.75.0-win32-mingw/bin/curl-ca-bundle.crt ./winenv/bin
           $version = (Get-Command xmake/xmake.exe).FileVersionInfo
           ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
           (New-Item ./artifacts/${{env.RELEASE_NAME}} -ItemType Directory).FullName
           Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake.exe
-          # build installer for tinyc
-          if ("${{ matrix.arch }}" -eq "x64"){
-            Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27-win64-bin.zip" -UseBasicParsing -OutFile .\tcc.zip
-          } else {
-            Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/tcc-0.9.27-win32-bin.zip" -UseBasicParsing -OutFile .\tcc.zip
-          }
-          Expand-Archive ./tcc.zip -DestinationPath ./tcc
-          Copy-Item ./tcc/tcc ./winenv/tcc -Recurse
-          Invoke-WebRequest "http://download.savannah.gnu.org/releases/tinycc/winapi-full-for-0.9.27.zip" -UseBasicParsing -OutFile .\winapi.zip
-          Expand-Archive ./winapi.zip -DestinationPath ./winapi
-          Copy-Item ./winapi/winapi-full-for-0.9.27 ./winenv/tcc/winapi -Recurse
-          ./nsis/makensis.exe /DMAJOR=$($version.ProductMajorPart) /DMINOR=$($version.ProductMinorPart) /DALTER=$($version.ProductBuildPart) /DBUILD=$($($version.ProductVersion -split '\+')[1]) /D${{ matrix.arch }} .\scripts\installer.nsi
-          Copy-Item scripts/xmake.exe ./artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
-          Remove-Item ./winenv/tcc -Recurse
-          Remove-Item ./scripts/xmake.exe
           # archive
           Copy-Item ./*.md ./xmake
           Copy-Item ./winenv ./xmake -Recurse
@@ -127,10 +109,6 @@ jobs:
           path: artifacts/${{env.RELEASE_NAME}}/xmake.exe
       - uses: actions/upload-artifact@v2
         with:
-          name: xmake-tinyc-latest.${{env.RELEASE_NAME}}.exe
-          path: artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
-      - uses: actions/upload-artifact@v2
-        with:
           name: xmake-latest.${{ env.RELEASE_NAME }}.zip
           path: artifacts/${{env.RELEASE_NAME}}/archive.zip
       - uses: actions/upload-artifact@v2
@@ -138,8 +116,26 @@ jobs:
           name: xmake-latest.${{ env.RELEASE_NAME }}.sha256
           path: artifacts/${{env.RELEASE_NAME}}/shafile
 
+        # upload artifacts to latest release
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Get Previous tag
+        id: previoustag
+        uses: WyriHaximus/github-action-get-previous-tag@master
+
+      - name: Upload artifacts to lastest release
+        if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev'
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: artifacts/${{env.RELEASE_NAME}}/xmake.exe
+          asset_name: xmake-${{ env.GITHUB_REF_SLUG }}.${{ env.RELEASE_NAME }}.exe
+          tag: ${{ steps.previoustag.outputs.tag }}
+          overwrite: true
+
         # publish release
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -150,18 +146,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
           asset_content_type: application/zip
 
-      - name: publish
-        if: github.event.action == 'published'
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: artifacts/${{env.RELEASE_NAME}}/xmake-tinyc.exe
-          asset_name: xmake-tinyc-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.exe
-          asset_content_type: application/zip
-
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -172,7 +157,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.${{ env.RELEASE_NAME }}.zip
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:

@@ -79,7 +79,7 @@ end
 function _check_vstudio(toolchain)
     local vs = _check_vsenv(toolchain)
     if vs then
-        if toolchain:global() then
+        if toolchain:is_global() then
             config.set("vs", vs, {force = true, readonly = true})
         end
         toolchain:config_set("vs", vs)
@@ -87,12 +87,6 @@ function _check_vstudio(toolchain)
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.success}%s", toolchain:arch(), vs)
     else
         cprint("checking for Microsoft Visual Studio (%s) version ... ${color.nothing}${text.nothing}", toolchain:arch())
-        if toolchain:is_plat("windows") then
-            print("please run:")
-            print("    - xmake config --vs=xxx [--vs_toolset=xxx]")
-            print("or  - xmake global --vs=xxx")
-            raise()
-        end
     end
     return vs
 end

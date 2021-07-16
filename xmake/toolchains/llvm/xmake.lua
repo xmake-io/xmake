@@ -48,7 +48,16 @@ toolchain("llvm")
 
         -- add march flags
         local march
-        if toolchain:is_arch("x86_64", "x64") then
+        if toolchain:is_plat("windows") and not is_host("windows") then
+            -- cross-compilation for windows
+            if toolchain:is_arch("i386", "x86") then
+                march = "-target i386-pc-windows-msvc"
+            else
+                march = "-target x86_64-pc-windows-msvc"
+            end
+            toolchain:add("ldflags", "-fuse-ld=lld")
+            toolchain:add("shflags", "-fuse-ld=lld")
+        elseif toolchain:is_arch("x86_64", "x64") then
             march = "-m64"
         elseif toolchain:is_arch("i386", "x86") then
             march = "-m32"
@@ -61,7 +70,7 @@ toolchain("llvm")
             toolchain:add("shflags", march)
         end
 
-        -- init flags for the xcode sdk directory
+        -- init flags for macOS
         if toolchain:is_plat("macosx") then
             local xcode_dir     = get_config("xcode")
             local xcode_sdkver  = toolchain:config("xcode_sdkver")
@@ -69,9 +78,20 @@ toolchain("llvm")
             if xcode_dir and xcode_sdkver then
                 xcode_sdkdir = xcode_dir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
                 toolchain:add("cxflags", "-isysroot " .. xcode_sdkdir)
+                toolchain:add("mxflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("ldflags", "-isysroot " .. xcode_sdkdir)
                 toolchain:add("shflags", "-isysroot " .. xcode_sdkdir)
+            else
+                -- @see https://github.com/xmake-io/xmake/issues/1179
+                local macsdk = "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk"
+                if os.exists(macsdk) then
+                    toolchain:add("cxflags", "-isysroot " .. macsdk)
+                    toolchain:add("mxflags", "-isysroot " .. macsdk)
+                    toolchain:add("ldflags", "-isysroot " .. macsdk)
+                    toolchain:add("shflags", "-isysroot " .. macsdk)
+                end
             end
+            toolchain:add("mxflags", "-fobjc-arc")
         end
 
         -- add bin search library for loading some dependent .dll files windows

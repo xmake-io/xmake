@@ -28,11 +28,55 @@ import("lib.detect.find_file")
 import("lib.detect.find_tool")
 import("package.tools.ninja")
 
--- translate windows bin path
-function _translate_windows_bin_path(bin_path)
-    if bin_path then
+-- get the number of parallel jobs
+function _get_parallel_njobs(opt)
+    return opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+end
+
+-- translate paths
+function _translate_paths(paths)
+    if is_host("windows") then
+        if type(paths) == "string" then
+            return (paths:gsub("\\", "/"))
+        elseif type(paths) == "table" then
+            local result = {}
+            for _, p in ipairs(paths) do
+                table.insert(result, (p:gsub("\\", "/")))
+            end
+            return result
+        end
+    end
+    return paths
+end
+
+-- translate bin path
+function _translate_bin_path(bin_path)
+    if is_host("windows") and bin_path then
         return bin_path:gsub("\\", "/") .. ".exe"
     end
+    return bin_path
+end
+
+-- map compiler flags
+function _map_compflags(package, langkind, name, values)
+    return compiler.map_flags(langkind, name, values, {target = package})
+end
+
+-- map linker flags
+function _map_linkflags(package, targetkind, sourcekinds, name, values)
+    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
+end
+
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return os.joinenvs(_get_msvc(package):runenvs())
 end
 
 -- get cflags from package deps
@@ -43,9 +87,9 @@ function _get_cflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, compiler.map_flags("cxx", "define", fetchinfo.defines))
-                table.join2(result, compiler.map_flags("cxx", "includedir", fetchinfo.includedirs))
-                table.join2(result, compiler.map_flags("cxx", "sysincludedir", fetchinfo.sysincludedirs))
+                table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
+                table.join2(result, _translate_paths(_map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
             end
         end
     end
@@ -60,9 +104,9 @@ function _get_ldflags_from_packagedeps(package, opt)
         if dep then
             local fetchinfo = dep:fetch({external = false})
             if fetchinfo then
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "link", fetchinfo.links))
-                table.join2(result, linker.map_flags("binary", {"cxx"}, "syslink", fetchinfo.syslinks))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
+                table.join2(result, _translate_paths(_map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
             end
         end
     end
@@ -76,6 +120,9 @@ function _get_cflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("cflags"))
         table.join2(result, package:build_getenv("cxflags"))
+        table.join2(result, _map_compflags(package, "c", "define", package:build_getenv("defines")))
+        table.join2(result, _map_compflags(package, "c", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, _map_compflags(package, "c", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("cflags"))
     table.join2(result, package:config("cxflags"))
@@ -87,7 +134,7 @@ function _get_cflags(package, opt)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -98,6 +145,9 @@ function _get_cxxflags(package, opt)
     if opt.cross then
         table.join2(result, package:build_getenv("cxxflags"))
         table.join2(result, package:build_getenv("cxflags"))
+        table.join2(result, _map_compflags(package, "cxx", "define", package:build_getenv("defines")))
+        table.join2(result, _map_compflags(package, "cxx", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, _map_compflags(package, "cxx", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("cxxflags"))
     table.join2(result, package:config("cxflags"))
@@ -109,7 +159,7 @@ function _get_cxxflags(package, opt)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -119,13 +169,16 @@ function _get_asflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("asflags"))
+        table.join2(result, _map_compflags(package, "as", "define", package:build_getenv("defines")))
+        table.join2(result, _map_compflags(package, "as", "includedir", package:build_getenv("includedirs")))
+        table.join2(result, _map_compflags(package, "as", "sysincludedir", package:build_getenv("sysincludedirs")))
     end
     table.join2(result, package:config("asflags"))
     if opt.asflags then
         table.join2(result, opt.asflags)
     end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -135,13 +188,16 @@ function _get_ldflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("ldflags"))
+        table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", package:build_getenv("links")))
+        table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", package:build_getenv("syslinks")))
+        table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.ldflags then
         table.join2(result, opt.ldflags)
     end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -151,13 +207,16 @@ function _get_shflags(package, opt)
     local result = {}
     if opt.cross then
         table.join2(result, package:build_getenv("shflags"))
+        table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "link", package:build_getenv("links")))
+        table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "syslink", package:build_getenv("syslinks")))
+        table.join2(result, _map_linkflags(package, "shared", {"cxx"}, "linkdir", package:build_getenv("linkdirs")))
     end
     table.join2(result, _get_ldflags_from_packagedeps(package, opt))
     if opt.shflags then
         table.join2(result, opt.shflags)
     end
     if #result > 0 then
-        return table.concat(result, ' ')
+        return os.args(result)
     end
 end
 
@@ -183,6 +242,9 @@ function _get_configs_for_generic(package, configs, opt)
     if shflags then
         table.insert(configs, "-DCMAKE_SHARED_LINKER_FLAGS=" .. shflags)
     end
+    if package:config("pic") ~= false then
+        table.insert(configs, "-DCMAKE_POSITION_INDEPENDENT_CODE=ON")
+    end
 end
 
 -- get configs for windows
@@ -196,6 +258,9 @@ function _get_configs_for_windows(package, configs, opt)
             table.insert(configs, "x64")
         end
     end
+    -- we maybe need patch `cmake_policy(SET CMP0091 NEW)` to enable this argument for some packages
+    -- @see https://cmake.org/cmake/help/latest/policy/CMP0091.html#policy:CMP0091
+    -- https://github.com/xmake-io/xmake-repo/pull/303
     local vs_runtime = package:config("vs_runtime")
     if vs_runtime == "MT" then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded")
@@ -271,26 +336,16 @@ end
 -- get configs for mingw
 function _get_configs_for_mingw(package, configs, opt)
     opt = opt or {}
+    opt.cross                      = true
     local envs                     = {}
     local sdkdir                   = package:build_getenv("mingw") or package:build_getenv("sdk")
-    if is_host("windows") then
-        envs.CMAKE_C_COMPILER      = _translate_windows_bin_path(package:build_getenv("cc"))
-        envs.CMAKE_CXX_COMPILER    = _translate_windows_bin_path(package:build_getenv("cxx"))
-        envs.CMAKE_ASM_COMPILER    = _translate_windows_bin_path(package:build_getenv("as"))
-        envs.CMAKE_AR              = _translate_windows_bin_path(package:build_getenv("ar"))
-        envs.CMAKE_LINKER          = _translate_windows_bin_path(package:build_getenv("ld"))
-        envs.CMAKE_RANLIB          = _translate_windows_bin_path(package:build_getenv("ranlib"))
-        envs.CMAKE_RC_COMPILER     = _translate_windows_bin_path(package:build_getenv("mrc"))
-    else
-        envs.CMAKE_C_COMPILER      = package:build_getenv("cc")
-        envs.CMAKE_CXX_COMPILER    = package:build_getenv("cxx")
-        envs.CMAKE_ASM_COMPILER    = package:build_getenv("as")
-        envs.CMAKE_AR              = package:build_getenv("ar")
-        envs.CMAKE_LINKER          = package:build_getenv("ld")
-        envs.CMAKE_RANLIB          = package:build_getenv("ranlib")
-        envs.CMAKE_RC_COMPILER     = package:build_getenv("mrc")
-    end
-    opt.cross                      = true
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
+    envs.CMAKE_RC_COMPILER         = _translate_bin_path(package:build_getenv("mrc"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
@@ -316,15 +371,15 @@ end
 -- get configs for cross
 function _get_configs_for_cross(package, configs, opt)
     opt = opt or {}
-    local envs                     = {}
-    local sdkdir                   = package:build_getenv("sdk")
     opt.cross                      = true
-    envs.CMAKE_C_COMPILER          = package:build_getenv("cc")
-    envs.CMAKE_CXX_COMPILER        = package:build_getenv("cxx")
-    envs.CMAKE_ASM_COMPILER        = package:build_getenv("as")
-    envs.CMAKE_AR                  = package:build_getenv("ar")
-    envs.CMAKE_LINKER              = package:build_getenv("ld")
-    envs.CMAKE_RANLIB              = package:build_getenv("ranlib")
+    local envs                     = {}
+    local sdkdir                   = _translate_paths(package:build_getenv("sdk"))
+    envs.CMAKE_C_COMPILER          = _translate_bin_path(package:build_getenv("cc"))
+    envs.CMAKE_CXX_COMPILER        = _translate_bin_path(package:build_getenv("cxx"))
+    envs.CMAKE_ASM_COMPILER        = _translate_bin_path(package:build_getenv("as"))
+    envs.CMAKE_AR                  = _translate_bin_path(package:build_getenv("ar"))
+    envs.CMAKE_LINKER              = _translate_bin_path(package:build_getenv("ld"))
+    envs.CMAKE_RANLIB              = _translate_bin_path(package:build_getenv("ranlib"))
     envs.CMAKE_C_FLAGS             = _get_cflags(package, opt)
     envs.CMAKE_CXX_FLAGS           = _get_cxxflags(package, opt)
     envs.CMAKE_ASM_FLAGS           = _get_asflags(package, opt)
@@ -348,7 +403,7 @@ function _get_configs_for_cross(package, configs, opt)
 end
 
 -- get cmake generator for msvc
-function _get_cmake_generator_for_msvc()
+function _get_cmake_generator_for_msvc(package)
     local vsvers =
     {
         ["2019"] = "16",
@@ -359,7 +414,7 @@ function _get_cmake_generator_for_msvc()
         ["2010"] = "10",
         ["2008"] = "9"
     }
-    local vs = config.get("vs")
+    local vs = _get_msvc(package):config("vs") or config.get("vs")
     assert(vsvers[vs], "Unknown Visual Studio version: '" .. tostring(vs) .. "' set in project.")
     return "Visual Studio " .. vsvers[vs] .. " " .. vs
 end
@@ -371,10 +426,19 @@ function _get_configs_for_generator(package, configs, opt)
     local cmake_generator = opt.cmake_generator
     if cmake_generator then
         if cmake_generator:find("Visual Studio", 1, true) then
-            cmake_generator = _get_cmake_generator_for_msvc()
+            cmake_generator = _get_cmake_generator_for_msvc(package)
         end
         table.insert(configs, "-G")
         table.insert(configs, cmake_generator)
+        if cmake_generator:find("Ninja", 1, true) then
+            local jobs = _get_parallel_njobs(opt)
+            local linkjobs = opt.linkjobs or option.get("linkjobs")
+            if linkjobs then
+                table.insert(configs, "-DCMAKE_JOB_POOL_COMPILE:STRING=compile")
+                table.insert(configs, "-DCMAKE_JOB_POOL_LINK:STRING=link")
+                table.insert(configs, ("-DCMAKE_JOB_POOLS:STRING=compile=%s;link=%s"):format(jobs, linkjobs))
+            end
+        end
     elseif package:is_plat("mingw") and is_subhost("msys") then
         table.insert(configs, "-G")
         table.insert(configs, "MSYS Makefiles")
@@ -383,16 +447,29 @@ function _get_configs_for_generator(package, configs, opt)
         table.insert(configs, "MinGW Makefiles")
     elseif package:is_plat("windows") then
         table.insert(configs, "-G")
-        table.insert(configs, _get_cmake_generator_for_msvc())
+        table.insert(configs, _get_cmake_generator_for_msvc(package))
     else
         table.insert(configs, "-G")
         table.insert(configs, "Unix Makefiles")
     end
 end
 
+-- get configs for installation
+function _get_configs_for_install(package, configs, opt)
+    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
+    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
+    --
+    table.insert(configs, "-DCMAKE_INSTALL_PREFIX=" .. package:installdir())
+    if not opt._configs_str:find("CMAKE_INSTALL_LIBDIR") then
+        table.insert(configs, "-DCMAKE_INSTALL_LIBDIR=" .. package:installdir("lib"))
+    end
+end
+
 -- get configs
 function _get_configs(package, configs, opt)
     configs = configs or {}
+    opt._configs_str = string.serialize(configs, {indent = false, strip = true})
+    _get_configs_for_install(package, configs, opt)
     _get_configs_for_generator(package, configs, opt)
     if package:is_plat("windows") then
         _get_configs_for_windows(package, configs, opt)
@@ -413,13 +490,12 @@ end
 -- get build environments
 function buildenvs(package, opt)
 
-    -- use ninja generator for windows platform? we need bind msvc environments manually
+    -- we need bind msvc environments manually
     -- @see https://github.com/xmake-io/xmake/issues/1057
     opt = opt or {}
     local envs = {}
-    local cmake_generator = opt.cmake_generator
-    if cmake_generator and cmake_generator == "Ninja" and package:is_plat("windows") then
-        table.join2(envs, toolchain.load("msvc"):runenvs())
+    if package:is_plat("windows") then
+        envs = _get_msvc_runenvs(package)
     end
 
     -- add environments for cmake/find_packages
@@ -427,7 +503,7 @@ function buildenvs(package, opt)
     local CMAKE_INCLUDE_PATH = {}
     local CMAKE_PREFIX_PATH  = {}
     for _, dep in ipairs(package:orderdeps()) do
-        if dep:isSys() then
+        if dep:is_system() then
             local fetchinfo = dep:fetch()
             if fetchinfo then
                 table.join2(CMAKE_LIBRARY_PATH, fetchinfo.linkdirs)
@@ -446,16 +522,20 @@ end
 
 -- do build for msvc
 function _build_for_msvc(package, configs, opt)
+    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
+    local runenvs = _get_msvc_runenvs(package)
     local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
+            (jobs ~= nil and format("-m:%d", jobs) or "-m"),
+            "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
+            "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
 end
 
 -- do build for make
 function _build_for_make(package, configs, opt)
-    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local argv = {"-j" .. njob}
+    local jobs = _get_parallel_njobs(opt)
+    local argv = {"-j" .. jobs}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
@@ -484,13 +564,17 @@ end
 
 -- do install for msvc
 function _install_for_msvc(package, configs, opt)
+    local jobs = _get_parallel_njobs(opt)
     local slnfile = assert(find_file("*.sln", os.curdir()), "*.sln file not found!")
-    local runenvs = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()}):runenvs()
-    local msbuild = find_tool("msbuild", {envs = runenvs})
-    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild", "-m", "-p:Configuration=" .. (package:debug() and "Debug" or "Release"), "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
+    local runenvs = _get_msvc_runenvs(package)
+    local msbuild = assert(find_tool("msbuild", {envs = runenvs}), "msbuild not found!")
+    os.vrunv(msbuild.program, {slnfile, "-nologo", "-t:Rebuild",
+        (jobs ~= nil and format("-m:%d", jobs) or "-m"),
+        "-p:Configuration=" .. (package:is_debug() and "Debug" or "Release"),
+        "-p:Platform=" .. (package:is_arch("x64") and "x64" or "Win32")}, {envs = runenvs})
     local projfile = os.isfile("INSTALL.vcxproj") and "INSTALL.vcxproj" or "INSTALL.vcproj"
     if os.isfile(projfile) then
-        os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:debug() and "Debug" or "Release")}, {envs = runenvs})
+        os.vrunv(msbuild.program, {projfile, "/property:configuration=" .. (package:is_debug() and "Debug" or "Release")}, {envs = runenvs})
         os.trycp("install/bin", package:installdir())
         os.trycp("install/lib", package:installdir()) -- perhaps only headers library
         os.trycp("install/share", package:installdir())
@@ -502,29 +586,10 @@ function _install_for_msvc(package, configs, opt)
     end
 end
 
--- install files for cmake
-function _install_files_for_cmake(package, opt)
-
-    -- patch _IMPORT_PREFIX to the real path
-    --
-    -- e.g. set(_IMPORT_PREFIX "/Users/ruki/.xmake/cache/packages/2009/x/xxx/master/source/xxx/build_C8AA35F0/install")
-    --
-    for _, cmakefile in ipairs(os.files("install/lib/cmake/*/*.cmake")) do
-        vprint("patching %s ..", cmakefile)
-        local prefixdir_old = path.absolute("install")
-        local prefixdir_new = package:installdir()
-        io.replace(cmakefile, prefixdir_old, prefixdir_new, {plain = true})
-    end
-    os.trycp("install/bin", package:installdir())
-    os.trycp("install/lib", package:installdir())
-    os.trycp("install/share", package:installdir())
-    os.trycp("install/include", package:installdir())
-end
-
 -- do install for make
 function _install_for_make(package, configs, opt)
-    local njob = tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
-    local argv = {"-j" .. njob}
+    local jobs = _get_parallel_njobs(opt)
+    local argv = {"-j" .. jobs}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
@@ -540,14 +605,12 @@ function _install_for_make(package, configs, opt)
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
     end
-    _install_files_for_cmake(package, opt)
 end
 
 -- do install for ninja
 function _install_for_ninja(package, configs, opt)
     opt = opt or {}
     ninja.install(package, {}, {envs = opt.envs or buildenvs(package, opt)})
-    _install_files_for_cmake(package, opt)
 end
 
 -- do install for cmake/build
@@ -556,7 +619,6 @@ function _install_for_cmakebuild(package, configs, opt)
     local cmake = assert(find_tool("cmake"), "cmake not found!")
     os.vrunv(cmake.program, {"--build", os.curdir()}, {envs = opt.envs or buildenvs(package)})
     os.vrunv(cmake.program, {"--install", os.curdir()})
-    _install_files_for_cmake(package, opt)
 end
 
 -- build package
@@ -570,13 +632,6 @@ function build(package, configs, opt)
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
-    -- init arguments
-    --
-    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
-    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    --
-    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-
     -- exists $CMAKE_GENERATOR? use it
     local cmake_generator_env = os.getenv("CMAKE_GENERATOR")
     if not opt.cmake_generator and cmake_generator_env then
@@ -584,6 +639,7 @@ function build(package, configs, opt)
     end
 
     -- pass configurations
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -591,7 +647,7 @@ function build(package, configs, opt)
                 table.insert(argv, value)
             end
         else
-            table.insert(argv, "--" .. name .. "=" .. value)
+            table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
     table.insert(argv, oldir)
@@ -635,14 +691,8 @@ function install(package, configs, opt)
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
-    -- init arguments
-    --
-    -- @see https://cmake.org/cmake/help/v3.14/module/GNUInstallDirs.html
-    -- LIBDIR: object code libraries (lib or lib64 or lib/<multiarch-tuple> on Debian)
-    --
-    local argv = {"-DCMAKE_INSTALL_PREFIX=" .. path.absolute("install"), "-DCMAKE_INSTALL_LIBDIR=" .. path.absolute("install/lib")}
-
     -- pass configurations
+    local argv = {}
     for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if type(name) == "number" then
@@ -650,7 +700,7 @@ function install(package, configs, opt)
                 table.insert(argv, value)
             end
         else
-            table.insert(argv, "--" .. name .. "=" .. value)
+            table.insert(argv, "-D" .. name .. "=" .. value)
         end
     end
     table.insert(argv, oldir)

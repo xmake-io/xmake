@@ -30,7 +30,7 @@ import("net.fasturl")
 import("core.base.privilege")
 import("privilege.sudo")
 import("private.async.runjobs")
-import("actions.require.impl.environment", {rootdir = os.programdir()})
+import("private.action.require.impl.environment")
 import("private.action.update.fetch_version")
 import("utils.archive")
 import("lib.detect.find_file")
@@ -173,7 +173,7 @@ function _install(sourcedir)
                     end
                 else
                     os.vrun("make build")
-                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile()}, {detach = true}):close()
+                    process.openv("./scripts/get.sh", {"__local__", "__install_only__"}, {stdout = os.tmpfile(), stderr = os.tmpfile(), detach = true}):close()
                 end
                 return true
             end,
@@ -223,7 +223,7 @@ function _install_script(sourcedir)
                 local script_original = path.join(os.programdir(), "scripts", "update-script.bat")
                 local script = os.tmpfile() .. ".bat"
                 os.cp(script_original, script)
-                local params = { "/c", script, os.programdir(),  source }
+                local params = { "/c", script, os.programdir(), source }
                 os.tryrm(script_original .. ".bak")
                 local access = os.trymv(script_original, script_original .. ".bak")
                 _run_win_v("cmd", params, not access)
@@ -309,15 +309,19 @@ function main()
             raise("not support to update from unofficial source on windows, missing '--scriptonly' flag?")
         end
 
+        local winarch = os.arch() == "x64" and "win64" or "win32"
         if version:find('.', 1, true) then
-            local winarch = os.arch() == "x64" and "win64" or "win32"
             mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
                         format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", version, version, winarch),
                         format("https://cdn.jsdelivr.net/gh/xmake-mirror/xmake-releases@%s/xmake-%s.%s.exe.zip", version, version, winarch),
                         format("https://gitlab.com/xmake-mirror/xmake-releases/raw/%s/xmake-%s.%s.exe.zip", version, version, winarch)}
         else
             -- regard as a git branch, fetch from ci
-            mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch())}
+            local tags = fetchinfo.tags
+            table.sort(tags)
+            local latest_version = tags[#tags] or ("v" .. xmake.version():shortstr())
+            mainurls = {format("https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=%s&pr=false&job=Image%%3A+Visual+Studio+2017%%3B+Platform%%3A+%s", version, os.arch()),
+                        format("https://github.com/xmake-io/xmake/releases/download/%s/xmake-%s.%s.exe", latest_version, version, winarch)}
         end
 
         -- re-sort mainurls

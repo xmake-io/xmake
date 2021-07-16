@@ -1,0 +1,32 @@
+name: FreeBSD
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Tests
+        uses: vmactions/freebsd-vm@v0.1.3
+        with:
+          usesh: true
+          mem: 4096
+          prepare: pkg install -y curl unzip gmake llvm gsed bash perl5
+          run: |
+            gmake -j4
+            gmake install
+            export XMAKE_ROOT=y
+            xrepo --version
+            xmake lua -v -D tests/run.lua
+
+

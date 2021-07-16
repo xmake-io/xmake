@@ -38,7 +38,7 @@
     <a href="https://jq.qq.com/?_wv=1027&k=5hpwWFv">
       <img src="https://img.shields.io/badge/chat-on%20QQ-ff69b4.svg?style=flat-square" alt="QQ" />
     </a>
-    <a href="https://discord.gg/aY7RVeKdG7">
+    <a href="https://discord.gg/xmake">
       <img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?style=flat-square" alt="Discord" />
     </a>
     <a href="https://xmake.io/#/zh-cn/about/sponsor">
@@ -46,12 +46,15 @@
     </a>
   </div>
 
-  <p>A cross-platform build utility based on Lua</p>
+  <b>A cross-platform build utility based on Lua</b><br/>
+  <i>Modern C/C++ build tools, Simple, Fast, Powerful dependency package integration</i><br/>
 </div>
 
 ## 项目支持
 
-通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏 [[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
+通过成为赞助者来支持该项目。您的logo将显示在此处，并带有指向您网站的链接。🙏
+
+- [成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)
 
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 
@@ -175,9 +178,11 @@ $ xmake f --menu
 * 官方包管理器 [Xrepo](https://github.com/xmake-io/xrepo)
 * [用户自建仓库](https://xmake.io/#/zh-cn/package/remote_package?id=%e4%bd%bf%e7%94%a8%e8%87%aa%e5%bb%ba%e7%a7%81%e6%9c%89%e5%8c%85%e4%bb%93%e5%ba%93)
 * Conan (conan::openssl/1.1.1g)
+* Conda (conda::libpng 1.3.67)
 * Vcpkg (vcpkg:ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
 * Pacman on archlinux/msys2 (pacman::libcurl)
+* Apt on ubuntu/debian (apt::zlib1g-dev)
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
 
@@ -190,6 +195,7 @@ $ xmake f --menu
 * Android (x86, x86_64, armeabi, armeabi-v7a, arm64-v8a)
 * iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)
+* AppleTVOS (armv7, arm64, i386, x86_64)
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64, arm, arm64)
 * Cygwin (i386, x86_64)
@@ -220,11 +226,11 @@ mingw         Minimalist GNU for Windows
 gnu-rm        GNU Arm Embedded Toolchain
 envs          Environment variables toolchain
 fasm          Flat Assembler
-tinyc         Tiny C Compiler
+tinycc        Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
-musl          The musl-based cross-compilation toolchains
+muslcc        The musl-based cross-compilation toolchains
 ```
 
 ## 支持语言
@@ -238,7 +244,7 @@ musl          The musl-based cross-compilation toolchains
 * Dlang
 * Fortran
 * Cuda
-* Zig (Experimental)
+* Zig
 
 ## 支持特性
 
@@ -249,13 +255,15 @@ musl          The musl-based cross-compilation toolchains
 * 多任务并行编译支持
 * C++20 Module-TS 支持
 * 支持跨平台的 C/C++ 依赖包快速集成
-* 自建分布式包仓库，第三方包仓库支持
+* 自建分布式包仓库，支持安装云端预编译包
+* 第三方包仓库支持，例如：vcpkg, conan, conda 等等
 * 多语言混合编译支持
 * 灵活的 lua 脚本，丰富的扩展模块，可实现高度定制化
 * 丰富的插件支持，内置 vs/cmake/makefile/compile_commands 等生成插件
 * REPL 交互式执行支持
 * 增量编译支持，头文件依赖自动分析
 * 工具链的快速切换、定制化支持
+* 自动拉取工具链以及依赖包的快速整合
 
 ## 工程类型
 
@@ -376,6 +384,56 @@ target("loop")
     add_packages("libomp")
 ```
 
+#### Zig 程序
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/main.zig")
+```
+
+### 自动拉取远程工具链
+
+#### 拉取指定版本的 llvm 工具链
+
+我们使用 llvm-10 中的 clang 来编译项目。
+
+```lua
+add_requires("llvm 10.x", {alias = "llvm-10"})
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("llvm@llvm-10")
+````
+
+#### 拉取交叉编译工具链
+
+我们也可以拉取指定的交叉编译工具链来编译项目。
+
+```lua
+add_requires("muslcc")
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("@muslcc")
+```
+
+#### 拉取工具链并且集成对应工具链编译的依赖包
+
+我们也可以使用指定的muslcc交叉编译工具链去编译和集成所有的依赖包。
+
+```lua
+add_requires("muslcc")
+add_requires("zlib", "libogg", {system = false})
+
+set_toolchains("@muslcc")
+
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("zlib", "libogg")
+```
+
 ## 插件
 
 #### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
@@ -430,7 +488,7 @@ $ xmake l
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.0.6'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
 }
 
 android {
@@ -475,14 +533,13 @@ $ ./gradlew app:assembleDebug
 
 或者你也可以考虑赞助我们也获取技术支持服务，[[成为赞助商](https://xmake.io/#/zh-cn/about/sponsor)]
 
-## 项目例子
+## 谁在使用 Xmake?
 
-一些使用xmake的项目：
+请点击 [用户列表](https://xmake.io/#/zh-cn/about/who_is_using_xmake) 查看完整用户使用列表。
 
-* [tbox](https://github.com/tboox/tbox)
-* [gbox](https://github.com/tboox/gbox)
-* [vm86](https://github.com/tboox/vm86)
-* [更多](https://github.com/xmake-io/awesome-xmake)
+如果您在使用 xmake，也欢迎通过 PR 将信息提交至上面的列表，让更多的用户了解有多少用户在使用 xmake，也能让用户更加安心使用 xmake。
+
+我们也会有更多的动力去持续投入，让 xmake 项目和社区更加繁荣。
 
 ## 联系方式
 
@@ -492,8 +549,8 @@ $ ./gradlew app:assembleDebug
   - [Reddit论坛](https://www.reddit.com/r/xmake/)
   - [Telegram群组](https://t.me/tbooxorg)
   - [Gitter聊天室](https://gitter.im/xmake-io/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-  - [Discord聊天室](https://discord.gg/aY7RVeKdG7)
-  - QQ群：343118190(技术支持), 662147501
+  - [Discord聊天室](https://discord.gg/xmake)
+  - QQ群：343118190, 662147501
 * 源码：[Github](https://github.com/xmake-io/xmake), [Gitee](https://gitee.com/tboox/xmake)
 * 微信公众号：tboox-os
 
@@ -502,7 +559,8 @@ $ ./gradlew app:assembleDebug
 感谢所有对xmake有所[贡献](CONTRIBUTING.md)的人:
 <a href="https://github.com/xmake-io/xmake/graphs/contributors"><img src="https://opencollective.com/xmake/contributors.svg?width=890&button=false" /></a>
 
-* [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本
-* [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)
-* [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci
+* [TitanSnow](https://github.com/TitanSnow): 提供xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) 和安装脚本。
+* [uael](https://github.com/uael): 提供语义版本跨平台c库 [sv](https://github.com/uael/sv)。
+* [OpportunityLiu](https://github.com/OpportunityLiu): 改进cuda构建, tests框架和ci。
+* [xq144](https://github.com/xq114): 改进 `xrepo env shell`，并贡献大量包到 [xmake-repo](https://github.com/xmake-io/xmake-repo) 仓库。
 

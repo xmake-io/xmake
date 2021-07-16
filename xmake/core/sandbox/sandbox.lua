@@ -323,7 +323,10 @@ function sandbox.instance(script)
     while level < 32 do
 
         -- get scope
-        local scope = getfenv(level)
+        local ok, scope = pcall(getfenv, level)
+        if not ok then
+            break;
+        end
         if scope then
 
             -- enable to read _SANDBOX
@@ -344,8 +347,6 @@ function sandbox.instance(script)
         -- next
         level = level + 1
     end
-
-    -- ok?
     return instance
 end
 

@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("core.tool.toolchain")
 import("package.tools.ninja")
 
 -- get build directory
@@ -34,15 +35,48 @@ function _get_buildir(opt)
 end
 
 -- get configs
-function _get_configs(package, configs)
+function _get_configs(package, configs, opt)
 
     -- add prefix
-    local configs = configs or {}
+    configs = configs or {}
     table.insert(configs, "--prefix=" .. package:installdir())
+    table.insert(configs, "--libdir=lib")
+
+    -- set build type
+    table.insert(configs, "--buildtype=" .. (package:debug() and "debug" or "release"))
+
+    -- add -fpic
+    if package:is_plat("linux") and package:config("pic") then
+        table.insert(configs, "-Db_staticpic=true")
+    end
+
+    -- add vs_runtime flags
+    if package:is_plat("windows") then
+        table.insert(configs, "-Db_vscrt=" .. package:config("vs_runtime"):lower())
+    end
 
     -- add build directory
-    table.insert(configs, _get_buildir())
+    table.insert(configs, _get_buildir(opt))
     return configs
+end
+
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
+-- get msvc run environments
+function _get_msvc_runenvs(package)
+    return os.joinenvs(_get_msvc(package):runenvs())
+end
+
+-- fix libname on windows
+function _fix_libname_on_windows(package)
+    for _, lib in ipairs(os.files(path.join(package:installdir("lib"), "lib*.a"))) do
+        os.mv(lib, lib:gsub("(.+)lib(.-)%.a", "%1%2.lib"))
+    end
 end
 
 -- get the build environments
@@ -54,6 +88,9 @@ function buildenvs(package)
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
+        if package:is_plat("windows") then
+            envs = os.joinenvs(envs, _get_msvc_runenvs(package))
+        end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
@@ -100,7 +137,7 @@ function generate(package, configs, opt)
 
     -- pass configurations
     local argv = {}
-    for name, value in pairs(_get_configs(package, configs)) do
+    for name, value in pairs(_get_configs(package, configs, opt)) do
         value = tostring(value):trim()
         if value ~= "" then
             if type(name) == "number" then
@@ -137,4 +174,9 @@ function install(package, configs, opt)
     -- do build and install
     local buildir = _get_buildir(opt)
     ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
+
+    -- fix static libname on windows
+    if package:is_plat("windows") and not package:config("shared") then
+        _fix_libname_on_windows(package)
+    end
 end

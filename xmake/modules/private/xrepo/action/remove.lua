@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("private.action.require.impl.remove_packages", {alias = "remove_all_packages"})
 
 -- get menu options
 function menu_options()
@@ -41,6 +42,12 @@ function menu_options()
                                        "    - xrepo remove -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo remove -f \"regex=true,thread=true\" boost"},
         {},
+        {nil, "all",        "k", nil,  "Remove all packages and ignore extra package configs.",
+                                       "If `--all` is enabled, the package name parameter will support lua pattern",
+                                       "e.g.",
+                                       "    - xrepo remove --all",
+                                       "    - xrepo remove --all zlib boost",
+                                       "    - xrepo remove --all zl* boo*"},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo remove zlib boost",
@@ -147,7 +154,9 @@ end
 -- main entry
 function main()
     local packages = option.get("packages")
-    if packages then
+    if option.get("all") then
+        remove_all_packages(packages)
+    elseif packages then
         _remove_packages(packages)
     else
         raise("please specify the packages to be removed.")

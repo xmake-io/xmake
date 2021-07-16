@@ -21,6 +21,43 @@
 -- imports
 import("core.project.config")
 
+-- get triple
+function _get_triple(arch)
+    local triples =
+    {
+        ["armv5te"]     = "arm-linux-androideabi"   -- deprecated
+    ,   ["armv7-a"]     = "arm-linux-androideabi"   -- deprecated
+    ,   ["armeabi"]     = "arm-linux-androideabi"   -- removed in ndk r17
+    ,   ["armeabi-v7a"] = "arm-linux-androideabi"
+    ,   ["arm64-v8a"]   = "aarch64-linux-android"
+    ,   i386            = "i686-linux-android"      -- deprecated
+    ,   x86             = "i686-linux-android"
+    ,   x86_64          = "x86_64-linux-android"
+    ,   mips            = "mips-linux-android"      -- removed in ndk r17
+    ,   mips64          = "mips64-linux-android"    -- removed in ndk r17
+    }
+    return triples[arch]
+end
+
+-- get target
+function _get_target(arch, ndk_sdkver)
+    local targets =
+    {
+        ["armv5te"]     = "armv5te-none-linux-androideabi"  -- deprecated
+    ,   ["armeabi"]     = "armv5te-none-linux-androideabi"  -- removed in ndk r17
+    ,   ["armv7-a"]     = "armv7-none-linux-androideabi"    -- deprecated
+    ,   ["armeabi-v7a"] = "armv7-none-linux-androideabi"
+    ,   ["arm64-v8a"]   = "aarch64-none-linux-android"
+    ,   ["i386"]        = "i686-none-linux-android"         -- deprecated
+    ,   ["x86"]         = "i686-none-linux-android"
+    ,   ["x86_64"]      = "x86_64-none-linux-android"
+    ,   ["mips"]        = "mipsel-none-linux-android"       -- removed in ndk r17
+    ,   ["mips64"]      = "mips64el-none-linux-android"     -- removed in ndk r17
+    }
+    assert(targets[arch], "unknown arch(%s) for android!", arch)
+    return targets[arch] .. (ndk_sdkver or "")
+end
+
 -- load ndk toolchain
 --
 -- some extra configuration for target
@@ -30,14 +67,19 @@ import("core.project.config")
 function main(toolchain)
 
     -- get cross
-    local cross = config.get("cross") or ""
+    local cross = toolchain:cross() or ""
 
     -- get gcc toolchain bin directory
     local gcc_toolchain_bin = nil
-    local gcc_toolchain = config.get("gcc_toolchain")
+    local gcc_toolchain = toolchain:config("gcc_toolchain")
     if gcc_toolchain then
         gcc_toolchain_bin = path.join(gcc_toolchain, "bin")
     end
+
+    -- get ndk and version
+    local ndk = toolchain:config("ndk")
+    local ndkver = toolchain:config("ndkver")
+    local ndk_sdkver = toolchain:config("ndk_sdkver")
 
     -- set toolset
     toolchain:set("toolset", "cc", "clang", cross .. "gcc")
@@ -62,7 +104,7 @@ function main(toolchain)
 
     -- use llvm directory? e.g. android-ndk/toolchains/llvm/prebuilt/darwin-x86_64/bin
     local isllvm = false
-    local bindir = config.get("bin")
+    local bindir = toolchain:bindir()
     if bindir and bindir:find("llvm", 1, true) then
         isllvm = true
     end
@@ -70,28 +112,15 @@ function main(toolchain)
     -- init architecture
     if isllvm then
 
-        -- add target
-        local targets =
-        {
-            ["armv5te"]     = "armv5te-none-linux-androideabi"  -- deprecated
-        ,   ["armeabi"]     = "armv5te-none-linux-androideabi"  -- removed in ndk r17
-        ,   ["armv7-a"]     = "armv7-none-linux-androideabi"    -- deprecated
-        ,   ["armeabi-v7a"] = "armv7-none-linux-androideabi"
-        ,   ["arm64-v8a"]   = "aarch64-none-linux-android"
-        ,   ["i386"]        = "i686-none-linux-android"         -- deprecated
-        ,   ["x86"]         = "i686-none-linux-android"
-        ,   ["x86_64"]      = "x86_64-none-linux-android"
-        ,   ["mips"]        = "mipsel-none-linux-android"       -- removed in ndk r17
-        ,   ["mips64"]      = "mips64el-none-linux-android"     -- removed in ndk r17
-        }
-        assert(targets[arch], "unknown arch(%s) for android!", arch)
-        toolchain:add("cxflags", "-target " .. targets[arch])
-        toolchain:add("asflags", "-target " .. targets[arch])
-        toolchain:add("ldflags", "-target " .. targets[arch])
-        toolchain:add("shflags", "-target " .. targets[arch])
+        -- add ndk target
+        local ndk_target = _get_target(arch, ndk_sdkver)
+        toolchain:add("cxflags", "-target " .. ndk_target)
+        toolchain:add("asflags", "-target " .. ndk_target)
+        toolchain:add("ldflags", "-target " .. ndk_target)
+        toolchain:add("shflags", "-target " .. ndk_target)
 
         -- add gcc toolchain
-        local gcc_toolchain = config.get("gcc_toolchain")
+        local gcc_toolchain = toolchain:config("gcc_toolchain")
         if gcc_toolchain then
             toolchain:add("cxflags", "-gcc-toolchain " .. gcc_toolchain)
             toolchain:add("asflags", "-gcc-toolchain " .. gcc_toolchain)
@@ -116,9 +145,6 @@ function main(toolchain)
     toolchain:add("binary.cxflags", "-fPIE", "-pie")
 
     -- add flags for the sdk directory of ndk
-    local ndk = config.get("ndk")
-    local ndkver = config.get("ndkver")
-    local ndk_sdkver = config.get("ndk_sdkver")
     if ndk and ndk_sdkver then
 
         -- the sysroot archs
@@ -137,58 +163,29 @@ function main(toolchain)
         }
         local sysroot_arch = sysroot_archs[arch]
 
-        -- add sysroot
-        --
-        -- @see https://android.googlesource.com/platform/ndk/+/master/docs/UnifiedHeaders.md
-        --
-        -- Before NDK r14, we had a set of libc headers for each API version.
-        -- In many cases these headers were incorrect. Many exposed APIs that didn‘t exist, and others didn’t expose APIs that did.
-        --
-        -- In NDK r14 (as an opt in feature) we unified these into a single set of headers, called unified headers.
-        -- This single header path is used for every platform level. API level guards are handled with #ifdef.
-        -- These headers can be found in prebuilts/ndk/headers.
-        --
-        -- Unified headers are built directly from the Android platform, so they are up to date and correct (or at the very least,
-        -- any bugs in the NDK headers will also be a bug in the platform headers, which means we're much more likely to find them).
-        --
-        -- In r15 unified headers are used by default. In r16, the old headers have been removed.
-        --
-        local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
-        local ndk_sysroot_be_r14 = path.join(ndk, "sysroot")
-        if os.isdir(ndk_sysroot_be_r14) then
-
-            -- the triples
-            local triples =
-            {
-                ["armv5te"]     = "arm-linux-androideabi"   -- deprecated
-            ,   ["armv7-a"]     = "arm-linux-androideabi"   -- deprecated
-            ,   ["armeabi"]     = "arm-linux-androideabi"   -- removed in ndk r17
-            ,   ["armeabi-v7a"] = "arm-linux-androideabi"
-            ,   ["arm64-v8a"]   = "aarch64-linux-android"
-            ,   i386            = "i686-linux-android"      -- deprecated
-            ,   x86             = "i686-linux-android"
-            ,   x86_64          = "x86_64-linux-android"
-            ,   mips            = "mips-linux-android"      -- removed in ndk r17
-            ,   mips64          = "mips64-linux-android"    -- removed in ndk r17
-            }
+        -- add sysroot flags
+        local ndk_sysroot = toolchain:config("ndk_sysroot")
+        if ndk_sysroot and os.isdir(ndk_sysroot) then
+            local triple = _get_triple(arch)
             toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
             toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot_be_r14)
-            toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot_be_r14)
-            toolchain:add("asflags", "--sysroot=" .. ndk_sysroot_be_r14)
-            toolchain:add("cflags",  "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
-            toolchain:add("cxxflags","-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
-            toolchain:add("asflags", "-isystem " .. path.join(ndk_sysroot_be_r14, "usr", "include", triples[arch]))
+            toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot)
+            toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot)
+            toolchain:add("asflags", "--sysroot=" .. ndk_sysroot)
+            toolchain:add("cflags",  "-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
+            toolchain:add("cxxflags","-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
+            toolchain:add("asflags", "-isystem " .. path.join(ndk_sysroot, "usr", "include", triple))
         else
-            if sysroot_arch then
-                toolchain:add("cflags",   format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-                toolchain:add("cxxflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-                toolchain:add("asflags",  format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+            local ndk_sdkdir = path.translate(format("%s/platforms/android-%d", ndk, ndk_sdkver))
+            if os.isdir(ndk_sdkdir) then
+                if sysroot_arch then
+                    toolchain:add("cflags",   format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                    toolchain:add("cxxflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                    toolchain:add("asflags",  format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                    toolchain:add("ldflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                    toolchain:add("shflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
+                end
             end
-        end
-        if sysroot_arch then
-            toolchain:add("ldflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
-            toolchain:add("shflags", format("--sysroot=%s/%s", ndk_sdkdir, sysroot_arch))
         end
 
         -- add "-fPIE -pie" to ldflags
@@ -200,8 +197,8 @@ function main(toolchain)
 
         -- get gnu c++ stl sdk directory
         local cxxstl_sdkdir_gnustl = nil
-        if config.get("ndk_toolchains_ver") then
-            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, config.get("ndk_toolchains_ver")))
+        if toolchain:config("ndk_toolchains_ver") then
+            cxxstl_sdkdir_gnustl = path.translate(format("%s/sources/cxx-stl/gnu-libstdc++/%s", ndk, toolchain:config("ndk_toolchains_ver")))
         end
 
         -- get stlport c++ sdk directory
@@ -254,6 +251,7 @@ function main(toolchain)
                 toolchain:add("linkdirs", format("%s/libs/%s", cxxstl_sdkdir, toolchains_arch))
             end
             if ndk_cxxstl:startswith("c++") or ndk_cxxstl:startswith("llvmstl") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
                     toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
@@ -267,11 +265,13 @@ function main(toolchain)
                     toolchain:add("sysincludedirs", after_r13)
                 end
             elseif ndk_cxxstl:startswith("gnustl") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/include", cxxstl_sdkdir))
                 if toolchains_arch then
                     toolchain:add("sysincludedirs", format("%s/libs/%s/include", cxxstl_sdkdir, toolchains_arch))
                 end
             elseif ndk_cxxstl:startswith("stlport") then
+                toolchain:add("cxxflags", "-nostdinc++")
                 toolchain:add("sysincludedirs", format("%s/stlport", cxxstl_sdkdir))
             end
 

@@ -71,6 +71,7 @@ function driver_kmdf(target)
     -- compile as kernel driver
     target:add("cxflags", "-kernel", {force = true})
     target:add("ldflags", "-kernel", "-driver", {force = true})
+    target:add("ldflags", "-nodefaultlib", {force = true})
 
     -- add subsystem
     target:add("ldflags", "-subsystem:native," .. os_winver.subsystem(winver), {force = true})
@@ -111,6 +112,7 @@ function driver_wdm(target)
     -- compile as kernel driver
     target:add("cxflags", "-kernel", {force = true})
     target:add("ldflags", "-kernel", "-driver", {force = true})
+    target:add("ldflags", "-nodefaultlib", {force = true})
 
     -- add subsystem
     target:add("ldflags", "-subsystem:native," .. os_winver.subsystem(winver), {force = true})

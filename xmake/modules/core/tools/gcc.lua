@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.tty")
 import("core.base.colors")
 import("core.base.global")
 import("core.project.config")
@@ -232,12 +233,12 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(path.translate(dir))
+    return {"-I" .. path.translate(dir)}
 end
 
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
-    return "-isystem " .. os.args(path.translate(dir))
+    return {"-isystem", path.translate(dir)}
 end
 
 -- make the link flag
@@ -252,30 +253,30 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(path.translate(dir))
+    return {"-L" .. path.translate(dir)}
 end
 
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)
     if self:has_flags("-Wl,-rpath=" .. dir, "ldflags") then
-        return "-Wl,-rpath=" .. os.args(dir:gsub("@[%w_]+", function (name)
+        return {"-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
-        end))
+        end))}
     elseif self:has_flags("-Xlinker -rpath -Xlinker " .. dir, "ldflags") then
-        return "-Xlinker -rpath -Xlinker " .. os.args(dir:gsub("%$ORIGIN", "@loader_path"))
+        return {"-Xlinker", "-rpath", "-Xlinker", (dir:gsub("%$ORIGIN", "@loader_path"))}
     end
 end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return "-framework " .. framework
+    return {"-framework", framework}
 end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. os.args(path.translate(frameworkdir))
+    return {"-F", path.translate(frameworkdir)}
 end
 
 -- make the c precompiled header flag
@@ -283,9 +284,9 @@ function nf_pcheader(self, pcheaderfile, target)
     if self:kind() == "cc" then
         local pcoutputfile = target:pcoutputfile("c")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
+            return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
-            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
+            return {"-include", path.filename(pcheaderfile), "-I", path.directory(pcoutputfile)}
         end
     end
 end
@@ -295,9 +296,9 @@ function nf_pcxxheader(self, pcheaderfile, target)
     if self:kind() == "cxx" then
         local pcoutputfile = target:pcoutputfile("cxx")
         if self:name() == "clang" then
-            return "-include " .. os.args(pcheaderfile) .. " -include-pch " .. os.args(pcoutputfile)
+            return {"-include", pcheaderfile, "-include-pch", pcoutputfile}
         else
-            return "-include " .. path.filename(pcheaderfile) .. " -I" .. os.args(path.directory(pcoutputfile))
+            return {"-include", path.filename(pcheaderfile), "-I", path.directory(pcoutputfile)}
         end
     end
 end
@@ -340,7 +341,7 @@ function linkargv(self, objectfiles, targetkind, targetfile, flags, opt)
     opt = opt or {}
     local argv = table.join("-o", targetfile, objectfiles, flags, flags_extra)
     if is_host("windows") and not opt.rawargs then
-        argv = winos.cmdargv(argv)
+        argv = winos.cmdargv(argv, {escape = true})
     end
     return self:program(), argv
 end
@@ -360,15 +361,15 @@ end
 function _has_color_diagnostics(self)
     local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
     if colors_diagnostics == nil then
-        if io.isatty() and (colors.color8() or colors.color256()) then
+        if io.isatty() and (tty.has_color8() or tty.has_color256()) then
             local theme = colors.theme()
             if theme and theme:name() ~= "plain" then
-                -- for clang
-                if self:has_flags("-fcolor-diagnostics", "cxflags") then
-                    colors_diagnostics = "-fcolor-diagnostics"
                 -- for gcc
-                elseif self:has_flags("-fdiagnostics-color=always", "cxflags") then
+                if self:has_flags("-fdiagnostics-color=always", "cxflags") then
                     colors_diagnostics = "-fdiagnostics-color=always"
+                -- for clang
+                elseif self:has_flags("-fcolor-diagnostics", "cxflags") then
+                    colors_diagnostics = "-fcolor-diagnostics"
                 end
             end
         end
@@ -472,7 +473,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                     -- get 16 lines of errors
                     if start > 0 then
-                        lines = table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start))
+                        lines = table.slice(lines, start, start + ((#lines - start > 16) and 16 or (#lines - start)))
                     end
                 end
 
@@ -487,7 +488,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning") or global.get("build_warning")) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
-                        local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
+                        local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
                         if progress.showing_without_scroll() then
                             print("")
                         end

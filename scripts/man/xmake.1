@@ -1,0 +1,214 @@
+.TH "xmake" "1"
+.SH NAME
+xmake \- cross-platform build utility based on Lua
+
+
+.SH SYNOPSIS
+.B xmake
+.RI [ task "] [" options "] [" target ]
+
+
+.SH DESCRIPTION
+.B xmake
+is a lightweight cross-platform build utility based on Lua. It uses
+.I xmake.lua
+to maintain project builds. Compared with
+.IR makefile / CMakeLists.txt ,
+the configuration syntax is more concise and intuitive. It is very friendly to
+novices and can quickly get started in a short time. Let users focus more on
+actual project development.
+
+
+.SH ACTIONS
+
+.TP
+.B b, build
+Build targets if no given tasks.
+
+.TP
+.B u, uninstall
+Uninstall the project binary files.
+
+.TP
+.B p, package
+Package target.
+
+.TP
+.B r, run
+Run the project target.
+
+.TP
+.B g, global
+Configure the global options for xmake.
+
+.TP
+.B i, install
+Package and install the target binary files.
+
+.TP
+.B c, clean
+Remove all binary and temporary files.
+
+.TP
+.B create
+Create a new project.
+
+.TP
+.B q, require
+Install and update required packages.
+
+.TP
+.B update
+Update and uninstall the xmake program.
+
+.TP
+.B f, config
+Configure the project.
+
+
+.SH PLUGINS
+
+.TP
+.B plugin
+Manage plugins of xmake.
+
+.TP
+.B m, macro
+Run the given macro.
+
+.TP
+.B doxygen
+Generate the doxygen document.
+
+.TP
+.B l, lua
+Run the lua script.
+
+.TP
+.B repo
+Manage package repositories.
+
+.TP
+.B service
+Start service for remote or distributed compilation and etc. (Experimental, still in development)
+
+.TP
+.B project
+Generate the project file.
+
+.TP
+.B show
+Show the given project information.
+
+
+.SH OPTIONS
+
+.TP
+.B \-q, \-\-quiet
+Quiet operation.
+
+.TP
+.B \-y, \-\-yes
+Input yes by default if need user confirm.
+
+.TP
+.BR \-\-confirm =\fICONFIRM
+Input the given result if need user confirm.
+  \- yes
+  \- no
+  \- def
+
+.TP
+.B \-v, \-\-verbose
+Print lots of verbose information for users.
+
+.TP
+.B \-\-root
+Allow to run xmake as root.
+
+.TP
+.B \-D, \-\-diagnosis
+Print lots of diagnosis information (backtrace, check info ..) only for developers.
+And we can append \fB\-v\fR to get more whole information.
+  e.g. $ xmake \-vD
+
+.TP
+.B \-\-version
+Print the version number and exit.
+
+.TP
+.B \-h, \-\-help
+Print this help message and exit.
+
+.TP
+.BI \-F " FILE" ", \-\-file\fR=" FILE
+Read a given
+.B xmake.lua
+file.
+
+.TP
+.BI \-P " PROJECT" ", \-\-project\fR=" PROJECT
+Change to the given project directory.
+Search priority:
+  1. The Given Command Argument
+  2. The Envirnoment Variable: \fBXMAKE_PROJECT_DIR\fR
+  3. The Current Directory
+
+
+.SH BUILD OPTIONS
+
+.TP
+.B \-b, \-\-build
+Build target. This is default building mode and optional.
+
+.TP
+.B \-r, \-\-rebuild
+Rebuild the target.
+
+.TP
+.B \-a, \-\-all
+Build all targets.
+
+.TP
+.B \-\-dry\-run
+Dry run to build target.
+
+.TP
+.BI \-j " JOBS" ", \-\-jobs\fR=" JOBS
+Specifies the number of jobs to build simultaneously. (default: 6)
+
+.TP
+.B \-w, \-\-warning
+Enable the warnings output.
+
+.TP
+.BI \-\-files= FILES
+Build the given source files.
+
+e.g.
+.RS
+.EX
+  \- xmake \-\-files=src/main.c
+  \- xmake \-\-files='src/*.c' [target]
+  \- xmake \-\-files='src/**c|excluded_file.c'
+  \- xmake \-\-files='src/main.c:src/test.c'
+.EE
+.RE
+
+.TP
+.B target
+The target name. It will build all default targets if this parameter is not specified.
+
+
+.SH AUTHOR
+.B xmake
+is written by
+.MT waruqi@\:gmail.com
+ruki
+.ME .
+
+This manual page was written by
+.MT mmyangfl@\:gmail.com
+Yangfl
+.ME
+for the Debian Project (and may be used by others).

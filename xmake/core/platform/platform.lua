@@ -29,6 +29,7 @@ local utils          = require("base/utils")
 local table          = require("base/table")
 local interpreter    = require("base/interpreter")
 local toolchain      = require("tool/toolchain")
+local memcache       = require("cache/memcache")
 local sandbox        = require("sandbox/sandbox")
 local config         = require("project/config")
 local global         = require("base/global")
@@ -40,6 +41,16 @@ function _instance.new(name, arch, info)
     instance._ARCH    = arch
     instance._INFO    = info
     return instance
+end
+
+-- get memcache
+function _instance:_memcache()
+    local cache = self._MEMCACHE
+    if not cache then
+        cache = memcache.cache("core.platform.platform." .. tostring(self))
+        self._MEMCACHE = cache
+    end
+    return cache
 end
 
 -- get platform name
@@ -99,7 +110,7 @@ end
 
 -- get the platform os
 function _instance:os()
-    return self._INFO:get("os") or config.get("target_os")
+    return self._INFO:get("os")
 end
 
 -- get the platform menu
@@ -138,7 +149,7 @@ end
 
 -- get the toolchains
 function _instance:toolchains(opt)
-    local toolchains = self._TOOLCHAINS
+    local toolchains = self:_memcache():get("toolchains")
     if not toolchains then
 
         -- get current valid toolchains from configuration cache
@@ -164,7 +175,7 @@ function _instance:toolchains(opt)
             end
 
             -- get the platform toolchains
-            if (not toolchain_given or not toolchain_given:standalone()) and self._INFO:get("toolchains") then
+            if (not toolchain_given or not toolchain_given:is_standalone()) and self._INFO:get("toolchains") then
                 names = self._INFO:get("toolchains")
             end
         end
@@ -181,77 +192,22 @@ function _instance:toolchains(opt)
                 table.insert(toolchains, toolchain_inst)
             end
         end
-        self._TOOLCHAINS = toolchains
+        self:_memcache():set("toolchains", toolchains)
     end
     return toolchains
 end
 
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
-
-    -- init tools
-    local tools = self._TOOLS
-    if not tools then
-        tools = {}
-        self._TOOLS = tools
-    end
-
-    -- get tool program
-    local program, toolname, toolchain_info
-    local toolinfo = tools[toolkind]
-    if toolinfo == nil then
-        toolinfo = {}
-        local toolchains = self:toolchains()
-        for idx, toolchain_inst in ipairs(toolchains) do
-            program, toolname = toolchain_inst:tool(toolkind)
-            if program then
-                toolchain_info = {name = toolchain_inst:name(),
-                                  plat = toolchain_inst:plat(),
-                                  arch = toolchain_inst:arch(),
-                                  cachekey = toolchain_inst:cachekey()}
-                toolinfo[1] = program
-                toolinfo[2] = toolname
-                toolinfo[3] = toolchain_info
-                break
-            end
-        end
-        tools[toolkind] = toolinfo
-    else
-        program        = toolinfo[1]
-        toolname       = toolinfo[2]
-        toolchain_info = toolinfo[3]
-    end
-    return program, toolname, toolchain_info
+    return toolchain.tool(self:toolchains(), toolkind, {cachekey = "platform", plat = self:name(), arch = self:arch(),
+                          before_get = function ()
+        return config.get(toolkind)
+    end})
 end
 
 -- get tool configuration from the toolchains
 function _instance:toolconfig(name)
-
-    -- init tool configs
-    local toolconfigs = self._TOOLCONFIGS
-    if not toolconfigs then
-        toolconfigs = {}
-        self._TOOLCONFIGS = toolconfigs
-    end
-
-    -- get configuration
-    local toolconfig = toolconfigs[name]
-    if toolconfig == nil then
-
-        -- get them from all toolchains
-        for _, toolchain_inst in ipairs(self:toolchains()) do
-            local values = toolchain_inst:get(name)
-            if values then
-                toolconfig = toolconfig or {}
-                table.join2(toolconfig, values)
-            end
-        end
-
-        -- cache it
-        toolconfig = toolconfig or false
-        toolconfigs[name] = toolconfig
-    end
-    return toolconfig or nil
+    return toolchain.toolconfig(self:toolchains(), name, {cachekey = "platform", plat = self:name(), arch = self:arch()})
 end
 
 -- get the platform script
@@ -288,11 +244,11 @@ function _instance:check()
     while idx <= num do
         local toolchain = toolchains[idx]
         -- we need remove other standalone toolchains if standalone toolchain found
-        if (standalone and toolchain:standalone()) or not toolchain:check() then
+        if (standalone and toolchain:is_standalone()) or not toolchain:check() then
             table.remove(toolchains, idx)
             num = num - 1
         else
-            if toolchain:standalone() then
+            if toolchain:is_standalone() then
                 standalone = true
             end
             idx = idx + 1
@@ -398,6 +354,11 @@ function platform._apis()
             "platform.set_menu"
         }
     }
+end
+
+-- get memcache
+function platform._memcache()
+    return memcache.cache("core.platform.platform")
 end
 
 -- get platform directories
@@ -509,41 +470,12 @@ end
 -- e.g. cc, cxx, mm, mxx, as, ar, ld, sh, ..
 --
 function platform.tool(toolkind, plat, arch)
-
-    -- attempt to get program from config first
-    plat = plat or config.get("plat") or os.host()
-    arch = arch or config.get("arch") or os.arch()
-    local key = toolkind .. "_" .. plat .. "_" .. arch
-    local program = config.get(toolkind) or config.get("__tool_" .. key)
-    local toolname = config.get("__toolname_" .. key)
-    local toolchain_info = config.get("__toolchain_info_" .. key)
-    if program == nil then
-
-        -- get the current platform
-        local instance, errors = platform.load(plat, arch)
-        if not instance then
-            os.raise(errors)
-        end
-
-        -- get it from the platform toolchains
-        program, toolname, toolchain_info = instance:tool(toolkind)
-        if program then
-            config.set("__tool_" .. key, program, {force = true, readonly = true})
-            config.set("__toolname_" .. key, toolname)
-            config.set("__toolchain_info_" .. key, toolchain_info)
-            config.save()
-        end
+    local instance, errors = platform.load(plat, arch)
+    if instance then
+        return instance:tool(toolkind)
+    else
+        os.raise(errors)
     end
-
-    -- contain toolname? parse it, e.g. 'gcc@xxxx.exe'
-    if program and type(program) == "string" then
-        local pos = program:find('@', 1, true)
-        if pos then
-            toolname = program:sub(1, pos - 1)
-            program = program:sub(pos + 1)
-        end
-    end
-    return program, toolname, toolchain_info
 end
 
 -- get the given tool configuration
@@ -583,26 +515,22 @@ end
 
 -- get the all toolchains
 function platform.toolchains()
-
-    -- return it directly if exists
-    if platform._TOOLCHAINS then
-        return platform._TOOLCHAINS
-    end
-
-    -- get all toolchains
-    local toolchains = {}
-    local dirs  = toolchain.directories()
-    for _, dir in ipairs(dirs) do
-        local dirs = os.dirs(path.join(dir, "*"))
-        if dirs then
-            for _, dir in ipairs(dirs) do
-                if os.isfile(path.join(dir, "xmake.lua")) then
-                    table.insert(toolchains, path.basename(dir))
+    local toolchains = platform._memcache():get("toolchains")
+    if not toolchains then
+        toolchains = {}
+        local dirs  = toolchain.directories()
+        for _, dir in ipairs(dirs) do
+            local dirs = os.dirs(path.join(dir, "*"))
+            if dirs then
+                for _, dir in ipairs(dirs) do
+                    if os.isfile(path.join(dir, "xmake.lua")) then
+                        table.insert(toolchains, path.basename(dir))
+                    end
                 end
             end
         end
+        platform._memcache():set("toolchains", toolchains)
     end
-    platform._TOOLCHAINS = toolchains
     return toolchains
 end
 

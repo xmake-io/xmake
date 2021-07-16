@@ -80,7 +80,6 @@ function _api_add_cfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cincludes", includes) end
-    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -134,7 +133,6 @@ function _api_add_cxxfunc(interp, module, alias, links, includes, func)
     interp:api_call("add_cxxfuncs", func)
     if links then interp:api_call("add_links", links) end
     if includes then interp:api_call("add_cxxincludes", includes) end
-    interp:api_call("add_defines_h", define)
 
     -- restore the current scope
     interp:scope_restore(scope)
@@ -159,10 +157,8 @@ function apis()
     -- init apis
     _g.values =
     {
-        -- target.set_xxx
-        "target.set_config_h_prefix" -- deprecated
         -- target.add_xxx
-    ,   "target.add_links"
+        "target.add_links"
     ,   "target.add_syslinks"
     ,   "target.add_cflags"
     ,   "target.add_cxflags"
@@ -172,8 +168,6 @@ function apis()
     ,   "target.add_shflags"
     ,   "target.add_defines"
     ,   "target.add_undefines"
-    ,   "target.add_defines_h"
-    ,   "target.add_undefines_h"
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
@@ -192,13 +186,7 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_defines"
-    ,   "option.add_defines_h"        -- TODO deprecated
-    ,   "option.add_defines_if_ok"    -- TODO deprecated
-    ,   "option.add_defines_h_if_ok"  -- TODO deprecated
     ,   "option.add_undefines"
-    ,   "option.add_undefines_h"      -- TODO deprecated
-    ,   "option.add_undefines_if_ok"  -- TODO deprecated
-    ,   "option.add_undefines_h_if_ok"-- TODO deprecated
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
         -- package.add_xxx
@@ -240,13 +228,11 @@ function apis()
     {
         -- target.set_xxx
         "target.set_headerdir"        -- TODO deprecated
-    ,   "target.set_config_h"         -- TODO deprecated
     ,   "target.set_config_header"    -- TODO deprecated
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
     ,   "target.add_headers"          -- TODO deprecated
-    ,   "target.add_headerdirs"       -- TODO deprecated
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"
@@ -261,9 +247,7 @@ function apis()
     _g.dictionary =
     {
         -- option.add_xxx
-        "option.add_csnippet"    -- TODO deprecated
-    ,   "option.add_csnippets"
-    ,   "option.add_cxxsnippet"  -- TODO deprecated
+        "option.add_csnippets"
     ,   "option.add_cxxsnippets"
     }
     _g.custom =

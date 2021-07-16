@@ -38,7 +38,7 @@
     <a href="https://jq.qq.com/?_wv=1027&k=5hpwWFv">
       <img src="https://img.shields.io/badge/chat-on%20QQ-ff69b4.svg?style=flat-square" alt="QQ" />
     </a>
-    <a href="https://discord.gg/XXRp26A4Gr">
+    <a href="https://discord.gg/xmake">
       <img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?style=flat-square" alt="Discord" />
     </a>
     <a href="https://xmake.io/#/sponsor">
@@ -46,12 +46,15 @@
     </a>
   </div>
 
-  <p>A cross-platform build utility based on Lua</p>
+  <b>A cross-platform build utility based on Lua</b><br/>
+  <i>Modern C/C++ build tools, Simple, Fast, Powerful dependency package integration</i><br/>
 </div>
 
 ## Supporting the project
 
-Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏 [[Become a sponsor](https://xmake.io/#/about/sponsor)]
+Support this project by becoming a sponsor. Your logo will show up here with a link to your website. 🙏
+
+- [Become a sponsor](https://xmake.io/#/about/sponsor)
 
 <a href="https://opencollective.com/xmake#sponsors" target="_blank"><img src="https://opencollective.com/xmake/sponsors.svg?width=890"></a>
 
@@ -61,7 +64,7 @@ xmake is a lightweight cross-platform build utility based on Lua. It uses xmake.
 
 It can compile the project directly like Make/Ninja, or generate project files like CMake/Meson, and it also has a built-in package management system to help users solve the integrated use of C/C++ dependent libraries.
 
-If you want to know more, please refer to: [Documents](https://xmake.io/#/home), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake) and also welcome to join our [community](https://xmake.io/#/about/contact).
+If you want to know more, please refer to: [Documents](https://xmake.io/#/getting_started), [Github](https://github.com/xmake-io/xmake) and [Gitee](https://gitee.com/tboox/xmake) and also welcome to join our [community](https://xmake.io/#/about/contact).
 
 ![](https://xmake.io/assets/img/index/xmake-basic-render.gif)
 
@@ -166,11 +169,14 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Official package manager [Xrepo](https://github.com/xmake-io/xrepo)
 * [User-built repositories](https://xmake.io/#/package/remote_package?id=using-self-built-private-package-repository)
 * Conan (conan::openssl/1.1.1g)
+* Conda (conda::libpng 1.3.67)
 * Vcpkg (vcpkg:ffmpeg)
 * Homebrew/Linuxbrew (brew::pcre2/libpcre2-8)
 * Pacman on archlinux/msys2 (pacman::libcurl)
+* Apt on ubuntu/debian (apt::zlib1g-dev)
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
+* Portage on Gentoo/Linux (portage::libhandy)
 
 ## Supported platforms
 
@@ -181,6 +187,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Android (x86, x86_64, armeabi, armeabi-v7a, arm64-v8a)
 * iOS (armv7, armv7s, arm64, i386, x86_64)
 * WatchOS (armv7k, i386)
+* AppleTVOS (armv7, arm64, i386, x86_64)
 * MSYS (i386, x86_64)
 * MinGW (i386, x86_64, arm, arm64)
 * Cygwin (i386, x86_64)
@@ -211,11 +218,11 @@ mingw         Minimalist GNU for Windows
 gnu-rm        GNU Arm Embedded Toolchain
 envs          Environment variables toolchain
 fasm          Flat Assembler
-tinyc         Tiny C Compiler
+tinycc        Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
-musl          The musl-based cross-compilation toolchains
+muslcc        The musl-based cross-compilation toolchains
 ```
 
 ## Supported Languages
@@ -230,7 +237,7 @@ musl          The musl-based cross-compilation toolchains
 * Dlang
 * Fortran
 * Cuda
-* Zig (Experimental)
+* Zig
 
 ## Support Features
 
@@ -241,13 +248,16 @@ musl          The musl-based cross-compilation toolchains
 * Multi-task parallel compilation support
 * C++20 Module-TS support
 * Support cross-platform C/C++ dependency packages
-* Support self-built distributed and third-party package repositories
+* Support self-built distributed package repositories
+* Support the installation of cloud pre-compiled packages
+* Support third-party package repositories, such as: vcpkg, conan, conda, etc.
 * Support multi-language mixed compilation
 * Flexible lua scripts, rich extension modules
 * Support for generating vsproj/cmake/makefile/compile_commands files
 * REPL interactive execution support
 * Incremental compilation support, automatic analysis of header dependency files
 * Fast switching toolchains
+* Automatic pull toolchain and dependency package integration
 
 ## Supported Projects
 
@@ -368,6 +378,56 @@ target("loop")
     add_packages("libomp")
 ```
 
+#### Zig Program
+
+```lua
+target("test")
+    set_kind("binary")
+    add_files("src/main.zig")
+```
+
+### Automatically fetch remote toolchain
+
+#### fetch the special version of llvm
+
+We use clang in llvm-10 to compile the project.
+
+```lua
+add_requires("llvm 10.x", {alias = "llvm-10"})
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("llvm@llvm-10")
+````
+
+#### Fetch cross-compilation toolchain
+
+We can also pull the specified cross-compilation tool chain to compile the project.
+
+```lua
+add_requires("muslcc")
+target("test")
+    set_kind("binary")
+    add_files("src/*.c)
+    set_toolchains("@muslcc")
+```
+
+#### Fetch toolchain and packages
+
+We can also use the specified muslcc cross-compilation toolchain to compile and integrate all dependent packages
+
+```lua
+add_requires("muslcc")
+add_requires("zlib", "libogg", {system = false})
+
+set_toolchains("@muslcc")
+
+target("test")
+    set_kind("binary")
+    add_files("src/*.c")
+    add_packages("zlib", "libogg")
+```
+
 ## Plugins
 
 #### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
@@ -422,7 +482,7 @@ We can uses [xmake-gradle](https://github.com/xmake-io/xmake-gradle) plugin to c
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.0.6'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
 }
 
 android {
@@ -467,14 +527,14 @@ We also provide paid technical support to help users quickly solve related probl
 
 Or you can also consider sponsoring us to get technical support services, [[Become a sponsor](https://xmake.io/#/about/sponsor)]
 
-## Project Examples
+## Who is using Xmake?
 
-Some projects using xmake:
+Please click [User List](https://xmake.io/#/about/who_is_using_xmake) to view the complete user list.
 
-* [tbox](https://github.com/tboox/tbox)
-* [gbox](https://github.com/tboox/gbox)
-* [vm86](https://github.com/tboox/vm86)
-* [more](https://github.com/xmake-io/awesome-xmake)
+If you are using xmake, welcome to submit the information to the above list through PR, so that let more users can known how many users are using xmake.
+
+Ihis also let users to use xmake more confidently, and we will also have more motivation to maintain it continuously,
+so that the xmake project and the community will grow stronger.
 
 ## Contacts
 
@@ -484,9 +544,8 @@ Some projects using xmake:
   - [Chat on reddit](https://www.reddit.com/r/xmake/)
   - [Chat on telegram](https://t.me/tbooxorg)
   - [Chat on gitter](https://gitter.im/xmake-io/xmake?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-  - [Chat on discord/en](https://discord.gg/XXRp26A4Gr)
-  - [Chat on discord/zh](https://discord.gg/aY7RVeKdG7)
-  - Chat on QQ Group: 343118190(Technical Support), 662147501
+  - [Chat on discord](https://discord.gg/xmake)
+  - Chat on QQ Group: 343118190, 662147501
 * Source Code：[Github](https://github.com/xmake-io/xmake), [Gitee](https://gitee.com/tboox/xmake)
 * Wechat Public: tboox-os
 
@@ -498,3 +557,4 @@ This project exists thanks to all the people who have [contributed](CONTRIBUTING
 * [TitanSnow](https://github.com/TitanSnow): provide the xmake [logo](https://github.com/TitanSnow/ts-xmake-logo) and install scripts
 * [uael](https://github.com/uael): provide the semantic versioning library [sv](https://github.com/uael/sv)
 * [OpportunityLiu](https://github.com/OpportunityLiu): improve cuda, tests and ci
+* [xq144](https://github.com/xq114): Improve `xrepo env shell`, and contribute a lot of packages to the [xmake-repo](https://github.com/xmake-io/xmake-repo) repository.

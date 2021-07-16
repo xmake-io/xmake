@@ -102,9 +102,10 @@ tb_int_t xm_winos_registry_query(lua_State* lua)
             value = (tb_char_t*)tb_malloc0(valuesize + 1);
             tb_assert_and_check_break(value);
 
-            // get value result
+            // get value result, we attempt to do not expand value if get failed
             type = 0;
-            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
+            if (s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS &&
+                s_RegGetValueA(key, rootdir, valuename, RRF_RT_ANY | RRF_NOEXPAND, &type, (PVOID)value, &valuesize) != ERROR_SUCCESS)
             {
                 lua_pushnil(lua);
                 lua_pushfstring(lua, "get registry value failed: %s\\%s;%s", rootkey, rootdir, valuename);

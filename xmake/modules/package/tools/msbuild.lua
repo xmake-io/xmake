@@ -23,9 +23,16 @@ import("core.base.option")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
 -- get the build environments
 function buildenvs(package, opt)
-    return table.copy(toolchain.load("msvc"):runenvs())
+    return os.joinenvs(_get_msvc(package):runenvs())
 end
 
 -- build package

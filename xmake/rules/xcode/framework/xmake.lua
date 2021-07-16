@@ -147,7 +147,7 @@ rule("xcode.framework")
             os.cd(oldir)
 
             -- do codesign, only for dynamic library
-            if target:targetkind() == "shared" then
+            if target:kind() == "shared" then
                 local codesign_identity = target:values("xcode.codesign_identity") or get_config("xcode_codesign_identity")
                 if target:is_plat("macosx") or (target:is_plat("iphoneos") and target:is_arch("x86_64", "i386")) then
                     codesign_identity = nil

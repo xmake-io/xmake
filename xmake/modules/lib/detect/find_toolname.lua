@@ -35,7 +35,7 @@ function _find(program)
     -- remove arguments: " -xxx" or " --xxx"
     name = name:gsub("%s%-+%w+", " ")
 
-    -- get the last name by ' ': xxx xxx toolname
+    -- try the last name by ' ': xxx xxx toolname
     local names = name:split("%s")
     if #names > 0 then
         name = names[#names]
@@ -43,14 +43,12 @@ function _find(program)
 
     -- remove suffix: ".xxx"
     name = name:gsub("%.%w+", "")
-
-    -- find_toolname.lua exists? found
-    local toolname = name:gsub("[%+%-]", function (ch) return ifelse(ch == "+", "x", "_") end)
+    local toolname = name:gsub("[%+%-]", function (ch) return (ch == "+" and "x" or "_") end)
     if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
 
-    -- get the last valid name: xxx-xxx-toolname-5
+    -- try last valid name: xxx-xxx-toolname-5
     local partnames = {}
     for partname in name:gmatch("([%a%+]+)") do
         table.insert(partnames, partname)
@@ -58,9 +56,25 @@ function _find(program)
     if #partnames > 0 then
         name = partnames[#partnames]
     end
-
-    -- find_toolname.lua exists? found
     toolname = name:gsub("%+", "x")
+    if module.find("detect.tools.find_" .. toolname) then
+        return toolname
+    end
+
+    -- try the the whole name with spaces, e.g. "zig cc" -> zig_cc
+    partnames = {}
+    names = path.filename(program):lower():split("%s")
+    for _, name in ipairs(names) do
+        -- remove suffix: ".exe", e.g. "zig.exe cc"
+        name = name:gsub("%.%w+", "")
+        -- "zig c++" -> zig_cxx
+        name = name:gsub("%+", "x")
+        -- skip -arguments
+        if not name:startswith("-") then
+            table.insert(partnames, name)
+        end
+    end
+    toolname = table.concat(partnames, "_")
     if module.find("detect.tools.find_" .. toolname) then
         return toolname
     end
@@ -70,6 +84,8 @@ end
 --
 -- e.g.
 -- "xcrun -sdk macosx clang":   clang
+-- "zig cc":                    zig_cc
+-- "zig.exe c++":               zig_c++
 -- "/usr/bin/arm-linux-gcc":    gcc
 -- "link.exe -lib":             link
 -- "gcc-5":                     gcc
@@ -88,16 +104,14 @@ function main(program)
     -- get it from the cache first
     local toolname = toolnames[program]
     if toolname ~= nil then
-        return ifelse(toolname, toolname, nil)
+        return toolname and toolname or nil
     end
 
     -- find the tool name
     toolname = _find(program)
 
     -- save result to cache
-    toolnames[program] = ifelse(toolname, toolname, false)
+    toolnames[program] = toolname and toolname or false
     _g._TOOLNAMES = toolnames
-
-    -- found?
     return toolname
 end

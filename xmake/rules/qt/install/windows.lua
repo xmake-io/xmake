@@ -29,7 +29,7 @@ function main(target, opt)
 
     local targetfile = target:targetfile()
     local installfile = path.join(target:installdir(), "bin", path.filename(targetfile))
-    
+
     -- get qt sdk
     local qt = target:data("qt")
 
@@ -68,6 +68,13 @@ function main(target, opt)
     else
         table.insert(argv, "--verbose=0")
     end
+
+    if is_mode("debug") then
+        table.insert(argv, "--debug")
+    else
+        table.insert(argv, "--release")
+    end
+
     if qmldir then
         table.insert(argv, "--qmldir=" .. qmldir)
     end

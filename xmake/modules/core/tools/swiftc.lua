@@ -142,22 +142,22 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "-Xcc -D" .. macro
+    return {"-Xcc", "-D" .. macro}
 end
 
 -- make the undefine flag
 function nf_undefine(self, macro)
-    return "-Xcc -U" .. macro
+    return {"-Xcc", "-U" .. macro}
 end
 
 -- make the framework flag
 function nf_framework(self, framework)
-    return "-framework " .. framework
+    return {"-framework", framework}
 end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return "-F " .. os.args(frameworkdir)
+    return {"-F", frameworkdir}
 end
 
 -- make the link flag
@@ -172,7 +172,7 @@ end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return "-L" .. os.args(dir)
+    return {"-L", dir}
 end
 
 -- make the link arguments list
@@ -182,11 +182,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 

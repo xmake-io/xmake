@@ -26,26 +26,22 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
-        # tests
-      - name: tests
+      - name: Tests
         run: |
           xmake lua -v -D tests/run.lua
           xrepo --version
 
-        # build artifacts
-      - name: artifact
+      - name: Artifact
         run: |
           sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
           scripts/makepkg deb 
-        # upload artifacts
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.amd64.deb
           path: artifacts/xmake.deb
 
-        # publish release
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         uses: actions/upload-release-asset@v1.0.1
         env:
@@ -56,7 +52,7 @@ jobs:
           asset_name: xmake-${{ steps.tagName.outputs.tag }}.amd64.deb
           asset_content_type: application/zip
 
-      - name: publish
+      - name: Publish
         if: github.event.action == 'published'
         env:
           PPA_GPG_PRIKEY_2C0C68C9: ${{ secrets.PPA_GPG_PRIKEY_2C0C68C9 }}

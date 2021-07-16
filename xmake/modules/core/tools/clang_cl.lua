@@ -21,6 +21,7 @@
 -- inherit cl
 inherit("cl")
 import("core.base.option")
+import("core.base.tty")
 import("core.base.colors")
 
 -- init it
@@ -65,7 +66,7 @@ end
 function _has_color_diagnostics(self)
     local colors_diagnostics = _g._HAS_COLOR_DIAGNOSTICS
     if colors_diagnostics == nil then
-        if io.isatty() and (colors.color8() or colors.color256()) then
+        if io.isatty() and (tty.has_color8() or tty.has_color256()) then
             local theme = colors.theme()
             if theme and theme:name() ~= "plain" then
                 -- for clang
@@ -204,7 +205,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
 
                     -- get 16 lines of errors
                     if start > 0 then
-                        lines = table.slice(lines, start, start + ifelse(#lines - start > 16, 16, #lines - start))
+                        lines = table.slice(lines, start, start + ((#lines - start > 16) and 16 or (#lines - start)))
                     end
                 end
 
@@ -219,7 +220,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 if ok and errdata and #errdata > 0 and (option.get("diagnosis") or option.get("warning")) then
                     local lines = errdata:split('\n', {plain = true})
                     if #lines > 0 then
-                        local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\n")
+                        local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\n")
                         cprint("${color.warning}%s", warnings)
                     end
                 end

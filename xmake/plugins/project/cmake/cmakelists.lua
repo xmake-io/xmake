@@ -162,14 +162,6 @@ function _add_target_include_directories(cmakelists, target)
     end
 
     -- TODO deprecated
-    local headerdirs = target:get("headerdirs")
-    if headerdirs then
-        cmakelists:print("target_include_directories(%s PUBLIC", target:name())
-        for _, headerdir in ipairs(headerdirs) do
-            cmakelists:print("    " .. _get_unix_path(headerdir))
-        end
-        cmakelists:print(")")
-    end
     local includedirs_interface = target:get("includedirs", {interface = true})
     if includedirs_interface then
         cmakelists:print("target_include_directories(%s INTERFACE", target:name())
@@ -476,8 +468,8 @@ function _add_target(cmakelists, target)
     cmakelists:print("# target")
 
     -- is phony target?
-    local targetkind = target:targetkind()
-    if target:isphony() then
+    local targetkind = target:kind()
+    if target:is_phony() then
         return _add_target_phony(cmakelists, target)
     elseif targetkind == "binary" then
         _add_target_binary(cmakelists, target)
@@ -486,7 +478,7 @@ function _add_target(cmakelists, target)
     elseif targetkind == "shared" then
         _add_target_shared(cmakelists, target)
     else
-        raise("unknown target kind %s", target:targetkind())
+        raise("unknown target kind %s", target:kind())
     end
 
     -- TODO export target headers (deprecated)

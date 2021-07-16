@@ -207,6 +207,14 @@ tb_int_t xm_io_file_open(lua_State* lua)
         encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE;
     else if (tb_strstr(modestr, "utf16") || tb_strstr(modestr, "utf-16"))
         encoding = TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_NE;
+    else if (tb_strstr(modestr, "ansi"))
+        encoding = TB_CHARSET_TYPE_ANSI;
+    else if (tb_strstr(modestr, "gbk"))
+        encoding = TB_CHARSET_TYPE_GBK;
+    else if (tb_strstr(modestr, "gb2312"))
+        encoding = TB_CHARSET_TYPE_GB2312;
+    else if (tb_strstr(modestr, "iso8859"))
+        encoding = TB_CHARSET_TYPE_ISO8859;
     else if (modestr[0] == 'w' || modestr[0] == 'a') // set to utf-8 if not specified for the writing mode
         encoding = TB_CHARSET_TYPE_UTF8;
     else if (modestr[0] == 'r') // detect encoding if not specified for the reading mode

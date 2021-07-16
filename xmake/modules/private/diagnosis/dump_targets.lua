@@ -42,7 +42,7 @@ end
 function main(targetname)
     config.load()
     for _, target in ipairs(_get_targets(targetname)) do
-        cprint("${bright}target(%s):${clear} %s", target:name(), target:targetkind())
+        cprint("${bright}target(%s):${clear} %s", target:name(), target:kind())
         local deps = target:get("deps")
         if deps then
             cprint("  ${color.dump.string}deps:")

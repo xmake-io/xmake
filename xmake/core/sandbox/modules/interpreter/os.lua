@@ -27,6 +27,7 @@ local interpreter   = require("base/interpreter")
 local sandbox_os = sandbox_os or {}
 
 -- export some readonly interfaces
+sandbox_os.term        = os.term
 sandbox_os.host        = os.host
 sandbox_os.arch        = os.arch
 sandbox_os.subhost     = os.subhost
@@ -65,12 +66,8 @@ end
 
 -- get the script directory
 function sandbox_os.scriptdir()
-
-    -- get the current interpreter instance
     local instance = interpreter.instance()
     assert(instance)
-
-    -- get the script directory
     return instance:scriptdir()
 end
 

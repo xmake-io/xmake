@@ -25,30 +25,96 @@ toolchain("zig")
     set_homepage("https://ziglang.org/")
     set_description("Zig Programming Language Compiler")
 
+    -- on check
+    on_check(function (toolchain)
+        import("lib.detect.find_tool")
+        local paths = {}
+        for _, package in ipairs(toolchain:packages()) do
+            local envs = package:get("envs")
+            if envs then
+                table.join2(paths, envs.PATH)
+            end
+        end
+        local zig = get_config("zc")
+        if not zig then
+            zig = find_tool("zig", {force = true, paths = paths})
+            if zig and zig.program then
+                zig = zig.program
+            end
+        end
+        if zig then
+            toolchain:config_set("zig", zig)
+            toolchain:configs_save()
+            return true
+        end
+    end)
+
     -- on load
     on_load(function (toolchain)
 
         -- set toolset
-        local zig = get_config("zc") or "zig"
+        -- we patch target to `zig cc` to fix has_flags. see https://github.com/xmake-io/xmake/issues/955#issuecomment-766929692
+        local zig = toolchain:config("zig") or "zig"
+        toolchain:set("toolset", "cc",    zig .. " cc")
+        toolchain:set("toolset", "cxx",   zig .. " c++")
+        toolchain:set("toolset", "ld",    zig .. " c++")
+        toolchain:set("toolset", "sh",    zig .. " c++")
         toolchain:set("toolset", "zc",   "$(env ZC)", zig)
         toolchain:set("toolset", "zcar", "$(env ZC)", zig)
         toolchain:set("toolset", "zcld", "$(env ZC)", zig)
         toolchain:set("toolset", "zcsh", "$(env ZC)", zig)
 
-        -- init flags
-        local march
-        if toolchain:is_plat("macosx") then
-            -- FIXME
-            --march = toolchain:is_arch("x86") and "i386-macosx-gnu" or "x86_64-macosx-gnu"
-        elseif toolchain:is_plat("linux") then
-            march = toolchain:is_arch("x86") and "i386-linux-gnu" or "x86_64-linux-gnu"
-        elseif toolchain:is_plat("windows") then
-            march = toolchain:is_arch("x86") and "i386-windows-msvc" or "x86_64-windows-msvc"
+        -- init arch
+        if toolchain:is_arch("arm64", "arm64-v8a") then
+            arch = "aarch64"
+        elseif toolchain:is_arch("arm", "armv7") then
+            arch = "arm"
+        elseif toolchain:is_arch("i386", "x86") then
+            arch = "i386"
+        elseif toolchain:is_arch("riscv64") then
+            arch = "riscv64"
+        elseif toolchain:is_arch("mips.*") then
+            arch = toolchain:arch()
+        elseif toolchain:is_arch("ppc64") then
+            arch = "powerpc64"
+        elseif toolchain:is_arch("ppc") then
+            arch = "powerpc"
+        elseif toolchain:is_arch("s390x") then
+            arch = "s390x"
+        else
+            arch = "x86_64"
         end
-        if march then
-            toolchain:add("zcflags", "-target", march)
-            toolchain:add("zcldflags", "-target", march)
-            toolchain:add("zcshflags", "-target", march)
+
+        -- init target
+        local target
+        if toolchain:is_plat("cross") then
+            -- xmake f -p cross --toolchain=zig --cross=mips64el-linux-gnuabi64
+            target = toolchain:cross()
+        elseif toolchain:is_plat("macosx") then
+            target = arch .. "-macos-gnu"
+        elseif toolchain:is_plat("linux") then
+            if arch == "arm" then
+                target = "arm-linux-gnueabi"
+            elseif arch == "mips64" or arch == "mips64el" then
+                target = arch .. "-linux-gnuabi64"
+            else
+                target = arch .. "-linux-gnu"
+            end
+        elseif toolchain:is_plat("windows") then
+            target = arch .. "-windows-msvc"
+        elseif toolchain:is_plat("mingw") then
+            target = arch .. "-windows-gnu"
+        end
+        if target then
+            toolchain:add("zig_cc.cxflags", "-target", target)
+            toolchain:add("zig_cc.shflags", "-target", target)
+            toolchain:add("zig_cc.ldflags", "-target", target)
+            toolchain:add("zig_cxx.cxflags", "-target", target)
+            toolchain:add("zig_cxx.shflags", "-target", target)
+            toolchain:add("zig_cxx.ldflags", "-target", target)
+            toolchain:add("zcflags", "-target", target)
+            toolchain:add("zcldflags", "-target", target)
+            toolchain:add("zcshflags", "-target", target)
         end
 
         -- @see https://github.com/ziglang/zig/issues/5825

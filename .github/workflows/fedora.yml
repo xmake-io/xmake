@@ -13,26 +13,24 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: prepare build tools
+      - name: Prepare build tools
         run: |
           uname -a
           dnf -y install @development-tools @rpm-development-tools
           dnf -y install copr-cli make gcc-c++
+          dnf -y install perl
           dnf -y upgrade git
       - uses: actions/checkout@v2
         with:
           submodules: true
-      - name: prepare local xmake
+      - name: Prepare local xmake
         run: |
           cp -rf . ../xmake-source
       - uses: xmake-io/github-action-setup-xmake@v1
         with:
           xmake-version: local#../xmake-source
-      - uses: little-core-labs/get-git-tag@v3.0.2
-        id: tagName
 
-        # tests
-      - name: tests
+      - name: Tests
         env:
           XMAKE_ROOT: y
         run: |

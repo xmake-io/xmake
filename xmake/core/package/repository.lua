@@ -184,7 +184,7 @@ function repository.load(name, url, branch, is_global)
     end
 
     -- the repository directory
-    local repodir = os.isdir(url) and url or path.join(repository.directory(is_global), name)
+    local repodir = os.isdir(url) and path.absolute(url) or path.join(repository.directory(is_global), name)
 
     -- new an instance
     local instance, errors = _instance.new(name, url, branch, repodir, is_global)

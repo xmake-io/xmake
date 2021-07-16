@@ -24,13 +24,23 @@ import("core.project.config")
 import("core.tool.toolchain")
 import("lib.detect.find_tool")
 
+-- get msvc
+function _get_msvc(package)
+    local msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    assert(msvc:check(), "vs not found!") -- we need check vs envs if it has been not checked yet
+    return msvc
+end
+
+-- get the build environments
+function buildenvs(package, opt)
+    return os.joinenvs(_get_msvc(package):runenvs())
+end
+
 -- build package
 function build(package, configs, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- pass configurations
+    opt = opt or {}
     local argv = {}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -47,15 +57,16 @@ function build(package, configs, opt)
     end
 
     -- do build
-    local runenvs = toolchain.load("msvc"):runenvs()
+    local runenvs = opt.envs or buildenvs(package, opt)
     local nmake = find_tool("nmake", {envs = runenvs})
     os.vrunv(nmake.program, argv, {envs = runenvs})
 end
 
 -- install package
-function install(package, configs)
+function install(package, configs, opt)
 
     -- pass configurations
+    opt = opt or {}
     local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
@@ -72,7 +83,7 @@ function install(package, configs)
     end
 
     -- do install
-    local runenvs = toolchain.load("msvc"):runenvs()
+    local runenvs = opt.envs or buildenvs(package, opt)
     local nmake = find_tool("nmake", {envs = runenvs})
     os.vrunv(nmake.program, argv, {envs = runenvs})
 end

@@ -18,17 +18,10 @@
 -- @file        xmake.lua
 --
 
--- define rule: *.qrc
 rule("qt.qrc")
-
-    -- add rule: qt environment
     add_deps("qt.env")
-
-    -- set extensions
     set_extensions(".qrc")
-
-    -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- get rcc
         local rcc = path.join(target:data("qt").bindir, is_host("windows") and "rcc.exe" or "rcc")
@@ -38,16 +31,7 @@ rule("qt.qrc")
         target:data_set("qt.rcc", rcc)
     end)
 
-    -- on build file
-    on_build_file(function (target, sourcefile_qrc, opt)
-
-        -- imports
-        import("core.base.option")
-        import("core.theme.theme")
-        import("core.project.config")
-        import("core.project.depend")
-        import("core.tool.compiler")
-        import("private.utils.progress")
+    on_buildcmd_file(function (target, batchcmds, sourcefile_qrc, opt)
 
         -- get rcc
         local rcc = target:data("qt.rcc")
@@ -56,51 +40,19 @@ rule("qt.qrc")
         local sourcefile_cpp = path.join(target:autogendir(), "rules", "qt", "qrc", path.basename(sourcefile_qrc) .. ".cpp")
         local sourcefile_dir = path.directory(sourcefile_cpp)
 
-        -- get object file
-        local objectfile = target:objectfile(sourcefile_cpp)
-
-        -- load compiler
-        local compinst = compiler.load("cxx", {target = target})
-
-        -- get compile flags
-        local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cpp})
-
         -- add objectfile
+        local objectfile = target:objectfile(sourcefile_cpp)
         table.insert(target:objectfiles(), objectfile)
 
-        -- load dependent info
-        local dependfile = target:dependfile(objectfile)
-        local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
+        batchcmds:mkdir(sourcefile_dir)
+        batchcmds:vrunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-o", sourcefile_cpp})
+        batchcmds:compile(sourcefile_cpp, objectfile)
 
-        -- need build this object?
-        local depvalues = {compinst:program(), compflags}
-        if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-            return
-        end
-
-        -- trace progress info
-        progress.show(opt.progress, "${color.build.object}compiling.qt.qrc %s", sourcefile_qrc)
-
-        -- ensure the source file directory
-        if not os.isdir(sourcefile_dir) then
-            os.mkdir(sourcefile_dir)
-        end
-
-        -- compile qrc
-        os.vrunv(rcc, {"-name", path.basename(sourcefile_qrc), sourcefile_qrc, "-o", sourcefile_cpp})
-
-        -- trace
-        if option.get("verbose") then
-            print(compinst:compcmd(sourcefile_cpp, objectfile, {compflags = compflags}))
-        end
-
-        -- compile c++ source file for qrc
-        dependinfo.files = {}
-        assert(compinst:compile(sourcefile_cpp, objectfile, {dependinfo = dependinfo, compflags = compflags}))
-
-        -- update files and values to the dependent file
-        dependinfo.values = depvalues
-        table.insert(dependinfo.files, sourcefile_qrc)
-        depend.save(dependinfo, dependfile)
+        -- add deps
+        batchcmds:add_depfiles(sourcefile_qrc)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 

@@ -87,6 +87,16 @@ function _coroutine:is_suspended()
     return self:status() == "suspended"
 end
 
+-- is isolated?
+function _coroutine:is_isolated()
+    return self._ISOLATED
+end
+
+-- isolate coroutine environments
+function _coroutine:isolate(isolate)
+    self._ISOLATED = isolate
+end
+
 -- get the current timer task
 function _coroutine:_timer_task()
     return self._TIMER_TASK
@@ -238,21 +248,51 @@ end
 -- update the current directory hash of current coroutine
 function scheduler:_co_curdir_update(curdir)
 
+    -- get running coroutine
+    local running = self:co_running()
+    if not running then
+        return
+    end
+
     -- save the current directory hash
     curdir = curdir or os.curdir()
     local curdir_hash = hash.uuid4(path.absolute(curdir)):sub(1, 8)
-    self._CO_CURDIR = curdir_hash
+    self._CO_CURDIR_HASH = curdir_hash
 
     -- save the current directory for each coroutine
-    local running = self:co_running()
-    if running then
-        local co_curdirs = self._CO_CURDIRS
-        if not co_curdirs then
-            co_curdirs = {}
-            self._CO_CURDIRS = co_curdirs
-        end
-        co_curdirs[running] = {curdir_hash, curdir}
+    local co_curdirs = self._CO_CURDIRS
+    if not co_curdirs then
+        co_curdirs = {}
+        self._CO_CURDIRS = co_curdirs
     end
+    co_curdirs[running] = {curdir_hash, curdir}
+end
+
+-- update the current environments hash of current coroutine
+function scheduler:_co_curenvs_update(envs)
+
+    -- get running coroutine
+    local running = self:co_running()
+    if not running then
+        return
+    end
+
+    -- save the current directory hash
+    local envs_hash = ""
+    envs = envs or os.getenvs()
+    for _, key in ipairs(table.orderkeys(envs)) do
+        envs_hash = envs_hash .. key:upper() .. envs[key]
+    end
+    envs_hash = hash.uuid4(envs_hash):sub(1, 8)
+    self._CO_CURENVS_HASH = envs_hash
+
+    -- save the current directory for each coroutine
+    local co_curenvs = self._CO_CURENVS
+    if not co_curenvs then
+        co_curenvs = {}
+        self._CO_CURENVS = co_curenvs
+    end
+    co_curenvs[running] = {envs_hash, envs}
 end
 
 -- resume it's waiting coroutine if all coroutines are dead in group
@@ -304,8 +344,15 @@ end
 
 -- start a new named coroutine task
 function scheduler:co_start_named(coname, cotask, ...)
+    return self:co_start_withopt({name = coname}, cotask, ...)
+end
+
+-- start a new coroutine task with options
+function scheduler:co_start_withopt(opt, cotask, ...)
 
     -- check coroutine task
+    opt = opt or {}
+    local coname = opt.name
     if not cotask then
         return nil, string.format("cannot start coroutine, invalid cotask(%s/%s)", coname and coname or "anonymous", cotask)
     end
@@ -314,12 +361,16 @@ function scheduler:co_start_named(coname, cotask, ...)
     local co
     co = _coroutine.new(coname, coroutine.create(function(...)
         self:_co_curdir_update()
+        self:_co_curenvs_update()
         cotask(...)
         self:co_tasks()[co:thread()] = nil
         if self:co_count() > 0 then
             self._CO_COUNT = self:co_count() - 1
         end
     end))
+    if opt.isolate then
+        co:isolate(true)
+    end
     self:co_tasks()[co:thread()] = co
     self._CO_COUNT = self:co_count() + 1
     if self._STARTED then
@@ -355,10 +406,17 @@ function scheduler:co_suspend(...)
 
     -- if the current directory has been changed? restore it
     local running = assert(self:co_running())
-    local curdir = self._CO_CURDIR
+    local curdir = self._CO_CURDIR_HASH
     local olddir = self._CO_CURDIRS and self._CO_CURDIRS[running] or nil
     if olddir and curdir ~= olddir[1] then -- hash changed?
         os.cd(olddir[2])
+    end
+
+    -- if the current environments has been changed? restore it
+    local curenvs = self._CO_CURENVS_HASH
+    local oldenvs = self._CO_CURENVS and self._CO_CURENVS[running] or nil
+    if oldenvs and curenvs ~= oldenvs[1] and running:is_isolated() then -- hash changed?
+        os.setenvs(oldenvs[2])
     end
 
     -- return results
@@ -493,7 +551,7 @@ end
 -- get waiting objects for the given group name
 function scheduler:co_group_waitobjs(name)
     local objs = hashset.new()
-    for _, co in ipairs(self:co_group(name)) do
+    for _, co in ipairs(table.wrap(self:co_group(name))) do
         if not co:is_dead() then
             local obj = co:waitobj()
             if obj then
@@ -750,8 +808,13 @@ function scheduler:runloop()
     end
 
     -- set on change directory callback for scheduler
-    os._sched_chdir_set(function (oldir, curdir)
+    os._sched_chdir_set(function (curdir)
         self:_co_curdir_update(curdir)
+    end)
+
+    -- set on change environments callback for scheduler
+    os._sched_chenvs_set(function (envs)
+        self:_co_curenvs_update(envs)
     end)
 
     -- start all ready coroutine tasks

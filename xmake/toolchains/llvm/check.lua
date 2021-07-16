@@ -20,6 +20,7 @@
 
 -- imports
 import("core.project.config")
+import("lib.detect.find_path")
 import("detect.sdks.find_xcode")
 import("detect.sdks.find_cross_toolchain")
 
@@ -28,7 +29,7 @@ function _find_xcode(toolchain)
 
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
-    local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
+    local xcode = find_xcode(toolchain:config("xcode") or config.get("xcode"), {force = true, verbose = true,
                                                    find_codesign = false,
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
@@ -40,7 +41,7 @@ function _find_xcode(toolchain)
 
     -- xcode found
     xcode_sdkver = xcode.sdkver
-    if toolchain:global() then
+    if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         cprint("checking for Xcode directory ... ${color.success}%s", xcode.sdkdir)
     end
@@ -54,19 +55,37 @@ end
 function main(toolchain)
 
     -- get sdk directory
-    local sdkdir = config.get("sdk")
-    local bindir = config.get("bin")
+    local sdkdir = toolchain:sdkdir()
+    local bindir = toolchain:bindir()
     if not sdkdir and not bindir then
-        if toolchain:is_plat("linux") and os.isfile("/usr/bin/llvm-ar") then
+        if is_host("linux") and os.isfile("/usr/bin/llvm-ar") then
             sdkdir = "/usr"
+        elseif is_host("macosx") then
+            local bindir = find_path("llvm-ar", "/usr/local/Cellar/llvm/*/bin")
+            if bindir then
+                sdkdir = path.directory(bindir)
+            end
         end
     end
 
-    -- find cross toolchain
+    -- find cross toolchain from external envirnoment
     local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir})
+    if not cross_toolchain then
+        -- find it from packages
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                cross_toolchain = find_cross_toolchain(installdir)
+                if cross_toolchain then
+                    break
+                end
+            end
+        end
+    end
     if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
+        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:configs_save()
     else
         raise("llvm toolchain not found!")
     end

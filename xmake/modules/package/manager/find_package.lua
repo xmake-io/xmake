@@ -56,13 +56,18 @@ function _find_package_with_builtin_rule(package_name, opt)
         -- only support the current sub-host platform and sub-architecture, e.g. linux, macosx, or msys (subsystem)
         if opt.plat == os.subhost() and opt.arch == os.subarch() then
 
+            -- find it from pkg-config
+            table.insert(managers, "pkgconfig")
+
             -- find it from pacman
             if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("pacman") then
                 table.insert(managers, "pacman")
             end
 
-            -- find it from pkg-config
-            table.insert(managers, "pkg_config")
+            -- find it from portage
+            if is_subhost("linux", "msys") and not is_plat("windows") and find_tool("emerge") then
+                table.insert(managers, "portage")
+            end
 
             -- find it from system
             table.insert(managers, "system")
@@ -92,6 +97,12 @@ function _find_package(manager_name, package_name, opt)
 
         -- trace
         dprint("finding %s from %s ..", package_name, manager_name)
+
+        -- TODO compatible with the previous version: pkg_config (deprecated)
+        if manager_name == "pkg_config" then
+            manager_name = "pkgconfig"
+            wprint("please use find_package(\"pkgconfig::%s\") instead of `pkg_config::%s`", package_name, package_name)
+        end
 
         -- find it
         result = import("package.manager." .. manager_name .. ".find_package", {anonymous = true})(package_name, opt)

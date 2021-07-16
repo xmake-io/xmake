@@ -85,6 +85,14 @@ local vsinfo =
     ,   toolset_version     = "v142"
     ,   sdk_version         = "10.0.17763.0"
     }
+,   [2022] =
+    {   vstudio_version     = "2022"
+    ,   project_version     = "17"
+    ,   filters_version     = "4.0"
+    ,   solution_version    = "12"
+    ,   toolset_version     = "v142"
+    ,   sdk_version         = "10.0.19041.0"
+    }
 }
 
 function main(version)

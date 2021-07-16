@@ -214,19 +214,28 @@ end
 function _make_target(makefile, target, targetflags)
 
     -- is phony target?
-    if target:isphony() then
+    if target:is_phony() then
         return _make_phony(makefile, target)
     end
 
     -- make head
     local targetfile = target:targetfile()
-    makefile:print("%s: %s", target:name(), targetfile)
-    makefile:printf("%s:", targetfile)
+    local targetname = target:name()
+
+    -- rules like `./target` and `target` are equivalent and can causes issues
+    -- for cases where targetdir is .
+    -- in these cases, the targetfile rule is not created
+    if targetfile == "./" .. targetname then
+        makefile:printf("%s:", targetname)
+    else
+        makefile:print("%s: %s", targetname, targetfile)
+        makefile:printf("%s:", targetfile)
+    end
 
     -- make dependence for the dependent targets
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
-        makefile:write(" " .. (dep:isphony() and depname or dep:targetfile()))
+        makefile:write(" " .. (dep:is_phony() and depname or dep:targetfile()))
     end
 
     -- make dependence for objects
@@ -359,7 +368,7 @@ function _make_all(makefile)
     -- make variables for target
     local targetflags = {}
     for targetname, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
 
             -- make target linker
             local program = _get_program_from_target(target, target:linker():kind())
@@ -392,8 +401,7 @@ function _make_all(makefile)
     -- make all
     local default = ""
     for targetname, target in pairs(project.targets()) do
-        local isdefault = target:get("default")
-        if isdefault == nil or isdefault == true then
+        if target:is_default() then
             default = default .. " " .. targetname
         end
     end
@@ -426,7 +434,7 @@ function _clean_target(makefile, target)
     makefile:print("")
 
     -- make body
-    if not target:isphony() then
+    if not target:is_phony() then
 
         -- remove the target file
         _remove(makefile, target:targetfile())

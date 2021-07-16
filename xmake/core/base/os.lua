@@ -39,6 +39,7 @@ os._rmdir       = os._rmdir or os.rmdir
 os._tmpdir      = os._tmpdir or os.tmpdir
 os._setenv      = os._setenv or os.setenv
 os._getenvs     = os._getenvs or os.getenvs
+os._cpuinfo     = os._cpuinfo or os.cpuinfo
 os._readlink    = os._readlink or os.readlink
 
 -- syserror code
@@ -180,9 +181,21 @@ function os._ramdir()
     return ramdir_root or nil
 end
 
+-- set on change environments callback for scheduler
+function os._sched_chenvs_set(envs)
+    os._SCHED_CHENVS = envs
+end
+
 -- set on change directory callback for scheduler
 function os._sched_chdir_set(chdir)
     os._SCHED_CHDIR = chdir
+end
+
+-- notify envs have been changed
+function os._notify_envs_changed(envs)
+    if os._SCHED_CHENVS then
+        os._SCHED_CHENVS(envs)
+    end
 end
 
 -- the current host is belong to the given hosts?
@@ -225,6 +238,28 @@ function os._match_wildcard_pathes(v)
     return v
 end
 
+-- split too long path environment variable for windows
+--
+-- @see https://github.com/xmake-io/xmake-repo/pull/489
+-- https://stackoverflow.com/questions/34491244/environment-variable-is-too-large-on-windows-10
+--
+function os._remove_repeat_pathenv(value)
+    if value and #value > 4096 then
+        local itemset = {}
+        local results = {}
+        for _, item in ipairs(path.splitenv(value)) do
+            if not itemset[item] then
+                table.insert(results, item)
+                itemset[item] = true
+            end
+        end
+        if #results > 0 then
+            value = path.joinenv(results)
+        end
+    end
+    return value
+end
+
 -- match files or directories
 --
 -- @param pattern   the search pattern
@@ -257,11 +292,7 @@ function os.match(pattern, mode, callback)
         local _excludes = {}
         for _, exclude in ipairs(excludes) do
             exclude = path.translate(exclude)
-            exclude = exclude:gsub("([%+%.%-%^%$%(%)%%])", "%%%1")
-            exclude = exclude:gsub("%*%*", "\001")
-            exclude = exclude:gsub("%*", "\002")
-            exclude = exclude:gsub("\001", ".*")
-            exclude = exclude:gsub("\002", "[^/]*")
+            exclude = path.pattern(exclude)
             table.insert(_excludes, exclude)
         end
         excludes = _excludes
@@ -479,7 +510,7 @@ function os.cd(dir)
 
     -- do chdir callback for scheduler
     if os._SCHED_CHDIR then
-        os._SCHED_CHDIR(oldir, os.curdir())
+        os._SCHED_CHDIR(os.curdir())
     end
 
     -- ok
@@ -687,9 +718,12 @@ function os.execv(program, argv, opt)
     if opt.envs then
         local envars = os.getenvs()
         for k, v in pairs(opt.envs) do
-            -- TODO
             if type(v) == "table" then
                 v = path.joinenv(v)
+            end
+            -- we try to fix too long value before running process
+            if type(v) == "string" and #v > 4096 and os.host() == "windows" then
+                v = os._remove_repeat_pathenv(v)
             end
             envars[k] = v
         end
@@ -817,15 +851,17 @@ function os.isexec(filepath)
     -- TODO
     -- check permission
 
-    -- is *.exe for windows?
+    -- check executable program exist
+    if os.isfile(filepath) then
+        return true
+    end
     if os.host() == "windows" then
-        if not filepath:endswith(".exe") and not filepath:endswith(".cmd") and not filepath:endswith(".bat") then
-            filepath = filepath .. ".exe"
+        for _, suffix in ipairs({".exe", ".cmd", ".bat"}) do
+            if os.isfile(filepath .. suffix) then
+                return true
+            end
         end
     end
-
-    -- file exists?
-    return os.isfile(filepath)
 end
 
 -- get system host
@@ -971,7 +1007,18 @@ function os.fscase()
     return os._FSCASE
 end
 
+-- get shell
+function os.shell()
+    return require("base/tty").shell()
+end
+
+-- get term
+function os.term()
+    return require("base/tty").term()
+end
+
 -- get all current environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
 function os.getenvs()
     local envs = {}
     for _, line in ipairs(os._getenvs()) do
@@ -990,28 +1037,119 @@ function os.getenvs()
     return envs
 end
 
+-- set all current environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
+function os.setenvs(envs)
+    local oldenvs = os.getenvs()
+    if envs then
+        local changed = false
+        -- remove new added values
+        for name, _ in pairs(oldenvs) do
+            if not envs[name] then
+                if os._setenv(name, "") then
+                    changed = true
+                end
+            end
+        end
+        -- change values
+        for name, values in pairs(envs) do
+            if oldenvs[name] ~= values then
+                if os._setenv(name, values) then
+                    changed = true
+                end
+            end
+        end
+        if changed then
+            os._notify_envs_changed(envs)
+        end
+    end
+    return oldenvs
+end
+
+-- add environment variables
+-- e.g. envs["PATH"] = "/xxx:/yyy/foo"
+function os.addenvs(envs)
+    local oldenvs = os.getenvs()
+    if envs then
+        local changed = false
+        for name, values in pairs(envs) do
+            local ok
+            local oldenv = oldenvs[name]
+            if oldenv == "" or oldenv == nil then
+                ok = os._setenv(name, values)
+            elseif not oldenv:startswith(values) then
+                ok = os._setenv(name, values .. path.envsep() .. oldenv)
+            end
+            if ok then
+                changed = true
+            end
+        end
+        if changed then
+            os._notify_envs_changed()
+        end
+    end
+    return oldenvs
+end
+
+-- join environment variables
+function os.joinenvs(envs, oldenvs)
+    oldenvs = oldenvs or os.getenvs()
+    local newenvs = oldenvs
+    if envs then
+        newenvs = table.copy(oldenvs)
+        for name, values in pairs(envs) do
+            local oldenv = oldenvs[name]
+            if oldenv == "" or oldenv == nil then
+                newenvs[name] = values
+            elseif not oldenv:startswith(values) then
+                newenvs[name] = values .. path.envsep() .. oldenv
+            end
+        end
+    end
+    return newenvs
+end
+
 -- set values to environment variable
 function os.setenv(name, ...)
+    local ok
     local values = {...}
     if #values <= 1 then
         -- keep compatible with original implementation
-        return os._setenv(name, values[1] or "")
+        ok = os._setenv(name, values[1] or "")
     else
-        return os._setenv(name, path.joinenv(values))
+        ok = os._setenv(name, path.joinenv(values))
     end
+    if ok then
+        os._notify_envs_changed()
+    end
+    return ok
 end
 
 -- add values to environment variable
 function os.addenv(name, ...)
     local values = {...}
     if #values > 0 then
+        local ok
+        local changed = false
         local oldenv = os.getenv(name)
         local appendenv = path.joinenv(values)
         if oldenv == "" or oldenv == nil then
-            return os._setenv(name, appendenv)
+            ok = os._setenv(name, appendenv)
+            if ok then
+                changed = true
+            end
+        elseif not oldenv:startswith(appendenv) then
+            ok = os._setenv(name, appendenv .. path.envsep() .. oldenv)
+            if ok then
+                changed = true
+            end
         else
-            return os._setenv(name, appendenv .. path.envsep() .. oldenv)
+            ok = true
         end
+        if changed then
+            os._notify_envs_changed()
+        end
+        return ok
     else
         return true
     end
@@ -1020,7 +1158,11 @@ end
 -- set values to environment variable with the given seperator
 function os.setenvp(name, values, sep)
     sep = sep or path.envsep()
-    return os._setenv(name, table.concat(table.wrap(values), sep))
+    local ok = os._setenv(name, table.concat(table.wrap(values), sep))
+    if ok then
+        os._notify_envs_changed()
+    end
+    return ok
 end
 
 -- add values to environment variable with the given seperator
@@ -1028,13 +1170,27 @@ function os.addenvp(name, values, sep)
     sep = sep or path.envsep()
     values = table.wrap(values)
     if #values > 0 then
+        local ok
+        local changed = false
         local oldenv = os.getenv(name)
         local appendenv = table.concat(values, sep)
         if oldenv == "" or oldenv == nil then
-            return os._setenv(name, appendenv)
+            ok = os._setenv(name, appendenv)
+            if ok then
+                changed = true
+            end
+        elseif not oldenv:startswith(appendenv) then
+            ok = os._setenv(name, appendenv .. sep .. oldenv)
+            if ok then
+                changed = true
+            end
         else
-            return os._setenv(name, appendenv .. sep .. oldenv)
+            ok = true
         end
+        if changed then
+            os._notify_envs_changed()
+        end
+        return ok
     else
         return true
     end
@@ -1066,6 +1222,11 @@ function os.pbcopy(data)
     else
         -- TODO
     end
+end
+
+-- get cpu info
+function os.cpuinfo(name)
+    return require("base/cpu").info(name)
 end
 
 -- read the content of symlink

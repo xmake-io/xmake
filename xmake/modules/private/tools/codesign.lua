@@ -48,15 +48,16 @@ function codesign_identities()
     local identities = _g.identities
     if identities == nil then
         identities = {}
-        local results = try { function() return os.iorun("/usr/bin/security find-identity -v -p codesigning") end }
-        if not results then
-            results = try { function() return os.iorun("/usr/bin/security find-identity") end }
-            if results then
-                local splitinfo = results:split("Valid identities only", {plain = true})
-                if splitinfo and #splitinfo > 1 then
-                    results = splitinfo[2]
-                end
+        local results = try { function() return os.iorun("/usr/bin/security find-identity") end }
+        if results then
+            local splitinfo = results:split("Valid identities only", {plain = true})
+            if splitinfo and #splitinfo > 1 then
+                results = splitinfo[2]
             end
+        end
+        if not results then
+            -- it may be slower
+            results = try { function() return os.iorun("/usr/bin/security find-identity -v -p codesigning") end }
         end
         if results then
             for _, line in ipairs(results:split('\n', {plain = true})) do

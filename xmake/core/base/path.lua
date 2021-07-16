@@ -69,9 +69,12 @@ function path.basename(p)
 end
 
 -- get the file extension of the path: .xxx
-function path.extension(p)
+function path.extension(p, level)
     local i = p:lastof(".", true)
     if i then
+        if level and level > 1 then
+            return path.extension(p:sub(1, i - 1), level - 1) .. p:sub(i)
+        end
         return p:sub(i)
     else
         return ""
@@ -188,13 +191,27 @@ function path.pattern(pattern)
     pattern = pattern:gsub("%*%*", "\001")
     pattern = pattern:gsub("%*", "\002")
     pattern = pattern:gsub("\001", ".*")
-    pattern = pattern:gsub("\002", "[^/]*")
+    if path.sep() == '\\' then
+        pattern = pattern:gsub("\002", "[^/\\]*")
+    else
+        pattern = pattern:gsub("\002", "[^/]*")
+    end
 
     -- case-insensitive filesystem?
     if not os.fscase() then
         pattern = string.ipattern(pattern, true)
     end
     return pattern
+end
+
+-- get cygwin-style path on msys2/cygwin, e.g. "c:\xxx" -> "/c/xxx"
+function path.cygwin_path(p)
+    p = p:gsub("\\", "/")
+    local pos = p:find(":/")
+    if pos == 2 then
+        return "/" .. p:sub(1, 1) .. p:sub(3)
+    end
+    return p
 end
 
 -- return module: path

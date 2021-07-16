@@ -38,7 +38,7 @@ local target                = require("project/target")
 local config                = require("project/config")
 local option                = require("project/option")
 local policy                = require("project/policy")
-local requireinfo           = require("project/requireinfo")
+local project_package       = require("project/package")
 local deprecated_project    = require("project/deprecated/project")
 local package               = require("package/package")
 local platform              = require("platform/platform")
@@ -167,11 +167,12 @@ function project._load(force, disable_filter)
 
     -- load script
     local ok, errors = interp:load(project.rootfile(), {on_load_data = function (data)
-            local xmakerc_file = project.rcfile()
-            if xmakerc_file and os.isfile(xmakerc_file) then
-                local rcdata = io.readfile(xmakerc_file)
-                if rcdata then
-                    data = rcdata .. "\n" .. data
+            for _, xmakerc_file in ipairs(project.rcfiles()) do
+                if xmakerc_file and os.isfile(xmakerc_file) then
+                    local rcdata = io.readfile(xmakerc_file)
+                    if rcdata then
+                        data = rcdata .. "\n" .. data
+                    end
                 end
             end
             return data
@@ -193,10 +194,8 @@ function project._load(force, disable_filter)
     end
 
     -- save the root info
-    for name, value in pairs(rootinfo_target:info()) do
-        rootinfo:set("target." .. name, value)
-    end
     project._memcache():set("rootinfo", rootinfo)
+    project._memcache():set("rootinfo_target", rootinfo_target)
 
     -- leave the project directory
     oldir, errors = os.cd(oldir)
@@ -359,35 +358,6 @@ function project._load_target(t, requires)
         return false, errors
     end
 
-    -- load packages
-    t._PACKAGES = t._PACKAGES or {}
-    for _, packagename in ipairs(table.wrap(t:get("packages"))) do
-        local p = requires[packagename]
-        if p then
-            table.insert(t._PACKAGES, p)
-        end
-    end
-
-    -- load toolchains
-    local toolchains = t:get("toolchains")
-    if toolchains then
-        t._TOOLCHAINS = {}
-        for _, name in ipairs(table.wrap(toolchains)) do
-            local toolchain_opt = table.copy(t:extraconf("toolchains", name))
-            toolchain_opt.arch = t:arch()
-            toolchain_opt.plat = t:plat()
-            local toolchain_inst, errors = toolchain.load(name, toolchain_opt)
-            -- attempt to load toolchain from project
-            if not toolchain_inst then
-                toolchain_inst = project.toolchain(name, toolchain_opt)
-            end
-            if not toolchain_inst then
-                return false, errors
-            end
-            table.insert(t._TOOLCHAINS, toolchain_inst)
-        end
-    end
-
     -- do after_load() for target and all rules
     ok, errors = t:_load_after()
     if not ok then
@@ -405,7 +375,7 @@ function project._load_targets()
     project._memcache():set("targets_loaded", true)
 
     -- load all requires first and reload the project file to ensure has_package() works for targets
-    local requires = project.requires()
+    local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
         return nil, errors
@@ -462,15 +432,18 @@ function project._load_targets()
         for _, rulename in ipairs(rulenames) do
             local r = project.rule(rulename) or rule.rule(rulename)
             if r then
-                t._RULES[rulename] = r
-                for _, deprule in ipairs(r:orderdeps()) do
-                    local name = deprule:name()
-                    if not t._RULES[name] then
-                        t._RULES[name] = deprule
-                        table.insert(t._ORDERULES, deprule)
+                -- only add target rules
+                if r:kind() == "target" then
+                    t._RULES[rulename] = r
+                    for _, deprule in ipairs(r:orderdeps()) do
+                        local name = deprule:name()
+                        if not t._RULES[name] then
+                            t._RULES[name] = deprule
+                            table.insert(t._ORDERULES, deprule)
+                        end
                     end
+                    table.insert(t._ORDERULES, r)
                 end
-                table.insert(t._ORDERULES, r)
             else
                 return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
@@ -565,20 +538,8 @@ function project._load_options(disable_filter)
     -- check options
     local options = {}
     for optionname, optioninfo in pairs(results) do
-
-        -- init an option instance
         local instance = option.new(optionname, optioninfo)
-
-        -- save it
         options[optionname] = instance
-
-        -- mark add_defines_h_if_ok and add_undefines_h_if_ok as deprecated
-        if instance:get("defines_h_if_ok") then
-            deprecated.add("add_defines_h(\"%s\")", "add_defines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("defines_h_if_ok")), "\", \""))
-        end
-        if instance:get("undefines_h_if_ok") then
-            deprecated.add("add_undefines_h(\"%s\")", "add_undefines_h_if_ok(\"%s\")", table.concat(table.wrap(instance:get("undefines_h_if_ok")), "\", \""))
-        end
     end
 
     -- load and attach options deps
@@ -612,30 +573,19 @@ function project._load_requires()
         end
 
         -- load it from cache first (@note will discard scripts in extrainfo)
-        local instance = requireinfo.load(alias or packagename)
+        local instance = project_package.load(alias or packagename)
         if not instance then
-
-            -- init a require info instance
-            instance = table.inherit(requireinfo)
-
-            -- save name and info
+            instance = table.inherit(project_package)
             instance._NAME = alias or packagename
             instance._INFO = { __requirestr = requirestr, __extrainfo = extrainfo }
         end
 
-        -- move scripts of extrainfo  (e.g. on_load ..)
+        -- @deprecated discard scripts in extrainfo, we need not it now (e.g. on_load ..)
         if extrainfo then
             for k, v in pairs(extrainfo) do
                 if type(v) == "function" then
-                    instance._SCRIPTS = instance._SCRIPTS or {}
-                    instance._SCRIPTS[k] = v
                     extrainfo[k] = nil
                 end
-            end
-
-            -- TODO exists deprecated option? show tips
-            if extrainfo.option then
-                os.raise("`option = {}` is no longger supported in add_requires(), please update xmake.lua")
             end
         end
 
@@ -704,6 +654,7 @@ function project.apis()
         ,   "set_description"
             -- add_xxx
         ,   "add_requires"
+        ,   "add_requireconfs"
         ,   "add_repositories"
         }
     ,   paths =
@@ -844,28 +795,35 @@ end
 
 -- get all loaded project files with subfiles (xmake.lua)
 function project.allfiles()
-    local rcfile = project.rcfile()
-    if rcfile and os.isfile(rcfile) then
-        return table.join(project.interpreter():scriptfiles(), rcfile)
-    else
-        return project.interpreter():scriptfiles()
+    local files = {}
+    table.join2(files, project.interpreter():scriptfiles())
+    for _, rcfile in ipairs(project.rcfiles()) do
+        if rcfile and os.isfile(rcfile) then
+            table.insert(files, rcfile)
+        end
     end
+    return files
 end
 
--- get the global rcfile: ~/.xmakerc.lua
-function project.rcfile()
-    local xmakerc = project._XMAKE_RCFILE
-    if xmakerc == nil then
-        xmakerc = "/etc/xmakerc.lua"
-        if not os.isfile(xmakerc) then
-            xmakerc = "~/.xmakerc.lua"
-            if not os.isfile(xmakerc) then
-                xmakerc = path.join(global.directory(), "xmakerc.lua")
+-- get the global rcfiles: ~/.xmakerc.lua
+function project.rcfiles()
+    local rcfiles = project._XMAKE_RCFILES
+    if rcfiles == nil then
+        rcfiles = {}
+        local rcpaths = {}
+        local rcpaths_env = os.getenv("XMAKE_RCFILES")
+        if rcpaths_env then
+            table.join2(rcpaths, path.splitenv(rcpaths_env))
+        end
+        table.join2(rcpaths, {"/etc/xmakerc.lua", "~/.xmakerc.lua", path.join(global.directory(), "xmakerc.lua")})
+        for _, rcfile in ipairs(rcpaths) do
+            if os.isfile(rcfile) then
+                table.insert(rcfiles, rcfile)
             end
         end
-        project._XMAKE_RCFILE = xmakerc
+        project._XMAKE_RCFILES = rcfiles
     end
-    return xmakerc
+    return rcfiles
 end
 
 -- get the project directory
@@ -884,10 +842,28 @@ function project.filelock()
     return filelock, errors
 end
 
--- get the project info from the given name
+-- get the root configuration
 function project.get(name)
-    local rootinfo = project._memcache():get("rootinfo")
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
     return rootinfo and rootinfo:get(name) or nil
+end
+
+-- get the root extra configuration
+function project.extraconf(name, item, key)
+    local rootinfo
+    if name and name:startswith("target.") then
+        name = name:sub(8)
+        rootinfo = project._memcache():get("rootinfo_target")
+    else
+        rootinfo = project._memcache():get("rootinfo")
+    end
+    return rootinfo and rootinfo:extraconf(name, item, key) or nil
 end
 
 -- get the project name
@@ -931,7 +907,8 @@ end
 
 -- get the given target
 function project.target(name)
-    return project.targets()[name]
+    local targets = project.targets()
+    return targets and targets[name]
 end
 
 -- get targets
@@ -940,7 +917,7 @@ function project.targets()
     if not targets then
         local ordertargets, errors
         targets, ordertargets, errors = project._load_targets()
-        if not targets or not ordertargets then
+        if errors then
             os.raise(errors)
         end
         project._memcache():set("targets", targets)
@@ -955,6 +932,7 @@ function project.ordertargets()
     if not ordertargets then
         -- ensure ordertargets to be cached
         project.targets()
+        ordertargets = project._memcache():get("ordertargets")
     end
     return ordertargets
 end
@@ -978,13 +956,13 @@ function project.options()
     return options
 end
 
--- get the given require info
-function project.require(name)
-    return project.requires()[name]
+-- get the given required package
+function project.required_package(name)
+    return project.required_packages()[name]
 end
 
--- get requires info
-function project.requires()
+-- get required packages
+function project.required_packages()
     local requires = project._memcache():get("requires")
     if not requires then
         local errors
@@ -1013,8 +991,21 @@ function project.requires_str()
         requires_str, requires_extra = project.get("requires"), project.get("__extra_requires")
         project._memcache():set("requires_str", requires_str or false)
         project._memcache():set("requires_extra", requires_extra)
+
+        -- get raw requireconfs
+        local requireconfs_str, requireconfs_extra = project.get("requireconfs"), project.get("__extra_requireconfs")
+        project._memcache():set("requireconfs_str", requireconfs_str or false)
+        project._memcache():set("requireconfs_extra", requireconfs_extra)
     end
     return requires_str or nil, requires_extra
+end
+
+-- get string requireconfs
+function project.requireconfs_str()
+    project.requires_str()
+    local requireconfs_str   = project._memcache():get("requireconfs_str")
+    local requireconfs_extra = project._memcache():get("requireconfs_extra")
+    return requireconfs_str, requireconfs_extra
 end
 
 -- get the given rule
@@ -1038,7 +1029,8 @@ end
 
 -- get the given toolchain
 function project.toolchain(name, opt)
-    local info = project._toolchains()[name]
+    local toolchain_name = toolchain.parsename(name) -- we need ignore `@packagename`
+    local info = project._toolchains()[toolchain_name]
     if info then
         return toolchain.load_withinfo(name, info, opt)
     end

@@ -49,7 +49,7 @@ function main(opt)
     if not program and is_host("windows") then
         local msvc = toolchain.load("msvc")
         if msvc:check() then
-            opt.envs = toolchain.load("msvc"):runenvs() -- we attempt to find it from vstudio environments
+            opt.envs = msvc:runenvs() -- we attempt to find it from vstudio environments
             opt.force = true
             program = find_program(opt.program or "cmake", opt)
         end

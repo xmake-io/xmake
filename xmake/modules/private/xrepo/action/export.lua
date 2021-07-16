@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.base.task")
 
 -- get menu options
 function menu_options()
@@ -41,7 +42,8 @@ function menu_options()
                                        "    - xrepo export -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo export -f \"regex=true,thread=true\" boost"},
         {},
-        {'o', "outputdir",  "kv", "packages","Set the exported packages directory."},
+        {nil, "shallow",    "k",  nil, "Does not export dependent packages."},
+        {'o', "packagedir", "kv", "packages","Set the exported packages directory."},
         {nil, "packages",   "vs", nil, "The packages list.",
                                        "e.g.",
                                        "    - xrepo export zlib boost",
@@ -120,12 +122,15 @@ function _export_packages(packages)
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
     end
-    local outputdir = option.get("outputdir")
-    if outputdir and not path.is_absolute(outputdir) then
-        outputdir = path.absolute(outputdir, oldir)
+    if option.get("shallow") then
+        table.insert(require_argv, "--shallow")
     end
-    if outputdir then
-        table.insert(require_argv, "--exportdir=" .. outputdir)
+    local packagedir = option.get("packagedir")
+    if packagedir and not path.is_absolute(packagedir) then
+        packagedir = path.absolute(packagedir, oldir)
+    end
+    if packagedir then
+        table.insert(require_argv, "--packagedir=" .. packagedir)
     end
     local extra = {system = false}
     if mode == "debug" then
@@ -153,11 +158,59 @@ function _export_packages(packages)
     os.vexecv("xmake", require_argv)
 end
 
+-- export packages in current project
+function _export_current_packages(packages)
+
+    -- do export
+    local require_argv = {export = true}
+    if option.get("yes") then
+        require_argv.yes = true
+    end
+    if option.get("verbose") then
+        require_argv.verbose = true
+    end
+    if option.get("diagnosis") then
+        require_argv.diagnosis = true
+    end
+    local packagedir = option.get("packagedir")
+    if packagedir and not path.is_absolute(packagedir) then
+        packagedir = path.absolute(packagedir, oldir)
+    end
+    if packagedir then
+        require_argv.packagedir = packagedir
+    end
+    local extra = {system = false}
+    if mode == "debug" then
+        extra.debug = true
+    end
+    if kind == "shared" then
+        extra.configs = extra.configs or {}
+        extra.configs.shared = true
+    end
+    local configs = option.get("configs")
+    if configs then
+        extra.configs = extra.configs or {}
+        local extra_configs, errors = ("{" .. configs .. "}"):deserialize()
+        if extra_configs then
+            table.join2(extra.configs, extra_configs)
+        else
+            raise(errors)
+        end
+    end
+    if extra then
+        local extra_str = string.serialize(extra, {indent = false, strip = true})
+        require_argv.extra = extra_str
+    end
+    task.run("require", require_argv)
+end
+
 -- main entry
 function main()
     local packages = option.get("packages")
     if packages then
         _export_packages(packages)
+    elseif os.isfile(os.projectfile()) then
+        _export_current_packages()
     else
         raise("please specify the packages to be exported.")
     end

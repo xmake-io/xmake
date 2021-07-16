@@ -24,11 +24,23 @@ import("detect.sdks.find_mingw")
 
 -- check the mingw toolchain
 function main(toolchain)
-    local mingw = find_mingw(config.get("mingw"), {verbose = true, bindir = config.get("bin"), cross = config.get("cross")})
+    local mingw = find_mingw(toolchain:config("mingw") or config.get("mingw"), {verbose = true, bindir = toolchain:bindir(), cross = toolchain:cross()})
+    if not mingw then
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                mingw = find_mingw(installdir, {verbose = true, cross = toolchain:cross()})
+                if mingw then
+                    break
+                end
+            end
+        end
+    end
     if mingw then
-        config.set("mingw", mingw.sdkdir, {force = true, readonly = true})
-        config.set("cross", mingw.cross, {readonly = true, force = true})
-        config.set("bin", mingw.bindir, {readonly = true, force = true})
+        toolchain:config_set("mingw", mingw.sdkdir)
+        toolchain:config_set("cross", mingw.cross)
+        toolchain:config_set("bindir", mingw.bindir)
+        toolchain:configs_save()
     else
         -- failed
         cprint("${bright color.error}please run:")

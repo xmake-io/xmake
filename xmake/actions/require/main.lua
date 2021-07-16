@@ -24,15 +24,16 @@ import("core.base.task")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
-import("list")
-import("scan")
-import("info")
-import("fetch")
-import("clean")
-import("search")
-import("export")
-import("install")
-import("uninstall")
+import("private.action.require.list")
+import("private.action.require.scan")
+import("private.action.require.info")
+import("private.action.require.fetch")
+import("private.action.require.clean")
+import("private.action.require.search")
+import("private.action.require.export")
+import("private.action.require.import", {alias = "import_packages"})
+import("private.action.require.install")
+import("private.action.require.uninstall")
 
 --
 -- the default repositories:
@@ -91,6 +92,11 @@ function main()
     elseif option.get("export") then
 
         export(option.get("requires"))
+
+    -- import the installed packages
+    elseif option.get("import") then
+
+        import_packages(option.get("requires"))
 
     -- show the given package info
     elseif option.get("info") then

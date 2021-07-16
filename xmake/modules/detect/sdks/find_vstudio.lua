@@ -43,9 +43,11 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     -- make the genvcvars.bat
     opt = opt or {}
     local genvcvars_bat = os.tmpfile() .. "_genvcvars.bat"
-    local genvcvars_dat = os.tmpfile() .. "_genvcvars.txt"
     local file = io.open(genvcvars_bat, "w")
     file:print("@echo off")
+    -- @note we need get utf8 output from cmd.exe
+    -- because some %PATH% and other envs maybe contains unicode characters
+    file:print("chcp 65001")
     -- fix error caused by the new vsDevCmd.bat of vs2019
     -- @see https://github.com/xmake-io/xmake/issues/549
     if vsver and tonumber(vsver) >= 16 then
@@ -57,16 +59,19 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
         file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
     for idx, var in ipairs(vcvars) do
-        file:print("echo " .. var .. " = %%" .. var .. "%% %s %s", idx == 1 and ">" or ">>", genvcvars_dat)
+        file:print("echo " .. var .. " = %%" .. var .. "%%")
     end
     file:close()
 
     -- run genvcvars.bat
-    os.run(genvcvars_bat)
+    local outdata = try {function () return os.iorun(genvcvars_bat) end}
+    if not outdata then
+        return
+    end
 
     -- load all envirnoment variables
     local variables = {}
-    for _, line in ipairs((io.readfile(genvcvars_dat) or ""):split("\n")) do
+    for _, line in ipairs(outdata:split("\n")) do
         local p = line:find('=', 1, true)
         if p then
             local name = line:sub(1, p - 1):trim()
@@ -145,7 +150,8 @@ function main(opt)
     -- init vsvers
     local vsvers =
     {
-        ["16.0"] = "2019"
+        ["17.0"] = "2022"
+    ,   ["16.0"] = "2019"
     ,   ["15.0"] = "2017"
     ,   ["14.0"] = "2015"
     ,   ["12.0"] = "2013"
@@ -218,7 +224,7 @@ function main(opt)
             VCInstallDir
         }
         local vcvarsall = find_file("vcvarsall.bat", paths) or find_file("vcvars32.bat", paths)
-        if vcvarsall and os.isfile(vcvarsall) then
+        if vcvarsall and os.isfile(vcvarsall) and vsvers[VisualStudioVersion] then
 
             -- load vcvarsall
             local vcvarsall_x86 = _load_vcvarsall(vcvarsall, VisualStudioVersion, "x86", opt)
@@ -248,7 +254,7 @@ function main(opt)
         local vswhere_VCAuxiliaryBuildDir = nil
         if (tonumber(version) >= 15) and vswhere then
             local vswhere_vrange = format("%s,%s)", version, (version + 1))
-            local result = os.iorunv(vswhere.program, {"-property", "installationpath", "-version", vswhere_vrange})
+            local result = os.iorunv(vswhere.program, {"-prerelease", "-property", "installationpath", "-version", vswhere_vrange})
             if result then
                 vswhere_VCAuxiliaryBuildDir = path.join(result:trim(), "VC", "Auxiliary", "Build")
             end

@@ -29,17 +29,17 @@ end
 
 -- make the define flag
 function nf_define(self, macro)
-    return "/D " .. macro
+    return {"/D", macro}
 end
 
 -- make the undefine flag
 function nf_undefine(self, macro)
-    return "/U " .. macro
+    return {"/U", macro}
 end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "/I " .. os.args(dir)
+    return {"/I", dir}
 end
 
 -- make the sysincludedir flag

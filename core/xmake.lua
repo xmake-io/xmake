@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.3.9", {build = "%Y%m%d%H%M"})
+set_version("2.5.5", {build = "%Y%m%d%H%M"})
 
 -- set xmake min version
 set_xmakever("2.2.3")
@@ -29,7 +29,7 @@ add_cxflags("-Wno-error=deprecated-declarations", "-fno-strict-aliasing", "-Wno-
 add_defines("_GNU_SOURCE=1", "_FILE_OFFSET_BITS=64", "_LARGEFILE_SOURCE")
 
 -- for the windows platform (msvc)
-if is_plat("windows") then 
+if is_plat("windows") then
     add_cxflags("-MT")
     add_ldflags("-nodefaultlib:msvcrt.lib")
     add_links("kernel32", "user32", "gdi32")

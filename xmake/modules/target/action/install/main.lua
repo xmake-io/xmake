@@ -44,12 +44,12 @@ function main(target, opt)
     end
 
     -- trace
-    print("installing to %s ..", installdir)
+    print("installing %s to %s ..", target:name(), installdir)
 
     -- call script
-    if not target:isphony() then
+    if not target:is_phony() then
         local install_style = target:is_plat("windows", "mingw") and "windows" or "unix"
-        local script = import(install_style, {anonymous = true})["install_" .. target:targetkind()]
+        local script = import(install_style, {anonymous = true})["install_" .. target:kind()]
         if script then
             script(target, opt)
         end

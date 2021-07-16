@@ -24,6 +24,7 @@ import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
 import("getinfo")
 import("core.project.config")
+import("core.cache.localcache")
 
 local template_root = path.join(os.scriptdir(), "vsproj", "templates")
 local template_sln = path.join(template_root, "sln", "vsxmake.sln")
@@ -130,6 +131,9 @@ function _buildparams(info, target, default)
         elseif args.filerc then
             local files = info._targets[target].sourcefiles
             table.insert(r, _filter_files(files, {".rc"}))
+        elseif args.fileui then -- for qt/.ui
+            local files = info._targets[target].sourcefiles
+            table.insert(r, _filter_files(files, {".ui"}))
         elseif args.incc then
             local files = info._targets[target].headerfiles
             table.insert(r, _filter_files(files, nil, {".natvis"}))
@@ -164,6 +168,17 @@ function _writefileifneeded(file, content)
         return
     end
     io.writefile(file, content)
+end
+
+function _clear_cacheconf()
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
 end
 
 -- make
@@ -215,5 +230,8 @@ function make(version)
             _trycp(template_items, proj_dir)
             _trycp(template_itemfil, proj_dir)
         end
+
+        -- clear config and local cache
+        _clear_cacheconf()
     end
 end

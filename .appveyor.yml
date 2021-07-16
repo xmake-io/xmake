@@ -1,7 +1,6 @@
 #version: v2.1.8.{build}
 image:
   - Visual Studio 2013
-  - Visual Studio 2015
   - Visual Studio 2017
 
 platform:
@@ -74,6 +73,8 @@ after_build:
   - ps: Copy-Item .\*.md .\xmake
   - ps: Copy-Item C:\winenv\ .\xmake -Recurse
   - ps: Copy-Item .\core\build\xmake.exe .\xmake
+  - ps: Copy-Item .\scripts\xrepo.bat .\xmake\xrepo.bat
+  - ps: Copy-Item .\scripts\xrepo.ps1 .\xmake\xrepo.ps1
   - ps: |-
         Add-Type -AssemblyName System.Text.Encoding
         Add-Type -AssemblyName System.IO.Compression.FileSystem

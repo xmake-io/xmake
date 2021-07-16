@@ -155,6 +155,7 @@ function rule.apis()
             -- rule.set_xxx
             "rule.set_extensions"
         ,   "rule.set_sourcekinds"
+        ,   "rule.set_kind"
             -- rule.add_xxx
         ,   "rule.add_deps"
         ,   "rule.add_imports"
@@ -164,6 +165,7 @@ function rule.apis()
             -- rule.on_xxx
             "rule.on_run"
         ,   "rule.on_load"
+        ,   "rule.on_config"
         ,   "rule.on_link"
         ,   "rule.on_build"
         ,   "rule.on_build_file"
@@ -172,6 +174,9 @@ function rule.apis()
         ,   "rule.on_package"
         ,   "rule.on_install"
         ,   "rule.on_uninstall"
+        ,   "rule.on_buildcmd"
+        ,   "rule.on_buildcmd_file"
+        ,   "rule.on_buildcmd_files"
             -- rule.before_xxx
         ,   "rule.before_run"
         ,   "rule.before_load"
@@ -183,6 +188,9 @@ function rule.apis()
         ,   "rule.before_package"
         ,   "rule.before_install"
         ,   "rule.before_uninstall"
+        ,   "rule.before_buildcmd"
+        ,   "rule.before_buildcmd_file"
+        ,   "rule.before_buildcmd_files"
             -- rule.after_xxx
         ,   "rule.after_run"
         ,   "rule.after_load"
@@ -194,6 +202,9 @@ function rule.apis()
         ,   "rule.after_package"
         ,   "rule.after_install"
         ,   "rule.after_uninstall"
+        ,   "rule.after_buildcmd"
+        ,   "rule.after_buildcmd_file"
+        ,   "rule.after_buildcmd_files"
         }
     }
 end
@@ -219,6 +230,16 @@ end
 -- get the rule name
 function rule:name()
     return self._NAME
+end
+
+-- get the rule kind
+--
+-- current supported kind:
+--  - target: default, only for each target
+--  - project: global rule, for whole project
+--
+function rule:kind()
+    return self:get("kind") or "target"
 end
 
 -- get the given dependent rule

@@ -87,7 +87,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
+    return {"-I" .. dir}
 end
 
 -- make the sysincludedir flag
@@ -97,7 +97,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-Fo" .. os.args(objectfile), sourcefile)
+    return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 
 -- compile the source file

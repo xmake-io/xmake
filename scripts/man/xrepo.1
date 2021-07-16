@@ -1,0 +1,123 @@
+.TH "xrepo" "1"
+.SH NAME
+xrepo \- cross-platform build utility based on Lua
+
+
+.SH SYNOPSIS
+.B xrepo
+.RI [ action "] [" options ]
+
+
+.SH DESCRIPTION
+.B xrepo
+is a lightweight cross-platform build utility based on Lua. It uses
+.I xrepo.lua
+to maintain project builds. Compared with
+.IR makefile / CMakeLists.txt ,
+the configuration syntax is more concise and intuitive. It is very friendly to
+novices and can quickly get started in a short time. Let users focus more on
+actual project development.
+
+
+.SH ACTIONS
+
+.TP
+.B clean
+Clear all package caches and remove all not\-referenced packages.
+
+.TP
+.B env
+Set environment and execute command, or print environment.
+
+.TP
+.B export
+Export the given packages.
+
+.TP
+.B fetch
+Fetch library information of the given installed packages.
+
+.TP
+.B import
+Import the given packages.
+
+.TP
+.B info
+Show information of the given packages.
+
+.TP
+.B install
+Install the given packages.
+
+.TP
+.B remove
+Remove the given packages.
+
+.TP
+.B scan
+Scan the given or all installed packages.
+
+.TP
+.B search
+Search the given packages.
+
+.TP
+.B add\-repo
+Add the given remote repository url.
+
+.TP
+.B list\-repo
+List all remote repositories.
+
+.TP
+.B rm\-repo
+Remove the given remote repository.
+
+.TP
+.B update\-repo
+Update all local repositories from remote.
+
+
+.SH OPTIONS
+
+.TP
+.B \-q, \-\-quiet
+Quiet operation.
+
+.TP
+.B \-y, \-\-yes
+Input yes by default if need user confirm.
+
+.TP
+.B \-\-root
+Allow to run xrepo as root.
+
+.TP
+.B \-v, \-\-verbose
+Print lots of verbose information for users.
+
+.TP
+.B \-D, \-\-diagnosis
+Print lots of diagnosis information.
+
+.TP
+.B \-\-version
+Print the version number and exit.
+
+.TP
+.B \-h, \-\-help
+Print this help message and exit.
+
+
+.SH AUTHOR
+.B xrepo
+is written by
+.MT waruqi@\:gmail.com
+ruki
+.ME .
+
+This manual page was written by
+.MT mmyangfl@\:gmail.com
+Yangfl
+.ME
+for the Debian Project (and may be used by others).

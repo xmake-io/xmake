@@ -43,6 +43,12 @@ function main(opt)
     opt.command = opt.command or "--help"
     opt.parse   = "(%d+%.?%d*)%s"
 
+    -- find 7z from builtin xmake/winenv
+    if is_host("windows") then
+        opt.paths = opt.paths or {}
+        table.insert(opt.paths, path.join(os.programdir(), "winenv", "bin"))
+    end
+
     -- find program
     local program = find_program(opt.program or "7z", opt)
     if not program and not opt.program then
@@ -54,7 +60,5 @@ function main(opt)
     if program and opt and opt.version then
         version = find_programver(program, opt)
     end
-
-    -- ok?
     return program, version
 end

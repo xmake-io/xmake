@@ -46,7 +46,7 @@ function compiler:_add_flags_from_toolchains(flags, targetkind, target)
     -- add flags for platform with the given target kind, e.g. binary.gcc.cxflags or binary.cxflags
     if targetkind then
         local toolname = self:name()
-        if target and target:type() == "target" then
+        if target and target.toolconfig then
             for _, flagkind in ipairs(self:_flagkinds()) do
                 local toolflags = target:toolconfig(targetkind .. '.' .. toolname .. '.' .. flagkind)
                 table.join2(flags, toolflags or target:toolconfig(targetkind .. '.' .. flagkind))
@@ -79,7 +79,7 @@ function compiler._load_tool(sourcekind, target)
 
     -- get program from target
     local program, toolname, toolchain_info
-    if target and target:type() == "target" then
+    if target and target.tool then
         program, toolname, toolchain_info = target:tool(sourcekind)
     end
 
@@ -138,7 +138,7 @@ function compiler.load(sourcekind, target)
 
     -- add toolchains flags to the compiler tool, e.g. gcc.cxflags or cxflags
     local toolname = compiler_tool:name()
-    if target and target:type() == "target" then
+    if target and target.toolconfig then
         for _, flagkind in ipairs(instance:_flagkinds()) do
             compiler_tool:add(flagkind, target:toolconfig(toolname .. '.' .. flagkind) or target:toolconfig(flagkind))
         end
@@ -175,7 +175,7 @@ function compiler:build(sourcefiles, targetfile, opt)
     -- get target kind
     local targetkind = opt.targetkind
     if not targetkind and opt.target and opt.target.targetkind then
-        targetkind = opt.target:targetkind()
+        targetkind = opt.target:kind()
     end
 
     -- get it
@@ -207,7 +207,7 @@ function compiler:buildargv(sourcefiles, targetfile, opt)
     -- get target kind
     local targetkind = opt.targetkind
     if not targetkind and opt.target and opt.target.targetkind then
-        targetkind = opt.target:targetkind()
+        targetkind = opt.target:kind()
     end
 
     -- get it
@@ -296,8 +296,8 @@ function compiler:compflags(opt)
 
     -- get target kind
     local targetkind = opt.targetkind
-    if not targetkind and target and target.targetkind then
-        targetkind = target:targetkind()
+    if not targetkind and target and target:type() == "target" then
+        targetkind = target:kind()
     end
 
     -- add flags from compiler/toolchains

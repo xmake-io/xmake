@@ -31,7 +31,6 @@ function _find_bindir(sdkdir, opt)
         table.insert(bindirs, opt.bindir)
     end
     table.insert(bindirs, path.join(sdkdir, "bin"))
-    table.insert(bindirs, path.join(sdkdir, "**", "bin"))
 
     -- attempt to find *-[gcc|clang|ld]
     for _, toolname in ipairs({"gcc", "clang", "ld"}) do
@@ -44,15 +43,17 @@ function _find_bindir(sdkdir, opt)
         end
 
         -- find tool path
-        toolpath = find_file(toolname, bindirs)
-        if toolpath then
-            return path.directory(toolpath), ""
+        if not opt.cross then
+            toolpath = find_file(toolname, bindirs)
+            if toolpath then
+                return path.directory(toolpath), ""
+            end
         end
     end
 
     -- attempt to use the bin directory
     local bindir = opt.bindir or path.join(sdkdir, "bin")
-    if os.isdir(bindir) then
+    if os.isdir(bindir) and not opt.cross then
         return bindir
     end
 end

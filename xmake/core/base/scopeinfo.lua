@@ -519,7 +519,7 @@ end
 -- function (target)
 --     _instance:extraconf("includedirs", "inc", "public")  -> true
 --     _instance:extraconf("includedirs", "inc")  -> {public = true}
---     _instance:extraconf("includedirs")  -> {["inc"] = {public = true}}
+--     _instance:extraconf("includedirs")  -> {inc = {public = true}}
 -- end
 --
 function _instance:extraconf(name, item, key)
@@ -547,6 +547,33 @@ function _instance:extraconf(name, item, key)
         end
     end
     return value
+end
+
+-- set the extra configuration
+--
+-- e.g.
+--
+-- add_includedirs("inc", {public = true})
+--
+-- function (target)
+--     _instance:extraconf_set("includedirs", "inc", "public", true)
+--     _instance:extraconf_set("includedirs", "inc", {public = true})
+--     _instance:extraconf_set("includedirs", {inc = {public = true}})
+-- end
+--
+function _instance:extraconf_set(name, item, key, value)
+    if key ~= nil then
+        local extraconf = self:get("__extra_" .. name) or {}
+        if value ~= nil then
+            extraconf[item] = extraconf[item] or {}
+            extraconf[item][key] = value
+        else
+            extraconf[item] = key
+        end
+        self:set("__extra_" .. name, extraconf)
+    else
+        self:set("__extra_" .. name, item)
+    end
 end
 
 -- clone a new instance from the current

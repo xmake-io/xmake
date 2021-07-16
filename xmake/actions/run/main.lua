@@ -25,7 +25,6 @@ import("core.project.config")
 import("core.base.global")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.environment")
 import("devel.debugger")
 import("private.action.run.make_runenvs")
 
@@ -33,7 +32,7 @@ import("private.action.run.make_runenvs")
 function _do_run_target(target)
 
     -- only for binary program
-    if target:targetkind() ~= "binary" then
+    if not target:is_binary() then
         return
     end
 
@@ -69,11 +68,6 @@ end
 -- run target
 function _on_run_target(target)
 
-    -- has been disabled?
-    if target:get("enabled") == false then
-        return
-    end
-
     -- build target with rules
     local done = false
     for _, r in ipairs(target:orderules()) do
@@ -89,28 +83,35 @@ function _on_run_target(target)
     _do_run_target(target)
 end
 
+-- recursively target add env
+function _add_target_pkgenvs(target, targets_added)
+    if targets_added[target:name()] then
+        return
+    end
+    targets_added[target:name()] = true
+    os.addenvs(target:pkgenvs())
+    for _, dep in ipairs(target:orderdeps()) do
+        _add_target_pkgenvs(dep, targets_added)
+    end
+end
+
 -- run the given target
 function _run(target)
 
-    -- enter the environments of the target packages
-    local oldenvs = {}
-    for name, values in pairs(target:pkgenvs()) do
-        oldenvs[name] = os.getenv(name)
-        os.addenv(name, unpack(values))
+    -- has been disabled?
+    if not target:is_enabled() then
+        return
     end
+
+    -- enter the environments of the target packages
+    local oldenvs = os.getenvs()
+    _add_target_pkgenvs(target, {})
 
     -- the target scripts
     local scripts =
     {
         target:script("run_before")
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local before_run = r:script("run_before")
                 if before_run then
@@ -120,13 +121,6 @@ function _run(target)
         end
     ,   target:script("run", _on_run_target)
     ,   function (target)
-
-            -- has been disabled?
-            if target:get("enabled") == false then
-                return
-            end
-
-            -- run rules
             for _, r in ipairs(target:orderules()) do
                 local after_run = r:script("run_after")
                 if after_run then
@@ -146,9 +140,7 @@ function _run(target)
     end
 
     -- leave the environments of the target packages
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
+    os.setenvs(oldenvs)
 end
 
 -- check targets
@@ -161,8 +153,7 @@ function _check_targets(targetname)
     else
         -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
+            if (target:is_default() or option.get("all")) and target:is_binary() then
                 table.insert(targets, target)
             end
         end
@@ -171,7 +162,7 @@ function _check_targets(targetname)
     -- filter and check targets with builtin-run script
     local targetnames = {}
     for _, target in ipairs(targets) do
-        if not target:isphony() and target:get("enabled") ~= false and not target:script("run") then
+        if not target:is_phony() and target:is_enabled() and not target:script("run") then
             local targetfile = target:targetfile()
             if targetfile and not os.isfile(targetfile) then
                 table.insert(targetnames, target:name())
@@ -200,24 +191,17 @@ function main()
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- enter the running environment
-    environment.enter("run")
-
     -- run the given target?
     if targetname then
         _run(project.target(targetname))
     else
         -- run default or all binary targets
         for _, target in ipairs(project.ordertargets()) do
-            local default = target:get("default")
-            if (default == nil or default == true or option.get("all")) and target:targetkind() == "binary" then
+            if (target:is_default() or option.get("all")) and target:is_binary() then
                 _run(target)
             end
         end
     end
-
-    -- leave the running environment
-    environment.leave("run")
 
     -- leave project directory
     os.cd(oldir)

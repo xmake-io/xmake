@@ -93,6 +93,8 @@ function app:_filter_option(name)
     ,   help        = true
     ,   clean       = true
     ,   menu        = true
+    ,   import      = true
+    ,   export      = true
     }
     return not options[name] and not project.option(name)
 end
@@ -358,9 +360,13 @@ end
 -- load configs from options
 function app:load(cache)
 
-    -- load config from cache
-    if cache then
-        cache = config.load(option.get("target") or "all")
+    -- merge configuration from the given import file or cache
+    local loaded = false
+    local importfile = option.get("import")
+    if importfile and os.isfile(importfile) then
+        loaded = config.load(importfile)
+    elseif cache then
+        loaded = config.load()
     end
 
     -- clear configs first
@@ -374,7 +380,7 @@ function app:load(cache)
     self:mconfdialog():load(configs)
 
     -- the previous config is only for loading menuconf, so clear config now
-    if cache then
+    if loaded then
         config.clear()
     end
 end

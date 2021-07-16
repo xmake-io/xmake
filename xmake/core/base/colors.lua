@@ -22,6 +22,7 @@
 local colors = colors or {}
 
 -- load modules
+local tty -- lazy loading it
 local emoji = require("base/emoji")
 
 -- the color8 keys
@@ -141,83 +142,6 @@ colors._keys24 =
 -- the escape string
 colors._ESC = '\x1b[%sm'
 
--- get colorterm setting
---
--- COLORTERM: color8, color256, truecolor, nocolor
---
-function colors._colorterm()
-    local colorterm = colors._COLORTERM
-    if colorterm == nil then
-        colorterm = os.getenv("XMAKE_COLORTERM") or os.getenv("COLORTERM") or ""
-        colors._COLORTERM = colorterm
-    end
-    return colorterm
-end
-
--- support 8 colors?
-function colors.color8()
-
-    -- no color?
-    local colorterm = colors._colorterm()
-    if colorterm == "nocolor" then
-        return false
-    end
-
-    -- has 8 colors?
-    if colorterm == "color8" or os.subhost() ~= "windows" then
-        return true
-    end
-
-    -- this is supported if exists ANSICON envirnoment variable on windows
-    colors._ANSICON = colors._ANSICON or os.getenv("ANSICON") or ""
-    return colors._ANSICON ~= ""
-end
-
--- support 256 colors?
-function colors.color256()
-
-    -- no color?
-    local colorterm = colors._colorterm()
-    if colorterm == "nocolor" then
-        return false
-    end
-
-    -- has 256 colors?
-    return colorterm == "color256" or os.subhost() ~= "windows"
-end
-
--- support 24bits true color
---
--- There's no reliable way, and ncurses/terminfo's maintainer expressed he has no intent on introducing support.
--- S-Lang author added a check for $COLORTERM containing either "truecolor" or "24bit" (case sensitive).
--- In turn, VTE, Konsole and iTerm2 set this variable to "truecolor" (it's been there in VTE for a while,
--- it's relatively new and maybe still git-only in Konsole and iTerm2).
---
--- This is obviously not a reliable method, and is not forwarded via sudo, ssh etc. However, whenever it errs,
--- it errs on the safe side: does not advertise support whereas it's actually supported.
--- App developers can freely choose to check for this same variable, or introduce their own method
--- (e.g. an option in their config file), whichever matches better the overall design of the given app.
--- Checking $COLORTERM is recommended though, since that would lead to a more unique desktop experience
--- where the user has to set one variable only and it takes effect across all the apps, rather than something
--- separately for each app.
---
-function colors.truecolor()
-
-    -- support true color?
-    local colorterm = colors._colorterm()
-    return colorterm:find("truecolor", 1, true) or colorterm:find("24bit", 1, true)
-end
-
--- support emoji?
-function colors.emoji()
-    local emoji = colors._EMOJI
-    if emoji == nil then
-        emoji = not os.getenv("XMAKE_COLORTERM_NOEMOJI")
-        colors._EMOJI = emoji
-    end
-    return emoji
-end
-
 -- make rainbow truecolor code by the index of characters
 --
 -- @param index     the index of characters
@@ -327,24 +251,29 @@ function colors.translate(str, opt)
     end
 
     -- translate color blocks, e.g. ${red}, ${color.xxx}, ${emoji}
+    tty = tty or require("base/tty")
+    local has_color8   = tty.has_color8()
+    local has_color256 = tty.has_color256()
+    local has_color24  = tty.has_color24()
+    local has_emoji    = tty.has_emoji()
     str = str:gsub("(%${(.-)})", function(_, word)
 
         -- not supported? ignore it
         local nocolors = false
-        if not colors.color8() and not colors.color256() and not colors.truecolor() then
+        if not has_color8 and not has_color256 and not has_color24 then
             nocolors = true
         end
 
         -- is plain theme? no colors and no emoji
-        local noemoji = not colors.emoji()
+        local noemoji = not has_emoji
         if opt.plain or (theme and theme:name() == "plain") then
             nocolors = true
             noemoji = true
         end
 
         -- get keys
-        local keys = colors.color256() and colors._keys256 or colors._keys8
-        if colors.truecolor() then
+        local keys = has_color256 and colors._keys256 or colors._keys8
+        if has_color24 then
             keys = colors._keys24
         end
 
@@ -384,13 +313,13 @@ function colors.translate(str, opt)
             -- get the color code
             local code = keys[block]
             if not code then
-                if colors.truecolor() and block:find(";", 1, true) then
+                if has_color24 and block:find(";", 1, true) then
                     if block:startswith("on;") then
                         code = block:gsub("on;", "48;2;")
                     else
                         code = "38;2;" .. block
                     end
-                elseif colors.color256() and block:find("#", 1, true) then
+                elseif has_color256 and block:find("#", 1, true) then
                     if block:startswith("on#") then
                         code = block:gsub("on#", "48;5;")
                     else

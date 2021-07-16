@@ -25,57 +25,17 @@ local environment = environment or {}
 local os            = require("base/os")
 local table         = require("base/table")
 local global        = require("base/global")
-local platform_core = require("platform/platform")
 local sandbox       = require("sandbox/sandbox")
 local package       = require("package/package")
 local import        = require("sandbox/modules/import")
 
 -- enter the toolchains environment
 function environment._enter_toolchains()
-
-    -- get the current platform
-    local platform, errors = platform_core.load()
-    if not platform then
-        return false, errors
-    end
-
-    -- add $programdir/winenv/bin to $path
-    local oldenvs = {}
-    oldenvs.PATH = os.getenv("PATH")
-    if os.host() == "windows" then
-        os.addenv("PATH", path.join(os.programdir(), "winenv", "bin"))
-    end
-    environment._OLDENVS_TOOLCHAINS = oldenvs
     return true
 end
 
 -- leave the toolchains environment
 function environment._leave_toolchains()
-    local oldenvs = environment._OLDENVS_TOOLCHAINS
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
-    return true
-end
-
--- enter the running environment
-function environment._enter_run()
-    local oldenvs               = {}
-    oldenvs.PATH                = os.getenv("PATH")
-    oldenvs.LD_LIBRARY_PATH     = os.getenv("LD_LIBRARY_PATH")
-    if os.host() == "macosx" then
-        oldenvs.DYLD_LIBRARY_PATH   = os.getenv("DYLD_LIBRARY_PATH")
-    end
-    environment._OLDENVS_RUN    = oldenvs
-    return true
-end
-
--- leave the running environment
-function environment._leave_run()
-    local oldenvs = environment._OLDENVS_RUN
-    for name, values in pairs(oldenvs) do
-        os.setenv(name, values)
-    end
     return true
 end
 
@@ -93,7 +53,7 @@ function environment.enter(name)
     end
 
     -- do enter
-    local maps = {toolchains = environment._enter_toolchains, run = environment._enter_run}
+    local maps = {toolchains = environment._enter_toolchains}
     local func = maps[name]
     if func then
         local ok, errors = func()
@@ -119,7 +79,7 @@ function environment.leave(name)
     end
 
     -- do leave
-    local maps = {toolchains = environment._leave_toolchains, run = environment._leave_run}
+    local maps = {toolchains = environment._leave_toolchains}
     local func = maps[name]
     if func then
         local ok, errors = func()

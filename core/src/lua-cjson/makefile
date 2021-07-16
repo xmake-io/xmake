@@ -18,12 +18,16 @@ lua-cjson_C_FILES 		+= \
 						lua-cjson/lua_cjson
 
 # cflags
-# Use internal strtod() / g_fmt() code for performance and disable multi-thread 
+# Use internal strtod() / g_fmt() code for performance and disable multi-thread
 lua-cjson_CFLAGS 		+= -DNDEBUG -DUSE_INTERNAL_FPCONV
 
 # includes
 lua-cjson_INC_DIRS 		+= \
 						../luajit/luajit/src
+
+# use given system library?
+lua-cjson_C_FILES  		:= $(if $(findstring cjson,$(base_LIBNAMES)),,$(lua-cjson_C_FILES))
+lua-cjson_INC_FILES  	:= $(if $(findstring cjson,$(base_LIBNAMES)),,$(lua-cjson_INC_FILES))
 
 # suffix
 include $(PRO_DIR)/suffix.mak

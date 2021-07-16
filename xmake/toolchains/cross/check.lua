@@ -29,16 +29,29 @@ function main(toolchain)
     local sdkdir = toolchain:sdkdir()
     local bindir = toolchain:bindir()
     local cross  = toolchain:cross()
-    if not sdkdir and not bindir and not cross then
+    if not sdkdir and not bindir and not cross and not toolchain:packages() then
         return
     end
 
-    -- find cross toolchain
+    -- find cross toolchain from external envirnoment
     local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
+    if not cross_toolchain then
+        -- find it from packages
+        for _, package in ipairs(toolchain:packages()) do
+            local installdir = package:installdir()
+            if installdir and os.isdir(installdir) then
+                cross_toolchain = find_cross_toolchain(installdir, {cross = cross})
+                if cross_toolchain then
+                    break
+                end
+            end
+        end
+    end
     if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        config.set("sdk", cross_toolchain.sdkdir, {readonly = true, force = true})
+        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
+        toolchain:configs_save()
         -- init default target os
         if not config.get("target_os") then
             config.set("target_os", "linux", {readonly = true, force = true})

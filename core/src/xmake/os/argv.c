@@ -42,7 +42,17 @@ tb_int_t xm_os_argv(lua_State* lua)
     tb_char_t const* args = luaL_checkstring(lua, 1);
     tb_check_return_val(args, 0);
 
-    // done
+    // split only? do not escape
+    tb_bool_t splitonly = tb_false;
+    if (lua_istable(lua, 2))
+    {
+        lua_pushstring(lua, "splitonly");
+        lua_gettable(lua, 2);
+        splitonly = lua_toboolean(lua, -1);
+        lua_pop(lua, 1);
+    }
+
+    // parse argument list
     tb_string_t arg;
     do
     {
@@ -88,7 +98,7 @@ tb_int_t xm_os_argv(lua_State* lua)
             }
 
             // save this charactor to argument
-            if (!skip) tb_string_chrcat(&arg, ch);
+            if (splitonly || !skip) tb_string_chrcat(&arg, ch);
 
             // step and cancel escape
             if (escape == 1) escape++;
@@ -114,7 +124,5 @@ tb_int_t xm_os_argv(lua_State* lua)
 
     // exit arg
     tb_string_exit(&arg);
-
-    // ok
     return 1;
 }

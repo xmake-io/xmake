@@ -42,6 +42,12 @@ task("config")
             ,   options =
                 {
                     {'c', "clean",      "k",  nil       ,   "Clean the cached configure and configure all again."           }
+                ,   {nil, "export",     "kv", nil       ,   "Export the current configuration to the given file."
+                                                        ,   "    e.g."
+                                                        ,   "    - xmake f -m debug -xxx=y --export=build/config.txt"         }
+                ,   {nil, "import",     "kv", nil       ,   "Import configuration from the given file."
+                                                        ,   "    e.g."
+                                                        ,   "    - xmake f -import=build/config.txt"                          }
                 ,   {nil, "menu",       "k",  nil       ,   "Configure project with a menu-driven user interface."          }
                 ,   {category = "."}
                 ,   {'p', "plat",       "kv", "auto"    , "Compile for the given platform."

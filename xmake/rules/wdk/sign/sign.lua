@@ -56,11 +56,13 @@ function main(target, filepath, mode)
     -- get signtool
     local signtool = _get_tool(target, "signtool")
 
-    -- get timestamp
-    local timestamp = target:values("wdk.sign.timestamp") or "http://timestamp.verisign.com/scripts/timestamp.dll"
-
     -- init arguments
-    local argv = {"sign", "/v", "/t", timestamp}
+    local argv = {"sign", "/v"}
+    local timestamp = target:values("wdk.sign.timestamp")
+    if timestamp then
+        table.insert(argv, "/t")
+        table.insert(argv, timestamp)
+    end
     local company = target:values("wdk.sign.company")
     if company then
         table.insert(argv, "/n")
@@ -77,8 +79,6 @@ function main(target, filepath, mode)
         table.insert(argv, thumbprint)
     end
     local store = target:values("wdk.sign.store")
-    if not store and mode == "test" then
-    end
     if store then
         table.insert(argv, "/a")
         table.insert(argv, "/s")

@@ -1,24 +1,42 @@
-# preifx
 include $(PRO_DIR)/prefix.mak
 
-# module name
-NAMES 											= demo
+NAMES 				= demo
+demo_TYPE 			= BIN
+demo_C_FILES 		+= xmake
+demo_PKGS-$(BASE)  	+= base
+demo_CXFLAGS 		+= -D__tb_prefix__=\"xmake\"
 
-# type
-demo_TYPE 										= BIN
+demo_LIBS 			+= xmake$(DTYPE)
+demo_LIB_DIRS 		+= ../xmake
 
-# files
-demo_C_FILES 									+= xmake
+# lcurses
+demo_LIBS 			+= lcurses$(DTYPE)
+demo_LIB_DIRS 		+= ../lcurses
 
-# packages
-demo_PKGS-$(BASE)  								+= base 
+# tbox
+tbox_DTYPE 			:= $(if $(findstring tbox,$(base_LIBNAMES)),,$(DTYPE))
+demo_LIBS 			+= tbox$(tbox_DTYPE)
+demo_INC_DIRS 		+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT)
+demo_LIB_DIRS 	    += ../tbox
 
-# others
-demo_LIBS 										+= xmake$(DTYPE) lcurses$(DTYPE) tbox$(DTYPE) luajit$(DTYPE) sv$(DTYPE) lua-cjson$(DTYPE) $(BASE_LIBS)
-demo_INC_DIRS 									+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT) ../luajit/luajit/src ../sv/sv/include 
-demo_LIB_DIRS 									+= ../xmake ../tbox ../luajit ../sv ../lcurses ../lua-cjson
-demo_CXFLAGS 									+= -D__tb_prefix__=\"xmake\"
+# luajit
+luajit_LIBS 	   	:= $(if $(findstring luajit,$(base_LIBNAMES)),,luajit$(DTYPE))
+demo_LIBS 			+= $(luajit_LIBS)
+demo_INC_DIRS 	    += ../luajit/luajit/src
+demo_LIB_DIRS 		+= ../luajit
 
-# suffix
+# sv
+sv_DTYPE 			:= $(if $(findstring sv,$(base_LIBNAMES)),,$(DTYPE))
+demo_LIBS 			+= sv$(sv_DTYPE)
+demo_INC_DIRS 		+= ../sv/sv/include
+demo_LIB_DIRS 		+= ../sv
+
+# lua-cjson
+lua-cjson_LIBS 	   	:= $(if $(findstring cjson,$(base_LIBNAMES)),,lua-cjson$(DTYPE))
+demo_LIBS 			+= $(lua-cjson_LIBS)
+demo_LIB_DIRS 		+= ../lua-cjson
+
+demo_LIBS 			+= $(BASE_LIBS)
+
 include $(PRO_DIR)/suffix.mak
 

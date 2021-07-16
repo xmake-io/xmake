@@ -22,10 +22,10 @@
 import("core.base.option")
 import("core.base.global")
 import("core.base.task")
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
-import("core.platform.environment")
 import("core.theme.theme")
 import("private.utils.progress")
 import("build")
@@ -79,6 +79,19 @@ function _try_build()
     end
 end
 
+-- do global project rules
+function _do_project_rules(scriptname, opt)
+    for _, rulename in ipairs(project.get("target.rules")) do
+        local r = project.rule(rulename) or rule.rule(rulename)
+        if r and r:kind() == "project" then
+            local buildscript = r:script(scriptname)
+            if buildscript then
+                buildscript(opt)
+            end
+        end
+    end
+end
+
 -- main
 function main()
 
@@ -105,10 +118,14 @@ function main()
     -- clean up temporary files once a day
     cleaner.cleanup()
 
-    -- build it
     try
     {
         function ()
+
+            -- do rules before building
+            _do_project_rules("build_before")
+
+            -- do build
             local sourcefiles = option.get("files")
             if sourcefiles then
                 build_files(targetname, sourcefiles)
@@ -120,6 +137,11 @@ function main()
         catch
         {
             function (errors)
+
+                -- do rules after building
+                _do_project_rules("build_after", {errors = errors})
+
+                -- raise
                 if errors then
                     raise(errors)
                 elseif targetname then
@@ -130,6 +152,9 @@ function main()
             end
         }
     }
+
+    -- do rules after building
+    _do_project_rules("build_after")
 
     -- unlock the whole project
     project.unlock()

@@ -35,6 +35,20 @@ function _proxy_hosts()
 end
 
 -- get proxy pac file
+--
+-- pac.lua
+--
+-- @code
+-- function mirror(url)
+--     return url:gsub("github.com", "hub.fastgit.org")
+-- end
+-- function main(url, host)
+--    if host:find("bintray.com") then
+--        return true
+--    end
+-- end
+-- @endcode
+--
 function _proxy_pac()
     local proxy_pac = _g._PROXY_PAC
     if proxy_pac == nil then
@@ -64,13 +78,37 @@ function _host_pattern(pattern)
     return pattern
 end
 
+-- has main entry? it will be callable directly
+function _is_callable(func)
+    if type(func) == "function" then
+        return true
+    elseif type(func) == "table" then
+        local meta = debug.getmetatable(func)
+        if meta and meta.__call then
+            return true
+        end
+    end
+end
+
+-- get proxy mirror url
+function mirror(url)
+    local proxy_pac = _proxy_pac()
+    if proxy_pac and proxy_pac.mirror then
+        return proxy_pac.mirror(url)
+    end
+    return url
+end
+
 -- get proxy configuration from the given url, [protocol://]host[:port]
-function get(url)
+--
+-- @see https://github.com/xmake-io/xmake/issues/854
+--
+function config(url)
 
     -- enable proxy for the given url and configuration pattern
     if url then
 
-        -- get proxy from the given hosts pattern
+        -- filter proxy host from the given hosts pattern
         local host = url:match("://(.-)/") or url:match("@(.-):")
         local proxy_hosts = _proxy_hosts()
         if host and proxy_hosts then
@@ -83,9 +121,14 @@ function get(url)
             end
         end
 
-        -- get proxy from the pac file
+        -- filter proxy host from the pac file
         local proxy_pac = _proxy_pac()
-        if proxy_pac and proxy_pac(url, host) then
+        if proxy_pac and host and _is_callable(proxy_pac) and proxy_pac(url, host) then
+            return global.get("proxy")
+        end
+
+        -- use global proxy
+        if not proxy_pac and not proxy_hosts then
             return global.get("proxy")
         end
         return

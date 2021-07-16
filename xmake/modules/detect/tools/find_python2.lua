@@ -43,6 +43,7 @@ function main(opt)
     -- find program
     local program = find_program(opt.program or "python2", opt)
     if not program then
+        opt.force = true
         program = find_program("python", opt)
         opt.version = true
     end

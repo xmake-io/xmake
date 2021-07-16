@@ -242,69 +242,69 @@ tb_int_t xm_process_openv(lua_State* lua)
     if (inpath)
     {
         // redirect stdin to file
-        attr.inpath = inpath;
-        attr.inmode = TB_FILE_MODE_RO;
-        attr.intype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+        attr.in.path = inpath;
+        attr.inmode  = TB_FILE_MODE_RO;
+        attr.intype  = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
     else if (infile && xm_io_file_is_file(infile))
     {
         tb_file_ref_t rawfile = tb_null;
         if (tb_stream_ctrl(infile->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) && rawfile)
         {
-            attr.infile = rawfile;
-            attr.intype = TB_PROCESS_REDIRECT_TYPE_FILE;
+            attr.in.file = rawfile;
+            attr.intype  = TB_PROCESS_REDIRECT_TYPE_FILE;
         }
     }
     else if (inpipe)
     {
-        attr.inpipe = inpipe;
-        attr.intype = TB_PROCESS_REDIRECT_TYPE_PIPE;
+        attr.in.pipe = inpipe;
+        attr.intype  = TB_PROCESS_REDIRECT_TYPE_PIPE;
     }
 
     // redirect stdout?
     if (outpath)
     {
         // redirect stdout to file
-        attr.outpath = outpath;
-        attr.outmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+        attr.out.path = outpath;
+        attr.outmode  = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.outtype  = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
     else if (outfile && xm_io_file_is_file(outfile))
     {
         tb_file_ref_t rawfile = tb_null;
         if (tb_stream_ctrl(outfile->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) && rawfile)
         {
-            attr.outfile = rawfile;
-            attr.outtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+            attr.out.file = rawfile;
+            attr.outtype  = TB_PROCESS_REDIRECT_TYPE_FILE;
         }
     }
     else if (outpipe)
     {
-        attr.outpipe = outpipe;
-        attr.outtype = TB_PROCESS_REDIRECT_TYPE_PIPE;
+        attr.out.pipe = outpipe;
+        attr.outtype  = TB_PROCESS_REDIRECT_TYPE_PIPE;
     }
 
     // redirect stderr?
     if (errpath)
     {
         // redirect stderr to file
-        attr.errpath = errpath;
-        attr.errmode = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
-        attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
+        attr.err.path = errpath;
+        attr.errmode  = TB_FILE_MODE_RW | TB_FILE_MODE_TRUNC | TB_FILE_MODE_CREAT;
+        attr.errtype  = TB_PROCESS_REDIRECT_TYPE_FILEPATH;
     }
     else if (errfile && xm_io_file_is_file(errfile))
     {
         tb_file_ref_t rawfile = tb_null;
         if (tb_stream_ctrl(errfile->stream, TB_STREAM_CTRL_FILE_GET_FILE, &rawfile) && rawfile)
         {
-            attr.errfile = rawfile;
-            attr.errtype = TB_PROCESS_REDIRECT_TYPE_FILE;
+            attr.err.file = rawfile;
+            attr.errtype  = TB_PROCESS_REDIRECT_TYPE_FILE;
         }
     }
     else if (errpipe)
     {
-        attr.errpipe = errpipe;
-        attr.errtype = TB_PROCESS_REDIRECT_TYPE_PIPE;
+        attr.err.pipe = errpipe;
+        attr.errtype  = TB_PROCESS_REDIRECT_TYPE_PIPE;
     }
 
     // set the new environments

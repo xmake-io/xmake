@@ -43,7 +43,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    return "-I" .. os.args(dir)
+    return {"-I" .. dir}
 end
 
 -- make the sysincludedir flag

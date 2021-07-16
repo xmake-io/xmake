@@ -50,13 +50,17 @@ theme("default")
     set_color("build.object", "")
 
     -- the building target file
-    set_color("build.target", "magenta bright")
+    if is_subhost("windows") and (os.term() == "powershell" or os.term() == "pwsh") then
+        set_color("build.target", "cyan bright")
+    else
+        set_color("build.target", "magenta bright")
+    end
 
     -- the spinner chars
-    if not is_subhost("msys", "cygwin") then
-        set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
-    else
+    if (is_subhost("windows") and winos.version():lt("win10")) or is_subhost("msys", "cygwin") then
         set_text("spinner.chars", '\\', '-', '/', '|')
+    else
+        set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
     end
 
     -- color dump
@@ -70,15 +74,25 @@ theme("default")
     set_color("dump.default", "red")
     set_color("dump.udata", "yellow")
     set_color("dump.table", "bright")
-    set_color("dump.string", "magenta bright")
-    set_color("dump.string_quote", "magenta")
+    if is_subhost("windows") and (os.term() == "powershell" or os.term() == "pwsh") then
+        set_color("dump.string", "red bright")
+        set_color("dump.string_quote", "red")
+    else
+        set_color("dump.string", "magenta bright")
+        set_color("dump.string_quote", "magenta")
+    end
     set_color("dump.keyword", "blue")
     set_color("dump.number", "green bright")
     set_color("dump.function", "cyan")
 
     -- menu
-    set_color("menu.main.task.name", "magenta")
-    set_color("menu.option.name", "green")
+    if is_subhost("windows") and (os.term() == "powershell" or os.term() == "pwsh") then
+        set_color("menu.main.task.name", "cyan bright")
+        set_color("menu.option.name", "green bright")
+    else
+        set_color("menu.main.task.name", "magenta")
+        set_color("menu.option.name", "green")
+    end
     set_color("menu.usage", "cyan")
 
     -- interactive mode

@@ -19,38 +19,65 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.project.config")
 import("detect.sdks.find_ndk")
 import("detect.sdks.find_android_sdk")
 
 -- check the ndk toolchain
-function _check_ndk()
-    local ndk = find_ndk(config.get("ndk"), {force = true, verbose = true})
+function _check_ndk(toolchain)
+    local ndk
+    for _, package in ipairs(toolchain:packages()) do
+        local installdir = package:installdir()
+        if installdir and os.isdir(installdir) then
+            ndk = find_ndk(installdir, {force = true, verbose = option.get("verbose"),
+                                        plat = toolchain:plat(),
+                                        arch = toolchain:arch(),
+                                        sdkver = toolchain:config("sdkver")})
+            if ndk then
+                break
+            end
+        end
+    end
+    if not ndk then
+        ndk = find_ndk(toolchain:config("ndk") or config.get("ndk"), {force = true, verbose = true,
+                                                                      plat = toolchain:plat(),
+                                                                      arch = toolchain:arch(),
+                                                                      sdkver = toolchain:config("sdkver")})
+    end
     if ndk then
-        config.set("ndk", ndk.sdkdir, {force = true, readonly = true})
-        config.set("bin", ndk.bindir, {force = true, readonly = true})
-        config.set("cross", ndk.cross, {force = true, readonly = true})
-        config.set("gcc_toolchain", ndk.gcc_toolchain, {force = true, readonly = true})
+        toolchain:config_set("ndk", ndk.sdkdir)
+        toolchain:config_set("bindir", ndk.bindir)
+        toolchain:config_set("cross", ndk.cross)
+        toolchain:config_set("gcc_toolchain", ndk.gcc_toolchain)
+        toolchain:config_set("ndkver", ndk.ndkver)
+        toolchain:config_set("ndk_sdkver", ndk.sdkver)
+        toolchain:config_set("ndk_toolchains_ver", ndk.toolchains_ver)
+        toolchain:config_set("ndk_sysroot", ndk.sysroot)
+        toolchain:configs_save()
+        return true
     else
+        --[[TODO we need also add this tips when use remote ndk toolchain
         -- failed
         cprint("${bright color.error}please run:")
         cprint("    - xmake config --ndk=xxx")
         cprint("or  - xmake global --ndk=xxx")
-        raise()
+        raise()]]
     end
 end
 
 -- check the android sdk
-function _check_android_sdk()
-    local sdk = find_android_sdk(config.get("android_sdk"), {force = true, verbose = true})
+function _check_android_sdk(toolchain)
+    local sdk = find_android_sdk(toolchain:config("android_sdk") or config.get("android_sdk"), {force = true, verbose = toolchain:is_global()})
     if sdk then
-        config.set("sdk", sdk.sdkdir, {force = true, readonly = true})
+        toolchain:config_set("android_sdk", sdk.sdkdir)
+        toolchain:config_set("build_toolver", sdk.build_toolver)
+        toolchain:configs_save()
     end
 end
 
 -- main entry
 function main(toolchain)
-    _check_android_sdk()
-    _check_ndk()
-    return true
+    _check_android_sdk(toolchain)
+    return _check_ndk(toolchain)
 end

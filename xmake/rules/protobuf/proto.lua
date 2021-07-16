@@ -19,16 +19,10 @@
 --
 
 -- imports
-import("core.base.option")
-import("core.theme.theme")
-import("core.project.config")
-import("core.project.depend")
-import("core.tool.compiler")
 import("lib.detect.find_tool")
-import("private.utils.progress")
 
--- build protobuf file
-function main(target, sourcekind, sourcefile_proto, opt)
+-- get protoc
+function _get_protoc(target, sourcekind)
 
     -- find protoc
     local protoc = target:data("protobuf.protoc")
@@ -49,12 +43,21 @@ function main(target, sourcekind, sourcefile_proto, opt)
     end
 
     -- get protoc
-    protoc = assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
+    return assert(target:data(sourcekind == "cxx" and "protobuf.protoc" or "protobuf.protoc-c"), "protoc not found!")
+end
+
+-- generate build commands
+function buildcmd(target, batchcmds, sourcefile_proto, opt, sourcekind)
+
+    -- get protoc
+    local protoc = _get_protoc(target, sourcekind)
 
     -- get c/c++ source file for protobuf
     local prefixdir
+    local public
     local fileconfig = target:fileconfig(sourcefile_proto)
     if fileconfig then
+        public = fileconfig.proto_public
         prefixdir = fileconfig.proto_rootdir
     end
     local rootdir = path.join(target:autogendir(), "rules", "protobuf")
@@ -63,66 +66,23 @@ function main(target, sourcekind, sourcefile_proto, opt)
     local sourcefile_dir = prefixdir and path.join(rootdir, prefixdir) or path.directory(sourcefile_cx)
 
     -- add includedirs
-    target:add("includedirs", sourcefile_dir)
-
-    -- get object file
-    local objectfile = target:objectfile(sourcefile_cx)
-
-    -- load compiler
-    local compinst = compiler.load(sourcekind, {target = target})
-
-    -- get compile flags
-    local configs = {includedirs = sourcefile_dir}
-    if sourcekind == "cxx" then
-        configs.languages = "c++11"
-    end
-    local compflags = compinst:compflags({target = target, sourcefile = sourcefile_cx, configs = configs})
+    target:add("includedirs", sourcefile_dir, {public = public})
 
     -- add objectfile
+    local objectfile = target:objectfile(sourcefile_cx)
     table.insert(target:objectfiles(), objectfile)
 
-    -- load dependent info
-    local dependfile = target:dependfile(objectfile)
-    local dependinfo = option.get("rebuild") and {} or (depend.load(dependfile) or {})
+    -- add commands
+    batchcmds:mkdir(sourcefile_dir)
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
+    batchcmds:vrunv(protoc, {sourcefile_proto,
+        "-I" .. (prefixdir and prefixdir or path.directory(sourcefile_proto)),
+        (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir})
+    batchcmds:compile(sourcefile_cx, objectfile, {configs = {includedirs = sourcefile_dir, languages = (sourcekind == "cxx" and "c++11")}})
 
-    -- need build this object?
-    local depvalues = {compinst:program(), compflags}
-    if not depend.is_changed(dependinfo, {lastmtime = os.mtime(objectfile), values = depvalues}) then
-        return
-    end
-
-    -- trace progress info
-    progress.show(opt.progress, "${color.build.object}compiling.proto %s", sourcefile_proto)
-
-    -- ensure the source file directory
-    if not os.isdir(sourcefile_dir) then
-        os.mkdir(sourcefile_dir)
-    end
-
-    -- get compilation flags
-    local argv = {sourcefile_proto}
-    if prefixdir then
-        table.insert(argv, "-I" .. prefixdir)
-    else
-        table.insert(argv, "-I" .. path.directory(sourcefile_proto))
-    end
-    table.insert(argv, (sourcekind == "cxx" and "--cpp_out=" or "--c_out=") .. sourcefile_dir)
-
-    -- do compile
-    os.vrunv(protoc, argv)
-
-    -- trace
-    if option.get("verbose") then
-        print(compinst:compcmd(sourcefile_cx, objectfile, {compflags = compflags}))
-    end
-
-    -- compile c/c++ source file for protobuf
-    dependinfo.files = {}
-    assert(compinst:compile(sourcefile_cx, objectfile, {dependinfo = dependinfo, compflags = compflags}))
-
-    -- update files and values to the dependent file
-    dependinfo.values = depvalues
-    table.insert(dependinfo.files, sourcefile_proto)
-    depend.save(dependinfo, dependfile)
+    -- add deps
+    batchcmds:add_depfiles(sourcefile_proto)
+    batchcmds:set_depmtime(os.mtime(objectfile))
+    batchcmds:set_depcache(target:dependfile(objectfile))
 end
 

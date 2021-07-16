@@ -47,4 +47,12 @@ function nf_optimize(self, level)
     return maps[level]
 end
 
+-- make the symbol flag
+function nf_symbol(self, level)
+    local maps =
+    {
+        debug = "-g --d-debug"
+    }
+    return maps[level]
+end
 

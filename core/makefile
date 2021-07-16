@@ -53,23 +53,11 @@ install : .null
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR)
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR) install
 
-# make lipo
-lipo : .null
-	./tool/lipo $(PRO_NAME) $(DEBUG) $(SDK) $(ARCH1) $(ARCH2)
-
 # make clean
 clean : .null
 	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
 	@echo clean $(PRO_NAME)
 	+@$(MAKE) --no-print-directory -C $(SRC_DIR) clean
-
-# make update
-update : .null
-	@echo "" > $(TMP_DIR)/$(PRO_NAME).out
-	@echo update $(PRO_NAME)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) update
-	@$(MAKE) --no-print-directory -C $(SRC_DIR)
-	@$(MAKE) --no-print-directory -C $(SRC_DIR) install
 
 # make output
 output : .null
@@ -98,7 +86,7 @@ include project.mak
 # ######################################################################################
 # no-config
 # #
-all : 
+all :
 	make -r f
 	make -r r
 
@@ -119,9 +107,9 @@ update :
 	make -r f
 	make -r u
 
-output :	
-error :		
-warning :	
+output :
+error :
+warning :
 doc :
 	make -r f
 	make -r d
@@ -168,10 +156,10 @@ endif
 BUILD_ARCH 	:=$(if $(findstring windows,$(PLAT)),x86,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring msys,$(PLAT)),$(MSYSARCH),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring cygwin,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring macosx,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
+BUILD_ARCH 	:=$(if $(findstring macosx,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring linux,$(PLAT)),$(shell uname -m),$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring bsd,$(PLAT)),x$(shell getconf LONG_BIT),$(BUILD_ARCH))
-BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),armv7,$(BUILD_ARCH))
+BUILD_ARCH 	:=$(if $(findstring iphoneos,$(PLAT)),arm64,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring android,$(PLAT)),armv7,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring i686,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
 BUILD_ARCH 	:=$(if $(findstring x32,$(BUILD_ARCH)),i386,$(BUILD_ARCH))
@@ -239,8 +227,8 @@ TOOL_DIR 	:= $(PRO_DIR)/tool
 CXFLAG		:= $(if $(CXFLAG),$(CXFLAG),)
 
 # ccache
-CCACHE		:= 
-DISTCC		:= 
+CCACHE		:=
+DISTCC		:=
 
 # sed
 ifeq ($(HOST),macosx)
@@ -268,7 +256,7 @@ SHELL 		= bash
 endif
 ECHO 		:= echo -e
 
-# make upper 
+# make upper
 define MAKE_UPPER
 ${shell echo $(1) | $(SEDX) "s/\(.*\)/\U\1/g"}
 endef
@@ -280,15 +268,21 @@ base_LIBNAMES 	:= curses readline m dl pthread
 endif
 
 ifeq ($(PLAT),windows)
-base_LIBPATH 	:= 
+base_LIBPATH 	:=
 base_LIBNAMES 	:= ws2_32
 endif
 
 ifeq ($(PLAT),linux)
 base_LIBPATH 	:=
-base_LIBNAMES 	:= 
-base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi ) 
-base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) 
+base_LIBNAMES 	:=
+base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/tbox.c | $(CC) -xc - -ltbox -o /dev/null 2>/dev/null; }; then echo tbox; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/lua-cjson.c | $(CC) -xc - -llua5.1-cjson -lluajit-5.1 -o /dev/null 2>/dev/null; }; then echo lua5.1-cjson; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/sv.c | $(CC) -xc - -lsv -o /dev/null 2>/dev/null; }; then echo sv; fi )
+ifeq ($(LUAJIT_SYSTEM),y)
+base_LIBNAMES 	+= $(shell if { cat detect/luajit.c | $(CC) -xc - $(shell pkg-config --libs --cflags luajit) -o /dev/null 2>/dev/null; }; then echo luajit-5.1; fi )
+endif
 ifneq ($(TERMUX_ARCH),) # on termux/ci?
 base_LIBNAMES 	+= m dl
 else
@@ -298,20 +292,23 @@ endif
 
 ifeq ($(PLAT),bsd)
 base_LIBPATH 	:=
-base_LIBNAMES 	:= 
-base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi ) 
-base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi ) 
+base_LIBNAMES 	:=
+base_LIBNAMES 	+= $(shell if { cat detect/curses.c | $(CC) -xc - -lcurses -ltinfo -o /dev/null 2>/dev/null; }; then echo curses tinfo; fi )
+base_LIBNAMES 	+= $(shell if { cat detect/readline.c | $(CC) -xc - -lreadline -o /dev/null 2>/dev/null; }; then echo readline; fi )
 base_LIBNAMES 	+= m dl pthread
 endif
 
 # check jit compiler
 ifeq ($(PLAT),linux)
 luajit_JIT :=$(shell if [ -f "/etc/redhat-release" ]; then echo "nojit"; else echo "jit"; fi )
-ifeq ($(BUILD_ARCH),mips64) # maybe it is not very stable yet, we need to disable it 
+ifeq ($(BUILD_ARCH),mips64) # maybe it is not very stable yet, we need to disable it
 luajit_JIT :=nojit
 endif
 else
 luajit_JIT :=jit
+endif
+ifeq ($(PLAT),iphoneos)
+luajit_JIT :=nojit
 endif
 
 # select package directory

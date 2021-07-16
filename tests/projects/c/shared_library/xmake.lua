@@ -1,12 +1,12 @@
 add_rules("mode.release", "mode.debug")
 
-target("shared_library_c")
+target("foo")
     set_kind("shared")
-    add_files("src/interface.c")
+    add_files("src/foo.c")
 
 target("test")
     set_kind("binary")
-    add_deps("shared_library_c")
-    add_files("src/test.c")
+    add_deps("foo")
+    add_files("src/main.c")
 
 

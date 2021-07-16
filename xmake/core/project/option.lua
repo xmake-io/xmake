@@ -19,8 +19,8 @@
 --
 
 -- define module
-local option = option or {}
-local _instance = _instance or {}
+local option    = {}
+local _instance = {}
 
 -- load modules
 local io             = require("base/io")
@@ -39,6 +39,7 @@ local compiler       = require("tool/compiler")
 local sandbox        = require("sandbox/sandbox")
 local language       = require("language/language")
 local sandbox        = require("sandbox/sandbox")
+local sandbox_os     = require("sandbox/modules/os")
 local sandbox_module = require("sandbox/modules/import/core/sandbox/module")
 
 -- new an instance
@@ -435,7 +436,7 @@ function option.interpreter()
         ,   mode       = function() return config.get("mode") or "release" end
         ,   host       = os.host()
         ,   subhost    = os.subhost()
-        ,   prefix     = "$(prefix)"
+        ,   scriptdir  = function () return interp:pending() and interp:scriptdir() or sandbox_os.scriptdir() end
         ,   globaldir  = global.directory()
         ,   configdir  = config.directory()
         ,   projectdir = os.projectdir()

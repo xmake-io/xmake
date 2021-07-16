@@ -54,7 +54,7 @@ function sandbox_core_base_task.run(taskname, options, ...)
 
     -- get task instance
     local taskname = option.taskname() or "build"
-    local taskinst = project.task(taskname) or task.task(taskname)
+    local taskinst = task.task(taskname) or project.task(taskname)
     if not taskinst then
         raise("do unknown task(%s)!", taskname)
     end

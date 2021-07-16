@@ -67,7 +67,7 @@ cat debian/changelog
 
 # build package
 echo "building package .."
-debuild -S -k2C0C68C9
+debuild -S -k02713554FA2CE4AADA20AB23167A22F22C0C68C9
 
 # check package
 echo "checking package .."
@@ -116,4 +116,7 @@ rm -rf xmake-ppa
 # recv and import key on ubuntu
 # gpg --keyserver keyserver.ubuntu.com --recv 2C0C68C9
 # gpg --export --armor 2C0C68C9 | sudo apt-key add -
+#
+# show long key
+# gpg --keyid-format long --list-keys waruqi@gmail.com
 #

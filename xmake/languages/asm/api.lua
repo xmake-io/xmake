@@ -75,7 +75,6 @@ function apis()
     {
         -- target.add_xxx
         "target.add_headers"    -- TODO deprecated
-    ,   "target.add_headerdirs"
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"

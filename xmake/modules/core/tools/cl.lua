@@ -85,7 +85,6 @@ function init(self)
 
         -- others
     ,   ["-ftrapv"]                 = ""
-    ,   ["-fsanitize=address"]      = ""
     })
 end
 
@@ -260,9 +259,7 @@ end
 
 -- make the includedir flag
 function nf_includedir(self, dir)
-    -- @note we use os.args() to escape and wrap it,
-    -- because all flags will be preprocessed in `builder:_preprocess_flags`/`os.argv()`
-    return "-I" .. os.args(path.translate(dir))
+    return {"-I" .. path.translate(dir)}
 end
 
 -- make the sysincludedir flag
@@ -276,7 +273,7 @@ function nf_sysincludedir(self, dir)
         _g._HAS_EXTERNAL_INCLUDEDIR = has_external_includedir
     end
     if has_external_includedir then
-        return {"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}
+        return {"-experimental:external", "-external:W0", "-external:I" .. path.translate(dir)}
     else
         return nf_includedir(self, dir)
     end
@@ -293,9 +290,7 @@ function nf_pcheader(self, pcheaderfile, target)
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("c") .. ".obj")
         end
-
-        -- make flag
-        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. os.args(target:pcoutputfile("c"))
+        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-Fp" .. target:pcoutputfile("c")}
     end
 end
 
@@ -310,9 +305,7 @@ function nf_pcxxheader(self, pcheaderfile, target)
         if objectfiles then
             table.insert(objectfiles, target:pcoutputfile("cxx") .. ".obj")
         end
-
-        -- make flag
-        return "-Yu" .. path.filename(pcheaderfile) .. " -FI" .. path.filename(pcheaderfile) .. " -Fp" .. os.args(target:pcoutputfile("cxx"))
+        return {"-Yu" .. path.filename(pcheaderfile), "-FI" .. path.filename(pcheaderfile), "-Fp" .. target:pcoutputfile("cxx")}
     end
 end
 
@@ -388,7 +381,6 @@ function compargv(self, sourcefile, objectfile, flags, opt)
     end
 
     -- make the compile arguments list
-    -- @note only flags in nf_xxx() need be wrapped via os.args, @see nf_includedir
     local argv = table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
     return self:program(), (opt and opt.rawargs) and argv or winos.cmdargv(argv)
 end
@@ -474,7 +466,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                             end
                         end
                         if #lines > 0 then
-                            local warnings = table.concat(table.slice(lines, 1, ifelse(#lines > 8, 8, #lines)), "\r\n")
+                            local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\r\n")
                             if progress.showing_without_scroll() then
                                 print("")
                             end

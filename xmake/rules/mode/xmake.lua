@@ -20,7 +20,7 @@
 
 -- define rule: debug mode
 rule("mode.debug")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is debug mode now? xmake f -m debug
         if is_mode("debug") then
@@ -39,13 +39,13 @@ rule("mode.debug")
 
 -- define rule: release mode
 rule("mode.release")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is release mode now? xmake f -m release
         if is_mode("release") then
 
             -- set the symbols visibility: hidden
-            if not target:get("symbols") and target:targetkind() ~= "shared" then
+            if not target:get("symbols") and target:kind() ~= "shared" then
                 target:set("symbols", "hidden")
             end
 
@@ -62,12 +62,15 @@ rule("mode.release")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
 -- define rule: release with debug symbols mode
 rule("mode.releasedbg")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is releasedbg mode now? xmake f -m releasedbg
         if is_mode("releasedbg") then
@@ -90,12 +93,15 @@ rule("mode.releasedbg")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
 -- define rule: release with minsize mode
 rule("mode.minsizerel")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is minsizerel mode now? xmake f -m minsizerel
         if is_mode("minsizerel") then
@@ -114,12 +120,15 @@ rule("mode.minsizerel")
             if not target:get("strip") then
                 target:set("strip", "all")
             end
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
 -- define rule: profile mode
 rule("mode.profile")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is profile mode now? xmake f -m profile
         if is_mode("profile") then
@@ -142,12 +151,15 @@ rule("mode.profile")
             target:add("cxflags", "-pg")
             target:add("mxflags", "-pg")
             target:add("ldflags", "-pg")
+
+            -- enable NDEBUG macros to disables standard-C assertions
+            target:add("cxflags", "-DNDEBUG")
         end
     end)
 
 -- define rule: coverage mode
 rule("mode.coverage")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is coverage mode now? xmake f -m coverage
         if is_mode("coverage") then
@@ -171,7 +183,7 @@ rule("mode.coverage")
 
 -- define rule: asan mode
 rule("mode.asan")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is asan mode now? xmake f -m asan
         if is_mode("asan") then
@@ -200,7 +212,7 @@ rule("mode.asan")
 
 -- define rule: tsan mode
 rule("mode.tsan")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is tsan mode now? xmake f -m tsan
         if is_mode("tsan") then
@@ -229,7 +241,7 @@ rule("mode.tsan")
 
 -- define rule: msan mode
 rule("mode.msan")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is msan mode now? xmake f -m msan
         if is_mode("msan") then
@@ -258,7 +270,7 @@ rule("mode.msan")
 
 -- define rule: lsan mode
 rule("mode.lsan")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is lsan mode now? xmake f -m lsan
         if is_mode("lsan") then
@@ -287,7 +299,7 @@ rule("mode.lsan")
 
 -- define rule: ubsan mode
 rule("mode.ubsan")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is ubsan mode now? xmake f -m ubsan
         if is_mode("ubsan") then
@@ -316,7 +328,7 @@ rule("mode.ubsan")
 
 -- define rule: valgrind mode
 rule("mode.valgrind")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is valgrind mode now? xmake f -m valgrind
         if is_mode("valgrind") then
@@ -339,7 +351,7 @@ rule("mode.valgrind")
 
 -- define rule: check mode (deprecated)
 rule("mode.check")
-    after_load(function (target)
+    on_config(function (target)
 
         -- is check mode now? xmake f -m check
         if is_mode("check") then

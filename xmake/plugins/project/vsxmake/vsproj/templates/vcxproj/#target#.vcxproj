@@ -45,6 +45,7 @@
   </ItemGroup>
   <ItemGroup>
 #Import(File.rc)#
+#Import(File.ui)#
   </ItemGroup>
   <!-- <ItemGroup>
 #Import(ProjectRef)#

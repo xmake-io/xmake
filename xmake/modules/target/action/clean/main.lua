@@ -26,7 +26,7 @@ import("private.action.clean.remove_files")
 function main(target)
 
     -- is phony?
-    if target:isphony() then
+    if target:is_phony() then
         return
     end
 

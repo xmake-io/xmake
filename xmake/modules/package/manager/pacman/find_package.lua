@@ -21,7 +21,7 @@
 -- imports
 import("core.base.option")
 import("lib.detect.find_tool")
-import("package.manager.pkg_config.find_package", {alias = "find_package_from_pkgconfig"})
+import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- find package from the system directories
 --
@@ -51,15 +51,13 @@ function main(name, opt)
     end
 
     -- parse package files list
-    local pkgconfig_dir = nil
-    local pkgconfig_name = nil
     local linkdirs = {}
     local has_includes = false
+    local pkgconfig_files = {}
     for _, line in ipairs(list:split('\n', {plain = true})) do
         line = line:trim():split('%s+')[2]
-        if not pkgconfig_dir and line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
-            pkgconfig_dir  = path.directory(line)
-            pkgconfig_name = path.basename(line)
+        if line:find("/pkgconfig/", 1, true) and line:endswith(".pc") then
+            pkgconfig_files[path.basename(line)] = line
         end
         if line:endswith(".so") or line:endswith(".a") or line:endswith(".lib") then
             table.insert(linkdirs, path.directory(line))
@@ -68,12 +66,23 @@ function main(name, opt)
         end
     end
 
+    -- get pkgconfig file
+    local pkgconfig_file = pkgconfig_files[name]
+    if not pkgconfig_file then
+        for _, file in pairs(pkgconfig_files) do
+            pkgconfig_file = file
+            break
+        end
+    end
+
     -- find package
     local result = nil
-    if pkgconfig_dir then
+    if pkgconfig_file then
+        local pkgconfig_dir = path.directory(pkgconfig_file)
+        local pkgconfig_name = path.basename(pkgconfig_file)
         linkdirs = table.unique(linkdirs)
         includedirs = table.unique(includedirs)
-        result = find_package_from_pkgconfig(pkgconfig_name or name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
+        result = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
         if not result and has_includes then
             -- header only and hidden /usr/include? we need only return empty {}
             result = {}

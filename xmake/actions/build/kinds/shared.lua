@@ -31,7 +31,7 @@ import("object", {alias = "add_batchjobs_for_object"})
 function _do_link_target(target, opt)
 
     -- load linker instance
-    local linkinst = linker.load(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkinst = linker.load(target:kind(), target:sourcekinds(), {target = target})
 
     -- get link flags
     local linkflags = linkinst:linkflags({target = target})
@@ -42,7 +42,7 @@ function _do_link_target(target, opt)
     -- need build this target?
     local depfiles = objectfiles
     for _, dep in ipairs(target:orderdeps()) do
-        if dep:targetkind() == "static" then
+        if dep:kind() == "static" then
             if depfiles == objectfiles then
                 depfiles = table.copy(objectfiles)
             end
@@ -150,7 +150,7 @@ function main(batchjobs, rootjob, target)
     -- add link job
     local job_link = batchjobs:addjob(target:name() .. "/link", function (index, total)
         _link_target(target, {progress = (index * 100) / total})
-    end, rootjob)
+    end, {rootjob = rootjob})
 
     -- we need only return and depend the link job for each target,
     -- so we can compile the source files for each target in parallel

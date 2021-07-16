@@ -59,10 +59,8 @@ language("dlang")
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         ,   "target.includedirs"
-        ,   "option.includedirs"
         ,   "toolchain.includedirs"
         ,   "target.sysincludedirs"
-        ,   "option.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
     ,   binary =
@@ -72,17 +70,13 @@ language("dlang")
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
-        ,   "option.rpathdirs"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "option.links"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
-        ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   shared =
@@ -91,15 +85,12 @@ language("dlang")
         ,   "target.linkdirs"
         ,   "target.strip"
         ,   "target.symbols"
-        ,   "option.linkdirs"
         ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
-        ,   "option.links"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
-        ,   "option.syslinks"
         ,   "toolchain.syslinks"
         }
     ,   static =

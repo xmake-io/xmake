@@ -31,9 +31,9 @@ function main(toolchain)
     end
 
     -- we need find ldc2 and gdc in the given toolchain sdk directory
-    local sdkdir = config.get("sdk")
-    local bindir = config.get("bin")
-    local cross  = config.get("cross")
+    local sdkdir = toolchain:sdkdir()
+    local bindir = toolchain:bindir()
+    local cross  = toolchain:cross()
     if not sdkdir and not bindir and not cross then
         return
     end
@@ -41,9 +41,10 @@ function main(toolchain)
     -- find cross toolchain
     local cross_toolchain = find_cross_toolchain(sdkdir, {bindir = bindir, cross = cross})
     if cross_toolchain then
-        config.set("cross", cross_toolchain.cross, {readonly = true, force = true})
-        config.set("bin", cross_toolchain.bindir, {readonly = true, force = true})
-        config.set("sdkdir", cross_toolchain.sdkdir, {readonly = true, force = true})
+        toolchain:config_set("cross", cross_toolchain.cross)
+        toolchain:config_set("bindir", cross_toolchain.bindir)
+        toolchain:config_set("sdkdir", cross_toolchain.sdkdir)
+        toolchain:configs_save()
     else
         raise("cross toolchain not found!")
     end

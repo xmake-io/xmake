@@ -24,10 +24,8 @@ function apis()
     -- init apis
     _g.values =
     {
-        -- target.set_xxx
-        "target.set_config_h_prefix" -- deprecated
         -- target.add_xxx
-    ,   "target.add_links"
+        "target.add_links"
     ,   "target.add_syslinks"
     ,   "target.add_mflags"
     ,   "target.add_mxflags"
@@ -37,8 +35,6 @@ function apis()
     ,   "target.add_shflags"
     ,   "target.add_defines"
     ,   "target.add_undefines"
-    ,   "target.add_defines_h"
-    ,   "target.add_undefines_h"
     ,   "target.add_frameworks"
     ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
         -- option.add_xxx
@@ -57,11 +53,7 @@ function apis()
     ,   "option.add_arflags"
     ,   "option.add_shflags"
     ,   "option.add_defines"
-    ,   "option.add_defines_if_ok"
-    ,   "option.add_defines_h_if_ok"
     ,   "option.add_undefines"
-    ,   "option.add_undefines_if_ok"
-    ,   "option.add_undefines_h_if_ok"
     ,   "option.add_frameworks"
     ,   "option.add_rpathdirs"
         -- toolchain.add_xxx
@@ -86,13 +78,11 @@ function apis()
     {
         -- target.set_xxx
         "target.set_headerdir"      -- TODO deprecated
-    ,   "target.set_config_h"       -- TODO deprecated
     ,   "target.set_config_header"
     ,   "target.set_pcheader"
     ,   "target.set_pcxxheader"
         -- target.add_xxx
     ,   "target.add_headers"        -- TODO deprecated
-    ,   "target.add_headerdirs"
     ,   "target.add_headerfiles"
     ,   "target.add_linkdirs"
     ,   "target.add_includedirs"

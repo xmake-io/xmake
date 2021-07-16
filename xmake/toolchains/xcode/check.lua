@@ -29,7 +29,7 @@ function main(toolchain)
     -- find xcode
     local xcode_sdkver = toolchain:config("xcode_sdkver") or config.get("xcode_sdkver")
     local xcode = find_xcode(config.get("xcode"), {force = true, verbose = true,
-                                                   find_codesign = toolchain:global(),
+                                                   find_codesign = toolchain:is_global(),
                                                    sdkver = xcode_sdkver,
                                                    plat = toolchain:plat(),
                                                    arch = toolchain:arch()})
@@ -40,7 +40,7 @@ function main(toolchain)
 
     -- xcode found
     xcode_sdkver = xcode.sdkver
-    if toolchain:global() then
+    if toolchain:is_global() then
         config.set("xcode", xcode.sdkdir, {force = true, readonly = true})
         config.set("xcode_mobile_provision", xcode.mobile_provision, {force = true, readonly = true})
         config.set("xcode_codesign_identity", xcode.codesign_identity, {force = true, readonly = true})
@@ -59,6 +59,26 @@ function main(toolchain)
         end
     end
 
+    -- save xcode sysroot directory
+    local xcode_sysroot
+    if xcode.sdkdir and xcode_sdkver then
+        if toolchain:is_plat("macosx") then
+            xcode_sysroot = xcode.sdkdir .. "/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX" .. xcode_sdkver .. ".sdk"
+        elseif toolchain:is_plat("iphoneos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "iPhoneSimulator" or "iPhoneOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        elseif toolchain:is_plat("watchos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "WatchSimulator" or "WatchOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        elseif toolchain:is_plat("appletvos") then
+            local platname = toolchain:is_arch("i386", "x86_64") and "AppleTVSimulator" or "AppleTVOS"
+            xcode_sysroot  = format("%s/Contents/Developer/Platforms/%s.platform/Developer/SDKs/%s%s.sdk", xcode.sdkdir, platname, platname, xcode_sdkver)
+        end
+    end
+    if xcode_sysroot then
+        toolchain:config_set("xcode_sysroot", xcode_sysroot)
+    end
+
     -- save target minver
     --
     -- @note we need to differentiate the version for the system,
@@ -69,7 +89,7 @@ function main(toolchain)
     -- target("test")
     --     set_toolchains("xcode", {plat = os.host(), arch = os.arch()})
     --
-    local target_minver = toolchain:config("target_minver") and config.get("target_minver")
+    local target_minver = toolchain:config("target_minver") or config.get("target_minver")
     if xcode_sdkver and not target_minver then
         target_minver = xcode_sdkver
         if toolchain:is_plat("macosx") then

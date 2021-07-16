@@ -23,9 +23,8 @@ import("core.base.option")
 import("core.base.process")
 import("core.project.config")
 import("core.platform.platform")
-import("core.platform.environment")
 import("private.action.update.fetch_version")
-import("private.action.require.packagenv")
+import("private.action.require.impl.packagenv")
 
 -- statistics is enabled?
 function _is_enabled()
@@ -89,7 +88,7 @@ function post()
     try
     {
         function ()
-            process.openv("xmake", argv, {stdout = path.join(os.tmpdir(), projectname .. ".stats.log")}, {detach = true}):close()
+            process.openv("xmake", argv, {stdout = path.join(os.tmpdir(), projectname .. ".stats.log"), detach = true}):close()
         end
     }
 
@@ -111,11 +110,8 @@ function main()
     -- load platform
     platform.load(config.plat())
 
-    -- enter environment
-    environment.enter("toolchains")
-
     -- enter the environments of git
-    packagenv.enter("git")
+    local oldenvs = packagenv.enter("git")
 
     -- get the project directory name
     local projectname = path.basename(os.projectdir())
@@ -143,8 +139,5 @@ function main()
     end
 
     -- leave the environments of git
-    packagenv.leave("git")
-
-    -- leave environment
-    environment.leave("toolchains")
+    os.setenvs(oldenvs)
 end

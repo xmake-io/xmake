@@ -53,7 +53,11 @@ theme("powershell")
     set_color("build.target", "cyan bright")
 
     -- the spinner chars
-    set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+    if (is_subhost("windows") and winos.version():lt("win10")) or is_subhost("msys", "cygwin") then
+        set_text("spinner.chars", '\\', '-', '/', '|')
+    else
+        set_text("spinner.chars", '⠋', '⠙', '⠹', '⠸', '⠼', '⠴', '⠦', '⠧', '⠇', '⠏')
+    end
 
     -- color dump
     set_text("dump.default_format", "%s")

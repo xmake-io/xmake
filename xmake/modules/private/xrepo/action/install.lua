@@ -32,14 +32,20 @@ function menu_options()
     {
         {'k', "kind",          "kv", nil, "Enable static/shared library.",
                                        values = {"static", "shared"}         },
-        {'p', "plat",          "kv", nil, "Set the given platform."             },
-        {'a', "arch",          "kv", nil, "Set the given architecture."         },
+        {'p', "plat",          "kv", nil, "Set the given platform."          },
+        {'a', "arch",          "kv", nil, "Set the given architecture."      },
         {'m', "mode",          "kv", nil, "Set the given mode.",
                                        values = {"release", "debug"}         },
         {'f', "configs",       "kv", nil, "Set the given extra package configs.",
                                        "e.g.",
                                        "    - xrepo install -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
+        {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+                                          "Set the number of parallel compilation jobs."},
+        {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."},
+        {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",
+                                       "e.g.",
+                                       "    -- xrepo install -p cross --toolchain=mytool --includes='toolchain1.lua" .. path.envsep() .. "toolchain2.lua'"},
         {category = "Visual Studio SDK Configuration"                        },
         {nil, "vs",            "kv", nil, "The Microsoft Visual Studio"
                                         , "  e.g. --vs=2017"                 },
@@ -61,6 +67,7 @@ function menu_options()
         {category = "Other Configuration"                                    },
         {nil, "force",         "k",  nil, "Force to reinstall all package dependencies."},
         {nil, "shallow",       "k",  nil, "Does not install dependent packages."},
+        {nil, "build",         "k",  nil, "Always build and install packages from source."},
         {},
         {nil, "packages",      "vs", nil, "The packages list.",
                                        "e.g.",
@@ -164,7 +171,8 @@ function _install_packages(packages)
     if option.get("target_minver") then
         table.insert(config_argv, "--target_minver=" .. option.get("target_minver"))
     end
-    os.vrunv("xmake", config_argv)
+    local envs = {XMAKE_RCFILES = option.get("includes")}
+    os.vrunv("xmake", config_argv, {envs = envs})
 
     -- do install
     local require_argv = {"require"}
@@ -177,11 +185,21 @@ function _install_packages(packages)
     if option.get("diagnosis") then
         table.insert(require_argv, "-D")
     end
+    if option.get("jobs") then
+        table.insert(require_argv, "-j")
+        table.insert(require_argv, option.get("jobs"))
+    end
+    if option.get("linkjobs") then
+        table.insert(require_argv, "--linkjobs=" .. option.get("linkjobs"))
+    end
     if option.get("force") then
         table.insert(require_argv, "--force")
     end
     if option.get("shallow") then
         table.insert(require_argv, "--shallow")
+    end
+    if option.get("build") then
+        table.insert(require_argv, "--build")
     end
     local extra = {system = false}
     if mode == "debug" then
@@ -207,7 +225,7 @@ function _install_packages(packages)
         table.insert(require_argv, "--extra=" .. extra_str)
     end
     table.join2(require_argv, packages)
-    os.vexecv("xmake", require_argv)
+    os.vexecv("xmake", require_argv, {envs = envs})
 end
 
 -- main entry

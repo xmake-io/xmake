@@ -31,9 +31,21 @@ import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
 import("core.cache.memcache")
 import("core.cache.localcache")
-import("actions.require.install", {alias = "install_requires", rootdir = os.programdir()})
+import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
+
+-- clear cache configuration
+function _clear_cacheconf()
+    config.clear()
+    config.save()
+    localcache.clear("config")
+    localcache.clear("detect")
+    localcache.clear("option")
+    localcache.clear("package")
+    localcache.clear("toolchain")
+    localcache.save()
+end
 
 -- make target info
 function _make_targetinfo(mode, arch, target)
@@ -60,7 +72,7 @@ function _make_targetinfo(mode, arch, target)
     targetinfo.symbols = target:get("symbols")
 
     -- save target kind
-    targetinfo.targetkind = target:targetkind()
+    targetinfo.targetkind = target:kind()
 
     -- save target file
     targetinfo.targetfile = target:targetfile()
@@ -96,7 +108,7 @@ function _make_targetinfo(mode, arch, target)
     end
 
     -- save linker flags
-    local linkflags = linker.linkflags(target:targetkind(), target:sourcekinds(), {target = target})
+    local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
     -- use mfc? save the mfc runtime kind
@@ -122,7 +134,7 @@ end
 function _make_targetheaders(mode, arch, target, last)
 
     -- only for static and shared target
-    local kind = target:targetkind()
+    local kind = target:kind()
     if kind == "static" or kind == "shared" then
 
         -- TODO make headers, (deprecated)
@@ -208,6 +220,29 @@ function _make_vsinfo_archs()
     return vsinfo_archs
 end
 
+-- config target
+function _config_target(target)
+    for _, rule in ipairs(target:orderules()) do
+        local on_config = rule:script("config")
+        if on_config then
+            on_config(target)
+        end
+    end
+    local on_config = target:script("config")
+    if on_config then
+        on_config(target)
+    end
+end
+
+-- config targets
+function _config_targets()
+    for _, target in ipairs(project.ordertargets()) do
+        if target:is_enabled() then
+            _config_target(target)
+        end
+    end
+end
+
 -- make vstudio project
 function make(outputdir, vsinfo)
 
@@ -261,6 +296,9 @@ function make(outputdir, vsinfo)
                 -- install and update requires
                 install_requires()
 
+                -- config targets
+                _config_targets()
+
                 -- update config files
                 generate_configfiles()
                 generate_configheader()
@@ -271,7 +309,7 @@ function make(outputdir, vsinfo)
 
             -- save targets
             for targetname, target in pairs(project.targets()) do
-                if not target:isphony() then
+                if not target:is_phony() then
 
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
@@ -283,7 +321,7 @@ function make(outputdir, vsinfo)
 
                     -- init target info
                     _target.name = targetname
-                    _target.kind = target:targetkind()
+                    _target.kind = target:kind()
                     _target.scriptdir = target:scriptdir()
                     _target.info = _target.info or {}
                     table.insert(_target.info, _make_targetinfo(mode, arch, target))
@@ -307,6 +345,9 @@ function make(outputdir, vsinfo)
         vs201x_vcxproj.make(vsinfo, target)
         vs201x_vcxproj_filters.make(vsinfo, target)
     end
+
+    -- clear config and local cache
+    _clear_cacheconf()
 
     -- leave project directory
     os.cd(oldir)

@@ -100,6 +100,9 @@
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx1z'))">stdcpp17</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx20'))">stdcpplatest</LanguageStandard>
       <LanguageStandard Condition="'%(LanguageStandard)' == '' And $(XmakeLanguages.Contains('gnuxx2a'))">stdcpplatest</LanguageStandard>
+      <PrecompiledHeader Condition="'%(PrecompiledHeader)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">Use</PrecompiledHeader>
+      <PrecompiledHeaderFile Condition="'%(PrecompiledHeaderFile)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">$(XmakeProjectDir)\$(XmakePrecompiledHeader)</PrecompiledHeaderFile>
+      <ForcedIncludeFiles Condition="'%(ForcedIncludeFiles)' == '' And $(XmakePrecompiledHeader.Contains('.h'))">$(XmakeProjectDir)\$(XmakePrecompiledHeader);%(ForcedIncludeFiles)</ForcedIncludeFiles>
     </ClCompile>
 
     <Link>

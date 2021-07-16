@@ -314,18 +314,18 @@ function utils.confirm(opt)
     local description = opt.description or ""
 
     -- get confirm result
-    local confirm = option.get("yes") or option.get("confirm")
-    if type(confirm) == "string" then
-        confirm = confirm:lower()
-        if confirm == "d" or confirm == "def" then
-            confirm = default
+    local result = option.get("yes") or option.get("confirm")
+    if type(result) == "string" then
+        result = result:lower()
+        if result == "d" or result == "def" then
+            result = default
         else
-            confirm = nil
+            result = nil
         end
     end
 
     -- get user confirm
-    if confirm == nil then
+    if result == nil then
 
         -- show tips
         if type(description) == "function" then
@@ -333,16 +333,20 @@ function utils.confirm(opt)
         else
             utils.cprint("${bright color.warning}note: ${clear}%s (pass -y or --confirm=y/n/d to skip confirm)?", description)
         end
-        utils.cprint("please input: ${bright}%s${clear} (y/n)", default and "y" or "n")
 
         -- get answer
-        io.flush()
-        confirm = option.boolean((io.read() or "false"):trim())
-        if type(confirm) ~= "boolean" then
-            confirm = default
+        if opt.answer then
+            result = opt.answer()
+        else
+            utils.cprint("please input: ${bright}%s${clear} (y/n)", default and "y" or "n")
+            io.flush()
+            result = option.boolean((io.read() or "false"):trim())
+            if type(result) ~= "boolean" then
+                result = default
+            end
         end
     end
-    return confirm
+    return result
 end
 
 function utils.table(data, opt)

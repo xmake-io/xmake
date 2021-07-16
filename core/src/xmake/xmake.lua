@@ -1,4 +1,3 @@
--- add target
 target("xmake")
 
     -- make as a static library
@@ -40,5 +39,5 @@ target("xmake")
     if is_plat("windows") then
         add_defines("UNICODE", "_UNICODE")
     end
- 
+
 

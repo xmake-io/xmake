@@ -94,14 +94,19 @@
       Text="$(XmakeProjectFile) not found at '$(XmakeProjectDirResolved)', please set XmakeProjectDir in vcxproj file" />
   </Target>
   <Target Name="_XmakeConfig" DependsOnTargets="_XmakeProjCheck">
-    <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" />
+    <Message Text="$xmake config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
-      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" EchoOff="true" />
+      $(_XmakeExecutable) config $(_XmakeCommonFlags) $(_XmakeConfigFlags)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
   <Target Name="_XmakeBuild" DependsOnTargets="_XmakeProjCheck">
-    <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" />
+    <Message Text="$xmake build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
-      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true" />
+      $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
+  </Target>
+  <Target Name="_XmakeRebuild" DependsOnTargets="_XmakeProjCheck">
+    <Message Text="$xmake build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
+    <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
+      $(_XmakeExecutable) build -r $(_XmakeCommonFlags) $(_XmakeBuildFlags) $(XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
   <Target Name="_XmakeBuildFile" DependsOnTargets="_XmakeProjCheck">
     <ItemGroup>
@@ -116,9 +121,9 @@
       $(_XmakeExecutable) build $(_XmakeCommonFlags) $(_XmakeBuildFileFlags) $(FileFlag) $(XmakeTarget)" EchoOff="true" />
   </Target>
   <Target Name="_XmakeClean" DependsOnTargets="_XmakeProjCheck">
-    <Message Text="$xmake clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(XmakeTarget)" Importance="High" />
+    <Message Text="$xmake clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(XmakeTarget)" Importance="High" Condition="'$(XmakeDefault)' != 'false'" />
     <Exec StdOutEncoding="utf-8" StdErrEncoding="utf-8" Command="$(_XmakeEnv)
-      $(_XmakeExecutable) clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(XmakeTarget)" EchoOff="true" />
+      $(_XmakeExecutable) clean $(_XmakeCommonFlags) $(_XmakeCleanFlags) $(XmakeTarget)" EchoOff="true" Condition="'$(XmakeDefault)' != 'false'" />
   </Target>
 
   <Target Name="Show">
@@ -130,6 +135,7 @@ MSBuild Properties:
     XmakeBasename: $(XmakeBasename)
     XmakeFilename: $(XmakeFilename)
     XmakeKind: $(XmakeKind)
+    XmakeDefault: $(XmakeDefault)
     XmakeCudaVersion: $(XmakeCudaVersion)
     XmakeWindowsSdkVersion: $(XmakeWindowsSdkVersion)
     XmakeMfcKind: $(XmakeMfcKind)
@@ -139,6 +145,7 @@ MSBuild Properties:
     XmakeIncludeDirs: $(XmakeIncludeDirs)
     XmakeLinkDirs: $(XmakeLinkDirs)
     XmakeSourceDirs: $(XmakeSourceDirs)
+    XmakePrecompiledHeader: $(XmakePrecompiledHeader)
     XmakeRunEnvs: $(XmakeRunEnvs)
   Xmake Path:
     XmakeProgramDir: $(XmakeProgramDir)
@@ -211,7 +218,7 @@ MSBuild Properties:
   <Target Name="Clean" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
     <CallTarget Targets="BeforeClean" />
-    <CallTarget Targets="_XmakeClean;_XmakeConfig" />
+    <CallTarget Targets="_XmakeConfig;_XmakeClean" />
     <CallTarget Targets="AfterClean" />
   </Target>
 
@@ -220,12 +227,7 @@ MSBuild Properties:
   <Target Name="Rebuild" Condition="'$(DesignTimeBuild)' != 'true'">
     <CallTarget Targets="Show" Condition="$(XmakeDiagnosis)" />
     <CallTarget Targets="BeforeRebuild" />
-    <CallTarget Targets="BeforeClean" />
-    <CallTarget Targets="_XmakeClean;_XmakeConfig" />
-    <CallTarget Targets="AfterClean" />
-    <CallTarget Targets="BeforeBuild" />
-    <CallTarget Targets="_XmakeBuild" />
-    <CallTarget Targets="AfterBuild" />
+    <CallTarget Targets="_XmakeConfig;_XmakeRebuild" />
     <CallTarget Targets="AfterRebuild" />
   </Target>
 

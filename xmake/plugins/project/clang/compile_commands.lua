@@ -20,8 +20,10 @@
 
 -- imports
 import("core.tool.compiler")
+import("core.project.rule")
 import("core.project.project")
 import("core.language.language")
+import("private.utils.batchcmds")
 
 -- escape path
 function _escape_path(p)
@@ -32,6 +34,7 @@ end
 -- https://github.com/xmake-io/xmake/issues/1050
 function _translate_arguments(arguments)
     local args = {}
+    local is_msvc = path.basename(arguments[1]):lower() == "cl"
     for _, arg in ipairs(arguments) do
         if arg:find("-isystem", 1, true) then
             arg = arg:replace("-isystem", "-I")
@@ -39,6 +42,15 @@ function _translate_arguments(arguments)
             arg = arg:gsub("[%-/]external:I", "-I")
         elseif arg:find("[%-/]external:W") or arg:find("[%-/]experimental:external") then
             arg = nil
+        -- escape '"' for the defines
+        -- https://github.com/xmake-io/xmake/issues/1506
+        elseif arg:find("^-D") then
+            arg = arg:gsub("\"", "\\\"")
+        end
+        -- @see use msvc-style flags for msvc to support language-server better
+        -- https://github.com/xmake-io/xmake/issues/1284
+        if is_msvc and arg and arg:startswith("-") then
+            arg = arg:gsub("^%-", "/")
         end
         if arg then
             table.insert(args, arg)
@@ -47,19 +59,22 @@ function _translate_arguments(arguments)
     return args
 end
 
--- make the object
-function _make_object(jsonfile, target, sourcefile, objectfile)
+-- make command
+function _make_arguments(jsonfile, arguments, sourcefile)
 
-    -- get the source file kind
-    local sourcekind = language.sourcekind_of(sourcefile)
-
-    -- make the object for the *.o/obj? ignore it directly
-    if sourcekind == "obj" or sourcekind == "lib" then
-        return
+    -- attempt to get source file from arguments
+    if not sourcefile then
+        for _, arg in ipairs(arguments) do
+            local sourcekind = try {function () return language.sourcekind_of(path.filename(arg)) end}
+            if sourcekind and os.isfile(arg) then
+                sourcefile = arg
+                break
+            end
+        end
+        if not sourcefile then
+            return
+        end
     end
-
-    -- get compile arguments
-    local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
 
     -- translate some unsupported arguments
     arguments = _translate_arguments(arguments)
@@ -82,15 +97,76 @@ function _make_object(jsonfile, target, sourcefile, objectfile)
     _g.firstline = false
 end
 
--- make objects
-function _make_objects(jsonfile, target, sourcekind, sourcebatch)
-    for index, objectfile in ipairs(sourcebatch.objectfiles) do
-        _make_object(jsonfile, target, sourcebatch.sourcefiles[index], objectfile)
+-- make commands for object rules
+function _make_commands_for_objectrules(jsonfile, target, sourcebatch, suffix)
+
+    -- get rule
+    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+
+    -- generate commands for xx_buildcmd_files
+    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        local batchcmds_ = batchcmds.new({target = target})
+        script(target, batchcmds_, sourcebatch, {})
+        if not batchcmds_:empty() then
+            for _, cmd in ipairs(batchcmds_:cmds()) do
+                if cmd.program then
+                    _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                end
+            end
+        end
     end
+
+    -- generate commands for xx_buildcmd_file
+    if not script then
+        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local batchcmds_ = batchcmds.new({target = target})
+                script(target, batchcmds_, sourcefile, {})
+                if not batchcmds_:empty() then
+                    for _, cmd in ipairs(batchcmds_:cmds()) do
+                        if cmd.program then
+                            _make_arguments(jsonfile, table.join(cmd.program, cmd.argv))
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- make commands for objects
+function _make_commands_for_objects(jsonfile, target, sourcebatch)
+    local sourcekind = sourcebatch.sourcekind
+    if sourcekind then
+        for index, sourcefile in ipairs(sourcebatch.sourcefiles) do
+            local objectfile = sourcebatch.objectfiles[index]
+            local arguments = table.join(compiler.compargv(sourcefile, objectfile, {target = target, sourcekind = sourcekind}))
+            _make_arguments(jsonfile, arguments, sourcefile)
+        end
+        return true
+    end
+end
+
+-- make objects
+function _make_objects(jsonfile, target, sourcebatch)
+    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "before")
+    if not _make_commands_for_objects(jsonfile, target, sourcebatch) then
+        _make_commands_for_objectrules(jsonfile, target, sourcebatch)
+    end
+    _make_commands_for_objectrules(jsonfile, target, sourcebatch, "after")
 end
 
 -- make target
 function _make_target(jsonfile, target)
+
+    -- enter package environments
+    local oldenvs = os.addenvs(target:pkgenvs())
 
     -- TODO
     -- disable precompiled header first
@@ -99,11 +175,11 @@ function _make_target(jsonfile, target)
 
     -- build source batches
     for _, sourcebatch in pairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind then
-            _make_objects(jsonfile, target, sourcekind, sourcebatch)
-        end
+        _make_objects(jsonfile, target, sourcebatch)
     end
+
+    -- restore package environments
+    os.setenvs(oldenvs)
 end
 
 -- make all
@@ -115,7 +191,7 @@ function _make_all(jsonfile)
     -- make commands
     _g.firstline = true
     for _, target in pairs(project.targets()) do
-        if not target:isphony() then
+        if not target:is_phony() then
             _make_target(jsonfile, target)
         end
     end

@@ -155,17 +155,21 @@ function builder:_add_flags_from_config(flags)
     end
 end
 
--- add flags from the option
-function builder:_add_flags_from_option(flags, opt)
-    for _, flagkind in ipairs(self:_flagkinds()) do
-        self:_add_flags_from_flagkind(flags, opt, flagkind)
+-- add flags from the target options
+function builder:_add_flags_from_targetopts(flags, target)
+    for _, opt in ipairs(target:orderopts()) do
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            self:_add_flags_from_flagkind(flags, opt, flagkind)
+        end
     end
 end
 
--- add flags from the package
-function builder:_add_flags_from_package(flags, pkg, target)
-    for _, flagkind in ipairs(self:_flagkinds()) do
-        table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+-- add flags from the target packages
+function builder:_add_flags_from_targetpkgs(flags, target)
+    for _, pkg in ipairs(target:orderpkgs()) do
+        for _, flagkind in ipairs(self:_flagkinds()) do
+            table.join2(flags, self:_mapflags(pkg:get(flagkind), flagkind, target))
+        end
     end
 end
 
@@ -174,6 +178,12 @@ function builder:_add_flags_from_target(flags, target)
 
     -- no target?
     if not target then
+        return
+    end
+
+    -- only for target and option
+    local target_type = target:type()
+    if target_type ~= "target" and target_type ~= "option" then
         return
     end
 
@@ -191,17 +201,13 @@ function builder:_add_flags_from_target(flags, target)
         self:_add_flags_from_language(targetflags, target)
 
         -- add flags for the target
-        if target:type() == "target" then
+        if target_type == "target" then
 
             -- add flags from options
-            for _, opt in ipairs(target:orderopts()) do
-                self:_add_flags_from_option(targetflags, opt)
-            end
+            self:_add_flags_from_targetopts(targetflags, target)
 
             -- add flags from packages
-            for _, pkg in ipairs(target:orderpkgs()) do
-                self:_add_flags_from_package(targetflags, pkg, target)
-            end
+            self:_add_flags_from_targetpkgs(targetflags, target)
 
             -- inherit flags (public/interface) from all dependent targets
             self:_inherit_flags_from_targetdeps(targetflags, target)
@@ -211,12 +217,8 @@ function builder:_add_flags_from_target(flags, target)
         for _, flagkind in ipairs(self:_flagkinds()) do
             self:_add_flags_from_flagkind(targetflags, target, flagkind)
         end
-
-        -- cache it
         cache[key] = targetflags
     end
-
-    -- add flags
     table.join2(flags, targetflags)
 end
 
@@ -225,11 +227,7 @@ function builder:_add_flags_from_argument(flags, target, args)
 
     -- add flags from the flag kinds (cxflags, ..)
     for _, flagkind in ipairs(self:_flagkinds()) do
-
-        -- add auto mapping flags
         table.join2(flags, self:_mapflags(args[flagkind], flagkind, target))
-
-        -- add original flags
         local original_flags = (args.force or {})[flagkind]
         if original_flags then
             table.join2(flags, original_flags)
@@ -237,16 +235,18 @@ function builder:_add_flags_from_argument(flags, target, args)
     end
 
     -- add flags (named) from the language
-    if target then
-        local key = target:type()
-        self:_add_flags_from_language(flags, target, {
-            [key] = function (name) return args[name] end,
-            toolchain = function (name) return platform.toolconfig(name) end})
-    else
-        self:_add_flags_from_language(flags, nil, {
-            target = function (name) return args[name] end,
-            toolchain = function (name) return platform.toolconfig(name) end})
-    end
+    self:_add_flags_from_language(flags, nil, {
+        target = function (name) return args[name] end,
+        toolchain = function (name)
+            local plat, arch
+            if target and target.plat then
+                plat = target:plat()
+            end
+            if target and target.arch then
+                arch = target:arch()
+            end
+            return platform.toolconfig(name, plat, arch)
+        end})
 end
 
 -- add flags from the language
@@ -275,28 +275,19 @@ function builder:_add_flags_from_language(flags, target, getters)
                             end
                         end
     ,   target      =   function (name)
-
-                            -- only for target
                             local results = {}
                             if target:type() == "target" then
-
-                                -- get flagvalues (public or interface) of all dependent targets
-                                table.join2(results, target:get_from_deps(name, {interface = true}))
 
                                 -- get flagvalues of target with given flagname
                                 table.join2(results, target:get(name))
-                            end
-                            return results
-                        end
-    ,   option      =   function (name)
 
-                            -- is target? get flagvalues of the attached options and packages
-                            local results = {}
-                            if target:type() == "target" then
+                                -- get flagvalues of the attached options and packages
                                 table.join2(results, target:get_from_opts(name))
                                 table.join2(results, target:get_from_pkgs(name))
 
-                            -- is option? get flagvalues of option with given flagname
+                                -- get flagvalues (public or interface) of all dependent targets (contain packages/options)
+                                table.join2(results, target:get_from_deps(name, {interface = true}))
+
                             elseif target:type() == "option" then
                                 table.join2(results, target:get(name))
                             end
@@ -317,16 +308,7 @@ function builder:_add_flags_from_language(flags, target, getters)
         if getter then
 
             -- get api name of tool
-            --
-            -- ignore "nf_" and "_if_ok" (deprecated)
-            --
-            -- e.g.
-            --
-            -- defines => define
-            -- defines_if_ok => define
-            -- ...
-            --
-            local apiname  = flagname:gsub("^nf_", ""):gsub("_if_ok$", "")
+            local apiname  = flagname:gsub("^nf_", "")
 
             -- use multiple values mapper if be defined in tool module
             local multival = false
@@ -345,14 +327,14 @@ function builder:_add_flags_from_language(flags, target, getters)
                     local results = mapper(self:_tool(), table.wrap(getter(flagname)), target, self:_targetkind())
                     for _, flag in ipairs(table.wrap(results)) do
                         if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.join2(flags, flag)
+                            table.insert(flags, flag)
                         end
                     end
                 else
                     for _, flagvalue in ipairs(table.wrap(getter(flagname))) do
                         local flag = mapper(self:_tool(), flagvalue, target, self:_targetkind())
                         if flag and flag ~= "" and (not checkstate or self:has_flags(flag)) then
-                            table.join2(flags, flag)
+                            table.insert(flags, flag)
                         end
                     end
                 end
@@ -364,23 +346,46 @@ end
 -- preprocess flags
 function builder:_preprocess_flags(flags)
 
-    -- remove repeat
-    flags = table.unique(flags)
+    -- remove repeat by right direction, because we need consider links/deps order
+    -- @note https://github.com/xmake-io/xmake/issues/1240
+    local unique = {}
+    local count = #flags
+    if count > 1 then
+        local flags_new = {}
+        for idx = count, 1, -1 do
+            local flag = flags[idx]
+            local flagkey = type(flag) == "table" and table.concat(flag, "") or flag
+            if flag and not unique[flagkey] then
+                table.insert(flags_new, flag)
+                unique[flagkey] = true
+            end
+        end
+        flags = flags_new
+        count = #flags_new
+    end
 
-    -- split flag group, e.g. "-I /xxx" => {"-I", "/xxx"}
+    -- remove repeat first and split flags group, e.g. "-I /xxx" => {"-I", "/xxx"}
     local results = {}
-    for _, flag in ipairs(flags) do
-        flag = flag:trim()
-        if #flag > 0 then
-            if flag:find(" ", 1, true) then
-                table.join2(results, os.argv(flag))
+    if count > 0 then
+        for idx = count, 1, -1 do
+            local flag = flags[idx]
+            if type(flag) == "string" then
+                flag = flag:trim()
+                if #flag > 0 then
+                    if flag:find(" ", 1, true) then
+                        table.join2(results, os.argv(flag, {splitonly = true}))
+                    else
+                        table.insert(results, flag)
+                    end
+                end
             else
-                table.insert(results, flag)
+                -- may be a table group? e.g. {"-I", "/xxx"}
+                if #flag > 0 then
+                    table.join2(results, flag)
+                end
             end
         end
     end
-
-    -- get it
     return results
 end
 

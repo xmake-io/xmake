@@ -53,6 +53,12 @@ function _find_xcode_sdkver(sdkdir, opt)
         else
             platsdkdir = "Contents/Developer/Platforms/WatchOS.platform/Developer/SDKs/WatchOS*.*.sdk"
         end
+    elseif plat == "appletvos" then
+        if arch == "i386" or arch == "x86_64" then
+            platsdkdir = "Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator*.*.sdk"
+        else
+            platsdkdir = "Contents/Developer/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS*.*.sdk"
+        end
     else
         platsdkdir = "Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX*.*.sdk"
     end
@@ -82,10 +88,11 @@ function _find_xcode(sdkdir, opt)
     end
 
     -- find codesign
+    local codesign_identity, mobile_provision
     if opt.find_codesign then
 
         -- find codesign identity
-        local codesign_identity = config.get("xcode_codesign_identity")
+        codesign_identity = config.get("xcode_codesign_identity")
         if codesign_identity == nil then -- we will disable codesign_identity if be false
             codesign_identity = global.get("xcode_codesign_identity")
         end
@@ -100,7 +107,6 @@ function _find_xcode(sdkdir, opt)
         end
 
         -- find mobile provision only for iphoneos
-        local mobile_provision
         if opt.plat == "iphoneos" then
             local mobile_provisions = codesign.mobile_provisions()
             if mobile_provisions then
