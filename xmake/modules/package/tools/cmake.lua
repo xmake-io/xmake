@@ -406,6 +406,7 @@ end
 function _get_cmake_generator_for_msvc(package)
     local vsvers =
     {
+        ["2022"] = "17",
         ["2019"] = "16",
         ["2017"] = "15",
         ["2015"] = "14",
