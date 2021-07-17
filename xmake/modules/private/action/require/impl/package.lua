@@ -548,11 +548,15 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
             local vs_toolset_semver = semver.new(vs_toolset)
             local msvc_version = "vc" .. vs_toolset_semver:major() .. tostring(vs_toolset_semver:minor()):sub(1, 1)
             if package:config("shared") or package:is_binary() then
+                -- we select a newest toolset to get better optimzed performance
+                local artifacts_infos = {}
                 for key, artifacts_info in pairs(artifacts_manifest) do
                     if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
-                        return artifacts_info
+                        table.insert(artifacts_infos, artifacts_info)
                     end
                 end
+                table.sort(artifacts_infos, function (a, b) return semver.compare(a.toolset, b.toolset) > 0 end)
+                return artifacts_infos[1]
             else
                 local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
                 local artifacts_info = artifacts_manifest[buildid]
