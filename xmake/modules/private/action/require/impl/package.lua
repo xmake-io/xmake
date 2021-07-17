@@ -545,36 +545,31 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
     if vcvars then
         local vs_toolset = vcvars.VCToolsVersion
         if vs_toolset and semver.is_valid(vs_toolset) then
-            local vs_toolset_semver = semver.new(vs_toolset)
-            local msvc_version = "vc" .. vs_toolset_semver:major() .. tostring(vs_toolset_semver:minor()):sub(1, 1)
-            if package:config("shared") or package:is_binary() then
-                -- we select a newest toolset to get better optimzed performance
-                local artifacts_infos = {}
-                for key, artifacts_info in pairs(artifacts_manifest) do
-                    if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
-                        table.insert(artifacts_infos, artifacts_info)
-                    end
+            local artifacts_infos = {}
+            for key, artifacts_info in pairs(artifacts_manifest) do
+                if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
+                    table.insert(artifacts_infos, artifacts_info)
                 end
-                table.sort(artifacts_infos, function (a, b)
-                    if a.toolset and b.toolset then
-                        return semver.compare(a.toolset, b.toolset) > 0
-                    else
-                        return false
-                    end
-                end)
+            end
+            -- we sort them to select a newest toolset to get better optimzed performance
+            table.sort(artifacts_infos, function (a, b)
+                if a.toolset and b.toolset then
+                    return semver.compare(a.toolset, b.toolset) > 0
+                else
+                    return false
+                end
+            end)
+            if package:config("shared") or package:is_binary() then
                 return artifacts_infos[1]
             else
-                local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
-                local artifacts_info = artifacts_manifest[buildid]
-                if artifacts_info then
+                for _, artifacts_info in ipairs(artifacts_infos) do
                     -- toolset is backwards compatible
                     --
                     -- @see https://github.com/xmake-io/xmake/issues/1513
                     -- https://docs.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-160
-                    if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) < 0 then
-                        return
+                    if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) >= 0 then
+                        return artifacts_info
                     end
-                    return artifacts_info
                 end
             end
         end
