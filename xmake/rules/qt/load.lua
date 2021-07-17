@@ -22,6 +22,7 @@
 import("core.base.semver")
 import("core.project.config")
 import("core.project.target")
+import("core.base.hashset")
 import("lib.detect.find_library")
 
 -- make link for framework
@@ -188,7 +189,7 @@ function main(target, opt)
     end
 
     -- do frameworks for qt
-    local useframeworks = false
+    local frameworksset = hashset.new()
     for _, framework in ipairs(target:get("frameworks")) do
 
         -- translate qt frameworks
@@ -216,13 +217,13 @@ function main(target, opt)
                 -- add includedirs
                 if is_plat("macosx") then
                     local frameworkdir = path.join(qt.libdir, framework .. ".framework")
-                    if os.isdir(frameworkdir) and not framework:endswith("Support") then
+                    if os.isdir(frameworkdir) and os.isdir(path.join(frameworkdir, "Headers")) then
                         _add_includedirs(target, path.join(frameworkdir, "Headers"))
                         -- e.g. QtGui.framework/Headers/5.15.0/QtGui/qpa/qplatformopenglcontext.h
                         -- https://github.com/xmake-io/xmake/issues/1226
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver))
                         _add_includedirs(target, path.join(frameworkdir, "Headers", qt.sdkver, framework))
-                        useframeworks = true
+                        frameworksset:insert(framework)
                     else
                         target:add("syslinks", _link(qt.libdir, framework, qt_sdkver))
                         _add_includedirs(target, path.join(qt.includedir, framework))
@@ -243,9 +244,7 @@ function main(target, opt)
     -- remove private frameworks
     local local_frameworks = {}
     for _, framework in ipairs(target:get("frameworks")) do
-        if target:is_plat("macosx") and framework:endswith("Support") then
-            -- we need handle Qt*Support as plain links, e.g. QtPlatformSupport
-        elseif not framework:lower():endswith("private") then
+        if frameworksset:has(framework) then
             table.insert(local_frameworks, framework)
         end
     end
@@ -264,7 +263,7 @@ function main(target, opt)
     if is_plat("macosx") then
         target:add("frameworks", "DiskArbitration", "IOKit", "CoreFoundation", "CoreGraphics", "OpenGL")
         target:add("frameworks", "Carbon", "Foundation", "AppKit", "Security", "SystemConfiguration")
-        if useframeworks then
+        if not frameworksset:empty() then
             target:add("frameworkdirs", qt.libdir)
             target:add("rpathdirs", "@executable_path/Frameworks", qt.libdir)
         else
