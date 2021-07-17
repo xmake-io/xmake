@@ -87,11 +87,7 @@ param (
         $x64arch = @('AMD64', 'IA64', 'ARM64')
         $arch = if ($env:PROCESSOR_ARCHITECTURE -in $x64arch -or $env:PROCESSOR_ARCHITEW6432 -in $x64arch) { 'x64' } else { 'x86' }
         $url = if ($v -is [version]) {
-            if ($v -gt "2.2.6") {
-                "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?tag=v$v&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch" 
-            } else {
-                "https://github.com/xmake-io/xmake/releases/download/v$v/xmake-v$v.exe"
-            }
+            "https://github.com/xmake-io/xmake/releases/download/v$v/xmake-v$v.exe"
         } else {
             "https://ci.appveyor.com/api/projects/waruqi/xmake/artifacts/xmake-installer.exe?branch=$v&pr=false&job=Image%3A+Visual+Studio+2017%3B+Platform%3A+$arch"
         }
