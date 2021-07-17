@@ -555,7 +555,13 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
                         table.insert(artifacts_infos, artifacts_info)
                     end
                 end
-                table.sort(artifacts_infos, function (a, b) return semver.compare(a.toolset, b.toolset) > 0 end)
+                table.sort(artifacts_infos, function (a, b)
+                    if a.toolset and b.toolset then
+                        return semver.compare(a.toolset, b.toolset) > 0
+                    else
+                        return false
+                    end
+                end)
                 return artifacts_infos[1]
             else
                 local buildid = package:plat() .. "-" .. package:arch() .. "-" .. msvc_version .. "-" .. package:buildhash()
