@@ -9,6 +9,9 @@
 ### Change
 
 * Improve vs/vsxmake project generator to support vs2022
+* [#1513](https://github.com/xmake-io/xmake/issues/1513): Improve precompiled binary package compatibility on windows/msvc
+* Improve to find vcpkg root directory on windows
+* Improve to support Qt6
 
 ### Bugs fixed
 
@@ -1040,6 +1043,9 @@
 ### 改进
 
 * 改进 vs/vsxmake 工程插件支持 vs2022
+* [#1513](https://github.com/xmake-io/xmake/issues/1513): 改进 windows 预编译包的兼容性问题
+* 改进 vcpkg 包在 windows 上的查找
+* 改进对 Qt6 的支持
 
 ### Bugs 修复
 
