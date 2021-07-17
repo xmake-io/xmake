@@ -560,8 +560,10 @@ function _select_artifacts_for_msvc(package, artifacts_manifest)
                 end
             end)
             if package:config("shared") or package:is_binary() then
+                -- executable programs and dynamic libraries only need to select the latest toolset
                 return artifacts_infos[1]
             else
+                -- static libraries need to consider toolset compatibility
                 for _, artifacts_info in ipairs(artifacts_infos) do
                     -- toolset is backwards compatible
                     --
