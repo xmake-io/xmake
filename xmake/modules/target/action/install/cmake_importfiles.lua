@@ -28,7 +28,7 @@ function _get_builtinvars(target, installdir)
             TARGETFILENAME  = path.filename(target:targetfile()),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
-            TARGETBYTES     = target:is_arch("x86", "i386") and "4" or "8"}
+            TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
 end
 
 -- install cmake import file
