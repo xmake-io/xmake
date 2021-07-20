@@ -110,7 +110,7 @@ task("config")
                                                                 end
                                                                 return archset:to_array()
                                                             end                                                             }
-                ,   {'m', "mode",       "kv", "release" ,   "Compile for the given mode."
+                ,   {'m', "mode",       "kv", "auto" ,      "Compile for the given mode."
                                                         ,   values = function (complete)
                                                                 if complete then
                                                                     local modes = (try { function()

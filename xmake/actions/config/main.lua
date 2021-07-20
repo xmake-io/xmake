@@ -191,6 +191,47 @@ function _config_targets(targetname)
     end
 end
 
+-- find default mode
+function _find_default_mode()
+    local mode = config.mode()
+    if not mode then
+        local allowedmodes = table.wrap(project.get("allowedmodes"))
+        if #allowedmodes > 0 then
+            mode = allowedmodes[1]
+        end
+        if not mode then
+            mode = "release"
+        end
+        config.set("mode", mode)
+    end
+    return mode
+end
+
+-- check configs
+function _check_configs()
+    -- check allowed modes
+    local mode = config.mode()
+    local allowedmodes = table.wrap(project.get("allowedmodes"))
+    if #allowedmodes > 0 then
+        local allowedmodes_set = hashset.from(allowedmodes)
+        if not allowedmodes_set:has(mode) then
+            local allowedmodes_str = table.concat(allowedmodes, ", ")
+            raise("`%s` is not a valid complation mode for this project, please use one of %s", mode, allowedmodes_str)
+        end
+    end
+
+    -- check allowed archs
+    local arch = config.arch()
+    local allowedarchs = table.wrap(project.get("allowedarchs"))
+    if #allowedarchs > 0 then
+        local allowedarchs_set = hashset.from(allowedarchs)
+        if not allowedarchs_set:has(arch) then
+            local allowedarchs_str = table.concat(allowedarchs, ", ")
+            raise("`%s` is not a valid complation arch for this project, please use one of %s", arch, allowedarchs_str)
+        end
+    end
+end
+
 -- export configs
 function _export_configs()
     local exportfile = option.get("export")
@@ -309,6 +350,10 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- find default mode
+    local mode = _find_default_mode()
+    assert(mode == config.mode())
+
     -- find default platform and save to configuration
     local plat, arch = find_platform({global = true})
     assert(plat == config.plat())
@@ -381,6 +426,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if option.get("verbose") and not opt.disable_dump then
         config.dump()
     end
+
+    -- check configs
+    _check_configs()
 
     -- export configs
     if option.get("export") then

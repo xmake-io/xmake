@@ -650,8 +650,9 @@ function project.apis()
         {
             -- set_xxx
             "set_project"
-        ,   "set_modes"     -- TODO deprecated
         ,   "set_description"
+        ,   "set_allowedmodes"
+        ,   "set_allowedarchs"
             -- add_xxx
         ,   "add_requires"
         ,   "add_requireconfs"
@@ -1081,7 +1082,7 @@ end
 
 -- get the project modes
 function project.modes()
-    local modes = project.get("modes") or {}
+    local modes = project.get("allowedmodes") or {}
     for _, target in pairs(table.wrap(project.targets())) do
         for _, rule in ipairs(target:orderules()) do
             local name = rule:name()
