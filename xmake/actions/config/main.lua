@@ -221,12 +221,20 @@ function _check_configs()
     end
 
     -- check allowed archs
+    local plat = config.plat()
     local arch = config.arch()
     local allowedarchs = table.wrap(project.get("allowedarchs"))
     if #allowedarchs > 0 then
-        local allowedarchs_set = hashset.from(allowedarchs)
+        local allowedarchs_current = {}
+        for _, allowedarch in ipairs(allowedarchs) do
+            local p = project.extraconf("allowedarchs", allowedarch, "plat")
+            if p == plat then
+                table.insert(allowedarchs_current, allowedarch)
+            end
+        end
+        local allowedarchs_set = hashset.from(allowedarchs_current)
         if not allowedarchs_set:has(arch) then
-            local allowedarchs_str = table.concat(allowedarchs, ", ")
+            local allowedarchs_str = table.concat(allowedarchs_current, ", ")
             raise("`%s` is not a valid complation arch for this project, please use one of %s", arch, allowedarchs_str)
         end
     end

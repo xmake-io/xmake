@@ -657,6 +657,8 @@ function project.apis()
         ,   "add_requires"
         ,   "add_requireconfs"
         ,   "add_repositories"
+        ,   "add_allowedmodes"
+        ,   "add_allowedarchs"
         }
     ,   paths =
         {
