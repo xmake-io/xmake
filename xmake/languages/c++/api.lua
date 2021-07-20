@@ -26,8 +26,6 @@
 -- sigsetjmp{int a = 0; sigsetjmp((void*)a, a);}
 --
 function _funcinfo(func)
-
-    -- parse name and code
     local name, code = string.match(func, "(.+){(.+)}")
     if code == nil then
         local pos = func:find("%(")
@@ -39,8 +37,6 @@ function _funcinfo(func)
             code = string.format("volatile void* p%s = (void*)&%s;", name, name)
         end
     end
-
-    -- ok
     return name:trim(), code
 end
 
@@ -90,8 +86,7 @@ end
 
 -- TODO add c functions, deprecated
 function _api_add_cfuncs(interp, module, links, includes, ...)
-
-    -- done
+    wprint("target.add_cfuncs is deprecated, please use option.add_cfuncs()")
     for _, func in ipairs({...}) do
         _api_add_cfunc(interp, module, nil, links, includes, func)
     end
@@ -143,8 +138,7 @@ end
 
 -- TODO add c++ functions, deprecated
 function _api_add_cxxfuncs(interp, module, links, includes, ...)
-
-    -- done
+    wprint("target.add_cxxfuncs is deprecated, please use option.add_cxxfuncs()")
     for _, func in ipairs({...}) do
         _api_add_cxxfunc(interp, module, nil, links, includes, func)
     end
