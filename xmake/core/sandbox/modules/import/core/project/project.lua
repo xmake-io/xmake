@@ -54,6 +54,7 @@ sandbox_core_project.directory         = project.directory
 sandbox_core_project.name              = project.name
 sandbox_core_project.modes             = project.modes
 sandbox_core_project.allowed_modes     = project.allowed_modes
+sandbox_core_project.allowed_plats     = project.allowed_plats
 sandbox_core_project.allowed_archs     = project.allowed_archs
 sandbox_core_project.mtimes            = project.mtimes
 sandbox_core_project.version           = project.version

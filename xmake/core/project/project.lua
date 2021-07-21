@@ -653,12 +653,14 @@ function project.apis()
             "set_project"
         ,   "set_description"
         ,   "set_allowedmodes"
+        ,   "set_allowedplats"
         ,   "set_allowedarchs"
             -- add_xxx
         ,   "add_requires"
         ,   "add_requireconfs"
         ,   "add_repositories"
         ,   "add_allowedmodes"
+        ,   "add_allowedplats"
         ,   "add_allowedarchs"
         }
     ,   paths =
@@ -1215,8 +1217,7 @@ end
 
 -- get allowed modes
 --
--- add_allowedmodes("releasedbg", {default = true})
--- add_allowedmodes("debug")
+-- add_allowedmodes("releasedbg", "debug", {default = "releasedbg"})
 --
 function project.allowed_modes()
     local allowed_modes_set = project._ALLOWED_MODES
@@ -1231,25 +1232,48 @@ function project.allowed_modes()
     if not default_mode then
         local allowed_modes = table.wrap(project.get("allowedmodes"))
         for _, allowed_mode in ipairs(allowed_modes) do
-            if project.extraconf("allowedmodes", allowed_mode, "default") then
+            if project.extraconf("allowedmodes", allowed_mode, "default") == allowed_mode then
                 default_mode = allowed_mode
                 break
             end
-        end
-        -- we use the first mode as default value if no default configuration
-        if not default_mode then
-            default_mode = allowed_modes[1]
         end
         project._DEFAULT_MODE = default_mode
     end
     return allowed_modes_set or nil, default_mode or nil
 end
 
--- get allowed archs
+-- get allowed platforms
 --
--- add_allowedarchs("arm64", "x86_64", {plat = "macosx"})
--- add_allowedarchs("i386", {plat = "linux", default = true})
--- add_allowedarchs("arm64", "x86_64", {plat = "linux"})
+-- add_allowedplats("windows", "mingw", {default = "windows"})
+-- add_allowedplats("windows", "mingw", "linux", "macosx")
+--
+function project.allowed_plats()
+    local allowed_plats_set = project._ALLOWED_PLATS
+    if not allowed_plats_set then
+        local allowed_plats = table.wrap(project.get("allowedplats"))
+        if #allowed_plats > 0 then
+            allowed_plats_set = hashset.from(allowed_plats)
+        end
+        project._ALLOWED_PLATS = allowed_plats_set or false
+    end
+    local default_plat = project._DEFAULT_PLAT
+    if not default_plat then
+        local allowed_plats = table.wrap(project.get("allowedplats"))
+        for _, allowed_plat in ipairs(allowed_plats) do
+            if project.extraconf("allowedplats", allowed_plat, "default") == allowed_plat then
+                default_plat = allowed_plat
+                break
+            end
+        end
+        project._DEFAULT_PLAT = default_plat
+    end
+    return allowed_plats_set or nil, default_plat or nil
+end
+
+-- get allowed architectures
+--
+-- add_allowedarchs("arm64", "x86_64", {plat = "macosx", default = "arm64"})
+-- add_allowedarchs("i386", {plat = "linux"})
 --
 function project.allowed_archs(plat)
     local allowed_archs_set = project._ALLOWED_ARCHS
@@ -1269,21 +1293,9 @@ function project.allowed_archs(plat)
     if not default_arch then
         if allowed_archs_set then
             for _, allowed_arch in allowed_archs_set:keys() do
-                if project.extraconf("allowedarchs", allowed_arch, "default") then
+                if project.extraconf("allowedarchs", allowed_arch, "default") == allowed_arch then
                     default_arch = allowed_arch
                     break
-                end
-            end
-        end
-        -- we use the first arch as default value if no default configuration
-        if not default_arch then
-            local allowed_archs = table.wrap(project.get("allowedarchs"))
-            if #allowed_archs > 0 then
-                for _, allowed_arch in ipairs(allowed_archs) do
-                    if not plat or project.extraconf("allowedarchs", allowed_arch, "plat") == plat then
-                        default_arch = allowed_arch
-                        break
-                    end
                 end
             end
         end
