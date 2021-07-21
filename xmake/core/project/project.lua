@@ -30,6 +30,7 @@ local utils                 = require("base/utils")
 local table                 = require("base/table")
 local global                = require("base/global")
 local process               = require("base/process")
+local hashset               = require("base/hashset")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local memcache              = require("cache/memcache")
@@ -1082,20 +1083,6 @@ function project.mtimes()
     return project.interpreter():mtimes()
 end
 
--- get the project modes
-function project.modes()
-    local modes = project.get("allowedmodes") or {}
-    for _, target in pairs(table.wrap(project.targets())) do
-        for _, rule in ipairs(target:orderules()) do
-            local name = rule:name()
-            if name:startswith("mode.") then
-                table.insert(modes, name:sub(6))
-            end
-        end
-    end
-    return table.unique(modes)
-end
-
 -- get the project menu
 function project.menu()
 
@@ -1210,6 +1197,98 @@ function project.tmpfile(opt_or_key)
         opt = opt_or_key
     end
     return path.join(project.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))
+end
+
+-- get all modes
+function project.modes()
+    local modes = project.get("allowed_modes") or {}
+    for _, target in pairs(table.wrap(project.targets())) do
+        for _, rule in ipairs(target:orderules()) do
+            local name = rule:name()
+            if name:startswith("mode.") then
+                table.insert(modes, name:sub(6))
+            end
+        end
+    end
+    return table.unique(modes)
+end
+
+-- get allowed modes
+--
+-- add_allowedmodes("releasedbg", {default = true})
+-- add_allowedmodes("debug")
+--
+function project.allowed_modes()
+    local allowed_modes_set = project._ALLOWED_MODES
+    if not allowed_modes_set then
+        local allowed_modes = table.wrap(project.get("allowedmodes"))
+        if #allowed_modes > 0 then
+            allowed_modes_set = hashset.from(allowed_modes)
+        end
+        project._ALLOWED_MODES = allowed_modes_set or false
+    end
+    local default_mode = project._DEFAULT_MODE
+    if not default_mode then
+        local allowed_modes = table.wrap(project.get("allowedmodes"))
+        for _, allowed_mode in ipairs(allowed_modes) do
+            if project.extraconf("allowedmodes", allowed_mode, "default") then
+                default_mode = allowed_mode
+                break
+            end
+        end
+        -- we use the first mode as default value if no default configuration
+        if not default_mode then
+            default_mode = allowed_modes[1]
+        end
+        project._DEFAULT_MODE = default_mode
+    end
+    return allowed_modes_set or nil, default_mode or nil
+end
+
+-- get allowed archs
+--
+-- add_allowedarchs("arm64", "x86_64", {plat = "macosx"})
+-- add_allowedarchs("i386", {plat = "linux"})
+--
+function project.allowed_archs(plat)
+    local allowed_archs_set = project._ALLOWED_ARCHS
+    if not allowed_archs_set then
+        local allowed_archs = table.wrap(project.get("allowedarchs"))
+        if #allowed_archs > 0 then
+            allowed_archs_set = hashset.new()
+            for _, allowed_arch in ipairs(allowed_archs) do
+                if not plat or project.extraconf("allowedarchs", allowed_arch, "plat") == plat then
+                    allowed_archs_set:insert(allowed_arch)
+                end
+            end
+        end
+        project._ALLOWED_ARCHS = allowed_archs_set or false
+    end
+    local default_arch = project._DEFAULT_ARCH
+    if not default_arch then
+        if allowed_archs_set then
+            for _, allowed_arch in allowed_archs_set:keys() do
+                if project.extraconf("allowedarchs", allowed_arch, "default") then
+                    default_arch = allowed_arch
+                    break
+                end
+            end
+        end
+        -- we use the first arch as default value if no default configuration
+        if not default_arch then
+            local allowed_archs = table.wrap(project.get("allowedarchs"))
+            if #allowed_archs > 0 then
+                for _, allowed_arch in ipairs(allowed_archs) do
+                    if not plat or project.extraconf("allowedarchs", allowed_arch, "plat") == plat then
+                        default_arch = allowed_arch
+                        break
+                    end
+                end
+            end
+        end
+        project._DEFAULT_ARCH = default_arch
+    end
+    return allowed_archs_set or nil, default_arch or nil
 end
 
 -- return module: project

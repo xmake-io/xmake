@@ -195,10 +195,8 @@ end
 function _find_default_mode()
     local mode = config.mode()
     if not mode then
-        local allowedmodes = table.wrap(project.get("allowedmodes"))
-        if #allowedmodes > 0 then
-            mode = allowedmodes[1]
-        end
+        local _, defaultmode = project.allowed_modes()
+        mode = defaultmode
         if not mode then
             mode = "release"
         end
@@ -211,31 +209,22 @@ end
 function _check_configs()
     -- check allowed modes
     local mode = config.mode()
-    local allowedmodes = table.wrap(project.get("allowedmodes"))
-    if #allowedmodes > 0 then
-        local allowedmodes_set = hashset.from(allowedmodes)
-        if not allowedmodes_set:has(mode) then
-            local allowedmodes_str = table.concat(allowedmodes, ", ")
-            raise("`%s` is not a valid complation mode for this project, please use one of %s", mode, allowedmodes_str)
+    local allowed_modes = project.allowed_modes()
+    if allowed_modes then
+        if not allowed_modes:has(mode) then
+            local allowed_modes_str = table.concat(allowed_modes:to_array(), ", ")
+            raise("`%s` is not a valid complation mode for this project, please use one of %s", mode, allowed_modes_str)
         end
     end
 
     -- check allowed archs
     local plat = config.plat()
     local arch = config.arch()
-    local allowedarchs = table.wrap(project.get("allowedarchs"))
-    if #allowedarchs > 0 then
-        local allowedarchs_current = {}
-        for _, allowedarch in ipairs(allowedarchs) do
-            local p = project.extraconf("allowedarchs", allowedarch, "plat")
-            if p == plat then
-                table.insert(allowedarchs_current, allowedarch)
-            end
-        end
-        local allowedarchs_set = hashset.from(allowedarchs_current)
-        if not allowedarchs_set:has(arch) then
-            local allowedarchs_str = table.concat(allowedarchs_current, ", ")
-            raise("`%s` is not a valid complation arch for this project, please use one of %s", arch, allowedarchs_str)
+    local allowed_archs = project.allowed_archs()
+    if allowed_archs then
+        if not allowed_archs:has(arch) then
+            local allowed_archs_str = table.concat(allowed_archs:to_array(), ", ")
+            raise("`%s` is not a valid complation arch for this project, please use one of %s", arch, allowed_archs_str)
         end
     end
 end
