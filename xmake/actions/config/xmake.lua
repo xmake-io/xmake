@@ -84,9 +84,16 @@ task("config")
                                                                 import("core.project.project")
                                                                 import("core.platform.platform")
 
+                                                                -- get all platforms
+                                                                local plats = try {function () return project.allowed_plats() end}
+                                                                if plats then
+                                                                    plats = plats:to_array()
+                                                                end
+                                                                plats = plats or platform.plats()
+
                                                                 -- get all architectures
                                                                 local description = {}
-                                                                for i, plat in ipairs(platform.plats()) do
+                                                                for i, plat in ipairs(plats) do
                                                                     local archs = try {function () return project.allowed_archs(plat) end}
                                                                     if archs then
                                                                         archs = archs:to_array()
@@ -115,9 +122,16 @@ task("config")
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
 
+                                                                -- get all platforms
+                                                                local plats = try {function () return project.allowed_plats() end}
+                                                                if plats then
+                                                                    plats = plats:to_array()
+                                                                end
+                                                                plats = plats or platform.plats()
+
                                                                 -- get all architectures
                                                                 local archset = hashset.new()
-                                                                for _, plat in ipairs(opt.plat and { opt.plat } or platform.plats()) do
+                                                                for _, plat in ipairs(opt.plat and { opt.plat } or plats) do
                                                                     local archs = try {function () return project.allowed_archs(plat) end}
                                                                     if archs then
                                                                         archs = archs:to_array()
