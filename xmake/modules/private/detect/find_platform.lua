@@ -83,6 +83,10 @@ function _find_arch(plat, arch)
     arch = arch or config.get("arch")
     if not arch then
         if not arch then
+            local _, default_arch = project.allowed_archs(plat)
+            arch = default_arch
+        end
+        if not arch then
             if plat == "android" then
                 arch = "armeabi-v7a"
             elseif plat == "iphoneos" or plat == "appletvos" then

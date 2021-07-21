@@ -1248,7 +1248,8 @@ end
 -- get allowed archs
 --
 -- add_allowedarchs("arm64", "x86_64", {plat = "macosx"})
--- add_allowedarchs("i386", {plat = "linux"})
+-- add_allowedarchs("i386", {plat = "linux", default = true})
+-- add_allowedarchs("arm64", "x86_64", {plat = "linux"})
 --
 function project.allowed_archs(plat)
     local allowed_archs_set = project._ALLOWED_ARCHS

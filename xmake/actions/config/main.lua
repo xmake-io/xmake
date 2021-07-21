@@ -218,9 +218,8 @@ function _check_configs()
     end
 
     -- check allowed archs
-    local plat = config.plat()
     local arch = config.arch()
-    local allowed_archs = project.allowed_archs()
+    local allowed_archs = project.allowed_archs(config.plat())
     if allowed_archs then
         if not allowed_archs:has(arch) then
             local allowed_archs_str = table.concat(allowed_archs:to_array(), ", ")
