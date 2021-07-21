@@ -1,9 +1,9 @@
 add_rules("mode.debug", "mode.release")
 
 add_allowedmodes("releasedbg", "debug", {default = "releasedbg"})
-add_allowedplats("windows", "linux", "macosx")
+add_allowedplats("windows", "linux", "macosx", {default = "linux"})
 add_allowedarchs("arm64", "x86_64", {plat = "macosx", default = "x86_64"})
-add_allowedarchs("i386", {plat = "linux"})
+add_allowedarchs("i386", {plat = "linux", default = "i386"})
 
 target("test")
     set_kind("binary")

@@ -27,7 +27,12 @@ import("detect.sdks.find_cross_toolchain")
 function _find_plat(plat)
     plat = plat or config.get("plat")
     if not plat then
-        plat = os.subhost()
+        if not plat then
+            _, plat = project.allowed_plats()
+        end
+        if not plat then
+            plat = os.subhost()
+        end
         if plat == "msys" then
             local msystem = os.getenv("MSYSTEM")
             if msystem and msystem:lower():find("mingw", 1, true) then
@@ -83,8 +88,7 @@ function _find_arch(plat, arch)
     arch = arch or config.get("arch")
     if not arch then
         if not arch then
-            local _, default_arch = project.allowed_archs(plat)
-            arch = default_arch
+            _, arch = project.allowed_archs(plat)
         end
         if not arch then
             if plat == "android" then

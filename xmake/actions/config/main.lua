@@ -217,6 +217,16 @@ function _check_configs()
         end
     end
 
+    -- check allowed plats
+    local plat = config.plat()
+    local allowed_plats = project.allowed_plats()
+    if allowed_plats then
+        if not allowed_plats:has(plat) then
+            local allowed_plats_str = table.concat(allowed_plats:to_array(), ", ")
+            raise("`%s` is not a valid platform for this project, please use one of %s", plat, allowed_plats_str)
+        end
+    end
+
     -- check allowed archs
     local arch = config.arch()
     local allowed_archs = project.allowed_archs(config.plat())

@@ -805,7 +805,7 @@ function option.show_options(options, taskname)
             -- append values
             local values = opt.values
             if type(values) == "function" then
-                values = values()
+                values = values(false, {helpmenu = true})
             end
             if values then
                 for _, value in ipairs(table.wrap(values)) do

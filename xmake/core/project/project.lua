@@ -1203,7 +1203,7 @@ end
 
 -- get all modes
 function project.modes()
-    local modes = project.get("allowed_modes") or {}
+    local modes = table.copy(table.wrap(project.get("allowedmodes")))
     for _, target in pairs(table.wrap(project.targets())) do
         for _, rule in ipairs(target:orderules()) do
             local name = rule:name()
@@ -1220,15 +1220,15 @@ end
 -- add_allowedmodes("releasedbg", "debug", {default = "releasedbg"})
 --
 function project.allowed_modes()
-    local allowed_modes_set = project._ALLOWED_MODES
+    local allowed_modes_set = project._memcache():get("allowedmodes")
     if not allowed_modes_set then
         local allowed_modes = table.wrap(project.get("allowedmodes"))
         if #allowed_modes > 0 then
             allowed_modes_set = hashset.from(allowed_modes)
         end
-        project._ALLOWED_MODES = allowed_modes_set or false
+        project._memcache():set("allowedmodes", allowed_modes_set or false)
     end
-    local default_mode = project._DEFAULT_MODE
+    local default_mode = project._memcache():get("allowedmodes.default")
     if not default_mode then
         local allowed_modes = table.wrap(project.get("allowedmodes"))
         for _, allowed_mode in ipairs(allowed_modes) do
@@ -1237,7 +1237,7 @@ function project.allowed_modes()
                 break
             end
         end
-        project._DEFAULT_MODE = default_mode
+        project._memcache():set("allowedmodes.default", default_mode or false)
     end
     return allowed_modes_set or nil, default_mode or nil
 end
@@ -1248,15 +1248,15 @@ end
 -- add_allowedplats("windows", "mingw", "linux", "macosx")
 --
 function project.allowed_plats()
-    local allowed_plats_set = project._ALLOWED_PLATS
+    local allowed_plats_set = project._memcache():get("allowedplats")
     if not allowed_plats_set then
         local allowed_plats = table.wrap(project.get("allowedplats"))
         if #allowed_plats > 0 then
             allowed_plats_set = hashset.from(allowed_plats)
         end
-        project._ALLOWED_PLATS = allowed_plats_set or false
+        project._memcache():set("allowedplats", allowed_plats_set or false)
     end
-    local default_plat = project._DEFAULT_PLAT
+    local default_plat = project._memcache():get("allowedplats.default")
     if not default_plat then
         local allowed_plats = table.wrap(project.get("allowedplats"))
         for _, allowed_plat in ipairs(allowed_plats) do
@@ -1265,7 +1265,7 @@ function project.allowed_plats()
                 break
             end
         end
-        project._DEFAULT_PLAT = default_plat
+        project._memcache():set("allowedplats.default", default_plat or false)
     end
     return allowed_plats_set or nil, default_plat or nil
 end
@@ -1276,20 +1276,22 @@ end
 -- add_allowedarchs("i386", {plat = "linux"})
 --
 function project.allowed_archs(plat)
-    local allowed_archs_set = project._ALLOWED_ARCHS
+    local allowed_archs_set = project._memcache():get2("allowedarchs", plat or "")
     if not allowed_archs_set then
         local allowed_archs = table.wrap(project.get("allowedarchs"))
         if #allowed_archs > 0 then
-            allowed_archs_set = hashset.new()
             for _, allowed_arch in ipairs(allowed_archs) do
                 if not plat or project.extraconf("allowedarchs", allowed_arch, "plat") == plat then
+                    if not allowed_archs_set then
+                        allowed_archs_set = hashset.new()
+                    end
                     allowed_archs_set:insert(allowed_arch)
                 end
             end
         end
-        project._ALLOWED_ARCHS = allowed_archs_set or false
+        project._memcache():set2("allowedarchs", plat or "", allowed_archs_set or false)
     end
-    local default_arch = project._DEFAULT_ARCH
+    local default_arch = project._memcache():get2("allowedarchs.default", plat or "")
     if not default_arch then
         if allowed_archs_set then
             for _, allowed_arch in allowed_archs_set:keys() do
@@ -1299,7 +1301,7 @@ function project.allowed_archs(plat)
                 end
             end
         end
-        project._DEFAULT_ARCH = default_arch
+        project._memcache():set2("allowedarchs.default", plat or "", default_arch or false)
     end
     return allowed_archs_set or nil, default_arch or nil
 end

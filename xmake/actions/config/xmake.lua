@@ -56,8 +56,13 @@ task("config")
                                                                 -- imports
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
+                                                                import("core.project.project")
 
                                                                 if not complete or not opt.arch then
+                                                                    local plats = try {function () return project.allowed_plats() end}
+                                                                    if plats then
+                                                                        return plats:to_array()
+                                                                    end
                                                                     return platform.plats()
                                                                 end
 
@@ -76,32 +81,50 @@ task("config")
                                                             function ()
 
                                                                 -- imports
+                                                                import("core.project.project")
                                                                 import("core.platform.platform")
 
                                                                 -- get all architectures
                                                                 local description = {}
                                                                 for i, plat in ipairs(platform.plats()) do
-                                                                    local archs = platform.archs(plat)
+                                                                    local archs = try {function () return project.allowed_archs(plat) end}
                                                                     if archs then
-                                                                        description[i] = "    - " .. plat .. ":"
+                                                                        archs = archs:to_array()
+                                                                    end
+                                                                    if not archs then
+                                                                        archs = platform.archs(plat)
+                                                                    end
+                                                                    if archs and #archs > 0 then
+                                                                        local desc = "    - " .. plat .. ":"
                                                                         for _, arch in ipairs(archs) do
-                                                                            description[i] = description[i] .. " " .. arch
+                                                                            desc = desc .. " " .. arch
                                                                         end
+                                                                        table.insert(description, desc)
                                                                     end
                                                                 end
                                                                 return description
                                                             end
                                                         ,   values = function (complete, opt)
-                                                                if not complete then return end
+                                                                opt = opt or {}
+                                                                if opt.helpmenu then
+                                                                    return
+                                                                end
 
                                                                 -- imports
+                                                                import("core.project.project")
                                                                 import("core.platform.platform")
                                                                 import("core.base.hashset")
 
                                                                 -- get all architectures
                                                                 local archset = hashset.new()
                                                                 for _, plat in ipairs(opt.plat and { opt.plat } or platform.plats()) do
-                                                                    local archs = platform.archs(plat)
+                                                                    local archs = try {function () return project.allowed_archs(plat) end}
+                                                                    if archs then
+                                                                        archs = archs:to_array()
+                                                                    end
+                                                                    if not archs then
+                                                                        archs = platform.archs(plat)
+                                                                    end
                                                                     if archs then
                                                                         for _, arch in ipairs(archs) do
                                                                             archset:insert(arch)
@@ -112,12 +135,12 @@ task("config")
                                                             end                                                             }
                 ,   {'m', "mode",       "kv", "auto" ,      "Compile for the given mode."
                                                         ,   values = function (complete)
-                                                                if complete then
-                                                                    local modes = (try { function()
-                                                                        return import("core.project.project").modes()
-                                                                    end }) or {"debug", "release"}
-                                                                    return modes
+                                                                import("core.project.project")
+                                                                local modes = try {function() return project.modes() end}
+                                                                if not modes then
+                                                                    modes = {"debug", "release"}
                                                                 end
+                                                                return modes
                                                             end                                                             }
                 ,   {'k', "kind",       "kv", "static"  ,   "Compile for the given target kind."
                                                         ,   values = {"static", "shared", "binary"}                         }

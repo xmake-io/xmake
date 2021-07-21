@@ -235,18 +235,23 @@ function app:_basic_configs(cache)
         local default = opt[4]
         local kind    = (opt[3] == "k" or type(default) == "boolean") and "boolean" or "string"
 
-        -- get default platform
+        -- get default values
         if name == "plat" then
             default = find_platform()
         elseif name == "arch" then
             _, default = find_platform()
+        elseif name == "mode" then
+            _, default = project.allowed_modes()
+            if not default then
+                default = "release"
+            end
         end
 
         -- choice option?
         local values = opt.values
         if values then
             if type(values) == "function" then
-                values = values()
+                values = values(false, {menuconf = true})
             end
             for idx, value in ipairs(values) do
                 if default == value then
