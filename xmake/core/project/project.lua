@@ -1203,16 +1203,23 @@ end
 
 -- get all modes
 function project.modes()
-    local modes = table.copy(table.wrap(project.get("allowedmodes")))
-    for _, target in pairs(table.wrap(project.targets())) do
-        for _, rule in ipairs(target:orderules()) do
-            local name = rule:name()
-            if name:startswith("mode.") then
-                table.insert(modes, name:sub(6))
+    local modes
+    local allowed_modes = project.allowed_modes()
+    if allowed_modes then
+        modes = allowed_modes:to_array()
+    else
+        modes = {}
+        for _, target in pairs(table.wrap(project.targets())) do
+            for _, rule in ipairs(target:orderules()) do
+                local name = rule:name()
+                if name:startswith("mode.") then
+                    table.insert(modes, name:sub(6))
+                end
             end
         end
+        modes = table.unique(modes)
     end
-    return table.unique(modes)
+    return modes
 end
 
 -- get default architectures from the given platform
