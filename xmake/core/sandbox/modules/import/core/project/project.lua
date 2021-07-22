@@ -53,6 +53,7 @@ sandbox_core_project.rcfiles           = project.rcfiles
 sandbox_core_project.directory         = project.directory
 sandbox_core_project.name              = project.name
 sandbox_core_project.modes             = project.modes
+sandbox_core_project.default_arch      = project.default_arch
 sandbox_core_project.allowed_modes     = project.allowed_modes
 sandbox_core_project.allowed_plats     = project.allowed_plats
 sandbox_core_project.allowed_archs     = project.allowed_archs

@@ -28,7 +28,7 @@ function _find_plat(plat)
     plat = plat or config.get("plat")
     if not plat then
         if not plat then
-            _, plat = project.allowed_plats()
+            plat = project.get("defaultplat")
         end
         if not plat then
             plat = os.subhost()
@@ -88,7 +88,7 @@ function _find_arch(plat, arch)
     arch = arch or config.get("arch")
     if not arch then
         if not arch then
-            _, arch = project.allowed_archs(plat)
+            arch = project.default_arch(plat)
         end
         if not arch then
             if plat == "android" then

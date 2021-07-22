@@ -195,8 +195,7 @@ end
 function _find_default_mode()
     local mode = config.mode()
     if not mode then
-        local _, defaultmode = project.allowed_modes()
-        mode = defaultmode
+        mode = project.get("defaultmode")
         if not mode then
             mode = "release"
         end

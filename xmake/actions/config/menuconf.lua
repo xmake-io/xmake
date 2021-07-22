@@ -241,7 +241,7 @@ function app:_basic_configs(cache)
         elseif name == "arch" then
             _, default = find_platform()
         elseif name == "mode" then
-            _, default = project.allowed_modes()
+            default = project.get("defaultmode")
             if not default then
                 default = "release"
             end
