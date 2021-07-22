@@ -262,7 +262,17 @@ function _make_vsinfo_archs()
         end
     else
         -- we use it first if global set_arch("xx") is setted in xmake.lua
-        vsinfo_archs = project.get("target.arch") or platform.archs()
+        vsinfo_archs = project.get("target.arch")
+        if not vsinfo_archs then
+            -- for set_allowedarchs()
+            local allowed_archs = project.allowed_archs(config.plat())
+            if allowed_archs then
+                vsinfo_archs = allowed_archs:to_array()
+            end
+        end
+        if not vsinfo_archs then
+            vsinfo_archs = platform.archs()
+        end
     end
     if not vsinfo_archs or #vsinfo_archs == 0 then
         vsinfo_archs = { config.arch() }

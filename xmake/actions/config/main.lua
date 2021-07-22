@@ -191,6 +191,52 @@ function _config_targets(targetname)
     end
 end
 
+-- find default mode
+function _find_default_mode()
+    local mode = config.mode()
+    if not mode then
+        mode = project.get("defaultmode")
+        if not mode then
+            mode = "release"
+        end
+        config.set("mode", mode)
+    end
+    return mode
+end
+
+-- check configs
+function _check_configs()
+    -- check allowed modes
+    local mode = config.mode()
+    local allowed_modes = project.allowed_modes()
+    if allowed_modes then
+        if not allowed_modes:has(mode) then
+            local allowed_modes_str = table.concat(allowed_modes:to_array(), ", ")
+            raise("`%s` is not a valid complation mode for this project, please use one of %s", mode, allowed_modes_str)
+        end
+    end
+
+    -- check allowed plats
+    local plat = config.plat()
+    local allowed_plats = project.allowed_plats()
+    if allowed_plats then
+        if not allowed_plats:has(plat) then
+            local allowed_plats_str = table.concat(allowed_plats:to_array(), ", ")
+            raise("`%s` is not a valid platform for this project, please use one of %s", plat, allowed_plats_str)
+        end
+    end
+
+    -- check allowed archs
+    local arch = config.arch()
+    local allowed_archs = project.allowed_archs(config.plat())
+    if allowed_archs then
+        if not allowed_archs:has(arch) then
+            local allowed_archs_str = table.concat(allowed_archs:to_array(), ", ")
+            raise("`%s` is not a valid complation arch for this project, please use one of %s", arch, allowed_archs_str)
+        end
+    end
+end
+
 -- export configs
 function _export_configs()
     local exportfile = option.get("export")
@@ -309,6 +355,10 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         end
     end
 
+    -- find default mode
+    local mode = _find_default_mode()
+    assert(mode == config.mode())
+
     -- find default platform and save to configuration
     local plat, arch = find_platform({global = true})
     assert(plat == config.plat())
@@ -381,6 +431,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if option.get("verbose") and not opt.disable_dump then
         config.dump()
     end
+
+    -- check configs
+    _check_configs()
 
     -- export configs
     if option.get("export") then

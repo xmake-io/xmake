@@ -33,24 +33,6 @@ local platform                  = require("platform/platform")
 local deprecated                = require("base/deprecated")
 local deprecated_interpreter    = require("base/deprecated/interpreter")
 
--- set modes
-function deprecated_project._api_set_modes(interp, ...)
-
-    -- get api function
-    local apifunc = interp:api_func("set_modes")
-    assert(apifunc)
-
-    -- register api
-    interp:api_register_builtin("set_modes", function (...)
-
-                                            -- deprecated
-                                            deprecated.add("add_rules(\"mode.debug\", \"mode.release\")", "set_modes(\"debug\", \"release\")")
-
-                                            -- dispatch it
-                                            apifunc(...)
-                                        end)
-end
-
 -- add_headers for target
 function deprecated_project._api_target_add_headers(interp)
 
@@ -159,36 +141,8 @@ function deprecated_project._api_target_add_tools(interp)
                                         end)
 end
 
--- enable options?
-function deprecated_project._api_is_option(interp, ...)
-
-    -- make values
-    local values = ""
-    for _, v in ipairs(table.join(...)) do
-        if v and type(v) == "string" then
-            if #values == 0 then
-                values = v
-            else
-                values = values .. ", " .. v
-            end
-        end
-    end
-
-    -- deprecated
-    deprecated.add("has_config(\"%s\")", "is_option(\"%s\")", values)
-
-    -- done
-    return config.has(...)
-end
-
 -- register api
 function deprecated_project.api_register(interp)
-
-    -- register api: is_option() to root
-    interp:api_register(nil, "is_option",   deprecated_project._api_is_option)
-
-    -- register api: set_modes() to root
-    deprecated_project._api_set_modes(interp)
 
     -- register api: add_headers() to target
     deprecated_project._api_target_add_headers(interp)
