@@ -5,6 +5,8 @@
 ### New features
 
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): Add `os.joinenvs()` and improve package tools envirnoments
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): Add `set_allowedmodes`, `set_allowedplats` and `set_allowedarchs`
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): Add `set_defaultmode`, `set_defaultplat` and `set_defaultarch`
 
 ### Change
 
@@ -1039,6 +1041,8 @@
 ### 新特性
 
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): 添加 `os.joinenvs()` 和改进包工具环境
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): 添加 `set_allowedmodes`, `set_allowedplats` 和 `set_allowedarchs`
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): 添加 `set_defaultmode`, `set_defaultplat` 和 `set_defaultarch`
 
 ### 改进
 
