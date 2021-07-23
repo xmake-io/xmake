@@ -26,7 +26,7 @@ import("core.tool.compiler")
 
 -- translate path
 function _translate_path(package, p)
-    if p and is_host("windows") and package:is_plat("mingw") then
+    if p and is_host("windows") and (package:is_plat("mingw") or package:is_plat("msys") or package:is_plat("cygwin")) then
         p = p:gsub("\\", "/")
     end
     return p
