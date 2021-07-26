@@ -395,6 +395,9 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         config.set("buildir", path.relative(buildir, project.directory()), {readonly = true, force = true})
     end
 
+    -- check configs
+    _check_configs()
+    
     -- only config for building project using third-party buildsystem
     if not trybuild then
 
@@ -431,9 +434,6 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
     if option.get("verbose") and not opt.disable_dump then
         config.dump()
     end
-
-    -- check configs
-    _check_configs()
 
     -- export configs
     if option.get("export") then
