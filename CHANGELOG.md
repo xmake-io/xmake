@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.5.6
+
 ### New features
 
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): Add `os.joinenvs()` and improve package tools envirnoments
@@ -1037,6 +1039,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.5.6
 
 ### 新特性
 
