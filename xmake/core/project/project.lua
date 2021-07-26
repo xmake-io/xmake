@@ -379,13 +379,13 @@ function project._load_targets()
     local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
-        return nil, errors
+        return nil, nil, errors
     end
 
     -- load targets
     local results, errors = project._load_scope("target", true, true)
     if not results then
-        return nil, errors
+        return nil, nil, errors
     end
 
     -- make targets
@@ -446,7 +446,7 @@ function project._load_targets()
                     table.insert(t._ORDERULES, r)
                 end
             else
-                return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
+                return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
     end

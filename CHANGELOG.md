@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#1531](https://github.com/xmake-io/xmake/issues/1531): Fix error info when loading targets failed
+
 ## v2.5.6
 
 ### New features
@@ -1039,6 +1043,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#1531](https://github.com/xmake-io/xmake/issues/1531): 修复 targets 加载失败的错误信息提示错误
 
 ## v2.5.6
 
