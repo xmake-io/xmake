@@ -395,11 +395,11 @@ force to build in current directory via run `xmake -P .`]], os.projectdir())
         config.set("buildir", path.relative(buildir, project.directory()), {readonly = true, force = true})
     end
 
-    -- check configs
-    _check_configs()
-    
     -- only config for building project using third-party buildsystem
     if not trybuild then
+
+        -- check configs
+        _check_configs()
 
         -- install and update packages
         local require_enable = option.boolean(option.get("require"))
