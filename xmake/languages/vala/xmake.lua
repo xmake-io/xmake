@@ -18,37 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("vala")
-
-    -- set source file kinds
     set_sourcekinds {va = ".vala"}
-
-    -- set source file flags
     set_sourceflags {va = "vaflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "vald", static = "vaar", shared = "vash"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_langkinds   {vala = "va"}
 
-    -- set language kinds
-    set_langkinds {vala = "va"}
-
-    -- set mixing kinds
     set_mixingkinds("va", "cc", "cxx", "as")
-
-    -- add rules
     add_rules("vala")
 
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
     set_nameflags
     {
         object =
@@ -95,7 +77,6 @@ language("vala")
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {
