@@ -18,17 +18,73 @@
 -- @file        load.lua
 --
 
--- imports
-import("api")
+function _get_apis()
+    local apis = {}
+    apis.values = {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_syslinks"
+    ,   "target.add_asflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+    ,   "target.add_defines"
+    ,   "target.add_undefines"
+    ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_syslinks"
+    ,   "option.add_asflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    ,   "option.add_defines"
+    ,   "option.add_undefines"
+    ,   "option.add_rpathdirs"
+        -- package.add_xxx
+    ,   "package.add_links"
+    ,   "package.add_syslinks"
+    ,   "package.add_asflags"
+    ,   "package.add_ldflags"
+    ,   "package.add_arflags"
+    ,   "package.add_shflags"
+    ,   "package.add_defines"
+    ,   "package.add_undefines"
+    ,   "package.add_rpathdirs"
+    ,   "package.add_linkdirs"
+    ,   "package.add_includedirs"
+    ,   "package.add_sysincludedirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_cflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_defines"
+    ,   "toolchain.add_undefines"
+    ,   "toolchain.add_rpathdirs"
+    ,   "toolchain.add_linkdirs"
+    ,   "toolchain.add_includedirs"
+    ,   "toolchain.add_sysincludedirs"
+    }
+    apis.paths = {
+        -- target.add_xxx
+        "target.add_headers"    -- TODO deprecated
+    ,   "target.add_headerfiles"
+    ,   "target.add_linkdirs"
+    ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
+    }
+    return apis
+end
 
--- load it
 function main()
-
-    -- init apis
-    _g.apis = api.apis()
-
-    -- ok
-    return _g
+    return {apis = _get_apis()}
 end
 
 

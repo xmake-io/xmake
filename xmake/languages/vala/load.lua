@@ -20,8 +20,7 @@
 
 function _get_apis()
     local apis = {}
-    apis.values =
-    {
+    apis.values = {
         -- target.add_xxx
         "target.add_links"
     ,   "target.add_syslinks"
@@ -57,8 +56,7 @@ function _get_apis()
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
     }
-    apis.paths =
-    {
+    apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"
         -- option.add_xxx

@@ -19,29 +19,25 @@
 --
 
 language("vala")
+    add_rules("vala")
     set_sourcekinds {va = ".vala"}
     set_sourceflags {va = "vaflags"}
-    set_targetkinds {binary = "vald", static = "vaar", shared = "vash"}
+    set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
     set_langkinds   {vala = "va"}
-
     set_mixingkinds("va", "cc", "cxx", "as")
-    add_rules("vala")
 
     on_load("load")
     on_check_main("check_main")
 
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -56,8 +52,7 @@ language("vala")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -70,23 +65,16 @@ language("vala")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
     set_menu {
-                config =
-                {
+                config = {
                     {category = "Cross Complation Configuration/Compiler Configuration"          }
-                ,   {nil, "va",         "kv", nil,          "The Vala Compiler"                   }
-
-                ,   {category = "Cross Complation Configuration/Linker Configuration"            }
-                ,   {nil, "vald",       "kv", nil,          "The Vala Linker"                     }
-                ,   {nil, "vaar",       "kv", nil,          "The Vala Static Library Archiver"    }
-                ,   {nil, "vash",       "kv", nil,          "The Vala Shared Library Linker"      }
+                ,   {nil, "va",         "kv", nil,          "The Vala Compiler"                  }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"     }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                 }

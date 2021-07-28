@@ -18,32 +18,17 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("msrc")
-
-    -- set source file kinds
+    add_rules("win.sdk.resource")
     set_sourcekinds {mrc = ".rc"}
-
-    -- set source file flags
     set_sourceflags {mrc = "mrcflags"}
-
-    -- set language kinds
-    set_langkinds {msrc = "mrc"}
-
-    -- set mixing kinds
+    set_langkinds   {msrc = "mrc"}
     set_mixingkinds("mrc")
 
-    -- add rules
-    add_rules("win.sdk.resource")
-
-    -- on load
     on_load("load")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.defines"
         ,   "target.undefines"
@@ -56,7 +41,6 @@ language("msrc")
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

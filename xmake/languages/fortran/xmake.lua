@@ -18,41 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("fortran")
-
-    -- set source file kinds
+    add_rules("fortran")
     set_sourcekinds {fc = {".f03", ".f90", ".f95", ".for", ".f"}}
-
-    -- set source file flags
     set_sourceflags {fc = "fcflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "fcld", static = "ar", shared = "fcsh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {fortran = "fc"}
-
-    -- set mixing kinds
+    set_langkinds   {fortran = "fc"}
     set_mixingkinds("fc", "cc", "cxx", "as")
 
-    -- add rules
-    add_rules("fortran")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -63,8 +42,7 @@ language("fortran")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -79,8 +57,7 @@ language("fortran")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -93,14 +70,12 @@ language("fortran")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

@@ -18,41 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("golang")
-
-    -- set source file kinds
+    add_rules("go")
     set_sourcekinds {gc = ".go"}
-
-    -- set source file flags
     set_sourceflags {gc = "gcflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "gcld", static = "gcar"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags"}
-
-    -- set language kinds
-    set_langkinds {go = "gc"}
-
-    -- set mixing kinds
+    set_langkinds   {go = "gc"}
     set_mixingkinds("gc")
 
-    -- add rules
-    add_rules("go")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -67,8 +46,7 @@ language("golang")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -81,8 +59,7 @@ language("golang")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -97,7 +74,6 @@ language("golang")
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {
