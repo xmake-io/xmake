@@ -72,8 +72,7 @@ language("zig")
     }
 
     set_menu {
-                config =
-                {
+                config = {
                     {category = "Cross Complation Configuration/Compiler Configuration"          }
                 ,   {nil, "zc",         "kv", nil,          "The Zig Compiler"                   }
 
