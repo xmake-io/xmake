@@ -18,7 +18,7 @@
 -- @file        load.lua
 --
 
-function apiset_apis()
+function _get_apis()
     local apis = {}
     apis.values = {
         -- target.add_xxx

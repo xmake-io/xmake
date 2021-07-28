@@ -145,7 +145,7 @@ function _api_add_cxxfuncs(interp, module, links, includes, ...)
 end
 
 -- get apis
-function apiset_apis()
+function _get_apis()
     local apis = {}
     apis.values = {
         -- target.add_xxx
@@ -250,7 +250,7 @@ function apiset_apis()
 end
 
 function main()
-    return {apis = apiset_apis()}
+    return {apis = _get_apis()}
 end
 
 
