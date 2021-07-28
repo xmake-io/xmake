@@ -663,6 +663,11 @@ function _load_package(packagename, requireinfo, opt)
     -- get package from cache first
     local package_cached = _memcache():get2("packages", packagekey)
     if package_cached then
+        -- since toplevel is not part of packagekey, we need to ensure it's part of the cached package table too
+        if requireinfo.is_toplevel and not package_cached:is_toplevel() then
+            package_cached:requireinfo().is_toplevel = true
+        end
+
         return package_cached
     end
 
