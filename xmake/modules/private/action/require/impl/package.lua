@@ -667,7 +667,6 @@ function _load_package(packagename, requireinfo, opt)
         if requireinfo.is_toplevel and not package_cached:is_toplevel() then
             package_cached:requireinfo().is_toplevel = true
         end
-
         return package_cached
     end
 
