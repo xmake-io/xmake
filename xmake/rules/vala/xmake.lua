@@ -20,9 +20,38 @@
 
 rule("vala")
     set_extensions(".vala")
-    before_buildcmd_files(function (target, batchcmds, sourcebatch, opt)
+    before_buildcmd_file(function (target, batchcmds, sourcefile_vala, opt)
+
+        -- get valac
         import("lib.detect.find_tool")
         local valac = assert(find_tool("valac"), "valac not found!")
-        print(sourcebatch)
+
+        -- get c source file for vala
+        local sourcefile_c = path.join(target:autogendir(), "rules", "vala", path.basename(sourcefile_vala) .. ".c")
+        local basedir = path.directory(sourcefile_c)
+
+        -- add objectfile
+        local objectfile = target:objectfile(sourcefile_c)
+        table.insert(target:objectfiles(), objectfile)
+
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.vala %s", sourcefile_vala)
+        batchcmds:mkdir(basedir)
+        local argv = {"-C", "-b", basedir}
+        local packages = target:values("vala.packages")
+        if packages then
+            for _, package in ipairs(packages) do
+                table.insert(argv, "--pkg")
+                table.insert(argv, package)
+            end
+        end
+        table.insert(argv, sourcefile_vala)
+        batchcmds:vrunv(valac.program, argv)
+        batchcmds:compile(sourcefile_c, objectfile)
+
+        -- add deps
+        batchcmds:add_depfiles(sourcefile_vala)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
     end)
 
