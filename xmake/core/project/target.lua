@@ -1545,30 +1545,18 @@ end
 -- e.g. cc cxx mm mxx as ...
 --
 function _instance:sourcekinds()
-
-    -- cached? return it directly
-    if self._SOURCEKINDS then
-        return self._SOURCEKINDS
-    end
-
-    -- make source kinds
-    local sourcekinds = {}
-    for _, sourcefile in pairs(self:sourcefiles()) do
-
-        -- get source kind
-        local sourcekind = self:sourcekind_of(sourcefile)
-        if sourcekind then
-            table.insert(sourcekinds, sourcekind)
+    local sourcekinds = self._SOURCEKINDS
+    if not sourcekinds then
+        sourcekinds = {}
+        for _, sourcefile in pairs(self:sourcefiles()) do
+            local sourcekind = self:sourcekind_of(sourcefile)
+            if sourcekind then
+                table.insert(sourcekinds, sourcekind)
+            end
         end
+        sourcekinds = table.unique(sourcekinds)
+        self._SOURCEKINDS = sourcekinds
     end
-
-    -- remove repeat
-    sourcekinds = table.unique(sourcekinds)
-
-    -- cache it
-    self._SOURCEKINDS = sourcekinds
-
-    -- ok?
     return sourcekinds
 end
 

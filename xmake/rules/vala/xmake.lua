@@ -20,6 +20,13 @@
 
 rule("vala")
     set_extensions(".vala")
+    on_load(function (target)
+        -- only vala source files? we need patch c source kind for linker
+        local sourcekinds = target:sourcekinds()
+        if #sourcekinds == 0 then
+            table.insert(sourcekinds, "cc")
+        end
+    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_vala, opt)
 
         -- get valac
@@ -27,7 +34,7 @@ rule("vala")
         local valac = assert(find_tool("valac"), "valac not found!")
 
         -- get c source file for vala
-        local sourcefile_c = path.join(target:autogendir(), "rules", "vala", path.basename(sourcefile_vala) .. ".c")
+        local sourcefile_c = target:autogenfile((sourcefile_vala:gsub(".vala$", ".c")))
         local basedir = path.directory(sourcefile_c)
 
         -- add objectfile
