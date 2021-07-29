@@ -18,17 +18,39 @@
 -- @file        load.lua
 --
 
--- imports
-import("api")
+function _get_apis()
+    local apis = {}
+    apis.values = {
+        -- target.add_xxx
+        "target.add_rcflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+    ,   "target.add_shflags"
+    ,   "target.add_rpathdirs"  -- @note do not translate path, it's usually an absolute path or contains $ORIGIN/@loader_path
+        -- option.add_xxx
+    ,   "option.add_rcflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+    ,   "option.add_shflags"
+    ,   "option.add_rpathdirs"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_rcflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    ,   "toolchain.add_shflags"
+    ,   "toolchain.add_rpathdirs"
+    }
+    apis.paths = {
+        -- target.add_xxx
+        "target.add_linkdirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    }
+    return apis
+end
 
--- load it
 function main()
-
-    -- init apis
-    _g.apis = api.apis()
-
-    -- ok
-    return _g
+    return {apis = _get_apis()}
 end
 
 

@@ -18,41 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("cuda")
-
-    -- set source file kinds
+    add_rules("cuda")
     set_sourcekinds {cu = ".cu"}
-
-    -- set source file flags
     set_sourceflags {cu = "cuflags"}
-
-    -- set target kinds
     set_targetkinds {gpucode = "culd", binary = "ld", static = "ar", shared = "sh"}
-
-    -- set target flags
     set_targetflags {gpucode = "culdflags", binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
     set_langkinds {cu = "cu"}
-
-    -- set mixing kinds
     set_mixingkinds("cu", "cc", "cxx", "as")
 
-    -- add rules
-    add_rules("cuda")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -68,8 +47,7 @@ language("cuda")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -98,13 +76,11 @@ language("cuda")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
-    ,   gpucode =
-        {
+    ,   gpucode = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "toolchain.linkdirs"
@@ -117,7 +93,6 @@ language("cuda")
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

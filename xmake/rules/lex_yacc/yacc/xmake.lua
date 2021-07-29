@@ -23,10 +23,8 @@ rule("yacc")
     set_extensions(".y", ".yy")
     before_buildcmd_file(function (target, batchcmds, sourcefile_yacc, opt)
 
-        -- imports
-        import("lib.detect.find_tool")
-
         -- get yacc
+        import("lib.detect.find_tool")
         local yacc = assert(find_tool("bison") or find_tool("yacc"), "yacc/bison not found!")
 
         -- get c/c++ source file for yacc

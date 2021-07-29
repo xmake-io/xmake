@@ -18,41 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("c++")
-
-    -- set source file kinds
+    add_rules("c++")
     set_sourcekinds {cc = ".c", cxx = {".cpp", ".cc", ".cxx"}}
-
-    -- set source file flags
     set_sourceflags {cc = {"cflags", "cxflags"}, cxx = {"cxxflags", "cxflags"}}
-
-    -- set target kinds
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {c = "cc", cxx = "cxx"}
-
-    -- set mixing kinds
+    set_langkinds   {c = "cc", cxx = "cxx"}
     set_mixingkinds("cc", "cxx", "as", "mrc")
 
-    -- add rules
-    add_rules("c++")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.frameworks"
@@ -78,8 +57,7 @@ language("c++")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
@@ -101,8 +79,7 @@ language("c++")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
@@ -124,14 +101,12 @@ language("c++")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {
