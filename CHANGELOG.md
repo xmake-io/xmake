@@ -2,6 +2,14 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1534](https://github.com/xmake-io/xmake/issues/1534): Support to compile Vala lanuage project
+
+### Change
+
+* [#1540](https://github.com/xmake-io/xmake/issues/1540): Better support for compilation of automatically generated code
+
 ### Bugs fixed
 
 * [#1531](https://github.com/xmake-io/xmake/issues/1531): Fix error info when loading targets failed
@@ -1043,6 +1051,14 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1534](https://github.com/xmake-io/xmake/issues/1534): 新增对 Vala 语言的支持
+
+### 改进
+
+* [#1540](https://github.com/xmake-io/xmake/issues/1540): 更好更方便地编译自动生成的代码
 
 ### Bugs 修复
 

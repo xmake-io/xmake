@@ -1237,6 +1237,8 @@ function _instance:sourcefiles()
                 -- This is usually used for some rules that automatically generate code files,
                 -- because they ensure that the code files have been generated before compilation.
                 --
+                -- @see https://github.com/xmake-io/xmake/issues/1540
+                --
                 -- e.g. add_files("src/test.c", {always_added = true})
                 --
                 if #results == 0 and self:extraconf("files", file, "always_added") then
