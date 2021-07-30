@@ -238,6 +238,7 @@ muslcc        The musl-based cross-compilation toolchains
 * Fortran
 * Cuda
 * Zig
+* Vala
 
 ## Support Features
 
