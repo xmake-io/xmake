@@ -1232,6 +1232,16 @@ function _instance:sourcefiles()
                         results = os.dirs(file)
                     end
                 end
+
+                -- Even if the current source file does not exist yet, we always add it.
+                -- This is usually used for some rules that automatically generate code files,
+                -- because they ensure that the code files have been generated before compilation.
+                --
+                -- e.g. add_files("src/test.c", {always_added = true})
+                --
+                if #results == 0 and self:extraconf("files", file, "always_added") then
+                    results = {file}
+                end
             end
             targetcache:set2("sourcefiles", file, results)
         end
