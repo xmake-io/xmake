@@ -18,10 +18,10 @@
 -- @file        xmake.lua
 --
 
-rule("c++.utils.bin2h")
+rule("utils.bin2c")
     set_extensions(".bin")
     on_load(function (target)
-        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2h")
+        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
         if not os.isfile(headerdir) then
             os.mkdir(headerdir)
         end
@@ -30,14 +30,14 @@ rule("c++.utils.bin2h")
     before_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
         -- get header file
-        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2h")
+        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
         local headerfile = path.join(headerdir, (sourcefile_bin:gsub("%.", "_")) .. ".h")
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.header %s", sourcefile_bin)
         batchcmds:mkdir(headerdir)
-
-        -- TODO
+        local argv = {"-i", sourcefile_bin, "-o", headerfile, "-w", "32"}
+        batchcmds:vrunv(os.programfile(), argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)
