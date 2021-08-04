@@ -81,9 +81,10 @@ function _do_bin2c(binarypath, outputpath, opt)
     print("generating code data file from %s ..", binarypath)
 
     -- do dump
-    local binarydata = bytes(io.readfile(binarypath))
+    local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
     local outputfile = io.open(outputpath, 'w')
     if outputfile then
+        binarydata = binarydata .. bytes('\0')
         _do_dump(binarydata, outputfile, opt)
         outputfile:close()
     end

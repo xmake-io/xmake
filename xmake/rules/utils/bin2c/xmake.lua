@@ -20,23 +20,22 @@
 
 rule("utils.bin2c")
     set_extensions(".bin")
-    on_load(function (target)
-        local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
-        if not os.isfile(headerdir) then
-            os.mkdir(headerdir)
-        end
-        target:add("includedirs", headerdir)
-    end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
 
         -- get header file
         local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
-        local headerfile = path.join(headerdir, (sourcefile_bin:gsub("%.", "_")) .. ".h")
+        local headerfile = path.join(headerdir, path.filename(sourcefile_bin) .. ".h")
+        target:add("includedirs", headerdir)
 
         -- add commands
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.header %s", sourcefile_bin)
+        batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
         batchcmds:mkdir(headerdir)
-        local argv = {"-i", sourcefile_bin, "-o", headerfile, "-w", "32"}
+        local argv = {"lua", "private.utils.bin2c", "-i", sourcefile_bin, "-o", headerfile}
+        local linewidth = target:extraconf("rules", "utils.bin2c", "linewidth")
+        if linewidth then
+            table.insert(argv, "-w")
+            table.insert(argv, tostring(linewidth))
+        end
         batchcmds:vrunv(os.programfile(), argv)
 
         -- add deps
