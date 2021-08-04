@@ -10,7 +10,7 @@ static unsigned char g_png_data[] = {
 
 int main(int argc, char** argv)
 {
-    printf("data.bin: %s, size: %d\n", g_bin_data, sizeof(g_bin_data));
-    printf("image.png: %s, size: %d\n", g_png_data, sizeof(g_png_data));
+    printf("data.bin: %s, size: %d\n", g_bin_data, (int)sizeof(g_bin_data));
+    printf("image.png: %s, size: %d\n", g_png_data, (int)sizeof(g_png_data));
     return 0;
 }
