@@ -5,6 +5,7 @@
 ### New features
 
 * [#1534](https://github.com/xmake-io/xmake/issues/1534): Support to compile Vala lanuage project
+* [#1544](https://github.com/xmake-io/xmake/issues/1544): Add utils.bin2c rule to generate header from binary file
 
 ### Change
 
@@ -1055,6 +1056,7 @@
 ### 新特性
 
 * [#1534](https://github.com/xmake-io/xmake/issues/1534): 新增对 Vala 语言的支持
+* [#1544](https://github.com/xmake-io/xmake/issues/1544): 添加 utils.bin2c 规则去自动从二进制资源文件产生 .h 头文件并引入到 C/C++ 代码中
 
 ### 改进
 
