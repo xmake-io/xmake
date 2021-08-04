@@ -20,7 +20,7 @@
 
 rule("c++.utils.bin2h")
     set_extensions(".bin")
-    on_load(function (function (target)
+    on_load(function (target)
         local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2h")
         if not os.isfile(headerdir) then
             os.mkdir(headerdir)
@@ -31,7 +31,7 @@ rule("c++.utils.bin2h")
 
         -- get header file
         local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2h")
-        local headerfile = path.join(headerdir, path.basename(sourcefile_bin) .. ".h")
+        local headerfile = path.join(headerdir, (sourcefile_bin:gsub("%.", "_")) .. ".h")
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.header %s", sourcefile_bin)
