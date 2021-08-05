@@ -18,17 +18,43 @@
 -- @file        load.lua
 --
 
--- imports
-import("api")
+function _get_apis()
+    local apis = {}
+    apis.values = {
+        -- target.add_xxx
+        "target.add_links"
+    ,   "target.add_syslinks"
+    ,   "target.add_gcflags"
+    ,   "target.add_ldflags"
+    ,   "target.add_arflags"
+        -- option.add_xxx
+    ,   "option.add_links"
+    ,   "option.add_syslinks"
+    ,   "option.add_gcflags"
+    ,   "option.add_ldflags"
+    ,   "option.add_arflags"
+        -- toolchain.add_xxx
+    ,   "toolchain.add_links"
+    ,   "toolchain.add_syslinks"
+    ,   "toolchain.add_gcflags"
+    ,   "toolchain.add_ldflags"
+    ,   "toolchain.add_arflags"
+    }
+    apis.paths = {
+        -- target.add_xxx
+        "target.add_linkdirs"
+    ,   "target.add_includedirs"
+    ,   "target.add_sysincludedirs"
+        -- option.add_xxx
+    ,   "option.add_linkdirs"
+    ,   "option.add_includedirs"
+    ,   "option.add_sysincludedirs"
+    }
+    return apis
+end
 
--- load it
 function main()
-
-    -- init apis
-    _g.apis = api.apis()
-
-    -- ok
-    return _g
+    return {apis = _get_apis()}
 end
 
 

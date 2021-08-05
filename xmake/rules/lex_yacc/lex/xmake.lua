@@ -23,10 +23,8 @@ rule("lex")
     set_extensions(".l", ".ll")
     on_buildcmd_file(function (target, batchcmds, sourcefile_lex, opt)
 
-        -- imports
-        import("lib.detect.find_tool")
-
         -- get lex
+        import("lib.detect.find_tool")
         local lex = assert(find_tool("flex") or find_tool("lex"), "lex not found!")
 
         -- get c/c++ source file for lex

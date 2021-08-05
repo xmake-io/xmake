@@ -50,16 +50,6 @@ function main(opt)
     if vcpkgdir then
         table.insert(paths, vcpkgdir)
     end
-    if is_host("windows") then
-        -- attempt to read path info after running `vcpkg integrate install`
-        local pathfile = "~/../Local/vcpkg/vcpkg.path.txt"
-        if os.isfile(pathfile) then
-            local dir = io.readfile(pathfile):trim()
-            if os.isdir(dir) then
-                table.insert(paths, dir)
-            end
-        end
-    end
 
     -- find program
     opt.paths = paths

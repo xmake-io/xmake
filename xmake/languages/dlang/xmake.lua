@@ -18,41 +18,20 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("dlang")
-
-    -- set source file kinds
+    add_rules("dlang")
     set_sourcekinds {dc = ".d"}
-
-    -- set source file flags
     set_sourceflags {dc = "dcflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "dcld", static = "dcar", shared = "dcsh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {d = "dc"}
-
-    -- set mixing kinds
+    set_langkinds   {d = "dc"}
     set_mixingkinds("dc", "cc", "cxx", "as")
 
-    -- add rules
-    add_rules("dlang")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -63,8 +42,7 @@ language("dlang")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -79,8 +57,7 @@ language("dlang")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -93,14 +70,12 @@ language("dlang")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

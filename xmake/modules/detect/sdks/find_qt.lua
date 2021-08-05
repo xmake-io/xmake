@@ -169,12 +169,13 @@ function _find_qt(sdkdir, sdkver)
     sdkdir = qtenvs.QT_INSTALL_PREFIX
     local sdkver = qtenvs.QT_VERSION
     local bindir = qtenvs.QT_INSTALL_BINS
+    local libexecdir = qtenvs.QT_INSTALL_LIBEXECS
     local qmldir = qtenvs.QT_INSTALL_QML
     local libdir = qtenvs.QT_INSTALL_LIBS
     local pluginsdir = qtenvs.QT_INSTALL_PLUGINS
     local includedir = qtenvs.QT_INSTALL_HEADERS
     local mkspecsdir = path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
-    return {sdkdir = sdkdir, bindir = bindir, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
+    return {sdkdir = sdkdir, bindir = bindir, libexecdir = libexecdir, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
 end
 
 -- find qt sdk toolchains

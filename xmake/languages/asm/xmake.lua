@@ -18,38 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("asm")
-
-    -- set source file kinds
+    add_rules("asm")
     set_sourcekinds {as = {".s", ".asm"}}
-
-    -- set source file flags
     set_sourceflags {as = "asflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "ld", static = "ar", shared = "sh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {as = "as"}
-
-    -- set mixing kinds
+    set_langkinds   {as = "as"}
     set_mixingkinds("as")
 
-    -- add rules
-    add_rules("asm")
-
-    -- on load
     on_load("load")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "target.symbols"
         ,   "target.warnings"
@@ -65,8 +46,7 @@ language("asm")
         ,   "target.sysincludedirs"
         ,   "toolchain.sysincludedirs"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -78,8 +58,7 @@ language("asm")
         ,   "target.links"
         ,   "toolchain.links"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -92,14 +71,12 @@ language("asm")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

@@ -1232,6 +1232,18 @@ function _instance:sourcefiles()
                         results = os.dirs(file)
                     end
                 end
+
+                -- Even if the current source file does not exist yet, we always add it.
+                -- This is usually used for some rules that automatically generate code files,
+                -- because they ensure that the code files have been generated before compilation.
+                --
+                -- @see https://github.com/xmake-io/xmake/issues/1540
+                --
+                -- e.g. add_files("src/test.c", {always_added = true})
+                --
+                if #results == 0 and self:extraconf("files", file, "always_added") then
+                    results = {file}
+                end
             end
             targetcache:set2("sourcefiles", file, results)
         end
@@ -1545,30 +1557,18 @@ end
 -- e.g. cc cxx mm mxx as ...
 --
 function _instance:sourcekinds()
-
-    -- cached? return it directly
-    if self._SOURCEKINDS then
-        return self._SOURCEKINDS
-    end
-
-    -- make source kinds
-    local sourcekinds = {}
-    for _, sourcefile in pairs(self:sourcefiles()) do
-
-        -- get source kind
-        local sourcekind = self:sourcekind_of(sourcefile)
-        if sourcekind then
-            table.insert(sourcekinds, sourcekind)
+    local sourcekinds = self._SOURCEKINDS
+    if not sourcekinds then
+        sourcekinds = {}
+        for _, sourcefile in pairs(self:sourcefiles()) do
+            local sourcekind = self:sourcekind_of(sourcefile)
+            if sourcekind then
+                table.insert(sourcekinds, sourcekind)
+            end
         end
+        sourcekinds = table.unique(sourcekinds)
+        self._SOURCEKINDS = sourcekinds
     end
-
-    -- remove repeat
-    sourcekinds = table.unique(sourcekinds)
-
-    -- cache it
-    self._SOURCEKINDS = sourcekinds
-
-    -- ok?
     return sourcekinds
 end
 

@@ -18,48 +18,26 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("zig")
-
-    -- set source file kinds
+    add_rules("zig")
     set_sourcekinds {zc = ".zig"}
-
-    -- set source file flags
     set_sourceflags {zc = "zcflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "zcld", static = "zcar", shared = "zcsh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {zig = "zc"}
-
-    -- set mixing kinds
+    set_langkinds   {zig = "zc"}
     set_mixingkinds("zc", "cc", "cxx", "as")
 
-    -- add rules
-    add_rules("zig")
-
-    -- on load
     on_load("load")
-
-    -- on check_main
     on_check_main("check_main")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.rpathdirs"
@@ -74,8 +52,7 @@ language("zig")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
         ,   "target.strip"
@@ -88,17 +65,14 @@ language("zig")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
-                config =
-                {
+                config = {
                     {category = "Cross Complation Configuration/Compiler Configuration"          }
                 ,   {nil, "zc",         "kv", nil,          "The Zig Compiler"                   }
 

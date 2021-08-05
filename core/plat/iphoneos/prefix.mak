@@ -25,7 +25,7 @@ TARGETARCH 			+= -miphoneos-version-min=10.0
 PRE_				:= $(if $(BIN),$(BIN)/$(PRE),xcrun -sdk iphoneos )
 
 # cc
-CC					= $(PRE_)clang
+CC					:= $(if $(CC),$(CC),$(PRE_)clang)
 ifeq ($(CXFLAGS_CHECK),)
 CC_CHECK			= ${shell if $(CC) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
 CXFLAGS_CHECK		:= $(call CC_CHECK,-ftrapv,)
@@ -33,7 +33,7 @@ export CXFLAGS_CHECK
 endif
 
 # ld
-LD					= $(PRE_)clang
+LD					:= $(if $(CC),$(CC),$(PRE_)clang)
 ifeq ($(LDFLAGS_CHECK),)
 LD_CHECK			= ${shell if $(LD) $(1) -S -o /dev/null -xc /dev/null > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi }
 LDFLAGS_CHECK		:= $(call LD_CHECK,-ftrapv,)
@@ -41,10 +41,10 @@ export LDFLAGS_CHECK
 endif
 
 # tool
-MM					= $(PRE_)clang
-AR					= $(PRE_)ar
-STRIP				= $(PRE_)strip
-RANLIB				= $(PRE_)ranlib
+MM					:= $(if $(CC),$(CC),$(PRE_)clang)
+AR					:= $(if $(AR),$(AR),$(PRE_)ar)
+STRIP				:= $(if $(STRIP),$(STRIP),$(PRE_)strip)
+RANLIB				:= $(if $(RANLIB),$(RANLIB),$(PRE_)ranlib)
 AS					= $(PRE_)clang
 RM					= rm -f
 RMDIR				= rm -rf

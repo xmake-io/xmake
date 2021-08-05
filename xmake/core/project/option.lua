@@ -175,7 +175,14 @@ function _instance:_check()
     end
 
     -- trace
-    utils.cprint("checking for %s ... %s", name, self:enabled() and "${color.success}${text.success}" or "${color.nothing}${text.nothing}")
+    local result
+    if self:enabled() then
+        local value = self:value()
+        result = "${color.success}" .. (type(value) == "boolean" and "${text.success}" or tostring(value))
+    else
+        result = "${color.nothing}${text.nothing}"
+    end
+    utils.cprint("checking for %s ... %s", name, result)
     if not ok then
         os.raise(errors)
     end

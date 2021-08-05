@@ -18,38 +18,19 @@
 -- @file        xmake.lua
 --
 
--- define language
 language("swift")
-
-    -- set source file kinds
+    add_rules("swift")
     set_sourcekinds {sc = ".swift"}
-
-    -- set source file flags
     set_sourceflags {sc = "scflags"}
-
-    -- set target kinds
     set_targetkinds {binary = "scld", static = "ar", shared = "scsh"}
-
-    -- set target flags
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
-
-    -- set language kinds
-    set_langkinds {swift = "sc"}
-
-    -- set mixing kinds
+    set_langkinds   {swift = "sc"}
     set_mixingkinds("sc", "mm", "mxx", "cc", "cxx")
 
-    -- add rules
-    add_rules("swift")
-
-    -- on load
     on_load("load")
 
-    -- set name flags
-    set_nameflags
-    {
-        object =
-        {
+    set_nameflags {
+        object = {
             "config.includedirs"
         ,   "config.frameworkdirs"
         ,   "config.Frameworks"
@@ -69,8 +50,7 @@ language("swift")
         ,   "toolchain.frameworkdirs"
         ,   "toolchain.frameworks"
         }
-    ,   binary =
-        {
+    ,   binary = {
             "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
@@ -91,8 +71,7 @@ language("swift")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   shared =
-        {
+    ,   shared = {
             "config.linkdirs"
         ,   "config.frameworkdirs"
         ,   "target.linkdirs"
@@ -111,14 +90,12 @@ language("swift")
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
         }
-    ,   static =
-        {
+    ,   static = {
             "target.strip"
         ,   "target.symbols"
         }
     }
 
-    -- set menu
     set_menu {
                 config =
                 {

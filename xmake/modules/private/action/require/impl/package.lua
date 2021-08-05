@@ -26,6 +26,7 @@ import("core.base.hashset")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
+import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
@@ -528,6 +529,74 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
     end
 end
 
+-- select artifacts for msvc
+function _select_artifacts_for_msvc(package, artifacts_manifest)
+    local msvc
+    for _, instance in ipairs(package:toolchains()) do
+        if instance:name() == "msvc" then
+            msvc = instance
+            break
+        end
+    end
+    if not msvc then
+        msvc = toolchain.load("msvc", {plat = package:plat(), arch = package:arch()})
+    end
+    local vcvars = msvc:config("vcvars")
+    if vcvars then
+        local vs_toolset = vcvars.VCToolsVersion
+        if vs_toolset and semver.is_valid(vs_toolset) then
+            local artifacts_infos = {}
+            for key, artifacts_info in pairs(artifacts_manifest) do
+                if key:startswith(package:plat() .. "-" .. package:arch() .. "-vc") and key:endswith("-" .. package:buildhash()) then
+                    table.insert(artifacts_infos, artifacts_info)
+                end
+            end
+            -- we sort them to select a newest toolset to get better optimzed performance
+            table.sort(artifacts_infos, function (a, b)
+                if a.toolset and b.toolset then
+                    return semver.compare(a.toolset, b.toolset) > 0
+                else
+                    return false
+                end
+            end)
+            if package:config("shared") or package:is_binary() then
+                -- executable programs and dynamic libraries only need to select the latest toolset
+                return artifacts_infos[1]
+            else
+                -- static libraries need to consider toolset compatibility
+                for _, artifacts_info in ipairs(artifacts_infos) do
+                    -- toolset is backwards compatible
+                    --
+                    -- @see https://github.com/xmake-io/xmake/issues/1513
+                    -- https://docs.microsoft.com/en-us/cpp/porting/binary-compat-2015-2017?view=msvc-160
+                    if artifacts_info.toolset and semver.compare(vs_toolset, artifacts_info.toolset) >= 0 then
+                        return artifacts_info
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- select artifacts for generic
+function _select_artifacts_for_generic(package, artifacts_manifest)
+    local buildid = package:plat() .. "-" .. package:arch() .. "-" .. package:buildhash()
+    return artifacts_manifest[buildid]
+end
+
+-- select to use precompiled artifacts?
+function _select_artifacts(package, artifacts_manifest)
+    local artifacts_info
+    if package:is_plat("windows") then -- for msvc
+        artifacts_info = _select_artifacts_for_msvc(package, artifacts_manifest)
+    else
+        artifacts_info = _select_artifacts_for_generic(package, artifacts_manifest)
+    end
+    if artifacts_info then
+        package:artifacts_set(artifacts_info)
+    end
+end
+
 -- load required packages
 function _load_package(packagename, requireinfo, opt)
 
@@ -594,6 +663,10 @@ function _load_package(packagename, requireinfo, opt)
     -- get package from cache first
     local package_cached = _memcache():get2("packages", packagekey)
     if package_cached then
+        -- since toplevel is not part of packagekey, we need to ensure it's part of the cached package table too
+        if requireinfo.is_toplevel and not package_cached:is_toplevel() then
+            package_cached:requireinfo().is_toplevel = true
+        end
         return package_cached
     end
 
@@ -625,14 +698,11 @@ function _load_package(packagename, requireinfo, opt)
     _check_package_configurations(package)
 
     -- save artifacts info, we need add it at last before buildhash need depend on package configurations
+    -- it will switch to install precompiled binary package from xmake-mirror/build-artifacts
     if from_repo and not option.get("build") and not requireinfo.build then
         local artifacts_manifest = repository.artifacts_manifest(packagename, version)
         if artifacts_manifest then
-            local buildid = package:plat() .. "-" .. package:arch() .. "-" .. package:buildhash()
-            local artifacts_info = artifacts_manifest[buildid]
-            if artifacts_info then
-                package:artifacts_set(artifacts_info)
-            end
+            _select_artifacts(package, artifacts_manifest)
         end
     end
 

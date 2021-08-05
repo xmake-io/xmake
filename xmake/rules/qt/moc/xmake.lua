@@ -27,7 +27,11 @@ rule("qt.moc")
         import("core.tool.compiler")
 
         -- get moc
-        local moc = path.join(target:data("qt").bindir, is_host("windows") and "moc.exe" or "moc")
+        local qt = assert(target:data("qt"), "qt not found!")
+        local moc = path.join(qt.bindir, is_host("windows") and "moc.exe" or "moc")
+        if not os.isexec(moc) and qt.libexecdir then
+            moc = path.join(qt.libexecdir, is_host("windows") and "moc.exe" or "moc")
+        end
         assert(moc and os.isexec(moc), "moc not found!")
 
         -- get c++ source file for moc

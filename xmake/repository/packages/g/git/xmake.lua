@@ -23,8 +23,6 @@ package("git")
             end
         end
     end
-    set_plat(os.host())
-    set_arch(os.arch())
 
     on_load("windows", function (package)
         package:addenv("PATH", path.join("share", "MinGit", "mingw32", "bin"))

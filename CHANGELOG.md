@@ -4,11 +4,31 @@
 
 ### New features
 
+* [#1534](https://github.com/xmake-io/xmake/issues/1534): Support to compile Vala lanuage project
+* [#1544](https://github.com/xmake-io/xmake/issues/1544): Add utils.bin2c rule to generate header from binary file
+
+### Change
+
+* [#1540](https://github.com/xmake-io/xmake/issues/1540): Better support for compilation of automatically generated code
+
+### Bugs fixed
+
+* [#1531](https://github.com/xmake-io/xmake/issues/1531): Fix error info when loading targets failed
+
+## v2.5.6
+
+### New features
+
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): Add `os.joinenvs()` and improve package tools envirnoments
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): Add `set_allowedmodes`, `set_allowedplats` and `set_allowedarchs`
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): Add `set_defaultmode`, `set_defaultplat` and `set_defaultarch`
 
 ### Change
 
 * Improve vs/vsxmake project generator to support vs2022
+* [#1513](https://github.com/xmake-io/xmake/issues/1513): Improve precompiled binary package compatibility on windows/msvc
+* Improve to find vcpkg root directory on windows
+* Improve to support Qt6
 
 ### Bugs fixed
 
@@ -1035,11 +1055,31 @@
 
 ### 新特性
 
+* [#1534](https://github.com/xmake-io/xmake/issues/1534): 新增对 Vala 语言的支持
+* [#1544](https://github.com/xmake-io/xmake/issues/1544): 添加 utils.bin2c 规则去自动从二进制资源文件产生 .h 头文件并引入到 C/C++ 代码中
+
+### 改进
+
+* [#1540](https://github.com/xmake-io/xmake/issues/1540): 更好更方便地编译自动生成的代码
+
+### Bugs 修复
+
+* [#1531](https://github.com/xmake-io/xmake/issues/1531): 修复 targets 加载失败的错误信息提示错误
+
+## v2.5.6
+
+### 新特性
+
 * [#1483](https://github.com/xmake-io/xmake/issues/1483): 添加 `os.joinenvs()` 和改进包工具环境
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): 添加 `set_allowedmodes`, `set_allowedplats` 和 `set_allowedarchs`
+* [#1523](https://github.com/xmake-io/xmake/issues/1523): 添加 `set_defaultmode`, `set_defaultplat` 和 `set_defaultarch`
 
 ### 改进
 
 * 改进 vs/vsxmake 工程插件支持 vs2022
+* [#1513](https://github.com/xmake-io/xmake/issues/1513): 改进 windows 预编译包的兼容性问题
+* 改进 vcpkg 包在 windows 上的查找
+* 改进对 Qt6 的支持
 
 ### Bugs 修复
 

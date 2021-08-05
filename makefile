@@ -114,10 +114,10 @@ install:
 	@cp -r xmake/* $(xmake_dir_install)
 	@# install the xmake core file
 	@cp -p $(xmake_core) $(xmake_core_install)
-	@chmod 777 $(xmake_core_install)
+	@chmod 755 $(xmake_core_install)
 	@# install the xrepo bin file
 	@cp -p ./scripts/xrepo.sh $(xrepo_bin_install)
-	@chmod 777 $(xrepo_bin_install)
+	@chmod 755 $(xrepo_bin_install)
 	@# remove xmake.out
 	@if [ -f "$(TMP_DIR)/xmake.out" ]; then rm $(TMP_DIR)/xmake.out; fi
 	@# ok

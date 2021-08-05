@@ -57,6 +57,16 @@ function main()
                 end
             end
         end
+        if not vcpkgdir and is_host("windows") then
+            -- attempt to read path info after running `vcpkg integrate install`
+            local pathfile = "~/../Local/vcpkg/vcpkg.path.txt"
+            if os.isfile(pathfile) then
+                local dir = io.readfile(pathfile):trim()
+                if os.isdir(dir) then
+                    vcpkgdir = dir
+                end
+            end
+        end
         detectcache:set("detect.sdks.find_vcpkgdir", vcpkgdir or false)
         detectcache:save()
     end

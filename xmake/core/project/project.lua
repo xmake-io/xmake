@@ -30,6 +30,7 @@ local utils                 = require("base/utils")
 local table                 = require("base/table")
 local global                = require("base/global")
 local process               = require("base/process")
+local hashset               = require("base/hashset")
 local deprecated            = require("base/deprecated")
 local interpreter           = require("base/interpreter")
 local memcache              = require("cache/memcache")
@@ -378,13 +379,13 @@ function project._load_targets()
     local requires = project.required_packages()
     local ok, errors = project._load(true)
     if not ok then
-        return nil, errors
+        return nil, nil, errors
     end
 
     -- load targets
     local results, errors = project._load_scope("target", true, true)
     if not results then
-        return nil, errors
+        return nil, nil, errors
     end
 
     -- make targets
@@ -445,7 +446,7 @@ function project._load_targets()
                     table.insert(t._ORDERULES, r)
                 end
             else
-                return nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
+                return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
     end
@@ -650,8 +651,13 @@ function project.apis()
         {
             -- set_xxx
             "set_project"
-        ,   "set_modes"     -- TODO deprecated
         ,   "set_description"
+        ,   "set_allowedmodes"
+        ,   "set_allowedplats"
+        ,   "set_allowedarchs"
+        ,   "set_defaultmode"
+        ,   "set_defaultplat"
+        ,   "set_defaultarchs"
             -- add_xxx
         ,   "add_requires"
         ,   "add_requireconfs"
@@ -1079,20 +1085,6 @@ function project.mtimes()
     return project.interpreter():mtimes()
 end
 
--- get the project modes
-function project.modes()
-    local modes = project.get("modes") or {}
-    for _, target in pairs(table.wrap(project.targets())) do
-        for _, rule in ipairs(target:orderules()) do
-            local name = rule:name()
-            if name:startswith("mode.") then
-                table.insert(modes, name:sub(6))
-            end
-        end
-    end
-    return table.unique(modes)
-end
-
 -- get the project menu
 function project.menu()
 
@@ -1207,6 +1199,113 @@ function project.tmpfile(opt_or_key)
         opt = opt_or_key
     end
     return path.join(project.tmpdir(opt), "_" .. (hash.uuid4(key):gsub("-", "")))
+end
+
+-- get all modes
+function project.modes()
+    local modes
+    local allowed_modes = project.allowed_modes()
+    if allowed_modes then
+        modes = allowed_modes:to_array()
+    else
+        modes = {}
+        for _, target in pairs(table.wrap(project.targets())) do
+            for _, rule in ipairs(target:orderules()) do
+                local name = rule:name()
+                if name:startswith("mode.") then
+                    table.insert(modes, name:sub(6))
+                end
+            end
+        end
+        modes = table.unique(modes)
+    end
+    return modes
+end
+
+-- get default architectures from the given platform
+--
+-- set_defaultarchs("linux|x86_64", "iphoneos|arm64")
+--
+function project.default_arch(plat)
+    local default_archs = project._memcache():get("defaultarchs")
+    if not default_archs then
+        default_archs = {}
+        for _, defaultarch in ipairs(table.wrap(project.get("defaultarchs"))) do
+            local splitinfo = defaultarch:split('|')
+            if #splitinfo == 2 then
+                default_archs[splitinfo[1]] = splitinfo[2]
+            elseif #splitinfo == 1 and not default_archs.default then
+                default_archs.default = defaultarch
+            end
+        end
+        project._memcache():set("defaultarchs", default_archs or false)
+    end
+    return default_archs[plat or "default"] or default_archs["default"]
+end
+
+-- get allowed modes
+--
+-- set_allowedmodes("releasedbg", "debug")
+--
+function project.allowed_modes()
+    local allowed_modes_set = project._memcache():get("allowedmodes")
+    if not allowed_modes_set then
+        local allowed_modes = table.wrap(project.get("allowedmodes"))
+        if #allowed_modes > 0 then
+            allowed_modes_set = hashset.from(allowed_modes)
+        end
+        project._memcache():set("allowedmodes", allowed_modes_set or false)
+    end
+    return allowed_modes_set or nil
+end
+
+-- get allowed platforms
+--
+-- set_allowedplats("windows", "mingw", "linux", "macosx")
+--
+function project.allowed_plats()
+    local allowed_plats_set = project._memcache():get("allowedplats")
+    if not allowed_plats_set then
+        local allowed_plats = table.wrap(project.get("allowedplats"))
+        if #allowed_plats > 0 then
+            allowed_plats_set = hashset.from(allowed_plats)
+        end
+        project._memcache():set("allowedplats", allowed_plats_set or false)
+    end
+    return allowed_plats_set or nil
+end
+
+-- get allowed architectures
+--
+-- set_allowedarchs("macosx|arm64", "macosx|x86_64", "linux|i386")
+--
+function project.allowed_archs(plat)
+    plat = plat or ""
+    local allowed_archs_set = project._memcache():get2("allowedarchs", plat)
+    if not allowed_archs_set then
+        local allowed_archs = table.wrap(project.get("allowedarchs"))
+        if #allowed_archs > 0 then
+            for _, allowed_arch in ipairs(allowed_archs) do
+                local splitinfo = allowed_arch:split('|')
+                local splitplat, splitarch
+                if #splitinfo == 2 then
+                    splitplat = splitinfo[1]
+                    splitarch = splitinfo[2]
+                elseif #splitinfo == 1 then
+                    splitplat = ""
+                    splitarch = allowed_arch
+                end
+                if plat == splitplat then
+                    if not allowed_archs_set then
+                        allowed_archs_set = hashset.new()
+                    end
+                    allowed_archs_set:insert(splitarch)
+                end
+            end
+        end
+        project._memcache():set2("allowedarchs", plat, allowed_archs_set or false)
+    end
+    return allowed_archs_set or nil
 end
 
 -- return module: project

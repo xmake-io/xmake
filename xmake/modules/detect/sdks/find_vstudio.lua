@@ -35,7 +35,8 @@ local vcvars = {"path",
                 "WindowsSDKVersion",
                 "WindowsSdkBinPath",
                 "UniversalCRTSdkDir",
-                "UCRTVersion"}
+                "UCRTVersion",
+                "VCToolsVersion"}
 
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
