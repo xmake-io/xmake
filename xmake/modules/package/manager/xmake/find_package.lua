@@ -73,36 +73,30 @@ function _find_package_from_repo(name, opt)
     local links = {}
     local linkdirs = {}
     local libfiles = {}
-    for _, linkdir in ipairs(vars.linkdirs) do
-        table.insert(linkdirs, path.join(installdir, linkdir))
-    end
     if vars.links then
         table.join2(links, vars.links)
-    end
-    if not vars.linkdirs or not vars.links then
+    else
+        -- we scan links automatically
         local found = false
-        for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
-            if file:endswith(".lib") or file:endswith(".a") then
-                found = true
-                if not vars.linkdirs then
-                    table.insert(linkdirs, path.directory(file))
-                end
-                if not vars.links then
+        for _, libdir in ipairs(vars.linkdirs or "lib") do
+            for _, file in ipairs(os.files(path.join(installdir, libdir, "*"))) do
+                if file:endswith(".lib") or file:endswith(".a") then
+                    found = true
                     table.insert(links, target.linkname(path.filename(file)))
                 end
             end
-        end
-        if not found then
-            for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
-                if file:endswith(".so") or file:endswith(".dylib") then
-                    if not vars.linkdirs then
-                        table.insert(linkdirs, path.directory(file))
-                    end
-                    if not vars.links then
+            if not found then
+                for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
+                    if file:endswith(".so") or file:endswith(".dylib") then
                         table.insert(links, target.linkname(path.filename(file)))
                     end
                 end
             end
+        end
+    end
+    if #links > 0 then
+        for _, libdir in ipairs(vars.linkdirs or "lib") do
+            table.insert(linkdirs, path.join(installdir, libdir))
         end
     end
     if opt.plat == "windows" then
