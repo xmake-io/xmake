@@ -255,10 +255,15 @@ function _instance:artifacts_set(artifacts_info)
             if not manifest then
                 os.raise("package(%s): load manifest.txt failed when installing artifacts!", package:displayname())
             end
-            local vars = manifest.vars
-            if vars then
-                for k, v in pairs(vars) do
+            if manifest.vars then
+                for k, v in pairs(manifest.vars) do
                     package:set(k, v)
+                end
+            end
+            if manifest.envs then
+                local envs = self:envs()
+                for k, v in pairs(manifest.envs) do
+                    envs[k] = v
                 end
             end
         end)
