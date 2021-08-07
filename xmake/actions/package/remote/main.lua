@@ -26,6 +26,18 @@ import("core.project.config")
 import("core.project.project")
 import("lib.luajit.bit")
 
+-- get link deps
+function _get_linkdeps(target)
+    local linkdeps = {}
+    for _, depname in ipairs(target:get("deps")) do
+        local dep = project.target(depname)
+        if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
+            table.insert(linkdeps, dep:name())
+        end
+    end
+    return linkdeps
+end
+
 -- package remote
 function _package_remote(target)
 
@@ -41,10 +53,7 @@ function _package_remote(target)
     -- generate xmake.lua
     local file = io.open(path.join(packagedir, "xmake.lua"), "w")
     if file then
-        local deps = {}
-        for _, dep in ipairs(target:orderdeps()) do
-            table.insert(deps, dep:name())
-        end
+        local deps = _get_linkdeps(target)
         file:print("package(\"%s\")", packagename)
         if target:is_binary() then
             file:print("    set_kind(\"binary\")")

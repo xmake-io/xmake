@@ -32,7 +32,6 @@ function _get_linkdeps(target)
     for _, depname in ipairs(target:get("deps")) do
         local dep = project.target(depname)
         if not ((target:is_binary() or target:is_shared()) and dep:is_static()) then
-            table.join2(linkdeps, _get_linkdeps(dep))
             table.insert(linkdeps, dep:name())
         end
     end
