@@ -1,3 +1,3 @@
 function main(t)
---    t:build()
+    t:build()
 end
