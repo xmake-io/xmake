@@ -36,7 +36,7 @@ rule("utils.bin2c")
             table.insert(argv, "-w")
             table.insert(argv, tostring(linewidth))
         end
-        batchcmds:vrunv(os.programfile(), argv)
+        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
 
         -- add deps
         batchcmds:add_depfiles(sourcefile_bin)
