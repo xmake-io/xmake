@@ -1225,13 +1225,19 @@ function interpreter:api_register_set_dictionary(scope_kind, ...)
     assert(self)
 
     -- define implementation
-    local implementation = function (self, scope, name, dict_or_key, value)
+    local implementation = function (self, scope, name, dict_or_key, value, extra_config)
 
         -- check
         if type(dict_or_key) == "table" then
             scope[name] = dict_or_key
         elseif type(dict_or_key) == "string" and value ~= nil then
             scope[name] = {[dict_or_key] = value}
+            -- save extra config
+            if extra_config and table.is_dictionary(extra_config) then
+                scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+                local extrascope = scope["__extra_" .. name]
+                extrascope[dict_or_key] = extra_config
+            end
         else
             -- error
             os.raise("set_%s(%s): invalid value type!", name, type(dict))
@@ -1249,14 +1255,21 @@ function interpreter:api_register_add_dictionary(scope_kind, ...)
     assert(self)
 
     -- define implementation
-    local implementation = function (self, scope, name, dict_or_key, value)
+    local implementation = function (self, scope, name, dict_or_key, value, extra_config)
 
         -- check
         scope[name] = scope[name] or {}
         if type(dict_or_key) == "table" then
             table.join2(scope[name], dict_or_key)
+            extra_config = value
         elseif type(dict_or_key) == "string" and value ~= nil then
             scope[name][dict_or_key] = value
+            -- save extra config
+            if extra_config and table.is_dictionary(extra_config) then
+                scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+                local extrascope = scope["__extra_" .. name]
+                extrascope[dict_or_key] = extra_config
+            end
         else
             -- error
             os.raise("add_%s(%s): invalid value type!", name, type(dict))

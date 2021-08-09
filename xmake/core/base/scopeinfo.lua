@@ -238,7 +238,7 @@ function _instance:_api_add_keyvalues(name, key, ...)
 end
 
 -- set the api dictionary to the scope info
-function _instance:_api_set_dictionary(name, dict_or_key, value)
+function _instance:_api_set_dictionary(name, dict_or_key, value, extra_config)
 
     -- get the scope info
     local scope = self._INFO
@@ -252,6 +252,12 @@ function _instance:_api_set_dictionary(name, dict_or_key, value)
         scope[name] = dict
     elseif type(dict_or_key) == "string" and value ~= nil then
         scope[name] = {[dict_or_key] = self:_api_handle(value)}
+        -- save extra config
+        if extra_config and table.is_dictionary(extra_config) then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            extrascope[dict_or_key] = extra_config
+        end
     else
         -- error
         os.raise("%s:set(%s, ...): invalid value type!", self:kind(), name, type(dict))
@@ -259,7 +265,7 @@ function _instance:_api_set_dictionary(name, dict_or_key, value)
 end
 
 -- add the api dictionary to the scope info
-function _instance:_api_add_dictionary(name, dict_or_key, value)
+function _instance:_api_add_dictionary(name, dict_or_key, value, extra_config)
 
     -- get the scope info
     local scope = self._INFO
@@ -274,6 +280,12 @@ function _instance:_api_add_dictionary(name, dict_or_key, value)
         table.join2(scope[name], dict)
     elseif type(dict_or_key) == "string" and value ~= nil then
         scope[name][dict_or_key] = self:_api_handle(value)
+        -- save extra config
+        if extra_config and table.is_dictionary(extra_config) then
+            scope["__extra_" .. name] = scope["__extra_" .. name] or {}
+            local extrascope = scope["__extra_" .. name]
+            extrascope[dict_or_key] = extra_config
+        end
     else
         -- error
         os.raise("%s:add(%s, ...): invalid value type!", self:kind(), name, type(dict))
