@@ -23,13 +23,17 @@
 -- e.g.
 --
 -- check_csnippets("HAS_STATIC_ASSERT", "_Static_assert(1, \"\");", {includes = "stdio.h"})
+-- check_csnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true})
+-- check_csnippets("PTR_SIZE", 'printf("%d", sizeof(void*)); return 0;', {output = true, number = true})
 --
 function check_csnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     option(optname)
-        add_csnippets(definition, snippets)
-        add_defines(definition)
+        add_csnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})
+        if not opt.output then
+            add_defines(definition)
+        end
         if opt.links then
             add_links(opt.links)
         end
@@ -51,6 +55,17 @@ function check_csnippets(definition, snippets, opt)
         if opt.warnings then
             set_warnings(opt.warnings)
         end
+        if opt.output then
+            after_check(function (option)
+                if option:value() then
+                    if opt.number then
+                        option:add("defines", definition .. "=" .. tonumber(option:value()))
+                    else
+                        option:add("defines", definition .. "=\"" .. option:value() .. "\"")
+                    end
+                end
+            end)
+        end
     option_end()
     add_options(optname)
 end
@@ -60,13 +75,15 @@ end
 -- e.g.
 --
 -- configvar_check_csnippets("HAS_STATIC_ASSERT", "_Static_assert(1, \"\");", {includes = "stdio.h"})
+-- configvar_check_csnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true})
+-- configvar_check_csnippets("PTR_SIZE", 'printf("%d", sizeof(void*)); return 0;', {output = true, number = true})
 --
 function configvar_check_csnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
     option(optname)
-        add_csnippets(definition, snippets)
+        add_csnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})
         set_configvar(defname, defval or 1)
         if opt.links then
             add_links(opt.links)
@@ -88,6 +105,13 @@ function configvar_check_csnippets(definition, snippets, opt)
         end
         if opt.warnings then
             set_warnings(opt.warnings)
+        end
+        if opt.output then
+            after_check(function (option)
+                if option:value() then
+                    option:set("configvar", defname, opt.number and tonumber(option:value()) or option:value())
+                end
+            end)
         end
     option_end()
     add_options(optname)
