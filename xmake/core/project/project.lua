@@ -215,13 +215,22 @@ end
 --
 -- orderdeps: c -> b -> a
 --
-function project._load_deps(instance, instances, deps, orderdeps)
-
-    -- get dep instances
+function project._load_deps(instance, instances, deps, orderdeps, depspath)
     for _, dep in ipairs(table.wrap(instance:get("deps"))) do
         local depinst = instances[dep]
         if depinst then
-            project._load_deps(depinst, instances, deps, orderdeps)
+            local depspath_sub
+            if depspath then
+                for idx, name in ipairs(depspath) do
+                    if name == dep then
+                        local circular_deps = table.slice(depspath, idx)
+                        table.insert(circular_deps, dep)
+                        os.raise("circular dependency(%s) detected!", table.concat(circular_deps, ", "))
+                    end
+                end
+                depspath_sub = table.join(depspath, dep)
+            end
+            project._load_deps(depinst, instances, deps, orderdeps, depspath_sub)
             if not deps[dep] then
                 deps[dep] = depinst
                 table.insert(orderdeps, depinst)
@@ -316,7 +325,7 @@ function project._load_rules()
     for _, instance in pairs(instances)  do
         instance._DEPS      = instance._DEPS or {}
         instance._ORDERDEPS = instance._ORDERDEPS or {}
-        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS)
+        project._load_deps(instance, instances, instance._DEPS, instance._ORDERDEPS, {instance:name()})
     end
     return rules
 end
@@ -403,7 +412,7 @@ function project._load_targets()
         -- load deps
         t._DEPS      = t._DEPS or {}
         t._ORDERDEPS = t._ORDERDEPS or {}
-        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS)
+        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
 
         -- load rules from target and language
         --
@@ -547,7 +556,7 @@ function project._load_options(disable_filter)
     for _, opt in pairs(options) do
         opt._DEPS      = opt._DEPS or {}
         opt._ORDERDEPS = opt._ORDERDEPS or {}
-        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS)
+        project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
     end
 
     -- ok?
