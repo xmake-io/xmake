@@ -78,8 +78,8 @@ end
 function is_changed(dependinfo, opt)
 
     -- empty depend info? always be changed
-    local files = dependinfo.files or {}
-    local values = dependinfo.values or {}
+    local files = table.wrap(dependinfo.files)
+    local values = table.wrap(dependinfo.values)
     if #files == 0 and #values == 0 then
         return true
     end
@@ -102,7 +102,7 @@ function is_changed(dependinfo, opt)
 
     -- check the dependent values are changed?
     local depvalues = values
-    local optvalues = opt.values or {}
+    local optvalues = table.wrap(opt.values)
     if #depvalues ~= #optvalues then
         return true
     end
@@ -124,8 +124,11 @@ function is_changed(dependinfo, opt)
     end
 
     -- check the dependent files list are changed?
-    local optfiles = opt.files
-    if optfiles then
+    if opt.files then
+        local optfiles = table.wrap(opt.files)
+        if #files ~= #optfiles then
+            return true
+        end
         for idx, file in ipairs(files) do
             if file ~= optfiles[idx] then
                 return true
@@ -178,7 +181,7 @@ function on_changed(callback, opt)
     -- need build this object?
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
-    if not is_changed(dependinfo, {lastmtime = opt.lastmtime or os.mtime(dependfile), values = opt.values}) then
+    if not is_changed(dependinfo, {lastmtime = opt.lastmtime or os.mtime(dependfile), values = opt.values, files = opt.files}) then
         return
     end
 
