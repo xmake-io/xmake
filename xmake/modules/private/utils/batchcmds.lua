@@ -128,21 +128,21 @@ end
 -- run command: os.cp
 function _runcmd_cp(cmd, opt)
     if not opt.dryrun then
-        os.cp(opt.srcpath, opt.dstpath, opt.opt)
+        os.cp(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
 -- run command: os.mv
 function _runcmd_mv(cmd, opt)
     if not opt.dryrun then
-        os.mv(opt.srcpath, opt.dstpath, opt.opt)
+        os.mv(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
 -- run command: os.ln
 function _runcmd_ln(cmd, opt)
     if not opt.dryrun then
-        os.ln(opt.srcpath, opt.dstpath, opt.opt)
+        os.ln(cmd.srcpath, cmd.dstpath, opt.opt)
     end
 end
 
