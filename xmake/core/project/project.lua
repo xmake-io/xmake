@@ -1091,7 +1091,12 @@ end
 
 -- get the mtimes
 function project.mtimes()
-    return project.interpreter():mtimes()
+    local mtimes = project._MTIMES
+    if not mtimes then
+        mtimes = project.interpreter():mtimes()
+        project._MTIMES = mtimes
+    end
+    return mtimes
 end
 
 -- get the project menu
