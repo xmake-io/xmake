@@ -25,19 +25,81 @@ import("core.project.project")
 function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILENAME  = path.filename(target:targetfile()),
+            TARGETFILENAME  = path.filename(target:targetfile()):replace("dll", "lib"),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
 end
 
--- install cmake import file
-function _install_cmake_importfile(target, installdir, filename, opt)
+-- install cmake config file
+function _install_cmake_configfile(target, installdir, filename, opt)
 
     -- get import file path
     local projectname = project.name() or target:name()
     local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
     local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", projectname)))
+
+    -- trace
+    vprint("generating %s ..", importfile_dst)
+
+    -- get the builtin variables
+    local builtinvars = _get_builtinvars(target, installdir)
+
+    -- copy and replace builtin variables
+    local content = io.readfile(importfile_src)
+    if content then
+        content = content:split("#######################+#")[1]
+        content = content:gsub("(@(.-)@)", function(_, variable)
+            variable = variable:trim()
+            local value = builtinvars[variable]
+            return type(value) == "function" and value() or value
+        end)
+        io.writefile(importfile_dst, content)
+    end
+end
+
+-- append target to cmake config file
+function _append_cmake_configfile(target, installdir, filename, opt)
+
+    -- get import file path
+    local projectname = project.name() or target:name()
+    local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
+    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", projectname)))
+
+    -- get the builtin variables
+    local builtinvars = _get_builtinvars(target, installdir)
+
+    -- generate the file if not exist / file is outdated
+    if not os.isfile(importfile_dst) or os.mtime(importfile_dst) < os.mtime(target:targetfile()) then
+        _install_cmake_configfile(target, installdir, filename, opt)
+    end
+
+    -- copy and replace builtin variables
+    local content = io.readfile(importfile_src)
+    local dst_content = io.readfile(importfile_dst)
+    if content then
+        content = content:split("#######################+#")[2]
+        content = content:gsub("(@(.-)@)", function(_, variable)
+            variable = variable:trim()
+            local value = builtinvars[variable]
+            return type(value) == "function" and value() or value
+        end)
+        content = content:trim()
+
+        -- check if the target already exists
+        if not dst_content:match(format("%sTargets.cmake", target:name())) then
+            io.writefile(importfile_dst, dst_content:trim() .. "\n\n" .. content .. "\n")
+        end
+    end
+end
+
+-- install cmake target file
+function _install_cmake_targetfile(target, installdir, filename, opt)
+
+    -- get import file path
+    local projectname = project.name() or target:name()
+    local importfile_src = path.join(os.programdir(), "scripts", "cmake_importfiles", filename)
+    local importfile_dst = path.join(installdir, opt and opt.libdir or "lib", "cmake", projectname, (filename:gsub("xxx", target:name())))
 
     -- trace
     vprint("generating %s ..", importfile_dst)
@@ -71,13 +133,13 @@ function main(target, opt)
     end
 
     -- do install
-    _install_cmake_importfile(target, installdir, "xxxConfig.cmake", opt)
-    _install_cmake_importfile(target, installdir, "xxxConfigVersion.cmake", opt)
-    _install_cmake_importfile(target, installdir, "xxxTargets.cmake", opt)
+    _append_cmake_configfile(target, installdir, "xxxConfig.cmake", opt)
+    _install_cmake_configfile(target, installdir, "xxxConfigVersion.cmake", opt)
+    _install_cmake_targetfile(target, installdir, "xxxTargets.cmake", opt)
     if is_mode("debug") then
-        _install_cmake_importfile(target, installdir, "xxxTargets-debug.cmake", opt)
+        _install_cmake_targetfile(target, installdir, "xxxTargets-debug.cmake", opt)
     else
-        _install_cmake_importfile(target, installdir, "xxxTargets-release.cmake", opt)
+        _install_cmake_targetfile(target, installdir, "xxxTargets-release.cmake", opt)
     end
 end
 
