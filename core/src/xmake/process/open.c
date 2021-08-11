@@ -56,7 +56,7 @@ tb_int_t xm_process_open(lua_State* lua)
 
     // get option arguments
     tb_size_t          envn = 0;
-    tb_char_t const*   envs[256] = {0};
+    tb_char_t const*   envs[1024] = {0};
     tb_char_t const*   inpath  = tb_null;
     tb_char_t const*   outpath = tb_null;
     tb_char_t const*   errpath = tb_null;
