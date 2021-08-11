@@ -25,7 +25,7 @@ import("core.project.project")
 function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILENAME  = is_plat("windows", "mingw") and path.filename(target:targetfile()):gsub("%.dll$", ".lib") or path.filename(target:targetfile()),
+            TARGETFILENAME  = target:is_plat("windows", "mingw") and path.filename(target:targetfile()):gsub("%.dll$", ".lib") or path.filename(target:targetfile()),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
