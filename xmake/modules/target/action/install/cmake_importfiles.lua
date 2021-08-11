@@ -23,9 +23,15 @@ import("core.project.project")
 
 -- get the builtin variables
 function _get_builtinvars(target, installdir)
+    local libfile = path.filename(target:targetfile())
+    if target:is_plat("windows") then
+        libfile = libfile:gsub("%.dll$", ".lib")
+    elseif target:is_plat("mingw") then
+        libfile = libfile:gsub("%.dll$", ".dll.a")
+    end
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILENAME  = target:is_plat("windows", "mingw") and path.filename(target:targetfile()):gsub("%.dll$", ".lib") or path.filename(target:targetfile()),
+            TARGETFILENAME  = libfile,
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
