@@ -44,7 +44,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
     end
 
     -- on msys2/cygwin? we need translate input path to cygwin-like path
-    if is_subhost("msys", "cygwin") and program:gsub("\\", "/"):find("/usr/bin") then
+    if is_subhost("msys", "cygwin") then
         archivefile = path.cygwin_path(archivefile)
     end
 
@@ -95,6 +95,12 @@ function _extract_using_7z(archivefile, outputdir, extension, opt)
     -- find 7z
     local program = find_7z()
     if not program then
+        return false
+    end
+
+    -- p7zip cannot extract other archive format on msys/cygwin
+    -- https://github.com/xmake-io/xmake/issues/1575#issuecomment-898205462
+    if is_subhost("msys", "cygwin") and extension ~= ".7z" and program:startswith("sh ") then
         return false
     end
 
@@ -389,11 +395,15 @@ end
 
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
+
+    -- extract it
     for _, extract in ipairs(extractors) do
         if extract(archivefile, outputdir, extension, opt) then
             return true
         end
     end
+
+    -- failed
     return false
 end
 
