@@ -1,7 +1,6 @@
 add_rules("mode.release", "mode.debug")
 
-add_requires("sqlite3")
-add_requires("glib", {system = false}) -- TODO we need improve glib package/on_fetch
+add_requires("sqlite3", "glib")
 
 target("test")
     set_kind("binary")
