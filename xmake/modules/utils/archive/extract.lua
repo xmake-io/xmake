@@ -389,15 +389,11 @@ end
 
 -- extract archive file using extractors
 function _extract(archivefile, outputdir, extension, extractors, opt)
-
-    -- extract it
     for _, extract in ipairs(extractors) do
         if extract(archivefile, outputdir, extension, opt) then
             return true
         end
     end
-
-    -- failed
     return false
 end
 
