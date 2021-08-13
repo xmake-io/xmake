@@ -417,7 +417,7 @@ function main(archivefile, outputdir, opt)
 
     -- init extractors
     local extractors
-    if is_host("windows") then
+    if is_subhost("windows") then
         -- we use 7z first, becase xmake package has builtin 7z program on windows
         -- tar/windows can not extract .bz2 ...
         extractors =
