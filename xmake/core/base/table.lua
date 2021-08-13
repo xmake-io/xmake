@@ -240,23 +240,44 @@ end
 
 -- remove repeat from the given array
 function table.unique(array, barrier)
-
     if table.is_array(array) then
         if table.getn(array) ~= 1 then
             local exists = {}
             local unique = {}
             for _, v in ipairs(array) do
-
                 -- exists barrier? clear the current existed items
                 if barrier and barrier(v) then
                     exists = {}
                 end
-
                 -- add unique item
                 if not exists[v] then
-                    -- v will not be nil
                     exists[v] = true
                     table.insert(unique, v)
+                end
+            end
+            array = unique
+        end
+    end
+    return array
+end
+
+-- reverse to remove repeat from the given array
+function table.reverse_unique(array, barrier)
+    if table.is_array(array) then
+        if table.getn(array) ~= 1 then
+            local exists = {}
+            local unique = {}
+            local n = #array
+            for i = 1, n do
+                local v = array[n - i + 1]
+                -- exists barrier? clear the current existed items
+                if barrier and barrier(v) then
+                    exists = {}
+                end
+                -- add unique item
+                if not exists[v] then
+                    exists[v] = true
+                    table.insert(unique, 1, v)
                 end
             end
             array = unique

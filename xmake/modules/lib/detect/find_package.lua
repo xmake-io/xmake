@@ -38,15 +38,7 @@ function _concat_packages(a, b)
         if k == "links" then
             if type(v) == "table" and #v > 1 then
                 -- we need ensure link orders when removing repeat values
-                local v2 = {}
-                local map = {}
-                for _, _v in irpairs(v) do
-                    if not map[_v] then
-                        table.insert(v2, 1, _v)
-                        map[_v] = true
-                    end
-                end
-                v = v2
+                v = table.reverse_unique(v)
             end
         else
             v = table.unique(v)
