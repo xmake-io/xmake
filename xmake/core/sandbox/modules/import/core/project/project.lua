@@ -63,6 +63,7 @@ sandbox_core_project.required_package  = project.required_package
 sandbox_core_project.required_packages = project.required_packages
 sandbox_core_project.requires_str      = project.requires_str
 sandbox_core_project.requireconfs_str  = project.requireconfs_str
+sandbox_core_project.requires_lockfile = project.requires_lockfile
 sandbox_core_project.policy            = project.policy
 sandbox_core_project.tmpdir            = project.tmpdir
 sandbox_core_project.tmpfile           = project.tmpfile
