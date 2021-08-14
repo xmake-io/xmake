@@ -30,6 +30,7 @@ import("actions.install", {alias = "action_install"})
 import("actions.download", {alias = "action_download"})
 import("net.fasturl")
 import("private.action.require.impl.package")
+import("private.action.require.impl.lock_packages")
 import("private.action.require.impl.register_packages")
 
 -- sort packages urls
@@ -600,6 +601,9 @@ function main(requires, opt)
     -- re-register and refresh all root packages to local cache,
     -- because there may be some missing optional dependencies reinstalled
     register_packages(packages)
+
+    -- lock packages
+    lock_packages(packages)
     return packages
 end
 

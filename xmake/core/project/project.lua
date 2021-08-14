@@ -1024,7 +1024,7 @@ function project.requireconfs_str()
 end
 
 -- get requires lockfile
-function project.requires_lockfile()
+function project.requireslock()
     return path.join(project.directory(), "xmake-requires.lock")
 end
 
