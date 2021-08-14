@@ -90,19 +90,15 @@ function sandbox_core_project.check()
     -- init check task
     local checked   = {}
     local checktask = function (index)
-
-        -- get option
         local opt = options[index]
         if opt then
-
             -- check deps of this option first
-            for depname, dep in pairs(opt:deps()) do
-                if not checked[depname] then
+            for _, dep in ipairs(opt:orderdeps()) do
+                if not checked[dep:name()] then
                     dep:check()
-                    checked[depname] = true
+                    checked[dep:name()] = true
                 end
             end
-
             -- check this option
             if not checked[opt:name()] then
                 opt:check()
