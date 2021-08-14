@@ -24,7 +24,12 @@ import("core.project.project")
 -- lock package
 function _lock_package(instance)
     local result = {}
+    result.name      = instance:name()
+    result.plat      = instance:plat()
+    result.arch      = instance:arch()
+    result.kind      = instance:kind()
     result.buildhash = instance:buildhash()
+    result.version   = instance:version_str()
     return result
 end
 
@@ -32,9 +37,8 @@ end
 function main(packages)
     local results = {}
     for _, instance in ipairs(packages) do
-        results[instance:name()] = _lock_package(instance)
+        results[instance:displayname()] = _lock_package(instance)
     end
-    table.sort(results, function (a, b) return a.name < b.name end)
     io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
 end
 

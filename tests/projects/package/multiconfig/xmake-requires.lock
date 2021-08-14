@@ -1,5 +1,17 @@
 {
     zlib = {
-        buildhash = "8e5b898b0f344715bac89cc6a1577506"
+        buildhash = "b76a297309d14c09b42cfe3927260a51",
+        name = "zlib",
+        version = "1.2.11"
+    },
+    ["zlib~debug"] = {
+        buildhash = "e6a6fa6a86ad4fc7ae3c2cf7c60cc084",
+        name = "zlib",
+        version = "1.2.11"
+    },
+    ["zlib~shared"] = {
+        buildhash = "8e5b898b0f344715bac89cc6a1577506",
+        name = "zlib",
+        version = "1.2.11"
     }
 }

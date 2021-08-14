@@ -1,0 +1,93 @@
+{
+    autoconf = {
+        arch = "x86_64",
+        buildhash = "01974c48f52d4d658f58852351743754",
+        kind = "binary",
+        name = "autoconf",
+        plat = "macosx",
+        version = "2.69"
+    },
+    automake = {
+        arch = "x86_64",
+        buildhash = "7a090c93706241f983f0d821a162e8a5",
+        kind = "binary",
+        name = "automake",
+        plat = "macosx",
+        version = "1.16.1"
+    },
+    cmake = {
+        arch = "x86_64",
+        buildhash = "a6d18f8c0bf347d980f8bb762583c91a",
+        kind = "binary",
+        name = "cmake",
+        plat = "macosx",
+        version = "3.21.0"
+    },
+    gmp = {
+        arch = "x86_64",
+        buildhash = "7dd9c224447e46698ac73d29f58b1d73",
+        name = "gmp",
+        plat = "macosx",
+        version = "6.2.1"
+    },
+    libisl = {
+        arch = "x86_64",
+        buildhash = "f649e1fb365e442e8f79f372fd91483b",
+        name = "libisl",
+        plat = "macosx",
+        version = "0.22"
+    },
+    libogg = {
+        arch = "arm",
+        buildhash = "d894fc29f2fb4c45a0f48bc2c6ece273",
+        name = "libogg",
+        plat = "cross",
+        version = "v1.3.4"
+    },
+    libplist = {
+        arch = "arm",
+        buildhash = "0c01b22920be4876b1de74629194eb8f",
+        name = "libplist",
+        plat = "cross",
+        version = "2.2.0"
+    },
+    libtool = {
+        arch = "x86_64",
+        buildhash = "64584ec84a4743ecb740b598b263ffa6",
+        kind = "binary",
+        name = "libtool",
+        plat = "macosx",
+        version = "2.4.6"
+    },
+    m4 = {
+        arch = "x86_64",
+        buildhash = "fd0e83e5759b442a970327ebb1c89793",
+        kind = "binary",
+        name = "m4",
+        plat = "macosx",
+        version = "1.4.19"
+    },
+    muslcc = {
+        arch = "x86_64",
+        buildhash = "11062c09ebeb484594488ad73ddbcd1f",
+        kind = "toolchain",
+        name = "muslcc",
+        plat = "macosx",
+        version = "20210202"
+    },
+    ["pkg-config"] = {
+        arch = "x86_64",
+        buildhash = "84fd7f9b9f7a47709512cfc85cd9e5f7",
+        kind = "binary",
+        name = "pkg-config",
+        plat = "macosx",
+        version = "0.29.2"
+    },
+    zlib = {
+        arch = "arm",
+        buildhash = "be90a245b8bb48e6b08a1a15bdcad467",
+        name = "zlib",
+        plat = "cross",
+        version = "1.2.11"
+    }
+}
