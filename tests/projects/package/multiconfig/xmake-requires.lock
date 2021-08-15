@@ -1,17 +1,53 @@
 {
-    zlib = {
+    ["zlib#fd74da7781d54dddb234cfb6eae7be34"] = {
+        arch = "x86_64",
         buildhash = "b76a297309d14c09b42cfe3927260a51",
+        configs = {
+            debug = false,
+            pic = true,
+            shared = false
+        },
+        is_built = true,
         name = "zlib",
+        plat = "macosx",
+        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        urls = {
+            "https://github.com/madler/zlib/archive/v1.2.11.tar.gz#629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff"
+        },
         version = "1.2.11"
     },
-    ["zlib~debug"] = {
+    ["zlib~debug#29572d10f2b44d76ad238aa6d9d886f0"] = {
+        arch = "x86_64",
         buildhash = "e6a6fa6a86ad4fc7ae3c2cf7c60cc084",
+        configs = {
+            debug = true,
+            pic = true,
+            shared = false
+        },
+        is_built = true,
         name = "zlib",
+        plat = "macosx",
+        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        urls = {
+            "https://github.com/madler/zlib/archive/v1.2.11.tar.gz#629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff"
+        },
         version = "1.2.11"
     },
-    ["zlib~shared"] = {
+    ["zlib~shared#0aa7e77905524be8bf354384c68bdde7"] = {
+        arch = "x86_64",
         buildhash = "8e5b898b0f344715bac89cc6a1577506",
+        configs = {
+            debug = false,
+            pic = true,
+            shared = true
+        },
+        is_built = true,
         name = "zlib",
+        plat = "macosx",
+        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        urls = {
+            "https://github.com/madler/zlib/archive/v1.2.11.tar.gz#629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff"
+        },
         version = "1.2.11"
     }
 }

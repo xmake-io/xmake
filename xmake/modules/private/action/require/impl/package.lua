@@ -30,6 +30,7 @@ import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
+import("private.action.require.impl.utils.requirekey")
 
 -- get memcache
 function _memcache()
@@ -477,26 +478,10 @@ end
 
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
-    local key = packagename .. "/" .. (version or requireinfo.version)
-    if requireinfo.plat then
-        key = key .. "/" .. requireinfo.plat
-    end
-    if requireinfo.arch then
-        key = key .. "/" .. requireinfo.arch
-    end
-    if requireinfo.label then
-        key = key .. "/" .. requireinfo.label
-    end
-    local configs = requireinfo.configs
-    if configs then
-        local configs_order = {}
-        for k, v in pairs(configs) do
-            table.insert(configs_order, k .. "=" .. tostring(v))
-        end
-        table.sort(configs_order)
-        key = key .. ":" .. string.serialize(configs_order, true)
-    end
-    return key
+    return requirekey(requireinfo, {name = packagename,
+                                    plat = requireinfo.plat,
+                                    arch = requireinfo.arch,
+                                    version = version or requireinfo.version})
 end
 
 -- inherit some builtin configs of parent package if these config values are not default value

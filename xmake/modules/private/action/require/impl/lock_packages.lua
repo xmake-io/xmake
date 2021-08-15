@@ -20,16 +20,53 @@
 
 -- imports
 import("core.project.project")
+import("devel.git")
+import("private.action.require.impl.utils.filter")
+import("private.action.require.impl.utils.requirekey")
+
+-- get package key
+function _get_packagekey(instance)
+    local requireinfo = instance:requireinfo()
+    local requirestr  = requireinfo.originstr
+    local plat        = instance:plat()
+    local arch        = instance:arch()
+    local key         = requirekey(requireinfo, {plat = instance:plat(), arch = instance:arch()})
+    return string.format("%s#%s", requirestr, key)
+end
 
 -- lock package
 function _lock_package(instance)
-    local result = {}
-    result.name      = instance:name()
-    result.plat      = instance:plat()
-    result.arch      = instance:arch()
-    result.kind      = instance:kind()
-    result.buildhash = instance:buildhash()
-    result.version   = instance:version_str()
+    local result      = {}
+    local repo        = instance:repo()
+    result.name       = instance:name()
+    result.plat       = instance:plat()
+    result.arch       = instance:arch()
+    result.kind       = instance:kind()
+    result.version    = instance:version_str()
+    result.buildhash  = instance:buildhash()
+    result.configs    = instance:configs()
+    result.is_built   = instance:is_built()
+    if repo then
+        local lastcommit = git.lastcommit({repodir = repo:directory()})
+        result.repo      = repo:url() .. "#" .. lastcommit
+    end
+    for _, url in ipairs(instance:urls()) do
+        result.urls = result.urls or {}
+        local url_alias = instance:url_alias(url)
+        url = filter.handle(url, instance)
+        if git.asgiturl(url) then
+            local revision = instance:revision(url_alias) or instance:tag() or instance:version_str()
+            url = url .. "#" .. revision
+        else
+            local sourcehash = instance:sourcehash(url_alias)
+            url = url .. "#" .. sourcehash
+        end
+        table.insert(result.urls, url)
+    end
+    for _, dep in ipairs(instance:plaindeps()) do
+        result.deps = result.deps or {}
+        table.insert(result.deps, _get_packagekey(dep))
+    end
     return result
 end
 
@@ -37,7 +74,8 @@ end
 function main(packages)
     local results = {}
     for _, instance in ipairs(packages) do
-        results[instance:displayname()] = _lock_package(instance)
+        local packagekey = _get_packagekey(instance)
+        results[packagekey] = _lock_package(instance)
     end
     io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
 end
