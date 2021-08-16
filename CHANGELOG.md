@@ -11,6 +11,7 @@
 ### Change
 
 * [#1540](https://github.com/xmake-io/xmake/issues/1540): Better support for compilation of automatically generated code
+* [#1578](https://github.com/xmake-io/xmake/issues/1578): Improve add_repositories to support relative path better
 
 ### Bugs fixed
 
@@ -1063,6 +1064,7 @@
 ### 改进
 
 * [#1540](https://github.com/xmake-io/xmake/issues/1540): 更好更方便地编译自动生成的代码
+* [#1578](https://github.com/xmake-io/xmake/issues/1578): 改进 add_repositories 去更好地支持相对路径
 
 ### Bugs 修复
 
@@ -2100,3 +2102,4 @@
 * 修复set_installscript接口的一些bug
 * 修复在windows x86_64下，安装失败的问题
 * 修复相对路径的一些bug
+

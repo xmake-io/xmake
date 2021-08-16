@@ -92,12 +92,20 @@ function sandbox_core_package_repository.repositories(is_global)
     -- in project xmake.lua:
     --
     --     add_repositories("other-repo https://github.com/other/other-repo.git dev")
+    --     add_repositories("other-repo dirname", {rootdir = os.scriptdir()})
     --
     if not is_global then
         for _, repo in ipairs(table.wrap(project.get("repositories"))) do
             local repoinfo = repo:split('%s')
             if #repoinfo <= 3 then
-                local repo = repository.load(repoinfo[1], repoinfo[2], repoinfo[3], is_global)
+                local name    = repoinfo[1]
+                local url     = repoinfo[2]
+                local branch  = repoinfo[3]
+                local rootdir = project.extraconf("repositories", repo, "rootdir")
+                if url and rootdir and not path.is_absolute(url) and not url:find(":", 1, true) then
+                    url = path.join(rootdir, url)
+                end
+                local repo = repository.load(name, url, branch, is_global)
                 if repo then
                     table.insert(repositories, repo)
                 end
@@ -167,3 +175,4 @@ end
 
 -- return module
 return sandbox_core_package_repository
+
