@@ -12,8 +12,8 @@
         repo = "https://gitee.com/tboox/xmake-repo.git#e87effa464611cecf28dfced70cbe491a08fe99d",
         urls = {
             "https://mirrors.ustc.edu.cn/gnu/autoconf/autoconf-2.69.tar.gz#954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969",
-            "git://git.sv.gnu.org/autoconf#2.69",
-            "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz#954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969"
+            "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz#954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969",
+            "git://git.sv.gnu.org/autoconf#2.69"
         },
         version = "2.69"
     },
@@ -127,8 +127,8 @@
         repo = "https://gitee.com/tboox/xmake-repo.git#e87effa464611cecf28dfced70cbe491a08fe99d",
         urls = {
             "https://mirrors.ustc.edu.cn/gnu/libtool/libtool-2.4.6.tar.gz#e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3",
-            "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz#e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3",
-            "git://git.savannah.gnu.org/libtool.git#2.4.6"
+            "git://git.savannah.gnu.org/libtool.git#2.4.6",
+            "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz#e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3"
         },
         version = "2.4.6"
     },

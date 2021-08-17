@@ -269,7 +269,19 @@ function _add_package_configurations(package)
 end
 
 -- select package version
-function _select_package_version(package, requireinfo)
+function _select_package_version(package, requireinfo, locked_requireinfo)
+
+    -- get it from the locked requireinfo
+    if locked_requireinfo then
+        local version = locked_requireinfo.version
+        local source = "version"
+        if locked_requireinfo.branch then
+            source = "branch"
+        elseif locked_requireinfo.tag then
+            source = "tag"
+        end
+        return version, source
+    end
 
     -- exists urls? otherwise be phony package (only as package group)
     if #package:urls() > 0 then
@@ -675,7 +687,7 @@ function _load_package(packagename, requireinfo, opt)
     end
 
     -- select package version
-    local version, source = _select_package_version(package, requireinfo)
+    local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
         package:version_set(version, source)
     end

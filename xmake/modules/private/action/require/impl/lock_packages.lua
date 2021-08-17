@@ -46,6 +46,8 @@ function _lock_package(instance)
     result.version    = instance:version_str()
     result.buildhash  = instance:buildhash()
     result.is_built   = instance:is_built()
+    result.branch     = instance:branch()
+    result.tag        = instance:tag()
     if repo then
         local lastcommit = git.lastcommit({repodir = repo:directory()})
         result.repo      = repo:url() .. "#" .. lastcommit
