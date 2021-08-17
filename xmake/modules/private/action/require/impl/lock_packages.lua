@@ -24,12 +24,10 @@ import("devel.git")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl.utils.requirekey")
 
--- get package key
-function _get_packagekey(instance)
+-- get locked package key
+function _get_packagelock_key(instance)
     local requireinfo = instance:requireinfo()
     local requirestr  = requireinfo.originstr
-    local plat        = instance:plat()
-    local arch        = instance:arch()
     local key         = requirekey(requireinfo, {plat = instance:plat(), arch = instance:arch()})
     return string.format("%s#%s", requirestr, key)
 end
@@ -66,7 +64,7 @@ function _lock_package(instance)
     end
     for _, dep in ipairs(instance:plaindeps()) do
         result.deps = result.deps or {}
-        table.insert(result.deps, _get_packagekey(dep))
+        table.insert(result.deps, _get_packagelock_key(dep))
     end
     return result
 end
@@ -76,8 +74,8 @@ function main(packages)
     if project.policy("package.requires_lock") then
         local results = {}
         for _, instance in ipairs(packages) do
-            local packagekey = _get_packagekey(instance)
-            results[packagekey] = _lock_package(instance)
+            local packagelock_key = _get_packagelock_key(instance)
+            results[packagelock_key] = _lock_package(instance)
         end
         io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
     end

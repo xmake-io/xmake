@@ -30,7 +30,7 @@ import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
-import("private.action.require.impl.utils.requirekey")
+import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
 
 -- get memcache
 function _memcache()
@@ -497,10 +497,17 @@ end
 
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
-    return requirekey(requireinfo, {name = packagename,
-                                    plat = requireinfo.plat,
-                                    arch = requireinfo.arch,
-                                    version = version or requireinfo.version})
+    return _get_requirekey(requireinfo, {name = packagename,
+                                         plat = requireinfo.plat,
+                                         arch = requireinfo.arch,
+                                         version = version or requireinfo.version})
+end
+
+-- get locked package key
+function _get_packagelock_key(requireinfo)
+    local requirestr  = requireinfo.originstr
+    local key         = _get_requirekey(requireinfo, {plat = requireinfo.plat, arch = requireinfo.arch})
+    return string.format("%s#%s", requirestr, key)
 end
 
 -- inherit some builtin configs of parent package if these config values are not default value
@@ -654,6 +661,12 @@ function _load_package(packagename, requireinfo, opt)
 
     -- finish requireinfo
     _finish_requireinfo(requireinfo, package)
+
+    -- get requirekey
+    if _has_locked_requires() then
+        local requirekey = _get_packagelock_key(requireinfo)
+        print("requirekey", requirekey)
+    end
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
