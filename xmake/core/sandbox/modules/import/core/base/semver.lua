@@ -80,7 +80,7 @@ end
 -- local version, source = semver.select(">=1.5.0 <1.6", {"1.5.0", "1.5.1"}, {"v1.5.0", ..}, {"master", "dev"})
 --
 -- @version     the selected version number
--- @source      the version source, e.g. versions, tags, branchs
+-- @source      the version source, e.g. version, tag, branch
 --
 function sandbox_core_base_semver.select(range, versions, tags, branches)
     local verinfo, errors = semver.select(range, table.wrap(versions), table.wrap(tags), table.wrap(branches))

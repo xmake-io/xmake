@@ -293,12 +293,12 @@ function _select_package_version(package, requireinfo)
             -- @see https://github.com/xmake-io/xmake/issues/930
             -- https://github.com/xmake-io/xmake/issues/1009
             version = require_version
-            source = "versions"
+            source = "version"
         elseif #package:versions() > 0 then -- select version?
             version, source = try { function () return semver.select(require_version, package:versions()) end }
         end
         if not version and has_giturl and not require_version:find('.', 1, true) then -- select branch?
-            version, source = require_version ~= "latest" and require_version or "master", "branches"
+            version, source = require_version ~= "latest" and require_version or "master", "branch"
         end
         if not version then
             raise("package(%s): version(%s) not found!", package:name(), require_version)
@@ -667,12 +667,12 @@ function _load_package(packagename, requireinfo, opt)
     -- finish requireinfo
     _finish_requireinfo(requireinfo, package)
 
-    --[[
-    -- get requirekey
+    -- get locked requireinfo
+    local locked_requireinfo
     if _has_locked_requires() then
         local requirekey = _get_packagelock_key(requireinfo)
-        print("requirekey", requirekey)
-    end]]
+        locked_requireinfo = _get_locked_requires(requirekey)
+    end
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo)
