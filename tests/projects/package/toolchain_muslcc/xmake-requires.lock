@@ -2,11 +2,6 @@
     ["autoconf#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "01974c48f52d4d658f58852351743754",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         deps = {
             "m4#fd74da7781d54dddb234cfb6eae7be34"
         },
@@ -14,7 +9,7 @@
         kind = "binary",
         name = "autoconf",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "http://ftp.gnu.org/gnu/autoconf/autoconf-2.69.tar.gz#954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969",
             "https://mirrors.ustc.edu.cn/gnu/autoconf/autoconf-2.69.tar.gz#954bd69b391edc12d6a4a51a2dd1476543da5c6bbf05a95b59dc0dd6fd4c2969",
@@ -25,11 +20,6 @@
     ["automake#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "7a090c93706241f983f0d821a162e8a5",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         deps = {
             "autoconf#fd74da7781d54dddb234cfb6eae7be34"
         },
@@ -37,7 +27,7 @@
         kind = "binary",
         name = "automake",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "http://ftp.gnu.org/gnu/automake/automake-1.16.1.tar.gz#608a97523f97db32f1f5d5615c98ca69326ced2054c9f82e65bade7fc4c9dea8",
             "https://mirrors.ustc.edu.cn/gnu/automake/automake-1.16.1.tar.gz#608a97523f97db32f1f5d5615c98ca69326ced2054c9f82e65bade7fc4c9dea8"
@@ -47,16 +37,11 @@
     ["cmake#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "a6d18f8c0bf347d980f8bb762583c91a",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         is_built = true,
         kind = "binary",
         name = "cmake",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://cmake.org/files/v3.21/cmake-3.21.0-macos-universal-Darwin-x86_64.tar.gz#c1c6f19dfc9c658a48b5aed22806595b2337bb3aedb71ab826552f74f568719f",
             "https://github.com/Kitware/CMake/releases/download/v3.21.0/cmake-3.21.0-macos-universal.tar.gz#c1c6f19dfc9c658a48b5aed22806595b2337bb3aedb71ab826552f74f568719f"
@@ -66,18 +51,13 @@
     ["gmp#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "7dd9c224447e46698ac73d29f58b1d73",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         deps = {
             "autoconf#fd74da7781d54dddb234cfb6eae7be34"
         },
         is_built = true,
         name = "gmp",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://gmplib.org/download/gmp/gmp-6.2.1.tar.xz#fd4829912cddd12f84181c3451cc752be224643e87fac497b69edddadc49b4f2"
         },
@@ -86,11 +66,6 @@
     ["libisl 0.22#11f62b7b062648cebf81bd6623721f7d"] = {
         arch = "x86_64",
         buildhash = "f649e1fb365e442e8f79f372fd91483b",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = true
-        },
         deps = {
             "autoconf#fd74da7781d54dddb234cfb6eae7be34",
             "gmp#fd74da7781d54dddb234cfb6eae7be34"
@@ -98,7 +73,7 @@
         is_built = true,
         name = "libisl",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "http://isl.gforge.inria.fr/isl-0.22.tar.xz#6c8bc56c477affecba9c59e2c9f026967ac8bad01b51bdd07916db40a517b9fa"
         },
@@ -107,19 +82,13 @@
     ["libogg#265260a3b33e47f189d65373131d1f08"] = {
         arch = "arm",
         buildhash = "d894fc29f2fb4c45a0f48bc2c6ece273",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false,
-            toolchains = "@muslcc"
-        },
         deps = {
             "cmake#fd74da7781d54dddb234cfb6eae7be34"
         },
         is_built = true,
         name = "libogg",
         plat = "cross",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://gitlab.xiph.org/xiph/ogg/-/archive/v1.3.4/ogg-v1.3.4.tar.gz#62cc64b9fd3cf57bde3a9033e94534ba34313d2bb9698029f623121a4e47bb9b",
             "https://gitlab.xiph.org/xiph/ogg.git#v1.3.4"
@@ -129,12 +98,6 @@
     ["libplist#265260a3b33e47f189d65373131d1f08"] = {
         arch = "arm",
         buildhash = "0c01b22920be4876b1de74629194eb8f",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false,
-            toolchains = "@muslcc"
-        },
         deps = {
             "autoconf#fd74da7781d54dddb234cfb6eae7be34",
             "automake#fd74da7781d54dddb234cfb6eae7be34",
@@ -144,7 +107,7 @@
         is_built = true,
         name = "libplist",
         plat = "cross",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://github.com/libimobiledevice/libplist/archive/2.2.0.tar.gz#7e654bdd5d8b96f03240227ed09057377f06ebad08e1c37d0cfa2abe6ba0cee2",
             "https://github.com/libimobiledevice/libplist.git#2.2.0"
@@ -154,11 +117,6 @@
     ["libtool#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "64584ec84a4743ecb740b598b263ffa6",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         deps = {
             "autoconf#fd74da7781d54dddb234cfb6eae7be34"
         },
@@ -166,7 +124,7 @@
         kind = "binary",
         name = "libtool",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "http://ftpmirror.gnu.org/libtool/libtool-2.4.6.tar.gz#e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3",
             "https://mirrors.ustc.edu.cn/gnu/libtool/libtool-2.4.6.tar.gz#e3bd4d5d3d025a36c21dd6af7ea818a2afcd4dfc1ea5a17b39d7854bcd0c06e3",
@@ -177,16 +135,11 @@
     ["m4#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "fd0e83e5759b442a970327ebb1c89793",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         is_built = true,
         kind = "binary",
         name = "m4",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://ftp.gnu.org/gnu/m4/m4-1.4.19.tar.xz#63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96",
             "https://ftpmirror.gnu.org/m4/m4-1.4.19.tar.xz#63aede5c6d33b6d9b13511cd0be2cac046f2e70fd0a07aa9573a04a82783af96"
@@ -196,11 +149,6 @@
     ["muslcc#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "11062c09ebeb484594488ad73ddbcd1f",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         deps = {
             "libisl 0.22#11f62b7b062648cebf81bd6623721f7d"
         },
@@ -208,7 +156,7 @@
         kind = "toolchain",
         name = "muslcc",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://github.com/xmake-mirror/musl.cc/releases/download/20210202/arm-linux-musleabi-cross.mac.tgz#a177df3f847181c0c7f2b34b9bd7725b4c556c11a347aa0ae36e09ebf23fb480"
         },
@@ -217,16 +165,11 @@
     ["pkg-config#fd74da7781d54dddb234cfb6eae7be34"] = {
         arch = "x86_64",
         buildhash = "84fd7f9b9f7a47709512cfc85cd9e5f7",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false
-        },
         is_built = true,
         kind = "binary",
         name = "pkg-config",
         plat = "macosx",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://pkgconfig.freedesktop.org/releases/pkg-config-0.29.2.tar.gz#6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591",
             "http://fco.it.distfiles.macports.org/mirrors/macports-distfiles/pkgconfig/pkg-config-0.29.2.tar.gz#6fc69c01688c9458a57eb9a1664c9aba372ccda420a02bf4429fe610e7e7d591"
@@ -236,16 +179,10 @@
     ["zlib#265260a3b33e47f189d65373131d1f08"] = {
         arch = "arm",
         buildhash = "be90a245b8bb48e6b08a1a15bdcad467",
-        configs = {
-            debug = false,
-            pic = true,
-            shared = false,
-            toolchains = "@muslcc"
-        },
         is_built = true,
         name = "zlib",
         plat = "cross",
-        repo = "https://gitee.com/tboox/xmake-repo.git#327b5dd6a61e5345c3e10d758e342a73a8e6c54e",
+        repo = "https://gitee.com/tboox/xmake-repo.git#d5113078b850efb476f1730b8cd31d1f47691f00",
         urls = {
             "https://github.com/madler/zlib/archive/v1.2.11.tar.gz#629380c90a77b964d896ed37163f5c3a34f6e6d897311f1df2a7016355c45eff"
         },

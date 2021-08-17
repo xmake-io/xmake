@@ -44,7 +44,6 @@ function _lock_package(instance)
     result.kind       = instance:kind()
     result.version    = instance:version_str()
     result.buildhash  = instance:buildhash()
-    result.configs    = instance:configs()
     result.is_built   = instance:is_built()
     if repo then
         local lastcommit = git.lastcommit({repodir = repo:directory()})
@@ -59,7 +58,9 @@ function _lock_package(instance)
             url = url .. "#" .. revision
         else
             local sourcehash = instance:sourcehash(url_alias)
-            url = url .. "#" .. sourcehash
+            if sourcehash then
+                url = url .. "#" .. sourcehash
+            end
         end
         table.insert(result.urls, url)
     end
@@ -72,11 +73,13 @@ end
 
 -- lock all required packages
 function main(packages)
-    local results = {}
-    for _, instance in ipairs(packages) do
-        local packagekey = _get_packagekey(instance)
-        results[packagekey] = _lock_package(instance)
+    if project.policy("package.requires_lock") then
+        local results = {}
+        for _, instance in ipairs(packages) do
+            local packagekey = _get_packagekey(instance)
+            results[packagekey] = _lock_package(instance)
+        end
+        io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
     end
-    io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
 end
 
