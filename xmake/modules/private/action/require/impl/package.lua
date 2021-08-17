@@ -26,6 +26,7 @@ import("core.base.hashset")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
+import("core.project.config")
 import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
@@ -505,8 +506,10 @@ end
 
 -- get locked package key
 function _get_packagelock_key(requireinfo)
+    local plat        = config.plat() or os.subhost()
+    local arch        = config.arch() or os.subarch()
     local requirestr  = requireinfo.originstr
-    local key         = _get_requirekey(requireinfo, {plat = requireinfo.plat, arch = requireinfo.arch})
+    local key         = _get_requirekey(requireinfo, {hash = true, plat = plat, arch = arch})
     return string.format("%s#%s", requirestr, key)
 end
 
@@ -662,11 +665,12 @@ function _load_package(packagename, requireinfo, opt)
     -- finish requireinfo
     _finish_requireinfo(requireinfo, package)
 
+    --[[
     -- get requirekey
     if _has_locked_requires() then
         local requirekey = _get_packagelock_key(requireinfo)
         print("requirekey", requirekey)
-    end
+    end]]
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo)

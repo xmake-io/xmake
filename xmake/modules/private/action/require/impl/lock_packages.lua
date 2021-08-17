@@ -20,15 +20,18 @@
 
 -- imports
 import("core.project.project")
+import("core.project.config")
 import("devel.git")
 import("private.action.require.impl.utils.filter")
 import("private.action.require.impl.utils.requirekey")
 
 -- get locked package key
 function _get_packagelock_key(instance)
+    local plat        = config.plat() or os.subhost()
+    local arch        = config.arch() or os.subarch()
     local requireinfo = instance:requireinfo()
     local requirestr  = requireinfo.originstr
-    local key         = requirekey(requireinfo, {plat = instance:plat(), arch = instance:arch()})
+    local key         = requirekey(requireinfo, {hash = true, plat = plat, arch = arch})
     return string.format("%s#%s", requirestr, key)
 end
 

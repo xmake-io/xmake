@@ -115,10 +115,10 @@ function _instance:plat()
         return os.subhost()
     end
     local requireinfo = self:requireinfo()
-    if not plat and requireinfo and requireinfo.plat then
+    if requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return self:get("plat") or package._target_plat()
+    return package._target_plat()
 end
 
 -- get the architecture of package
@@ -145,7 +145,7 @@ function _instance:targetarch()
     if requireinfo and requireinfo.arch then
         return requireinfo.arch
     end
-    return self:get("arch") or package._target_arch()
+    return package._target_arch()
 end
 
 -- get the build mode
@@ -1703,8 +1703,8 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
-        ,   "package.set_plat"
-        ,   "package.set_arch"
+        ,   "package.set_plat" -- deprecated
+        ,   "package.set_arch" -- deprecated
         ,   "package.set_license"
         ,   "package.set_homepage"
         ,   "package.set_description"

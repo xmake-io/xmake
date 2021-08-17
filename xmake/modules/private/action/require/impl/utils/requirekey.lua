@@ -37,6 +37,9 @@ function main(requireinfo, opt)
     if requireinfo.label then
         key = key .. "/" .. requireinfo.label
     end
+    if key:startswith("/") then
+        key = key:sub(2)
+    end
     local configs = requireinfo.configs
     if configs then
         local configs_order = {}
@@ -46,5 +49,9 @@ function main(requireinfo, opt)
         table.sort(configs_order)
         key = key .. ":" .. string.serialize(configs_order, true)
     end
-    return hash.uuid(key):gsub("%-", ""):lower()
+    if opt.hash then
+        return hash.uuid(key):gsub("%-", ""):lower()
+    else
+        return key
+    end
 end
