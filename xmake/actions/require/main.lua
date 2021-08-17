@@ -118,7 +118,7 @@ function main()
 
         scan(option.get("requires"))
 
-    -- install and update all outdated package dependencies by default if no arguments
+    -- install and upgrade all outdated package dependencies by default if no arguments
     else
         install(option.get("requires"))
     end

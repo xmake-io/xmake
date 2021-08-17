@@ -204,7 +204,9 @@ end
 
 -- has locked requires?
 function _has_locked_requires()
-    return project.policy("package.requires_lock") and os.isfile(project.requireslock())
+    if not option.get("upgrade") then
+        return project.policy("package.requires_lock") and os.isfile(project.requireslock())
+    end
 end
 
 -- get locked requires
