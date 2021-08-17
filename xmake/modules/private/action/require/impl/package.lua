@@ -201,6 +201,25 @@ function _load_package_from_repository(packagename, reponame)
     end
 end
 
+-- has locked requires?
+function _has_locked_requires()
+    return project.policy("package.requires_lock") and os.isfile(project.requireslock())
+end
+
+-- get locked requires
+function _get_locked_requires(requirekey)
+    local requireslock = _memcache():get("requireslock")
+    if requireslock == nil then
+        if _has_locked_requires() then
+            requireslock = io.load(project.requireslock())
+        end
+        _memcache():set("requireslock", requireslock or false)
+    end
+    if requireslock then
+        return requireslock[requirekey]
+    end
+end
+
 -- sort package deps
 --
 -- e.g.
