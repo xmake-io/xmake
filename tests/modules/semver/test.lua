@@ -10,21 +10,21 @@ end
 -- test select version
 function test_semver_select(t)
 
-    _check_semver_select(t, {"1.5.1", "versions"}
+    _check_semver_select(t, {"1.5.1", "version"}
                         , ">=1.5.0 <1.6.0"
                         , {"1.4.0", "1.5.0", "1.5.1"})
 
-    _check_semver_select(t, {"1.5.1", "versions"}
+    _check_semver_select(t, {"1.5.1", "version"}
                         , "^1.5.0"
                         ,{"1.4.0", "1.5.0", "1.5.1"})
 
-    _check_semver_select(t, {"master", "branches"}
+    _check_semver_select(t, {"master", "branch"}
                         , "master"
                         , {"1.4.0", "1.5.0", "1.5.1"}
                         , {"v1.2.0", "v1.6.0"}
                         , {"master", "dev"})
 
-    _check_semver_select(t, {"1.5.1", "versions"}
+    _check_semver_select(t, {"1.5.1", "version"}
                         , "latest"
                         , {"1.4.0", "1.5.0", "1.5.1"})
 end
