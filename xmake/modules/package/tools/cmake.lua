@@ -363,6 +363,12 @@ function _get_configs_for_mingw(package, configs, opt)
     envs.CMAKE_OSX_SYSROOT = ""
     -- Avoid cmake to add the flags -search_paths_first and -headerpad_max_install_names on macOS
     envs.HAVE_FLAG_SEARCH_PATHS_FIRST = "0"
+    -- CMAKE_MAKE_PROGRAM may be required for some CMakeLists.txt (libcurl)
+    if is_subhost("windows") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
+    end
+
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
