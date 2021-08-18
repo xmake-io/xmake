@@ -684,6 +684,9 @@ function _load_package(packagename, requireinfo, opt)
     if _has_locked_requires() then
         local requirekey = _get_packagelock_key(requireinfo)
         locked_requireinfo = _get_locked_requires(requirekey)
+        if semver.compare(project.requireslock_version(), locked_requireinfo.version) < 0 then
+            locked_requireinfo = nil
+        end
     end
 
     -- select package version

@@ -76,6 +76,7 @@ end
 function main(packages)
     if project.policy("package.requires_lock") then
         local results = {}
+        results.version = project.requireslock_version()
         for _, instance in ipairs(packages) do
             local packagelock_key = _get_packagelock_key(instance)
             results[packagelock_key] = _lock_package(instance)
