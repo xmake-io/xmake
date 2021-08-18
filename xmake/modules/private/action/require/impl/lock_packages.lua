@@ -27,12 +27,8 @@ import("private.action.require.impl.utils.requirekey")
 
 -- get locked package key
 function _get_packagelock_key(instance)
-    local plat        = config.plat() or os.subhost()
-    local arch        = config.arch() or os.subarch()
     local requireinfo = instance:requireinfo()
-    local requirestr  = requireinfo.originstr
-    local key         = requirekey(requireinfo, {hash = true, plat = plat, arch = arch})
-    return string.format("%s#%s", requirestr, key)
+    return requireinfo and requireinfo.requirekey
 end
 
 -- lock package
@@ -49,25 +45,6 @@ function _lock_package(instance)
     if repo then
         local lastcommit = git.lastcommit({repodir = repo:directory()})
         result.repo      = repo:url() .. "#" .. lastcommit
-    end
-    for _, url in ipairs(instance:urls()) do
-        result.urls = result.urls or {}
-        local url_alias = instance:url_alias(url)
-        url = filter.handle(url, instance)
-        if git.asgiturl(url) then
-            local revision = instance:revision(url_alias) or instance:tag() or instance:version_str()
-            url = url .. "#" .. revision
-        else
-            local sourcehash = instance:sourcehash(url_alias)
-            if sourcehash then
-                url = url .. "#" .. sourcehash
-            end
-        end
-        table.insert(result.urls, url)
-    end
-    for _, dep in ipairs(instance:plaindeps()) do
-        result.deps = result.deps or {}
-        table.insert(result.deps, _get_packagelock_key(dep))
     end
     return result
 end

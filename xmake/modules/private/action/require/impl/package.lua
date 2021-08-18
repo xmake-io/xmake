@@ -219,7 +219,7 @@ function _get_locked_requires(requirekey)
         _memcache():set("requireslock", requireslock or false)
     end
     if requireslock then
-        return requireslock[requirekey]
+        return requireslock[requirekey], requireslock.version
     end
 end
 
@@ -638,6 +638,19 @@ function _load_package(packagename, requireinfo, opt)
         requireinfo.label = splitinfo[2]
     end
 
+    -- sve requirekey
+    local requirekey = _get_packagelock_key(requireinfo)
+    requireinfo.requirekey = requirekey
+
+    -- get locked requireinfo
+    local locked_requireinfo, requireslock_version
+    if _has_locked_requires() then
+        locked_requireinfo, requireslock_version = _get_locked_requires(requirekey)
+        if requireslock_version and semver.compare(project.requireslock_version(), requireslock_version) < 0 then
+            locked_requireinfo = nil
+        end
+    end
+
     -- load package from project first
     local package
     if os.isfile(os.projectfile()) then
@@ -678,16 +691,6 @@ function _load_package(packagename, requireinfo, opt)
 
     -- finish requireinfo
     _finish_requireinfo(requireinfo, package)
-
-    -- get locked requireinfo
-    local locked_requireinfo
-    if _has_locked_requires() then
-        local requirekey = _get_packagelock_key(requireinfo)
-        locked_requireinfo = _get_locked_requires(requirekey)
-        if semver.compare(project.requireslock_version(), locked_requireinfo.version) < 0 then
-            locked_requireinfo = nil
-        end
-    end
 
     -- select package version
     local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
