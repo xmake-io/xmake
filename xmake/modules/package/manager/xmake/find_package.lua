@@ -99,7 +99,7 @@ function _find_package_from_repo(name, opt)
             table.insert(linkdirs, path.join(installdir, libdir))
         end
     end
-    if opt.plat == "windows" then
+    if opt.plat == "windows" or opt.plat == "mingw" then
         for _, file in ipairs(os.files(path.join(installdir, "lib", "*.dll"))) do
             result.shared = true
             table.insert(libfiles, file)
