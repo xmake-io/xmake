@@ -119,7 +119,7 @@ static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx
             lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
 
-            lua_pushstring(lua, "branches");
+            lua_pushstring(lua, "branch");
             lua_setfield(lua, -2, "source");
 
             // ok
