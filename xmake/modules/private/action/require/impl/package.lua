@@ -747,6 +747,11 @@ function _load_package(packagename, requireinfo, opt)
         on_load(package)
     end
 
+    -- check build hash
+    if locked_requireinfo and locked_requireinfo.buildhash ~= package:buildhash() then
+        wprint("package(%s): buildhash is not matched in xmake-requires.lock", package:displayname(), locked_requireinfo.buildhash, package:buildhash())
+    end
+
     -- load environments from the manifest to enable the environments of on_install()
     package:envs_load()
 
