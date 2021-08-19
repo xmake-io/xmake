@@ -59,12 +59,16 @@ function _get_configs(package, configs)
             table.insert(configs, "--cross=" .. cross)
         end
         local bindir = _get_config_from_toolchains(package, "bindir") or get_config("bin")
-        if cross then
+        if bindir then
             table.insert(configs, "--bin=" .. bindir)
         end
         local sdkdir = _get_config_from_toolchains(package, "sdkdir") or get_config("sdk")
-        if cross then
+        if sdkdir then
             table.insert(configs, "--sdk=" .. sdkdir)
+        end
+        local toolchain_name = get_config("toolchain")
+        if toolchain_name then
+            table.insert(configs, "--toolchain=" .. toolchain_name)
         end
     else
         local names = {"ndk", "ndk_sdkver", "vs", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
