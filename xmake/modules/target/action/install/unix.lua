@@ -39,7 +39,7 @@ end
 function _install_shared_for_package(target, pkg, outputdir)
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if sopath:endswith(".so") or sopath:endswith(".dylib") then
-            local soname = path.filename(dllpath)
+            local soname = path.filename(sopath)
             if os.isfile(path.join(outputdir, soname)) then
                 wprint("'%s' already exists in install dir, overwriting it from package(%s).", soname, pkg:name())
             end
