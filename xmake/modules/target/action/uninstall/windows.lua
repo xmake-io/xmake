@@ -31,6 +31,7 @@ end
 function _uninstall_shared_for_package(target, pkg, outputdir)
     for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
+            local dllname = path.filename(dllpath)
             os.vrm(path.join(outputdir, dllname))
         end
     end
