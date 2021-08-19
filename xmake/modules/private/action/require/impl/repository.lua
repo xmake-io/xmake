@@ -22,6 +22,11 @@
 import("core.base.global")
 import("core.package.repository")
 
+-- get package directory from the locked repository
+function _get_packagedir_from_locked_repo(packagename, locked_repo)
+--    print(packagename, locked_repo)
+end
+
 -- get all repositories
 function repositories()
     if _g._REPOSITORIES then
@@ -48,34 +53,53 @@ function pulled()
 end
 
 -- get package directory from repositories
-function packagedir(packagename, reponame)
+function packagedir(packagename, opt)
 
     -- strip trailng ~tag, e.g. zlib~debug
+    opt = opt or {}
     packagename = packagename:lower()
     if packagename:find('~', 1, true) then
         packagename = packagename:gsub("~.+$", "")
     end
 
-    -- get it from cache it
-    local packagedirs = _g._PACKAGEDIRS or {}
-    local foundir = packagedirs[packagename]
-    if foundir then
-        return foundir[1], foundir[2]
+    -- get cache key
+    local reponame = opt.name
+    local cachekey = packagename
+    local locked_repo = opt.locked_repo
+    if locked_repo then
+        cachekey = cachekey .. locked_repo.url .. locked_repo.commit .. (locked_repo.branch or "")
+    end
+    local packagedirs = _g._PACKAGEDIRS
+    if not packagedirs then
+        packagedirs = {}
+        _g._PACKAGEDIRS = packagedirs
     end
 
-    -- find the package directory from repositories
-    for _, repo in ipairs(repositories()) do
-        local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
-        if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) and (not reponame or reponame == repo:name()) then
-            foundir = {dir, repo}
-            break
+    -- get the package directory
+    local foundir = packagedirs[cachekey]
+    if not foundir then
+
+        -- find the package directory from the locked repository
+        if locked_repo then
+            local dir, repo = _get_packagedir_from_locked_repo(packagename, locked_repo)
+            if dir and repo then
+                foundir = {dir, repo}
+            end
         end
+
+        -- find the package directory from repositories
+        if not foundir then
+            for _, repo in ipairs(repositories()) do
+                local dir = path.join(repo:directory(), "packages", packagename:sub(1, 1), packagename)
+                if os.isdir(dir) and os.isfile(path.join(dir, "xmake.lua")) and (not reponame or reponame == repo:name()) then
+                    foundir = {dir, repo}
+                    break
+                end
+            end
+        end
+        packagedirs[cachekey] = foundir or {}
     end
-    if foundir then
-        packagedirs[packagename] = foundir
-        _g._PACKAGEDIRS = packagedirs
-        return foundir[1], foundir[2]
-    end
+    return foundir[1], foundir[2]
 end
 
 -- get artifacts manifest from repositories

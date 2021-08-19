@@ -195,8 +195,8 @@ function _load_package_from_project(packagename)
 end
 
 -- load package package from repositories
-function _load_package_from_repository(packagename, reponame)
-    local packagedir, repo = repository.packagedir(packagename, reponame)
+function _load_package_from_repository(packagename, opt)
+    local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
         return core_package.load_from_repository(packagename, repo, packagedir)
     end
@@ -660,7 +660,8 @@ function _load_package(packagename, requireinfo, opt)
     -- load package from repositories
     local from_repo = false
     if not package then
-        package = _load_package_from_repository(packagename, requireinfo.reponame)
+        package = _load_package_from_repository(packagename, {
+            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
         end
