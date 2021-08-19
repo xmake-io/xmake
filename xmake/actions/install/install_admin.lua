@@ -28,6 +28,8 @@ import("install")
 -- install
 function main(targetname, installdir, prefix)
 
+    local verbose = option.get("verbose")
+
     -- enter project directory
     os.cd(project.directory())
 
@@ -39,6 +41,9 @@ function main(targetname, installdir, prefix)
 
     -- save the current option and push a new option context
     option.save()
+
+    -- preserve verbose option
+    option.set("verbose", option)
 
     -- pass installdir to option
     if installdir then
