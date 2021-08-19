@@ -43,7 +43,7 @@ function main(targetname, installdir, prefix)
     option.save()
 
     -- preserve verbose option
-    option.set("verbose", option)
+    option.set("verbose", verbose)
 
     -- pass installdir to option
     if installdir then
