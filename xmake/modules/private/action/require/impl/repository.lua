@@ -36,9 +36,9 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
             break
         end
     end
+    local reponame = hash.uuid(locked_repo.url):gsub("%-", ""):lower() .. ".lock"
 
     -- clone repository to local
-    local reponame = path.basename(locked_repo.url) .. ".lock"
     local repodir_local = path.join(config.directory(), "repositories", reponame)
     if not os.isdir(repodir_local) then
         if repodir_global then

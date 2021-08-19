@@ -9,7 +9,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.2.11"
@@ -21,7 +21,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.2.11"
@@ -33,7 +33,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.2.11"
