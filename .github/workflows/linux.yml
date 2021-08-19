@@ -8,9 +8,10 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    concurrency:
+        group: ${{ github.head_ref }}-build
+        cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
         with:
