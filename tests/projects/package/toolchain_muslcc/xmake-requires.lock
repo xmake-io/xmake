@@ -1,0 +1,149 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    ["autoconf#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "01974c48f52d4d658f58852351743754",
+        name = "autoconf",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "2.69"
+    },
+    ["automake#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "7a090c93706241f983f0d821a162e8a5",
+        name = "automake",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.16.1"
+    },
+    ["cmake#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "a6d18f8c0bf347d980f8bb762583c91a",
+        name = "cmake",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "3.21.0"
+    },
+    ["gmp#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "7dd9c224447e46698ac73d29f58b1d73",
+        name = "gmp",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "6.2.1"
+    },
+    ["libisl 0.22#3dd996fa365042e39791030c4e1cad52"] = {
+        arch = "x86_64",
+        buildhash = "f649e1fb365e442e8f79f372fd91483b",
+        name = "libisl",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "0.22"
+    },
+    ["libogg#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "arm",
+        buildhash = "d894fc29f2fb4c45a0f48bc2c6ece273",
+        name = "libogg",
+        plat = "cross",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "v1.3.4"
+    },
+    ["libplist#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "arm",
+        buildhash = "0c01b22920be4876b1de74629194eb8f",
+        name = "libplist",
+        plat = "cross",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "2.2.0"
+    },
+    ["libtool#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "64584ec84a4743ecb740b598b263ffa6",
+        name = "libtool",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "2.4.6"
+    },
+    ["m4#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "fd0e83e5759b442a970327ebb1c89793",
+        name = "m4",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.4.19"
+    },
+    ["muslcc#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "11062c09ebeb484594488ad73ddbcd1f",
+        name = "muslcc",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "20210202"
+    },
+    ["pkg-config#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "84fd7f9b9f7a47709512cfc85cd9e5f7",
+        name = "pkg-config",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "0.29.2"
+    },
+    ["zlib#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "arm",
+        buildhash = "be90a245b8bb48e6b08a1a15bdcad467",
+        name = "zlib",
+        plat = "cross",
+        repo = {
+            branch = "master",
+            commit = "e87effa464611cecf28dfced70cbe491a08fe99d",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.2.11"
+    }
+}

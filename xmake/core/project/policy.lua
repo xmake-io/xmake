@@ -44,7 +44,9 @@ function policy.policies()
             -- we can compile the source files for each target in parallel
             ["build.across_targets_in_parallel"] = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
             -- we need enable longpaths when building target or installing package
-            ["platform.longpaths"]               = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"}
+            ["platform.longpaths"]               = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
+            -- lock required packages
+            ["package.requires_lock"]            = {description = "Enable xmake-requires.lock to lock required packages.", default = false, type = "boolean"}
         }
         policy._POLICIES = policies
     end

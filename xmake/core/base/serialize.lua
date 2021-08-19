@@ -123,7 +123,8 @@ function serialize._maketable(obj, opt, level, pathsegs, reftab)
         local sformat = opt.indentstr and "[%q] = %s" or "[%q]=%s"
         local nformat = opt.indentstr and "[%s] = %s" or "[%s]=%s"
         local keywords = serialize._keywords()
-        for k, v in pairs(serialized) do
+        local makepairs = opt.orderkeys and table.orderpairs or pairs
+        for k, v in makepairs(serialized) do
             local format
             -- serialize key
             if type(k) == "string" then

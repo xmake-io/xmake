@@ -26,10 +26,12 @@ import("core.base.hashset")
 import("private.utils.progress")
 import("core.cache.memcache")
 import("core.project.project")
+import("core.project.config")
 import("core.tool.toolchain")
 import("core.package.package", {alias = "core_package"})
 import("devel.git")
 import("private.action.require.impl.repository")
+import("private.action.require.impl.utils.requirekey", {alias = "_get_requirekey"})
 
 -- get memcache
 function _memcache()
@@ -193,10 +195,31 @@ function _load_package_from_project(packagename)
 end
 
 -- load package package from repositories
-function _load_package_from_repository(packagename, reponame)
-    local packagedir, repo = repository.packagedir(packagename, reponame)
+function _load_package_from_repository(packagename, opt)
+    local packagedir, repo = repository.packagedir(packagename, opt)
     if packagedir then
         return core_package.load_from_repository(packagename, repo, packagedir)
+    end
+end
+
+-- has locked requires?
+function _has_locked_requires()
+    if not option.get("upgrade") then
+        return project.policy("package.requires_lock") and os.isfile(project.requireslock())
+    end
+end
+
+-- get locked requires
+function _get_locked_requires(requirekey)
+    local requireslock = _memcache():get("requireslock")
+    if requireslock == nil then
+        if _has_locked_requires() then
+            requireslock = io.load(project.requireslock())
+        end
+        _memcache():set("requireslock", requireslock or false)
+    end
+    if requireslock then
+        return requireslock[requirekey], requireslock.__meta__.version
     end
 end
 
@@ -246,7 +269,19 @@ function _add_package_configurations(package)
 end
 
 -- select package version
-function _select_package_version(package, requireinfo)
+function _select_package_version(package, requireinfo, locked_requireinfo)
+
+    -- get it from the locked requireinfo
+    if locked_requireinfo then
+        local version = locked_requireinfo.version
+        local source = "version"
+        if locked_requireinfo.branch then
+            source = "branch"
+        elseif locked_requireinfo.tag then
+            source = "tag"
+        end
+        return version, source
+    end
 
     -- exists urls? otherwise be phony package (only as package group)
     if #package:urls() > 0 then
@@ -270,12 +305,12 @@ function _select_package_version(package, requireinfo)
             -- @see https://github.com/xmake-io/xmake/issues/930
             -- https://github.com/xmake-io/xmake/issues/1009
             version = require_version
-            source = "versions"
+            source = "version"
         elseif #package:versions() > 0 then -- select version?
             version, source = try { function () return semver.select(require_version, package:versions()) end }
         end
         if not version and has_giturl and not require_version:find('.', 1, true) then -- select branch?
-            version, source = require_version ~= "latest" and require_version or "master", "branches"
+            version, source = require_version ~= "latest" and require_version or "master", "branch"
         end
         if not version then
             raise("package(%s): version(%s) not found!", package:name(), require_version)
@@ -477,26 +512,19 @@ end
 
 -- get package key
 function _get_packagekey(packagename, requireinfo, version)
-    local key = packagename .. "/" .. (version or requireinfo.version)
-    if requireinfo.plat then
-        key = key .. "/" .. requireinfo.plat
-    end
-    if requireinfo.arch then
-        key = key .. "/" .. requireinfo.arch
-    end
-    if requireinfo.label then
-        key = key .. "/" .. requireinfo.label
-    end
-    local configs = requireinfo.configs
-    if configs then
-        local configs_order = {}
-        for k, v in pairs(configs) do
-            table.insert(configs_order, k .. "=" .. tostring(v))
-        end
-        table.sort(configs_order)
-        key = key .. ":" .. string.serialize(configs_order, true)
-    end
-    return key
+    return _get_requirekey(requireinfo, {name = packagename,
+                                         plat = requireinfo.plat,
+                                         arch = requireinfo.arch,
+                                         version = version or requireinfo.version})
+end
+
+-- get locked package key
+function _get_packagelock_key(requireinfo)
+    local plat        = config.plat() or os.subhost()
+    local arch        = config.arch() or os.subarch()
+    local requirestr  = requireinfo.originstr
+    local key         = _get_requirekey(requireinfo, {hash = true, plat = plat, arch = arch})
+    return string.format("%s#%s", requirestr, key)
 end
 
 -- inherit some builtin configs of parent package if these config values are not default value
@@ -610,6 +638,19 @@ function _load_package(packagename, requireinfo, opt)
         requireinfo.label = splitinfo[2]
     end
 
+    -- sve requirekey
+    local requirekey = _get_packagelock_key(requireinfo)
+    requireinfo.requirekey = requirekey
+
+    -- get locked requireinfo
+    local locked_requireinfo, requireslock_version
+    if _has_locked_requires() then
+        locked_requireinfo, requireslock_version = _get_locked_requires(requirekey)
+        if requireslock_version and semver.compare(project.requireslock_version(), requireslock_version) < 0 then
+            locked_requireinfo = nil
+        end
+    end
+
     -- load package from project first
     local package
     if os.isfile(os.projectfile()) then
@@ -619,7 +660,8 @@ function _load_package(packagename, requireinfo, opt)
     -- load package from repositories
     local from_repo = false
     if not package then
-        package = _load_package_from_repository(packagename, requireinfo.reponame)
+        package = _load_package_from_repository(packagename, {
+            name = requireinfo.reponame, locked_repo = locked_requireinfo and locked_requireinfo.repo})
         if package then
             from_repo = true
         end
@@ -652,7 +694,7 @@ function _load_package(packagename, requireinfo, opt)
     _finish_requireinfo(requireinfo, package)
 
     -- select package version
-    local version, source = _select_package_version(package, requireinfo)
+    local version, source = _select_package_version(package, requireinfo, locked_requireinfo)
     if version then
         package:version_set(version, source)
     end
@@ -710,6 +752,11 @@ function _load_package(packagename, requireinfo, opt)
     local on_load = package:script("load")
     if on_load then
         on_load(package)
+    end
+
+    -- check build hash
+    if locked_requireinfo and locked_requireinfo.buildhash ~= package:buildhash() then
+        wprint("package(%s): buildhash is not matched in xmake-requires.lock", package:displayname(), locked_requireinfo.buildhash, package:buildhash())
     end
 
     -- load environments from the manifest to enable the environments of on_install()

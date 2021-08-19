@@ -68,7 +68,7 @@ static tb_bool_t xm_semver_select_from_versions_tags1(lua_State* lua, tb_int_t f
     lua_pushstring(lua, top.raw);
     lua_setfield(lua, -2, "version");
 
-    lua_pushstring(lua, fromidx == 2? "versions" : "tags");
+    lua_pushstring(lua, fromidx == 2? "version" : "tag");
     lua_setfield(lua, -2, "source");
 
     // exit the popped semver
@@ -92,7 +92,7 @@ static tb_bool_t xm_semver_select_from_versions_tags2(lua_State* lua, tb_int_t f
             lua_createtable(lua, 0, 2);
             lua_pushstring(lua, source_str);
             lua_setfield(lua, -2, "version");
-            lua_pushstring(lua, fromidx == 2? "versions" : "tags");
+            lua_pushstring(lua, fromidx == 2? "version" : "tag");
             lua_setfield(lua, -2, "source");
             return tb_true;
         }
@@ -119,7 +119,7 @@ static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx
             lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
 
-            lua_pushstring(lua, "branches");
+            lua_pushstring(lua, "branch");
             lua_setfield(lua, -2, "source");
 
             // ok
@@ -162,7 +162,7 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State* lua, tb_i
     lua_pushstring(lua, top.raw);
     lua_setfield(lua, -2, "version");
 
-    lua_pushstring(lua, fromidx == 2? "versions" : "tags");
+    lua_pushstring(lua, fromidx == 2? "version" : "tag");
     lua_setfield(lua, -2, "source");
 
     // exit the popped semver

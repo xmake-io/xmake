@@ -317,6 +317,21 @@ function table.orderkeys(tab)
     return keys
 end
 
+-- order key/value iterator
+--
+-- for k, v in table.orderpairs(t) do
+--   TODO
+-- end
+function table.orderpairs(t)
+    local orderkeys = table.orderkeys(t)
+    local i = 1
+    return function (t, k)
+        k = orderkeys[i]
+        i = i + 1
+        return k, t[k]
+    end, t, nil
+end
+
 -- get values of a table
 function table.values(tab)
 

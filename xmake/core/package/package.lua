@@ -115,10 +115,10 @@ function _instance:plat()
         return os.subhost()
     end
     local requireinfo = self:requireinfo()
-    if not plat and requireinfo and requireinfo.plat then
+    if requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return self:get("plat") or package._target_plat()
+    return package._target_plat()
 end
 
 -- get the architecture of package
@@ -145,7 +145,7 @@ function _instance:targetarch()
     if requireinfo and requireinfo.arch then
         return requireinfo.arch
     end
-    return self:get("arch") or package._target_arch()
+    return package._target_arch()
 end
 
 -- get the build mode
@@ -855,6 +855,26 @@ function _instance:version_str()
     return self._VERSION_STR
 end
 
+-- set the version, source: branch, tag, version
+function _instance:version_set(version, source)
+
+    -- save the semver version
+    local sv = semver.new(version)
+    if sv then
+        self._VERSION = sv
+    end
+
+    -- save branch and tag
+    if source == "branch" then
+        self._BRANCH = version
+    elseif source == "tag" then
+        self._TAG = version
+    end
+
+    -- save version string
+    self._VERSION_STR = version
+end
+
 -- get branch version
 function _instance:branch()
     return self._BRANCH
@@ -868,27 +888,6 @@ end
 -- is git ref?
 function _instance:gitref()
     return self:branch() or self:tag()
-end
-
--- set the version, source: branches, tags, versions
-function _instance:version_set(version, source)
-
-    -- save the semver version
-    local sv = semver.new(version)
-    if sv then
-        self._VERSION = sv
-    end
-
-    -- save branch and tag
-    if source == "branches" then
-        self._BRANCH = version
-    elseif source == "tags" then
-        self._TAG = version
-    end
-
-    -- save source and version string
-    self._SOURCE      = source
-    self._VERSION_STR = version
 end
 
 -- get the require info
@@ -1703,8 +1702,8 @@ function package.apis()
             -- package.set_xxx
             "package.set_urls"
         ,   "package.set_kind"
-        ,   "package.set_plat"
-        ,   "package.set_arch"
+        ,   "package.set_plat" -- deprecated
+        ,   "package.set_arch" -- deprecated
         ,   "package.set_license"
         ,   "package.set_homepage"
         ,   "package.set_description"

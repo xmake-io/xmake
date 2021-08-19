@@ -29,20 +29,13 @@ local repository    = require("package/repository")
 local raise         = require("sandbox/modules/raise")
 local import        = require("sandbox/modules/import")
 
--- get repository directory
-function sandbox_core_package_repository.directory(is_global)
-    return repository.directory(is_global)
-end
-
--- get repository url from the given name
-function sandbox_core_package_repository.get(name, is_global)
-    return repository.get(name, is_global)
-end
+-- inherit some builtin interfaces
+sandbox_core_package_repository.directory = repository.directory
+sandbox_core_package_repository.get       = repository.get
+sandbox_core_package_repository.load      = repository.load
 
 -- add repository url to the given name
 function sandbox_core_package_repository.add(name, url, branch, is_global)
-
-    -- add it
     local ok, errors = repository.add(name, url, branch, is_global)
     if not ok then
         raise(errors)
@@ -51,8 +44,6 @@ end
 
 -- remove repository from gobal or local directory
 function sandbox_core_package_repository.remove(name, is_global)
-
-    -- remove it
     local ok, errors = repository.remove(name, is_global)
     if not ok then
         raise(errors)
@@ -61,8 +52,6 @@ end
 
 -- clear all repositories from global or local directory
 function sandbox_core_package_repository.clear(is_global)
-
-    -- clear all repositories
     local ok, errors = repository.clear(is_global)
     if not ok then
         raise(errors)

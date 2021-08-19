@@ -1023,6 +1023,16 @@ function project.requireconfs_str()
     return requireconfs_str, requireconfs_extra
 end
 
+-- get requires lockfile
+function project.requireslock()
+    return path.join(project.directory(), "xmake-requires.lock")
+end
+
+-- get the format version of requires lockfile
+function project.requireslock_version()
+    return "1.0"
+end
+
 -- get the given rule
 function project.rule(name)
     return project.rules()[name]

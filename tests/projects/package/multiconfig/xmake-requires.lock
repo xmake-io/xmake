@@ -1,0 +1,41 @@
+{
+    __meta__ = {
+        version = "1.0"
+    },
+    ["zlib#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        arch = "x86_64",
+        buildhash = "b76a297309d14c09b42cfe3927260a51",
+        name = "zlib",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.2.11"
+    },
+    ["zlib~debug#d72a8a937b694e449bce540c8eb65a8a"] = {
+        arch = "x86_64",
+        buildhash = "e6a6fa6a86ad4fc7ae3c2cf7c60cc084",
+        name = "zlib",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.2.11"
+    },
+    ["zlib~shared#b286744a1898416faad2e5cab0104b2f"] = {
+        arch = "x86_64",
+        buildhash = "8e5b898b0f344715bac89cc6a1577506",
+        name = "zlib",
+        plat = "macosx",
+        repo = {
+            branch = "master",
+            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            url = "https://gitee.com/tboox/xmake-repo.git"
+        },
+        version = "1.2.11"
+    }
+}

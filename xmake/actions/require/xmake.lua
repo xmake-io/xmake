@@ -72,6 +72,7 @@ task("require")
                 ,   {'s', "search",     "k",  nil,       "Search for the given packages from repositories.",
                                                          "e.g.",
                                                          "    $ xmake require --search tbox"                                   }
+                ,   {nil, "upgrade",    "k",  nil,       "Upgrade the installed packages."                                     }
                 ,   {nil, "uninstall",  "k",  nil,       "Uninstall the installed packages.",
                                                          "e.g.",
                                                          "    $ xmake require --uninstall",

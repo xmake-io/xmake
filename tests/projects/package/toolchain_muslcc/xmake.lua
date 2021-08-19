@@ -4,6 +4,9 @@ add_rules("mode.debug", "mode.release")
 set_plat("cross")
 set_arch("arm")
 
+-- lock requires
+set_policy("package.requires_lock", true)
+
 -- add library packages
 -- for testing zlib/xmake, libplist/autoconf, libogg/cmake
 add_requires("zlib", "libogg",  {system = false})
