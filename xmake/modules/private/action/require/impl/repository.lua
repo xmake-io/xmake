@@ -27,7 +27,6 @@ import("devel.git")
 
 -- get package directory from the locked repository
 function _get_packagedir_from_locked_repo(packagename, locked_repo)
-    print(packagename, locked_repo)
 
     -- find global repository directory
     local repodir_global
@@ -39,7 +38,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     end
 
     -- clone repository to local
-    local reponame = path.basename(locked_repo.url)
+    local reponame = path.basename(locked_repo.url) .. ".lock"
     local repodir_local = path.join(config.directory(), "repositories", reponame)
     if not os.isdir(repodir_local) then
         if repodir_global then
@@ -57,7 +56,7 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     if not ok then
         if global.get("network") ~= "private" then
             -- pull the latest commit
-            git.pull({verbose = option.get("verbose"), branch = locked_repo.branch, repodir = repodir_local})
+            git.pull({verbose = option.get("verbose"), remote = locked_repo.url, branch = locked_repo.branch, repodir = repodir_local})
             -- re-checkout to the given commit
             ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
         else
