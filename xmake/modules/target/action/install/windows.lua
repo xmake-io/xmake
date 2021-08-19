@@ -42,6 +42,7 @@ end
 function _install_shared_for_package(target, pkg, outputdir)
     for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
+            local dllname = path.filename(dllpath)
             if os.isfile(path.join(outputdir, dllname)) then
                 wprint("'%s' already exists in install dir, overwriting it from package(%s).", dllname, pkg:name())
             end
