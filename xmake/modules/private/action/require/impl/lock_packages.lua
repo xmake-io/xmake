@@ -44,7 +44,7 @@ function _lock_package(instance)
     result.tag        = instance:tag()
     if repo then
         local lastcommit = git.lastcommit({repodir = repo:directory()})
-        result.repo      = repo:url() .. "#" .. lastcommit
+        result.repo      = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
     end
     return result
 end
@@ -52,8 +52,8 @@ end
 -- lock all required packages
 function main(packages)
     if project.policy("package.requires_lock") then
-        local results = {}
-        results.version = project.requireslock_version()
+        local results = {__meta__ = {}}
+        results.__meta__.version = project.requireslock_version()
         for _, instance in ipairs(packages) do
             local packagelock_key = _get_packagelock_key(instance)
             results[packagelock_key] = _lock_package(instance)

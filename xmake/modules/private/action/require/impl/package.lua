@@ -219,7 +219,7 @@ function _get_locked_requires(requirekey)
         _memcache():set("requireslock", requireslock or false)
     end
     if requireslock then
-        return requireslock[requirekey], requireslock.version
+        return requireslock[requirekey], requireslock.__meta__.version
     end
 end
 
