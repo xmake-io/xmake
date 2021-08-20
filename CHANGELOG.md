@@ -13,6 +13,7 @@
 
 * [#1540](https://github.com/xmake-io/xmake/issues/1540): Better support for compilation of automatically generated code
 * [#1578](https://github.com/xmake-io/xmake/issues/1578): Improve add_repositories to support relative path better
+* [#1582](https://github.com/xmake-io/xmake/issues/1582): Improve installation and os.cp to reserve symlink
 
 ### Bugs fixed
 
@@ -1067,6 +1068,7 @@
 
 * [#1540](https://github.com/xmake-io/xmake/issues/1540): 更好更方便地编译自动生成的代码
 * [#1578](https://github.com/xmake-io/xmake/issues/1578): 改进 add_repositories 去更好地支持相对路径
+* [#1582](https://github.com/xmake-io/xmake/issues/1582): 改进安装和 os.cp 支持符号链接
 
 ### Bugs 修复
 
