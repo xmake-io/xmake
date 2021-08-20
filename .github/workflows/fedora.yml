@@ -12,6 +12,9 @@ jobs:
     container: fedora:latest
     runs-on: ubuntu-latest
 
+    concurrency:
+        group: ${{ github.head_ref }}-build
+        cancel-in-progress: true
     steps:
       - name: Prepare build tools
         run: |

@@ -7,6 +7,11 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+
+    concurrency:
+        group: ${{ github.head_ref }}-build
+        cancel-in-progress: true
+
     strategy:
       fail-fast: false
       matrix:
