@@ -23,6 +23,76 @@ import("core.base.option")
 import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
+-- get result from list of file inside pacman package
+function _find_package_from_list(list, opt, cygpath)
+    local result = {
+        includedirs = {},
+        linkdirs = {},
+        links = {},
+        version = nil
+    }
+    
+    -- iterate over each file path inside the pacman package
+    for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be used to convert local path to windows path
+        line = line:trim():split('%s+')[2]
+        if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
+            local hpath = line
+            if opt.plat == "mingw" then
+                hpath = os.iorunv(cygpath.program, {"--windows", line})
+                
+                if(opt.arch == "x86_64") then
+                local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
+                    table.insert(result.includedirs, basehpath)
+                else
+                    local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
+                    table.insert(result.includedirs, basehpath)
+                end
+            end
+            table.insert(result.includedirs, path.directory(hpath))
+        -- revove lib and .a, .dll.a and .so to have the links
+        elseif line:endswith(".dll.a") then -- only for mingw
+            local apath = os.iorunv(cygpath.program, {"--windows", line})
+            table.insert(result.linkdirs, path.directory(apath))
+            apath = path.filename(apath)
+            if apath:startswith("lib") then
+                apath = apath:sub(4, apath:len())
+            end
+            table.insert(result.links, apath:sub(1, apath:len() - 7))
+        elseif line:endswith(".so") then
+            local apath = line
+            table.insert(result.linkdirs, path.directory(apath))
+            apath = path.filename(apath)
+            if apath:startswith("lib") then
+                apath = apath:sub(4, apath:len())
+            end
+            table.insert(result.links, apath:sub(1, apath:len() - 4))
+        elseif line:endswith(".a") then
+            local apath = line
+            if opt.plat == "mingw" then
+                apath = os.iorunv(cygpath.program, {"--windows", line})
+            end
+            table.insert(result.linkdirs, path.directory(apath))
+            apath = path.filename(apath)
+            if apath:startswith("lib") then
+                apath = apath:sub(4, apath:len())
+            end
+            table.insert(result.links, apath:sub(1, apath:len() - 3))
+        end
+    end
+    
+    result.includedirs = table.unique(result.includedirs)
+    result.linkdirs = table.unique(result.linkdirs)
+    result.links = table.unique(result.links)
+    
+    -- use pacman package version as version
+    local pacmanversion = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
+    if pacmanversion then
+        result.version = pacmanversion:trim():split('%s+')[2]
+    end
+    
+    return result
+end
+
 -- find package from the system directories
 --
 -- @param name  the package name
@@ -56,7 +126,7 @@ function main(name, opt)
     if not list then
         return
     end
-        
+  
     -- parse package files list
     local linkdirs = {}
     local has_includes = false
@@ -74,113 +144,51 @@ function main(name, opt)
     end
     
     -- we iterate over each pkgconfig file to extract the required data
-    local result = {}
-    local myIncludedirs = {}
-    local myLinkdirs = {}
-    local myLinks = {}
-    myVersion = "0"
+    local result = {
+        includedirs = {},
+        linkdirs = {},
+        links = {},
+        version = nil
+    }
+    
     local foundPC = false
+    
     for key, file in pairs(pkgconfig_files) do
         pkgconfig_file = file
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
         linkdirs = table.unique(linkdirs)
         includedirs = table.unique(includedirs)
-        local myResult = {}
-        myResult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
+        local pcresult = {}
+        pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
             
         -- the pkgconfig file has been parse successfully
-        if myResult ~= nil then
-            for _, locIncludeDir in pairs(myResult.includedirs) do
-                table.insert(myIncludedirs, locIncludeDir)
+        if pcresult ~= nil then
+            for _, locincludedir in pairs(pcresult.includedirs) do
+                table.insert(result.includedirs, locincludedir)
             end
                     
-            for _, locLinkDir in pairs(myResult.linkdirs) do
-                table.insert(myLinkdirs, locLinkDir)
+            for _, loclinkdir in pairs(pcresult.linkdirs) do
+                table.insert(result.linkdirs, loclinkdir)
             end
             
-            for _, locLink in pairs(myResult.links) do
-                table.insert(myLinks, locLink)
+            for _, loclink in pairs(pcresult.links) do
+                table.insert(result.links, loclink)
             end
 
             -- version should be the same if a pacman package contains multiples .pc
-            myVersion = myResult.version
+            result.version = pcresult.version
             
             foundPC = true
         end
     end
         
     if foundPC == true then
-        myIncludedirs = table.unique(myIncludedirs)
-        myLinkdirs = table.unique(myLinkdirs)
-        myLinks = table.unique(myLinks)
-        
-        result.includedirs = myIncludedirs
-        result.linkdirs = myLinkdirs
-        result.links = myLinks
-        result.version = myVersion
+        result.includedirs = table.unique(result.includedirs)
+        result.linkdirs = table.unique(result.linkdirs)
+        result.links = table.unique(result.links)
     else -- if there is no .pc, we parse the package content to obtain the data we want
-        for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be use to convert local path to windows path
-            line = line:trim():split('%s+')[2]
-            if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
-                local hPath = line
-                if opt.plat == "mingw" then
-                    hPath = os.iorunv(cygpath.program, {"--windows", line})
-                end
-                table.insert(myIncludedirs, path.directory(hPath))
-                if(opt.arch == "x86_64") then
-                    local baseHPath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
-                    table.insert(myIncludedirs, baseHPath)
-                else
-                    local baseHPath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
-                    table.insert(myIncludedirs, baseHPath)
-                end
-            -- revove lib and .a, .dll.a and .so to have the links
-            elseif line:endswith(".dll.a") then
-                local aPath = os.iorunv(cygpath.program, {"--windows", line})
-                table.insert(myLinkdirs, path.directory(aPath))
-                aPath = path.filename(aPath)
-                if aPath:startswith("lib") then
-                    aPath = aPath:sub(4, aPath:len())
-                end
-                table.insert(myLinks, aPath:sub(1, aPath:len() - 7))
-            elseif line:endswith(".so") then
-                local aPath = line
-                table.insert(myLinkdirs, path.directory(aPath))
-                aPath = path.filename(aPath)
-                if aPath:startswith("lib") then
-                    aPath = aPath:sub(4, aPath:len())
-                end
-                table.insert(myLinks, aPath:sub(1, aPath:len() - 4))
-            elseif line:endswith(".a") then
-                local aPath = line
-                if opt.plat == "mingw" then
-                    aPath = os.iorunv(cygpath.program, {"--windows", line})
-                end
-                aPath = path.filename(aPath)
-                if aPath:startswith("lib") then
-                    aPath = aPath:sub(4, aPath:len())
-                end
-                table.insert(myLinks, aPath:sub(1, aPath:len() - 3))
-            end
-        end
-        
-        myLinkdirs = table.unique(myLinkdirs)
-        myLinks = table.unique(myLinks)
-        myIncludedirs = table.unique(myIncludedirs)
-        
-        -- use pacman package version as version
-        local myVersion = "0"
-        local nameVersion = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
-        if nameVersion then
-            myVersion = nameVersion:trim():split('%s+')[2]
-        end
-
-        result = {}
-        result.includedirs = myIncludedirs
-        result.linkdirs    = myLinkdirs
-        result.links       = myLinks
-        result.version     = myVersion
+        result = _find_package_from_list(list, opt, cygpath)
     end
         
     return result
