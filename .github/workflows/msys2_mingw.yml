@@ -9,7 +9,7 @@ jobs:
     runs-on: windows-latest
 
     concurrency:
-        group: ${{ github.head_ref }}-build
+        group: ${{ github.head_ref }}-MSYS2_MINGW
         cancel-in-progress: true
 
     strategy:

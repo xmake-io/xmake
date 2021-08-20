@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     concurrency:
-        group: ${{ github.head_ref }}-build
+        group: ${{ github.head_ref }}-Linux
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +36,7 @@ jobs:
         run: |
           sudo apt install -y ruby ruby-dev rubygems build-essential
           sudo gem install --no-document fpm
-          scripts/makepkg deb 
+          scripts/makepkg deb
       - uses: actions/upload-artifact@v2
         with:
           name: xmake-latest.amd64.deb
@@ -62,11 +62,11 @@ jobs:
           sudo apt install -y dh-make rng-tools devscripts lintian
           echo "$PPA_GPG_PRIKEY_2C0C68C9" > ppa_gpg.key
           gpg --import ppa_gpg.key
-          scripts/makeppa groovy  
-          scripts/makeppa focal 
-          scripts/makeppa bionic 
-          scripts/makeppa xenial  
-          scripts/makeppa trusty  
-          scripts/makeppa precise  
+          scripts/makeppa groovy
+          scripts/makeppa focal
+          scripts/makeppa bionic
+          scripts/makeppa xenial
+          scripts/makeppa trusty
+          scripts/makeppa precise
 
 
