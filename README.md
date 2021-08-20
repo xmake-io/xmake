@@ -259,6 +259,7 @@ muslcc        The musl-based cross-compilation toolchains
 * Incremental compilation support, automatic analysis of header dependency files
 * Fast switching toolchains
 * Automatic pull toolchain and dependency package integration
+* Support precompiled package and lock package requires
 
 ## Supported Projects
 

@@ -265,6 +265,7 @@ muslcc        The musl-based cross-compilation toolchains
 * 增量编译支持，头文件依赖自动分析
 * 工具链的快速切换、定制化支持
 * 自动拉取工具链以及依赖包的快速整合
+* 支持预编译包以及包依赖锁定
 
 ## 工程类型
 
