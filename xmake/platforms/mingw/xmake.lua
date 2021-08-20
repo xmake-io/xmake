@@ -31,7 +31,7 @@ platform("mingw")
     set_archs("i386", "x86_64", "arm", "arm64")
 
     -- set formats
-    set_formats("static", "$(name).lib")
+    set_formats("static", "$(name).a")
     set_formats("object", "$(name).obj")
     set_formats("shared", "$(name).dll")
     set_formats("binary", "$(name).exe")
