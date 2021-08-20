@@ -103,11 +103,11 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".pcm"
+        local modulefile = objectfile .. ".ifc"
 
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {"/experimental:module /module:interface /module:output " .. os.args(modulefile), "/TP"}
+        opt.configs.cxxflags = {"/experimental:module /interface /ifcOutput " .. os.args(modulefile), "/TP"}
         import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
@@ -116,7 +116,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "/experimental:module /module:reference " .. os.args(modulefile))
+        target:add("cxxflags", "/experimental:module /reference " .. os.args(modulefile))
     end
 end
 
