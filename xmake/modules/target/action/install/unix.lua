@@ -38,7 +38,7 @@ end
 -- install shared libraries for package
 function _install_shared_for_package(target, pkg, outputdir)
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
-        if sopath:endswith(".so") or sopath:endswith(".dylib") then
+        if sopath:endswith(".so") or sopath:match(".+%.so%..+$") or sopath:endswith(".dylib") then
             local soname = path.filename(sopath)
             if os.isfile(path.join(outputdir, soname)) then
                 wprint("'%s' already exists in install dir, overwriting it from package(%s).", soname, pkg:name())
@@ -46,14 +46,6 @@ function _install_shared_for_package(target, pkg, outputdir)
             -- we need reserve symlink
             -- @see https://github.com/xmake-io/xmake/issues/1582
             os.vcp(sopath, outputdir, {symlink = true})
-            -- copy real file of symlink
-            if os.islink(sopath) then
-                local realpath = os.readlink(sopath)
-                if not path.is_absolute(realpath) then
-                    realpath = path.absolute(realpath, path.directory(sopath))
-                end
-                os.vcp(realpath, outputdir)
-            end
         end
     end
 end

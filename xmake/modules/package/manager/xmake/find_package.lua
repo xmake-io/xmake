@@ -83,12 +83,14 @@ function _find_package_from_repo(name, opt)
                 if file:endswith(".lib") or file:endswith(".a") then
                     found = true
                     table.insert(links, target.linkname(path.filename(file)))
+                    table.insert(libfiles, file)
                 end
             end
             if not found then
                 for _, file in ipairs(os.files(path.join(installdir, "lib", "*"))) do
-                    if file:endswith(".so") or file:endswith(".dylib") then
+                    if file:endswith(".so") or file:match(".+%.so%..+$") or file:endswith(".dylib") then -- maybe symlink to libxxx.so.1
                         table.insert(links, target.linkname(path.filename(file)))
+                        table.insert(libfiles, file)
                     end
                 end
             end
@@ -139,7 +141,7 @@ function _find_package_from_repo(name, opt)
         result.links = table.unique(result.links)
     end
     if result.libfiles then
-        result.libfiles = table.join(result.libfiles, libfiles)
+        result.libfiles = table.unique(table.join(result.libfiles, libfiles))
     end
 
     -- inherit the other prefix variables
