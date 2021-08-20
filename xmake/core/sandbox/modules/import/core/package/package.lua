@@ -26,20 +26,12 @@ local project    = require("project/project")
 local package    = require("package/package")
 local raise      = require("sandbox/modules/raise")
 
--- get cache directory
-function sandbox_core_package_package.cachedir(opt)
-    return package.cachedir(opt)
-end
-
--- the install directory
-function sandbox_core_package_package.installdir()
-    return package.installdir()
-end
-
--- the search directories
-function sandbox_core_package_package.searchdirs()
-    return package.searchdirs()
-end
+-- inherit some builtin interfaces
+sandbox_core_package_package.cachedir   = package.cachedir
+sandbox_core_package_package.installdir = package.installdir
+sandbox_core_package_package.searchdirs = package.searchdirs
+sandbox_core_package_package.targetplat = package.targetplat
+sandbox_core_package_package.targetarch = package.targetarch
 
 -- load the package from the project file
 function sandbox_core_package_package.load_from_project(packagename)

@@ -152,8 +152,13 @@ function _load_require(require_str, requires_extra, parentinfo)
 
     -- require packge in the current host platform
     if require_extra.host then
-        require_extra.plat = os.host()
-        require_extra.arch = os.arch()
+        if is_subhost(core_package.targetplat()) and os.subarch() == core_package.targetarch() then
+            -- we need pass plat/arch to avoid repeat installation
+            -- @see https://github.com/xmake-io/xmake/issues/1579
+        else
+            require_extra.plat = os.subhost()
+            require_extra.arch = os.subarch()
+        end
     end
 
     -- init required item

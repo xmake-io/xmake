@@ -118,7 +118,7 @@ function _instance:plat()
     if requireinfo and requireinfo.plat then
         return requireinfo.plat
     end
-    return package._target_plat()
+    return package.targetplat()
 end
 
 -- get the architecture of package
@@ -145,7 +145,7 @@ function _instance:targetarch()
     if requireinfo and requireinfo.arch then
         return requireinfo.arch
     end
-    return package._target_arch()
+    return package.targetarch()
 end
 
 -- get the build mode
@@ -1592,7 +1592,7 @@ end
 
 -- the current platform is belong to the given platforms?
 function package._api_is_plat(interp, ...)
-    local plat = package._target_plat()
+    local plat = package.targetplat()
     for _, v in ipairs(table.join(...)) do
         if v and plat == v then
             return true
@@ -1602,7 +1602,7 @@ end
 
 -- the current platform is belong to the given architectures?
 function package._api_is_arch(interp, ...)
-    local arch = package._target_arch()
+    local arch = package.targetarch()
     for _, v in ipairs(table.join(...)) do
         if v and arch:find("^" .. v:gsub("%-", "%%-") .. "$") then
             return true
@@ -1657,7 +1657,7 @@ function package._project()
 end
 
 -- get global target platform of package
-function package._target_plat()
+function package.targetplat()
     local plat = package._memcache():get("target_plat")
     if plat == nil then
         if not plat and package._project() then
@@ -1675,7 +1675,7 @@ function package._target_plat()
 end
 
 -- get global target architecture of pacakge
-function package._target_arch()
+function package.targetarch()
     local arch = package._memcache():get("target_arch")
     if arch == nil then
         if not arch and package._project() then
