@@ -224,7 +224,12 @@ function _get_locked_requires(requirekey)
         _memcache():set("requireslock", requireslock or false)
     end
     if requireslock then
-        return requireslock[requirekey], requireslock.__meta__.version
+        local plat = config.plat() or os.subhost()
+        local arch = config.arch() or so.subarch()
+        local key = plat .. "|" .. arch
+        if requireslock[key] then
+            return requireslock[key][requirekey], requireslock.__meta__.version
+        end
     end
 end
 

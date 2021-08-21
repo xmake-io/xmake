@@ -35,9 +35,6 @@ end
 function _lock_package(instance)
     local result      = {}
     local repo        = instance:repo()
-    result.name       = instance:name()
-    result.plat       = instance:plat()
-    result.arch       = instance:arch()
     result.version    = instance:version_str()
     result.buildhash  = instance:buildhash()
     result.branch     = instance:branch()
@@ -56,12 +53,16 @@ end
 -- lock all required packages
 function main(packages)
     if project.policy("package.requires_lock") then
+        local plat = config.plat() or os.subhost()
+        local arch = config.arch() or so.subarch()
+        local key = plat .. "|" .. arch
         local results = os.isfile(project.requireslock()) and io.load(project.requireslock()) or {}
         results.__meta__ = results.__meta__ or {}
         results.__meta__.version = project.requireslock_version()
+        results[key] = {}
         for _, instance in ipairs(packages) do
             local packagelock_key = _get_packagelock_key(instance)
-            results[packagelock_key] = _lock_package(instance)
+            results[key][packagelock_key] = _lock_package(instance)
         end
         io.writefile(project.requireslock(), string.serialize(results, {orderkeys = true}))
     end
