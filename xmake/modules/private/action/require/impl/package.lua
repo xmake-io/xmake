@@ -530,10 +530,8 @@ end
 
 -- get locked package key
 function _get_packagelock_key(requireinfo)
-    local plat        = config.plat() or os.subhost()
-    local arch        = config.arch() or os.subarch()
     local requirestr  = requireinfo.originstr
-    local key         = _get_requirekey(requireinfo, {hash = true, plat = plat, arch = arch})
+    local key         = _get_requirekey(requireinfo, {hash = true})
     return string.format("%s#%s", requirestr, key)
 end
 
@@ -648,7 +646,7 @@ function _load_package(packagename, requireinfo, opt)
         requireinfo.label = splitinfo[2]
     end
 
-    -- sve requirekey
+    -- save requirekey
     local requirekey = _get_packagelock_key(requireinfo)
     requireinfo.requirekey = requirekey
 

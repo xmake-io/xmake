@@ -50,6 +50,9 @@ function main(requireinfo, opt)
         key = key .. ":" .. string.serialize(configs_order, true)
     end
     if opt.hash then
+        if key == "" then
+            key = "_"
+        end
         return hash.uuid(key):gsub("%-", ""):lower()
     else
         return key
