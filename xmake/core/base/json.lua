@@ -73,7 +73,11 @@ function json.loadfile(filepath, opt)
     if not filedata then
         return nil, errors
     end
-    return json.decode(filedata, opt)
+    local jsondata, other_errors = json.decode(filedata, opt)
+    if not jsondata then
+        return nil, other_errors .. "\nduring parsing json file \"" .. filepath .. "\"\nfile content: --[[\n" .. filedata .. "\n]]"
+    end
+    return jsondata
 end
 
 -- save lua table to the json file
