@@ -56,7 +56,8 @@ end
 -- lock all required packages
 function main(packages)
     if project.policy("package.requires_lock") then
-        local results = {__meta__ = {}}
+        local results = os.isfile(project.requireslock()) and io.load(project.requireslock()) or {}
+        results.__meta__ = results.__meta__ or {}
         results.__meta__.version = project.requireslock_version()
         for _, instance in ipairs(packages) do
             local packagelock_key = _get_packagelock_key(instance)
