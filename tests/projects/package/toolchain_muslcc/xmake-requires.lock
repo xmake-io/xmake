@@ -4,15 +4,15 @@
     },
     ["autoconf#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
         arch = "x86_64",
-        buildhash = "01974c48f52d4d658f58852351743754",
+        buildhash = "cd4169a7cb484832b2f70d2174072ca2",
         name = "autoconf",
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
-        version = "2.69"
+        version = "2.71"
     },
     ["automake#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
         arch = "x86_64",
@@ -21,7 +21,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.16.1"
@@ -33,7 +33,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "3.21.0"
@@ -45,7 +45,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "6.2.1"
@@ -57,7 +57,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "0.22"
@@ -69,7 +69,7 @@
         plat = "cross",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "v1.3.4"
@@ -81,7 +81,7 @@
         plat = "cross",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "2.2.0"
@@ -93,7 +93,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "2.4.6"
@@ -105,7 +105,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.4.19"
@@ -117,7 +117,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "20210202"
@@ -129,7 +129,7 @@
         plat = "macosx",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "0.29.2"
@@ -141,7 +141,7 @@
         plat = "cross",
         repo = {
             branch = "master",
-            commit = "df6cad5cf5701de3705c7afce54d732e1f5b14b9",
+            commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
             url = "https://gitee.com/tboox/xmake-repo.git"
         },
         version = "1.2.11"

@@ -43,7 +43,11 @@ function _lock_package(instance)
     result.branch     = instance:branch()
     result.tag        = instance:tag()
     if repo then
-        local lastcommit = git.lastcommit({repodir = repo:directory()})
+        local lastcommit = try {function()
+            if os.isdir(path.join(repo:directory(), ".git")) then
+                return git.lastcommit({repodir = repo:directory()})
+            end
+        end}
         result.repo      = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
     end
     return result

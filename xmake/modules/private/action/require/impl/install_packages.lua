@@ -603,9 +603,7 @@ function main(requires, opt)
     register_packages(packages)
 
     -- lock packages
-    if #packages_install > 0 then
-        lock_packages(packages)
-    end
+    lock_packages(packages)
     return packages
 end
 

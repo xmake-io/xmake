@@ -38,8 +38,15 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     end
     local reponame = hash.uuid(locked_repo.url):gsub("%-", ""):lower() .. ".lock"
 
+    -- get local repodir
+    local repodir_local
+    if os.isdir(locked_repo.url) then
+        repodir_local = locked_repo.url
+    else
+        repodir_local = path.join(config.directory(), "repositories", reponame)
+    end
+
     -- clone repository to local
-    local repodir_local = path.join(config.directory(), "repositories", reponame)
     if not os.isdir(repodir_local) then
         if repodir_global then
             git.clone(repodir_global, {verbose = option.get("verbose"), outputdir = repodir_local})
@@ -51,17 +58,20 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
         end
     end
 
-    -- try checkout to the given commit
-    local ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
-    if not ok then
-        if global.get("network") ~= "private" then
-            -- pull the latest commit
-            git.pull({verbose = option.get("verbose"), remote = locked_repo.url, branch = locked_repo.branch, repodir = repodir_local})
-            -- re-checkout to the given commit
-            ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
-        else
-            wprint("we cannot lock repository(%s) in private network mode!", locked_repo.url)
-            return
+    -- lock commit
+    if locked_repo.commit and os.isdir(path.join(repodir_local, ".git")) then
+        -- try checkout to the given commit
+        local ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
+        if not ok then
+            if global.get("network") ~= "private" then
+                -- pull the latest commit
+                git.pull({verbose = option.get("verbose"), remote = locked_repo.url, branch = locked_repo.branch, repodir = repodir_local})
+                -- re-checkout to the given commit
+                ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
+            else
+                wprint("we cannot lock repository(%s) in private network mode!", locked_repo.url)
+                return
+            end
         end
     end
 
@@ -118,7 +128,7 @@ function packagedir(packagename, opt)
     local cachekey = packagename
     local locked_repo = opt.locked_repo
     if locked_repo then
-        cachekey = cachekey .. locked_repo.url .. locked_repo.commit .. (locked_repo.branch or "")
+        cachekey = cachekey .. locked_repo.url .. (locked_repo.commit or "") .. (locked_repo.branch or "")
     end
     local packagedirs = _g._PACKAGEDIRS
     if not packagedirs then
