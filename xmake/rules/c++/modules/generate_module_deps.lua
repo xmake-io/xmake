@@ -19,9 +19,16 @@
 --
 
 -- imports
-                import("core.tool.compiler")
+local flag    = import("get_module_flags")
 local json    = import("core.base.json")
 local builder = import("private.action.build.object")
+                import("core.tool.compiler")
+
+function _generate_moduledeps_clang(target, sourcebatch, opt)
+end
+
+function _generate_moduledeps_gcc(target, sourcebatch, opt)
+end
 
 -- build module files using msvc
 function _generate_moduledeps_msvc(target, sourcebatch, opt)
@@ -37,47 +44,17 @@ function _generate_moduledeps_msvc(target, sourcebatch, opt)
         local dependfile = target:dependfile(objectfile)
         local modulefile = objectfile .. ".ifc"
 
-        --[[
-        local out_dir = modulefile:gsub("[^\\\\/]*$", "")
-        print("OUT_DIR = "..out_dir)
-        os.mkdir(out_dir)
-        ]]
-
-        --[[
-        -- Compile module file to *.ifc.d.json
-        local ixxfile = sourcefile
-        if not sourcefile:endswith(".ixx") then
-            ixxfile = sourcefile:gsub("mpp$","ixx")
-            ixxfile = ixxfile:gsub("mxx$","ixx")
-            ixxfile = ixxfile:gsub("cppm$","ixx")
-            if os.exists(ixxfile) then
-                local ixx_content = io.readfile(ixxfile)
-                local source_content = io.readfile(sourcefile)
-                if ixx_content ~= source_content then
-                    os.raise("Sorry, \""..sourcefile.."\" should has an extension .ixx, or I won't be able to compile it as a module interface for you. Some info: \n" .. "\n" .. ixxfile .. "\n" .. sourcefile .. "\n" .. ixx_content .. "\n" .. source_content)
-                end
-            end
-            os.cp(sourcefile, ixxfile) -- Make a temp file with .ixx, which is the only extension that cl.exe supports
-        end
-        local out, err = os.iorunv(target:tool("cxx"), {"/interface", "-nologo", "-c", "/TP", "/EHsc", "-Fo"..objectfile, "/sourceDependencies:directives", "-", ixxfile}, {envs=os.getenvs()})
-        print(target:get("includedirs"))
-        print(target:get("runenvs"))
-        print(target:get_includedirs())
-        --os.execv("echo", {out})
-        local dependTable = json.decode(out)
-        if ixxfile ~= sourcefile then
-            os.rm(ixxfile)
-        end
-        ]]
-
         -- compile module file to *.ifc.d.json
         -- See https://docs.microsoft.com/en-us/cpp/build/reference/sourcedependencies-directives
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
 
         local descFile = modulefile .. ".d.json"
-        opt.configs.cxxflags = {"/experimental:module", "/interface", "/sourceDependencies:directives " .. descFile, "/TP"}
+        opt.configs.cxxflags = {opt.interfaceflag, "/sourceDependencies:directives " .. descFile, "/TP"}
 
-        builder.build(target, singlebatch, opt)
+        if sourcefile:endswith(".mxx") or sourcefile:endswith(".mpp") or sourcefile:endswith(".ixx") or sourcefile:endswith(".cppm") then
+            builder.build(target, singlebatch, opt)
+        end
+        --builder.build(target, singlebatch, opt)
         --[[]]
     end
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -85,32 +62,19 @@ function _generate_moduledeps_msvc(target, sourcebatch, opt)
     end
 end
 
--- build module files
+-- build module interface files
 function main(target, sourcebatch, opt)    -- do compile
-    local modulesflag = nil
     local _, toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) then
-        if compinst:has_flags("-fmodules") then
-            modulesflag = "-fmodules"
-        elseif compinst:has_flags("-fmodules-ts") then
-            modulesflag = "-fmodules-ts"
-        end
+    flag.get_module_flags(compinst, toolname, opt)
+
+    if toolname:find("clang", 1, true) then
+        _generate_moduledeps_clang(target, sourcebatch, opt)
+    elseif toolname:find("gcc", 1, true) then
+        _generate_moduledeps_gcc(target, sourcebatch, opt)
     elseif toolname == "cl" then
-        if compinst:has_flags("/experimental:module") then
-            modulesflag = "/experimental:module"
-        end
-    end
-    if modulesflag then
-        opt.modulesflag = modulesflag
-        if toolname:find("clang", 1, true) then
-            _generate_moduledeps_clang(target, sourcebatch, opt)
-        elseif toolname:find("gcc", 1, true) then
-            _generate_moduledeps_gcc(target, sourcebatch, opt)
-        elseif toolname == "cl" then
-            _generate_moduledeps_msvc(target, sourcebatch, opt)
-        else
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
+        _generate_moduledeps_msvc(target, sourcebatch, opt)
+    else
+        raise("compiler(%s): does not support c++ module!", toolname)
     end
 end

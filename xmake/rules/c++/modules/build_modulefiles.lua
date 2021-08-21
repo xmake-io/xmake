@@ -19,9 +19,10 @@
 --
 
 -- imports
-                import("core.tool.compiler")
+local flag    = import("get_module_flags")
 local json    = import("core.base.json")
 local builder = import("private.action.build.object")
+                import("core.tool.compiler")
 
 -- build module files using clang
 function _build_modulefiles_clang(target, sourcebatch, opt)
@@ -109,8 +110,6 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     local uncompiled_modules = {}
     local moduleDependenciesMap = {}
 
-    print(#target)
-
     function compile_module(sourcefile)
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
@@ -120,15 +119,23 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
         local dependTable = moduleDependenciesMap[sourcefile]
         local this_module_name = dependTable["Data"]["ProvidedModule"]
-        local interface_or_partition = not string.find(this_module_name, ":", 1, true) -- Error for unknown reason
-        
-        local type = nil
+
+        -- Failed for unknown reason
+        --[[
+        print(this_module_name)
+        local interface_or_partition = not string.find(this_module_name, ":", 1, true)
+        ]]
+        local interface_or_partition = true
+        local filetype
         if interface_or_partition then
-            type = "/interface"
+            filetype = opt.interfaceflag
         else
-            type = "/internalPartition"
+            filetype = opt.partitionflag
         end
-        opt.configs.cxxflags = {"/experimental:module", type, "/ifcOutput " .. os.args(modulefile), "/TP"}
+
+        local out_dir = modulefile:gsub("[^\\\\/]*$", "")
+
+        opt.configs.cxxflags = {opt.modulesflag, filetype, "/sourceDependencies " .. out_dir, opt.outputflag .. " " .. os.args(modulefile), "/TP"}
 
         for _, moduleName in ipairs(dependTable["Data"]["ImportedModules"]) do
             if not moduleName or not moduleMap[moduleName] then
@@ -137,7 +144,9 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
             table.insert(opt.configs.cxxflags, "/reference " .. moduleName .. "=" .. moduleMap[moduleName])
         end
 
-        builder.build(target, singlebatch, opt)
+        if sourcefile:endswith(".mxx") or sourcefile:endswith(".mpp") or sourcefile:endswith(".ixx") or sourcefile:endswith(".cppm") then
+            builder.build(target, singlebatch, opt)
+        end
     end
 
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
@@ -198,7 +207,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "/experimental:module")
+        target:add("cxxflags", opt.modulesflag)
         target:add("cxxflags", "/reference " .. os.args(modulefile))
     end
 end
@@ -206,33 +215,20 @@ end
 -- build module files
 function main(target, sourcebatch, opt)
     -- do compile
-    local modulesflag = nil
     local _, toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) then
-        if compinst:has_flags("-fmodules") then
-            modulesflag = "-fmodules"
-        elseif compinst:has_flags("-fmodules-ts") then
-            modulesflag = "-fmodules-ts"
-        end
+    flag.get_module_flags(compinst, toolname, opt)
+
+    if toolname:find("clang", 1, true) then
+        _build_modulefiles_clang(target, sourcebatch, opt)
+    elseif toolname:find("gcc", 1, true) then
+        _build_modulefiles_gcc(target, sourcebatch, opt)
     elseif toolname == "cl" then
-        if compinst:has_flags("/experimental:module") then
-            modulesflag = "/experimental:module"
-        end
-    end
-    if modulesflag then
-        opt.modulesflag = modulesflag
-        if toolname:find("clang", 1, true) then
-            _build_modulefiles_clang(target, sourcebatch, opt)
-        elseif toolname:find("gcc", 1, true) then
-            _build_modulefiles_gcc(target, sourcebatch, opt)
-        elseif toolname == "cl" then
-            _build_modulefiles_msvc(target, sourcebatch, opt)
-        else
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
+        _build_modulefiles_msvc(target, sourcebatch, opt)
+    else
+        raise("compiler(%s): does not support c++ module!", toolname)
     end
     if opt.origin then
-        opt.origin(target, sourcebatch, opt)
+        -- opt.origin(target, sourcebatch, opt)
     end
 end
