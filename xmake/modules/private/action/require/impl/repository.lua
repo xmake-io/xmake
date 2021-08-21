@@ -160,7 +160,19 @@ function packagedir(packagename, opt)
         end
         packagedirs[cachekey] = foundir or {}
     end
-    return foundir[1], foundir[2]
+
+    -- save the current commit
+    local dir  = foundir[1]
+    local repo = foundir[2]
+    if repo and not repo:commit() then
+        local lastcommit = try {function()
+            if os.isdir(path.join(repo:directory(), ".git")) then
+                return git.lastcommit({repodir = repo:directory()})
+            end
+        end}
+        repo:commit_set(lastcommit)
+    end
+    return dir, repo
 end
 
 -- get artifacts manifest from repositories

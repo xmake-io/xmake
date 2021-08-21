@@ -74,6 +74,16 @@ function _instance:branch()
     return self._BRANCH
 end
 
+-- get the current commit
+function _instance:commit()
+    return self._COMMIT
+end
+
+-- set the commit
+function _instance:commit_set(commit)
+    self._COMMIT = commit
+end
+
 -- is global repository?
 function _instance:is_global()
     return self._IS_GLOBAL

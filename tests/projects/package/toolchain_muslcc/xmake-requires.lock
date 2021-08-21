@@ -7,25 +7,25 @@
             buildhash = "cd4169a7cb484832b2f70d2174072ca2",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "4498f11267de5112199152ab030ed139c985ad5a",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "2.71"
         },
         ["automake#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
-            buildhash = "7a090c93706241f983f0d821a162e8a5",
+            buildhash = "5b4ee7b727764ece8aa3e149603cfc7a",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
-            version = "1.16.1"
+            version = "1.16.4"
         },
         ["cmake#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
             buildhash = "a6d18f8c0bf347d980f8bb762583c91a",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "4498f11267de5112199152ab030ed139c985ad5a",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "3.21.0"
@@ -34,7 +34,7 @@
             buildhash = "7dd9c224447e46698ac73d29f58b1d73",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "6.2.1"
@@ -43,7 +43,7 @@
             buildhash = "f649e1fb365e442e8f79f372fd91483b",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "0.22"
@@ -52,7 +52,7 @@
             buildhash = "d894fc29f2fb4c45a0f48bc2c6ece273",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "v1.3.4"
@@ -61,7 +61,7 @@
             buildhash = "0c01b22920be4876b1de74629194eb8f",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "2.2.0"
@@ -70,7 +70,7 @@
             buildhash = "64584ec84a4743ecb740b598b263ffa6",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "2.4.6"
@@ -79,7 +79,7 @@
             buildhash = "fd0e83e5759b442a970327ebb1c89793",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.4.19"
@@ -88,7 +88,7 @@
             buildhash = "11062c09ebeb484594488ad73ddbcd1f",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "20210202"
@@ -97,7 +97,7 @@
             buildhash = "84fd7f9b9f7a47709512cfc85cd9e5f7",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "0.29.2"
@@ -106,7 +106,7 @@
             buildhash = "be90a245b8bb48e6b08a1a15bdcad467",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.2.11"

@@ -628,6 +628,7 @@ function _instance:manifest_save()
         manifest.repo.name   = repo:name()
         manifest.repo.url    = repo:url()
         manifest.repo.branch = repo:branch()
+        manifest.repo.commit = repo:commit()
     end
 
     -- save manifest
