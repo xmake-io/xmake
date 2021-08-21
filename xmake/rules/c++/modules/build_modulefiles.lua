@@ -55,7 +55,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     -- add module files
     target:add("cxxflags", opt.modulesflag)
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "-fmodule-file=" .. modulefile)
+        target:add("cxxflags", "-fmodules", "-fimplicit-modules", "-fimplicit-module-maps", "-fmodule-file=" .. modulefile)
     end
 end
 
@@ -63,7 +63,6 @@ end
 -- build module files using gcc
 function _build_modulefiles_gcc(target, sourcebatch, opt)
 
-    --[[
     -- attempt to compile the module files as cxx
     local modulefiles = {}
     opt = table.join(opt, {configs = {}})
@@ -77,7 +76,7 @@ function _build_modulefiles_gcc(target, sourcebatch, opt)
 
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {"-fmodules", "-fmodule-output=" .. modulefile, "-x c++"}
+        opt.configs.cxxflags = {"-fmodules-ts", "-x c++"}
         import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
@@ -86,9 +85,8 @@ function _build_modulefiles_gcc(target, sourcebatch, opt)
 
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "-fmodules", "-fmodule-file=" .. modulefile)
-    end]]
-    raise("compiler(gcc): not implemented for c++ module!")
+        target:add("cxxflags", "-fmodules-ts", "-fmodule-file=" .. modulefile)
+    end
 end
 
 -- build module files using msvc
@@ -125,9 +123,9 @@ function main(target, sourcebatch, opt)
 
     -- do compile
     local modulesflag = nil
-    local _, toolname = target:tool("cxx")
+    local toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) then
+    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) or toolname:find("g++", 1, true) then
         if compinst:has_flags("-fmodules") then
             modulesflag = "-fmodules"
         elseif compinst:has_flags("-fmodules-ts") then
@@ -142,7 +140,7 @@ function main(target, sourcebatch, opt)
         opt.modulesflag = modulesflag
         if toolname:find("clang", 1, true) then
             _build_modulefiles_clang(target, sourcebatch, opt)
-        elseif toolname:find("gcc", 1, true) then
+        elseif toolname:find("gcc", 1, true) or toolname:find("g++", 1, true) then
             _build_modulefiles_gcc(target, sourcebatch, opt)
         elseif toolname == "cl" then
             _build_modulefiles_msvc(target, sourcebatch, opt)
