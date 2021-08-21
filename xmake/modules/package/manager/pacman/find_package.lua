@@ -24,11 +24,10 @@ import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
 -- get result from list of file inside pacman package
-function _find_package_from_list(list, opt, name, pacman)
-    local result = {includedirs = {}, linkdirs = {}, links = {}}
-    
-    local cygpath = nil
+function _find_package_from_list(list, name, pacman, opt)
+
     -- mingw + pacman = cygpath available
+    local cygpath = nil
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
@@ -37,13 +36,14 @@ function _find_package_from_list(list, opt, name, pacman)
     end
 
     -- iterate over each file path inside the pacman package
+    local result = {includedirs = {}, linkdirs = {}, links = {}}
     for _, line in ipairs(list:split('\n', {plain = true})) do -- on msys cygpath should be used to convert local path to windows path
         line = line:trim():split('%s+')[2]
         if line:find("/include/", 1, true) and (line:endswith(".h") or line:endswith(".hpp")) then
             local hpath = line
             if is_subhost("msys") and opt.plat == "mingw" then
                 hpath = os.iorunv(cygpath.program, {"--windows", line})
-                
+
                 if opt.arch == "x86_64" then
                     local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
                     table.insert(result.includedirs, basehpath)
@@ -83,20 +83,18 @@ function _find_package_from_list(list, opt, name, pacman)
             table.insert(result.links, apath:sub(1, apath:len() - 3))
         end
     end
-
     result.includedirs = table.unique(result.includedirs)
     result.linkdirs = table.unique(result.linkdirs)
     result.links = table.unique(result.links)
 
     -- use pacman package version as version
-    local pacmanversion = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
-    if pacmanversion then
-        pacmanversion = pacmanversion:trim():split('%s+')[2]
-        result.version = pacmanversion:split('-')[1]
+    local version = try { function() return os.iorunv(pacman.program, {"-Q", name}) end }
+    if version then
+        version = version:trim():split('%s+')[2]
+        result.version = version:split('-')[1]
     else
         result = nil
     end
-    
     return result
 end
 
@@ -107,10 +105,8 @@ end
 --
 function main(name, opt)
 
-    -- init options
-    opt = opt or {}
-
     -- find pacman
+    opt = opt or {}
     local pacman = find_tool("pacman")
     if not pacman then
         return
@@ -124,7 +120,7 @@ function main(name, opt)
     -- get package files list
     local list = try { function() return os.iorunv(pacman.program, {"-Q", "-l", name}) end }
     if not list then
-        return nil
+        return
     end
 
     -- parse package files list
@@ -143,32 +139,28 @@ function main(name, opt)
         end
     end
     linkdirs = table.unique(linkdirs)
-    
+
     -- we iterate over each pkgconfig file to extract the required data
-    local result = {includedirs = {}, linkdirs = {}, links = {}}
-
     local foundpc = false
-
-    for key, pkgconfig_file in pairs(pkgconfig_files) do
+    local result = {includedirs = {}, linkdirs = {}, links = {}}
+    for _, pkgconfig_file in pairs(pkgconfig_files) do
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
         local pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
-            
+
         -- the pkgconfig file has been parse successfully
         if pcresult then
-            for _, locincludedir in ipairs(pcresult.includedirs) do
-                table.insert(result.includedirs, locincludedir)
-            end        
-            for _, loclinkdir in ipairs(pcresult.linkdirs) do
-                table.insert(result.linkdirs, loclinkdir)
+            for _, includedir in ipairs(pcresult.includedirs) do
+                table.insert(result.includedirs, includedir)
             end
-            for _, loclink in ipairs(pcresult.links) do
-                table.insert(result.links, loclink)
+            for _, linkdir in ipairs(pcresult.linkdirs) do
+                table.insert(result.linkdirs, linkdir)
             end
-
+            for _, link in ipairs(pcresult.links) do
+                table.insert(result.links, link)
+            end
             -- version should be the same if a pacman package contains multiples .pc
             result.version = pcresult.version
-            
             foundpc = true
         end
     end
@@ -177,9 +169,9 @@ function main(name, opt)
         result.includedirs = table.unique(result.includedirs)
         result.linkdirs = table.unique(result.linkdirs)
         result.links = table.unique(result.links)
-    else -- if there is no .pc, we parse the package content to obtain the data we want
-        result = _find_package_from_list(list, opt, name, pacman)
+    else
+        -- if there is no .pc, we parse the package content to obtain the data we want
+        result = _find_package_from_list(list, name, pacman, opt)
     end
-        
     return result
 end
