@@ -53,7 +53,7 @@ function _find_package_from_list(list, opt, name, pacman)
                 end
             end
             table.insert(result.includedirs, path.directory(hpath))
-        -- revove lib and .a, .dll.a and .so to have the links
+        -- remove lib and .a, .dll.a and .so to have the links
         elseif line:endswith(".dll.a") then -- only for mingw
             local apath = os.iorunv(cygpath.program, {"--windows", line})
             table.insert(result.linkdirs, path.directory(apath))
