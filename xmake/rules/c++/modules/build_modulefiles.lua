@@ -19,10 +19,10 @@
 --
 
 -- imports
-local flag    = import("get_module_flags")
-local json    = import("core.base.json")
-local builder = import("private.action.build.object")
-                import("core.tool.compiler")
+import("get_module_flags", {alias="flagGetter"})
+import("core.base.json")
+import("private.action.build.object", {alias="objectBuilder"})
+import("core.tool.compiler")
 
 -- build module files using clang
 function _build_modulefiles_clang(target, sourcebatch, opt)
@@ -126,7 +126,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
         opt.configs.cxxflags = {opt.modulesflag, filetype, opt.outputflag .. " " .. os.args(modulefile), "/TP"}
 
-        builder.build(target, singlebatch, opt)
+        objectBuilder.build(target, singlebatch, opt)
         target:add("cxxflags", opt.modulesflag)
         target:add("cxxflags", "/reference " .. os.args(modulefile))
     end
@@ -144,7 +144,7 @@ function main(target, sourcebatch, opt)
     -- do compile
     local _, toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    flag.get_module_flags(compinst, toolname, opt)
+    flagGetter.get_module_flags(compinst, toolname, opt)
 
     if toolname:find("clang", 1, true) then
         _build_modulefiles_clang(target, sourcebatch, opt)
