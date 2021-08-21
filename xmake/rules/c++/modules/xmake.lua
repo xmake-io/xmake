@@ -21,6 +21,5 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    before_build_files("generate_module_deps")
-    on_build_files("build_modulefiles")
+    before_build_files("build_modulefiles")
 

@@ -14,7 +14,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      ruki, TheVeryDarkness
+-- @author      ruki
 -- @file        build_modulefiles.lua
 --
 
@@ -98,17 +98,10 @@ end
 function _build_modulefiles_msvc(target, sourcebatch, opt)
 
     -- attempt to compile the module files as cxx
-    local modulefiles = {}
     opt = table.join(opt, {configs = {}})
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
-
-    -- Map module name to its path.
-    -- It's a map or a dict.
-    local moduleMap = {}
-    local uncompiled_modules = {}
-    local moduleDependenciesMap = {}
 
     function compile_module(sourcefile)
         local objectfile = target:objectfile(sourcefile)
@@ -117,14 +110,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
         -- compile module file to *.ifc
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        local dependTable = moduleDependenciesMap[sourcefile]
-        local this_module_name = dependTable["Data"]["ProvidedModule"]
 
-        -- Failed for unknown reason
-        --[[
-        print(this_module_name)
-        local interface_or_partition = not string.find(this_module_name, ":", 1, true)
-        ]]
         local interface_or_partition = true
         local filetype
         if interface_or_partition then
@@ -133,82 +119,23 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
             filetype = opt.partitionflag
         end
 
-        local out_dir = modulefile:gsub("[^\\\\/]*$", "")
+        --[[
+            local out_dir = modulefile:gsub("[^\\\\/]*$", "")
+            "/sourceDependencies " .. out_dir
+        ]]
 
-        opt.configs.cxxflags = {opt.modulesflag, filetype, "/sourceDependencies " .. out_dir, opt.outputflag .. " " .. os.args(modulefile), "/TP"}
+        opt.configs.cxxflags = {opt.modulesflag, filetype, opt.outputflag .. " " .. os.args(modulefile), "/TP"}
 
-        for _, moduleName in ipairs(dependTable["Data"]["ImportedModules"]) do
-            if not moduleName or not moduleMap[moduleName] then
-                os.raise("\"" .. moduleName .. "\" is not listed in modules. Why? Listed modules are " .. json.encode(moduleMap))
-            end
-            table.insert(opt.configs.cxxflags, "/reference " .. moduleName .. "=" .. moduleMap[moduleName])
-        end
-
-        if sourcefile:endswith(".mxx") or sourcefile:endswith(".mpp") or sourcefile:endswith(".ixx") or sourcefile:endswith(".cppm") then
-            builder.build(target, singlebatch, opt)
-        end
-    end
-
-    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile)
-        local modulefile = objectfile .. ".ifc"
-        local descFile = modulefile .. ".d.json"
-
-        local dependTable = json.loadfile(descFile)
-        moduleDependenciesMap[sourcefile] = dependTable
-
-        local name = dependTable["Data"]["ProvidedModule"]
-        moduleMap[name] = modulefile
-        table.insert(uncompiled_modules, sourcefile)
-    end
-
-    while #uncompiled_modules > 0 do
-        local compiled_one_in_this_loop = false
-
-        for _, to_be_compiled in ipairs(uncompiled_modules) do
-
-            local dependTable = moduleDependenciesMap[to_be_compiled]
-            local compilable = true
-            if not dependTable then
-                os.raise(to_be_compiled .. " is not in list. Why?")
-            end
-            for _, to_be_imported in ipairs(dependTable["Data"]["ImportedModules"]) do
-                for _, uncompiled in ipairs(uncompiled_modules)do
-                    if to_be_imported == uncompiled then
-                        compilable = false
-                        break
-                    end
-                end
-                if not compilable then
-                    break
-                end
-            end
-            if compilable then
-                compile_module(to_be_compiled)
-                compiled_one_in_this_loop = true
-                table.remove(uncompiled_modules, _)
-            end
-        end
-        if not compiled_one_in_this_loop then
-            os.raise("Ring import detected among ", uncompiled_modules)
-        end
+        builder.build(target, singlebatch, opt)
+        target:add("cxxflags", opt.modulesflag)
+        target:add("cxxflags", "/reference " .. os.args(modulefile))
     end
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".ifc"
-        local dependTable = moduleDependenciesMap[sourcefile]
-        local modulename = dependTable["Data"]["ProvidedModule"]
-
-        table.insert(modulefiles, modulename .. "=" .. modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
-    end
-
-    -- add module files
-    for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", opt.modulesflag)
-        target:add("cxxflags", "/reference " .. os.args(modulefile))
+        compile_module(sourcefile)
     end
 end
 
