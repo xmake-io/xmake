@@ -1,4 +1,4 @@
-function get_module_flags(compinst, toolname, opt)
+function main(compinst, toolname, opt)
     local modulesflag = nil
     local outputflag = nil
     local interfaceflag = nil

@@ -19,7 +19,7 @@
 --
 
 -- imports
-import("get_module_flags", {alias="flag_getter"})
+import("get_module_flags")
 import("core.base.json")
 import("private.action.build.object", {alias="object_builder"})
 import("core.tool.compiler")
@@ -144,7 +144,7 @@ function main(target, sourcebatch, opt)
     -- do compile
     local _, toolname = target:tool("cxx")
     local compinst = compiler.load("cxx")
-    flag_getter.get_module_flags(compinst, toolname, opt)
+    get_module_flags(compinst, toolname, opt)
 
     if toolname:find("clang", 1, true) then
         _build_modulefiles_clang(target, sourcebatch, opt)
