@@ -158,7 +158,8 @@ function packagedir(packagename, opt)
                 end
             end
         end
-        packagedirs[cachekey] = foundir or {}
+        foundir = foundir or {}
+        packagedirs[cachekey] = foundir
     end
 
     -- save the current commit
