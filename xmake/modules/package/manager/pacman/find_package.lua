@@ -25,19 +25,14 @@ import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkg
 
 -- get result from list of file inside pacman package
 function _find_package_from_list(list, opt, name, pacman)
-    local result = {
-        includedirs = {},
-        linkdirs = {},
-        links = {},
-        version = nil
-    }
+    local result = {includedirs = {}, linkdirs = {}, links = {}}
     
     local cygpath = nil
     -- mingw + pacman = cygpath available
     if is_subhost("msys") and opt.plat == "mingw" then
         cygpath = find_tool("cygpath")
         if not cygpath then
-            return nil
+            return
         end
     end
 
@@ -50,7 +45,7 @@ function _find_package_from_list(list, opt, name, pacman)
                 hpath = os.iorunv(cygpath.program, {"--windows", line})
                 
                 if opt.arch == "x86_64" then
-                local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
+                    local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw64/include"})
                     table.insert(result.includedirs, basehpath)
                 else
                     local basehpath = os.iorunv(cygpath.program, {"--windows", "/mingw32/include"})
@@ -147,34 +142,26 @@ function main(name, opt)
             has_includes = true
         end
     end
+    linkdirs = table.unique(linkdirs)
     
     -- we iterate over each pkgconfig file to extract the required data
-    local result = {
-        includedirs = {},
-        linkdirs = {},
-        links = {},
-        version = nil
-    }
+    local result = {includedirs = {}, linkdirs = {}, links = {}}
 
     local foundpc = false
 
-    for key, file in pairs(pkgconfig_files) do
-        local pkgconfig_file = file
+    for key, pkgconfig_file in pairs(pkgconfig_files) do
         local pkgconfig_dir = path.directory(pkgconfig_file)
         local pkgconfig_name = path.basename(pkgconfig_file)
-        linkdirs = table.unique(linkdirs)
         local pcresult = find_package_from_pkgconfig(pkgconfig_name, {configdirs = pkgconfig_dir, linkdirs = linkdirs})
             
         -- the pkgconfig file has been parse successfully
-        if pcresult ~= nil then
+        if pcresult then
             for _, locincludedir in ipairs(pcresult.includedirs) do
                 table.insert(result.includedirs, locincludedir)
-            end
-                    
+            end        
             for _, loclinkdir in ipairs(pcresult.linkdirs) do
                 table.insert(result.linkdirs, loclinkdir)
             end
-            
             for _, loclink in ipairs(pcresult.links) do
                 table.insert(result.links, loclink)
             end
