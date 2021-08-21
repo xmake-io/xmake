@@ -3,29 +3,29 @@
         version = "1.0"
     },
     ["macosx|x86_64"] = {
-        ["zlib#ddbdd8b8f76d455a8c0ef45fffe37160"] = {
+        ["zlib#31fecfc4"] = {
             buildhash = "b76a297309d14c09b42cfe3927260a51",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.2.11"
         },
-        ["zlib~debug#d72a8a937b694e449bce540c8eb65a8a"] = {
+        ["zlib~debug#55833b12"] = {
             buildhash = "e6a6fa6a86ad4fc7ae3c2cf7c60cc084",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.2.11"
         },
-        ["zlib~shared#b286744a1898416faad2e5cab0104b2f"] = {
+        ["zlib~shared#b6ab42cb"] = {
             buildhash = "8e5b898b0f344715bac89cc6a1577506",
             repo = {
                 branch = "master",
-                commit = "d0e1f98585a4ec31b056fe3bda65a4fe37e0b375",
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.2.11"
