@@ -48,7 +48,7 @@ function _lock_package(instance)
                 return git.lastcommit({repodir = repo:directory()})
             end
         end}
-        result.repo      = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
+        result.repo   = {url = repo:url(), commit = lastcommit, branch = repo:branch()}
     end
     return result
 end
