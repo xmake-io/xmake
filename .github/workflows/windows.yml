@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     concurrency:
-        group: ${{ github.head_ref }}-Windows
+        group: ${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-Windows
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
