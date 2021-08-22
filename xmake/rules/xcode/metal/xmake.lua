@@ -80,8 +80,9 @@ rule("xcode.metal")
         assert(#objectfiles > 0, "*.air files not found!")
 
         -- add commands
-        local libraryfile = "default.metallib"
-        batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", libraryfile)
+        local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
+        local libraryfile = resourcesdir and path.join(resourcesdir, "default.metallib") or (target:targetfile() .. ".metallib")
+        batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", path.filename(libraryfile))
         batchcmds:mkdir(path.directory(libraryfile))
         batchcmds:vrunv(metallib.program, table.join({"-o", libraryfile}, objectfiles))
 
