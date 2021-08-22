@@ -47,10 +47,8 @@ rule("xcode.metal")
         local cross = target:data("xcode.metal.cross")
         local metal = assert(find_tool("metal", {program = cross .. " metal"}), "metal command not found!")
 
-        -- add objectfile (.air)
-        local objectfile = target:objectfile(sourcefile) .. ".air"
-
         -- add commands
+        local objectfile = target:objectfile(sourcefile) .. ".air"
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.metal %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
         batchcmds:vrunv(metal.program, {"-c", "-o", objectfile, sourcefile})
@@ -59,10 +57,36 @@ rule("xcode.metal")
         batchcmds:add_depfiles(sourcefile)
         batchcmds:set_depmtime(os.mtime(objectfile))
         batchcmds:set_depcache(target:dependfile(objectfile))
-
     end)
 
     -- link *.air to *.metallib
-    on_linkcmd(function (target, batchcmds, opt)
-        print("linkcmd")
+    before_linkcmd(function (target, batchcmds, opt)
+
+        -- get metallib
+        import("lib.detect.find_tool")
+        local cross = target:data("xcode.metal.cross")
+        local metallib = assert(find_tool("metallib", {program = cross .. " metallib"}), "metallib command not found!")
+
+        -- get objectfiles
+        local objectfiles = {}
+        for rulename, sourcebatch in pairs(target:sourcebatches()) do
+            if rulename == "xcode.metal" then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    table.insert(objectfiles, target:objectfile(sourcefile) .. ".air")
+                end
+                break
+            end
+        end
+        assert(#objectfiles > 0, "*.air files not found!")
+
+        -- add commands
+        local libraryfile = "default.metallib"
+        batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", libraryfile)
+        batchcmds:mkdir(path.directory(libraryfile))
+        batchcmds:vrunv(metallib.program, table.join({"-o", libraryfile}, objectfiles))
+
+        -- add deps
+        batchcmds:add_depfiles(objectfiles)
+        batchcmds:set_depmtime(os.mtime(libraryfile))
+        batchcmds:set_depcache(target:dependfile(libraryfile))
     end)
