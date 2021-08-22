@@ -25,6 +25,7 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.depend")
 import("private.utils.progress")
+import("private.utils.batchcmds")
 import("object", {alias = "add_batchjobs_for_object"})
 
 -- do link target
@@ -102,6 +103,13 @@ function _on_link_target(target, opt)
             on_link(target, opt)
             done = true
         end
+        local on_linkcmd = r:script("linkcmd")
+        if on_linkcmd then
+            local batchcmds_ = batchcmds.new({target = target})
+            on_linkcmd(target, batchcmds_, {progress = opt.progress})
+            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+            done = true
+        end
     end
     if done then return end
 
@@ -124,6 +132,12 @@ function _link_target(target, opt)
         if before_link then
             before_link(target, opt)
         end
+        local before_linkcmd = r:script("linkcmd_before")
+        if before_linkcmd then
+            local batchcmds_ = batchcmds.new({target = target})
+            before_linkcmd(target, batchcmds_, {progress = opt.progress})
+            batchcmds_:runcmds({dryrun = option.get("dry-run")})
+        end
     end
 
     -- on link
@@ -140,6 +154,12 @@ function _link_target(target, opt)
         local after_link = r:script("link_after")
         if after_link then
             after_link(target, opt)
+        end
+        local after_linkcmd = r:script("linkcmd_after")
+        if after_linkcmd then
+            local batchcmds_ = batchcmds.new({target = target})
+            after_linkcmd(target, batchcmds_, {progress = opt.progress})
+            batchcmds_:runcmds({dryrun = option.get("dry-run")})
         end
     end
 end
