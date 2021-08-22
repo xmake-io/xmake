@@ -5,7 +5,7 @@ target("HelloTriangle")
     add_includedirs("Renderer")
     add_frameworks("MetalKit")
     add_mflags("-fmodules")
-    add_files("Renderer/*.m")
+    add_files("Renderer/*.m", "Renderer/*.metal")
     if is_plat("macosx") then
         add_files("Application/main.m")
         add_files("Application/AAPLViewController.m")

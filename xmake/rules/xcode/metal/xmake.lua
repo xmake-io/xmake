@@ -18,26 +18,12 @@
 -- @file        xmake.lua
 --
 
--- define rule: xcode application
-rule("xcode.application")
+rule("xcode.metal")
 
-    -- support add_files("Info.plist", "*.storyboard", "*.xcassets", "*.metal")
-    add_deps("xcode.info_plist", "xcode.storyboard", "xcode.xcassets", "xcode.metal")
+    -- support add_files("*.metal")
+    set_extensions(".metal")
 
-    -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load("load")
+    -- build *.metal to *.metallib
+    on_build_file(function (target, sourcefile, opt)
 
-    -- build *.app
-    after_build("build")
-
-    -- package *.app to *.ipa (iphoneos) or *.dmg (macosx)
-    on_package("package")
-
-    -- install application
-    on_install("install")
-
-    -- uninstall application
-    on_uninstall("uninstall")
-
-    -- run application
-    on_run("run")
+    end)
