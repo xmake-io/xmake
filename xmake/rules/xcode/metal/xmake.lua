@@ -18,6 +18,10 @@
 -- @file        xmake.lua
 --
 
+-- build metal files
+--
+-- @see https://developer.apple.com/documentation/metal/libraries/building_a_library_with_metal_s_command-line_tools
+--
 rule("xcode.metal")
 
     -- support add_files("*.metal")
