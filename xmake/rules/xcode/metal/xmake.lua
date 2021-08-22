@@ -43,15 +43,50 @@ rule("xcode.metal")
     on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
 
         -- get metal
+        import("core.tool.toolchain")
         import("lib.detect.find_tool")
         local cross = target:data("xcode.metal.cross")
         local metal = assert(find_tool("metal", {program = cross .. " metal"}), "metal command not found!")
 
-        -- add commands
+        -- get xcode toolchain
+        local xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
+        local target_minver = xcode:config("target_minver")
+        local xcode_sysroot = xcode:config("xcode_sysroot")
+
+        -- init metal arguments
         local objectfile = target:objectfile(sourcefile) .. ".air"
+        local argv = {"-c", "-ffast-math", "-gline-tables-only"}
+        if target_minver then
+            table.insert(argv, "-target")
+            local airarch = target:is_arch("x86_64", "arm64") and "air64" or "air32"
+            if target:is_plat("macosx") then
+                table.insert(argv, airarch .. "-apple-macos" .. target_minver)
+            elseif target:is_plat("iphoneos") then
+                local airtarget = airarch .. "-apple-ios" .. target_minver
+                if target:is_arch("x86_64", "i386") then
+                    airtarget = airtarget .. "-simulator"
+                end
+                table.insert(argv, airtarget)
+            elseif target:is_plat("watchos") then
+                local airtarget = airarch .. "-apple-watchos" .. target_minver
+                if target:is_arch("x86_64", "i386") then
+                    airtarget = airtarget .. "-simulator"
+                end
+                table.insert(argv, airtarget)
+            end
+        end
+        if xcode_sysroot then
+            table.insert(argv, "-isysroot")
+            table.insert(argv, xcode_sysroot)
+        end
+        table.insert(argv, "-o")
+        table.insert(argv, objectfile)
+        table.insert(argv, sourcefile)
+
+        -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}compiling.metal %s", sourcefile)
         batchcmds:mkdir(path.directory(objectfile))
-        batchcmds:vrunv(metal.program, {"-c", "-o", objectfile, sourcefile})
+        batchcmds:vrunv(metal.program, argv)
 
         -- add deps
         batchcmds:add_depfiles(sourcefile)
@@ -63,6 +98,7 @@ rule("xcode.metal")
     before_linkcmd(function (target, batchcmds, opt)
 
         -- get metallib
+        import("core.tool.toolchain")
         import("lib.detect.find_tool")
         local cross = target:data("xcode.metal.cross")
         local metallib = assert(find_tool("metallib", {program = cross .. " metallib"}), "metallib command not found!")
@@ -79,12 +115,16 @@ rule("xcode.metal")
         end
         assert(#objectfiles > 0, "*.air files not found!")
 
+        -- get xcode toolchain
+        local xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
+        local xcode_sysroot = xcode:config("xcode_sysroot")
+
         -- add commands
         local resourcesdir = path.absolute(target:data("xcode.bundle.resourcesdir"))
         local libraryfile = resourcesdir and path.join(resourcesdir, "default.metallib") or (target:targetfile() .. ".metallib")
         batchcmds:show_progress(opt.progress, "${color.build.target}linking.metal %s", path.filename(libraryfile))
         batchcmds:mkdir(path.directory(libraryfile))
-        batchcmds:vrunv(metallib.program, table.join({"-o", libraryfile}, objectfiles))
+        batchcmds:vrunv(metallib.program, table.join({"-o", libraryfile}, objectfiles), {envs = {SDKROOT = xcode_sysroot}})
 
         -- add deps
         batchcmds:add_depfiles(objectfiles)
