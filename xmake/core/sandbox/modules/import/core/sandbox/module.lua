@@ -28,6 +28,7 @@ local utils     = require("base/utils")
 local table     = require("base/table")
 local string    = require("base/string")
 local global    = require("base/global")
+local memcache  = require("cache/memcache")
 local sandbox   = require("sandbox/sandbox")
 local raise     = require("sandbox/modules/raise")
 
@@ -287,31 +288,27 @@ end
 
 -- get module directories
 function core_sandbox_module.directories()
-    local directories = core_sandbox_module._DIRS
-    if not directories then
-        directories = { path.join(global.directory(), "modules"),
-                        path.join(os.programdir(), "modules"),
-                        path.join(os.programdir(), "core/sandbox/modules/import")}
+    local moduledirs = memcache.get("core_sandbox_module", "moduledirs")
+    if not moduledirs then
+        moduledirs = { path.join(global.directory(), "modules"),
+                       path.join(os.programdir(), "modules"),
+                       path.join(os.programdir(), "core/sandbox/modules/import")}
         local modulesdir = os.getenv("XMAKE_MODULES_DIR")
         if modulesdir and os.isdir(modulesdir) then
-            table.insert(directories, 1, modulesdir)
+            table.insert(moduledirs, 1, modulesdir)
         end
-        core_sandbox_module._DIRS = directories
+        memcache.set("core_sandbox_module", "moduledirs", moduledirs)
     end
-    return directories
+    return moduledirs
 end
 
 -- add module directories
 function core_sandbox_module.add_directories(...)
-
-    -- add directories
     local moduledirs = core_sandbox_module.directories()
     for _, dir in ipairs({...}) do
         table.insert(moduledirs, 1, dir)
     end
-
-    -- remove unique directories
-    core_sandbox_module._DIRS = table.unique(moduledirs)
+    memcache.set("core_sandbox_module", "moduledirs", table.unique(moduledirs))
 end
 
 -- find module
