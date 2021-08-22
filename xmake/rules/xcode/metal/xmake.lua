@@ -73,6 +73,12 @@ rule("xcode.metal")
                     airtarget = airtarget .. "-simulator"
                 end
                 table.insert(argv, airtarget)
+            elseif target:is_plat("appletvos") then
+                local airtarget = airarch .. "-apple-tvos" .. target_minver
+                if target:is_arch("x86_64", "i386") then
+                    airtarget = airtarget .. "-simulator"
+                end
+                table.insert(argv, airtarget)
             end
         end
         if xcode_sysroot then
