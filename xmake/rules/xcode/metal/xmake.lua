@@ -63,3 +63,6 @@ rule("xcode.metal")
     end)
 
     -- link *.air to *.metallib
+    on_linkcmd(function (target, batchcmds, opt)
+        print("linkcmd")
+    end)
