@@ -42,6 +42,8 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
     local repodir_local
     if os.isdir(locked_repo.url) then
         repodir_local = locked_repo.url
+    elseif not locked_repo.commit then
+        repodir_local = repodir_global
     else
         repodir_local = path.join(config.directory(), "repositories", reponame)
     end
