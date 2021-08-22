@@ -23,7 +23,43 @@ rule("xcode.metal")
     -- support add_files("*.metal")
     set_extensions(".metal")
 
-    -- build *.metal to *.metallib
-    on_build_file(function (target, sourcefile, opt)
+    on_load(function (target)
+        local cross
+        if target:is_plat("macosx") then
+            cross = "xcrun -sdk macosx "
+        elseif target:is_plat("iphoneos") then
+            cross = target:is_arch("i386", "x86_64") and "xcrun -sdk iphonesimulator " or "xcrun -sdk iphoneos "
+        elseif target:is_plat("watchos") then
+            cross = target:is_arch("i386") and "xcrun -sdk watchsimulator " or "xcrun -sdk watchos "
+        elseif target:is_plat("appletvos") then
+            cross = target:is_arch("i386", "x86_64") and "xcrun -sdk appletvsimulator " or "xcrun -sdk appletvos "
+        else
+            raise("unknown platform for xcode!")
+        end
+        target:data_set("xcode.metal.cross", cross)
+    end)
+
+    -- build *.metal to *.air
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+
+        -- get metal
+        import("lib.detect.find_tool")
+        local cross = target:data("xcode.metal.cross")
+        local metal = assert(find_tool("metal", {program = cross .. " metal"}), "metal command not found!")
+
+        -- add objectfile (.air)
+        local objectfile = target:objectfile(sourcefile) .. ".air"
+
+        -- add commands
+        batchcmds:show_progress(opt.progress, "${color.build.object}compiling.metal %s", sourcefile)
+        batchcmds:mkdir(path.directory(objectfile))
+        batchcmds:vrunv(metal.program, {"-c", "-o", objectfile, sourcefile})
+
+        -- add deps
+        batchcmds:add_depfiles(sourcefile)
+        batchcmds:set_depmtime(os.mtime(objectfile))
+        batchcmds:set_depcache(target:dependfile(objectfile))
 
     end)
+
+    -- link *.air to *.metallib
