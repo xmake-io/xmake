@@ -208,17 +208,19 @@ function _load_package_from_repository(packagename, opt)
 end
 
 -- has locked requires?
-function _has_locked_requires()
-    if not option.get("upgrade") then
+function _has_locked_requires(opt)
+    opt = opt or {}
+    if not option.get("upgrade") or opt.force then
         return project.policy("package.requires_lock") and os.isfile(project.requireslock())
     end
 end
 
 -- get locked requires
-function _get_locked_requires(requirekey)
+function _get_locked_requires(requirekey, opt)
+    opt = opt or {}
     local requireslock = _memcache():get("requireslock")
-    if requireslock == nil then
-        if _has_locked_requires() then
+    if requireslock == nil or opt.force then
+        if _has_locked_requires(opt) then
             requireslock = io.load(project.requireslock())
         end
         _memcache():set("requireslock", requireslock or false)
@@ -651,13 +653,7 @@ function _load_package(packagename, requireinfo, opt)
     requireinfo.requirekey = requirekey
 
     -- get locked requireinfo
-    local locked_requireinfo, requireslock_version
-    if _has_locked_requires() then
-        locked_requireinfo, requireslock_version = _get_locked_requires(requirekey)
-        if requireslock_version and semver.compare(project.requireslock_version(), requireslock_version) < 0 then
-            locked_requireinfo = nil
-        end
-    end
+    local locked_requireinfo = get_locked_requireinfo(requireinfo)
 
     -- load package from project first
     local package
@@ -953,6 +949,19 @@ function get_configs_str(package)
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
     end
     return configs_str
+end
+
+-- get locked requireinfo
+function get_locked_requireinfo(requireinfo, opt)
+    local requirekey = requireinfo.requirekey
+    local locked_requireinfo, requireslock_version
+    if _has_locked_requires(opt) and requirekey then
+        locked_requireinfo, requireslock_version = _get_locked_requires(requirekey, opt)
+        if requireslock_version and semver.compare(project.requireslock_version(), requireslock_version) < 0 then
+            locked_requireinfo = nil
+        end
+    end
+    return locked_requireinfo, requireslock_version
 end
 
 -- load requires

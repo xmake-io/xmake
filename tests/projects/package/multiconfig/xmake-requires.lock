@@ -4,7 +4,6 @@
     },
     ["macosx|x86_64"] = {
         ["zlib#31fecfc4"] = {
-            buildhash = "b76a297309d14c09b42cfe3927260a51",
             repo = {
                 branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
@@ -13,7 +12,6 @@
             version = "1.2.11"
         },
         ["zlib~debug#55833b12"] = {
-            buildhash = "e6a6fa6a86ad4fc7ae3c2cf7c60cc084",
             repo = {
                 branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
@@ -22,7 +20,6 @@
             version = "1.2.11"
         },
         ["zlib~shared#b6ab42cb"] = {
-            buildhash = "8e5b898b0f344715bac89cc6a1577506",
             repo = {
                 branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",

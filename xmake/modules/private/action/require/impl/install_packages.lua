@@ -243,6 +243,19 @@ function _get_confirm(packages)
     return result, packages_modified
 end
 
+-- show upgraded packages
+function _show_upgraded_packages(packages)
+    local upgraded_count = 0
+    for _, instance in ipairs(packages) do
+        local locked_requireinfo = package.get_locked_requireinfo(instance:requireinfo(), {force = true})
+        if locked_requireinfo and locked_requireinfo.version and instance:version():gt(locked_requireinfo.version) then
+            cprint("  ${color.dump.string}%s${clear}: %s -> ${color.success}%s", instance:displayname(), locked_requireinfo.version, instance:version_str())
+            upgraded_count = upgraded_count + 1
+        end
+    end
+    cprint("${bright}%d packages are upgraded!", upgraded_count)
+end
+
 -- install packages
 function _install_packages(packages_install, packages_download, installdeps)
 
@@ -580,6 +593,11 @@ function main(requires, opt)
         end
     end
 
+    -- show upgraded information
+    if option.get("upgrade") then
+        print("upgrading packages ..")
+    end
+
     -- some packages are modified? we need fix packages list and all deps
     if packages_modified then
         order_packages = {}
@@ -601,6 +619,11 @@ function main(requires, opt)
     -- re-register and refresh all root packages to local cache,
     -- because there may be some missing optional dependencies reinstalled
     register_packages(packages)
+
+    -- show upgraded packages
+    if option.get("upgrade") then
+        _show_upgraded_packages(packages)
+    end
 
     -- lock packages
     lock_packages(packages)
