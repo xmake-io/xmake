@@ -468,7 +468,7 @@ end
 
 -- is cross-compilation?
 function _instance:is_cross()
-    if self:is_plat("windows") and os.host() == "windows" then
+    if self:is_plat("windows", "mingw") and os.host() == "windows" then
         -- always false on windows host
         return false
     end
