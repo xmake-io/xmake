@@ -248,7 +248,7 @@ function _show_upgraded_packages(packages)
     local upgraded_count = 0
     for _, instance in ipairs(packages) do
         local locked_requireinfo = package.get_locked_requireinfo(instance:requireinfo(), {force = true})
-        if locked_requireinfo and locked_requireinfo.version and instance:version():gt(locked_requireinfo.version) then
+        if locked_requireinfo and locked_requireinfo.version and instance:version() and instance:version():gt(locked_requireinfo.version) then
             cprint("  ${color.dump.string}%s${clear}: %s -> ${color.success}%s", instance:displayname(), locked_requireinfo.version, instance:version_str())
             upgraded_count = upgraded_count + 1
         end
