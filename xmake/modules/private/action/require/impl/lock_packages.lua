@@ -36,7 +36,6 @@ function _lock_package(instance)
     local result      = {}
     local repo        = instance:repo()
     result.version    = instance:version_str()
-    result.buildhash  = instance:buildhash()
     result.branch     = instance:branch()
     result.tag        = instance:tag()
     if repo then
