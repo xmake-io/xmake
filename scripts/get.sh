@@ -227,11 +227,18 @@ write_profile()
 install_profile()
 {
     if [ ! -d ~/.xmake ]; then mkdir ~/.xmake; fi
-    echo "export PATH=$prefix/bin:\$PATH" > ~/.xmake/profile
+    echo "export XMAKE_ROOTDIR=\"$prefix/bin\"" > ~/.xmake/profile
+    echo 'export PATH="$XMAKE_ROOTDIR:$PATH"' >> ~/.xmake/profile
     if [ -f "$projectdir/scripts/register-completions.sh" ]; then
         cat "$projectdir/scripts/register-completions.sh" >> ~/.xmake/profile
     else
         remote_get_content "$gitrepo_raw/scripts/register-completions.sh" >> ~/.xmake/profile
+    fi
+
+    if [ -f "$projectdir/scripts/register-virtualenvs.sh" ]; then
+        cat "$projectdir/scripts/register-virtualenvs.sh" >> ~/.xmake/profile
+    else
+        remote_get_content "$gitrepo_raw/scripts/register-virtualenvs.sh" >> ~/.xmake/profile
     fi
 
     if   [[ "$SHELL" = */zsh ]]; then 

@@ -22,7 +22,7 @@
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
             )
-            @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
                 exit /B !errorlevel!
@@ -39,13 +39,13 @@
             if !errorlevel! neq 0 (
                 exit /B !errorlevel!
             )
-            @%XMAKE_EXE% lua private.xrepo.action.env.info prompt 1>nul
+            @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt 1>nul
             if !errorlevel! neq 0 (
                 echo error: xmake.lua not found^^!
                 exit /B !errorlevel!
             )
             endlocal
-            for /f %%i in ('@%XMAKE_EXE% lua private.xrepo.action.env.info prompt') do @(
+            for /f %%i in ('@%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt') do @(
                 @set "PROMPT=%%i %PROMPT%"
             )
             @set XMAKE_PROMPT_BACKUP=%PROMPT%
