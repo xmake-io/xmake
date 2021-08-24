@@ -285,15 +285,29 @@ function _get_env_script(envs, shell, del)
     elseif shell == "cmd" then
         prefix = "@set \""
         suffix = "\""
+    elseif shell:endswith("sh") then
+        if del then
+            prefix = "unset "
+            connector = ""
+        else
+            prefix = "export "
+            connector = "='"
+            suffix = "'"
+        end
     end
+    local exceptions = hashset.of("_", "PS1", "PROMPT")
     local ret = ""
     if del then
         for name, _ in pairs(envs) do
-            ret = ret .. prefix .. name .. connector .. default .. suffix .. "\n"
+            if not exceptions:has(name) then
+                ret = ret .. prefix .. name .. connector .. default .. suffix .. "\n"
+            end
         end
     else
         for name, value in pairs(envs) do
-            ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
+            if not exceptions:has(name) then
+                ret = ret .. prefix .. name .. connector .. value .. suffix .. "\n"
+            end
         end
     end
     return ret
