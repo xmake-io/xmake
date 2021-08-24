@@ -1,8 +1,6 @@
 
 # parameter completions for *nix shell
 
-export PATH=${XMAKE_ROOTDIR}:$PATH
-
 if   [[ "$SHELL" = */zsh ]]; then
   # zsh parameter completion for xmake
   _xmake_zsh_complete() 
