@@ -21,7 +21,7 @@ function Enter-XrepoEnvironment {
         }
 
         $xmakeColorTermBackup, $Env:XMAKE_COLORTERM = $Env:XMAKE_COLORTERM, "nocolor";
-        $xrepoPrompt = (& $Env:XMAKE_EXE lua private.xrepo.action.env.info prompt | Out-String);
+        $xrepoPrompt = (& $Env:XMAKE_EXE lua --quiet private.xrepo.action.env.info prompt | Out-String);
         $Env:XMAKE_COLORTERM = $xmakeColorTermBackup;
         if (-not $xrepoPrompt.StartsWith("[")) {
             Write-Host $xrepoPrompt;

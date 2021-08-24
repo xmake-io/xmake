@@ -317,7 +317,7 @@ end
 function info(key)
     if key == "prompt" then
         assert(os.isfile(os.projectfile()), "xmake.lua not found!")
-        print("[%s]", path.filename(os.projectdir()))
+        io.write("[" .. path.filename(os.projectdir()) .. "]")
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
