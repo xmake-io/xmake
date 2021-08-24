@@ -107,12 +107,6 @@ rule("xcode.metal")
     -- link *.air to *.metallib
     before_linkcmd(function (target, batchcmds, opt)
 
-        -- get metallib
-        import("core.tool.toolchain")
-        import("lib.detect.find_tool")
-        local cross = target:data("xcode.metal.cross")
-        local metallib = assert(find_tool("metallib", {program = cross .. " metallib"}), "metallib command not found!")
-
         -- get objectfiles
         local objectfiles = {}
         for rulename, sourcebatch in pairs(target:sourcebatches()) do
@@ -123,7 +117,15 @@ rule("xcode.metal")
                 break
             end
         end
-        assert(#objectfiles > 0, "*.air files not found!")
+        if #objectfiles == 0 then
+            return
+        end
+
+        -- get metallib
+        import("core.tool.toolchain")
+        import("lib.detect.find_tool")
+        local cross = target:data("xcode.metal.cross")
+        local metallib = assert(find_tool("metallib", {program = cross .. " metallib"}), "metallib command not found!")
 
         -- get xcode toolchain
         local xcode = toolchain.load("xcode", {plat = target:plat(), arch = target:arch()})
