@@ -70,7 +70,7 @@ function menu_options()
     local function show_options()
 
         -- show usage
-        cprint("${bright}Usage: $${clear cyan}xrepo env [options] [packages] [program] [arguments]")
+        cprint("${bright}Usage: $${clear cyan}xrepo env [options] [program] [arguments]")
 
         -- show description
         print("")
