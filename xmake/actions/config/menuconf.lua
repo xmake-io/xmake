@@ -253,6 +253,7 @@ function app:_basic_configs(cache)
             if type(values) == "function" then
                 values = values(false, {menuconf = true})
             end
+            values = table.wrap(values)
             for idx, value in ipairs(values) do
                 if default == value then
                     default = idx
@@ -331,6 +332,7 @@ function app:_project_configs(cache)
         local values = opt:get("values")
         if values then
             kind = "choice"
+            values = table.wrap(values)
             for idx, value in ipairs(values) do
                 if default == value then
                     default = idx
