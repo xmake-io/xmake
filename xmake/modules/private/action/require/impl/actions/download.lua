@@ -66,17 +66,18 @@ function _checkout(package, url, sourcedir, url_alias)
     local longpaths = package:policy("platform.longpaths")
 
     -- download package from branches?
+    url = proxy.mirror(url) or url
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     if package:branch() then
 
         -- only shadow clone this branch
-        git.clone(proxy.mirror(url) or url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
+        git.clone(url, {depth = 1, recursive = true, longpaths = longpaths, branch = package:branch(), outputdir = packagedir})
 
     -- download package from revision or tag?
     else
 
         -- clone whole history and tags
-        git.clone(proxy.mirror(url) or url, {longpaths = longpaths, outputdir = packagedir})
+        git.clone(url, {longpaths = longpaths, outputdir = packagedir})
 
         -- attempt to checkout the given version
         local revision = package:revision(url_alias) or package:tag() or package:version_str()
@@ -102,6 +103,11 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- get package file
     local packagefile = url_filename(url)
+
+    -- use proxy url?
+    if not os.isfile(url) then
+        url = proxy.mirror(url) or url
+    end
 
     -- get sourcehash from the given url
     --
@@ -139,7 +145,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
                 -- we can use local package from the search directories directly if network is too slow
                 os.cp(localfile, packagefile)
             else
-                http.download(proxy.mirror(url) or url, packagefile)
+                http.download(url, packagefile)
             end
         end
 

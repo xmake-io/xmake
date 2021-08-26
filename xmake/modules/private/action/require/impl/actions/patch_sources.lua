@@ -50,6 +50,7 @@ end
 function _patch(package, patch_url, patch_hash)
 
     -- trace
+    patch_url = proxy.mirror(patch_url) or patch_url
     vprint("patching %s to %s-%s ..", patch_url, package:name(), package:version_str())
 
     -- get the patch file
@@ -72,7 +73,7 @@ function _patch(package, patch_url, patch_hash)
 
         -- download the patch file
         if patch_url:find(string.ipattern("https-://")) or patch_url:find(string.ipattern("ftps-://")) then
-            http.download(proxy.mirror(patch_url) or patch_url, patch_file)
+            http.download(patch_url, patch_file)
         else
             -- copy the patch file
             if os.isfile(patch_url) then
