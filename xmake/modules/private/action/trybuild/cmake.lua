@@ -19,7 +19,6 @@
 --
 
 -- imports
-import("core.base.cli")
 import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
@@ -199,7 +198,7 @@ function _get_configs(artifacts_dir)
     -- add extra user configs
     local tryconfigs = config.get("tryconfigs")
     if tryconfigs then
-        for _, opt in ipairs(cli.parse(tryconfigs)) do
+        for _, opt in ipairs(os.argv(tryconfigs)) do
             table.insert(configs, tostring(opt))
         end
     end
