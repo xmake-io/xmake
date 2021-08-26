@@ -1124,10 +1124,11 @@ function _instance:_fetch_tool(opt)
     if fetchinfo == nil then
         self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
         if opt.system then
-            local fetchnames = {self:name()}
+            local fetchnames = {}
             if not self:is_thirdparty() then
                 table.join2(fetchnames, self:extsources())
             end
+            table.insert(fetchnames, self:name())
             for _, fetchname in ipairs(fetchnames) do
                 fetchinfo = self:find_tool(fetchname, opt)
                 if fetchinfo then
@@ -1180,10 +1181,11 @@ function _instance:_fetch_library(opt)
     end
     if fetchinfo == nil then
         if opt.system then
-            local fetchnames = {self:name()}
+            local fetchnames = {}
             if not self:is_thirdparty() then
                 table.join2(fetchnames, self:extsources())
             end
+            table.insert(fetchnames, self:name())
             for _, fetchname in ipairs(fetchnames) do
                 fetchinfo = self:find_package(fetchname, opt)
                 if fetchinfo then
