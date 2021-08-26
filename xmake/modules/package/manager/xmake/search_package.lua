@@ -36,7 +36,7 @@ function main(name)
             local versions = package:versions()
             if versions then
                 versions = table.copy(versions)
-                table.sort(versions, function (a, b) return semver.compare(a, b) < 0 end)
+                table.sort(versions, function (a, b) return semver.compare(a, b) > 0 end)
             end
             table.insert(results, {name = package:name(), version = versions and versions[1], description = package:get("description"), reponame = repo and repo:name()})
         end
