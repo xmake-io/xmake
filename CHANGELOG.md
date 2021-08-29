@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.5.7
+
 ### New features
 
 * [#1534](https://github.com/xmake-io/xmake/issues/1534): Support to compile Vala lanuage project
@@ -1057,6 +1059,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.5.7
 
 ### 新特性
 
