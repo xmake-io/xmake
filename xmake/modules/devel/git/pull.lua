@@ -58,18 +58,12 @@ function main(opt)
         table.insert(argv, "--tags")
     end
 
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
     -- use proxy?
     local envs
     local proxy_conf = proxy.config()
     if proxy_conf then
         -- get proxy configuration from the current remote url
-        local remoteinfo = try { function() return os.iorunv(git.program, {"remote", "-v"}) end }
+        local remoteinfo = try { function() return os.iorunv(git.program, {"remote", "-v"}, {curdir = opt.repodir}) end }
         if remoteinfo then
             for _, line in ipairs(remoteinfo:split('\n', {plain = true})) do
                 local splitinfo = line:split("%s+")
@@ -86,10 +80,5 @@ function main(opt)
     end
 
     -- pull it
-    os.vrunv(git.program, argv, {envs = envs})
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    os.vrunv(git.program, argv, {envs = envs, curdir = opt.repodir})
 end

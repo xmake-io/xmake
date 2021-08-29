@@ -44,17 +44,6 @@ function main(patchfile, opt)
     opt = opt or {}
     local argv = {"apply", "--reject", "--ignore-whitespace", patchfile}
 
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
     -- apply it
-    os.vrunv(git.program, argv)
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
-    end
+    os.vrunv(git.program, argv, {curdir = opt.repodir})
 end

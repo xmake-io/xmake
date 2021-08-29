@@ -57,21 +57,10 @@ function main(opt)
         envs = {ALL_PROXY = proxy_conf}
     end
 
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
     -- get last commit
-    local lastcommit = os.iorunv(git.program, argv, {envs = envs})
+    local lastcommit = os.iorunv(git.program, argv, {envs = envs, curdir = opt.repodir})
     if lastcommit then
         lastcommit = lastcommit:trim()
-    end
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
     end
     return lastcommit
 end

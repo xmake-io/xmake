@@ -58,37 +58,26 @@ function main(opt)
         table.join2(argv, opt.paths)
     end
 
-    -- enter repository directory
-    local oldir = nil
-    if opt.repodir then
-        oldir = os.cd(opt.repodir)
-    end
-
     -- enable long paths
     local longpaths_old
     local longpaths_changed = false
     if opt.longpaths then
-        local longpaths_old = try {function () return os.iorunv(git.program, {"config", "--get", "--global", "core.longpaths"}) end}
+        local longpaths_old = try {function () return os.iorunv(git.program, {"config", "--get", "--global", "core.longpaths"}, {curdir = opt.repodir}) end}
         if not longpaths_old or not longpaths_old:find("true") then
-            os.vrunv(git.program, {"config", "--global", "core.longpaths", "true"})
+            os.vrunv(git.program, {"config", "--global", "core.longpaths", "true"}, {curdir = opt.repodir})
             longpaths_changed = true
         end
     end
 
     -- submodule it
-    os.vrunv(git.program, argv)
+    os.vrunv(git.program, argv, {curdir = opt.repodir})
 
     -- restore old long paths configuration
     if longpaths_changed then
         if longpaths_old and longpaths_old:find("false") then
-            os.vrunv(git.program, {"config", "--global", "core.longpaths", "false"})
+            os.vrunv(git.program, {"config", "--global", "core.longpaths", "false"}, {curdir = opt.repodir})
         else
-            os.vrunv(git.program, {"config", "--global", "--unset", "core.longpaths"})
+            os.vrunv(git.program, {"config", "--global", "--unset", "core.longpaths", {curdir = opt.repodir}})
         end
-    end
-
-    -- leave repository directory
-    if oldir then
-        os.cd(oldir)
     end
 end
