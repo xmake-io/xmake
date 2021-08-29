@@ -53,7 +53,7 @@ Implementation of a platform independent renderer class, which performs Metal se
 
         _pipelineState = [_device newRenderPipelineStateWithDescriptor:pipelineStateDescriptor
                                                                  error:&error];
-                
+
         // Pipeline State creation could fail if the pipeline descriptor isn't set up properly.
         //  If the Metal API validation is enabled, you can find out more information about what
         //  went wrong.  (Metal API validation is enabled by default when a debug build is run
@@ -102,14 +102,14 @@ Implementation of a platform independent renderer class, which performs Metal se
 
         // Set the region of the drawable to draw into.
         [renderEncoder setViewport:(MTLViewport){0.0, 0.0, _viewportSize.x, _viewportSize.y, 0.0, 1.0 }];
-        
+
         [renderEncoder setRenderPipelineState:_pipelineState];
 
         // Pass in the parameter data.
         [renderEncoder setVertexBytes:triangleVertices
                                length:sizeof(triangleVertices)
                               atIndex:AAPLVertexInputIndexVertices];
-        
+
         [renderEncoder setVertexBytes:&_viewportSize
                                length:sizeof(_viewportSize)
                               atIndex:AAPLVertexInputIndexViewportSize];
