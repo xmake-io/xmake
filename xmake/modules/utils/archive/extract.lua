@@ -85,9 +85,7 @@ function _extract_using_tar(archivefile, outputdir, extension, opt)
 
     -- extract it
     if is_host("windows") then
-        local oldir = os.cd(outputdir)
-        os.vrunv(program, argv)
-        os.cd(oldir)
+        os.vrunv(program, argv, {curdir = outputdir})
     else
         os.vrunv(program, argv)
     end
@@ -201,14 +199,8 @@ function _extract_using_gzip(archivefile, outputdir, extension, opt)
         os.cp(archivefile, tmpfile)
     end
 
-    -- enter outputdir
-    local oldir = os.cd(outputdir)
-
     -- extract it
-    os.vrunv(program, argv)
-
-    -- leave outputdir
-    os.cd(oldir)
+    os.vrunv(program, argv, {curdir = outputdir})
 
     -- continue to extract *.tar file
     if outputdir_old then
@@ -256,14 +248,8 @@ function _extract_using_xz(archivefile, outputdir, extension, opt)
         os.cp(archivefile, tmpfile)
     end
 
-    -- enter outputdir
-    local oldir = os.cd(outputdir)
-
     -- extract it
-    os.vrunv(program, argv)
-
-    -- leave outputdir
-    os.cd(oldir)
+    os.vrunv(program, argv, {curdir = outputdir})
 
     -- continue to extract *.tar file
     if outputdir_old then
@@ -369,14 +355,8 @@ function _extract_using_bzip2(archivefile, outputdir, extension, opt)
         os.cp(archivefile, tmpfile)
     end
 
-    -- enter outputdir
-    local oldir = os.cd(outputdir)
-
     -- extract it
-    os.vrunv(program, argv)
-
-    -- leave outputdir
-    os.cd(oldir)
+    os.vrunv(program, argv, {curdir = outputdir})
 
     -- continue to extract *.tar file
     if outputdir_old then
