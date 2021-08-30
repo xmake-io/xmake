@@ -1364,7 +1364,11 @@ function _instance:fetch_linkdeps()
     end
     if fetchinfo then
         for name, values in pairs(fetchinfo) do
-            fetchinfo[name] = table.unwrap(table.unique(table.wrap(values)))
+            if name == "links" or name == "syslinks" or name == "frameworks" then
+                fetchinfo[name] = table.unwrap(table.reverse_unique(table.wrap(values)))
+            else
+                fetchinfo[name] = table.unwrap(table.unique(table.wrap(values)))
+            end
         end
     end
     return fetchinfo
