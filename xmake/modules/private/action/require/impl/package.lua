@@ -321,7 +321,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         elseif #package:versions() > 0 then -- select version?
             version, source = try { function () return semver.select(require_version, package:versions()) end }
         end
-        if not version and has_giturl and not require_version:find('.', 1, true) then -- select branch?
+        if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branch"
         end
         if not version then
