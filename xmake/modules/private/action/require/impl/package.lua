@@ -806,7 +806,7 @@ function _load_packages(requires, opt)
                     package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-                    package._LINKDEPS = table.unique(_sort_packagedeps(package, true))
+                    package._LINKDEPS = table.reverse_unique(_sort_packagedeps(package, true))
                 end
             end
 
