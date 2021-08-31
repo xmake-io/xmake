@@ -41,6 +41,22 @@ rule("vala.build")
             end
             target:data_set("vala.vapifile", vapifile)
         end
+
+        -- get header file
+        local headerfile = target:data("vala.headerfile")
+        if not headerfile then
+            local headername = target:values("vala.header")
+            if headername then
+                headerfile = path.join(target:targetdir(), headername)
+            else
+                headerfile = path.join(target:targetdir(), target:name() .. ".h")
+            end
+            target:data_set("vala.headerfile", headerfile)
+        end
+        if headerfile then
+            target:add("headerfiles", headerfile)
+            target:add("sysincludedirs", path.directory(headerfile), {public = true})
+        end
     end)
     before_buildcmd_file(function (target, batchcmds, sourcefile_vala, opt)
 
@@ -80,6 +96,11 @@ rule("vala.build")
             local vapifile = target:data("vala.vapifile")
             if vapifile then
                 table.insert(argv, "--vapi=" .. vapifile)
+            end
+            local headerfile = target:data("vala.headerfile")
+            if headerfile then
+                table.insert(argv, "-H")
+                table.insert(argv, headerfile)
             end
         end
         table.insert(argv, sourcefile_vala)
