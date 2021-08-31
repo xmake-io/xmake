@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#1618](https://github.com/xmake-io/xmake/issues/1618): Improve vala to support to generate libraries and bindings
+
 ## v2.5.7
 
 ### New features
@@ -1059,6 +1063,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#1618](https://github.com/xmake-io/xmake/issues/1618): 改进 vala 支持构建动态库和静态库程序
 
 ## v2.5.7
 
