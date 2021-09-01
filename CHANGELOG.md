@@ -5,6 +5,8 @@
 ### Change
 
 * [#1618](https://github.com/xmake-io/xmake/issues/1618): Improve vala to support to generate libraries and bindings
+* Improve Qt rules to support Qt 4.x
+* Improve `set_symbols("debug")` to generate pdb file for clang on windows
 
 ## v2.5.7
 
@@ -1067,6 +1069,8 @@
 ### 改进
 
 * [#1618](https://github.com/xmake-io/xmake/issues/1618): 改进 vala 支持构建动态库和静态库程序
+* 改进 Qt 规则去支持 Qt 4.x
+* 改进 `set_symbols("debug")` 支持 clang/windows 生成 pdb 文件
 
 ## v2.5.7
 
