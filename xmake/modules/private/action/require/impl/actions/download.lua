@@ -66,7 +66,6 @@ function _checkout(package, url, sourcedir, url_alias)
     local longpaths = package:policy("platform.longpaths")
 
     -- download package from branches?
-    url = proxy.mirror(url) or url
     packagedir = path.join(sourcedir .. ".tmp", package:name())
     if package:branch() then
 
@@ -103,11 +102,6 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- get package file
     local packagefile = url_filename(url)
-
-    -- use proxy url?
-    if not os.isfile(url) then
-        url = proxy.mirror(url) or url
-    end
 
     -- get sourcehash from the given url
     --
@@ -229,6 +223,11 @@ function main(package)
 
         -- filter url
         url = filter.handle(url, package)
+
+        -- use proxy url?
+        if not os.isfile(url) then
+            url = proxy.mirror(url) or url
+        end
 
         -- download url
         ok = try
