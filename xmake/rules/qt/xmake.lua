@@ -140,6 +140,9 @@ rule("qt.widgetapp_static")
         -- laod some basic plugins and frameworks
         local plugins = {}
         local frameworks = {"QtGui", "QtWidgets", "QtCore"}
+        if qt_sdkver and qt_sdkver:lt("5.0") then
+            frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
+        end
         if target:is_plat("macosx") then
             plugins.QCocoaIntegrationPlugin = {linkdirs = "plugins/platforms", links = {"qcocoa", "cups"}}
             table.join2(frameworks, QtPlatformSupport, "QtWidgets")
