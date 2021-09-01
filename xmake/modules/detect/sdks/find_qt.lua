@@ -174,7 +174,7 @@ function _find_qt(sdkdir, sdkver)
     local libdir = qtenvs.QT_INSTALL_LIBS
     local pluginsdir = qtenvs.QT_INSTALL_PLUGINS
     local includedir = qtenvs.QT_INSTALL_HEADERS
-    local mkspecsdir = path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
+    local mkspecsdir = qtenvs.QMAKE_MKSPECS or path.join(qtenvs.QT_INSTALL_ARCHDATA, "mkspecs")
     return {sdkdir = sdkdir, bindir = bindir, libexecdir = libexecdir, libdir = libdir, includedir = includedir, qmldir = qmldir, pluginsdir = pluginsdir, mkspecsdir = mkspecsdir, sdkver = sdkver}
 end
 
