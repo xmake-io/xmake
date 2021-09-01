@@ -87,7 +87,20 @@ rule("qt.widgetapp")
     end)
 
     on_config(function (target)
-        import("load")(target, {gui = true, frameworks = {"QtGui", "QtWidgets", "QtCore"}})
+        
+        -- get qt sdk version
+        local qt = target:data("qt")
+        local qt_sdkver = nil
+        if qt.sdkver then
+            import("core.base.semver")
+            qt_sdkver = semver.new(qt.sdkver)
+        end
+
+        local frameworks = {"QtGui", "QtWidgets", "QtCore"}
+        if qt_sdkver and qt_sdkver:lt("5.0") then
+            frameworks = {"QtGui", "QtCore"} -- qt4.x has not QtWidgets, it is in QtGui
+        end
+        import("load")(target, {gui = true, frameworks = frameworks})
     end)
 
     -- deploy application
