@@ -124,3 +124,16 @@ function nf_warning(self, level)
     }
     return maps[level]
 end
+
+-- make the symbol flag
+function nf_symbol(self, level)
+    local kind = self:kind()
+    if kind == "ld" or kind == "sh" then
+        -- clang/windows need add `-g` to linker to generate pdb symbol file
+        if self:plat() == "windows" and level == "debug" then
+            return "-g"
+        end
+    else
+        return _super.nf_symbol(self, level)
+    end
+end
