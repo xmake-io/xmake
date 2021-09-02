@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#388](https://github.com/xmake-io/xmake/issues/388): Pascal Language Support
+
 ### Change
 
 * [#1618](https://github.com/xmake-io/xmake/issues/1618): Improve vala to support to generate libraries and bindings
@@ -1065,6 +1069,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#388](https://github.com/xmake-io/xmake/issues/388): Pascal 语言支持，可以使用 fpc 来编译 free pascal
 
 ### 改进
 
