@@ -25,22 +25,17 @@ language("pascal")
     set_targetkinds {binary = "pcld", static = "pcar", shared = "pcsh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
     set_langkinds   {pascal = "pc"}
-    set_mixingkinds("pc", "cc", "cxx", "as")
+    set_mixingkinds("pc")
 
     on_load("load")
     on_check_main("check_main")
 
     set_nameflags {
         object = {
-            "config.includedirs"
-        ,   "target.symbols"
+            "target.symbols"
         ,   "target.warnings"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
-        ,   "target.includedirs"
-        ,   "toolchain.includedirs"
-        ,   "target.sysincludedirs"
-        ,   "toolchain.sysincludedirs"
         }
     ,   binary = {
             "config.linkdirs"
@@ -52,6 +47,8 @@ language("pascal")
         ,   "toolchain.rpathdirs"
         ,   "config.links"
         ,   "target.links"
+        ,   "target.frameworks"
+        ,   "target.frameworkdirs"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
@@ -65,14 +62,12 @@ language("pascal")
         ,   "toolchain.linkdirs"
         ,   "config.links"
         ,   "target.links"
+        ,   "target.frameworks"
+        ,   "target.frameworkdirs"
         ,   "toolchain.links"
         ,   "config.syslinks"
         ,   "target.syslinks"
         ,   "toolchain.syslinks"
-        }
-    ,   static = {
-            "target.strip"
-        ,   "target.symbols"
         }
     }
 
@@ -80,17 +75,16 @@ language("pascal")
                 config =
                 {
                     {category = "Cross Complation Configuration/Compiler Configuration"          }
-                ,   {nil, "pc",         "kv", nil,          "The Pascal Compiler"               }
+                ,   {nil, "pc",         "kv", nil,          "The Pascal Compiler"                }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"            }
-                ,   {nil, "pcld",       "kv", nil,          "The Pascal Linker"                 }
-                ,   {nil, "pcsh",       "kv", nil,          "The Pascal Shared Library Linker"  }
+                ,   {nil, "pcld",       "kv", nil,          "The Pascal Linker"                  }
+                ,   {nil, "pcsh",       "kv", nil,          "The Pascal Shared Library Linker"   }
 
                 ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"     }
                 ,   {nil, "links",      "kv", nil,          "The Link Libraries"                 }
                 ,   {nil, "syslinks",   "kv", nil,          "The System Link Libraries"          }
                 ,   {nil, "linkdirs",   "kv", nil,          "The Link Search Directories"        }
-                ,   {nil, "includedirs","kv", nil,          "The Include Search Directories"     }
                 }
             }
 

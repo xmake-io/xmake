@@ -23,6 +23,7 @@ function _get_apis()
     apis.values = {
         -- target.add_xxx
         "target.add_links"
+    ,   "target.add_frameworks"
     ,   "target.add_syslinks"
     ,   "target.add_pcflags"
     ,   "target.add_ldflags"
@@ -46,8 +47,6 @@ function _get_apis()
     ,   "package.add_shflags"
     ,   "package.add_rpathdirs"
     ,   "package.add_linkdirs"
-    ,   "package.add_includedirs"
-    ,   "package.add_sysincludedirs"
         -- toolchain.add_xxx
     ,   "toolchain.add_links"
     ,   "toolchain.add_syslinks"
@@ -57,18 +56,13 @@ function _get_apis()
     ,   "toolchain.add_shflags"
     ,   "toolchain.add_rpathdirs"
     ,   "toolchain.add_linkdirs"
-    ,   "toolchain.add_includedirs"
-    ,   "toolchain.add_sysincludedirs"
     }
     apis.paths = {
         -- target.add_xxx
         "target.add_linkdirs"
-    ,   "target.add_includedirs"
-    ,   "target.add_sysincludedirs"
+    ,   "target.add_frameworkdirs"
         -- option.add_xxx
     ,   "option.add_linkdirs"
-    ,   "option.add_includedirs"
-    ,   "option.add_sysincludedirs"
     }
     return apis
 end

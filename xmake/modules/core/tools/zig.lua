@@ -55,7 +55,6 @@ function nf_optimize(self, level)
     {
         none       = "-O Debug"
     ,   fast       = "-O ReleaseSafe"
-    ,   aggressive = "-O ReleaseFast"
     ,   fastest    = "-O ReleaseFast"
     ,   smallest   = "-O ReleaseSmall"
     ,   aggressive = "-O ReleaseFast"

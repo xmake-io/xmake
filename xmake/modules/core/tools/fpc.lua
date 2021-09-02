@@ -29,10 +29,33 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
+    local maps =
+    {
+        none       = "-O-"
+    ,   fast       = "-O1"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-O2"
+    ,   aggressive = "-O4"
+    }
+    return maps[level]
+end
+
+-- make the strip flag
+function nf_strip(self, level)
+    if level == "all" then
+        return "-Xs"
+    end
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
+    if level == "debug" and self:kind() == "pc" then
+        if self:plat() == "windows" then
+            return {"-gw3", "-WN"}
+        else
+            return "-gw3"
+        end
+    end
 end
 
 -- make the link flag
@@ -48,6 +71,27 @@ end
 -- make the linkdir flag
 function nf_linkdir(self, dir)
     return {"-k-L" .. dir}
+end
+
+-- make the rpathdir flag
+function nf_rpathdir(self, dir)
+    dir = path.translate(dir)
+    if self:has_flags("-k,-rpath=" .. dir, "ldflags") then
+        return {"-k,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+            return maps[name]
+        end))}
+    end
+end
+
+-- make the framework flag
+function nf_framework(self, framework)
+    return {"-k-framework", framework}
+end
+
+-- make the frameworkdir flag
+function nf_frameworkdir(self, frameworkdir)
+    return {"-k-F", path.translate(frameworkdir)}
 end
 
 -- make the build arguments list
