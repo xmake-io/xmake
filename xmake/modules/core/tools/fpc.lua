@@ -22,61 +22,32 @@
 import("core.base.option")
 import("core.project.config")
 import("core.project.project")
-import("core.project.target")
 
 -- init it
 function init(self)
-end
-
--- make the strip flag
-function nf_strip(self, level)
-end
-
--- make the define flag
-function nf_define(self, macro)
-    return "-D" .. macro
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
 end
 
--- make the link flag
-function nf_link(self, lib)
-    return "-l" .. lib
-end
-
--- make the syslink flag
-function nf_syslink(self, lib)
-    return nf_link(self, lib)
+-- make the symbol flag
+function nf_symbol(self, level)
 end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L", dir}
+    return {"-L" .. dir}
 end
 
--- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    local argv = {}
-    return self:program(), argv
+-- make the build arguments list
+function buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    return self:program(), table.join(flags, "-o" .. targetfile, sourcefiles)
 end
 
--- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
+-- build the target file
+function build(self, sourcefiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
-end
-
--- make the compile arguments list
-function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-Sd", "-Cn", flags, "-FE" .. path.directory(objectfile), sourcefile)
-end
-
--- compile the source file
-function compile(self, sourcefile, objectfile, dependinfo, flags)
-    os.mkdir(path.directory(objectfile))
-    os.runv(compargv(self, sourcefile, objectfile, flags))
-    os.mv(path.join(path.directory(objectfile), path.basename(sourcefile) .. ".o"), objectfile)
+    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
 end
 

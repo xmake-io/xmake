@@ -21,13 +21,7 @@
 -- define rule: pascal.build
 rule("pascal.build")
     set_sourcekinds("pc")
-    on_load(function (target)
-        -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        target:set("policy", "build.across_targets_in_parallel", false)
-    end)
-    on_build_files(function (target, sourcebatch, opt)
-        import("private.action.build.object").build(target, sourcebatch, opt)
-    end)
+    on_build("build.target")
 
 -- define rule: pascal
 rule("pascal")
@@ -37,10 +31,3 @@ rule("pascal")
 
     -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")
-
-    -- support `add_files("src/*.o")` and `add_files("src/*.a")` to merge object and archive files to target
-    add_deps("utils.merge.object", "utils.merge.archive")
-
-    -- we attempt to extract symbols to the independent file and
-    -- strip self-target binary if `set_symbols("debug")` and `set_strip("all")` are enabled
-    add_deps("utils.symbols.extract")

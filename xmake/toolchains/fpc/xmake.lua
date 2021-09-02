@@ -27,9 +27,12 @@ toolchain("fpc")
 
     -- set toolset
     set_toolset("pc",   "$(env PC)", "fpc")
---    set_toolset("pcld", "$(env PC)", "fpc")
---    set_toolset("pcsh", "$(env PC)", "fpc")
+    set_toolset("pcld", "$(env PC)", "fpc")
+    set_toolset("pcsh", "$(env PC)", "fpc")
+    set_toolset("pcar", "$(env PC)", "fpc")
 
     -- on load
     on_load(function (toolchain)
+        toolchain:set("pcshflags", "")
+        toolchain:set("pcldflags", "")
     end)
