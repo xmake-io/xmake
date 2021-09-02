@@ -25,6 +25,7 @@ import("core.project.project")
 
 -- init it
 function init(self)
+    self:set("pcarflags", "-Xt")
 end
 
 -- make the optimize flag
