@@ -26,22 +26,10 @@ import("core.project.target")
 
 -- init it
 function init(self)
-
-    -- init shflags
-    self:set("zcshflags", "-dynamic", "-fPIC")
-
-    -- init zcflags for the kind: shared
-    self:set("shared.zcflags", "-fPIC")
 end
 
 -- make the strip flag
 function nf_strip(self, level)
-    local maps =
-    {
-        debug       = "--strip"
-    ,   all         = "--strip"
-    }
-    return maps[level]
 end
 
 -- make the define flag
@@ -51,16 +39,6 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-    local maps =
-    {
-        none       = "-O Debug"
-    ,   fast       = "-O ReleaseSafe"
-    ,   aggressive = "-O ReleaseFast"
-    ,   fastest    = "-O ReleaseFast"
-    ,   smallest   = "-O ReleaseSmall"
-    ,   aggressive = "-O ReleaseFast"
-    }
-    return maps[level]
 end
 
 -- make the link flag
@@ -78,65 +56,27 @@ function nf_linkdir(self, dir)
     return {"-L", dir}
 end
 
--- make the framework flag
-function nf_framework(self, framework)
-    return {"-framework", framework}
-end
-
--- make the frameworkdir flag
-function nf_frameworkdir(self, frameworkdir)
-    return {"-F", path.translate(frameworkdir)}
-end
-
--- make the rpathdir flag
-function nf_rpathdir(self, dir)
-    dir = path.translate(dir)
-    if is_plat("macosx") then
-        return {"-rpath", (dir:gsub("%$ORIGIN", "@loader_path"))}
-    else
-        return {"-rpath", (dir:gsub("@[%w_]+", function (name)
-            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
-            return maps[name]
-        end))}
-    end
-end
-
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
     local argv = {}
-    if targetkind == "binary" then
-        table.insert(argv, "build-exe")
-    elseif targetkind == "static" or targetkind == "shared" then
-        table.insert(argv, "build-lib")
-    else
-        raise("unknown target kind(%s)!", targetkind)
-    end
-    table.join2(argv, flags, "-femit-bin=" .. targetfile, objectfiles)
     return self:program(), argv
 end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("build-obj", flags, "-femit-bin=" .. objectfile, sourcefile)
+    return self:program(), table.join("-Sd", "-Cn", flags, "-FE" .. path.directory(objectfile), sourcefile)
 end
 
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
-    -- compile it
     os.runv(compargv(self, sourcefile, objectfile, flags))
+    os.mv(path.join(path.directory(objectfile), path.basename(sourcefile) .. ".o"), objectfile)
 end
 
