@@ -1,7 +1,7 @@
 uses strings;
 
 function SubStr(const CString: PChar; FromPos, ToPos: longint): PChar;
-  cdecl; external 'subs';
+  cdecl; external 'foo';
 
 var
   s: PChar;

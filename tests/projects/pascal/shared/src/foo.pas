@@ -1,4 +1,4 @@
-library subs;
+library foo;
 
 function SubStr(CString: PChar;FromPos,ToPos: Longint): PChar; cdecl;
 

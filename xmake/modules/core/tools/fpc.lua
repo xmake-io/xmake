@@ -76,8 +76,8 @@ end
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)
-    if self:has_flags("-k,-rpath=" .. dir, "ldflags") then
-        return {"-k,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+    if self:has_flags("-k-rpath=" .. dir, "ldflags") then
+        return {"-k-rpath=" .. (dir:gsub("@[%w_]+", function (name)
             local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
             return maps[name]
         end))}
