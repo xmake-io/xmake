@@ -33,6 +33,6 @@ toolchain("fpc")
 
     -- on load
     on_load(function (toolchain)
-        toolchain:set("pcshflags", "")
-        toolchain:set("pcldflags", "")
+        toolchain:set("pcshflags", "-Sd")
+        toolchain:set("pcldflags", "-Sd")
     end)

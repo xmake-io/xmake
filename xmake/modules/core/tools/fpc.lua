@@ -35,9 +35,19 @@ end
 function nf_symbol(self, level)
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    return "-k-l" .. lib
+end
+
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L" .. dir}
+    return {"-k-L" .. dir}
 end
 
 -- make the build arguments list
