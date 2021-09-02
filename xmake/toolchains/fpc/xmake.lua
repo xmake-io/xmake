@@ -25,9 +25,10 @@ toolchain("fpc")
     set_homepage("https://www.freepascal.org/")
     set_description("Free Pascal Programming Language Compiler")
 
-    -- on check
-    on_check(function (toolchain)
-    end)
+    -- set toolset
+    set_toolset("pc",   "$(env PC)", "fpc")
+    set_toolset("pcld", "$(env PC)", "fpc")
+    set_toolset("pcsh", "$(env PC)", "fpc")
 
     -- on load
     on_load(function (toolchain)
