@@ -223,6 +223,7 @@ emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
 muslcc        The musl-based cross-compilation toolchains
+fpc           Free Pascal Programming Language Compiler
 ```
 
 ## Supported Languages
@@ -239,6 +240,7 @@ muslcc        The musl-based cross-compilation toolchains
 * Cuda
 * Zig
 * Vala
+* Pascal
 
 ## Support Features
 
