@@ -56,7 +56,7 @@ function _patch_pkgconfig(package)
     -- get libs
     local libs = ""
     for _, linkdir in ipairs(fetchinfo.linkdirs) do
-        libs = libs .. "-L" .. linkdir
+        libs = libs .. " -L" .. linkdir
     end
     libs = libs .. " -L${libdir}"
     for _, link in ipairs(fetchinfo.links) do
@@ -69,7 +69,7 @@ function _patch_pkgconfig(package)
     -- cflags
     local cflags = ""
     for _, includedir in ipairs(fetchinfo.includedirs) do
-        cflags = cflags .. "-I" .. includedir
+        cflags = cflags .. " -I" .. includedir
     end
     cflags = cflags .. " -I${includedir}"
 
