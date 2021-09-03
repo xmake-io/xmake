@@ -1167,21 +1167,21 @@ function _instance:fileconfig(sourcefile)
 
             -- match source files
             local results = os.match(filepath)
-            if #results == 0 then
+            if #results == 0 and not fileconfig.always_added then
                 local sourceinfo = (self:get("__sourceinfo_files") or {})[filepath] or {}
                 utils.warning("cannot match %s(%s).add_files(\"%s\") at %s:%d", self:type(), self:name(), filepath, sourceinfo.file or "", sourceinfo.line or -1)
             end
 
             -- process source files
             for _, file in ipairs(results) do
-
-                -- convert to the relative path
                 if path.is_absolute(file) then
                     file = path.relative(file, os.projectdir())
                 end
-
-                -- save it
                 filesconfig[file] = fileconfig
+            end
+            -- we also need support always_added, @see https://github.com/xmake-io/xmake/issues/1634
+            if #results == 0 and fileconfig.always_added then
+                filesconfig[filepath] = fileconfig
             end
         end
         self._FILESCONFIG = filesconfig
