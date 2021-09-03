@@ -1,23 +1,18 @@
 library foo;
 
-function SubStr(CString: PChar;FromPos,ToPos: Longint): PChar; cdecl;
+{$mode objfpc}{$H+}
 
-var
-  Length: Integer;
-
+function fib(n : Int64) : Int64; cdecl;
 begin
-  Length := StrLen(CString);
-  SubStr := CString + Length;
-  if (FromPos > 0) and (ToPos >= FromPos) then
+  if n > 1 then
   begin
-    if Length >= FromPos then
-      SubStr := CString + FromPos;
-    if Length > ToPos then
-    CString[ToPos+1] := #0;
-  end;
+      Result := fib(n - 1) + fib(n - 2);
+  end
+  else
+        Result := 1;
 end;
 
 exports
-  SubStr;
-
+ fib;
 end.
+

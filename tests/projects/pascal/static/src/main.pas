@@ -1,14 +1,12 @@
-uses strings;
+program hello;
 
-function SubStr(const CString: PChar; FromPos, ToPos: longint): PChar;
+function fib(n: Int64): Int64;
   cdecl; external 'foo';
 
 var
-  s: PChar;
-  FromPos, ToPos: Integer;
+  Value: Integer;
 begin
-  s := strnew('TestMe');
-  FromPos := 2;
-  ToPos := 3;
-  WriteLn(SubStr(s, FromPos, ToPos));
+  Value := 5;
+  WriteLn(fib(Value));
 end.
+
