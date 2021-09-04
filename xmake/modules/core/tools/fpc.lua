@@ -26,6 +26,9 @@ import("core.project.project")
 -- init it
 function init(self)
     self:set("pcarflags", "-Xt")
+    if not is_plat("windows", "mingw") then
+        self:add("shared.pcflags", "-Cg")
+    end
 end
 
 -- make the optimize flag
