@@ -24,7 +24,7 @@ import("core.base.option")
 -- merge *.a archive libraries for ar
 function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
     opt = opt or {}
-    if target:is_plat("macosx") then
+    if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
         os.vrunv("libtool", table.join("-static", "-o", outputfile, libraryfiles))
     else
         os.vrunv(program, table.join("crsT", outputfile, libraryfiles))
