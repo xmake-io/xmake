@@ -22,12 +22,17 @@
 import("core.base.option")
 
 -- merge *.a archive libraries for ar
-function _merge_for_ar(program, outputfile, libraryfiles, opt)
+function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
     opt = opt or {}
+    if target:is_plat("macosx") then
+        os.vrunv("libtool", table.join("-static", "-o", outputfile, libraryfiles))
+    else
+        os.vrunv(program, table.join("crsT", outputfile, libraryfiles))
+    end
 end
 
 -- merge *.a archive libraries for msvc/lib.exe
-function _merge_for_msvclib(program, outputfile, libraryfiles, opt)
+function _merge_for_msvclib(target, program, outputfile, libraryfiles, opt)
     opt = opt or {}
 end
 
@@ -36,7 +41,7 @@ function main(target, outputfile, libraryfiles)
     local program, toolname = target:tool("ar")
     if program and toolname then
         if toolname:find("ar") then
-            _merge_for_ar(program, outputfile, libraryfiles)
+            _merge_for_ar(target, program, outputfile, libraryfiles)
         elseif toolname == "link" and target:is_plat("windows") then
             local msvc
             for _, toolchain_inst in ipairs(target:toolchains()) do
@@ -45,7 +50,7 @@ function main(target, outputfile, libraryfiles)
                     break
                 end
             end
-            _merge_for_msvclib((program:gsub("link%.exe", "lib.exe")), outputfile, libraryfiles, {envs = msvc and msvc:runenvs()})
+            _merge_for_msvclib(target, (program:gsub("link%.exe", "lib.exe")), outputfile, libraryfiles, {envs = msvc and msvc:runenvs()})
         else
             raise("cannot merge (%s): unknown ar tool %s!", table.concat(libraryfiles, ", "), toolname)
         end
