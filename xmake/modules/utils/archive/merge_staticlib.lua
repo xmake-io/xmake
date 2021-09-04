@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("private.tools.vstool")
 
 -- merge *.a archive libraries for ar
 function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
@@ -44,6 +45,7 @@ end
 -- merge *.a archive libraries for msvc/lib.exe
 function _merge_for_msvclib(target, program, outputfile, libraryfiles, opt)
     opt = opt or {}
+    vstool.runv(program, table.join("-nologo", "-out:" .. outputfile, libraryfiles), {envs = opt.runenvs})
 end
 
 -- merge *.a archive libraries
@@ -60,7 +62,7 @@ function main(target, outputfile, libraryfiles)
                     break
                 end
             end
-            _merge_for_msvclib(target, (program:gsub("link%.exe", "lib.exe")), outputfile, libraryfiles, {envs = msvc and msvc:runenvs()})
+            _merge_for_msvclib(target, (program:gsub("link%.exe", "lib.exe")), outputfile, libraryfiles, {runenvs = msvc and msvc:runenvs()})
         else
             raise("cannot merge (%s): unknown ar tool %s!", table.concat(libraryfiles, ", "), toolname)
         end
