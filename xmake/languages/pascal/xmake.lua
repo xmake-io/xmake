@@ -20,7 +20,7 @@
 
 language("pascal")
     add_rules("pascal")
-    set_sourcekinds {pc = {".pas", ".pp"}}
+    set_sourcekinds {pc = {".pas", ".pp", ".ppu", ".lpr"}}
     set_sourceflags {pc = "pcflags"}
     set_targetkinds {binary = "pcld", static = "pcar", shared = "pcsh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
