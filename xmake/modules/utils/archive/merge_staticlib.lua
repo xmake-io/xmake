@@ -27,7 +27,17 @@ function _merge_for_ar(target, program, outputfile, libraryfiles, opt)
     if target:is_plat("macosx", "iphoneos", "watchos", "appletvos") then
         os.vrunv("libtool", table.join("-static", "-o", outputfile, libraryfiles))
     else
-        os.vrunv(program, table.join("crsT", outputfile, libraryfiles))
+        local tmpfile = os.tmpfile()
+        local mrifile = io.open(tmpfile, "w")
+        mrifile:print("create %s", outputfile)
+        for _, libraryfile in ipairs(libraryfiles) do
+            mrifile:print("addlib %s", libraryfile)
+        end
+        mrifile:print("save")
+        mrifile:print("end")
+        mrifile:close()
+        os.vrunv(program, {"-M"}, {stdin = tmpfile})
+        os.rm(tmpfile)
     end
 end
 

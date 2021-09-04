@@ -16,3 +16,6 @@ target("mul")
     add_files("src/mul.c")
     set_policy("build.merge_archive", true)
 
+target("test")
+    add_deps("mul")
+    add_files("src/main.c")

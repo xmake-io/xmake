@@ -40,7 +40,8 @@ rule("utils.merge.archive")
                 if #libraryfiles > 0 then
                     local tmpfile = os.tmpfile() .. path.extension(target:targetfile())
                     merge_staticlib(target, tmpfile, libraryfiles)
-                    os.mv(tmpfile, target:targetfile())
+                    os.cp(tmpfile, target:targetfile())
+                    os.rm(tmpfile)
                 end
             end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles})
         end
