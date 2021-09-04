@@ -221,22 +221,14 @@ function _add_target_compile_options(cmakelists, target)
     if #cflags > 0 or #cxflags > 0 or #cxxflags > 0 or #cuflags > 0 then
         cmakelists:print("target_compile_options(%s PRIVATE", target:name())
         for _, flag in ipairs(cflags) do
-            if compiler.has_flags("c", flag, {target = target}) then
-                cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
-            end
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
         end
         for _, flag in ipairs(cxflags) do
-            if compiler.has_flags("c", flag, {target = target}) then
-                cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
-            end
-            if compiler.has_flags("cxx", flag, {target = target}) then
-                cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
-            end
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:C>:" .. flag .. ">")
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
         for _, flag in ipairs(cxxflags) do
-            if compiler.has_flags("cxx", flag, {target = target}) then
-                cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
-            end
+            cmakelists:print("    $<$<COMPILE_LANGUAGE:CXX>:" .. flag .. ">")
         end
         for _, flag in ipairs(cuflags) do
             cmakelists:print("    $<$<COMPILE_LANGUAGE:CUDA>:" .. flag .. ">")
