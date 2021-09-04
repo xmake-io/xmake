@@ -22,8 +22,8 @@ language("pascal")
     add_rules("pascal")
     set_sourcekinds {pc = {".pas", ".pp", ".ppu", ".lpr"}}
     set_sourceflags {pc = "pcflags"}
-    set_targetkinds {binary = "pcld", static = "pcar", shared = "pcsh"}
-    set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
+    set_targetkinds {binary = "pcld", shared = "pcsh"}
+    set_targetflags {binary = "ldflags", shared = "shflags"}
     set_langkinds   {pascal = "pc"}
     set_mixingkinds("pc")
 
