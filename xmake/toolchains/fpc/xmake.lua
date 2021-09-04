@@ -33,8 +33,8 @@ toolchain("fpc")
 
     -- on load
     on_load(function (toolchain)
-        toolchain:set("pcshflags", "-Sd")
-        toolchain:set("pcldflags", "-Sd")
+        toolchain:set("pcshflags", "")
+        toolchain:set("pcldflags", "")
         if toolchain:is_plat("linux") then
             toolchain:add("pcldflags", "-k-lc")
         end
