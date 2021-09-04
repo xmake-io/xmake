@@ -18,12 +18,32 @@
 -- @file        xmake.lua
 --
 
--- define rule: utils.merge.archive
 rule("utils.merge.archive")
-
-    -- set extensions
     set_extensions(".a", ".lib")
-
-    -- on build file
     on_build_files("merge_archive")
+    after_link(function (target, opt)
+        if target:policy("build.merge_archive") and target:is_static() then
+            import("utils.archive.merge_staticlib")
+            import("core.project.depend")
+            import("private.utils.progress")
+            local libraryfiles = {}
+            for _, dep in ipairs(target:orderdeps()) do
+                if dep:is_static() then
+                    table.insert(libraryfiles, dep:targetfile())
+                end
+            end
+            if #libraryfiles > 0 then
+                table.insert(libraryfiles, target:targetfile())
+            end
+            depend.on_changed(function ()
+                progress.show(opt.progress, "${color.build.target}merging.$(mode) %s", path.filename(target:targetfile()))
+                if #libraryfiles > 0 then
+                    local tmpfile = os.tmpfile() .. path.extension(target:targetfile())
+                    merge_staticlib(target, tmpfile, libraryfiles)
+                    os.cp(tmpfile, target:targetfile())
+                    os.rm(tmpfile)
+                end
+            end, {dependfile = target:dependfile(target:targetfile() .. ".merge_archive"), files = libraryfiles})
+        end
+    end)
 

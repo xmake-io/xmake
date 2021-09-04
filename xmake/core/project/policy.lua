@@ -43,6 +43,8 @@ function policy.policies()
             ["check.target_package_licenses"]    = {description = "Enable check the compatibility of target and package licenses.", default = true, type = "boolean"},
             -- we can compile the source files for each target in parallel
             ["build.across_targets_in_parallel"] = {description = "Enable compile the source files for each target in parallel.", default = true, type = "boolean"},
+            -- merge archive intead of linking for all dependent targets
+            ["build.merge_archive"]              = {description = "Enable merge archive intead of linking for all dependent targets.", default = false, type = "boolean"},
             -- we need enable longpaths when building target or installing package
             ["platform.longpaths"]               = {description = "Enable long paths when building target or installing package on windows.", default = false, type = "boolean"},
             -- lock required packages
