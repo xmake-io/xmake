@@ -21,7 +21,9 @@
 -- install pkg-config/*.pc import files
 rule("utils.install.pkgconfig_importfiles")
     after_install(function (target, opt)
-        import("target.action.install.pkgconfig_importfiles")(target, opt)
+        opt = opt or {}
+        local filename = target:extraconf("rules", "utils.install.pkgconfig_importfiles", "filename")
+        import("target.action.install.pkgconfig_importfiles")(target, table.join(opt, {filename = filename}))
     end)
 
 -- install *.cmake import files
