@@ -30,7 +30,7 @@ import("package.tools.ninja")
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
-    return opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    return opt.jobs or option.get("jobs") or tostring(os.default_njob())
 end
 
 -- translate paths

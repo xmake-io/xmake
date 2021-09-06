@@ -91,7 +91,7 @@ function build(package, configs, opt)
     opt = opt or {}
 
     -- pass configurations
-    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local argv = {"-j" .. njob}
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")

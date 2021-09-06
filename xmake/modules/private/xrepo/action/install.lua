@@ -40,7 +40,7 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo install -f \"vs_runtime=MD\" zlib",
                                        "    - xrepo install -f \"regex=true,thread=true\" boost"},
-        {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+        {'j', "jobs",       "kv", tostring(os.default_njob()),
                                           "Set the number of parallel compilation jobs."},
         {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."},
         {nil, "includes",      "kv", nil, "Includes extra lua configuration files.",

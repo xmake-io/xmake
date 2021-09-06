@@ -86,7 +86,7 @@ end
 function build(package, configs, opt)
     opt = opt or {}
     local buildir = opt.buildir or os.curdir()
-    local njob = opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
+    local njob = opt.jobs or option.get("jobs") or tostring(os.default_njob())
     local scons = assert(find_tool("scons"), "scons not found!")
     local argv = {"-C", buildir, "-j", njob}
     configs = _get_configs(package, configs)

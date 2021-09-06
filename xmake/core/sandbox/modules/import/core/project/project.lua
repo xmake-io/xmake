@@ -110,7 +110,7 @@ function sandbox_core_project.check()
     end
 
     -- check all options
-    local jobs = baseoption.get("jobs") or math.ceil(os.cpuinfo().ncpu * 3 / 2)
+    local jobs = baseoption.get("jobs") or os.default_njob()
     import("private.async.runjobs", {anonymous = true})("check_options", instance:fork(checktask):script(), {total = #options, comax = jobs})
 
     -- save all options to the cache file

@@ -47,7 +47,7 @@ task("build")
                 ,   {nil, "dry-run",    "k",  nil   , "Dry run to build target."                                      }
 
                 ,   {}
-                ,   {'j', "jobs",       "kv", tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2)),
+                ,   {'j', "jobs",       "kv", tostring(os.default_njob()),
                                                       "Set the number of parallel compilation jobs."                  }
                 ,   {nil, "linkjobs",   "kv", nil,    "Set the number of parallel link jobs."                         }
                 ,   {'w', "warning",    "k",  false , "Enable the warnings output."                                   }
