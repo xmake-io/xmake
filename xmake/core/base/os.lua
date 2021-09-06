@@ -1237,6 +1237,21 @@ function os.cpuinfo(name)
     return require("base/cpu").info(name)
 end
 
+-- get the default parallel jobs number
+function os.default_njob()
+    local njob = math.ceil(os.cpuinfo().ncpu * 3 / 2)
+    if os.host() == "windows" and njob > 128 then
+        njob = 128
+    end
+    if njob > 512 then
+        njob = 512
+    end
+    if njob < 1 then
+        njob = 1
+    end
+    return njob
+end
+
 -- read the content of symlink
 function os.readlink(symlink)
     return os._readlink(path.absolute(symlink))
