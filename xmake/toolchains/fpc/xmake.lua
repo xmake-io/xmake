@@ -32,7 +32,11 @@ toolchain("fpc")
 
     -- on load
     on_load(function (toolchain)
-        toolchain:set("pcshflags", "")
-        toolchain:set("pcldflags", "")
-        toolchain:add("syslinks", "c")
+        if toolchain:is_plat("linux") then
+            toolchain:set("pcldflags", "-k-lc")
+            toolchain:set("pcshflags", "-k-lc")
+        else
+            toolchain:set("pcldflags", "")
+            toolchain:set("pcshflags", "")
+        end
     end)
