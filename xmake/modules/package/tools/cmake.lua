@@ -133,9 +133,11 @@ function _get_cflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    local vs_runtime = package:config("vs_runtime")
-    if vs_runtime then
-        table.insert(result, "/" .. vs_runtime)
+    if package:is_plat("windows") then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            table.insert(result, "/" .. vs_runtime)
+        end
     end
     if #result > 0 then
         return os.args(result)
@@ -162,9 +164,11 @@ function _get_cxxflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    local vs_runtime = package:config("vs_runtime")
-    if vs_runtime then
-        table.insert(result, "/" .. vs_runtime)
+    if package:is_plat("windows") then
+        local vs_runtime = package:config("vs_runtime")
+        if vs_runtime then
+            table.insert(result, "/" .. vs_runtime)
+        end
     end
     if #result > 0 then
         return os.args(result)
