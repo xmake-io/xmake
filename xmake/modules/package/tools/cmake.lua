@@ -133,6 +133,10 @@ function _get_cflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
+    local vs_runtime = package:config("vs_runtime")
+    if vs_runtime then
+        table.insert(result, "/" .. vs_runtime)
+    end
     if #result > 0 then
         return os.args(result)
     end
@@ -158,6 +162,10 @@ function _get_cxxflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
+    local vs_runtime = package:config("vs_runtime")
+    if vs_runtime then
+        table.insert(result, "/" .. vs_runtime)
+    end
     if #result > 0 then
         return os.args(result)
     end
@@ -270,12 +278,6 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
     elseif vs_runtime == "MDd" then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
-    end
-    if vs_runtime then
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. '"')
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -739,4 +741,3 @@ function install(package, configs, opt)
     end
     os.cd(oldir)
 end
-
