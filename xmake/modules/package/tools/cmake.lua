@@ -564,7 +564,7 @@ function _build_for_make(package, configs, opt)
         if ndk then
             make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
         end
-        if not os.isfile(make) then
+        if not make or not os.isfile(make) then
             make = "make"
         end
         os.vrunv(make, argv)
@@ -630,7 +630,7 @@ function _install_for_make(package, configs, opt)
         if ndk then
             make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
         end
-        if not os.isfile(make) then
+        if not make or not os.isfile(make) then
             make = "make"
         end
         os.vrunv(make, argv)
