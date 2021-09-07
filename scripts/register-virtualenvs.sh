@@ -39,10 +39,10 @@ function xrepo {
                 fi
                 ;;
             *)
-                "$XMAKE_EXE" lua private.xrepo $@
+                "$XMAKE_EXE" lua private.xrepo "$@"
                 ;;
         esac
     else
-        "$XMAKE_EXE" lua private.xrepo $@
+        "$XMAKE_EXE" lua private.xrepo "$@"
     fi
 }
