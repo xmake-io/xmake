@@ -30,7 +30,7 @@ import("package.tools.ninja")
 
 -- get the number of parallel jobs
 function _get_parallel_njobs(opt)
-    return opt.jobs or option.get("jobs") or tostring(os.default_njob())
+    return opt.jobs or option.get("jobs") or tostring(math.ceil(os.cpuinfo().ncpu * 3 / 2))
 end
 
 -- translate paths
@@ -296,6 +296,12 @@ function _get_configs_for_android(package, configs, opt)
         if ndk_cxxstl then
             table.insert(configs, "-DANDROID_STL=" .. ndk_cxxstl)
         end
+        if is_host("windows") then
+            local make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+            if os.isfile(make) then
+                table.insert(configs, "-DCMAKE_MAKE_PROGRAM=" .. make)
+            end
+        end
     end
     _get_configs_for_generic(package, configs, opt)
 end
@@ -552,6 +558,16 @@ function _build_for_make(package, configs, opt)
         local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
         local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
         os.vrunv(mingw_make, argv)
+    elseif package:is_plat("android") and is_host("windows") then
+        local make
+        local ndk = get_config("ndk")
+        if ndk then
+            make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+        end
+        if not os.isfile(make) then
+            make = "make"
+        end
+        os.vrunv(make, argv)
     else
         os.vrunv("make", argv)
     end
@@ -608,6 +624,17 @@ function _install_for_make(package, configs, opt)
         local mingw_make = path.join(mingw, "bin", "mingw32-make.exe")
         os.vrunv(mingw_make, argv)
         os.vrunv(mingw_make, {"install"})
+    elseif package:is_plat("android") and is_host("windows") then
+        local make
+        local ndk = get_config("ndk")
+        if ndk then
+            make = path.join(ndk, "prebuilt", "windows-x86_64", "bin", "make.exe")
+        end
+        if not os.isfile(make) then
+            make = "make"
+        end
+        os.vrunv(make, argv)
+        os.vrunv(make, {"install"})
     else
         os.vrunv("make", argv)
         os.vrunv("make", {"install"})
