@@ -275,10 +275,10 @@ function _get_configs_for_windows(package, configs, opt)
         -- CMake default MSVC flags as of 3.21.2
         local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
         local default_release_flags = "/O2 /Ob2 /DNDEBUG"
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. ' ' .. default_debug_flags .. '"')
-        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. ' ' .. default_release_flags .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. ' ' .. default_debug_flags .. '"')
-        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. ' ' .. default_release_flags .. '"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG=/' .. vs_runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE=/' .. vs_runtime .. ' ' .. default_release_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG=/' .. vs_runtime .. ' ' .. default_debug_flags)
+        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE=/' .. vs_runtime .. ' ' .. default_release_flags)
     end
     _get_configs_for_generic(package, configs, opt)
 end
