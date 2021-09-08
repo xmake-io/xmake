@@ -133,12 +133,6 @@ function _get_cflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    if package:is_plat("windows") then
-        local vs_runtime = package:config("vs_runtime")
-        if vs_runtime then
-            table.insert(result, "/" .. vs_runtime)
-        end
-    end
     if #result > 0 then
         return os.args(result)
     end
@@ -164,12 +158,6 @@ function _get_cxxflags(package, opt)
         table.join2(result, opt.cxflags)
     end
     table.join2(result, _get_cflags_from_packagedeps(package, opt))
-    if package:is_plat("windows") then
-        local vs_runtime = package:config("vs_runtime")
-        if vs_runtime then
-            table.insert(result, "/" .. vs_runtime)
-        end
-    end
     if #result > 0 then
         return os.args(result)
     end
@@ -282,6 +270,15 @@ function _get_configs_for_windows(package, configs, opt)
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL")
     elseif vs_runtime == "MDd" then
         table.insert(configs, "-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDebugDLL")
+    end
+    if vs_runtime then
+        -- CMake default MSVC flags as of 3.21.2
+        local default_debug_flags = "/Zi /Ob0 /Od /RTC1"
+        local default_release_flags = "/O2 /Ob2 /DNDEBUG"
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_DEBUG="/' .. vs_runtime .. ' ' .. default_debug_flags .. '"')
+        table.insert(configs, '-DCMAKE_CXX_FLAGS_RELEASE="/' .. vs_runtime .. ' ' .. default_release_flags .. '"')
+        table.insert(configs, '-DCMAKE_C_FLAGS_DEBUG="/' .. vs_runtime .. ' ' .. default_debug_flags .. '"')
+        table.insert(configs, '-DCMAKE_C_FLAGS_RELEASE="/' .. vs_runtime .. ' ' .. default_release_flags .. '"')
     end
     _get_configs_for_generic(package, configs, opt)
 end
