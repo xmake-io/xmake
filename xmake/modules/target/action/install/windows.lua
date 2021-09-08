@@ -40,13 +40,18 @@ end
 
 -- install shared libraries for package
 function _install_shared_for_package(target, pkg, outputdir)
+    _g.installed_dllfiles = _g.installed_dllfiles or {}
     for _, dllpath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if dllpath:endswith(".dll") then
-            local dllname = path.filename(dllpath)
-            if os.isfile(path.join(outputdir, dllname)) then
-                wprint("'%s' already exists in install dir, overwriting it from package(%s).", dllname, pkg:name())
+            -- prevent packages using the same libfiles from overwriting each other
+            if not _g.installed_dllfiles[dllpath] then
+                local dllname = path.filename(dllpath)
+                if os.isfile(path.join(outputdir, dllname)) then
+                    wprint("'%s' already exists in install dir, overwriting it from package(%s).", dllname, pkg:name())
+                end
+                os.vcp(dllpath, outputdir)
+                _g.installed_dllfiles[dllpath] = true
             end
-            os.vcp(dllpath, outputdir)
         end
     end
 end
@@ -74,11 +79,15 @@ function install_binary(target, opt)
 
     -- install the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
+    _g.installed_dllfiles = _g.installed_dllfiles or {}
     for _, dep in ipairs(target:orderdeps()) do
         if dep:kind() == "shared" then
             local depfile = dep:targetfile()
             if os.isfile(depfile) then
-                os.vcp(depfile, binarydir)
+                if not _g.installed_dllfiles[depfile] then
+                    os.vcp(depfile, binarydir)
+                    _g.installed_dllfiles[depfile] = true
+                end
             end
         end
         -- install all shared libraries in packages in all deps
