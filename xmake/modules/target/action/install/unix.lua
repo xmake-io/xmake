@@ -37,15 +37,23 @@ end
 
 -- install shared libraries for package
 function _install_shared_for_package(target, pkg, outputdir)
+    _g.installed_libfiles = _g.installed_libfiles or {}
     for _, sopath in ipairs(table.wrap(pkg:get("libfiles"))) do
         if sopath:endswith(".so") or sopath:match(".+%.so%..+$") or sopath:endswith(".dylib") then
-            local soname = path.filename(sopath)
-            if os.isfile(path.join(outputdir, soname)) then
-                wprint("'%s' already exists in install dir, overwriting it from package(%s).", soname, pkg:name())
+            -- prevent packages using the same system libfiles from overwriting each other
+            if not _g.installed_libfiles[sopath] then
+                local soname = path.filename(sopath)
+                local targetname = path.join(outputdir, soname)
+                if os.isfile(targetname) then
+                    wprint("'%s' already exists in install dir, overwriting it from package(%s).", soname, pkg:name())
+                    -- rm because symlink cannot overwrite existing file
+                    os.rm(targetname)
+                end
+                -- we need reserve symlink
+                -- @see https://github.com/xmake-io/xmake/issues/1582
+                os.vcp(sopath, outputdir, {symlink = true})
+                _g.installed_libfiles[sopath] = true
             end
-            -- we need reserve symlink
-            -- @see https://github.com/xmake-io/xmake/issues/1582
-            os.vcp(sopath, outputdir, {symlink = true})
         end
     end
 end
