@@ -1771,9 +1771,20 @@ end
 
 -- the install directory
 function package.installdir()
+    local empty_or_self = function (s)
+        if s == "" 
+            then return nil
+            else return s
+        end
+    end
+
     local installdir = package._INSTALLDIR
+
     if not installdir then
-        installdir = os.getenv("XMAKE_PKG_INSTALLDIR") or global.get("pkg_installdir") or path.join(global.directory(), "packages")
+        installdir = empty_or_self(os.getenv("XMAKE_PKG_INSTALLDIR")) or empty_or_self(global.get("pkg_installdir")) or empty_or_self(path.join(global.directory(), "packages"))
+        if not empty_or_self(installdir) then
+            raise("Unknow error, please report your operating environment to github. You can avoid it temporarily by `export/set` XMAKE_PKG_INSTALLDIR.")
+        end
         package._INSTALLDIR = installdir
     end
     return installdir
