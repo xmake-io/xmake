@@ -22,5 +22,5 @@
 rule("win.sdk.mfc.env")
 
     -- TODO: before load need check of vs's minverion, if defined
-    before_load(function (target)
+    on_load(function (target)
     end)

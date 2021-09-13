@@ -25,7 +25,7 @@ rule("xcode.application")
     add_deps("xcode.info_plist", "xcode.storyboard", "xcode.xcassets", "xcode.metal")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load("load")
+    on_load("load")
 
     -- build *.app
     after_build("build")

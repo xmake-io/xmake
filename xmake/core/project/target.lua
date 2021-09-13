@@ -105,17 +105,6 @@ function _instance:_load_rules(suffix)
     return true
 end
 
--- do before_load target and rules
-function _instance:_load_before()
-
-    -- do before_load with target rules
-    local ok, errors = self:_load_rules("before")
-    if not ok then
-        return false, errors
-    end
-    return true
-end
-
 -- do load target and rules
 function _instance:_load()
 
