@@ -133,6 +133,9 @@ function _instance:_load()
             return false, errors
         end
     end
+
+    -- mark as loaded
+    self._LOADED = true
     return true
 end
 
@@ -141,6 +144,15 @@ function _instance:_load_after()
 
     -- enter the environments of the target packages
     local oldenvs = os.addenvs(self:pkgenvs())
+
+    -- do load for target
+    local after_load = self:script("load_after")
+    if after_load then
+        local ok, errors = sandbox.load(after_load, self)
+        if not ok then
+            return false, errors
+        end
+    end
 
     -- do after_load with target rules
     local ok, errors = self:_load_rules("after")
@@ -608,11 +620,17 @@ end
 
 -- get target deps
 function _instance:deps()
+    if not self._LOADED then
+        os.raise("please call target:deps() or target:dep() in after_load()!")
+    end
     return self._DEPS
 end
 
 -- get target ordered deps
 function _instance:orderdeps()
+    if not self._LOADED then
+        os.raise("please call target:orderdeps() in after_load()!")
+    end
     return self._ORDERDEPS
 end
 
@@ -2003,6 +2021,7 @@ function target.apis()
         ,   "target.before_uninstall"
             -- target.after_xxx
         ,   "target.after_run"
+        ,   "target.after_load"
         ,   "target.after_link"
         ,   "target.after_build"
         ,   "target.after_build_file"
