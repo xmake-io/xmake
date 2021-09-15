@@ -81,7 +81,7 @@ function uninstall_shared(target, opt)
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
-    os.vrm(path.join(librarydir, path.basename(targetfile) .. ".lib"))
+    os.vrm(path.join(librarydir, path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib")))
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)
