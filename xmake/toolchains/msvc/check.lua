@@ -60,6 +60,8 @@ function _check_vsenv(toolchain)
 
                 -- save vcvars
                 toolchain:config_set("vcvars", vcvars)
+                toolchain:config_set("vs_toolset", vcvars.VCToolsVersion)
+                toolchain:config_set("vs_sdkver", vcvars.WindowsSDKVersion)
 
                 -- check compiler
                 local program = nil
