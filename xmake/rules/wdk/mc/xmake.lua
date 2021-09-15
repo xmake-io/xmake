@@ -28,7 +28,7 @@ rule("wdk.mc")
     set_extensions(".mc")
 
     -- before load
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("core.project.config")

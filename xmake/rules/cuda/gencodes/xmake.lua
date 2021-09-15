@@ -34,7 +34,7 @@ rule("cuda.gencodes")
     --                                    if no available device is found, no `-gencode` flags will be added
     --                                    @seealso xmake/modules/lib/detect/find_cudadevices
     --
-    before_load(function (target)
+    on_load(function (target)
 
         -- imports
         import("core.platform.platform")

@@ -26,7 +26,7 @@
 -- @see https://github.com/xmake-io/xmake/issues/1123
 --
 rule("utils.symbols.export_all")
-    before_load(function (target)
+    on_load(function (target)
         -- @note it only supports windows/dll now
         assert(target:is_shared(), 'rule("utils.symbols.export_all"): only for shared target(%s)!', target:name())
         if target:is_plat("windows") then

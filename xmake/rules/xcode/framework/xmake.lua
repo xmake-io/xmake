@@ -25,7 +25,7 @@ rule("xcode.framework")
     add_deps("xcode.info_plist")
 
     -- we must set kind before target.on_load(), may we will use target in on_load()
-    before_load(function (target)
+    on_load(function (target)
 
         -- get framework directory
         local targetdir = target:targetdir()

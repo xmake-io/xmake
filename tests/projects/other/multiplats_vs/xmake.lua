@@ -1,7 +1,7 @@
 add_rules("mode.debug", "mode.release")
 
 rule("vs2015_x86")
-    before_load(function (target)
+    on_load(function (target)
         target:set("arch", "x86")
         target:set("toolchains", "msvc", {vs = "2015"})
     end)

@@ -353,29 +353,6 @@ function project._load_toolchains()
     return toolchains
 end
 
--- load target
-function project._load_target(t, requires)
-
-    -- do before_load() for target and all rules
-    local ok, errors = t:_load_before()
-    if not ok then
-        return false, errors
-    end
-
-    -- do on_load() for target and all rules
-    ok, errors = t:_load()
-    if not ok then
-        return false, errors
-    end
-
-    -- do after_load() for target and all rules
-    ok, errors = t:_load_after()
-    if not ok then
-        return false, errors
-    end
-    return true
-end
-
 -- load targets
 function project._load_targets()
 
@@ -408,11 +385,6 @@ function project._load_targets()
 
     -- load and attach target deps, rules and packages
     for _, t in pairs(targets) do
-
-        -- load deps
-        t._DEPS      = t._DEPS or {}
-        t._ORDERDEPS = t._ORDERDEPS or {}
-        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
 
         -- load rules from target and language
         --
@@ -458,6 +430,18 @@ function project._load_targets()
                 return nil, nil, string.format("unknown rule(%s) in target(%s)!", rulename, t:name())
             end
         end
+
+        -- we need call on_load() before building deps/rules,
+        -- so we can use `target:add("deps", "xxx")` to add deps in on_load
+        ok, errors = t:_load()
+        if not ok then
+            return nil, nil, errors
+        end
+
+        -- load deps
+        t._DEPS      = t._DEPS or {}
+        t._ORDERDEPS = t._ORDERDEPS or {}
+        project._load_deps(t, targets, t._DEPS, t._ORDERDEPS, {t:name()})
     end
 
     -- sort targets for all deps
@@ -467,18 +451,12 @@ function project._load_targets()
         project._sort_targets(targets, ordertargets, targetrefs, t)
     end
 
-    -- do load for each target
-    local ok = false
+    -- do after_load() for targets
     for _, t in ipairs(ordertargets) do
-        ok, errors = project._load_target(t, requires)
+        ok, errors = t:_load_after()
         if not ok then
-            break
+            return nil, nil, errors
         end
-    end
-
-    -- do load failed?
-    if not ok then
-        return nil, nil, errors
     end
     return targets, ordertargets
 end
@@ -558,8 +536,6 @@ function project._load_options(disable_filter)
         opt._ORDERDEPS = opt._ORDERDEPS or {}
         project._load_deps(opt, options, opt._DEPS, opt._ORDERDEPS, {opt:name()})
     end
-
-    -- ok?
     return options
 end
 
