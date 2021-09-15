@@ -12,6 +12,7 @@
 * Improve Qt rules to support Qt 4.x
 * Improve `set_symbols("debug")` to generate pdb file for clang on windows
 * [#1638](https://github.com/xmake-io/xmake/issues/1638): Improve to merge static library
+* Improve on_load/after_load to support to add target deps dynamically
 
 ## v2.5.7
 
@@ -1081,6 +1082,7 @@
 * 改进 Qt 规则去支持 Qt 4.x
 * 改进 `set_symbols("debug")` 支持 clang/windows 生成 pdb 文件
 * [#1638](https://github.com/xmake-io/xmake/issues/1638): 改进合并静态库
+* 改进 on_load/after_load 去支持动态的添加 target deps
 
 ## v2.5.7
 
