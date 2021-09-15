@@ -2059,17 +2059,13 @@ end
 
 -- get the link name of the target file
 function target.linkname(filename)
+    -- for implib/mingw, e.g. libxxx.dll.a
+    if filename:startswith("lib") and filename:endswith(".dll.a") then
+        return filename:sub(4, #filename - 6)
+    end
     local linkname, count = filename:gsub(target.filename("__pattern__", "static"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     if count == 0 then
         linkname, count = filename:gsub(target.filename("__pattern__", "shared"):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-    end
-    if count == 0 then
-        -- for the mingw/cross platform, it is compatible with the libxxx.a and xxx.lib
-        local formats = {static = "lib$(name).a", shared = "lib$(name).so"}
-        linkname, count = filename:gsub(target.filename("__pattern__", "static", {format = formats["static"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-        if count == 0 then
-            linkname, count = filename:gsub(target.filename("__pattern__", "shared", {format = formats["shared"]}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
-        end
     end
     return count > 0 and linkname or nil
 end
