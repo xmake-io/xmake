@@ -91,6 +91,33 @@ function _patch_pkgconfig(package)
     end
 end
 
+-- fix paths for the precompiled package
+-- @see https://github.com/xmake-io/xmake/issues/1671
+function _fix_paths_for_precompiled_package(package)
+    local librarydir = package:installdir("lib")
+    local filepaths = {path.join(librarydir, "cmake", "*", "*.cmake")}
+    for _, filepath in ipairs(filepaths) do
+        for _, file in ipairs(os.files(filepath)) do
+            io.gsub(file, "(\"(.-)\")", function(_, value)
+                if value:find(package:buildhash(), 1, true) and value:find(package:name(), 1, true) then
+                    local result
+                    local splitinfo = value:split(package:buildhash(), {plain = true})
+                    if #splitinfo == 2 then
+                        result = path.join(package:installdir(), splitinfo[2])
+                    elseif #splitinfo == 1 then
+                        result = package:installdir()
+                    end
+                    if result then
+                        result = result:gsub("\\", "/")
+                        vprint("fix path: %s in %s", result, path.filename(file))
+                        return "\"" .. result .. "\""
+                    end
+                end
+            end)
+        end
+    end
+end
+
 -- check package toolchains
 function _check_package_toolchains(package)
     for _, toolchain_inst in pairs(package:toolchains()) do
@@ -195,6 +222,11 @@ function main(package)
 
             -- this package is installed now
             if installed_now then
+
+                -- fix paths for the precompiled package
+                if package:is_plat("windows") and not package:is_built() and not package:is_system() then
+                    _fix_paths_for_precompiled_package(package)
+                end
 
                 -- patch pkg-config files for package
                 _patch_pkgconfig(package)
