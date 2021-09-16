@@ -20,7 +20,6 @@
 
 -- imports
 import("lib.detect.find_file")
-import("lib.detect.find_library")
 import("lib.detect.find_tool")
 import("core.base.option")
 import("core.project.config")

@@ -124,7 +124,7 @@ function _find_package_from_repo(name, opt)
 
     -- find library
     for _, link in ipairs(links) do
-        local libinfo = find_library(link, linkdirs)
+        local libinfo = find_library(link, linkdirs, {plat = opt.plat})
         if libinfo then
             if libinfo.kind == "shared" then
                 result.shared = true
@@ -241,7 +241,7 @@ function _find_package_from_packagedirs(name, opt)
     -- find library
     local result = nil
     for _, link in ipairs(packageinfo:get("links")) do
-        local libinfo = find_library(link, linkdirs)
+        local libinfo = find_library(link, linkdirs, {plat = opt.plat})
         if libinfo then
             result          = result or {}
             result.links    = table.join(result.links or {}, libinfo.link)
