@@ -99,5 +99,47 @@
             },
             version = "1.2.11"
         }
+    },
+    ["windows|x64"] = {
+        ["cmake#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "8e8c5e4d1c7e8b047b23333594d23b4b85163aed",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "3.21.0"
+        },
+        ["libogg#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "v1.3.4"
+        },
+        ["make#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "4.3"
+        },
+        ["muslcc#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "20210202"
+        },
+        ["zlib#31fecfc4"] = {
+            repo = {
+                branch = "master",
+                commit = "2b1cb74b289ae3221241985db4401a495c42fde3",
+                url = "https://gitee.com/tboox/xmake-repo.git"
+            },
+            version = "1.2.11"
+        }
     }
 }

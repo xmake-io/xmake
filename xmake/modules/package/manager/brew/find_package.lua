@@ -97,11 +97,11 @@ function main(name, opt)
         if pkgdir then
             local links = {}
             for _, libfile in ipairs(os.files(path.join(pkgdir, "lib", "*.a"))) do
-                table.insert(links, target.linkname(path.filename(libfile)))
+                table.insert(links, target.linkname(path.filename(libfile), {plat = opt.plat}))
             end
             for _, libfile in ipairs(os.files(path.join(pkgdir, "lib", opt.plat == "macosx" and "*.dylib" or "*.so"))) do
                 if not os.islink(libfile) then
-                    table.insert(links, target.linkname(path.filename(libfile)))
+                    table.insert(links, target.linkname(path.filename(libfile), {plat = opt.plat}))
                 end
             end
             opt.links       = links

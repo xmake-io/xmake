@@ -67,7 +67,7 @@ function main(name, opt)
                 result.linkdirs = result.linkdirs or {}
                 result.libfiles = result.libfiles or {}
                 table.insert(result.linkdirs, path.directory(line))
-                table.insert(result.links, target.linkname(path.filename(line)))
+                table.insert(result.links, target.linkname(path.filename(line), {plat = opt.plat}))
                 table.insert(result.libfiles, path.join(path.directory(line), path.filename(line)))
             end
         end
