@@ -110,7 +110,7 @@ function install_shared(target, opt)
     -- @see https://github.com/xmake-io/xmake/issues/714
     local targetfile = target:targetfile()
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
-    local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. ".lib")
+    local targetfile_lib = path.join(path.directory(targetfile), path.basename(targetfile) .. (target:is_plat("mingw") and ".dll.a" or ".lib"))
     if os.isfile(targetfile_lib) then
         os.mkdir(librarydir)
         os.vcp(targetfile_lib, librarydir)

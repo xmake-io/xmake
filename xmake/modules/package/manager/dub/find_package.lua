@@ -67,7 +67,7 @@ function main(name, opt)
         if pkgdir then
             local links = {}
             for _, libraryfile in ipairs(os.files(path.join(pkgdir, libpattern))) do
-                table.insert(links, target.linkname(path.filename(libraryfile)))
+                table.insert(links, target.linkname(path.filename(libraryfile), {plat = opt.plat}))
             end
             local includedirs = {}
             local dubjson = path.join(pkgdir, "dub.json")
