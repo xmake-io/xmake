@@ -32,9 +32,15 @@
 #   define LUA_API extern "C"
 #   define LUALIB_API	LUA_API
 #endif
-#include "luajit.h"
-#include "lualib.h"
-#include "lauxlib.h"
+#ifdef USE_LUAJIT
+#   include "luajit.h"
+#   include "lualib.h"
+#   include "lauxlib.h"
+#else
+#   include "lua.h"
+#   include "lualib.h"
+#   include "lauxlib.h"
+#endif
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private interfaces

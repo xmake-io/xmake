@@ -152,9 +152,11 @@ xmake_INC_DIRS 		    += \
                         ../sv/sv/include
 ifeq ($(BACKEND),luajit)
 xmake_INC_DIRS 			+= ../luajit/luajit/src
+xmake_CXFLAGS 			+= -DUSE_LUAJIT
 endif
 ifeq ($(BACKEND),lua)
 xmake_INC_DIRS 			+= ../lua/lua
+xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
 endif
 
 

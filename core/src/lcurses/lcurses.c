@@ -336,7 +336,11 @@ static chtype lc_checkch(lua_State *L, int index)
     if (lua_type(L, index) == LUA_TSTRING)
         return *lua_tostring(L, index);
 
+#ifdef USE_LUAJIT
     luaL_typerror(L, index, "chtype");
+#else
+    // TODO
+#endif
     /* never executes */
     return (chtype)0;
 }
