@@ -94,8 +94,7 @@ end
 -- fix paths for the precompiled package
 -- @see https://github.com/xmake-io/xmake/issues/1671
 function _fix_paths_for_precompiled_package(package)
-    local librarydir = package:installdir("lib")
-    local filepaths = {path.join(librarydir, "cmake", "*", "*.cmake")}
+    local filepaths = {path.join(package:installdir(), "**.cmake")}
     for _, filepath in ipairs(filepaths) do
         for _, file in ipairs(os.files(filepath)) do
             io.gsub(file, "(\"(.-)\")", function(_, value)
