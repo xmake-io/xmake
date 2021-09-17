@@ -82,6 +82,11 @@ function _instance:_load_rule(ruleinst, suffix)
         else
             cache[key] = {true}
         end
+
+        -- before_load has been deprecated
+        if on_load and suffix == "before" then
+            deprecated.add(ruleinst:name() .. ".on_load", ruleinst:name() .. ".before_load")
+        end
     end
 
     -- save cache
@@ -125,6 +130,16 @@ function _instance:_load()
 
     -- mark as loaded
     self._LOADED = true
+    return true
+end
+
+-- do before_load for rules
+-- @note it's deprecated, please use on_load instead of before_load
+function _instance:_load_before()
+    local ok, errors = self:_load_rules("before")
+    if not ok then
+        return false, errors
+    end
     return true
 end
 

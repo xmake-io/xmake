@@ -180,6 +180,7 @@ function rule.apis()
         ,   "rule.on_buildcmd_files"
             -- rule.before_xxx
         ,   "rule.before_run"
+        ,   "rule.before_load"
         ,   "rule.before_link"
         ,   "rule.before_build"
         ,   "rule.before_build_file"

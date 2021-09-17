@@ -431,6 +431,12 @@ function project._load_targets()
             end
         end
 
+        -- @note it's deprecated, please use on_load instead of before_load
+        ok, errors = t:_load_before()
+        if not ok then
+            return nil, nil, errors
+        end
+
         -- we need call on_load() before building deps/rules,
         -- so we can use `target:add("deps", "xxx")` to add deps in on_load
         ok, errors = t:_load()
