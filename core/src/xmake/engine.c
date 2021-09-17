@@ -814,7 +814,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         tb_strlcpy(engine->name, name, sizeof(engine->name));
 
         // init lua
-        engine->lua = lua_open();
+        engine->lua = luaL_newstate();
         tb_assert_and_check_break(engine->lua);
 
         // open lua libraries

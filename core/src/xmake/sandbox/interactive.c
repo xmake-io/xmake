@@ -314,6 +314,7 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
         // execute codes
         if (status == 0)
         {
+#ifdef USE_LUAJIT
             /* bind sandbox
              *
              * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ...
@@ -326,6 +327,10 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
              * stack: arg1(top) scriptfunc -> ...
              */
             status = xm_sandbox_docall(lua, 0, 0);
+#else
+            // TODO
+            (void)xm_sandbox_docall;
+#endif
         }
 
         // report errors
