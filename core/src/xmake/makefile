@@ -149,8 +149,13 @@ xmake_CXFLAGS 	   	    += $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG
 xmake_INC_DIRS 		    += \
 						../tbox/tbox/src \
 						../tbox/inc/$(PLAT) \
-						../luajit/luajit/src \
                         ../sv/sv/include
+ifeq ($(BACKEND),luajit)
+xmake_INC_DIRS 			+= ../luajit/luajit/src
+endif
+ifeq ($(BACKEND),lua)
+xmake_INC_DIRS 			+= ../lua/lua
+endif
 
 
 # suffix

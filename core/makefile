@@ -368,6 +368,7 @@ config : .null
 	@$(ECHO) "directories:"
 	@$(ECHO) "    install:\t\t"$(abspath $(INSTALL))
 	@$(ECHO) "    package:\t\t"$(PACKAGE)
+	@$(ECHO) "    backend:\t\t"$(BACKEND)
 	@$(ECHO) ""
 	@$(ECHO) "toolchains:"
 	@$(ECHO) "    bin:\t\t"$(BIN)
@@ -458,6 +459,10 @@ config : .null
 	@$(ECHO) "export SH4"								>> .config.mak
 	@$(ECHO) "export MIPS"								>> .config.mak
 	@$(ECHO) "export SPARC"								>> .config.mak
+	@$(ECHO) ""											>> .config.mak
+	@$(ECHO) "# backend"								>> .config.mak
+	@$(ECHO) "BACKEND ="$(BACKEND)						>> .config.mak
+	@$(ECHO) "export BACKEND"							>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# demo"									>> .config.mak
 	@$(ECHO) "DEMO ="$(DEMO)							>> .config.mak
