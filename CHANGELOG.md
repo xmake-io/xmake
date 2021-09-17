@@ -13,6 +13,11 @@
 * Improve `set_symbols("debug")` to generate pdb file for clang on windows
 * [#1638](https://github.com/xmake-io/xmake/issues/1638): Improve to merge static library
 * Improve on_load/after_load to support to add target deps dynamically
+* [#1675](https://github.com/xmake-io/xmake/pull/1675): Rename dynamic and import library suffix for mingw
+
+### Bugs fixed
+
+* [#1671](https://github.com/xmake-io/xmake/issues/1671): Fix incorrect absolute path after installing precompiled packages
 
 ## v2.5.7
 
@@ -1083,6 +1088,11 @@
 * 改进 `set_symbols("debug")` 支持 clang/windows 生成 pdb 文件
 * [#1638](https://github.com/xmake-io/xmake/issues/1638): 改进合并静态库
 * 改进 on_load/after_load 去支持动态的添加 target deps
+* [#1675](https://github.com/xmake-io/xmake/pull/1675): 针对 mingw 平台，重命名动态库和导入库文件名后缀
+
+### Bugs 修复
+
+* [#1671](https://github.com/xmake-io/xmake/issues/1671): 修复安装预编译包后，*.cmake 里面的一些不正确的绝对路径
 
 ## v2.5.7
 
