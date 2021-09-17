@@ -65,9 +65,15 @@ Notes:
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef USE_LUAJIT
 #include "luajit.h"
 #include "lualib.h"
 #include "lauxlib.h"
+#else
+#include "lua.h"
+#include "lualib.h"
+#include "lauxlib.h"
+#endif
 
 #include <curses.h>
 #include <signal.h>

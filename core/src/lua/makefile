@@ -47,6 +47,29 @@ lua_C_FILES 			+= \
 						lua/ltests \
 						lua/ldo
 
+# is windows?
+iswin =
+ifeq ($(PLAT),windows)
+	iswin = yes
+endif
+ifeq ($(PLAT),msys)
+	iswin = yes
+endif
+ifeq ($(PLAT),mingw)
+	iswin = yes
+endif
+ifeq ($(PLAT),cygwin)
+	iswin = yes
+endif
+
+lua_CFLAGS 				:= -std=c99 -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 \
+						-Wno-error=string-plus-int
+ifdef iswin
+lua_CFLAGS 				+= -DLUA_USE_WINDOWS
+else
+lua_CFLAGS 				+= -DLUA_USE_LINUX
+endif
+
 # use given system library?
 lua_C_FILES 			:= $(if $(findstring lua,$(base_LIBNAMES)),,$(lua_C_FILES))
 lua_ASM_FILES 			:= $(if $(findstring lua,$(base_LIBNAMES)),,$(lua_ASM_FILES))
