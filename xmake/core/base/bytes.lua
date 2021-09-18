@@ -23,8 +23,8 @@ local bytes = bytes or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit        = require('bit')
-local ffi        = require('ffi')
+local bit        = require("base/bit")
+local ffi        = require("ffi")
 local os         = require("base/os")
 local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
