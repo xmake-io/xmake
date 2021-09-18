@@ -25,7 +25,8 @@ jobs:
       - name: Installation
         run: |
           make -j6 BACKEND=lua
-          make install
+          ./scripts/get.sh __local__ __install_only__
+          source ~/.xmake/profile
           xmake --version
 
       - name: Tests
