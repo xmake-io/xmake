@@ -184,7 +184,7 @@ function colors.rainbow256(index, seed, freq, spread)
     index  = seed + index / spread
 
     -- make color code
-    local code = (freq * index) % 240 + 18
+    local code = math.floor((freq * index) % 240 + 18)
 
     -- make code
     return string.format("#%d", code)
