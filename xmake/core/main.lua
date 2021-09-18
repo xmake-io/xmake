@@ -22,7 +22,7 @@
 local main = main or {}
 
 -- load modules
-local env           = require("base/env")
+local env           = require("base/compat/env")
 local os            = require("base/os")
 local log           = require("base/log")
 local path          = require("base/path")
