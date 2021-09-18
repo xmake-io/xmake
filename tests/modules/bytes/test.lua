@@ -1,5 +1,9 @@
 import("core.base.bytes")
 
+if not xmake.luajit() then
+    return
+end
+
 function test_ctor(t)
     t:are_equal(bytes("123456789"):str(), "123456789")
     t:are_equal(bytes(bytes("123456789")):str(), "123456789")

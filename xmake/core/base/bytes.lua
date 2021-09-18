@@ -24,16 +24,18 @@ local _instance = _instance or {}
 
 -- load modules
 local bit        = require("base/bit")
-local ffi        = require("ffi")
+local ffi        = xmake._LUAJIT and require("ffi") or nil
 local os         = require("base/os")
 local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
 
 -- define ffi interfaces
-ffi.cdef[[
-    void* malloc(size_t size);
-    void  free(void* data);
-]]
+if ffi then
+    ffi.cdef[[
+        void* malloc(size_t size);
+        void  free(void* data);
+    ]]
+end
 
 -- new a bytes instance
 --
