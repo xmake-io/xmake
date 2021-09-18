@@ -21,9 +21,30 @@
 -- define module: table
 local table = table or {}
 
--- import jit function
-table.clear = require("table.clear")
-table.new   = require("table.new")
+-- clear table
+if not table.clear then
+    if xmake._LUAJIT then
+        table.clear = require("table.clear")
+    else
+        function table.clear(t)
+            for k, v in pairs(t) do
+                t[k] = nil
+            end
+        end
+    end
+end
+
+-- new table
+if not table.new then
+    if xmake._LUAJIT then
+        table.new = require("table.new")
+    else
+        function table.new(narray, nhash)
+            -- TODO
+            return {}
+        end
+    end
+end
 
 -- move values of table(a1) to table(a2)
 --

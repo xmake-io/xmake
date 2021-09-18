@@ -47,5 +47,10 @@ function xmake.programfile()
     return xmake._PROGRAM_FILE
 end
 
+-- use luajit?
+function xmake.luajit()
+    return xmake._LUAJIT
+end
+
 -- return module: xmake
 return xmake

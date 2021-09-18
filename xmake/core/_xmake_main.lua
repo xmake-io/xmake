@@ -34,6 +34,7 @@ xmake._PROJECT_DIR      = _PROJECT_DIR
 xmake._PROJECT_FILE     = "xmake.lua"
 xmake._WORKING_DIR      = os.curdir()
 xmake._FEATURES         = _FEATURES
+xmake._LUAJIT           = _LUAJIT
 
 function _loadfile_impl(filepath, mode, opt)
 
