@@ -5,97 +5,85 @@
     ["macosx|x86_64"] = {
         ["autoconf#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "4498f11267de5112199152ab030ed139c985ad5a",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "2.71"
         },
         ["automake#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "1.16.4"
         },
         ["cmake#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "4498f11267de5112199152ab030ed139c985ad5a",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "3.21.0"
         },
         ["gmp#31fecfc4"] = {
             repo = {
-                branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "6.2.1"
         },
         ["libisl 0.22#67114504"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "0.22"
         },
         ["libogg#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "v1.3.4"
         },
         ["libplist#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "2.2.0"
         },
         ["libtool#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "2.4.6"
         },
         ["m4#31fecfc4"] = {
             repo = {
-                branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "1.4.19"
         },
         ["muslcc#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "20210202"
         },
         ["pkg-config#31fecfc4"] = {
             repo = {
-                branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "0.29.2"
         },
         ["zlib#31fecfc4"] = {
             repo = {
-                branch = "master",
                 commit = "eda7adee81bac151f87c507030cc0dd8ab299462",
-                url = "https://gitee.com/tboox/xmake-repo.git"
+                url = "/Users/ruki/projects/personal/xmake-repo/"
             },
             version = "1.2.11"
         }
