@@ -66,6 +66,10 @@ lua_CFLAGS 				:= -std=c99 -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 \
 						-Wno-error=string-plus-int
 ifdef iswin
 lua_CFLAGS 				+= -DLUA_USE_WINDOWS
+endif
+
+ifeq ($(PLAT),macosx)
+lua_CFLAGS 				+= -DLUA_USE_MACOSX
 else
 lua_CFLAGS 				+= -DLUA_USE_LINUX
 endif

@@ -73,6 +73,7 @@ static tb_void_t xm_sandbox_report(lua_State *lua)
     }
 }
 
+#ifdef USE_LUAJIT
 // the traceback function
 static tb_int_t xm_sandbox_traceback(lua_State *lua)
 {
@@ -122,6 +123,7 @@ static tb_int_t xm_sandbox_docall(lua_State* lua, tb_int_t narg, tb_int_t clear)
     // ok?
     return status;
 }
+#endif
 
 // this line is incomplete?
 static tb_int_t xm_sandbox_incomplete(lua_State *lua, tb_int_t status)
@@ -327,9 +329,6 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
              * stack: arg1(top) scriptfunc -> ...
              */
             status = xm_sandbox_docall(lua, 0, 0);
-#else
-            // TODO
-            (void)xm_sandbox_docall;
 #endif
         }
 
