@@ -46,6 +46,13 @@ if not table.new then
     end
 end
 
+-- get array length
+if not table.getn then
+    function table.getn(t)
+        return #t
+    end
+end
+
 -- move values of table(a1) to table(a2)
 --
 -- disable the builtin implementation for android termux/arm64, it will crash when calling `table.move({1, 1}, 1, 2, 1, {})`
