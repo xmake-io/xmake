@@ -1,3 +1,6 @@
 function main(t)
-    t:build()
+    -- TODO
+    if xmake.luajit() then
+        t:build()
+    end
 end
