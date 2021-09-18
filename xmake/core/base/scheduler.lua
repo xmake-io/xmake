@@ -31,7 +31,7 @@ local poller    = require("base/poller")
 local timer     = require("base/timer")
 local hashset   = require("base/hashset")
 local coroutine = require("base/coroutine")
-local bit       = require("bit")
+local bit       = require("base/bit")
 
 -- new a coroutine instance
 function _coroutine.new(name, thread)
