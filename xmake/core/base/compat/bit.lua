@@ -18,4 +18,28 @@
 -- @file        bit.lua
 --
 
-return (xmake._LUAJIT and require("bit") or require("base/compat/bit"))
+-- define module: bit
+local bit = bit or {}
+
+-- bit/and operation
+function bit.band(a, b)
+    return a & b
+end
+
+-- bit/or operation
+function bit.bor(a, b)
+    return a | b
+end
+
+-- bit/xor operation
+function bit.bxor(a, b)
+    return a ~ b
+end
+
+-- bit/not operation
+function bit.bnot(a)
+    return ~a
+end
+
+-- return module: bit
+return bit
