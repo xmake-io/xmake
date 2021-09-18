@@ -15,7 +15,7 @@
 --
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
--- @author      OpportunityLiu
+-- @author      OpportunityLiu, ruki
 -- @file        serialize.lua
 --
 
@@ -24,6 +24,7 @@ local serialize  = serialize or {}
 local stub       = serialize._stub or {}
 serialize._stub  = stub
 serialize._dump  = serialize._dump or string._dump or string.dump
+serialize._BCTAG = xmake._LUAJIT and "\27LJ" or "\27Lua"
 
 -- load modules
 local math      = require("base/math")
@@ -170,7 +171,7 @@ function serialize._resolvefunction(root, fenv, bytecode)
     if type(bytecode) ~= "string" then
         return nil, string.format("invalid bytecode (string expected, got %s)", type(bytecode))
     end
-    if not bytecode:startswith("\27LJ") then
+    if not bytecode:startswith(serialize._BCTAG) then
         return nil, "cannot load incompatible bytecode"
     end
 
@@ -425,7 +426,7 @@ function serialize._load(str)
 
     -- load table as script
     local result = nil
-    local binary = str:startswith("\27LJ")
+    local binary = str:startswith(serialize._BCTAG)
     if not binary then
         str = "return " .. str
     end
