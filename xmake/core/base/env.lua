@@ -90,6 +90,8 @@ else -- >= Lua 5.2
     -- register to global
     _G.setfenv = env.setfenv
     _G.getfenv = env.getfenv
+    debug.setfenv = env.setfenv
+    debug.getfenv = env.getfenv
 end
 
 -- return module: env
