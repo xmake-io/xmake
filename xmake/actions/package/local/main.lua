@@ -24,7 +24,7 @@ import("core.base.task")
 import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
-import("lib.luajit.bit")
+import("core.base.bit")
 
 -- get link deps
 function _get_linkdeps(target)
