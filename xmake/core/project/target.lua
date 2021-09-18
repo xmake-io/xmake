@@ -23,7 +23,7 @@ local target    = target or {}
 local _instance = _instance or {}
 
 -- load modules
-local bit             = require("bit")
+local bit             = require("base/bit")
 local os              = require("base/os")
 local path            = require("base/path")
 local utils           = require("base/utils")

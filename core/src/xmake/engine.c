@@ -814,7 +814,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         tb_strlcpy(engine->name, name, sizeof(engine->name));
 
         // init lua
-        engine->lua = lua_open();
+        engine->lua = luaL_newstate();
         tb_assert_and_check_break(engine->lua);
 
         // open lua libraries
@@ -891,6 +891,14 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         // init engine name
         lua_pushstring(engine->lua, name? name : "xmake");
         lua_setglobal(engine->lua, "_NAME");
+
+        // use luajit as backend?
+#ifdef USE_LUAJIT
+        lua_pushboolean(engine->lua, tb_true);
+#else
+        lua_pushboolean(engine->lua, tb_false);
+#endif
+        lua_setglobal(engine->lua, "_LUAJIT");
 
         // init namespace: xmake
         lua_newtable(engine->lua);

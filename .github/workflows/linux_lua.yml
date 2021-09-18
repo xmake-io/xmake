@@ -1,0 +1,36 @@
+name: Linux (Lua)
+
+on:
+  pull_request:
+  push:
+  release:
+    types: [published]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    concurrency:
+        group: ${{ github.head_ref }}-Linux-Lua
+        cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+      - uses: dlang-community/setup-dlang@v1
+        with:
+          compiler: dmd-latest
+      - uses: little-core-labs/get-git-tag@v3.0.2
+        id: tagName
+
+      - name: Installation
+        run: |
+          make BACKEND=lua
+          ./scripts/get.sh __local__ __install_only__
+          source ~/.xmake/profile
+          xmake --version
+
+      - name: Tests
+        run: |
+          xmake lua -v -D tests/run.lua
+          xrepo --version
+

@@ -15,42 +15,31 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        bit.lua
 --
 
--- define module: xmake
-local xmake = xmake or {}
+-- define module: bit
+local bit = bit or {}
 
--- load modules
-local semver = require("base/semver")
-
--- get name
-function xmake.name()
-    return xmake._NAME or "xmake"
+-- bit/and operation
+function bit.band(a, b)
+    return a & b
 end
 
--- get xmake version
-function xmake.version()
-    if xmake._VERSION_CACHE == nil then
-        xmake._VERSION_CACHE = semver.new(xmake._VERSION) or false
-    end
-    return xmake._VERSION_CACHE or nil
+-- bit/or operation
+function bit.bor(a, b)
+    return a | b
 end
 
--- get the program directory
-function xmake.programdir()
-    return xmake._PROGRAM_DIR
+-- bit/xor operation
+function bit.bxor(a, b)
+    return a ~ b
 end
 
--- get the program file
-function xmake.programfile()
-    return xmake._PROGRAM_FILE
+-- bit/not operation
+function bit.bnot(a)
+    return ~a
 end
 
--- use luajit?
-function xmake.luajit()
-    return xmake._LUAJIT
-end
-
--- return module: xmake
-return xmake
+-- return module: bit
+return bit

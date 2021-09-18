@@ -30,7 +30,7 @@
         ["gmp#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
+                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "6.2.1"
@@ -70,7 +70,7 @@
         ["m4#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
+                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "1.4.19"
@@ -86,7 +86,7 @@
         ["pkg-config#31fecfc4"] = {
             repo = {
                 branch = "master",
-                commit = "c1b4838c9b1e7a2c52d9bf1a9beafeaee7305e30",
+                commit = "89ac4c1e2d360bc3a8c3f4cdedf4ee683701de74",
                 url = "https://gitee.com/tboox/xmake-repo.git"
             },
             version = "0.29.2"

@@ -17,7 +17,14 @@ lcurses_C_FILES 		+= lcurses
 lcurses_CXFLAGS 		+= $(if $(findstring curses,$(base_LIBNAMES)),-DXM_CONFIG_API_HAVE_CURSES,)
 
 # includes
-lcurses_INC_DIRS  		+= ../luajit/luajit/src
+ifeq ($(BACKEND),luajit)
+lcurses_INC_DIRS 		+= ../luajit/luajit/src
+lcurses_CXFLAGS 		+= -DUSE_LUAJIT
+endif
+ifeq ($(BACKEND),lua)
+lcurses_INC_DIRS 		+= ../lua/lua
+lcurses_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
+endif
 
 # suffix
 include $(PRO_DIR)/suffix.mak

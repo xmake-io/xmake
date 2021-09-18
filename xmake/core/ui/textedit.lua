@@ -27,7 +27,7 @@ local border    = require("ui/border")
 local curses    = require("ui/curses")
 local textarea  = require("ui/textarea")
 local action    = require("ui/action")
-local bit       = require("bit")
+local bit       = require("base/bit")
 
 -- define module
 local textedit = textedit or textarea()

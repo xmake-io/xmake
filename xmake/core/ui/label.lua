@@ -24,7 +24,7 @@ local view      = require("ui/view")
 local event     = require("ui/event")
 local action    = require("ui/action")
 local curses    = require("ui/curses")
-local bit       = require("bit")
+local bit       = require("base/bit")
 
 -- define module
 local label = label or view()

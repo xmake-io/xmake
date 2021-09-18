@@ -75,6 +75,7 @@ end
 
 -- show the message with process
 function show(progress, format, ...)
+    progress = math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         cprint(progress_prefix .. "${dim}" .. format, progress, ...)
@@ -113,6 +114,7 @@ end
 
 -- get the message text with process
 function text(progress, format, ...)
+    progress = math.floor(progress)
     local progress_prefix = "${color.build.progress}" .. theme.get("text.build.progress_format") .. ":${clear} "
     if option.get("verbose") then
         return string.format(progress_prefix .. "${dim}" .. format, progress, ...)

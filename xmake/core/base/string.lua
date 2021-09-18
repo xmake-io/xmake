@@ -24,7 +24,7 @@ local string = string or {}
 -- load modules
 local deprecated = require("base/deprecated")
 local serialize  = require("base/serialize")
-local bit        = require("bit")
+local bit        = require("base/bit")
 
 -- save original interfaces
 string._dump   = string._dump or string.dump

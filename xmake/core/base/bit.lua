@@ -15,20 +15,7 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        bit.lua
 --
 
--- load modules
-local xmake   = require("base/xmake")
-
--- define module
-local sandbox_xmake = sandbox_xmake or {}
-
--- inherit some builtin interfaces
-sandbox_xmake.version     = xmake.version
-sandbox_xmake.programdir  = xmake.programdir
-sandbox_xmake.programfile = xmake.programfile
-sandbox_xmake.luajit      = xmake.luajit
-
--- return module
-return sandbox_xmake
+return (xmake._LUAJIT and require("bit") or require("base/compat/bit"))

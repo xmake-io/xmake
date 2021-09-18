@@ -40,6 +40,14 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
+-- the backend option
+option("backend")
+    set_showmenu(true)
+    set_default("luajit")
+    set_description("Use luajit or lua backend")
+    set_values("luajit", "lua")
+option_end()
+
 -- the readline option
 option("readline")
     set_showmenu(true)
@@ -80,7 +88,7 @@ if is_plat("windows") then
 end
 
 -- add projects
-includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/tbox", "src/xmake", "src/demo")
+includes("src/lua-cjson", "src/lcurses", "src/sv","src/luajit", "src/lua", "src/tbox", "src/xmake", "src/demo")
 if is_plat("windows") then
     includes("src/pdcurses")
 end
