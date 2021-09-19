@@ -15,39 +15,30 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        endswith.c
+ * @file        prefix.h
  *
  */
-
-/* //////////////////////////////////////////////////////////////////////////////////////
- * trace
- */
-#define TB_TRACE_MODULE_NAME                "endswith"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#ifndef XM_LIBC_PREFIX_H
+#define XM_LIBC_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
  */
-#include "prefix.h"
+#include "../prefix.h"
 
 /* //////////////////////////////////////////////////////////////////////////////////////
- * implementation
+ * macros
  */
-tb_int_t xm_string_endswith(lua_State* lua)
-{
-    // check
-    tb_assert_and_check_return_val(lua, 0);
 
-    // get the string and suffix
-    size_t              string_size = 0;
-    size_t              suffix_size = 0;
-    tb_char_t const*    string = luaL_checklstring(lua, 1, &string_size);
-    tb_char_t const*    suffix = luaL_checklstring(lua, 2, &suffix_size);
-    tb_check_return_val(string && suffix, 0);
+// return libc error
+#define xm_libc_return_error(lua, error)          \
+    do                                            \
+    {                                             \
+        lua_pushnil(lua);                         \
+        lua_pushliteral(lua, error);              \
+        return 2;                                 \
+    } while (0)
 
-    // string:endswith(suffix)?
-    lua_pushboolean(lua, string_size >= suffix_size && !tb_strcmp(string + string_size - suffix_size, suffix));
+#endif
 
-    // ok
-    return 1;
-}
+

@@ -221,6 +221,9 @@ tb_int_t xm_semver_compare(lua_State* lua);
 tb_int_t xm_semver_satisfies(lua_State* lua);
 tb_int_t xm_semver_select(lua_State* lua);
 
+// the libc functions
+tb_int_t xm_libc_malloc(lua_State* lua);
+
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
 __tb_extern_c_enter__
@@ -409,6 +412,13 @@ static luaL_Reg const g_semver_functions[] =
 ,   { "compare",        xm_semver_compare   }
 ,   { "satisfies",      xm_semver_satisfies }
 ,   { "select",         xm_semver_select    }
+,   { tb_null,          tb_null             }
+};
+
+// the libc functions
+static luaL_Reg const g_libc_functions[] =
+{
+    { "malloc",         xm_libc_malloc      }
 ,   { tb_null,          tb_null             }
 };
 
@@ -853,6 +863,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind semver functions
         luaL_register(engine->lua, "semver", g_semver_functions);
+
+        // bind libc functions
+        luaL_register(engine->lua, "libc", g_libc_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses

@@ -15,15 +15,15 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        endswith.c
+ * @file        malloc.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME                "endswith"
-#define TB_TRACE_MODULE_DEBUG               (0)
+#define TB_TRACE_MODULE_NAME    "malloc"
+#define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
@@ -33,21 +33,20 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_string_endswith(lua_State* lua)
+tb_int_t xm_libc_malloc(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // get the string and suffix
-    size_t              string_size = 0;
-    size_t              suffix_size = 0;
-    tb_char_t const*    string = luaL_checklstring(lua, 1, &string_size);
-    tb_char_t const*    suffix = luaL_checklstring(lua, 2, &suffix_size);
-    tb_check_return_val(string && suffix, 0);
+    // check arguments?
+    if (!lua_isnumber(lua, 1))
+        xm_libc_return_error(lua, "malloc(invalid size)!");
 
-    // string:endswith(suffix)?
-    lua_pushboolean(lua, string_size >= suffix_size && !tb_strcmp(string + string_size - suffix_size, suffix));
-
-    // ok
+    // do malloc
+    tb_pointer_t data = tb_null;
+    tb_int_t size = (tb_int_t)lua_tointeger(lua, 1);
+    if (size > 0) data = tb_malloc(size);
+    xm_lua_pushpointer(lua, data);
     return 1;
 }
+
