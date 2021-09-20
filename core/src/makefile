@@ -3,10 +3,10 @@ include $(PRO_DIR)/prefix.mak
 
 # projects
 SUB_PROS 	+= demo
-ifeq ($(BACKEND),luajit)
+ifeq ($(RUNTIME),luajit)
 DEP_PROS 	+= luajit
 endif
-ifeq ($(BACKEND),lua)
+ifeq ($(RUNTIME),lua)
 DEP_PROS 	+= lua
 endif
 DEP_PROS 	+= lcurses sv lua-cjson tbox xmake

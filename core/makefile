@@ -368,7 +368,7 @@ config : .null
 	@$(ECHO) "directories:"
 	@$(ECHO) "    install:\t\t"$(abspath $(INSTALL))
 	@$(ECHO) "    package:\t\t"$(PACKAGE)
-	@$(ECHO) "    backend:\t\t"$(BACKEND)
+	@$(ECHO) "    backend:\t\t"$(RUNTIME)
 	@$(ECHO) ""
 	@$(ECHO) "toolchains:"
 	@$(ECHO) "    bin:\t\t"$(BIN)
@@ -461,8 +461,8 @@ config : .null
 	@$(ECHO) "export SPARC"								>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# backend"								>> .config.mak
-	@$(ECHO) "BACKEND ="$(BACKEND)						>> .config.mak
-	@$(ECHO) "export BACKEND"							>> .config.mak
+	@$(ECHO) "RUNTIME ="$(RUNTIME)						>> .config.mak
+	@$(ECHO) "export RUNTIME"							>> .config.mak
 	@$(ECHO) ""											>> .config.mak
 	@$(ECHO) "# demo"									>> .config.mak
 	@$(ECHO) "DEMO ="$(DEMO)							>> .config.mak

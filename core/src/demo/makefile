@@ -20,7 +20,7 @@ demo_INC_DIRS 		+= ../ ../tbox/tbox/src ../tbox/inc/$(PLAT)
 demo_LIB_DIRS 	    += ../tbox
 
 # luajit
-ifeq ($(BACKEND),luajit)
+ifeq ($(RUNTIME),luajit)
 luajit_LIBS 	   	:= $(if $(findstring luajit,$(base_LIBNAMES)),,luajit$(DTYPE))
 demo_LIBS 			+= $(luajit_LIBS)
 demo_INC_DIRS 	    += ../luajit/luajit/src
@@ -28,7 +28,7 @@ demo_LIB_DIRS 		+= ../luajit
 endif
 
 # lua
-ifeq ($(BACKEND),lua)
+ifeq ($(RUNTIME),lua)
 lua_LIBS    	   	:= $(if $(findstring lua,$(base_LIBNAMES)),,lua$(DTYPE))
 demo_LIBS 			+= $(lua_LIBS)
 demo_INC_DIRS 	    += ../lua/lua

@@ -16,8 +16,8 @@ endif
 endif
 
 # use luajit or lua backend
-ifeq ($(BACKEND),)
-BACKEND 	:=luajit
+ifeq ($(RUNTIME),)
+RUNTIME 	:=luajit
 endif
 
 # the temporary directory
@@ -99,7 +99,7 @@ xrepo_bin_install   :=$(destdir)/bin/xrepo
 build:
 	@echo compiling xmake-core ...
 	@if [ -f core/.config.mak ]; then rm core/.config.mak; fi
-	+@$(MAKE) -C core --no-print-directory f DEBUG=$(debug) BACKEND=$(BACKEND)
+	+@$(MAKE) -C core --no-print-directory f DEBUG=$(debug) RUNTIME=$(RUNTIME)
 	+@$(MAKE) -C core --no-print-directory c
 	+@$(MAKE) -C core --no-print-directory
 

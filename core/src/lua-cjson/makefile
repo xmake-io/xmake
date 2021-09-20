@@ -22,11 +22,11 @@ lua-cjson_C_FILES 		+= \
 lua-cjson_CFLAGS 		+= -DNDEBUG -DUSE_INTERNAL_FPCONV
 
 # includes
-ifeq ($(BACKEND),luajit)
+ifeq ($(RUNTIME),luajit)
 lua-cjson_INC_DIRS 		+= ../luajit/luajit/src
 lua-cjson_CXFLAGS 		+= -DUSE_LUAJIT
 endif
-ifeq ($(BACKEND),lua)
+ifeq ($(RUNTIME),lua)
 lua-cjson_INC_DIRS 		+= ../lua/lua
 lua-cjson_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
 endif
