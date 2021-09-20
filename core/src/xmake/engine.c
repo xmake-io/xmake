@@ -227,6 +227,7 @@ tb_int_t xm_libc_free(lua_State* lua);
 tb_int_t xm_libc_memcpy(lua_State* lua);
 tb_int_t xm_libc_memset(lua_State* lua);
 tb_int_t xm_libc_dataptr(lua_State* lua);
+tb_int_t xm_libc_ptraddr(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
@@ -427,6 +428,7 @@ static luaL_Reg const g_libc_functions[] =
 ,   { "memcpy",         xm_libc_memcpy      }
 ,   { "memset",         xm_libc_memset      }
 ,   { "dataptr",        xm_libc_dataptr     }
+,   { "ptraddr",        xm_libc_ptraddr     }
 ,   { tb_null,          tb_null             }
 };
 

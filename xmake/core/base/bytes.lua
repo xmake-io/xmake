@@ -184,7 +184,7 @@ end
 
 -- get data address
 function _instance:caddr()
-    return tonumber(ffi.cast('unsigned long long', self:cdata()))
+    return libc.ptraddr(self:cdata())
 end
 
 -- readonly?

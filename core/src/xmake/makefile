@@ -120,7 +120,8 @@ xmake_C_FILES 			+= \
 						libc/free \
 						libc/memset \
 						libc/memcpy \
-						libc/dataptr
+						libc/dataptr \
+						libc/ptraddr
 
 iswin =
 ifeq ($(PLAT),windows)

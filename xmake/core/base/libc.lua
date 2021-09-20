@@ -27,6 +27,7 @@ libc._free    = libc._free or libc.free
 libc._memcpy  = libc._memcpy or libc.memcpy
 libc._memset  = libc._memset or libc.memset
 libc._dataptr = libc._dataptr or libc.dataptr
+libc._ptraddr = libc._ptraddr or libc.ptraddr
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -85,6 +86,14 @@ function libc.dataptr(data)
         return ffi.cast("unsigned char*", data)
     else
         return libc._dataptr(data)
+    end
+end
+
+function libc.ptraddr(data)
+    if ffi then
+        return tonumber(ffi.cast('unsigned long long', data))
+    else
+        return libc._ptraddr(data)
     end
 end
 
