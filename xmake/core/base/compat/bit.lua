@@ -41,5 +41,33 @@ function bit.bnot(a)
     return ~a
 end
 
+-- bit/lshift operation
+function bit.lshift(a, b)
+    return a << b
+end
+
+-- bit/rshift operation
+function bit.rshift(a, b)
+    return a >> b
+end
+
+-- tobit operation
+function bit.tobit(x)
+    return x & 0xffffffff
+end
+
+-- tohex operation
+function bit.tohex(x, n)
+    n = n or 8
+    local up
+    if n <= 0 then
+        if n == 0 then return '' end
+        up = true
+        n = - n
+    end
+    x = x & (16 ^ n - 1)
+    return ('%0'..n..(up and 'X' or 'x')):format(x)
+end
+
 -- return module: bit
 return bit
