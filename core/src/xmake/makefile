@@ -116,7 +116,8 @@ xmake_C_FILES 			+= \
 						readline/history_list \
 						readline/add_history \
 						readline/clear_history \
-						libc/malloc
+						libc/malloc \
+						libc/free
 
 iswin =
 ifeq ($(PLAT),windows)

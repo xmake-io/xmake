@@ -23,6 +23,7 @@ local libc = libc or {}
 
 -- save original interfaces
 libc._malloc = libc._malloc or libc.malloc
+libc._free = libc._free or libc.free
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -40,6 +41,14 @@ function libc.malloc(size)
         return ffi.cast("unsigned char*", ffi.C.malloc(size))
     else
         return libc._malloc(size)
+    end
+end
+
+function libc.free(data)
+    if ffi then
+        return ffi.C.free(data)
+    else
+        return libc._free(data)
     end
 end
 
