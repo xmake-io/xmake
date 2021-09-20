@@ -30,6 +30,9 @@ function check_cincludes(definition, includes, opt)
     local optname = "__" .. (opt.name or definition)
     option(optname)
         add_cincludes(includes)
+        if opt.includedirs then
+            add_includedirs(opt.includedirs)
+        end
         add_defines(definition)
     option_end()
     add_options(optname)
@@ -48,6 +51,9 @@ function configvar_check_cincludes(definition, includes, opt)
     local defname, defval = unpack(definition:split('='))
     option(optname)
         add_cincludes(includes)
+        if opt.includedirs then
+            add_includedirs(opt.includedirs)
+        end
         set_configvar(defname, defval or 1)
     option_end()
     add_options(optname)
