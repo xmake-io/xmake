@@ -30,6 +30,7 @@ libc._strndup = libc._strndup or libc.strndup
 libc._dataptr = libc._dataptr or libc.dataptr
 libc._ptraddr = libc._ptraddr or libc.ptraddr
 libc._diffptr = libc._diffptr or libc.diffptr
+libc._byteof  = libc._byteof or libc.byteof
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -91,6 +92,14 @@ function libc.strndup(s, n)
             os.raise(errors)
         end
         return s
+    end
+end
+
+function libc.byteof(data, offset)
+    if ffi then
+        return data[offset]
+    else
+        return libc._byteof(data, offset)
     end
 end
 

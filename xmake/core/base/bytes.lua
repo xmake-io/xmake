@@ -138,7 +138,7 @@ function _instance.new(...)
                 os.raise("incorrect bounds(%d-%d)!", start, last)
             end
             instance._SIZE     = last - start + 1
-            instance._CDATA    = b:cdata() - 1 + start
+            instance._CDATA    = libc.diffptr(b:cdata(), -1 + start)
             instance._REF      = b -- keep lua ref for GC
             instance._MANAGED  = false
             instance._READONLY = b:readonly()
@@ -390,7 +390,7 @@ function _instance:__index(key)
         if key < 1 or key > self:size() then
             os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size())
         end
-        return self._CDATA[key - 1]
+        return libc.byteof(self._CDATA, key - 1)
     elseif type(key) == "table" then
         local start, last = key[1], key[2]
         return self:slice(start, last)
