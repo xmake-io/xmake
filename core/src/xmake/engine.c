@@ -224,6 +224,7 @@ tb_int_t xm_semver_select(lua_State* lua);
 // the libc functions
 tb_int_t xm_libc_malloc(lua_State* lua);
 tb_int_t xm_libc_free(lua_State* lua);
+tb_int_t xm_libc_memcpy(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
@@ -421,6 +422,7 @@ static luaL_Reg const g_libc_functions[] =
 {
     { "malloc",         xm_libc_malloc      }
 ,   { "free",           xm_libc_free        }
+,   { "memcpy",         xm_libc_memcpy      }
 ,   { tb_null,          tb_null             }
 };
 

@@ -23,7 +23,8 @@ local libc = libc or {}
 
 -- save original interfaces
 libc._malloc = libc._malloc or libc.malloc
-libc._free = libc._free or libc.free
+libc._free   = libc._free or libc.free
+libc._memcpy = libc._memcpy or libc.memcpy
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -49,6 +50,14 @@ function libc.free(data)
         return ffi.C.free(data)
     else
         return libc._free(data)
+    end
+end
+
+function libc.memcpy(dst, src, size)
+    if ffi then
+        return ffi.copy(dst, src, size)
+    else
+        return libc._memcpy(dst, src, size)
     end
 end
 
