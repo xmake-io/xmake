@@ -30,14 +30,6 @@ local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
 local libc       = require("base/libc")
 
--- define ffi interfaces
-if ffi then
-    ffi.cdef[[
-        void* malloc(size_t size);
-        void  free(void* data);
-    ]]
-end
-
 -- new a bytes instance
 --
 -- bytes(size[, init]): allocates a buffer of given size, init with given number or char value
