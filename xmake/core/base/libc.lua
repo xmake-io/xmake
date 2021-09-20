@@ -25,6 +25,7 @@ local libc = libc or {}
 libc._malloc = libc._malloc or libc.malloc
 libc._free   = libc._free or libc.free
 libc._memcpy = libc._memcpy or libc.memcpy
+libc._memset = libc._memset or libc.memset
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -58,6 +59,14 @@ function libc.memcpy(dst, src, size)
         return ffi.copy(dst, src, size)
     else
         return libc._memcpy(dst, src, size)
+    end
+end
+
+function libc.memset(data, ch, size)
+    if ffi then
+        return ffi.fill(data, size, ch)
+    else
+        return libc._memset(data, ch, size)
     end
 end
 

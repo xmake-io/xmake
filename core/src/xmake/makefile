@@ -118,6 +118,7 @@ xmake_C_FILES 			+= \
 						readline/clear_history \
 						libc/malloc \
 						libc/free \
+						libc/memset \
 						libc/memcpy
 
 iswin =
