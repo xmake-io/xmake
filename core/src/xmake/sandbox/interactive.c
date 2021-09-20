@@ -73,7 +73,6 @@ static tb_void_t xm_sandbox_report(lua_State *lua)
     }
 }
 
-#ifdef USE_LUAJIT
 // the traceback function
 static tb_int_t xm_sandbox_traceback(lua_State *lua)
 {
@@ -123,7 +122,6 @@ static tb_int_t xm_sandbox_docall(lua_State* lua, tb_int_t narg, tb_int_t clear)
     // ok?
     return status;
 }
-#endif
 
 // this line is incomplete?
 static tb_int_t xm_sandbox_incomplete(lua_State *lua, tb_int_t status)
@@ -316,20 +314,27 @@ tb_int_t xm_sandbox_interactive(lua_State* lua)
         // execute codes
         if (status == 0)
         {
-#ifdef USE_LUAJIT
             /* bind sandbox
              *
              * stack: arg1(top) scriptfunc arg1(sandbox_scope) -> ...
              */
+#ifdef USE_LUAJIT
             lua_pushvalue(lua, 1);
             lua_setfenv(lua, -2);
+#else
+            // stack: arg1(top) scriptfunc $interactive_setfenv scriptfunc arg1(sandbox_scope) -> ...
+            lua_getfield(lua, 1, "$interactive_setfenv");
+            lua_pushvalue(lua, -2);
+            lua_pushvalue(lua, 1);
+            if (lua_pcall(lua, 2, 0, 0) != 0)
+                tb_printl(lua_pushfstring(lua, "error calling " LUA_QL("$interactive_setfenv") " (%s)", lua_tostring(lua, -1)));
+#endif
 
             /* run script
              *
              * stack: arg1(top) scriptfunc -> ...
              */
             status = xm_sandbox_docall(lua, 0, 0);
-#endif
         }
 
         // report errors
