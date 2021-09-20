@@ -22,10 +22,11 @@
 local libc = libc or {}
 
 -- save original interfaces
-libc._malloc = libc._malloc or libc.malloc
-libc._free   = libc._free or libc.free
-libc._memcpy = libc._memcpy or libc.memcpy
-libc._memset = libc._memset or libc.memset
+libc._malloc  = libc._malloc or libc.malloc
+libc._free    = libc._free or libc.free
+libc._memcpy  = libc._memcpy or libc.memcpy
+libc._memset  = libc._memset or libc.memset
+libc._dataptr = libc._dataptr or libc.dataptr
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -76,6 +77,14 @@ function libc.memset(data, ch, size)
         return ffi.fill(data, size, ch)
     else
         return libc._memset(data, ch, size)
+    end
+end
+
+function libc.dataptr(data)
+    if ffi then
+        return ffi.cast("unsigned char*", data)
+    else
+        return libc._dataptr(data)
     end
 end
 

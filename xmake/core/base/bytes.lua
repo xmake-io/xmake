@@ -60,10 +60,10 @@ function _instance.new(...)
             local ptr = arg2
             local manage = arg3
             if manage then
-                instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
+                instance._CDATA   = ffi.gc(libc.dataptr(ptr), ffi.C.free)
                 instance._MANAGED = true
             else
-                instance._CDATA   = ffi.cast("unsigned char*", ptr)
+                instance._CDATA   = libc.dataptr(ptr)
                 instance._MANAGED = false
             end
         else
@@ -91,7 +91,7 @@ function _instance.new(...)
         -- bytes(str): mounts a buffer from the given string
         local str = arg1
         instance._SIZE     = #str
-        instance._CDATA    = ffi.cast("unsigned char*", str)
+        instance._CDATA    = libc.dataptr(str)
         instance._REF      = str -- keep ref for GC
         instance._MANAGED  = false
         instance._READONLY = true

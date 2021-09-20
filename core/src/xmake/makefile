@@ -119,7 +119,8 @@ xmake_C_FILES 			+= \
 						libc/malloc \
 						libc/free \
 						libc/memset \
-						libc/memcpy
+						libc/memcpy \
+						libc/dataptr
 
 iswin =
 ifeq ($(PLAT),windows)
