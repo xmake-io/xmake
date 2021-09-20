@@ -121,8 +121,6 @@ xmake_C_FILES 			+= \
 						libc/memset \
 						libc/memcpy \
 						libc/dataptr \
-						libc/ptraddr \
-						libc/diffptr \
 						libc/byteof \
 						libc/setbyte \
 						libc/strndup

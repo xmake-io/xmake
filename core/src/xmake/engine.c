@@ -228,8 +228,6 @@ tb_int_t xm_libc_memcpy(lua_State* lua);
 tb_int_t xm_libc_memset(lua_State* lua);
 tb_int_t xm_libc_strndup(lua_State* lua);
 tb_int_t xm_libc_dataptr(lua_State* lua);
-tb_int_t xm_libc_ptraddr(lua_State* lua);
-tb_int_t xm_libc_diffptr(lua_State* lua);
 tb_int_t xm_libc_byteof(lua_State* lua);
 tb_int_t xm_libc_setbyte(lua_State* lua);
 
@@ -433,8 +431,6 @@ static luaL_Reg const g_libc_functions[] =
 ,   { "memset",         xm_libc_memset      }
 ,   { "strndup",        xm_libc_strndup     }
 ,   { "dataptr",        xm_libc_dataptr     }
-,   { "ptraddr",        xm_libc_ptraddr     }
-,   { "diffptr",        xm_libc_diffptr     }
 ,   { "byteof",         xm_libc_byteof      }
 ,   { "setbyte",        xm_libc_setbyte     }
 ,   { tb_null,          tb_null             }

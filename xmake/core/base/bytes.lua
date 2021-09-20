@@ -96,7 +96,7 @@ function _instance.new(...)
                 os.raise("incorrect bounds(%d-%d) for bytes(...)!", start, last)
             end
             instance._SIZE     = last - start + 1
-            instance._CDATA    = libc.diffptr(b:cdata(), -1 + start)
+            instance._CDATA    = b:cdata() -1 + start
             instance._REF      = b -- keep lua ref for GC
             instance._MANAGED  = false
             instance._READONLY = b:readonly()
@@ -109,7 +109,7 @@ function _instance.new(...)
             instance._CDATA = libc.malloc(instance._SIZE, {gc = true})
             local offset = 0
             for _, b in ipairs(args) do
-                libc.memcpy(libc.diffptr(instance._CDATA, offset), b:cdata(), b:size())
+                libc.memcpy(instance._CDATA + offset, b:cdata(), b:size())
                 offset = offset + b:size()
             end
             instance._MANAGED  = true
@@ -124,7 +124,7 @@ function _instance.new(...)
             instance._CDATA = libc.malloc(instance._SIZE, {gc = true})
             local offset = 0
             for _, b in ipairs(args) do
-                libc.memcpy(libc.diffptr(instance._CDATA, offset), b._CDATA, b:size())
+                libc.memcpy(instance._CDATA + offset, b._CDATA, b:size())
                 offset = offset + b:size()
             end
             instance._MANAGED  = true
@@ -138,7 +138,7 @@ function _instance.new(...)
                 os.raise("incorrect bounds(%d-%d)!", start, last)
             end
             instance._SIZE     = last - start + 1
-            instance._CDATA    = libc.diffptr(b:cdata(), -1 + start)
+            instance._CDATA    = b:cdata() -1 + start
             instance._REF      = b -- keep lua ref for GC
             instance._MANAGED  = false
             instance._READONLY = b:readonly()
@@ -324,7 +324,7 @@ end
 -- convert bytes to string
 function _instance:str(i, j)
     local offset = i and i - 1 or 0
-    return libc.strndup(libc.diffptr(self:cdata(), offset), (j or self:size()) - offset)
+    return libc.strndup(self:cdata() + offset, (j or self:size()) - offset)
 end
 
 -- get uint8 value

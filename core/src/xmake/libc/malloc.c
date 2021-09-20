@@ -38,15 +38,11 @@ tb_int_t xm_libc_malloc(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // check arguments?
-    if (!lua_isnumber(lua, 1))
-        xm_libc_return_error(lua, "libc.malloc(invalid size)!");
-
     // do malloc
     tb_pointer_t data = tb_null;
-    tb_int_t size = (tb_int_t)lua_tointeger(lua, 1);
+    tb_long_t size = (tb_long_t)luaL_checkinteger(lua, 1);
     if (size > 0) data = tb_malloc(size);
-    xm_lua_pushpointer(lua, data);
+    lua_pushinteger(lua, (lua_Integer)data);
     return 1;
 }
 

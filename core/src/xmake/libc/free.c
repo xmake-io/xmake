@@ -38,12 +38,8 @@ tb_int_t xm_libc_free(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // check arguments?
-    if (!xm_lua_ispointer(lua, 1))
-        xm_libc_return_error(lua, "libc.free(invalid data)!");
-
     // do free
-    tb_pointer_t data = (tb_pointer_t)xm_lua_topointer(lua, 1);
+    tb_pointer_t data = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
     if (data) tb_free(data);
     return 0;
 }

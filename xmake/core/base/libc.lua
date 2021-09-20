@@ -28,8 +28,6 @@ libc._memcpy  = libc._memcpy or libc.memcpy
 libc._memset  = libc._memset or libc.memset
 libc._strndup = libc._strndup or libc.strndup
 libc._dataptr = libc._dataptr or libc.dataptr
-libc._ptraddr = libc._ptraddr or libc.ptraddr
-libc._diffptr = libc._diffptr or libc.diffptr
 libc._byteof  = libc._byteof or libc.byteof
 libc._setbyte = libc._setbyte or libc.setbyte
 
@@ -112,14 +110,6 @@ function libc.setbyte(data, offset, value)
     end
 end
 
-function libc.diffptr(data, offset)
-    if ffi then
-        return data + offset
-    else
-        return libc._diffptr(data, offset)
-    end
-end
-
 function libc.dataptr(data, opt)
     if ffi then
         if opt and opt.gc then
@@ -128,7 +118,7 @@ function libc.dataptr(data, opt)
             return ffi.cast("unsigned char*", data)
         end
     else
-        return libc._dataptr(data)
+        return type(data) == "number" and data or libc._dataptr(data)
     end
 end
 
@@ -136,7 +126,7 @@ function libc.ptraddr(data)
     if ffi then
         return tonumber(ffi.cast('unsigned long long', data))
     else
-        return libc._ptraddr(data)
+        return data
     end
 end
 

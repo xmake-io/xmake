@@ -38,13 +38,9 @@ tb_int_t xm_libc_memcpy(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // check arguments?
-    if (!xm_lua_ispointer(lua, 1) || !xm_lua_ispointer(lua, 2) || !lua_isnumber(lua, 3))
-        xm_libc_return_error(lua, "memcpy(invalid args)!");
-
     // do memcpy
-    tb_pointer_t dst = (tb_pointer_t)xm_lua_topointer(lua, 1);
-    tb_pointer_t src = (tb_pointer_t)xm_lua_topointer(lua, 2);
+    tb_pointer_t dst = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
+    tb_pointer_t src = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 2);
     tb_int_t size = (tb_int_t)lua_tointeger(lua, 3);
     if (dst && src && size > 0)
         tb_memcpy(dst, src, size);

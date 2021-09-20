@@ -38,12 +38,8 @@ tb_int_t xm_libc_memset(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
-    // check arguments?
-    if (!xm_lua_ispointer(lua, 1) || !lua_isnumber(lua, 2) || !lua_isnumber(lua, 3))
-        xm_libc_return_error(lua, "memset(invalid args)!");
-
     // do memset
-    tb_pointer_t data = (tb_pointer_t)xm_lua_topointer(lua, 1);
+    tb_pointer_t data = (tb_pointer_t)(tb_size_t)luaL_checkinteger(lua, 1);
     tb_char_t ch = (tb_char_t)lua_tointeger(lua, 2);
     tb_int_t size = (tb_int_t)lua_tointeger(lua, 3);
     if (data && size > 0)
