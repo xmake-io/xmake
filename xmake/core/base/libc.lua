@@ -31,6 +31,7 @@ libc._dataptr = libc._dataptr or libc.dataptr
 libc._ptraddr = libc._ptraddr or libc.ptraddr
 libc._diffptr = libc._diffptr or libc.diffptr
 libc._byteof  = libc._byteof or libc.byteof
+libc._setbyte = libc._setbyte or libc.setbyte
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -100,6 +101,14 @@ function libc.byteof(data, offset)
         return data[offset]
     else
         return libc._byteof(data, offset)
+    end
+end
+
+function libc.setbyte(data, offset, value)
+    if ffi then
+        data[offset] = value
+    else
+        return libc._setbyte(data, offset, value)
     end
 end
 

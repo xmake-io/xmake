@@ -411,7 +411,7 @@ function _instance:__newindex(key, value)
         if key < 1 or key > self:size() then
             os.raise("%s: index(%d/%d) out of bounds!", self, key, self:size())
         end
-        self._CDATA[key - 1] = value
+        libc.setbyte(self._CDATA, key - 1, value)
         return
     elseif type(key) == "table" then
         local start, last = key[1], key[2]

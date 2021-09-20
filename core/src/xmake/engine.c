@@ -231,6 +231,7 @@ tb_int_t xm_libc_dataptr(lua_State* lua);
 tb_int_t xm_libc_ptraddr(lua_State* lua);
 tb_int_t xm_libc_diffptr(lua_State* lua);
 tb_int_t xm_libc_byteof(lua_State* lua);
+tb_int_t xm_libc_setbyte(lua_State* lua);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
@@ -435,6 +436,7 @@ static luaL_Reg const g_libc_functions[] =
 ,   { "ptraddr",        xm_libc_ptraddr     }
 ,   { "diffptr",        xm_libc_diffptr     }
 ,   { "byteof",         xm_libc_byteof      }
+,   { "setbyte",        xm_libc_setbyte     }
 ,   { tb_null,          tb_null             }
 };
 
