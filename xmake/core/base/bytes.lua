@@ -24,7 +24,6 @@ local _instance = _instance or {}
 
 -- load modules
 local bit        = require("base/bit")
-local ffi        = xmake._LUAJIT and require("ffi") or nil
 local os         = require("base/os")
 local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
@@ -52,7 +51,7 @@ function _instance.new(...)
             local ptr = arg2
             local manage = arg3
             if manage then
-                instance._CDATA   = ffi.gc(libc.dataptr(ptr), ffi.C.free)
+                instance._CDATA   = libc.dataptr(ptr, {gc = true})
                 instance._MANAGED = true
             else
                 instance._CDATA   = libc.dataptr(ptr)
@@ -70,7 +69,7 @@ function _instance.new(...)
                     os.raise("invalid arguments #2 for bytes(size, ...), cdata, string, number or nil expected!")
                 end
             end
-            local ptr = libc.gcmalloc(size)
+            local ptr = libc.malloc(size, {gc = true})
             if init then
                 libc.memset(ptr, init, size)
             end
@@ -107,7 +106,7 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = libc.gcmalloc(instance._SIZE)
+            instance._CDATA = libc.malloc(instance._SIZE, {gc = true})
             local offset = 0
             for _, b in ipairs(args) do
                 libc.memcpy(instance._CDATA + offset, b:cdata(), b:size())
@@ -122,7 +121,7 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = libc.gcmalloc(instance._SIZE)
+            instance._CDATA = libc.malloc(instance._SIZE, {gc = true})
             local offset = 0
             for _, b in ipairs(args) do
                 libc.memcpy(instance._CDATA + offset, b._CDATA, b:size())
@@ -325,7 +324,7 @@ end
 -- convert bytes to string
 function _instance:str(i, j)
     local offset = i and i - 1 or 0
-    return ffi.string(self:cdata() + offset, (j or self:size()) - offset)
+    return libc.strndup(self:cdata() + offset, (j or self:size()) - offset)
 end
 
 -- get uint8 value
@@ -451,6 +450,10 @@ end
 -- it's only called for lua runtime, because bytes is not userdata
 function _instance:__gc()
     print("gc")
+    if self._MANAGED and self._CDATA then
+        libc.free(self._CDATA)
+        self._CDATA = nil
+    end
 end
 
 -- new an bytes instance

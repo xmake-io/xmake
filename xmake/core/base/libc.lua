@@ -40,19 +40,14 @@ if ffi then
     ]]
 end
 
-function libc.malloc(size)
+function libc.malloc(size, opt)
     if ffi then
-        return ffi.cast("unsigned char*", ffi.C.malloc(size))
+        if opt and opt.gc then
+            return ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(size)), ffi.C.free)
+        else
+            return ffi.cast("unsigned char*", ffi.C.malloc(size))
+        end
     else
-        return libc._malloc(size)
-    end
-end
-
-function libc.gcmalloc(size)
-    if ffi then
-        return ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(size)), ffi.C.free)
-    else
-        -- @note we need free it in lua/__gc manually
         return libc._malloc(size)
     end
 end
@@ -81,9 +76,21 @@ function libc.memset(data, ch, size)
     end
 end
 
-function libc.dataptr(data)
+function libc.strndup(s, n)
     if ffi then
-        return ffi.cast("unsigned char*", data)
+        return ffi.string(s, n)
+    else
+        return libc._strndup(s, n)
+    end
+end
+
+function libc.dataptr(data, opt)
+    if ffi then
+        if opt and opt.gc then
+            return ffi.gc(ffi.cast("unsigned char*", data), ffi.C.free)
+        else
+            return ffi.cast("unsigned char*", data)
+        end
     else
         return libc._dataptr(data)
     end
