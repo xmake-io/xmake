@@ -46,6 +46,15 @@ function libc.malloc(size)
     end
 end
 
+function libc.gcmalloc(size)
+    if ffi then
+        return ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(size)), ffi.C.free)
+    else
+        -- @note we need free it in lua/__gc manually
+        return libc._malloc(size)
+    end
+end
+
 function libc.free(data)
     if ffi then
         return ffi.C.free(data)

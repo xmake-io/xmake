@@ -28,6 +28,7 @@ local ffi        = xmake._LUAJIT and require("ffi") or nil
 local os         = require("base/os")
 local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
+local libc       = require("base/libc")
 
 -- define ffi interfaces
 if ffi then
@@ -77,11 +78,11 @@ function _instance.new(...)
                     os.raise("invalid arguments #2 for bytes(size, ...), cdata, string, number or nil expected!")
                 end
             end
-            local ptr = ffi.C.malloc(size)
+            local ptr = libc.gcmalloc(size)
             if init then
-                ffi.fill(ptr, size, init)
+                libc.memset(ptr, init, size)
             end
-            instance._CDATA   = ffi.gc(ffi.cast("unsigned char*", ptr), ffi.C.free)
+            instance._CDATA   = ptr
             instance._MANAGED = true
         end
         instance._SIZE     = size
@@ -114,10 +115,10 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(instance._SIZE)), ffi.C.free)
+            instance._CDATA = libc.gcmalloc(instance._SIZE)
             local offset = 0
             for _, b in ipairs(args) do
-                ffi.copy(instance._CDATA + offset, b:cdata(), b:size())
+                libc.memcpy(instance._CDATA + offset, b:cdata(), b:size())
                 offset = offset + b:size()
             end
             instance._MANAGED  = true
@@ -129,10 +130,10 @@ function _instance.new(...)
             for _, b in ipairs(args) do
                 instance._SIZE = instance._SIZE + b:size()
             end
-            instance._CDATA = ffi.gc(ffi.cast("unsigned char*", ffi.C.malloc(instance._SIZE)), ffi.C.free)
+            instance._CDATA = libc.gcmalloc(instance._SIZE)
             local offset = 0
             for _, b in ipairs(args) do
-                ffi.copy(instance._CDATA + offset, b._CDATA, b:size())
+                libc.memcpy(instance._CDATA + offset, b._CDATA, b:size())
                 offset = offset + b:size()
             end
             instance._MANAGED  = true
@@ -218,7 +219,7 @@ function _instance:copy(src)
     if src:size() ~= self:size() then
         os.raise("%s: cannot copy bytes, src and dst must have same size(%d->%d)!", self, src:size(), self:size())
     end
-    ffi.copy(self:cdata(), src:cdata(), self:size())
+    libc.memcpy(self:cdata(), src:cdata(), self:size())
     return self
 end
 
@@ -453,6 +454,11 @@ function _instance:__todisplay()
         parts[i] = "0x" .. bit.tohex(self[i], 2)
     end
     return "bytes${reset}(" .. todisplay(self:size()) .. ") <${color.dump.number}" .. table.concat(parts, " ") .. (self:size() > 8 and "${reset} ..>" or "${reset}>")
+end
+
+-- it's only called for lua runtime, because bytes is not userdata
+function _instance:__gc()
+    print("gc")
 end
 
 -- new an bytes instance
