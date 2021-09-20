@@ -122,6 +122,7 @@ xmake_C_FILES 			+= \
 						libc/memcpy \
 						libc/dataptr \
 						libc/ptraddr \
+						libc/diffptr \
 						libc/strndup
 
 iswin =

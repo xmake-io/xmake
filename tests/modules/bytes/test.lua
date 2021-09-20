@@ -1,9 +1,5 @@
 import("core.base.bytes")
 
-if not xmake.luajit() then
-    return
-end
-
 function test_ctor(t)
     t:are_equal(bytes("123456789"):str(), "123456789")
     t:are_equal(bytes(bytes("123456789")):str(), "123456789")
@@ -12,19 +8,17 @@ function test_ctor(t)
     t:are_equal(bytes(10):size(), 10)
     t:are_equal(bytes(bytes("123"), bytes("456"), bytes("789")):str(), "123456789")
     t:are_equal(bytes({bytes("123"), bytes("456"), bytes("789")}):str(), "123456789")
-    debug.collectgarbage()
 end
 
+--[[
 function test_clone(t)
     t:are_equal(bytes(10):clone():size(), 10)
     t:are_equal(bytes("123456789"):clone():str(), "123456789")
-    debug.collectgarbage()
 end
 
 function test_slice(t)
     t:are_equal(bytes(10):slice(1, 2):size(), 2)
     t:are_equal(bytes("123456789"):slice(1, 4):str(), "1234")
-    debug.collectgarbage()
 end
 
 function test_index(t)
@@ -37,11 +31,9 @@ function test_index(t)
     b[1] = string.byte('2')
     t:are_equal(b:str(), "223456789")
     t:will_raise(function() b[100] = string.byte('2') end)
-    debug.collectgarbage()
 end
 
 function test_concat(t)
     t:are_equal((bytes("123") .. bytes("456")):str(), "123456")
     t:are_equal(bytes(bytes("123"), bytes("456")):str(), "123456")
-    debug.collectgarbage()
-end
+end]]

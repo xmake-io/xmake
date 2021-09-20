@@ -26,8 +26,10 @@ libc._malloc  = libc._malloc or libc.malloc
 libc._free    = libc._free or libc.free
 libc._memcpy  = libc._memcpy or libc.memcpy
 libc._memset  = libc._memset or libc.memset
+libc._strndup = libc._strndup or libc.strndup
 libc._dataptr = libc._dataptr or libc.dataptr
 libc._ptraddr = libc._ptraddr or libc.ptraddr
+libc._diffptr = libc._diffptr or libc.diffptr
 
 -- load modules
 local ffi = xmake._LUAJIT and require("ffi")
@@ -48,7 +50,11 @@ function libc.malloc(size, opt)
             return ffi.cast("unsigned char*", ffi.C.malloc(size))
         end
     else
-        return libc._malloc(size)
+        local data, errors = libc._malloc(size)
+        if not data then
+            os.raise(errors)
+        end
+        return data
     end
 end
 
@@ -72,7 +78,7 @@ function libc.memset(data, ch, size)
     if ffi then
         return ffi.fill(data, size, ch)
     else
-        return libc._memset(data, ch, size)
+        libc._memset(data, ch, size)
     end
 end
 
@@ -80,7 +86,19 @@ function libc.strndup(s, n)
     if ffi then
         return ffi.string(s, n)
     else
-        return libc._strndup(s, n)
+        local s, errors = libc._strndup(s, n)
+        if not s then
+            os.raise(errors)
+        end
+        return s
+    end
+end
+
+function libc.diffptr(data, offset)
+    if ffi then
+        return data + offset
+    else
+        return libc._diffptr(data, offset)
     end
 end
 

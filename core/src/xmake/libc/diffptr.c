@@ -15,14 +15,14 @@
  * Copyright (C) 2015-present, TBOOX Open Source Group.
  *
  * @author      ruki
- * @file        ptraddr.c
+ * @file        diffptr.c
  *
  */
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * trace
  */
-#define TB_TRACE_MODULE_NAME    "ptraddr"
+#define TB_TRACE_MODULE_NAME    "diffptr"
 #define TB_TRACE_MODULE_DEBUG   (0)
 
 /* //////////////////////////////////////////////////////////////////////////////////////
@@ -33,23 +33,25 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * implementation
  */
-tb_int_t xm_libc_ptraddr(lua_State* lua)
+tb_int_t xm_libc_diffptr(lua_State* lua)
 {
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+    // get data
+    tb_pointer_t data = tb_null;
     if (xm_lua_ispointer(lua, 1))
-    {
-        tb_pointer_t data = (tb_pointer_t)xm_lua_topointer(lua, 1);
-        lua_pushnumber(lua, (lua_Number)(tb_hize_t)data);
-        return 1;
-    }
+        data = (tb_pointer_t)xm_lua_topointer(lua, 1);
     else if (lua_isstring(lua, 1))
-    {
-        tb_char_t const* cstr = luaL_checkstring(lua, 1);
-        lua_pushnumber(lua, (lua_Number)(tb_hize_t)cstr);
-        return 1;
-    }
-    xm_libc_return_error(lua, "libc.ptraddr(invalid data)!");
+        data = (tb_pointer_t)luaL_checkstring(lua, 1);
+    else xm_libc_return_error(lua, "libc.diffptr(invalid data)!");
+
+    // get offset
+    tb_int_t offset = 0;
+    if (lua_isnumber(lua, 2))
+        offset = (tb_int_t)lua_tonumber(lua, 2);
+    else xm_libc_return_error(lua, "libc.diffptr(invalid offset)!");
+    xm_lua_pushpointer(lua, data + offset);
+    return 1;
 }
 

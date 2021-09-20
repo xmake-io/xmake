@@ -40,7 +40,7 @@ tb_int_t xm_libc_malloc(lua_State* lua)
 
     // check arguments?
     if (!lua_isnumber(lua, 1))
-        xm_libc_return_error(lua, "malloc(invalid size)!");
+        xm_libc_return_error(lua, "libc.malloc(invalid size)!");
 
     // do malloc
     tb_pointer_t data = tb_null;

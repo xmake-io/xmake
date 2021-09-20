@@ -50,6 +50,6 @@ tb_int_t xm_libc_dataptr(lua_State* lua)
         xm_lua_pushpointer(lua, (tb_pointer_t)cstr);
         return 1;
     }
-    xm_libc_return_error(lua, "dataptr(invalid data)!");
+    xm_libc_return_error(lua, "libc.dataptr(invalid data)!");
 }
 
