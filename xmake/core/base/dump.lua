@@ -196,7 +196,7 @@ function dump._print_udata(value, first_indent, remain_indent, printed_set)
     io.write(first_indent)
 
     if not first_level then
-        return dump._print_udata_scalar(value)
+        io.write(todisplay._print_udata_scalar(value))
     end
     local inner_indent = remain_indent .. "  "
 
