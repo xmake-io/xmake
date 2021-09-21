@@ -1,6 +1,6 @@
 target("lcurses")
     set_kind("static")
-    add_deps(get_config("backend"))
+    add_deps(get_config("runtime"))
     if is_plat("windows") and has_config("pdcurses") then
         add_deps("pdcurses")
         add_defines("XM_CONFIG_API_HAVE_CURSES", {public = true})

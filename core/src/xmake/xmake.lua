@@ -8,7 +8,7 @@ target("xmake")
         add_deps("lcurses")
     end
     add_deps("sv", "lua-cjson", "tbox")
-    add_deps(get_config("backend"))
+    add_deps(get_config("runtime"))
 
     -- add defines
     add_defines("__tb_prefix__=\"xmake\"")

@@ -40,11 +40,11 @@ if is_mode("coverage") then
     add_ldflags("-coverage", "-fprofile-arcs", "-ftest-coverage")
 end
 
--- the backend option
-option("backend")
+-- the runtime option
+option("runtime")
     set_showmenu(true)
     set_default("luajit")
-    set_description("Use luajit or lua backend")
+    set_description("Use luajit or lua runtime")
     set_values("luajit", "lua")
 option_end()
 

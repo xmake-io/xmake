@@ -919,7 +919,7 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         lua_pushstring(engine->lua, name? name : "xmake");
         lua_setglobal(engine->lua, "_NAME");
 
-        // use luajit as backend?
+        // use luajit as runtime?
 #ifdef USE_LUAJIT
         lua_pushboolean(engine->lua, tb_true);
 #else
