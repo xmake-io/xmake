@@ -66,6 +66,6 @@ function main(toolchain)
     _add_vsenv(toolchain, "WindowsSDKVersion")
 
     -- add some default flags
-    toolchain:add("cxxflags", "/EHsc")
+    toolchain:add("cl.cxxflags", "/EHsc")
 end
 
