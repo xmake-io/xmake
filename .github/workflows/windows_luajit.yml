@@ -1,4 +1,4 @@
-name: Windows (Lua)
+name: Windows (Luajit)
 
 on:
   pull_request:
@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     concurrency:
-        group: ${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-Windows-Lua
+        group: ${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.arch }}-Windows-Luajit
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
@@ -49,7 +49,7 @@ jobs:
 
       - name: Build
         run: |
-          xmake f -vD -P core -a ${{ matrix.arch }} --runtime=lua
+          xmake f -vD -P core -a ${{ matrix.arch }} --runtime=luajit
           xmake -vD -P core
 
       - name: Tests
