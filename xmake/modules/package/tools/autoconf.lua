@@ -112,6 +112,7 @@ end
 function buildenvs(package, opt)
     opt = opt or {}
     local envs = {}
+    local cppflags = {}
     if package:is_plat(os.subhost()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
@@ -127,10 +128,12 @@ function buildenvs(package, opt)
         table.join2(cflags,   opt.cxflags)
         table.join2(cxxflags, opt.cxxflags)
         table.join2(cxxflags, opt.cxflags)
+        table.join2(cppflags, opt.cppflags) -- @see https://github.com/xmake-io/xmake/issues/1688
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
+        envs.CPPFLAGS  = table.concat(cppflags, ' ')
         envs.ASFLAGS   = table.concat(asflags, ' ')
         envs.LDFLAGS   = table.concat(ldflags, ' ')
     else
