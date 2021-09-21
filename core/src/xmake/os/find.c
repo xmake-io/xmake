@@ -177,10 +177,10 @@ tb_int_t xm_os_find(lua_State* lua)
     tb_check_return_val(pattern, 0);
 
     // the recursion level
-    tb_long_t recursion = lua_tointeger(lua, 3);
+    tb_long_t recursion = (tb_long_t)lua_tointeger(lua, 3);
 
     // the match mode
-    tb_long_t mode = lua_tointeger(lua, 4);
+    tb_long_t mode = (tb_long_t)lua_tointeger(lua, 4);
 
     // init table
     lua_newtable(lua);

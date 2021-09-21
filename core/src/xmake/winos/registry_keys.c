@@ -172,7 +172,7 @@ tb_int_t xm_winos_registry_keys(lua_State* lua)
     // get the arguments
     tb_char_t const* rootkey = luaL_checkstring(lua, 1);
     tb_char_t const* rootdir = luaL_checkstring(lua, 2);
-    tb_long_t recursion      = lua_tointeger(lua, 3);
+    tb_long_t recursion      = (tb_long_t)lua_tointeger(lua, 3);
     tb_bool_t is_function    = lua_isfunction(lua, 4);
     tb_check_return_val(rootkey && rootdir && is_function, 0);
 
