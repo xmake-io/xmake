@@ -237,7 +237,12 @@ function serialize._make(obj, opt)
     -- call make* by type
     if type(obj) == "string" then
         return serialize._makestring(obj, opt)
-    elseif type(obj) == "boolean" or type(obj) == "nil" or type(obj) == "number" then
+    elseif type(obj) == "boolean" or type(obj) == "nil" then
+        return serialize._makedefault(obj, opt)
+    elseif type(obj) == "number" then
+        if math.isnan(obj) then -- fix nan for lua 5.3, -nan(ind)
+            return "nan"
+        end
         return serialize._makedefault(obj, opt)
     elseif type(obj) == "table" then
         return serialize._maketable(obj, opt)
