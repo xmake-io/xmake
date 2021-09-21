@@ -337,6 +337,8 @@ function colors.translate(str, opt)
                         -- unknown code, regard as plain text
                         table.insert(text_buffer, block)
                     end
+                elseif not opt.ignore_unknown then
+                    table.insert(text_buffer, block)
                 end
             end
 
