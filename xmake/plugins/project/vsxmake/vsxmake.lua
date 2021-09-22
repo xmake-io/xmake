@@ -167,7 +167,9 @@ function _writefileifneeded(file, content)
         dprint("skipped file %s since the file has the same content", path.relative(file))
         return
     end
-    io.writefile(file, content)
+    -- we need utf8 with bom encoding for unicode
+    -- @see https://github.com/xmake-io/xmake/issues/1689
+    io.writefile(file, content, {encoding = "utf8bom"})
 end
 
 function _clear_cacheconf()

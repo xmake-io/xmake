@@ -33,6 +33,36 @@
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */
+static tb_void_t xm_io_file_write_file_utfbom(xm_io_file_t* file)
+{
+    // check
+    tb_assert(file && data && xm_io_file_is_file(file) && file->file_ref);
+
+    // write bom
+    switch (file->encoding)
+    {
+    case TB_CHARSET_TYPE_UTF8:
+        {
+            static tb_byte_t bom[] = {0xef, 0xbb, 0xbf};
+            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+        }
+        break;
+    case TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_LE:
+        {
+            static tb_byte_t bom[] = {0xff, 0xfe};
+            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+        }
+        break;
+    case TB_CHARSET_TYPE_UTF16 | TB_CHARSET_TYPE_BE:
+        {
+            static tb_byte_t bom[] = {0xfe, 0xff};
+            tb_stream_bwrit(file->file_ref, bom, sizeof(bom));
+        }
+        break;
+    default:
+        break;
+    }
+}
 static tb_void_t xm_io_file_write_file_directly(xm_io_file_t* file, tb_char_t const* data, tb_size_t size)
 {
     // check
@@ -141,7 +171,15 @@ tb_int_t xm_io_file_write(lua_State* lua)
             else if (is_binary)
                 xm_io_file_write_file_directly(file, data, (tb_size_t)datasize);
             else
+            {
+                // write utf bom first?
+                if (file->utfbom)
+                {
+                    xm_io_file_write_file_utfbom(file);
+                    file->utfbom = tb_false;
+                }
                 xm_io_file_write_file_transcrlf(file, data, (tb_size_t)datasize);
+            }
         }
     }
     lua_settop(lua, 1);
