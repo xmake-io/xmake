@@ -19,6 +19,7 @@
 ### Bugs fixed
 
 * [#1671](https://github.com/xmake-io/xmake/issues/1671): Fix incorrect absolute path after installing precompiled packages
+* [#1689](https://github.com/xmake-io/xmake/issues/1689): Fix unicode chars bug for vsxmake
 
 ## v2.5.7
 
@@ -1095,6 +1096,7 @@
 ### Bugs 修复
 
 * [#1671](https://github.com/xmake-io/xmake/issues/1671): 修复安装预编译包后，*.cmake 里面的一些不正确的绝对路径
+* [#1689](https://github.com/xmake-io/xmake/issues/1689): 修复 vsxmake 插件的 unicode 字符显示和加载问题
 
 ## v2.5.7
 
