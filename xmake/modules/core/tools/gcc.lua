@@ -113,8 +113,8 @@ function nf_warning(self, level)
     ,   less       = "-Wall"
     ,   more       = "-Wall"
     ,   all        = "-Wall"
-    ,   allextra   = "-Wall -Wextra"
-    ,   everything = "-Wall -Wextra -Weffc++"
+    ,   allextra   = {"-Wall", "-Wextra"}
+    ,   everything = self:kind() == "cxx" and {"-Wall", "-Wextra", "-Weffc++"} or {"-Wall", "-Wextra"}
     ,   error      = "-Werror"
     }
     return maps[level]
