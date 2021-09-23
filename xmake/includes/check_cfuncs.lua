@@ -49,7 +49,7 @@ function check_cfuncs(definition, funcs, opt)
         if opt.cflags then
             add_cflags(opt.cflags)
         end
-        if opt.cflags then
+        if opt.cxflags then
             add_cxflags(opt.cxflags)
         end
         if opt.defines then
