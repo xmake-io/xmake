@@ -4,6 +4,7 @@
 ${define FOO_ENABLE}
 ${define FOO_ENABLE2}
 ${define FOO_STRING}
+${define FOO_DEFINE}
 
 ${define FOO2_ENABLE}
 ${define FOO2_ENABLE2}

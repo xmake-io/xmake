@@ -167,7 +167,9 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
             -- get variables from the target
             for name, value in pairs(target:get("configvar")) do
                 if variables[name] == nil then
-                    variables[name] = table.unwrap(value)
+                    value = table.unwrap(value)
+                    variables[name] = value
+                    variables["__extraconf_" .. name] = target:extraconf("configvar." .. name, value)
                 end
             end
 
@@ -236,6 +238,7 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
 
             -- get variable value
             local value = variables[variable]
+            local extraconf = variables["__extraconf_" .. variable]
             if isdefine then
                 if value == nil then
                     value = ("/* #undef %s */"):format(variable)
@@ -248,7 +251,12 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 elseif type(value) == "number" then
                     value = ("#define %s %d"):format(variable, value)
                 elseif type(value) == "string" then
-                    value = ("#define %s \"%s\""):format(variable, value)
+                    -- disable to wrap quote, @see https://github.com/xmake-io/xmake/issues/1694
+                    if extraconf and extraconf.quote == false then
+                        value = ("#define %s %s"):format(variable, value)
+                    else
+                        value = ("#define %s \"%s\""):format(variable, value)
+                    end
                 else
                     raise("unknown variable(%s) type: %s", variable, type(value))
                 end
