@@ -164,7 +164,7 @@ function colors.rainbow24(index, seed, freq, spread)
     local blue  = math.sin(freq * index + 4 * math.pi / 3) * 127 + 128
 
     -- make code
-    return string.format("%d;%d;%d", red, green, blue)
+    return string.format("%d;%d;%d", math.floor(red), math.floor(green), math.floor(blue))
 end
 
 -- make rainbow color256 code by the index of characters (16-256)
