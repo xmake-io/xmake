@@ -60,7 +60,9 @@ function configvar_check_features(definition, features, opt)
     local defname, defval = unpack(definition:split('='))
     option(optname)
         add_features(features)
-        set_configvar(defname, defval or 1)
+        if opt.default == nil then
+            set_configvar(defname, defval or 1, {quote = opt.quote})
+        end
         if opt.languages then
             set_languages(opt.languages)
         end
@@ -74,5 +76,9 @@ function configvar_check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
-    add_options(optname)
+    if opt.default == nil then
+        add_options(optname)
+    else
+        set_configvar(defname, has_config(optname) and (defval or 1) or opt.default, {quote = opt.quote})
+    end
 end

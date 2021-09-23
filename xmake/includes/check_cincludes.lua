@@ -54,7 +54,13 @@ function configvar_check_cincludes(definition, includes, opt)
         if opt.includedirs then
             add_includedirs(opt.includedirs)
         end
-        set_configvar(defname, defval or 1)
+        if opt.default == nil then
+            set_configvar(defname, defval or 1, {quote = opt.quote})
+        end
     option_end()
-    add_options(optname)
+    if opt.default == nil then
+        add_options(optname)
+    else
+        set_configvar(defname, has_config(optname) and (defval or 1) or opt.default, {quote = opt.quote})
+    end
 end
