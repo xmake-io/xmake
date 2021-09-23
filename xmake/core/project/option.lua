@@ -69,7 +69,7 @@ function _instance:_clear()
 end
 
 -- check snippets
-function _instance:_do_check_cxsnippts(snippets)
+function _instance:_do_check_cxsnippets(snippets)
 
     -- import check_cxsnippets()
     self._check_cxsnippets = self._check_cxsnippets or sandbox_module.import("lib.detect.check_cxsnippets", {anonymous = true})
@@ -220,7 +220,7 @@ end
 function _instance:_do_check()
 
     -- check snippets
-    local ok, passed, errors = self:_do_check_cxsnippts()
+    local ok, passed, errors = self:_do_check_cxsnippets()
     if not ok then
         return false, errors
     end
