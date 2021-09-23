@@ -1,6 +1,5 @@
 ${define HAS_STRING_H}
 ${define HAS_STRING_AND_STDIO_H}
-${define HAS_WCHAR}
 ${define HAS_WCHAR_AND_FLOAT}
 ${define HAS_PTHREAD}
 ${define HAS_STATIC_ASSERT}
@@ -10,3 +9,4 @@ ${define HAS_CONSEXPR_AND_STATIC_ASSERT}
 ${define HAS_SSE2}
 ${define HAS_LONG_8}
 ${define PTR_SIZE}
+#define HAS_WCHAR ${default HAS_WCHAR 0}

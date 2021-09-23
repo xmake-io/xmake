@@ -9,3 +9,5 @@ ${define FOO_DEFINE}
 ${define FOO2_ENABLE}
 ${define FOO2_ENABLE2}
 ${define FOO2_STRING}
+
+#define HAVE_SSE2 ${default HAVE_SSE2 0}

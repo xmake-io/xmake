@@ -729,7 +729,7 @@ function _instance:orderopts(opt)
 
         -- load options if be enabled
         orderopts = {}
-        for _, name in ipairs(table.wrap(self:get("options"))) do
+        for _, name in ipairs(table.wrap(self:get("options", opt))) do
             local opt_ = nil
             if config.get(name) then opt_ = option.load(name) end
             if opt_ then
@@ -738,7 +738,7 @@ function _instance:orderopts(opt)
         end
 
         -- load options from packages if no require info, be compatible with the option package in (*.pkg)
-        for _, name in ipairs(table.wrap(self:get("packages"))) do
+        for _, name in ipairs(table.wrap(self:get("packages", opt))) do
             if not project_package.load(name) then
                 local opt_ = nil
                 if config.get(name) then opt_ = option.load(name) end
