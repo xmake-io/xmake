@@ -36,6 +36,12 @@ xmake._WORKING_DIR      = os.curdir()
 xmake._FEATURES         = _FEATURES
 xmake._LUAJIT           = _LUAJIT
 
+-- In order to be compatible with updates from lower versions of engine core
+-- @see https://github.com/xmake-io/xmake/issues/1694#issuecomment-925507210
+if xmake._LUAJIT == nil then
+    xmake._LUAJIT = true
+end
+
 -- load the given lua file
 function _loadfile_impl(filepath, mode, opt)
 
