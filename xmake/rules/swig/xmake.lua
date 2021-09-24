@@ -27,10 +27,9 @@
 rule("swig.base")
     on_load(function (target)
         target:set("kind", "shared")
+        target:set("prefixname", "_")
         if target:is_plat("windows") then
             target:set("extension", ".pyd")
-        elseif target:is_plat("linux") then
-            target:set("prefixname", "_")
         end
         local scriptfiles = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
