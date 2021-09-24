@@ -60,6 +60,8 @@ function check_cxxsnippets(definition, snippets, opt)
                 if option:value() then
                     if opt.number then
                         option:add("defines", definition .. "=" .. tonumber(option:value()))
+                    elseif opt.quote == false then
+                        option:add("defines", definition .. "=" .. option:value())
                     else
                         option:add("defines", definition .. "=\"" .. option:value() .. "\"")
                     end
@@ -76,6 +78,8 @@ end
 --
 -- configvar_check_cxxsnippets("HAS_STATIC_ASSERT", "static_assert(1, \"\");")
 -- configvar_check_cxxsnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true})
+-- configvar_check_cxxsnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, default = 0})
+-- configvar_check_cxxsnippets("LONG_SIZE=8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, quote = false})
 -- configvar_check_cxxsnippets("PTR_SIZE", 'printf("%d", sizeof(void*)); return 0;', {output = true, number = true})
 --
 function configvar_check_cxxsnippets(definition, snippets, opt)
@@ -84,7 +88,9 @@ function configvar_check_cxxsnippets(definition, snippets, opt)
     local defname, defval = unpack(definition:split('='))
     option(optname)
         add_cxxsnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})
-        set_configvar(defname, defval or 1)
+        if opt.default == nil then
+            set_configvar(defname, defval or 1, {quote = opt.quote})
+        end
         if opt.links then
             add_links(opt.links)
         end
@@ -109,10 +115,14 @@ function configvar_check_cxxsnippets(definition, snippets, opt)
         if opt.output then
             after_check(function (option)
                 if option:value() then
-                    option:set("configvar", defname, opt.number and tonumber(option:value()) or option:value())
+                    option:set("configvar", defname, opt.number and tonumber(option:value()) or option:value(), {quote = opt.quote})
                 end
             end)
         end
     option_end()
-    add_options(optname)
+    if opt.default == nil then
+        add_options(optname)
+    else
+        set_configvar(defname, has_config(optname) and (defval or 1) or opt.default, {quote = opt.quote})
+    end
 end
