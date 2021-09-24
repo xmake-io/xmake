@@ -39,7 +39,7 @@ function main(opt)
 
     -- init options
     opt = opt or {}
-    opt.check = opt.check or "-help"
+    opt.check = opt.check or "-version"
 
     -- find program
     local program = find_program(opt.program or "swig", opt)
