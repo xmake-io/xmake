@@ -76,6 +76,8 @@ end
 --
 -- configvar_check_csnippets("HAS_STATIC_ASSERT", "_Static_assert(1, \"\");", {includes = "stdio.h"})
 -- configvar_check_csnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true})
+-- configvar_check_csnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, default = 0})
+-- configvar_check_csnippets("LONG_SIZE=8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, quote = false})
 -- configvar_check_csnippets("PTR_SIZE", 'printf("%d", sizeof(void*)); return 0;', {output = true, number = true})
 --
 function configvar_check_csnippets(definition, snippets, opt)

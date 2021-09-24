@@ -40,6 +40,7 @@ end
 -- e.g.
 --
 -- configvar_check_syslinks("HAS_PTHREAD", "pthread")
+-- configvar_check_syslinks("HAS_PTHREAD", "pthread", {default = 0})
 -- configvar_check_syslinks("HAS_PTHREAD", {"pthread", "m", "dl"})
 --
 function configvar_check_syslinks(definition, links, opt)

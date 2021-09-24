@@ -40,6 +40,7 @@ end
 -- e.g.
 --
 -- configvar_check_cxxincludes("HAS_STRING_H", "string.h")
+-- configvar_check_cxxincludes("HAS_STRING_H", "string.h", {default = 0})
 -- configvar_check_cxxincludes("HAS_STRING_AND_STDIO_H", {"string.h", "stdio.h"})
 --
 function configvar_check_cxxincludes(definition, includes, opt)

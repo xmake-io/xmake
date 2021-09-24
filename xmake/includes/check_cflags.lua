@@ -23,7 +23,7 @@
 -- e.g.
 --
 -- check_cflags("HAS_SSE2", "-msse2")
--- check_cflags("HAS_SSE2", {"-msse2", "/arch:SSE2"})
+-- check_cflags("HAS_SSE2", {"-msse", "-msse2"})
 --
 function check_cflags(definition, flags, opt)
     opt = opt or {}
@@ -45,8 +45,10 @@ end
 -- e.g.
 --
 -- configvar_check_cflags("HAS_SSE2", "-msse2")
--- configvar_check_cflags("HAS_SSE2", {"-msse2", "/arch:SSE2"})
--- configvar_check_cflags("SSE=2", "-msse2")
+-- configvar_check_cflags("HAS_SSE2", {"-msse", "-msse2"})
+-- configvar_check_cflags("HAS_SSE2", "-msse2", {default = 0})
+-- configvar_check_cflags("SSE_STR=2", "-msse2")
+-- configvar_check_cflags("SSE=2", "-msse2", {quote = false})
 --
 function configvar_check_cflags(definition, flags, opt)
     opt = opt or {}

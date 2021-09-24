@@ -68,6 +68,8 @@ end
 --
 -- configvar_check_cxxfuncs("HAS_SETJMP", "setjmp", {includes = {"signal.h", "setjmp.h"}, links = {}})
 -- configvar_check_cxxfuncs("HAS_SETJMP", {"setjmp", "sigsetjmp{sigsetjmp((void*)0, 0);}"})
+-- configvar_check_cxxfuncs("HAS_SETJMP", "setjmp", {includes = {"setjmp.h"}, default = 0})
+-- configvar_check_cxxfuncs("CUSTOM_SETJMP=setjmp", "setjmp", {includes = {"setjmp.h"}, default = "", quote = false})
 --
 function configvar_check_cxxfuncs(definition, funcs, opt)
     opt = opt or {}

@@ -55,6 +55,8 @@ end
 -- e.g.
 --
 -- configvar_check_cxxtypes("HAS_WCHAR", "wchar_t")
+-- configvar_check_cxxtypes("HAS_WCHAR", "wchar_t", {default = 0})
+-- configvar_check_cxxtypes("CUSTOM_WCHAR=wchar_t", "wchar_t", {default = "", quote = false})
 -- configvar_check_cxxtypes("HAS_WCHAR_AND_FLOAT", {"wchar_t", "float"})
 --
 function configvar_check_cxxtypes(definition, types, opt)

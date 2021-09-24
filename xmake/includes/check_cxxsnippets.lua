@@ -76,6 +76,8 @@ end
 --
 -- configvar_check_cxxsnippets("HAS_STATIC_ASSERT", "static_assert(1, \"\");")
 -- configvar_check_cxxsnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true})
+-- configvar_check_cxxsnippets("HAS_LONG_8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, default = 0})
+-- configvar_check_cxxsnippets("LONG_SIZE=8", "return (sizeof(long) == 8)? 0 : -1;", {tryrun = true, quote = false})
 -- configvar_check_cxxsnippets("PTR_SIZE", 'printf("%d", sizeof(void*)); return 0;', {output = true, number = true})
 --
 function configvar_check_cxxsnippets(definition, snippets, opt)

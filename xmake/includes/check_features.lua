@@ -52,6 +52,7 @@ end
 -- e.g.
 --
 -- configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr")
+-- configvar_check_features("HAS_CONSTEXPR", "cxx_constexpr", {default = 0})
 -- configvar_check_features("HAS_CONSEXPR_AND_STATIC_ASSERT", {"cxx_constexpr", "c_static_assert"}, {languages = "c++11"})
 --
 function configvar_check_features(definition, features, opt)
