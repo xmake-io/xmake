@@ -6,6 +6,7 @@
 
 * [#388](https://github.com/xmake-io/xmake/issues/388): Pascal Language Support
 * [#1682](https://github.com/xmake-io/xmake/issues/1682): Add optional lua5.3 backend instead of luajit to provide better compatibility
+* [#1622](https://github.com/xmake-io/xmake/issues/1622): Support Swig
 
 ### Change
 
@@ -1084,6 +1085,7 @@
 
 * [#388](https://github.com/xmake-io/xmake/issues/388): Pascal 语言支持，可以使用 fpc 来编译 free pascal
 * [#1682](https://github.com/xmake-io/xmake/issues/1682): 添加可选的额lua5.3 运行时替代 luajit，提供更好的平台兼容性。
+* [#1622](https://github.com/xmake-io/xmake/issues/1622): 支持 Swig
 
 ### 改进
 
