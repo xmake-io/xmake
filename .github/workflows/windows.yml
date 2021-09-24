@@ -35,6 +35,17 @@ jobs:
       - uses: little-core-labs/get-git-tag@v3.0.2
         id: tagName
 
+      # Force xmake to a specific folder (for cache)
+      - name: Set xmake package cache path
+        run: echo "XMAKE_PKG_CACHEDIR=$(pwd)/xmake-cache" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # Cache xmake dependencies
+      - name: Retrieve xmake cache for packages
+        uses: actions/cache@v2
+        with:
+          path: xmake-cache
+          key: ${{ matrix.os }}-${{ matrix.arch }}
+
       - name: Prepare
         run: |
           xmake show
