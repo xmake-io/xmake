@@ -30,6 +30,30 @@ rule("swig.base")
         if target:is_plat("windows") then
             target:set("extension", ".pyd")
         end
+        local scriptfiles = {}
+        for _, sourcebatch in pairs(target:sourcebatches()) do
+            if sourcebatch.rulename:startswith("swig.") then
+                for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                    local scriptdir
+                    local moduletype
+                    local fileconfig = target:fileconfig(sourcefile)
+                    if fileconfig then
+                        moduletype = fileconfig.moduletype
+                        scriptdir = fileconfig.scriptdir
+                    end
+                    local scriptfile = path.join(target:autogendir(), "rules", "swig", path.basename(sourcefile))
+                    if moduletype == "python" then
+                        scriptfile = scriptfile .. ".py"
+                    end
+                    table.insert(scriptfiles, scriptfile)
+                    if scriptdir then
+                        target:add("installfiles", scriptfile, {prefixdir = scriptdir})
+                    end
+                end
+            end
+        end
+        -- for custom on_install/after_install, user can use it to install them
+        target:set("data", "swig.scriptfiles", scriptfiles)
     end)
 
 rule("swig.c")
