@@ -29,6 +29,8 @@ rule("swig.base")
         target:set("kind", "shared")
         if target:is_plat("windows") then
             target:set("extension", ".pyd")
+        elseif target:is_plat("linux") then
+            target:set("prefixname", "_")
         end
         local scriptfiles = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
