@@ -60,6 +60,8 @@ function check_csnippets(definition, snippets, opt)
                 if option:value() then
                     if opt.number then
                         option:add("defines", definition .. "=" .. tonumber(option:value()))
+                    elseif opt.quote == false then
+                        option:add("defines", definition .. "=" .. option:value())
                     else
                         option:add("defines", definition .. "=\"" .. option:value() .. "\"")
                     end
@@ -113,7 +115,7 @@ function configvar_check_csnippets(definition, snippets, opt)
         if opt.output then
             after_check(function (option)
                 if option:value() then
-                    option:set("configvar", defname, opt.number and tonumber(option:value()) or option:value())
+                    option:set("configvar", defname, opt.number and tonumber(option:value()) or option:value(), {quote = opt.quote})
                 end
             end)
         end
