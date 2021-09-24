@@ -18,9 +18,32 @@
 -- @file        xmake.lua
 --
 
-rule("swig")
-    set_extensions(".i")
+-- references:
+--
+-- https://github.com/xmake-io/xmake/issues/1622
+-- http://www.swig.org/Doc4.0/SWIGDocumentation.html#Introduction_nn4
+--
+
+rule("swig.base")
     on_load(function (target)
+        target:set("kind", "shared")
+        if target:is_plat("windows") then
+            target:set("extension", ".pyd")
+        end
+    end)
+
+rule("swig.c")
+    set_extensions(".i")
+    add_deps("swig.base")
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cc"}, opt))
+    end)
+
+rule("swig.cpp")
+    set_extensions(".i")
+    add_deps("swig.base")
+    on_buildcmd_file(function (target, batchcmds, sourcefile, opt)
+        import("build_module_file")(target, batchcmds, sourcefile, table.join({sourcekind = "cxx"}, opt))
     end)
 
 
