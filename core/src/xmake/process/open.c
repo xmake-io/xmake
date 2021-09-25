@@ -178,14 +178,14 @@ tb_int_t xm_process_open(lua_State* lua)
                     else
                     {
                         // error
-                        lua_pushfstring(lua, "envs is too large(%lu > %d) for process.openv", envn, tb_arrayn(envs) - 1);
+                        lua_pushfstring(lua, "envs is too large(%d > %d) for process.openv", (tb_int_t)envn, tb_arrayn(envs) - 1);
                         lua_error(lua);
                     }
                 }
                 else
                 {
                     // error
-                    lua_pushfstring(lua, "invalid envs[%ld] type(%s) for process.openv", i, luaL_typename(lua, -1));
+                    lua_pushfstring(lua, "invalid envs[%d] type(%s) for process.openv", (tb_int_t)i, luaL_typename(lua, -1));
                     lua_error(lua);
                 }
 
