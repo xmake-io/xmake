@@ -159,7 +159,7 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
-        raise("cannot extract %s", packagefile)
+        raise("cannot extract %s, maybe missing extractor or invalid package file!", packagefile)
     end
 
     -- save original file path
@@ -230,6 +230,7 @@ function main(package)
         end
 
         -- download url
+        local allerrors = {}
         ok = try
         {
             function ()
@@ -248,8 +249,12 @@ function main(package)
                 function (errors)
 
                     -- show or save the last errors
-                    if errors and (option.get("verbose") or option.get("diagnosis")) then
-                        cprint("${dim color.error}error: ${clear}%s", errors)
+                    if errors then
+                        if (option.get("verbose") or option.get("diagnosis")) then
+                            cprint("${dim color.error}error: ${clear}%s", errors)
+                        else
+                            table.insert(allerrors, errors)
+                        end
                     end
 
                     -- trace
@@ -275,7 +280,11 @@ function main(package)
                             cprint("  ${bright}- %s", table.concat(searchnames:to_array(), ", "))
                             cprint("and we can run `xmake g --pkg_searchdirs=/xxx` to set the search directories.")
                         end
-                        raise("download failed!")
+                        if #allerrors then
+                            raise(table.concat(allerrors, "\n"))
+                        else
+                            raise("download failed!")
+                        end
                     end
                 end
             }

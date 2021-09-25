@@ -1485,7 +1485,7 @@ end
 -- @param funcs     the funcs
 -- @param opt       the argument options, e.g. { includes = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_cfuncs(funcs, opt)
     opt = opt or {}
@@ -1499,7 +1499,7 @@ end
 -- @param funcs     the funcs
 -- @param opt       the argument options, e.g. {includes = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_cxxfuncs(funcs, opt)
     opt = opt or {}
@@ -1513,7 +1513,7 @@ end
 -- @param types  the types
 -- @param opt       the argument options, e.g. { defines = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_ctypes(types, opt)
     opt = opt or {}
@@ -1527,7 +1527,7 @@ end
 -- @param types  the types
 -- @param opt       the argument options, e.g. { defines = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_cxxtypes(types, opt)
     opt = opt or {}
@@ -1541,7 +1541,7 @@ end
 -- @param includes  the includes
 -- @param opt       the argument options, e.g. { defines = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_cincludes(includes, opt)
     opt = opt or {}
@@ -1555,7 +1555,7 @@ end
 -- @param includes  the includes
 -- @param opt       the argument options, e.g. { defines = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:has_cxxincludes(includes, opt)
     opt = opt or {}
@@ -1569,7 +1569,7 @@ end
 -- @param snippets  the snippets
 -- @param opt       the argument options, e.g. { includes = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:check_csnippets(snippets, opt)
     opt = opt or {}
@@ -1583,7 +1583,7 @@ end
 -- @param snippets  the snippets
 -- @param opt       the argument options, e.g. { includes = ""}
 --
--- @return          true or false
+-- @return          true or false, errors
 --
 function _instance:check_cxxsnippets(snippets, opt)
     opt = opt or {}

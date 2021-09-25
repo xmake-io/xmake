@@ -278,7 +278,16 @@ function main(package)
                 -- failed
                 if not package:requireinfo().optional then
                     if os.isfile(errorfile) then
-                        print("if you want to get verbose errors, please see:")
+                        if errors then
+                            print("")
+                            for idx, line in ipairs(errors:split("\n")) do
+                                print(line)
+                                if idx > 16 then
+                                    break
+                                end
+                            end
+                        end
+                        cprint("if you want to get more verbose errors, please see:")
                         cprint("  -> ${bright}%s", errorfile)
                     end
                     raise("install failed!")

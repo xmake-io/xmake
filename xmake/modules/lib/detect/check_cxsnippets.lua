@@ -143,9 +143,9 @@ end
 -- @return          true or false
 --
 -- @code
--- local ok = check_cxsnippets("void test() {}")
--- local ok = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
--- local ok = check_cxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok, output_or_errors = check_cxsnippets("void test() {}")
+-- local ok, output_or_errors = check_cxsnippets({"void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
+-- local ok, output_or_errors = check_cxsnippets({snippet_name = "void test(){}", "#define TEST 1"}, {types = "wchar_t", includes = "stdio.h"})
 -- @endcode
 --
 function main(snippets, opt)
@@ -265,6 +265,6 @@ function main(snippets, opt)
     if errors and option.get("diagnosis") and #tostring(errors) > 0 then
         cprint("${color.warning}checkinfo:${clear dim} %s", errors)
     end
-    return ok, output
+    return ok, ok and output or errors
 end
 
