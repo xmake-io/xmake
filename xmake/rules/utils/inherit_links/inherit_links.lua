@@ -79,7 +79,7 @@ function main(target)
         -- and we need pass `{public = true}` to add_packages/add_links/... to export it if want to export links for shared target
         --
         if targetkind == "static" then
-            for _, name in ipairs({"frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
+            for _, name in ipairs({"rpathdirs", "frameworkdirs", "frameworks", "linkdirs", "links", "syslinks"}) do
                 local values = _get_values_from_target(target, name)
                 if values and #values > 0 then
                     target:add(name, values, {public = true})
