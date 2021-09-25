@@ -276,7 +276,7 @@ end
 
 -- make the frameworkdir flag
 function nf_frameworkdir(self, frameworkdir)
-    return {"-F", path.translate(frameworkdir)}
+    return {"-F" .. path.translate(frameworkdir)}
 end
 
 -- make the c precompiled header flag
