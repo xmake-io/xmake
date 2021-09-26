@@ -117,6 +117,10 @@ function nf_language(self, stdname)
         ,   gnu99       = "-Xclang -std=gnu99"
         ,   c11         = "-Xclang -std=c11"
         ,   gnu11       = "-Xclang -std=gnu11"
+        ,   c17         = "-Xclang -std=c17"
+        ,   gnu17       = "-Xclang -std=gnu17"
+        ,   clatest     = "-Xclang -std=c17"
+        ,   gnulatest   = "-Xclang -std=gnu17"
         }
     end
 
@@ -134,10 +138,12 @@ function nf_language(self, stdname)
         ,   gnuxx17      = "-Xclang -std=gnu++17"
         ,   cxx1z        = "-Xclang -std=c++1z"
         ,   gnuxx1z      = "-Xclang -std=gnu++1z"
-        ,   cxx20        = "-Xclang -std=c++2a"
-        ,   gnuxx20      = "-Xclang -std=gnu++2a"
+        ,   cxx20        = "-Xclang -std=c++20"
+        ,   gnuxx20      = "-Xclang -std=gnu++20"
         ,   cxx2a        = "-Xclang -std=c++2a"
         ,   gnuxx2a      = "-Xclang -std=gnu++2a"
+        ,   cxxlatest    = "-Xclang -std=c++latest"
+        ,   gnuxxlatest  = "-Xclang -std=gnu++latest"
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do

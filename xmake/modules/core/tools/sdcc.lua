@@ -116,6 +116,8 @@ function nf_language(self, stdname)
         ,   gnu11       = "--std-sdcc11"
         ,   c20         = "--std-c2x"
         ,   gnu20       = "--std-sdcc2x"
+        ,   clatest     = "--std-c2x"
+        ,   gnulatest   = "--std-sdcc2x"
         }
     end
     return _g.cmaps[stdname]
