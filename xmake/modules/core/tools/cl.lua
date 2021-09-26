@@ -197,12 +197,14 @@ function nf_language(self, stdname)
         _g.cmaps =
         {
             -- stdc
-            c99   = "-TP" -- compile as c++ files because older msvc only support c89
-        ,   gnu99 = "-TP"
-        ,   c11   = {"-std:c11", "-TP"}
-        ,   gnu11 = {"-std:c11", "-TP"}
-        ,   c17   = {"-std:c17", "-TP"}
-        ,   gnu17 = {"-std:c17", "-TP"}
+            c99       = "-TP" -- compile as c++ files because older msvc only support c89
+        ,   gnu99     = "-TP"
+        ,   c11       = {"-std:c11", "-TP"}
+        ,   gnu11     = {"-std:c11", "-TP"}
+        ,   c17       = {"-std:c17", "-TP"}
+        ,   gnu17     = {"-std:c17", "-TP"}
+        ,   clatest   = "-std:c17"
+        ,   gnulatest = "-std:c17"
         }
     end
 
@@ -222,6 +224,8 @@ function nf_language(self, stdname)
         ,   gnuxx20     = {"-std:c++20", "-std:c++latest"}
         ,   cxx2a       = {"-std:c++20", "-std:c++latest"}
         ,   gnuxx2a     = {"-std:c++20", "-std:c++latest"}
+        ,   cxxlatest   = "-std:c++latest"
+        ,   gnuxxlatest = "-std:c++latest"
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do

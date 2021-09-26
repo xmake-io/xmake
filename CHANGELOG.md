@@ -18,6 +18,7 @@
 * [#1675](https://github.com/xmake-io/xmake/pull/1675): Rename dynamic and import library suffix for mingw
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): Support to define a variable without quotes for configuration files
 * Support Android NDK r23
+* Add `c++latest` and `clatest` for `set_languages`
 
 ### Bugs fixed
 
@@ -1098,6 +1099,7 @@
 * [#1675](https://github.com/xmake-io/xmake/pull/1675): 针对 mingw 平台，重命名动态库和导入库文件名后缀
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): 支持在 set_configvar 中定义一个不带引号的字符串变量
 * 改进对 Android NDK r23 的支持
+* 为 `set_languages` 新增 `c++latest` 和 `clatest` 配置值
 
 ### Bugs 修复
 
