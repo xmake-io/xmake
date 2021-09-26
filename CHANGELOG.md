@@ -17,6 +17,7 @@
 * Improve on_load/after_load to support to add target deps dynamically
 * [#1675](https://github.com/xmake-io/xmake/pull/1675): Rename dynamic and import library suffix for mingw
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): Support to define a variable without quotes for configuration files
+* Support Android NDK r23
 
 ### Bugs fixed
 
@@ -1096,6 +1097,7 @@
 * 改进 on_load/after_load 去支持动态的添加 target deps
 * [#1675](https://github.com/xmake-io/xmake/pull/1675): 针对 mingw 平台，重命名动态库和导入库文件名后缀
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): 支持在 set_configvar 中定义一个不带引号的字符串变量
+* 改进对 Android NDK r23 的支持
 
 ### Bugs 修复
 
