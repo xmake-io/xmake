@@ -167,8 +167,10 @@ function main(toolchain)
         local ndk_sysroot = toolchain:config("ndk_sysroot")
         if ndk_sysroot and os.isdir(ndk_sysroot) then
             local triple = _get_triple(arch)
-            toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
-            toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            if ndkver and tonumber(ndkver) < 22 then
+                toolchain:add("cxflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+                toolchain:add("asflags", "-D__ANDROID_API__=" .. ndk_sdkver)
+            end
             toolchain:add("cflags",  "--sysroot=" .. ndk_sysroot)
             toolchain:add("cxxflags","--sysroot=" .. ndk_sysroot)
             toolchain:add("asflags", "--sysroot=" .. ndk_sysroot)

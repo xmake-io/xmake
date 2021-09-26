@@ -188,8 +188,12 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
     local gcc_toolchain_subdir = gcc_toolchain_subdirs[arch] or "arm-linux-androideabi-*"
 
     -- find the binary directory
-    local bindir = find_directory("bin", path.join(sdkdir, "toolchains", "llvm", "prebuilt", "*")) -- larger than ndk r16
-    if not bindir then
+    local llvm_toolchain
+    local prebuilt = (is_host("macosx") and "darwin" or os.host()) .. "-x86_64"
+    local bindir = find_directory("bin", path.join(sdkdir, "toolchains", "llvm", "prebuilt", prebuilt)) -- larger than ndk r16
+    if bindir then
+        llvm_toolchain = path.directory(bindir)
+    else
         bindir = find_directory("bin", path.join(sdkdir, "toolchains", gcc_toolchain_subdir, "prebuilt", "*"))
     end
     if not bindir then
@@ -231,6 +235,7 @@ function _find_ndk(sdkdir, arch, ndk_sdkver, ndk_toolchains_ver)
             bindir = bindir,
             cross = cross,
             sdkver = sdkver,
+            llvm_toolchain = llvm_toolchain, -- >= ndk r22
             gcc_toolchain = gcc_toolchain,
             toolchains_ver = toolchains_ver,
             sysroot = sysroot}
@@ -280,7 +285,6 @@ function main(sdkdir, opt)
         if opt.verbose or option.get("verbose") then
             cprint("checking for NDK directory ... ${color.success}%s", ndk.sdkdir)
             cprint("checking for SDK version of NDK ... ${color.success}%s", ndk.sdkver)
-            cprint("checking for toolchains version of NDK ... ${color.success}%s", ndk.toolchains_ver)
         end
     else
 
