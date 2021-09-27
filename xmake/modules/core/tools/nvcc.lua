@@ -59,7 +59,7 @@ function nf_symbol(self, level, target)
     -- debug? generate *.pdb file
     local flags = nil
     if level == "debug" then
-        flags = "-g -lineinfo"
+        flags = {"-g", "-lineinfo"}
         if is_plat("windows") then
             local host_flags = nil
             local symbolfile = nil
@@ -82,11 +82,10 @@ function nf_symbol(self, level, target)
             else
                 host_flags = "-Zi"
             end
-            flags = flags .. ' -Xcompiler "' .. host_flags .. '"'
+            table.insert(flags, "-Xcompiler")
+            table.insert(flags, host_flags)
         end
     end
-
-    -- none
     return flags
 end
 
