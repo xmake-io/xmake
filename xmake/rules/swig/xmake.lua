@@ -27,24 +27,34 @@
 rule("swig.base")
     on_load(function (target)
         target:set("kind", "shared")
-        target:set("prefixname", "_")
-        if target:is_plat("windows") then
-            target:set("extension", ".pyd")
+        local moduletype = target:extraconf("rules", "swig.c", "moduletype") or target:extraconf("rules", "swig.cpp", "moduletype")
+        if moduletype == "python" then
+            target:set("prefixname", "_")
+            if target:is_plat("windows") then
+                target:set("extension", ".pyd")
+            end
+        elseif moduletype == "lua" then
+            target:set("prefixname", "")
+            if not target:is_plat("windows") then
+                target:set("extension", ".so")
+            end
+        else
+            raise("unknown swig module type, please use `add_rules(\"swig.c\", {moduletype = \"python\"})` to set it!")
         end
         local scriptfiles = {}
         for _, sourcebatch in pairs(target:sourcebatches()) do
             if sourcebatch.rulename:startswith("swig.") then
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
                     local scriptdir
-                    local moduletype
                     local fileconfig = target:fileconfig(sourcefile)
                     if fileconfig then
-                        moduletype = fileconfig.moduletype
                         scriptdir = fileconfig.scriptdir
                     end
                     local scriptfile = path.join(target:autogendir(), "rules", "swig", path.basename(sourcefile))
                     if moduletype == "python" then
                         scriptfile = scriptfile .. ".py"
+                    elseif moduletype == "lua" then
+                        scriptfile = scriptfile .. ".lua"
                     end
                     table.insert(scriptfiles, scriptfile)
                     if scriptdir then
@@ -54,7 +64,8 @@ rule("swig.base")
             end
         end
         -- for custom on_install/after_install, user can use it to install them
-        target:set("data", "swig.scriptfiles", scriptfiles)
+        target:data_set("swig.scriptfiles", scriptfiles)
+        target:data_set("swig.moduletype", moduletype)
     end)
 
 rule("swig.c")

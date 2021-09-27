@@ -23,16 +23,8 @@ import("lib.detect.find_tool")
 
 function main(target, batchcmds, sourcefile, opt)
 
-    -- get module type
-    opt = opt or {}
-    local moduletype
-    local fileconfig = target:fileconfig(sourcefile)
-    if fileconfig then
-        moduletype = fileconfig.moduletype
-    end
-    assert(moduletype, "%s: unknown swig module type, please use `add_files(\"foo.c\", {moduletype = \"python\"})` to set it!", sourcefile)
-
     -- get swig
+    opt = opt or {}
     local swig = assert(find_tool("swig"), "swig not found!")
     local sourcefile_cx = path.join(target:autogendir(), "rules", "swig", path.basename(sourcefile) .. (opt.sourcekind == "cxx" and ".cpp" or ".c"))
 
@@ -41,6 +33,7 @@ function main(target, batchcmds, sourcefile, opt)
     table.insert(target:objectfiles(), objectfile)
 
     -- add commands
+    local moduletype = assert(target:data("swig.moduletype"), "swig.moduletype not found!")
     local argv = {"-" .. moduletype, "-o", sourcefile_cx}
     if opt.sourcekind == "cxx" then
         table.insert(argv, "-c++")
