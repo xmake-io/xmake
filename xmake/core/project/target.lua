@@ -1605,6 +1605,15 @@ function _instance:sourcekinds()
                 table.insert(sourcekinds, sourcekind)
             end
         end
+        -- if the source file is added dynamically, we may not be able to get the sourcekinds,
+        -- so we can only continue to get it from the rule
+        -- https://github.com/xmake-io/xmake/issues/1622#issuecomment-927726697
+        for _, ruleinst in ipairs(self:orderules()) do
+            local rule_sourcekinds = ruleinst:get("sourcekinds")
+            if rule_sourcekinds then
+                table.insert(sourcekinds, rule_sourcekinds)
+            end
+        end
         sourcekinds = table.unique(sourcekinds)
         self._SOURCEKINDS = sourcekinds
     end
