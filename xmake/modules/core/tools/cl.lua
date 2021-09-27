@@ -203,8 +203,8 @@ function nf_language(self, stdname)
         ,   gnu11     = {"-std:c11", "-TP"}
         ,   c17       = {"-std:c17", "-TP"}
         ,   gnu17     = {"-std:c17", "-TP"}
-        ,   clatest   = "-std:c17"
-        ,   gnulatest = "-std:c17"
+        ,   clatest   = {"-std:c17", "-std:c11"}
+        ,   gnulatest = {"-std:c17", "-std:c11"}
         }
     end
 
@@ -241,14 +241,17 @@ function nf_language(self, stdname)
     end
 
     -- map it
-    local flags = maps[stdname]
-    if flags then
-        for _, flag in ipairs(table.wrap(flags)) do
-            if self:has_flags(flag, "cxflags") then
-                return flag
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                break
             end
         end
     end
+    return result
 end
 
 -- make the define flag

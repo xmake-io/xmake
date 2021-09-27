@@ -180,8 +180,8 @@ function nf_language(self, stdname)
         ,   gnu11       = "-std=gnu11"
         ,   c17         = "-std=c17"
         ,   gnu17       = "-std=gnu17"
-        ,   clatest     = "-std=c17"
-        ,   gnulatest   = "-std=gnu17"
+        ,   clatest     = {"-std=c17", "-std=c11", "-std=c99", "-std=c89", "-ansi"}
+        ,   gnulatest   = {"-std=gnu17", "-std=gnu11", "-std=gnu99", "-std=gnu89", "-ansi"}
         }
     end
 
@@ -203,8 +203,8 @@ function nf_language(self, stdname)
         ,   gnuxx20      = "-std=gnu++20"
         ,   cxx2a        = "-std=c++2a"
         ,   gnuxx2a      = "-std=gnu++2a"
-        ,   cxxlatest    = "-std=c++2a"
-        ,   gnuxxlatest  = "-std=gnu++2a"
+        ,   cxxlatest    = {"-std=c++20", "-std=c++2a", "-std=c++17", "-std=c++14", "-std=c++11", "-std=c++1z", "-std=c++98"}
+        ,   gnuxxlatest  = {"-std=gnu++20", "-std=gnu++2a", "-std=gnu++17", "-std=gnu++14", "-std=gnu++11", "-std=c++1z", "-std=gnu++98"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -220,9 +220,17 @@ function nf_language(self, stdname)
     elseif self:kind() == "sc" then
         maps = {}
     end
-
-    -- make it
-    return maps[stdname]
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                break
+            end
+        end
+    end
+    return result
 end
 
 -- make the define flag

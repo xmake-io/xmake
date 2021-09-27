@@ -179,7 +179,7 @@ function nf_language(self, stdname)
         ,   cxx11       = "--std c++11"
         ,   cxx14       = "--std c++14"
         ,   cxx17       = "--std c++17"
-        ,   cxxlatest   = "--std c++17"
+        ,   cxxlatest   = {"--std c++17", "--std c++14", "--std c++11", "--std c++03"}
         }
         local cxxmaps2 = {}
         for k, v in pairs(_g.cxxmaps) do
@@ -187,7 +187,18 @@ function nf_language(self, stdname)
         end
         table.join2(_g.cxxmaps, cxxmaps2)
     end
-    return _g.cxxmaps[stdname]
+    local maps = _g.cxxmaps
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                break
+            end
+        end
+    end
+    return result
 end
 
 -- make the define flag

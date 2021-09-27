@@ -106,7 +106,6 @@ function nf_language(self, stdname)
     if _g.cmaps == nil then
         _g.cmaps =
         {
-            -- stdc
             ansi        = "--std-c89"
         ,   c89         = "--std-c89"
         ,   gnu89       = "--std-sdcc89"
@@ -116,11 +115,22 @@ function nf_language(self, stdname)
         ,   gnu11       = "--std-sdcc11"
         ,   c20         = "--std-c2x"
         ,   gnu20       = "--std-sdcc2x"
-        ,   clatest     = "--std-c2x"
-        ,   gnulatest   = "--std-sdcc2x"
+        ,   clatest     = {"--std-c2x", "--std-c11", "--std-c99", "--std-c89"}
+        ,   gnulatest   = {"--std-sdcc2x", "--std-sdcc11", "--std-sdcc99", "--std-sdcc89"}
         }
     end
-    return _g.cmaps[stdname]
+    local maps = _g.cmaps
+    local result = maps[stdname]
+    if type(result) == "table" then
+        for _, v in ipairs(result) do
+            if self:has_flags(v, "cxflags") then
+                result = v
+                maps[stdname] = result
+                break
+            end
+        end
+    end
+    return result
 end
 
 -- make the define flag
