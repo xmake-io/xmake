@@ -73,6 +73,9 @@ function _add_project(cmakelists)
 ]], project.name() or "")
     cmakelists:print("# project")
     cmakelists:print("cmake_minimum_required(VERSION %s)", _get_cmake_minver())
+    -- see https://github.com/xmake-io/xmake/issues/1661#issuecomment-927951660
+    cmakelists:print("cmake_policy(SET CMP0091 NEW)")
+    cmakelists:print('set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")')
     local project_name = project.name()
     if not project_name then
         for _, target in pairs(project.targets()) do
