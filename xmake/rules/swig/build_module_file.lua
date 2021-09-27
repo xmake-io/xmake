@@ -38,6 +38,10 @@ function main(target, batchcmds, sourcefile, opt)
     if opt.sourcekind == "cxx" then
         table.insert(argv, "-c++")
     end
+    local fileconfig = target:fileconfig(sourcefile)
+    if fileconfig.swigflags then
+        table.join2(argv, fileconfig.swigflags)
+    end
     table.insert(argv, sourcefile)
     batchcmds:show_progress(opt.progress, "${color.build.object}compiling.swig.%s %s", moduletype, sourcefile)
     batchcmds:mkdir(path.directory(sourcefile_cx))
