@@ -242,7 +242,7 @@ fpc           Free Pascal Programming Language Compiler
 * Vala
 * Pascal
 
-## Support Features
+## Supported Features
 
 * Simple project configuration syntax
 * Direct build support, without relying on any third-party back-end make tools
@@ -273,8 +273,13 @@ fpc           Free Pascal Programming Language Compiler
 * WDK Driver (umdf/kmdf/wdm)
 * WinSDK Application
 * MFC Application
-* iOS/MacOS Application
+* iOS/MacOS Application (Support .metal)
 * Framework and Bundle Program (iOS/MacOS)
+* SWIG Modules (Lua, python, ...)
+* Luarocks Modules
+* Protobuf Program
+* Lex/yacc program
+* C++20 Modules
 
 ## More Examples
 

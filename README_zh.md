@@ -274,13 +274,18 @@ fpc           Free Pascal Programming Language Compiler
 * 静态库程序
 * 动态库类型
 * 控制台程序
-* Cuda程序
-* Qt应用程序
-* WDK驱动程序
-* WinSDK应用程序
-* MFC应用程序
-* iOS/MacOS应用程序
+* Cuda 程序
+* Qt 应用程序
+* WDK 驱动程序
+* WinSDK 应用程序
+* MFC 应用程序
+* iOS/MacOS 应用程序（支持.metal）
 * Framework和Bundle程序（iOS/MacOS）
+* SWIG 模块 (Lua, python, ...)
+* Luarocks 模块
+* Protobuf 程序
+* Lex/yacc 程序
+* C++20 模块
 
 ## 更多例子
 
