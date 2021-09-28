@@ -379,7 +379,7 @@ end
 --
 function _add_target_vs_runtime(cmakelists, target)
     local cmake_minver = _get_cmake_minver()
-    if true then--cmake_minver:ge("3.15.0") then
+    if cmake_minver:ge("3.15.0") then
         local vs_runtime = target:get("runtimes")
         if vs_runtime then
             cmakelists:print("if(MSVC)")
