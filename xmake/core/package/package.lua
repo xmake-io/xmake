@@ -514,6 +514,11 @@ function _instance:unlock()
     end
 end
 
+-- get the source directory
+function _instance:sourcedir()
+    return self:get("sourcedir")
+end
+
 -- get the cached directory of this package
 function _instance:cachedir()
     local name = self:name():lower():gsub("::", "_")
@@ -1715,6 +1720,7 @@ function package.apis()
         ,   "package.set_homepage"
         ,   "package.set_description"
         ,   "package.set_parallelize"
+        ,   "package.set_sourcedir"
         ,   "package.set_installdir"
             -- package.add_xxx
         ,   "package.add_deps"

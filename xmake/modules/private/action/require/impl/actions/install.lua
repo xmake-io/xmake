@@ -137,7 +137,10 @@ function main(package)
 
     -- enter the working directory
     local oldir = nil
-    if #package:urls() > 0 then
+    local sourcedir = package:sourcedir()
+    if sourcedir then
+        oldir = os.cd(sourcedir)
+    elseif #package:urls() > 0 then
         -- only one root directory? skip it
         local filedirs = os.filedirs(path.join(workdir, "source", "*"))
         if #filedirs == 1 and os.isdir(filedirs[1]) then
