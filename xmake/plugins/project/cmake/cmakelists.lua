@@ -74,10 +74,9 @@ function _add_project(cmakelists)
 ]], project.name() or "")
     cmakelists:print("# project")
     cmakelists:print("cmake_minimum_required(VERSION %s)", cmake_version)
-    -- see https://github.com/xmake-io/xmake/issues/1661#issuecomment-927951660
-    if cmake_version:ge("3.15") then
+    if cmake_version:ge("3.15.0") then
+        -- for MSVC_RUNTIME_LIBRARY
         cmakelists:print("cmake_policy(SET CMP0091 NEW)")
-        cmakelists:print('set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")')
     end
     local project_name = project.name()
     if not project_name then
@@ -373,6 +372,32 @@ function _add_target_optimization(cmakelists, target)
     end
 end
 
+-- add target vs runtime
+--
+-- https://github.com/xmake-io/xmake/issues/1661#issuecomment-927979489
+-- https://cmake.org/cmake/help/latest/prop_tgt/MSVC_RUNTIME_LIBRARY.html
+--
+function _add_target_vs_runtime(cmakelists, target)
+    local cmake_minver = _get_cmake_minver()
+    if true then--cmake_minver:ge("3.15.0") then
+        local vs_runtime = target:get("runtimes")
+        if vs_runtime then
+            cmakelists:print("if(MSVC)")
+            if vs_runtime == "MT" then
+                vs_runtime = "MultiThreaded"
+            elseif vs_runtime == "MTd" then
+                vs_runtime = "MultiThreadedDebug"
+            elseif vs_runtime == "MD" then
+                vs_runtime = "MultiThreadedDLL"
+            elseif vs_runtime == "MDd" then
+                vs_runtime = "MultiThreadedDebugDLL"
+            end
+            cmakelists:print('    set_property(TARGET %s PROPERTY MSVC_RUNTIME_LIBRARY "%s")', target:name(), vs_runtime)
+            cmakelists:print("endif()")
+        end
+    end
+end
+
 -- add target link libraries
 function _add_target_link_libraries(cmakelists, target)
 
@@ -508,6 +533,9 @@ function _add_target(cmakelists, target)
 
     -- add target optimization
     _add_target_optimization(cmakelists, target)
+
+    -- add vs runtime for msvc
+    _add_target_vs_runtime(cmakelists, target)
 
     -- add target link libraries
     _add_target_link_libraries(cmakelists, target)
