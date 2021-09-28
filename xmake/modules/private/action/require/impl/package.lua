@@ -295,8 +295,8 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         return version, source
     end
 
-    -- exists urls? otherwise be phony package (only as package group)
-    if #package:urls() > 0 then
+    -- if not phony package (only as package group)
+    if not requireinfo.group then
 
         -- has git url?
         local has_giturl = false
@@ -323,6 +323,11 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
         end
         if not version and has_giturl and not semver.is_valid(require_version) then -- select branch?
             version, source = require_version ~= "latest" and require_version or "master", "branch"
+        end
+        -- local source package? we use a phony version
+        if not version and require_version == "latest" and #package:urls() == 0 then
+            version = "latest"
+            source = "version"
         end
         if not version then
             raise("package(%s): version(%s) not found!", package:name(), require_version)
