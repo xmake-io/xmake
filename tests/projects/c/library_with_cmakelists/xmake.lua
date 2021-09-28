@@ -12,7 +12,7 @@ package("foo")
         os.cp("build/*.a", package:installdir("lib"))
     end)
     on_test(function (package)
-        assert(package:has_cincludes("interface.h"))
+        assert(package:has_cincludes("foo.h"))
     end)
 package_end()
 
