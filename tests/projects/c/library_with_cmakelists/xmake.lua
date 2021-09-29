@@ -1,8 +1,12 @@
 add_rules("mode.debug", "mode.release")
 
+local cachedir = path.join(os.scriptdir(), "build", "cache")
+local packagesdir = path.join(os.scriptdir(), "build", "packages")
 package("foo")
     add_deps("cmake")
     set_sourcedir("foo")
+    set_cachedir(cachedir)
+    set_installdir(packagesdir)
     on_install(function (package)
         local configs = {}
         table.insert(configs, "-DCMAKE_BUILD_TYPE=" .. (package:debug() and "Debug" or "Release"))

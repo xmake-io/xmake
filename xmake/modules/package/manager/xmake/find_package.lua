@@ -38,7 +38,11 @@ function _find_package_from_repo(name, opt)
 
     -- find the manifest file of package, e.g. ~/.xmake/packages/z/zlib/1.1.12/ed41d5327fad3fc06fe376b4a94f62ef/manifest.txt
     local packagedirs = {}
-    table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
+    if opt.installdir then
+        table.insert(packagedirs, opt.installdir)
+    else
+        table.insert(packagedirs, path.join(package.installdir(), name:lower():sub(1, 1), name:lower(), opt.require_version, opt.buildhash))
+    end
     local manifest_file = find_file("manifest.txt", packagedirs)
     if not manifest_file then
         return

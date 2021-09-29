@@ -521,8 +521,16 @@ end
 
 -- get the cached directory of this package
 function _instance:cachedir()
-    local name = self:name():lower():gsub("::", "_")
-    return path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
+    local cachedir = self._CACHEDIR
+    if not cachedir then
+        cachedir = self:get("cachedir")
+        if not cachedir then
+            local name = self:name():lower():gsub("::", "_")
+            cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
+        end
+        self._CACHEDIR = cachedir
+    end
+    return cachedir
 end
 
 -- get the installed directory of this package
@@ -1213,6 +1221,7 @@ function _instance:find_tool(name, opt)
     opt = opt or {}
     self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
     return self._find_tool(name, {cachekey = opt.cachekey or "fetch_package_system",
+                                  installdir = self:installdir(),
                                   require_version = opt.require_version,
                                   norun = opt.norun,
                                   force = opt.force})
@@ -1228,6 +1237,7 @@ function _instance:find_package(name, opt)
     end
     return self._find_package(name, {
                               force = opt.force,
+                              installdir = self:installdir(),
                               require_version = opt.require_version,
                               mode = self:mode(),
                               plat = self:plat(),
@@ -1721,6 +1731,7 @@ function package.apis()
         ,   "package.set_description"
         ,   "package.set_parallelize"
         ,   "package.set_sourcedir"
+        ,   "package.set_cachedir"
         ,   "package.set_installdir"
             -- package.add_xxx
         ,   "package.add_deps"
