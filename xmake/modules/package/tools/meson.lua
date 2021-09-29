@@ -25,11 +25,11 @@ import("core.tool.toolchain")
 import("package.tools.ninja")
 
 -- get build directory
-function _get_buildir(opt)
+function _get_buildir(package, opt)
     if opt and opt.buildir then
         return opt.buildir
     else
-        _g.buildir = _g.buildir or ("build_" .. hash.uuid4():split('%-')[1])
+        _g.buildir = _g.buildir or package:buildir()
         return _g.buildir
     end
 end
@@ -56,7 +56,7 @@ function _get_configs(package, configs, opt)
     end
 
     -- add build directory
-    table.insert(configs, _get_buildir(opt))
+    table.insert(configs, _get_buildir(package, opt))
     return configs
 end
 
@@ -160,7 +160,7 @@ function build(package, configs, opt)
     generate(package, configs, opt)
 
     -- do build
-    local buildir = _get_buildir(opt)
+    local buildir = _get_buildir(package, opt)
     ninja.build(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 end
 
@@ -172,7 +172,7 @@ function install(package, configs, opt)
     generate(package, configs, opt)
 
     -- do build and install
-    local buildir = _get_buildir(opt)
+    local buildir = _get_buildir(package, opt)
     ninja.install(package, {}, {buildir = buildir, envs = opt.envs or buildenvs(package, opt)})
 
     -- fix static libname on windows
