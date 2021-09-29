@@ -461,6 +461,18 @@ function _instance:is_parallelize()
     return self:get("parallelize") ~= false
 end
 
+-- is local embed package?
+-- we install directly from the local source code instead of downloading it remotely
+function _instance:is_embed()
+    return self:get("sourcedir") and #self:urls() == 0 and self:script("install")
+end
+
+-- is local package?
+-- we will use local installdir and cachedir in current project
+function _instance:is_local()
+    return self:is_embed()
+end
+
 -- is debug package? (deprecated)
 function _instance:debug()
     return self:is_debug()
@@ -526,7 +538,8 @@ function _instance:cachedir()
         cachedir = self:get("cachedir")
         if not cachedir then
             local name = self:name():lower():gsub("::", "_")
-            cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
+            local rootdir = self:is_local() and path.join(config.directory(), "cache", "packages") or package.cachedir()
+            cachedir = path.join(rootdir, name:sub(1, 1):lower(), name, self:version_str())
         end
         self._CACHEDIR = cachedir
     end
@@ -540,7 +553,8 @@ function _instance:installdir(...)
         installdir = self:get("installdir")
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
-            installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+            local rootdir = self:is_local() and path.join(config.directory(), "packages") or package.installdir()
+            installdir = path.join(rootdir, name:sub(1, 1):lower(), name)
             if self:version_str() then
                 installdir = path.join(installdir, self:version_str())
             end
