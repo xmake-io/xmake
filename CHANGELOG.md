@@ -8,7 +8,7 @@
 * [#1682](https://github.com/xmake-io/xmake/issues/1682): Add optional lua5.3 backend instead of luajit to provide better compatibility
 * [#1622](https://github.com/xmake-io/xmake/issues/1622): Support Swig
 * [#1714](https://github.com/xmake-io/xmake/issues/1714): Support build local embed cmake projects
-* [#1715](https://github.com/xmake-io/xmake/issues/1715): Support to detect compiler language standards as features
+* [#1715](https://github.com/xmake-io/xmake/issues/1715): Support to detect compiler language standards as features and add `check_macros`
 
 
 ### Change
@@ -1092,7 +1092,7 @@
 * [#1682](https://github.com/xmake-io/xmake/issues/1682): 添加可选的额lua5.3 运行时替代 luajit，提供更好的平台兼容性。
 * [#1622](https://github.com/xmake-io/xmake/issues/1622): 支持 Swig
 * [#1714](https://github.com/xmake-io/xmake/issues/1714): 支持内置 cmake 等第三方项目的混合编译
-* [#1715](https://github.com/xmake-io/xmake/issues/1715): 支持探测编译器语言标准特性
+* [#1715](https://github.com/xmake-io/xmake/issues/1715): 支持探测编译器语言标准特性，并且新增 `check_macros` 检测接口
 
 ### 改进
 
