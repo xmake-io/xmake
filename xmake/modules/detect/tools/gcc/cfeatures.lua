@@ -33,6 +33,11 @@ function main()
     local gcc34_c99  = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 304 && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
     local gcc_c90    = gcc_minver
 
+    -- set language standard supports
+    _set("c_std_89", gcc46_c90)
+    _set("c_std_99", gcc34_c99)
+    _set("c_std_11", gcc46_c11)
+
     -- set features
     _set("c_static_assert",       gcc46_c11) -- GNU 4.7 correctly sets __STDC_VERSION__ to 201112L, but GNU 4.6 sets it to 201000L
     _set("c_restrict",            gcc34_c99)

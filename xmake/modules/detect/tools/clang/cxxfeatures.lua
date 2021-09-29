@@ -28,6 +28,8 @@ end
 
 -- get features
 --
+-- @see http://clang.llvm.org/cxx_status.html
+--
 -- porting from Modules/Compiler/Clang-CXX-FeatureTests.cmake
 --
 function main()
@@ -37,10 +39,19 @@ function main()
 
     -- init conditions
     local clang_minver  = "((__clang_major__ * 100) + __clang_minor__) >= 301"
+    local clang80_cxx20 = "((__clang_major__ * 100) + __clang_minor__) >= 800 && __cplusplus > 201707L"
+    local clang50_cxx17 = "((__clang_major__ * 100) + __clang_minor__) >= 500 && __cplusplus > 201703L"
     local clang34_cxx14 = "((__clang_major__ * 100) + __clang_minor__) >= 304 && __cplusplus > 201103L"
     local clang31_cxx11 = clang_minver .. " && __cplusplus >= 201103L"
     local clang29_cxx11 = clang_minver .. " && __cplusplus >= 201103L"
     local clang_cxx98   = clang_minver .. " && __cplusplus >= 199711L"
+
+    -- set language standard supports
+    _set("cxx_std_98", clang_cxx98)
+    _set("cxx_std_11", clang29_cxx11)
+    _set("cxx_std_14", clang34_cxx14)
+    _set("cxx_std_17", clang50_cxx17)
+    _set("cxx_std_20", clang80_cxx20)
 
     -- set features for __has_feature()
     local features_of_has_feature =

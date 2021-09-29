@@ -38,6 +38,11 @@ function main()
     local c99          = clang_minver .. " && defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L"
     local c90          = clang_minver
 
+    -- set language standard supports
+    _set("c_std_89", c90)
+    _set("c_std_99", c99)
+    _set("c_std_11", c11)
+
     -- set features
     _set("c_static_assert",       c11)
     _set("c_restrict",            c99)

@@ -8,6 +8,14 @@ ${define HAS_CONSTEXPR}
 ${define HAS_CONSEXPR_AND_STATIC_ASSERT}
 ${define HAS_SSE2}
 ${define HAS_LONG_8}
+${define HAS_CXX_STD_98}
+${define HAS_CXX_STD_11}
+${define HAS_CXX_STD_14}
+${define HAS_CXX_STD_17}
+${define HAS_CXX_STD_20}
+${define HAS_C_STD_89}
+${define HAS_C_STD_99}
+${define HAS_C_STD_11}
 ${define PTR_SIZE}
 ${define HAVE_VISIBILITY}
 ${define CUSTOM_ASSERT}

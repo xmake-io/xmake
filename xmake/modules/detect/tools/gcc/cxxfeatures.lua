@@ -28,6 +28,7 @@ end
 --
 -- http://gcc.gnu.org/projects/cxx0x.html
 -- http://gcc.gnu.org/projects/cxx1y.html
+-- https://gcc.gnu.org/projects/cxx-status.html
 --
 -- porting from Modules/Compiler/GNU-CXX-FeatureTests.cmake
 --
@@ -35,6 +36,8 @@ function main()
 
     -- init conditions
     local gcc_minver        = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404"
+    local gcc90_cxx20       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 900 && __cplusplus >= 201709L"
+    local gcc70_cxx17       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 700 && __cplusplus >= 201703L"
     local gcc50_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L"
     local gcc49_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 409 && __cplusplus > 201103L"
     local gcc481_cxx11      = "((__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__) >= 40801) && __cplusplus >= 201103L"
@@ -45,6 +48,13 @@ function main()
     local gcc45_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 405 && " .. gcc_cxx0x_defined
     local gcc44_cxx11       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404 && " .. gcc_cxx0x_defined
     local gcc43_cxx11       = gcc_minver .. " && " .. gcc_cxx0x_defined
+
+    -- set language standard supports
+    _set("cxx_std_98", gcc_minver)
+    _set("cxx_std_11", gcc43_cxx11)
+    _set("cxx_std_14", gcc49_cxx14)
+    _set("cxx_std_17", gcc70_cxx17)
+    _set("cxx_std_20", gcc90_cxx20)
 
     -- set features
     _set("cxx_variable_templates",             gcc50_cxx14)
