@@ -38,9 +38,10 @@ function main()
     _g.features = cxxfeatures()
 
     -- init conditions
+    -- clang -x c++ -std=c++20 -dM -E - < /dev/null | grep __cplusplus
     local clang_minver  = "((__clang_major__ * 100) + __clang_minor__) >= 301"
-    local clang80_cxx20 = "((__clang_major__ * 100) + __clang_minor__) >= 800 && __cplusplus > 201707L"
-    local clang50_cxx17 = "((__clang_major__ * 100) + __clang_minor__) >= 500 && __cplusplus > 201703L"
+    local clang80_cxx20 = "((__clang_major__ * 100) + __clang_minor__) >= 800 && __cplusplus >= 202002L"
+    local clang50_cxx17 = "((__clang_major__ * 100) + __clang_minor__) >= 500 && __cplusplus >= 201703L"
     local clang34_cxx14 = "((__clang_major__ * 100) + __clang_minor__) >= 304 && __cplusplus > 201103L"
     local clang31_cxx11 = clang_minver .. " && __cplusplus >= 201103L"
     local clang29_cxx11 = clang_minver .. " && __cplusplus >= 201103L"

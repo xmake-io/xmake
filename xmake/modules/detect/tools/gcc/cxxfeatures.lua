@@ -35,8 +35,9 @@ end
 function main()
 
     -- init conditions
+    -- gcc -x c++ -std=c++20 -dM -E - < /dev/null | grep __cplusplus
     local gcc_minver        = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 404"
-    local gcc90_cxx20       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 900 && __cplusplus >= 201709L"
+    local gcc90_cxx20       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 900 && __cplusplus >= 202002L"
     local gcc70_cxx17       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 700 && __cplusplus >= 201703L"
     local gcc50_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 500 && __cplusplus >= 201402L"
     local gcc49_cxx14       = "(__GNUC__ * 100 + __GNUC_MINOR__) >= 409 && __cplusplus > 201103L"
