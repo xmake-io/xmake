@@ -531,6 +531,22 @@ function _instance:sourcedir()
     return self:get("sourcedir")
 end
 
+-- get the build directory
+function _instance:buildir()
+    local buildir = self._BUILDIR
+    if not buildir then
+        if self:is_local() then
+            local name = self:name():lower():gsub("::", "_")
+            local rootdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str())
+            buildir = path.join(rootdir, "cache", "build_" .. self:buildhash():sub(1, 8))
+        else
+            buildir = "build_" .. self:buildhash():sub(1, 8)
+        end
+        self._BUILDIR = buildir
+    end
+    return buildir
+end
+
 -- get the cached directory of this package
 function _instance:cachedir()
     local cachedir = self._CACHEDIR
@@ -538,8 +554,11 @@ function _instance:cachedir()
         cachedir = self:get("cachedir")
         if not cachedir then
             local name = self:name():lower():gsub("::", "_")
-            local rootdir = self:is_local() and path.join(config.directory(), "cache", "packages") or package.cachedir()
-            cachedir = path.join(rootdir, name:sub(1, 1):lower(), name, self:version_str())
+            if self:is_local() then
+                cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str(), "cache")
+            else
+                cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
+            end
         end
         self._CACHEDIR = cachedir
     end
@@ -553,8 +572,11 @@ function _instance:installdir(...)
         installdir = self:get("installdir")
         if not installdir then
             local name = self:name():lower():gsub("::", "_")
-            local rootdir = self:is_local() and path.join(config.directory(), "packages") or package.installdir()
-            installdir = path.join(rootdir, name:sub(1, 1):lower(), name)
+            if self:is_local() then
+                installdir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name)
+            else
+                installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
+            end
             if self:version_str() then
                 installdir = path.join(installdir, self:version_str())
             end

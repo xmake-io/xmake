@@ -90,9 +90,11 @@ function config.options()
 end
 
 -- get the buildir
-function config.buildir()
+-- we can use `{absolute = true}` to force to get absolute path
+function config.buildir(opt)
 
     -- get the absolute path first
+    opt = opt or {}
     local buildir = config.get("buildir") or "build"
     if not path.is_absolute(buildir) then
         local rootdir
@@ -106,7 +108,9 @@ function config.buildir()
     end
 
     -- adjust path for the current directory
-    buildir = path.relative(buildir, os.curdir())
+    if not opt.absolute then
+        buildir = path.relative(buildir, os.curdir())
+    end
     return buildir
 end
 

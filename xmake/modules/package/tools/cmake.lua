@@ -665,7 +665,7 @@ function build(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
+    local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
@@ -724,7 +724,7 @@ function install(package, configs, opt)
     opt = opt or {}
 
     -- enter build directory
-    local buildir = opt.buildir or "build_" .. hash.uuid4():split('%-')[1]
+    local buildir = opt.buildir or package:buildir()
     os.mkdir(path.join(buildir, "install"))
     local oldir = os.cd(buildir)
 
