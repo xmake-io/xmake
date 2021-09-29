@@ -16,6 +16,7 @@ ${define HAS_CXX_STD_20}
 ${define HAS_C_STD_89}
 ${define HAS_C_STD_99}
 ${define HAS_C_STD_11}
+${define HAS_C_STD_17}
 ${define PTR_SIZE}
 ${define HAVE_VISIBILITY}
 ${define CUSTOM_ASSERT}
