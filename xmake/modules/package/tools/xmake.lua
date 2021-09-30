@@ -66,10 +66,6 @@ function _get_configs(package, configs)
         if sdkdir then
             table.insert(configs, "--sdk=" .. sdkdir)
         end
-        local toolchain_name = get_config("toolchain")
-        if toolchain_name then
-            table.insert(configs, "--toolchain=" .. toolchain_name)
-        end
     else
         local names = {"ndk", "ndk_sdkver", "vs", "mingw", "ld", "sh", "ar", "cc", "cxx", "mm", "mxx"}
         for _, name in ipairs(names) do
@@ -77,6 +73,13 @@ function _get_configs(package, configs)
             if value ~= nil then
                 table.insert(configs, "--" .. name .. "=" .. tostring(value))
             end
+        end
+    end
+    -- we can only modify toolchain for linux or cross-compilation
+    if package:is_plat("linux", "cross") then
+        local toolchain_name = get_config("toolchain")
+        if toolchain_name then
+            table.insert(configs, "--toolchain=" .. toolchain_name)
         end
     end
     if not package:is_plat("windows", "mingw") and package:config("pic") ~= false then
