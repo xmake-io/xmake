@@ -9,6 +9,7 @@
 * [#1622](https://github.com/xmake-io/xmake/issues/1622): Support Swig
 * [#1714](https://github.com/xmake-io/xmake/issues/1714): Support build local embed cmake projects
 * [#1715](https://github.com/xmake-io/xmake/issues/1715): Support to detect compiler language standards as features and add `check_macros`
+* Support Loongarch
 
 
 ### Change
@@ -1093,6 +1094,7 @@
 * [#1622](https://github.com/xmake-io/xmake/issues/1622): 支持 Swig
 * [#1714](https://github.com/xmake-io/xmake/issues/1714): 支持内置 cmake 等第三方项目的混合编译
 * [#1715](https://github.com/xmake-io/xmake/issues/1715): 支持探测编译器语言标准特性，并且新增 `check_macros` 检测接口
+* xmake 支持在 Loongarch 架构上运行
 
 ### 改进
 
