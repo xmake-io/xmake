@@ -23,6 +23,7 @@
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): Support to define a variable without quotes for configuration files
 * Support Android NDK r23
 * Add `c++latest` and `clatest` for `set_languages`
+* [#1720](https://github.com/xmake-io/xmake/issues/1720): Add `save_scope` and `restore_scope` to fix `check_xxx` apis
 
 ### Bugs fixed
 
@@ -1107,6 +1108,7 @@
 * [#1694](https://github.com/xmake-io/xmake/issues/1694): 支持在 set_configvar 中定义一个不带引号的字符串变量
 * 改进对 Android NDK r23 的支持
 * 为 `set_languages` 新增 `c++latest` 和 `clatest` 配置值
+* [#1720](https://github.com/xmake-io/xmake/issues/1720): 添加 `save_scope` 和 `restore_scope` 去修复 `check_xxx` 相关接口
 
 ### Bugs 修复
 
