@@ -35,7 +35,11 @@ end
 function _translate_arguments(arguments)
     local args = {}
     local is_msvc = path.basename(arguments[1]):lower() == "cl"
-    for _, arg in ipairs(arguments) do
+    for idx, arg in ipairs(arguments) do
+        -- see https://github.com/xmake-io/xmake/issues/1721
+        if idx == 1 and is_host("windows") and path.extension(arg) == "" then
+            arg = arg .. ".exe"
+        end
         if arg:find("-isystem", 1, true) then
             arg = arg:replace("-isystem", "-I")
         elseif arg:find("[%-/]external:I") then
