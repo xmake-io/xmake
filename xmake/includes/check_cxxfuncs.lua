@@ -34,6 +34,7 @@
 function check_cxxfuncs(definition, funcs, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_cxxfuncs(funcs)
         add_defines(definition)
@@ -59,6 +60,7 @@ function check_cxxfuncs(definition, funcs, opt)
             set_warnings(opt.warnings)
         end
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -75,6 +77,7 @@ function configvar_check_cxxfuncs(definition, funcs, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_cxxfuncs(funcs)
         if opt.default == nil then
@@ -102,6 +105,7 @@ function configvar_check_cxxfuncs(definition, funcs, opt)
             set_warnings(opt.warnings)
         end
     option_end()
+    restore_scope()
     if opt.default == nil then
         add_options(optname)
     else

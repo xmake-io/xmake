@@ -28,6 +28,7 @@
 function check_features(definition, features, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_features(features)
         add_defines(definition)
@@ -44,6 +45,7 @@ function check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -59,6 +61,7 @@ function configvar_check_features(definition, features, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_features(features)
         if opt.default == nil then
@@ -77,6 +80,7 @@ function configvar_check_features(definition, features, opt)
             add_cxxflags(opt.cxxflags)
         end
     option_end()
+    restore_scope()
     if opt.default == nil then
         add_options(optname)
     else

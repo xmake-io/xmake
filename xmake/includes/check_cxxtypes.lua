@@ -28,6 +28,7 @@
 function check_cxxtypes(definition, types, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_cxxtypes(types)
         add_defines(definition)
@@ -47,6 +48,7 @@ function check_cxxtypes(definition, types, opt)
             add_cxxincludes(opt.includes)
         end
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -63,6 +65,7 @@ function configvar_check_cxxtypes(definition, types, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_cxxtypes(types)
         if opt.default == nil then
@@ -84,6 +87,7 @@ function configvar_check_cxxtypes(definition, types, opt)
             add_cxxincludes(opt.includes)
         end
     option_end()
+    restore_scope()
     if opt.default == nil then
         add_options(optname)
     else

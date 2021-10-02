@@ -694,6 +694,10 @@ function interpreter.new()
     instance:api_register(nil, "add_subdirs",  interpreter.api_builtin_includes)
     instance:api_register(nil, "add_subfiles", interpreter.api_builtin_includes)
     instance:api_register(nil, "set_xmakever", interpreter.api_builtin_set_xmakever)
+    instance:api_register(nil, "save_scope",   interpreter.api_builtin_save_scope)
+    instance:api_register(nil, "restore_scope",interpreter.api_builtin_restore_scope)
+    instance:api_register(nil, "get_scopekind",interpreter.api_builtin_get_scopekind)
+    instance:api_register(nil, "get_scopename",interpreter.api_builtin_get_scopename)
 
     -- register the builtin modules
     for module_name, module in pairs(interpreter._builtin_modules()) do
@@ -1533,22 +1537,12 @@ end
 
 -- the builtin api: includes()
 function interpreter:api_builtin_includes(...)
-
-    -- check
     assert(self and self._PRIVATE and self._PRIVATE._ROOTDIR and self._PRIVATE._MTIMES)
-
-    -- the current file
     local curfile = self._PRIVATE._CURFILE
-    assert(curfile)
-
-    -- the scopes
     local scopes = self._PRIVATE._SCOPES
-    assert(scopes)
-
-    -- get all subpaths
-    local subpaths = table.join(...)
 
     -- find all files
+    local subpaths = table.join(...)
     local subpaths_matched = {}
     for _, subpath in ipairs(subpaths) do
         -- find the given files from the project directory
@@ -1646,6 +1640,64 @@ function interpreter:api_builtin_includes(...)
     self._PRIVATE._CURFILE = curfile
 end
 
+-- the builtin api: save_scope()
+-- save the current scope
+function interpreter:api_builtin_save_scope()
+    assert(self and self._PRIVATE)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
+    -- save the current scope
+    local scope = {}
+    scope._CURRENT      = scopes._CURRENT
+    scope._CURRENT_KIND = scopes._CURRENT_KIND
+    self._PRIVATE._SCOPES_SAVED = self._PRIVATE._SCOPES_SAVED or {}
+    table.insert(self._PRIVATE._SCOPES_SAVED, scope)
+end
+
+-- the builtin api: restore_scope()
+-- restore the current scope
+function interpreter:api_builtin_restore_scope()
+    assert(self and self._PRIVATE)
+
+    -- the scopes
+    local scopes = self._PRIVATE._SCOPES
+    assert(scopes)
+
+    -- restore it
+    local scopes_saved = self._PRIVATE._SCOPES_SAVED
+    if scopes_saved and #scopes_saved > 0 then
+        local scope = scopes_saved[#scopes_saved]
+        if scope then
+            scopes._CURRENT      = scope._CURRENT
+            scopes._CURRENT_KIND = scope._CURRENT_KIND
+            table.remove(scopes_saved, #scopes_saved)
+        end
+    end
+end
+
+-- the builtin api: get_scopekind()
+function interpreter:api_builtin_get_scopekind()
+    local scopes = self._PRIVATE._SCOPES
+    return scopes._CURRENT_KIND
+end
+
+-- the builtin api: get_scopename()
+function interpreter:api_builtin_get_scopename()
+    local scopes = self._PRIVATE._SCOPES
+    local scope_kind = scopes._CURRENT_KIND
+    if scope_kind and scopes[scope_kind] then
+        local scope_current = scopes._CURRENT
+        for name, scope in pairs(scopes[scope_kind]) do
+            if scope_current == scope then
+                return name
+            end
+        end
+    end
+end
+
 -- get api function
 function interpreter:api_func(apiname)
 
@@ -1670,40 +1722,6 @@ function interpreter:api_call(apiname, ...)
 
     -- call api function
     return apifunc(...)
-end
-
--- save the current scope
-function interpreter:scope_save()
-
-    -- check
-    assert(self and self._PRIVATE)
-
-    -- the scopes
-    local scopes = self._PRIVATE._SCOPES
-    assert(scopes)
-
-    -- the current scope
-    local scope = {}
-    scope._CURRENT      = scopes._CURRENT
-    scope._CURRENT_KIND = scopes._CURRENT_KIND
-
-    -- ok?
-    return scope
-end
-
--- restore the current scope
-function interpreter:scope_restore(scope)
-
-    -- check
-    assert(self and self._PRIVATE and scope)
-
-    -- the scopes
-    local scopes = self._PRIVATE._SCOPES
-    assert(scopes)
-
-    -- restore it
-    scopes._CURRENT      = scope._CURRENT
-    scopes._CURRENT_KIND = scope._CURRENT_KIND
 end
 
 -- get current instance in the interpreter modules
@@ -1753,8 +1771,6 @@ function interpreter.instance(script)
         -- next
         level = level + 1
     end
-
-    -- ok?
     return instance
 end
 

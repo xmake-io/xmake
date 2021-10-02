@@ -28,6 +28,7 @@
 function check_cincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_cincludes(includes)
         if opt.includedirs then
@@ -35,6 +36,7 @@ function check_cincludes(definition, includes, opt)
         end
         add_defines(definition)
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -50,6 +52,7 @@ function configvar_check_cincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
+    save_scope()
     option(optname)
         add_cincludes(includes)
         if opt.includedirs then
@@ -59,6 +62,7 @@ function configvar_check_cincludes(definition, includes, opt)
             set_configvar(defname, defval or 1, {quote = opt.quote})
         end
     option_end()
+    restore_scope()
     if opt.default == nil then
         add_options(optname)
     else
