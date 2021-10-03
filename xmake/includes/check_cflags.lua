@@ -28,6 +28,7 @@
 function check_cflags(definition, flags, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
+    save_scope()
     option(optname)
         add_defines(definition)
         on_check(function (option)
@@ -37,6 +38,7 @@ function check_cflags(definition, flags, opt)
             end
         end)
     option_end()
+    restore_scope()
     add_options(optname)
 end
 
@@ -54,6 +56,7 @@ function configvar_check_cflags(definition, flags, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
     local defname, defval = unpack(definition:split('='))
+    save_scope()
     option(optname)
         if opt.default == nil then
             set_configvar(defname, defval or 1, {quote = opt.quote})
@@ -65,6 +68,7 @@ function configvar_check_cflags(definition, flags, opt)
             end
         end)
     option_end()
+    restore_scope()
     if opt.default == nil then
         add_options(optname)
     else
