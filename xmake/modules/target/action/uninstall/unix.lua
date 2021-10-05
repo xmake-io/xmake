@@ -95,3 +95,8 @@ function uninstall_static(target, opt)
     -- remove headers from the include directory
     _uninstall_headers(target, opt)
 end
+
+-- uninstall phony
+function uninstall_phony(target, opt)
+    _uninstall_headers(target, opt)
+end
