@@ -34,7 +34,8 @@ end
 -- https://github.com/xmake-io/xmake/issues/1050
 function _translate_arguments(arguments)
     local args = {}
-    local is_msvc = path.basename(arguments[1]):lower() == "cl"
+    local cc = path.basename(arguments[1]):lower()
+    local is_include = false
     for idx, arg in ipairs(arguments) do
         -- see https://github.com/xmake-io/xmake/issues/1721
         if idx == 1 and is_host("windows") and path.extension(arg) == "" then
@@ -53,8 +54,26 @@ function _translate_arguments(arguments)
         end
         -- @see use msvc-style flags for msvc to support language-server better
         -- https://github.com/xmake-io/xmake/issues/1284
-        if is_msvc and arg and arg:startswith("-") then
+        if cc == "cl" and arg and arg:startswith("-") then
             arg = arg:gsub("^%-", "/")
+        elseif cc == "nvcc" and arg then
+            -- support -I path with spaces for nvcc
+            -- https://github.com/xmake-io/xmake/issues/1726
+            if is_include then
+                if arg and arg:find(' ', 1, true) then
+                    arg = "\"" .. arg .. "\""
+                end
+                is_include = false
+            elseif arg:startswith("-I") then
+                local f = arg:sub(1, 2)
+                local v = arg:sub(3)
+                if v and v:find(' ', 1, true) then
+                    arg = f .. "\"" .. v .. "\""
+                end
+            end
+        end
+        if arg == "-I" then
+            is_include = true
         end
         if arg then
             table.insert(args, arg)
