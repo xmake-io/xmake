@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.config")
+import("lib.detect.find_tool")
 
 -- get the build environments
 function buildenvs(package)
@@ -84,6 +85,24 @@ function buildenvs(package)
     return envs
 end
 
+-- do make
+function make(package, argv, opt)
+    opt = opt or {}
+    local program
+    local runenvs = opt.envs or buildenvs(package)
+    if package:is_plat("mingw") and is_subhost("windows") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        program = path.join(mingw, "bin", "mingw32-make.exe")
+    else
+        local tool = find_tool("make", {envs = runenvs})
+        if tool then
+            program = tool.program
+        end
+    end
+    assert(program, "make not found!")
+    os.vrunv(program, argv, {envs = runenvs})
+end
+
 -- build package
 function build(package, configs, opt)
 
@@ -108,15 +127,7 @@ function build(package, configs, opt)
     end
 
     -- do build
-    if is_host("bsd") then
-        os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
-    elseif package:is_plat("mingw") and is_subhost("windows") then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        local make = path.join(mingw, "bin", "mingw32-make.exe")
-        os.vrunv(make, argv, {envs = opt.envs or buildenvs(package)})
-    else
-        os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
-    end
+    make(package, argv, opt)
 end
 
 -- install package
@@ -131,13 +142,5 @@ function install(package, configs, opt)
     if option.get("verbose") then
         table.insert(argv, "VERBOSE=1")
     end
-    if is_host("bsd") then
-        os.vrunv("gmake", argv, {envs = opt.envs or buildenvs(package)})
-    elseif package:is_plat("mingw") and is_subhost("windows") then
-        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
-        local make = path.join(mingw, "bin", "mingw32-make.exe")
-        os.vrunv(make, argv, {envs = opt.envs or buildenvs(package)})
-    else
-        os.vrunv("make", argv, {envs = opt.envs or buildenvs(package)})
-    end
+    make(package, argv, opt)
 end

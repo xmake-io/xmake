@@ -23,6 +23,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.tool.linker")
 import("core.tool.compiler")
+import("lib.detect.find_tool")
 
 -- translate path
 function _translate_path(package, p)
@@ -296,8 +297,25 @@ function configure(package, configs, opt)
     os.vrunv("sh", argv, {envs = envs})
 end
 
--- install package
-function install(package, configs, opt)
+-- do make
+function make(package, argv, opt)
+    opt = opt or {}
+    local program
+    if package:is_plat("mingw") and is_subhost("windows") then
+        local mingw = assert(package:build_getenv("mingw") or package:build_getenv("sdk"), "mingw not found!")
+        program = path.join(mingw, "bin", "mingw32-make.exe")
+    else
+        local tool = find_tool("make")
+        if tool then
+            program = tool.program
+        end
+    end
+    assert(program, "make not found!")
+    os.vrunv(program, argv)
+end
+
+-- build package
+function build(package, configs, opt)
 
     -- do configure
     configure(package, configs, opt)
@@ -309,12 +327,21 @@ function install(package, configs, opt)
     if option.get("verbose") then
         table.insert(argv, "V=1")
     end
-    if is_host("bsd") then
-        os.vrunv("gmake", argv)
-        os.vrun("gmake install")
-    else
-        os.vrunv("make", argv)
-        os.vrun("make install")
+    make(package, argv, opt)
+end
+
+-- install package
+function install(package, configs, opt)
+
+    -- do build
+    opt = opt or {}
+    build(package, configs, opt)
+
+    -- do install
+    local argv = {"install"}
+    if option.get("verbose") then
+        table.insert(argv, "V=1")
     end
+    make(package, argv, opt)
 end
 
