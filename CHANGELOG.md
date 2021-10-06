@@ -11,7 +11,6 @@
 * [#1715](https://github.com/xmake-io/xmake/issues/1715): Support to detect compiler language standards as features and add `check_macros`
 * Support Loongarch
 
-
 ### Change
 
 * [#1618](https://github.com/xmake-io/xmake/issues/1618): Improve vala to support to generate libraries and bindings
@@ -24,6 +23,7 @@
 * Support Android NDK r23
 * Add `c++latest` and `clatest` for `set_languages`
 * [#1720](https://github.com/xmake-io/xmake/issues/1720): Add `save_scope` and `restore_scope` to fix `check_xxx` apis
+* [#1726](https://github.com/xmake-io/xmake/issues/1726): Improve compile_commands generator to support nvcc
 
 ### Bugs fixed
 
@@ -1109,6 +1109,7 @@
 * 改进对 Android NDK r23 的支持
 * 为 `set_languages` 新增 `c++latest` 和 `clatest` 配置值
 * [#1720](https://github.com/xmake-io/xmake/issues/1720): 添加 `save_scope` 和 `restore_scope` 去修复 `check_xxx` 相关接口
+* [#1726](https://github.com/xmake-io/xmake/issues/1726): 改进 compile_commands 生成器去支持 nvcc
 
 ### Bugs 修复
 
