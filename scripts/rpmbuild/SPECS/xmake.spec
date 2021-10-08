@@ -1,8 +1,9 @@
 %define     xmake_revision       c022587f0c32859b74f6fa16c7a3e16094bbbd7c
-%define     tbox_revision        5ef932750ede0b90867fd4afdcf1deed2464c82b
+%define     tbox_revision        7ca5145d40aa906fdc48b0b0e75e80412241be7e
 %define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
 %define     luajit_revision      e9af1abec542e6f9851ff2368e7f196b6382a44c
+%define     lua_revision         75ea9ccbea7c4886f30da147fb67b693b2624c26
 %define     _binaries_in_noarch_packages_terminate_build   0
 %undefine   _disable_source_fetch
 
@@ -15,9 +16,10 @@ License:    ASL 2.0
 URL:        https://xmake.io
 Source0:    https://github.com/xmake-io/xmake/archive/%{xmake_revision}.tar.gz#/xmake-%{xmake_revision}.tar.gz
 Source1:    https://github.com/tboox/tbox/archive/%{tbox_revision}.tar.gz#/tbox-%{tbox_revision}.tar.gz
-Source2:    https://github.com/xmake-io/xmake-core-luajit/archive/%{luajit_revision}.tar.gz#/xmake-core-luajit-%{luajit_revision}.tar.gz
-Source3:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_revision}.tar.gz#/xmake-core-sv-%{sv_revision}.tar.gz
-Source4:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_revision}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_revision}.tar.gz
+Source2:    https://github.com/xmake-io/xmake-core-lua/archive/%{lua_revision}.tar.gz#/xmake-core-lua-%{lua_revision}.tar.gz
+Source3:    https://github.com/xmake-io/xmake-core-luajit/archive/%{luajit_revision}.tar.gz#/xmake-core-luajit-%{luajit_revision}.tar.gz
+Source4:    https://github.com/xmake-io/xmake-core-sv/archive/%{sv_revision}.tar.gz#/xmake-core-sv-%{sv_revision}.tar.gz
+Source5:    https://github.com/xmake-io/xmake-core-lua-cjson/archive/%{lua_cjson_revision}.tar.gz#/xmake-core-lua-cjson-%{lua_cjson_revision}.tar.gz
 
 BuildRequires:  gcc-c++
 BuildRequires:  ncurses-devel
@@ -38,19 +40,23 @@ system to help users solve the integrated use of C/C++ dependent libraries.
 %prep
 %setup -q -T -b 1 -n tbox-%{tbox_revision}
 cd ..
-%setup -q -T -b 2 -n xmake-core-luajit-%{luajit_revision}
+%setup -q -T -b 2 -n xmake-core-lua-%{lua_revision}
 cd ..
-%setup -q -T -b 3 -n xmake-core-sv-%{sv_revision}
+%setup -q -T -b 3 -n xmake-core-luajit-%{luajit_revision}
 cd ..
-%setup -q -T -b 4 -n xmake-core-lua-cjson-%{lua_cjson_revision}
+%setup -q -T -b 4 -n xmake-core-sv-%{sv_revision}
+cd ..
+%setup -q -T -b 5 -n xmake-core-lua-cjson-%{lua_cjson_revision}
 cd ..
 %setup -q -T -b 0 -n xmake-%{xmake_revision}
 rm -rf core/src/sv/sv
 rm -rf core/src/tbox/tbox
+rm -rf core/src/lua/lua
 rm -rf core/src/luajit/luajit
 rm -rf core/src/lua-cjson/lua-cjson
 ln -s `pwd`/../tbox-%{tbox_revision} core/src/tbox/tbox
 ln -s `pwd`/../xmake-core-sv-%{sv_revision} core/src/sv/sv
+ln -s `pwd`/../xmake-core-lua-%{lua_revision} core/src/lua/lua
 ln -s `pwd`/../xmake-core-luajit-%{luajit_revision} core/src/luajit/luajit
 ln -s `pwd`/../xmake-core-lua-cjson-%{lua_cjson_revision} core/src/lua-cjson/lua-cjson
 
