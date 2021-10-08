@@ -43,7 +43,7 @@ end
 -- the runtime option
 option("runtime")
     set_showmenu(true)
-    set_default("lua")
+    set_default("luajit")
     set_description("Use luajit or lua runtime")
     set_values("luajit", "lua")
 option_end()
