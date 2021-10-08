@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.5.8
+
 ### New features
 
 * [#388](https://github.com/xmake-io/xmake/issues/388): Pascal Language Support
@@ -1087,6 +1089,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.5.8
 
 ### 新特性
 

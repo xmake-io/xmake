@@ -1,4 +1,4 @@
-%define     xmake_revision       c022587f0c32859b74f6fa16c7a3e16094bbbd7c
+%define     xmake_revision       703d5a016e2c1881990fc34e2e989b28e7673aa2
 %define     tbox_revision        7ca5145d40aa906fdc48b0b0e75e80412241be7e
 %define     sv_revision          9a3cf7c8e589de4f70378824329882c4a047fffc
 %define     lua_cjson_revision   515bab6d6d80b164b94db73af69609ea02f3a798
