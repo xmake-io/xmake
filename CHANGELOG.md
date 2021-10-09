@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1736](https://github.com/xmake-io/xmake/issues/1736): Support wasi-sdk toolchain
+
 ## v2.5.8
 
 ### New features
@@ -1089,6 +1093,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1736](https://github.com/xmake-io/xmake/issues/1736): 支持 wasi-sdk 工具链
 
 ## v2.5.8
 

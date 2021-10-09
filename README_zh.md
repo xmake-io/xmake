@@ -230,8 +230,9 @@ tinycc        Tiny C Compiler
 emcc          A toolchain for compiling to asm.js and WebAssembly
 icc           Intel C/C++ Compiler
 ifort         Intel Fortran Compiler
-muslcc        The musl-based cross-compilation toolchains
+muslcc        The musl-based cross-compilation toolchain
 fpc           Free Pascal Programming Language Compiler
+wasi          WASI-enabled WebAssembly C/C++ toolchain
 ```
 
 ## 支持语言
