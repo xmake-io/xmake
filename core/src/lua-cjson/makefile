@@ -28,7 +28,7 @@ lua-cjson_CXFLAGS 		+= -DUSE_LUAJIT
 endif
 ifeq ($(RUNTIME),lua)
 lua-cjson_INC_DIRS 		+= ../lua/lua
-lua-cjson_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
+lua-cjson_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
 endif
 
 # use given system library?

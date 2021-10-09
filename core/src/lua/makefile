@@ -37,7 +37,6 @@ lua_C_FILES 			+= \
 						lua/lcorolib \
 						lua/lcode \
 						lua/ltablib \
-						lua/lbitlib \
 						lua/lapi \
 						lua/lbaselib \
 						lua/ldebug \
@@ -62,7 +61,7 @@ ifeq ($(PLAT),cygwin)
 	iswin = yes
 endif
 
-lua_CFLAGS 				:= -std=c99 -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
+lua_CFLAGS 				:= -std=c99 -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
 ifdef iswin
 lua_CFLAGS_PLAT 		:= -DLUA_USE_WINDOWS
 endif
