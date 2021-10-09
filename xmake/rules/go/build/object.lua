@@ -27,10 +27,7 @@ import("utils.progress")
 
 -- build the source files
 function main(target, sourcebatch, opt)
-
-    -- is verbose?
-    local verbose = option.get("verbose")
-
+    
     -- get source files and kind
     local sourcefiles = sourcebatch.sourcefiles
     local sourcekind  = sourcebatch.sourcekind
@@ -73,9 +70,7 @@ function main(target, sourcebatch, opt)
     end
 
     -- trace verbose info
-    if verbose then
-        print(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
-    end
+    vprint(compinst:compcmd(sourcefiles, objectfile, {compflags = compflags}))
 
     -- compile it
     dependinfo.files = {}
