@@ -48,10 +48,10 @@ function _do_run_target(target)
     -- add run environments
     local addrunenvs, setrunenvs = make_runenvs(target)
     for name, values in pairs(addrunenvs) do
-        os.addenv(name, unpack(table.wrap(values)))
+        os.addenv(name, table.unpack(table.wrap(values)))
     end
     for name, value in pairs(setrunenvs) do
-        os.setenv(name, unpack(table.wrap(value)))
+        os.setenv(name, table.unpack(table.wrap(value)))
     end
 
     -- debugging?

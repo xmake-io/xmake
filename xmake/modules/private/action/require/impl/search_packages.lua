@@ -22,7 +22,7 @@
 function _search_packages(name)
 
     -- get package manager name
-    local manager_name, package_name = unpack(name:split("::", {plain = true, strict = true}))
+    local manager_name, package_name = table.unpack(name:split("::", {plain = true, strict = true}))
     if package_name == nil then
         package_name = manager_name
         manager_name = "xmake"

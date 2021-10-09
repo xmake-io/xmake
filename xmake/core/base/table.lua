@@ -327,9 +327,9 @@ function table.pack(...)
     return { n = select("#", ...), ... }
 end
 
--- unpack table values
+-- table.unpack table values
 -- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.unpack
-table.unpack = table.unpack or unpack
+table.unpack = table.unpack or table.unpack
 
 -- get keys of a table
 function table.keys(tab)

@@ -244,7 +244,7 @@ function _instance:send(data, opt)
         return -1, errors
     end
 
-    -- data is bytes? unpack the raw address
+    -- data is bytes? table.unpack the raw address
     local datasize = #data
     if type(data) == "table" and data.caddr then
         datasize = data:size()
@@ -442,7 +442,7 @@ function _instance:sendto(data, addr, port, opt)
         return -1, string.format("%s: sendto empty address!", self)
     end
 
-    -- data is bytes? unpack the raw address
+    -- data is bytes? table.unpack the raw address
     if type(data) == "table" and data.caddr then
         data = {data = data:caddr(), size = data:size()}
     end

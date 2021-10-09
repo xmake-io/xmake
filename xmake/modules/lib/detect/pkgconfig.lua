@@ -46,7 +46,7 @@ function version(name, opt)
     local configdirs_old = os.getenv("PKG_CONFIG_PATH")
     local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+        os.setenv("PKG_CONFIG_PATH", table.unpack(configdirs))
     end
 
     -- get version
@@ -85,7 +85,7 @@ function variables(name, variables, opt)
     local configdirs_old = os.getenv("PKG_CONFIG_PATH")
     local configdirs = table.wrap(opt.configdirs)
     if #configdirs > 0 then
-        os.setenv("PKG_CONFIG_PATH", unpack(configdirs))
+        os.setenv("PKG_CONFIG_PATH", table.unpack(configdirs))
     end
 
     -- get variable value

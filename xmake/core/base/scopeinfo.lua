@@ -451,7 +451,7 @@ function _instance:apival_set(name, ...)
         local array = name
         for _, dict in ipairs(array) do
             for k, v in pairs(dict) do
-                self:apival_set(k, unpack(table.wrap(v)))
+                self:apival_set(k, table.unpack(table.wrap(v)))
             end
         end
 
@@ -459,7 +459,7 @@ function _instance:apival_set(name, ...)
     elseif table.is_dictionary(name) then
         local dict = name
         for k, v in pairs(dict) do
-            self:apival_set(k, unpack(table.wrap(v)))
+            self:apival_set(k, table.unpack(table.wrap(v)))
         end
     elseif name ~= nil then
         os.raise("unknown type(%s) for %s:set(%s, ...)", type(name), self:kind(), name)
@@ -487,7 +487,7 @@ function _instance:apival_add(name, ...)
         local array = name
         for _, dict in ipairs(array) do
             for k, v in pairs(dict) do
-                self:apival_add(k, unpack(table.wrap(v)))
+                self:apival_add(k, table.unpack(table.wrap(v)))
             end
         end
 
@@ -495,7 +495,7 @@ function _instance:apival_add(name, ...)
     elseif table.is_dictionary(name) then
         local dict = name
         for k, v in pairs(dict) do
-            self:apival_add(k, unpack(table.wrap(v)))
+            self:apival_add(k, table.unpack(table.wrap(v)))
         end
     elseif name ~= nil then
         os.raise("unknown type(%s) for %s:add(%s, ...)", type(name), self:kind(), name)
