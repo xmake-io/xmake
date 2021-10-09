@@ -328,8 +328,8 @@ function table.pack(...)
 end
 
 -- table.unpack table values
--- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.unpack
-table.unpack = table.unpack or table.unpack
+-- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-unpack
+table.unpack = table.unpack or unpack
 
 -- get keys of a table
 function table.keys(tab)
