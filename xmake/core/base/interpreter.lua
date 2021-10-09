@@ -491,14 +491,17 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
     local results = {}
     for name, values in pairs(scope) do
 
+        -- filter values
+        --
+        -- @note we need do filter before removing repeat values
+        -- https://github.com/xmake-io/xmake/issues/1732
+        if enable_filter then
+            values = self:_filter(values)
+        end
+
         -- remove repeat first for each slice with deleted item (__del_xxx)
         if remove_repeat and not table.is_dictionary(values) then
             values = table.unique(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
-        end
-
-        -- filter values
-        if enable_filter then
-            values = self:_filter(values)
         end
 
         -- unwrap it if be only one
