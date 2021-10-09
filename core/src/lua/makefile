@@ -69,10 +69,10 @@ endif
 
 ifeq ($(PLAT),macosx)
 lua_CFLAGS 				+= -Wno-error=string-plus-int
-lua_CFLAGS_PLAT 		:= -DLUA_USE_WINDOWS
+lua_CFLAGS_PLAT 		:= -DLUA_USE_MACOSX
 endif
 
-ifeq($(lua_CFLAGS_PLAT),)
+ifeq ($(lua_CFLAGS_PLAT),)
 lua_CFLAGS_PLAT 		:= -DLUA_USE_LINUX
 endif
 lua_CFLAGS 				+= $(lua_CFLAGS_PLAT)
