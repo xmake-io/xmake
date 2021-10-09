@@ -112,7 +112,7 @@ rule("cuda.gencodes")
             if v_arch then
                 table.insert(r_archs, v_arch)
             else
-                v_arch = math.min(unpack(r_archs))
+                v_arch = math.min(table.unpack(r_archs))
             end
             r_archs = table.unique(r_archs)
 

@@ -55,10 +55,10 @@ function sandbox_utils._print(...)
     end
 
     -- print multi-variables with raw lua action
-    utils._print(unpack(args))
+    utils._print(table.unpack(args))
 
     -- write to the log file
-    log:printv(unpack(args))
+    log:printv(table.unpack(args))
 end
 
 -- print format string with newline

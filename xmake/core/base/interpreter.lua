@@ -1306,7 +1306,7 @@ function interpreter:api_register_set_paths(scope_kind, ...)
         end
 
         -- translate paths
-        values = table.join(unpack(values))
+        values = table.join(table.unpack(values))
         local paths = self:_api_translate_paths(values, "set_" .. name)
 
         -- save values
@@ -1378,7 +1378,7 @@ function interpreter:api_register_add_paths(scope_kind, ...)
         end
 
         -- translate paths
-        values = table.join(unpack(values))
+        values = table.join(table.unpack(values))
         local paths = self:_api_translate_paths(values, "add_" .. name)
 
         -- save values

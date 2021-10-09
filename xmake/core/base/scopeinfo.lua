@@ -109,7 +109,7 @@ function _instance:_api_set_values(name, ...)
     end
 
     -- expand values
-    values = table.join(unpack(values))
+    values = table.join(table.unpack(values))
 
     -- handle values
     local handled_values = self:_api_handle(values)
@@ -148,7 +148,7 @@ function _instance:_api_add_values(name, ...)
     end
 
     -- expand values
-    values = table.join(unpack(values))
+    values = table.join(table.unpack(values))
 
     -- save values
     scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), values))
@@ -311,7 +311,7 @@ function _instance:_api_set_paths(name, ...)
     end
 
     -- expand values
-    values = table.join(unpack(values))
+    values = table.join(table.unpack(values))
 
     -- translate paths
     local paths = interp:_api_translate_paths(values, "set_" .. name, 5)
@@ -351,7 +351,7 @@ function _instance:_api_add_paths(name, ...)
     end
 
     -- expand values
-    values = table.join(unpack(values))
+    values = table.join(table.unpack(values))
 
     -- translate paths
     local paths = interp:_api_translate_paths(values, "add_" .. name, 5)
