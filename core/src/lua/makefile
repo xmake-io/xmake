@@ -64,15 +64,18 @@ endif
 
 lua_CFLAGS 				:= -std=c99 -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
 ifdef iswin
-lua_CFLAGS 				+= -DLUA_USE_WINDOWS
+lua_CFLAGS_PLAT 		:= -DLUA_USE_WINDOWS
 endif
 
 ifeq ($(PLAT),macosx)
-lua_CFLAGS 				+= -DLUA_USE_MACOSX \
-						-Wno-error=string-plus-int
-else
-lua_CFLAGS 				+= -DLUA_USE_LINUX
+lua_CFLAGS 				+= -Wno-error=string-plus-int
+lua_CFLAGS_PLAT 		:= -DLUA_USE_WINDOWS
 endif
+
+ifeq($(lua_CFLAGS_PLAT),)
+lua_CFLAGS_PLAT 		:= -DLUA_USE_LINUX
+endif
+lua_CFLAGS 				+= $(lua_CFLAGS_PLAT)
 
 # use given system library?
 lua_C_FILES 			:= $(if $(findstring lua,$(base_LIBNAMES)),,$(lua_C_FILES))
