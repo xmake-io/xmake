@@ -93,7 +93,7 @@ rule("wdk.sign")
         import("core.project.config")
         import("core.project.depend")
         import("lib.detect.find_file")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- need build this object?
         local tempfile = os.tmpfile(target:targetfile())

@@ -25,7 +25,7 @@ import("core.tool.compiler")
 import("core.project.depend")
 import("private.tools.ccache")
 import("private.async.runjobs")
-import("private.utils.progress")
+import("utils.progress")
 
 -- do build file
 function _do_build_file(target, sourcefile, opt)

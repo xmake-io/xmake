@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.theme.theme")
 import("core.project.depend")
 import("core.project.target", {alias = "project_target"})
-import("private.utils.progress")
+import("utils.progress")
 import("core.tool.toolchain")
 import("private.tools.vstool")
 

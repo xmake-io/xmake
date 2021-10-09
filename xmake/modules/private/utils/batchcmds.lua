@@ -28,7 +28,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.language.language")
-import("private.utils.progress", {alias = "progress_utils"})
+import("utils.progress", {alias = "progress_utils"})
 
 -- define module
 local batchcmds = batchcmds or object { _init = {"_TARGET", "_CMDS", "_DEPS", "_tip"}}

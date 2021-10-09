@@ -73,7 +73,7 @@ rule("wdk.mof")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get mofcomp
         local mofcomp = target:data("wdk.mofcomp")

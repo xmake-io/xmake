@@ -85,7 +85,7 @@ rule("xcode.framework")
         import("core.theme.theme")
         import("core.project.depend")
         import("private.tools.codesign")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get framework directory
         local bundledir = path.absolute(target:data("xcode.bundle.rootdir"))

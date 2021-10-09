@@ -218,7 +218,7 @@ function main(targetname)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build", batchjobs, {comax = option.get("jobs") or 1, on_exit = function (errors)
-            import("private.utils.progress")
+            import("utils.progress")
             if errors and progress.showing_without_scroll() then
                 print("")
             end

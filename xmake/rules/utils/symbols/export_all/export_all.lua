@@ -24,7 +24,7 @@ import("core.tool.toolchain")
 import("core.base.option")
 import("core.base.hashset")
 import("core.project.depend")
-import("private.utils.progress")
+import("utils.progress")
 
 -- export all symbols for dynamic library
 function main (target, opt)

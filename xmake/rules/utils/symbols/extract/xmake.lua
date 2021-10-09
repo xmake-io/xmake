@@ -46,7 +46,7 @@ rule("utils.symbols.extract")
         import("core.theme.theme")
         import("core.project.depend")
         import("core.platform.platform")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get strip
         local strip = target:tool("strip")

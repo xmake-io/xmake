@@ -24,7 +24,7 @@ import("core.theme.theme")
 import("core.tool.linker")
 import("core.tool.compiler")
 import("core.project.depend")
-import("private.utils.progress")
+import("utils.progress")
 import("private.utils.batchcmds")
 import("object", {alias = "add_batchjobs_for_object"})
 

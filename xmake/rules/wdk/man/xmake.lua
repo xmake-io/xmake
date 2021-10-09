@@ -57,7 +57,7 @@ rule("wdk.man")
         import("core.base.option")
         import("core.theme.theme")
         import("core.project.depend")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- get ctrpp
         local ctrpp = target:data("wdk.ctrpp")

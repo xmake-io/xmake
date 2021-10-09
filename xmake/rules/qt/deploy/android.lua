@@ -25,7 +25,7 @@ import("core.base.semver")
 import("core.project.config")
 import("core.project.depend")
 import("core.tool.toolchain")
-import("private.utils.progress")
+import("utils.progress")
 
 -- escape path
 function _escape_path(p)

@@ -34,7 +34,7 @@ rule("cuda.build.devlink")
         import("core.project.depend")
         import("core.tool.linker")
         import("core.platform.platform")
-        import("private.utils.progress")
+        import("utils.progress")
 
         -- disable devlink?
         if target:values("cuda.build.devlink") == false then

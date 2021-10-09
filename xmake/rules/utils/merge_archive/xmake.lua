@@ -25,7 +25,7 @@ rule("utils.merge.archive")
         if target:policy("build.merge_archive") and target:is_static() then
             import("utils.archive.merge_staticlib")
             import("core.project.depend")
-            import("private.utils.progress")
+            import("utils.progress")
             local libraryfiles = {}
             for _, dep in ipairs(target:orderdeps()) do
                 if dep:is_static() then

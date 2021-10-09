@@ -23,7 +23,7 @@ import("core.base.option")
 import("core.theme.theme")
 import("core.project.depend")
 import("private.tools.codesign")
-import("private.utils.progress")
+import("utils.progress")
 
 -- main entry
 function main (target, opt)

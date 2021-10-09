@@ -20,7 +20,7 @@
 
 -- imports
 import("core.base.scheduler")
-import("private.utils.progress")
+import("utils.progress")
 
 -- print back characters
 function _print_backchars(backnum)
@@ -37,7 +37,7 @@ end
 -- e.g.
 -- runjobs("test", function (index) print("hello") end, {total = 100, comax = 6, timeout = 1000, on_timer = function (running_jobs_indices) end})
 -- runjobs("test", function () os.sleep(10000) end, { progress = true })
--- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module private.utils.progress
+-- runjobs("test", function () os.sleep(10000) end, { progress = { chars = {'/','\'} } }) -- see module utils.progress
 --
 -- local jobs = jobpool.new()
 -- local root = jobs:addjob("job/root", function (idx, total)

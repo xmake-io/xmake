@@ -27,7 +27,7 @@ import("core.project.config")
 import("core.project.project")
 import("core.language.language")
 import("private.tools.ccache")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)

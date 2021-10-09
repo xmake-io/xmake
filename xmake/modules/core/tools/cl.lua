@@ -26,7 +26,7 @@ import("core.project.project")
 import("core.language.language")
 import("private.tools.vstool")
 import("private.tools.cl.parse_include")
-import("private.utils.progress")
+import("utils.progress")
 
 -- init it
 function init(self)
