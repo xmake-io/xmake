@@ -28,6 +28,7 @@ local os         = require("base/os")
 local utils      = require("base/utils")
 local todisplay  = require("base/todisplay")
 local libc       = require("base/libc")
+local table      = require("base/table")
 
 -- new a bytes instance
 --
@@ -42,7 +43,7 @@ local libc       = require("base/libc")
 --
 function _instance.new(...)
     local args = {...}
-    local arg1, arg2, arg3 = unpack(args)
+    local arg1, arg2, arg3 = table.unpack(args)
     local instance = table.inherit(_instance)
     if type(arg1) == "number" then
         local size = arg1

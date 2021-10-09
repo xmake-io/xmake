@@ -53,6 +53,13 @@ if not table.getn then
     end
 end
 
+-- get array max length for lua5.4
+if not table.maxn then
+    function table.maxn(t)
+        return #t
+    end
+end
+
 -- move values of table(a1) to table(a2)
 --
 -- disable the builtin implementation for android termux/arm64, it will crash when calling `table.move({1, 1}, 1, 2, 1, {})`
@@ -322,7 +329,7 @@ end
 
 -- unpack table values
 -- polyfill of lua 5.2, @see https://www.lua.org/manual/5.2/manual.html#pdf-table.unpack
-table.unpack = unpack
+table.unpack = table.unpack or unpack
 
 -- get keys of a table
 function table.keys(tab)

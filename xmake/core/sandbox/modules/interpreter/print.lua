@@ -19,6 +19,7 @@
 --
 
 -- load modules
+local table     = require("base/table")
 local try       = require("sandbox/modules/try")
 local catch     = require("sandbox/modules/catch")
 
@@ -33,13 +34,13 @@ function _print(format, ...)
         {
             function ()
                 -- attempt to print format string first
-                io.write(string.format(format, unpack(args)) .. "\n")
+                io.write(string.format(format, table.unpack(args)) .. "\n")
             end,
             catch
             {
                 function ()
                     -- print multi-variables with raw lua action
-                    print(format, unpack(args))
+                    print(format, table.unpack(args))
                 end
             }
         }

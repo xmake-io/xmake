@@ -51,6 +51,11 @@
 // buffer size for prompt
 #define LUA_PROMPT_BUFSIZE 4096
 
+// for lua5.4
+#ifndef LUA_QL
+#   define LUA_QL(x)    "'" x "'"
+#endif
+
 /* //////////////////////////////////////////////////////////////////////////////////////
  * private implementation
  */

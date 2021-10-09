@@ -19,5 +19,5 @@
 --
 
 -- load module
-return unpack
+return require("base/table").unpack
 
