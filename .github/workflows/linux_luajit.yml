@@ -1,4 +1,4 @@
-name: Linux (Lua)
+name: Linux (Luajit)
 
 on:
   pull_request:
@@ -10,7 +10,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     concurrency:
-        group: ${{ github.head_ref }}-Linux-Lua
+        group: ${{ github.head_ref }}-Linux-Luajit
         cancel-in-progress: true
     steps:
       - uses: actions/checkout@v2
@@ -24,7 +24,7 @@ jobs:
 
       - name: Installation
         run: |
-          make BACKEND=lua
+          make RUNTIME=luajit
           ./scripts/get.sh __local__ __install_only__
           source ~/.xmake/profile
           xmake --version

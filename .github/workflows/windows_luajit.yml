@@ -49,7 +49,7 @@ jobs:
 
       - name: Build
         run: |
-          xmake f -vD -P core -a ${{ matrix.arch }} --runtime=lua
+          xmake f -vD -P core -a ${{ matrix.arch }} --runtime=luajit
           xmake -vD -P core
 
       - name: Tests
@@ -61,7 +61,6 @@ jobs:
           Set-Item -Path Env:Path -Value ($Env:XMAKE_PROGRAM_DIR + ";" + $Env:Path)
           xrepo --version
           xmake show
-          #xmake l -v private.utils.bcsave --rootname='@programdir' -x 'scripts/**|templates/**' xmake
           xmake lua -v -D tests/run.lua
 
       - name: Set release arch name
