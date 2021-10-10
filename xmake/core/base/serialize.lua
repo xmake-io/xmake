@@ -323,7 +323,7 @@ function serialize.save(obj, opt)
     end
 
     -- binary mode
-    local func, lerr = loadstring("return " .. result, "=")
+    local func, lerr = load("return " .. result, "=")
     if lerr ~= nil then
         return nil, lerr
     end
