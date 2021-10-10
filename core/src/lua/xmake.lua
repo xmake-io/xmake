@@ -17,7 +17,7 @@ target("lua")
     add_includedirs("lua", {public = true})
 
     -- add the common source files
-    add_files("lua/*.c|lua.c")
+    add_files("lua/*.c|lua.c|onelua.c")
 
     -- add defines
     add_defines("LUA_COMPAT_5_1", "LUA_COMPAT_5_2", "LUA_COMPAT_5_3", {public = true})
