@@ -1,8 +1,8 @@
-module hello;
-
+module;
 #include <iostream>
-
 using namespace std;
+
+module hello;
 
 namespace hello {
     void say_hi() {
