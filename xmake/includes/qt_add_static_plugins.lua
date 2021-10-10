@@ -34,10 +34,10 @@ function qt_add_static_plugins(plugin, opt)
     opt = opt or {}
     add_values("qt.plugins", plugin)
     if opt.links then
-        add_values("qt.links", unpack(table.wrap(opt.links)))
+        add_values("qt.links", table.unpack(table.wrap(opt.links)))
     end
     if opt.linkdirs then
-        add_values("qt.linkdirs", unpack(table.wrap(opt.linkdirs)))
+        add_values("qt.linkdirs", table.unpack(table.wrap(opt.linkdirs)))
     end
 end
 

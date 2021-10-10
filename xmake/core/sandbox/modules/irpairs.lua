@@ -60,7 +60,7 @@ function sandbox_irpairs(t, filter, ...)
 
     -- return iterator and initialized state
     t = table.wrap(t)
-    return iter, t, table.maxn(t) + 1
+    return iter, t, table.getn(t) + 1
 end
 
 -- load module

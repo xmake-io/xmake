@@ -120,8 +120,8 @@ function loadfile(filepath, mode, opt)
     return script, errors
 end
 
--- init package path
-table.insert(package.loaders, 2, function(v)
+-- init package path, package.searchers for lua5.4
+table.insert(package.loaders or package.searchers, 2, function(v)
     local filepath = xmake._PROGRAM_DIR .. "/core/" .. v .. ".lua"
     local script, serr = _loadfile_impl(filepath)
     if not script then

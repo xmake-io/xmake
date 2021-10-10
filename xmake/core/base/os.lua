@@ -377,7 +377,7 @@ end
 
 -- match directories
 --
--- @note only return {} without count to simplify code, e.g. unpack(os.dirs(""))
+-- @note only return {} without count to simplify code, e.g. table.unpack(os.dirs(""))
 --
 function os.dirs(pattern, callback)
     return (os.match(pattern, 'd', callback))

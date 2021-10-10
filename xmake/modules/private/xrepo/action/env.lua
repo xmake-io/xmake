@@ -208,7 +208,7 @@ function _package_addenvs(envs, instance)
                 end
             end
         else
-            _addenvs(envs, name, unpack(table.wrap(values)))
+            _addenvs(envs, name, table.unpack(table.wrap(values)))
         end
     end
 
@@ -237,7 +237,7 @@ function _toolchain_addenvs(envs)
         local toolchain_inst = toolchain.load(name, toolchain_opt)
         if toolchain_inst then
             for k, v in pairs(toolchain_inst:runenvs()) do
-                _addenvs(envs, k, unpack(path.splitenv(v)))
+                _addenvs(envs, k, table.unpack(path.splitenv(v)))
             end
         end
     end

@@ -87,7 +87,7 @@ end
 function configvar_check_cxxsnippets(definition, snippets, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
-    local defname, defval = unpack(definition:split('='))
+    local defname, defval = table.unpack(definition:split('='))
     save_scope()
     option(optname)
         add_cxxsnippets(definition, snippets, {tryrun = opt.tryrun, output = opt.output})

@@ -55,7 +55,7 @@ end
 function configvar_check_cxxflags(definition, flags, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
-    local defname, defval = unpack(definition:split('='))
+    local defname, defval = table.unpack(definition:split('='))
     save_scope()
     option(optname)
         if opt.default == nil then

@@ -51,7 +51,7 @@ end
 function configvar_check_cincludes(definition, includes, opt)
     opt = opt or {}
     local optname = "__" .. (opt.name or definition)
-    local defname, defval = unpack(definition:split('='))
+    local defname, defval = table.unpack(definition:split('='))
     save_scope()
     option(optname)
         add_cincludes(includes)

@@ -108,7 +108,7 @@ tb_int_t xm_os_args(lua_State* lua)
     if (lua_istable(lua, 1))
     {
         tb_size_t i = 0;
-        tb_size_t n = lua_objlen(lua, 1);
+        tb_size_t n = (tb_size_t)lua_objlen(lua, 1);
         for (i = 1; i <= n; i++)
         {
             // add space

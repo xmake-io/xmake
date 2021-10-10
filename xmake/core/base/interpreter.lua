@@ -459,13 +459,12 @@ function interpreter:_filter(values, level)
     else
         -- filter value or arrays
         values = table.wrap(values)
-        for idx = 1, table.maxn(values) do
-
+        for idx = 1, #values do
             local value = values[idx]
             if type(value) == "string" then
                 value = filter:handle(value)
             elseif table.is_array(value) then
-                for i = 1, table.maxn(value) do
+                for i = 1, #value do
                     local v = value[i]
                     if type(v) == "string" then
                         v = filter:handle(v)
@@ -1306,7 +1305,7 @@ function interpreter:api_register_set_paths(scope_kind, ...)
         end
 
         -- translate paths
-        values = table.join(unpack(values))
+        values = table.join(table.unpack(values))
         local paths = self:_api_translate_paths(values, "set_" .. name)
 
         -- save values
@@ -1378,7 +1377,7 @@ function interpreter:api_register_add_paths(scope_kind, ...)
         end
 
         -- translate paths
-        values = table.join(unpack(values))
+        values = table.join(table.unpack(values))
         local paths = self:_api_translate_paths(values, "add_" .. name)
 
         -- save values

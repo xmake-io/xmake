@@ -2431,8 +2431,11 @@ int xm_curses_register (lua_State *L)
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);               /* push metatable */
     lua_rawset(L, -3);                  /* metatable.__index = metatable */
+#if 0
     luaL_openlib(L, NULL, windowlib, 0);
-
+#else
+    luaL_setfuncs(L, windowlib, 0);
+#endif
     lua_pop(L, 1);                      /* remove metatable from stack */
 
     /*
@@ -2442,8 +2445,11 @@ int xm_curses_register (lua_State *L)
     lua_pushliteral(L, "__index");
     lua_pushvalue(L, -2);               /* push metatable */
     lua_rawset(L, -3);                  /* metatable.__index = metatable */
+#if 0
     luaL_openlib(L, NULL, chstrlib, 0);
-
+#else
+    luaL_setfuncs(L, chstrlib, 0);
+#endif
     lua_pop(L, 1);                      /* remove metatable from stack */
 
 
@@ -2451,7 +2457,11 @@ int xm_curses_register (lua_State *L)
     ** create global table with curses methods/variables/constants
     */
     lua_newtable(L);
+#if 0
     luaL_register(L, NULL, curseslib);
+#else
+    luaL_setfuncs(L, curseslib, 0);
+#endif
 
     lua_pushstring(L, "init");
     lua_pushvalue(L, -2);

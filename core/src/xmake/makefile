@@ -164,7 +164,7 @@ xmake_CXFLAGS 			+= -DUSE_LUAJIT
 endif
 ifeq ($(RUNTIME),lua)
 xmake_INC_DIRS 			+= ../lua/lua
-xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
+xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
 endif
 
 

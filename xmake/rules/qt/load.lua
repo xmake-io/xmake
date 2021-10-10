@@ -81,10 +81,10 @@ function _add_plugins(target, plugins)
     for name, plugin in pairs(plugins) do
         target:values_add("qt.plugins", name)
         if plugin.links then
-            target:values_add("qt.links", unpack(table.wrap(plugin.links)))
+            target:values_add("qt.links", table.unpack(table.wrap(plugin.links)))
         end
         if plugin.linkdirs then
-            target:values_add("qt.linkdirs", unpack(table.wrap(plugin.linkdirs)))
+            target:values_add("qt.linkdirs", table.unpack(table.wrap(plugin.linkdirs)))
         end
     end
 end

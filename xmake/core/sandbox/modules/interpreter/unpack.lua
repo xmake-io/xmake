@@ -15,9 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        unpack.lua
+-- @file        table.unpack.lua
 --
 
 -- load module
-return unpack
+return require("base/table").unpack
 

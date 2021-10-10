@@ -845,41 +845,41 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
         luaL_openlibs(engine->lua);
 
         // bind os functions
-        luaL_register(engine->lua, "os", g_os_functions);
+        xm_lua_register(engine->lua, "os", g_os_functions);
 
         // bind io functions
-        luaL_register(engine->lua, "io", g_io_functions);
+        xm_lua_register(engine->lua, "io", g_io_functions);
 
         // bind path functions
-        luaL_register(engine->lua, "path", g_path_functions);
+        xm_lua_register(engine->lua, "path", g_path_functions);
 
         // bind hash functions
-        luaL_register(engine->lua, "hash", g_hash_functions);
+        xm_lua_register(engine->lua, "hash", g_hash_functions);
 
         // bind string functions
-        luaL_register(engine->lua, "string", g_string_functions);
+        xm_lua_register(engine->lua, "string", g_string_functions);
 
         // bind process functions
-        luaL_register(engine->lua, "process", g_process_functions);
+        xm_lua_register(engine->lua, "process", g_process_functions);
 
         // bind sandbox functions
-        luaL_register(engine->lua, "sandbox", g_sandbox_functions);
+        xm_lua_register(engine->lua, "sandbox", g_sandbox_functions);
 
         // bind windows functions
 #ifdef TB_CONFIG_OS_WINDOWS
-        luaL_register(engine->lua, "winos", g_winos_functions);
+        xm_lua_register(engine->lua, "winos", g_winos_functions);
 #endif
 
 #ifdef XM_CONFIG_API_HAVE_READLINE
         // bind readline functions
-        luaL_register(engine->lua, "readline", g_readline_functions);
+        xm_lua_register(engine->lua, "readline", g_readline_functions);
 #endif
 
         // bind semver functions
-        luaL_register(engine->lua, "semver", g_semver_functions);
+        xm_lua_register(engine->lua, "semver", g_semver_functions);
 
         // bind libc functions
-        luaL_register(engine->lua, "libc", g_libc_functions);
+        xm_lua_register(engine->lua, "libc", g_libc_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses
@@ -1059,7 +1059,7 @@ tb_void_t xm_engine_register(xm_engine_ref_t self, tb_char_t const* module, luaL
     // do register
     lua_pushstring(engine->lua, module);
     lua_newtable(engine->lua);
-    luaL_register(engine->lua, tb_null, funcs);
+    xm_lua_register(engine->lua, tb_null, funcs);
     lua_rawset(engine->lua, -3);
 }
 tb_int_t xm_engine_run(tb_char_t const* name, tb_int_t argc, tb_char_t** argv, tb_char_t** taskargv, xm_engine_lni_initalizer_cb_t lni_initalizer)

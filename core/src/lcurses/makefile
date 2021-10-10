@@ -23,7 +23,7 @@ lcurses_CXFLAGS 		+= -DUSE_LUAJIT
 endif
 ifeq ($(RUNTIME),lua)
 lcurses_INC_DIRS 		+= ../lua/lua
-lcurses_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2
+lcurses_CXFLAGS 		+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
 endif
 
 # suffix
