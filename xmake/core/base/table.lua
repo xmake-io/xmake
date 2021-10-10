@@ -53,10 +53,16 @@ if not table.getn then
     end
 end
 
--- get array max length for lua5.4
+-- get array max integer key for lua5.4
 if not table.maxn then
     function table.maxn(t)
-        return #t
+        local max = 0
+        for k, _ in pairs(t) do
+            if type(k) == "number" and k > max then
+                max = k
+            end
+        end
+        return max
     end
 end
 
