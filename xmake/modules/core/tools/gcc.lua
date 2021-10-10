@@ -226,7 +226,7 @@ function nf_language(self, stdname)
             if self:has_flags(v, "cxflags") then
                 result = v
                 maps[stdname] = result
-                break
+                return result
             end
         end
     else
