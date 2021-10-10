@@ -459,13 +459,12 @@ function interpreter:_filter(values, level)
     else
         -- filter value or arrays
         values = table.wrap(values)
-        for idx = 1, table.maxn(values) do
-
+        for idx = 1, #values do
             local value = values[idx]
             if type(value) == "string" then
                 value = filter:handle(value)
             elseif table.is_array(value) then
-                for i = 1, table.maxn(value) do
+                for i = 1, #value do
                     local v = value[i]
                     if type(v) == "string" then
                         v = filter:handle(v)
