@@ -28,7 +28,7 @@ toolchain("gcc" .. suffix)
 
     -- set homepage
     set_homepage("https://gcc.gnu.org/")
-    set_description("GNU Compiler Collection")
+    set_description("GNU Compiler Collection" .. (version and (" (" .. version .. ")") or ""))
 
     -- mark as standalone toolchain
     set_kind("standalone")
