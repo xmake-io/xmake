@@ -250,8 +250,9 @@ function nf_language(self, stdname)
                 break
             end
         end
+    else
+        return result
     end
-    return result
 end
 
 -- make the define flag
