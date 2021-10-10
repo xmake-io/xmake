@@ -5,6 +5,7 @@
 ### New features
 
 * [#1736](https://github.com/xmake-io/xmake/issues/1736): Support wasi-sdk toolchain
+* Support Lua 5.4 runtime
 
 ## v2.5.8
 
@@ -1097,6 +1098,7 @@
 ### 新特性
 
 * [#1736](https://github.com/xmake-io/xmake/issues/1736): 支持 wasi-sdk 工具链
+* 支持 Lua 5.4 运行时
 
 ## v2.5.8
 
