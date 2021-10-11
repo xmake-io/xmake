@@ -42,6 +42,56 @@ target("foo")
     configvar_check_macros("NO_GCC", "__GNUC__", {defined = false})
     configvar_check_macros("HAS_CXX20", "__cplusplus >= 202002L", {languages = "c++20"})
 
+    local features_cxx17 = {
+        "cxx_aggregate_bases",
+        "cxx_aligned_new",
+        "cxx_capture_star_this",
+        "cxx_constexpr",
+        "cxx_deduction_guides",
+        "cxx_enumerator_attributes",
+        "cxx_fold_expressions",
+        "cxx_guaranteed_copy_elision",
+        "cxx_hex_float",
+        "cxx_if_constexpr",
+        "cxx_inheriting_constructors",
+        "cxx_inline_variables",
+        "cxx_namespace_attributes",
+        "cxx_noexcept_function_type",
+        "cxx_nontype_template_args",
+        "cxx_nontype_template_parameter_auto",
+        "cxx_range_based_for",
+        "cxx_static_assert",
+        "cxx_structured_bindings",
+        "cxx_template_template_args",
+        "cxx_variadic_using"}
+    for _, feature in ipairs(features_cxx17) do
+        check_features("HAS_17_" .. feature:upper(), feature, {languages = "c++17"})
+    end
+
+    local features_cxx20 = {
+        "cxx_aggregate_paren_init",
+        "cxx_char8_t",
+        "cxx_concepts",
+        "cxx_conditional_explicit",
+        "cxx_consteval",
+        "cxx_constexpr",
+        "cxx_constexpr_dynamic_alloc",
+        "cxx_constexpr_in_decltype",
+        "cxx_constinit",
+        "cxx_deduction_guides",
+        "cxx_designated_initializers",
+        "cxx_generic_lambdas",
+        "cxx_impl_coroutine",
+        "cxx_impl_destroying_delete",
+        "cxx_impl_three_way_comparison",
+        "cxx_init_captures",
+        "cxx_modules",
+        "cxx_nontype_template_args",
+        "cxx_using_enum"}
+    for _, feature in ipairs(features_cxx20) do
+        check_features("HAS_20_" .. feature:upper(), feature, {languages = "c++20"})
+    end
+
 target("test")
     add_deps("foo")
     set_kind("binary")

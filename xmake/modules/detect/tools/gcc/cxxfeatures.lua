@@ -162,6 +162,60 @@ function main()
     _set("cxx_variadic_macros", gcc_minver .. " && " .. gcc_cxx0x_defined)
     _set("cxx_template_template_parameters", gcc_minver .. " && __cplusplus")
 
+    -- c++17 language features with predefined macros
+    -- https://en.cppreference.com/w/cpp/feature_test
+    local features_cxx17 = {
+        "__cpp_aggregate_bases",
+        "__cpp_aligned_new",
+        "__cpp_capture_star_this",
+        "__cpp_constexpr",
+        "__cpp_deduction_guides",
+        "__cpp_enumerator_attributes",
+        "__cpp_fold_expressions",
+        "__cpp_guaranteed_copy_elision",
+        "__cpp_hex_float",
+        "__cpp_if_constexpr",
+        "__cpp_inheriting_constructors",
+        "__cpp_inline_variables",
+        "__cpp_namespace_attributes",
+        "__cpp_noexcept_function_type",
+        "__cpp_nontype_template_args",
+        "__cpp_nontype_template_parameter_auto",
+        "__cpp_range_based_for",
+        "__cpp_static_assert",
+        "__cpp_structured_bindings",
+        "__cpp_template_template_args",
+        "__cpp_variadic_using"}
+    for _, feature in ipairs(features_cxx17) do
+        _set((feature:gsub("__cpp", "cxx")), "__cplusplus && defined(" .. feature .. ")")
+    end
+
+    -- c++20 language features with predefined macros
+    -- https://en.cppreference.com/w/cpp/feature_test
+    local features_cxx20 = {
+        "__cpp_aggregate_paren_init",
+        "__cpp_char8_t",
+        "__cpp_concepts",
+        "__cpp_conditional_explicit",
+        "__cpp_consteval",
+        "__cpp_constexpr",
+        "__cpp_constexpr_dynamic_alloc",
+        "__cpp_constexpr_in_decltype",
+        "__cpp_constinit",
+        "__cpp_deduction_guides",
+        "__cpp_designated_initializers",
+        "__cpp_generic_lambdas",
+        "__cpp_impl_coroutine",
+        "__cpp_impl_destroying_delete",
+        "__cpp_impl_three_way_comparison",
+        "__cpp_init_captures",
+        "__cpp_modules",
+        "__cpp_nontype_template_args",
+        "__cpp_using_enum"}
+    for _, feature in ipairs(features_cxx20) do
+        _set((feature:gsub("__cpp", "cxx")), "__cplusplus && defined(" .. feature .. ")")
+    end
+
     -- get features
     return _g.features
 end
