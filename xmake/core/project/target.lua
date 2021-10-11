@@ -2088,6 +2088,10 @@ function target.linkname(filename, opt)
     if filename:startswith("lib") and filename:endswith(".dll.a") then
         return filename:sub(4, #filename - 6)
     end
+    -- for macOS, libxxx.tbd
+    if filename:startswith("lib") and filename:endswith(".tbd") then
+        return filename:sub(4, #filename - 4)
+    end
     local linkname, count = filename:gsub(target.filename("__pattern__", "static", {plat = opt.plat}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
     if count == 0 then
         linkname, count = filename:gsub(target.filename("__pattern__", "shared", {plat = opt.plat}):gsub("%.", "%%."):gsub("__pattern__", "(.+)") .. "$", "%1")
