@@ -54,6 +54,13 @@ function _find_package(cmake, name, opt)
             cmakefile:print("add_cmake_modules(%s)", moduledir)
         end
     end
+    if opt.presets then
+        for k, v in ipairs(opt.presets) do
+            if type(v) == "boolean" then
+                cmakefile:print("set(%s_%s %s)", name, k, v and "ON" or "OFF")
+            end
+        end
+    end
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
     for _, macro_name in ipairs({name, name:upper()}) do
@@ -64,12 +71,6 @@ function _find_package(cmake, name, opt)
         cmakefile:print("   message(STATUS \"%s_LIBRARY=\" \"${%s_LIBRARY}\")", macro_name, macro_name)
         cmakefile:print("   message(STATUS \"%s_LIBRARIES=\" \"${%s_LIBRARIES}\")", macro_name, macro_name)
         cmakefile:print("   message(STATUS \"%s_LIBS=\" \"${%s_LIBS}\")", macro_name, macro_name)
-        --[[
-        for _, component in ipairs(opt.components) do
-            local component_name = component:upper()
-            cmakefile:print("   message(STATUS \"%s_%s_LIBRARY_RELEASE=\" \"${%s_%s_LIBRARY_RELEASE}\")",
-                macro_name, component_name, macro_name, component_name)
-        end]]
     end
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
@@ -174,13 +175,14 @@ end
 --
 -- find_package("cmake::ZLIB")
 -- find_package("cmake::OpenCV", {required_version = "4.1.1"})
--- find_package("cmake::Boost", {components = {"regex", "system"}})
+-- find_package("cmake::Boost", {components = {"regex", "system"}, presets = {USE_STATIC_LIB = true}})
 -- find_package("cmake::Foo", {moduledirs = "xxx"})
 --
 -- @param name  the package name
 -- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
 --                                 components = {"regex", "system"},
---                                 moduledirs = "xxx")
+--                                 moduledirs = "xxx",
+--                                 presets = {USE_STATIC_LIB = true})
 --
 function main(name, opt)
     opt = opt or {}
