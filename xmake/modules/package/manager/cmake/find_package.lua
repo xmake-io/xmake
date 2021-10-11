@@ -36,8 +36,13 @@ function _find_package(cmake, name, opt)
     if cmake.version then
         cmakefile:print("cmake_minimum_required(VERSION %s)", cmake.version)
     end
+    -- e.g. OpenCV 4.1.1, Boost COMPONENTS regex system
+    local requirestr = name
+    if opt.required_version then
+        requirestr = requirestr .. " " .. opt.required_version
+    end
     cmakefile:print("project(find_package)")
-    cmakefile:print("find_package(%s REQUIRED)", name)
+    cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
     cmakefile:print("   message(STATUS \"%s_INCLUDE_DIR=\" ${%s_INCLUDE_DIR})", name:upper(), name:upper())
     cmakefile:print("   message(STATUS \"%s_LIBRARY=\" ${%s_LIBRARY})", name:upper(), name:upper())
@@ -104,7 +109,7 @@ end
 -- find package using the cmake package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true)
+-- @param opt   the options, e.g. {verbose = true, required_version = "1.0")
 --
 function main(name, opt)
     opt = opt or {}

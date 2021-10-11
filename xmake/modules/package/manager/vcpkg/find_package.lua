@@ -29,7 +29,7 @@ import("detect.sdks.find_vcpkgdir")
 -- find package from the vcpkg package manager
 --
 -- @param name  the package name, e.g. zlib, pcre
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true)
 --
 function main(name, opt)
 

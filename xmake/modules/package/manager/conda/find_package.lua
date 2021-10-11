@@ -52,7 +52,7 @@ end
 -- find package using the conda package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
+-- @param opt   the options, e.g. {verbose = true, require_version = "1.12.0")
 --
 function main(name, opt)
 
