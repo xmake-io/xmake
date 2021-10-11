@@ -52,7 +52,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {opt.modulesflag}}
+    opt.configs = {cxxflags = {opt.modulesflag, "-fmodules-cache-path=" .. cachedir}}
     opt.quiet   = true
     import("private.action.build.object").build(target, sourcebatch, opt)
 
