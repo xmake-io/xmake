@@ -7,6 +7,7 @@
 * [#1736](https://github.com/xmake-io/xmake/issues/1736): Support wasi-sdk toolchain
 * Support Lua 5.4 runtime
 * Add gcc-8, gcc-9, gcc-10, gcc-11 toolchains
+* [#1623](https://github.com/xmake-io/xmake/issues/1632): Support find_package from cmake
 
 ## v2.5.8
 
@@ -1101,6 +1102,7 @@
 * [#1736](https://github.com/xmake-io/xmake/issues/1736): 支持 wasi-sdk 工具链
 * 支持 Lua 5.4 运行时
 * 添加 gcc-8, gcc-9, gcc-10, gcc-11 工具链
+* [#1623](https://github.com/xmake-io/xmake/issues/1632): 支持 find_package 从 cmake 查找包
 
 ## v2.5.8
 
