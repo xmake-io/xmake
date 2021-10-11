@@ -54,10 +54,13 @@ function _find_package(cmake, name, opt)
             cmakefile:print("add_cmake_modules(%s)", moduledir)
         end
     end
+    -- e.g. set(Boost_USE_STATIC_LIB ON)
     if opt.presets then
         for k, v in ipairs(opt.presets) do
             if type(v) == "boolean" then
                 cmakefile:print("set(%s_%s %s)", name, k, v and "ON" or "OFF")
+            else
+                cmakefile:print("set(%s_%s %s)", name, k, tostring(v))
             end
         end
     end
