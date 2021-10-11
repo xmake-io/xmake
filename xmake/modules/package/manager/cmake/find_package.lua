@@ -41,14 +41,28 @@ function _find_package(cmake, name, opt)
     if opt.required_version then
         requirestr = requirestr .. " " .. opt.required_version
     end
+    if opt.components then
+        requirestr = requirestr .. " COMPONENTS"
+        for _, component in ipairs(opt.components) do
+            requirestr = requirestr .. " " .. component
+        end
+    end
     cmakefile:print("project(find_package)")
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
-    for _, macroname in ipairs({name, name:upper()}) do
-        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIR=\" \"${%s_INCLUDE_DIR}\")", macroname, macroname)
-        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIRS=\" \"${%s_INCLUDE_DIRS}\")", macroname, macroname)
-        cmakefile:print("   message(STATUS \"%s_LIBRARY=\" \"${%s_LIBRARY}\")", macroname, macroname)
-        cmakefile:print("   message(STATUS \"%s_LIBS=\" \"${%s_LIBS}\")", macroname, macroname)
+    for _, macro_name in ipairs({name, name:upper()}) do
+        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIR=\" \"${%s_INCLUDE_DIR}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIRS=\" \"${%s_INCLUDE_DIRS}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_LIBRARY_DIR=\" \"${%s_LIBRARY_DIR}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_LIBRARY_DIRS=\" \"${%s_LIBRARY_DIRS}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_LIBRARY=\" \"${%s_LIBRARY}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_LIBRARIES=\" \"${%s_LIBRARIES}\")", macro_name, macro_name)
+        cmakefile:print("   message(STATUS \"%s_LIBS=\" \"${%s_LIBS}\")", macro_name, macro_name)
+        for _, component in ipairs(opt.components) do
+            local component_name = component:upper()
+            cmakefile:print("   message(STATUS \"%s_%s_LIBRARY_RELEASE=\" \"${%s_%s_LIBRARY_RELEASE}\")",
+                macro_name, component_name, macro_name, component_name)
+        end
     end
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
@@ -60,9 +74,9 @@ function _find_package(cmake, name, opt)
     local output, errors = try {function() return os.iorunv(cmake.program, {workdir}, {curdir = workdir}) end}
     if output then
         for _, line in ipairs(output:split("\n", {plain = true})) do
-            for _, macroname in ipairs({name, name:upper()}) do
+            for _, macro_name in ipairs({name, name:upper()}) do
                 -- parse includedirs
-                for _, includedir_key in ipairs({macroname .. "_INCLUDE_DIR=", macroname .. "_INCLUDE_DIRS="}) do
+                for _, includedir_key in ipairs({macro_name .. "_INCLUDE_DIR=", macro_name .. "_INCLUDE_DIRS="}) do
                     if line:find(includedir_key, 1, true) then
                         local splitinfo = line:split(includedir_key)
                         local values = splitinfo[2]
@@ -76,8 +90,23 @@ function _find_package(cmake, name, opt)
                     end
                 end
 
+                -- parse linkdirs
+                for _, linkdir_key in ipairs({macro_name .. "_LIBRARY_DIR=", macro_name .. "_LIBRARY_DIRS="}) do
+                    if line:find(linkdir_key, 1, true) then
+                        local splitinfo = line:split(linkdir_key)
+                        local values = splitinfo[2]
+                        if values then
+                            values = values:split(';', {plain = true})
+                        end
+                        if values then
+                            linkdirs = linkdirs or {}
+                            table.join2(linkdirs, values)
+                        end
+                    end
+                end
+
                 -- parse links and linkdirs
-                for _, library_key in ipairs({macroname .. "_LIBRARY=", macroname .. "_LIBS="}) do
+                for _, library_key in ipairs({macro_name .. "_LIBRARY=", macro_name .. "_LIBS=", macro_name .. "_LIBRARIES="}) do
                     if line:find(library_key, 1, true) then
                         local splitinfo = line:split(library_key)
                         local values = splitinfo[2]
@@ -98,6 +127,7 @@ function _find_package(cmake, name, opt)
                                 end
                             end
                             if link then
+                                assert(not link:find("::", 1, true), "link(%s) is not supported yet!", link)
                                 links = links or {}
                                 table.insert(links, link)
                             end
@@ -122,7 +152,7 @@ function _find_package(cmake, name, opt)
     os.tryrm(workdir)
 
     -- get results
-    if true then --links or includedirs then
+    if links or includedirs then
         local results = {}
         results.links = table.reverse_unique(links)
         results.linkdirs = table.unique(linkdirs)
@@ -133,8 +163,14 @@ end
 
 -- find package using the cmake package manager
 --
+-- e.g.
+--
+-- find_package("cmake::ZLIB")
+-- find_package("cmake::OpenCV", {required_version = "4.1.1"})
+-- find_package("cmake::Boost", {components = {"regex", "system"}})
+--
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, required_version = "1.0")
+-- @param opt   the options, e.g. {verbose = true, required_version = "1.0", components = {"regex", "system"})
 --
 function main(name, opt)
     opt = opt or {}
