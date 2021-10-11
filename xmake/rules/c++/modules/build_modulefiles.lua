@@ -24,6 +24,9 @@ import("core.tool.compiler")
 -- build module files using clang
 function _build_modulefiles_clang(target, sourcebatch, opt)
 
+    -- the module cache directory
+    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+
     -- attempt to compile the module files as cxx
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
@@ -35,7 +38,8 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 
     -- compile module files to *.pcm
-    opt = table.join(opt, {configs = {force = {cxxflags = {opt.modulesflag, "--precompile", "-x c++-module"}}}})
+    opt = table.join(opt, {configs = {force = {cxxflags = {opt.modulesflag,
+        "--precompile", "-x c++-module", "-fmodules-cache-path=" .. cachedir}}}})
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- compile *.pcm to object files
@@ -53,7 +57,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
-    target:add("cxxflags", opt.modulesflag)
+    target:add("cxxflags", opt.modulesflag, "-fmodules-cache-path=" .. cachedir)
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodule-file=" .. modulefile)
     end
