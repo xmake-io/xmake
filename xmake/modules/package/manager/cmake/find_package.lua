@@ -82,10 +82,11 @@ function _find_package(cmake, name, opt)
     -- run cmake
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir}) end}
 
-    -- pares includedirs
+    -- pares defines and includedirs
     local links
     local linkdirs
     local libfiles
+    local defines
     local includedirs
     local flagsfile = path.join(workdir, "CMakeFiles", name .. ".dir", "flags.make")
     if os.isfile(flagsfile) then
@@ -108,6 +109,17 @@ function _find_package(cmake, name, opt)
                             has_include = false
                         elseif flag == "-isystem" or flag == "-I" then
                             has_include = true
+                        end
+                    end
+                elseif line:find("CXX_DEFINES =", 1, true) then
+                    local flags = os.argv(line:split("=", {plain = true})[2]:trim())
+                    for _, flag in ipairs(flags) do
+                        if flag:startswith("-D") and #flag > 2 then
+                            local define = flag:sub(3)
+                            if define then
+                                defines = defines or {}
+                                table.insert(defines, define)
+                            end
                         end
                     end
                 end
@@ -165,9 +177,10 @@ function _find_package(cmake, name, opt)
     -- get results
     if links or includedirs then
         local results = {}
-        results.links = table.reverse_unique(links)
-        results.linkdirs = table.unique(linkdirs)
-        results.libfiles = table.unique(libfiles)
+        results.links       = table.reverse_unique(links)
+        results.linkdirs    = table.unique(linkdirs)
+        results.defines     = table.unique(defines)
+        results.libfiles    = table.unique(libfiles)
         results.includedirs = table.unique(includedirs)
         return results
     end
