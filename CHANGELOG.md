@@ -9,6 +9,10 @@
 * Add gcc-8, gcc-9, gcc-10, gcc-11 toolchains
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): Support find_package from cmake
 
+### Changes
+
+* [#1528](https://github.com/xmake-io/xmake/issues/1528): Check c++17/20 features
+
 ## v2.5.8
 
 ### New features
@@ -1103,6 +1107,10 @@
 * 支持 Lua 5.4 运行时
 * 添加 gcc-8, gcc-9, gcc-10, gcc-11 工具链
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): 支持 find_package 从 cmake 查找包
+
+### 改进
+
+* [#1528](https://github.com/xmake-io/xmake/issues/1528): 检测 c++17/20 特性
 
 ## v2.5.8
 
