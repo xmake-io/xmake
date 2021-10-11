@@ -44,8 +44,12 @@ function _find_package(cmake, name, opt)
     cmakefile:print("project(find_package)")
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
-    cmakefile:print("   message(STATUS \"%s_INCLUDE_DIR=\" ${%s_INCLUDE_DIR})", name:upper(), name:upper())
-    cmakefile:print("   message(STATUS \"%s_LIBRARY=\" ${%s_LIBRARY})", name:upper(), name:upper())
+    for _, macroname in ipairs({name, name:upper()}) do
+        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIR=\" \"${%s_INCLUDE_DIR}\")", macroname, macroname)
+        cmakefile:print("   message(STATUS \"%s_INCLUDE_DIRS=\" \"${%s_INCLUDE_DIRS}\")", macroname, macroname)
+        cmakefile:print("   message(STATUS \"%s_LIBRARY=\" \"${%s_LIBRARY}\")", macroname, macroname)
+        cmakefile:print("   message(STATUS \"%s_LIBS=\" \"${%s_LIBS}\")", macroname, macroname)
+    end
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
 
@@ -56,28 +60,49 @@ function _find_package(cmake, name, opt)
     local output, errors = try {function() return os.iorunv(cmake.program, {workdir}, {curdir = workdir}) end}
     if output then
         for _, line in ipairs(output:split("\n", {plain = true})) do
-            print(line)
-            local includedir_key = name:upper() .. "_INCLUDE_DIR="
-            if line:find(includedir_key, 1, true) then
-                local splitinfo = line:split(includedir_key)
-                local includedir = splitinfo[2]
-                if includedir then
-                    includedirs = includedirs or {}
-                    table.insert(includedirs, includedir)
+            for _, macroname in ipairs({name, name:upper()}) do
+                -- parse includedirs
+                for _, includedir_key in ipairs({macroname .. "_INCLUDE_DIR=", macroname .. "_INCLUDE_DIRS="}) do
+                    if line:find(includedir_key, 1, true) then
+                        local splitinfo = line:split(includedir_key)
+                        local values = splitinfo[2]
+                        if values then
+                            values = values:split(';', {plain = true})
+                        end
+                        if values then
+                            includedirs = includedirs or {}
+                            table.join2(includedirs, values)
+                        end
+                    end
                 end
-            end
 
-            local library_key = name:upper() .. "_LIBRARY="
-            if line:find(library_key, 1, true) then
-                local splitinfo = line:split(library_key)
-                local library = splitinfo[2]
-                if library then
-                    local linkdir = path.directory(library)
-                    local link = target.linkname(path.filename(library))
-                    links = links or {}
-                    linkdirs = linkdirs or {}
-                    table.insert(links, link)
-                    table.insert(linkdirs, linkdir)
+                -- parse links and linkdirs
+                for _, library_key in ipairs({macroname .. "_LIBRARY=", macroname .. "_LIBS="}) do
+                    if line:find(library_key, 1, true) then
+                        local splitinfo = line:split(library_key)
+                        local values = splitinfo[2]
+                        if values then
+                            values = values:split(';', {plain = true})
+                        end
+                        for _, library in ipairs(values) do
+                            local linkdir = path.directory(library)
+                            if linkdir ~= "." then
+                                linkdirs = linkdirs or {}
+                                table.insert(linkdirs, linkdir)
+                            end
+                            local link = target.linkname(path.filename(library))
+                            if not link then
+                                -- has been link name?
+                                if path.filename(library) == path.basename(library) and linkdir == "." then
+                                    link = library
+                                end
+                            end
+                            if link then
+                                links = links or {}
+                                table.insert(links, link)
+                            end
+                        end
+                    end
                 end
             end
         end
@@ -97,11 +122,11 @@ function _find_package(cmake, name, opt)
     os.tryrm(workdir)
 
     -- get results
-    if links or includedirs then
+    if true then --links or includedirs then
         local results = {}
-        results.links = links
-        results.linkdirs = linkdirs
-        results.includedirs = includedirs
+        results.links = table.reverse_unique(links)
+        results.linkdirs = table.unique(linkdirs)
+        results.includedirs = table.unique(includedirs)
         return results
     end
 end
