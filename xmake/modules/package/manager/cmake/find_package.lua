@@ -36,6 +36,8 @@ function _find_package(cmake, name, opt)
     if cmake.version then
         cmakefile:print("cmake_minimum_required(VERSION %s)", cmake.version)
     end
+    cmakefile:print("project(find_package)")
+
     -- e.g. OpenCV 4.1.1, Boost COMPONENTS regex system
     local requirestr = name
     if opt.required_version then
@@ -47,7 +49,11 @@ function _find_package(cmake, name, opt)
             requirestr = requirestr .. " " .. component
         end
     end
-    cmakefile:print("project(find_package)")
+    if opt.moduledirs then
+        for _, moduledir in ipairs(opt.moduledirs) do
+            cmakefile:print("add_cmake_modules(%s)", moduledir)
+        end
+    end
     cmakefile:print("find_package(%s REQUIRED)", requirestr)
     cmakefile:print("if(%s_FOUND)", name)
     for _, macro_name in ipairs({name, name:upper()}) do
@@ -58,11 +64,12 @@ function _find_package(cmake, name, opt)
         cmakefile:print("   message(STATUS \"%s_LIBRARY=\" \"${%s_LIBRARY}\")", macro_name, macro_name)
         cmakefile:print("   message(STATUS \"%s_LIBRARIES=\" \"${%s_LIBRARIES}\")", macro_name, macro_name)
         cmakefile:print("   message(STATUS \"%s_LIBS=\" \"${%s_LIBS}\")", macro_name, macro_name)
+        --[[
         for _, component in ipairs(opt.components) do
             local component_name = component:upper()
             cmakefile:print("   message(STATUS \"%s_%s_LIBRARY_RELEASE=\" \"${%s_%s_LIBRARY_RELEASE}\")",
                 macro_name, component_name, macro_name, component_name)
-        end
+        end]]
     end
     cmakefile:print("endif(%s_FOUND)", name)
     cmakefile:close()
@@ -168,9 +175,12 @@ end
 -- find_package("cmake::ZLIB")
 -- find_package("cmake::OpenCV", {required_version = "4.1.1"})
 -- find_package("cmake::Boost", {components = {"regex", "system"}})
+-- find_package("cmake::Foo", {moduledirs = "xxx"})
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, required_version = "1.0", components = {"regex", "system"})
+-- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
+--                                 components = {"regex", "system"},
+--                                 moduledirs = "xxx")
 --
 function main(name, opt)
     opt = opt or {}
