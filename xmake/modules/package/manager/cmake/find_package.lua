@@ -80,7 +80,7 @@ function _find_package(cmake, name, opt)
     cmakefile:close()
 
     -- run cmake
-    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir}) end}
+    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = opt.envs}) end}
 
     -- pares defines and includedirs
     local links
@@ -199,7 +199,8 @@ end
 -- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
 --                                 components = {"regex", "system"},
 --                                 moduledirs = "xxx",
---                                 presets = {Boost_USE_STATIC_LIB = true})
+--                                 presets = {Boost_USE_STATIC_LIB = true},
+--                                 envs = {CMAKE_PREFIX_PATH = "xxx"})
 --
 function main(name, opt)
     opt = opt or {}
