@@ -73,36 +73,33 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 end
 
--- TODO
 -- build module files using gcc
 function _build_modulefiles_gcc(target, sourcebatch, opt)
 
-    --[[
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("-fmodules-ts") then
+        modulesflag = "-fmodules-ts"
+    end
+    assert(modulesflag, "compiler(gcc): does not support c++ module!")
+
     -- attempt to compile the module files as cxx
-    local modulefiles = {}
-    opt = table.join(opt, {configs = {}})
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
-        local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".pcm"
-
-        -- compile module file to *.pcm
-        local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {"-fmodules", "-fmodule-output=" .. modulefile, "-x c++"}
-        import("private.action.build.object").build(target, singlebatch, opt)
-        table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
+        table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
     end
 
+    -- compile module files to object files
+    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "-x c++"}}}})
+    import("private.action.build.object").build(target, sourcebatch, opt)
+
     -- add module files
-    for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "-fmodules", "-fmodule-file=" .. modulefile)
-    end]]
-    raise("compiler(gcc): not implemented for c++ module!")
+    target:add("cxxflags", modulesflag)
 end
 
 -- build module files using msvc
