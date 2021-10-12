@@ -1,7 +1,7 @@
-export module say;
-
+module;
 #include <cstdio>
 
+export module say;
 export class say {
 public:
     template <int N>

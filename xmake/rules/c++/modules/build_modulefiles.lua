@@ -24,6 +24,19 @@ import("core.tool.compiler")
 -- build module files using clang
 function _build_modulefiles_clang(target, sourcebatch, opt)
 
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("-fmodules") then
+        modulesflag = "-fmodules"
+    elseif compinst:has_flags("-fmodules-ts") then
+        modulesflag = "-fmodules-ts"
+    end
+    assert(modulesflag, "compiler(clang): does not support c++ module!")
+
+    -- the module cache directory
+    local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+
     -- attempt to compile the module files as cxx
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
@@ -35,7 +48,8 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     end
 
     -- compile module files to *.pcm
-    opt = table.join(opt, {configs = {force = {cxxflags = {opt.modulesflag, "--precompile", "-x c++-module"}}}})
+    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag,
+        "--precompile", "-x c++-module", "-fmodules-cache-path=" .. cachedir}}}})
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- compile *.pcm to object files
@@ -48,52 +62,84 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {opt.modulesflag}}
+    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir}}
     opt.quiet   = true
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
-    target:add("cxxflags", opt.modulesflag)
+    target:add("cxxflags", opt.modulesflag, "-fmodules-cache-path=" .. cachedir)
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodule-file=" .. modulefile)
     end
 end
 
--- TODO
 -- build module files using gcc
 function _build_modulefiles_gcc(target, sourcebatch, opt)
 
-    --[[
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("-fmodules-ts") then
+        modulesflag = "-fmodules-ts"
+    end
+    assert(modulesflag, "compiler(gcc): does not support c++ module!")
+
     -- attempt to compile the module files as cxx
-    local modulefiles = {}
-    opt = table.join(opt, {configs = {}})
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
-        local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".pcm"
-
-        -- compile module file to *.pcm
-        local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {"-fmodules", "-fmodule-output=" .. modulefile, "-x c++"}
-        import("private.action.build.object").build(target, singlebatch, opt)
-        table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
-        table.insert(sourcebatch.dependfiles, dependfile)
+        table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
     end
 
+    -- compile module files to object files
+    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "-x c++"}}}})
+    import("private.action.build.object").build(target, sourcebatch, opt)
+
     -- add module files
-    for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "-fmodules", "-fmodule-file=" .. modulefile)
-    end]]
-    raise("compiler(gcc): not implemented for c++ module!")
+    target:add("cxxflags", modulesflag)
 end
 
 -- build module files using msvc
 function _build_modulefiles_msvc(target, sourcebatch, opt)
 
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("/experimental:module") then
+        modulesflag = "/experimental:module"
+    end
+    assert(modulesflag, "compiler(msvc): does not support c++ module!")
+
+    -- get output flag
+    local outputflag
+    if compinst:has_flags("/ifcOutput")  then
+        outputflag = "/ifcOutput"
+    elseif compinst:has_flags("/module:output") then
+        outputflag = "/module:output"
+    end
+    assert(outputflag, "compiler(msvc): does not support c++ module!")
+
+    -- get interface flag
+    local interfaceflag
+    if compinst:has_flags("/interface") then
+        interfaceflag = "/interface"
+    elseif compinst:has_flags("/module:interface") then
+        interfaceflag = "/module:interface"
+    end
+    assert(interfaceflag, "compiler(msvc): does not support c++ module!")
+
+    -- get reference flag
+    local referenceflag
+    if compinst:has_flags("/reference") then
+        referenceflag = "/reference"
+    elseif compinst:has_flags("/module:interface") then
+        referenceflag = "/module:reference"
+    end
+    assert(referenceflag, "compiler(msvc): does not support c++ module!")
+
     -- attempt to compile the module files as cxx
     local modulefiles = {}
     opt = table.join(opt, {configs = {}})
@@ -107,7 +153,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {"/experimental:module /module:interface /module:output " .. os.args(modulefile), "/TP"}
+        opt.configs.cxxflags = {modulesflag, interfaceflag, outputflag .. " " .. os.args(modulefile), "/TP"}
         import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
@@ -116,38 +162,20 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "/experimental:module /module:reference " .. os.args(modulefile))
+        target:add("cxxflags", modulesflag, referenceflag .. " " .. os.args(modulefile))
     end
 end
 
 -- build module files
 function main(target, sourcebatch, opt)
-
-    -- do compile
-    local modulesflag = nil
     local _, toolname = target:tool("cxx")
-    local compinst = compiler.load("cxx")
-    if toolname:find("clang", 1, true) or toolname:find("gcc", 1, true) then
-        if compinst:has_flags("-fmodules") then
-            modulesflag = "-fmodules"
-        elseif compinst:has_flags("-fmodules-ts") then
-            modulesflag = "-fmodules-ts"
-        end
+    if toolname:find("clang", 1, true) then
+        _build_modulefiles_clang(target, sourcebatch, opt)
+    elseif toolname:find("gcc", 1, true) then
+        _build_modulefiles_gcc(target, sourcebatch, opt)
     elseif toolname == "cl" then
-        if compinst:has_flags("/experimental:module") then
-            modulesflag = "/experimental:module"
-        end
-    end
-    if modulesflag then
-        opt.modulesflag = modulesflag
-        if toolname:find("clang", 1, true) then
-            _build_modulefiles_clang(target, sourcebatch, opt)
-        elseif toolname:find("gcc", 1, true) then
-            _build_modulefiles_gcc(target, sourcebatch, opt)
-        elseif toolname == "cl" then
-            _build_modulefiles_msvc(target, sourcebatch, opt)
-        else
-            raise("compiler(%s): does not support c++ module!", toolname)
-        end
+        _build_modulefiles_msvc(target, sourcebatch, opt)
+    else
+        raise("compiler(%s): does not support c++ module!", toolname)
     end
 end

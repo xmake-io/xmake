@@ -1,6 +1,7 @@
-module hello;
-
+module;
 #include <iostream>
+
+module hello;
 import mod;
 
 void inner() {
@@ -13,7 +14,6 @@ namespace hello {
     void say_hello() { ::inner(); }
 
     say::say(int data) : data_{data} {
-
     }
 
     void say::hello() {
