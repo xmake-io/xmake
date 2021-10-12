@@ -1,9 +1,9 @@
 module;
 #include <iostream>
-using namespace std;
 
 module hello;
 
+using namespace std;
 namespace hello {
     say::say(int data) : data_(data) {
 
