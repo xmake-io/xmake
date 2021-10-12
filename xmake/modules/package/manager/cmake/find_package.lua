@@ -57,7 +57,7 @@ function _find_package(cmake, name, opt)
     end
     -- e.g. set(Boost_USE_STATIC_LIB ON)
     if opt.presets then
-        for k, v in ipairs(opt.presets) do
+        for k, v in pairs(opt.presets) do
             if type(v) == "boolean" then
                 cmakefile:print("set(%s %s)", k, v and "ON" or "OFF")
             else
@@ -82,7 +82,7 @@ function _find_package(cmake, name, opt)
     -- run cmake
     try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = opt.envs}) end}
 
-    -- pares defines and includedirs
+    -- pares defines and includedirs for macosx/linux
     local links
     local linkdirs
     local libfiles
@@ -127,7 +127,7 @@ function _find_package(cmake, name, opt)
         end
     end
 
-    -- parse links and linkdirs
+    -- parse links and linkdirs for macosx/linux
     local linkfile = path.join(workdir, "CMakeFiles", name .. ".dir", "link.txt")
     if os.isfile(linkfile) then
         local linkdata = io.readfile(linkfile)
@@ -165,6 +165,44 @@ function _find_package(cmake, name, opt)
                     if link then
                         links = links or {}
                         table.insert(links, link)
+                    end
+                end
+            end
+        end
+    end
+
+    -- pares includedirs and links/linkdirs for windows
+    local vcprojfile = path.join(workdir, name .. ".vcxproj")
+    if os.isfile(vcprojfile) then
+        local vcprojdata = io.readfile(vcprojfile)
+        if vcprojdata then
+            for _, line in ipairs(vcprojdata:split("\n", {plain = true})) do
+                local values = line:match("<AdditionalIncludeDirectories>(.+);%%%(AdditionalIncludeDirectories%)</AdditionalIncludeDirectories>")
+                if values then
+                    includedirs = includedirs or {}
+                    table.join2(includedirs, path.splitenv(values))
+                end
+
+                values = line:match("<AdditionalDependencies>(.+)</AdditionalDependencies>")
+                if values then
+                    for _, library in ipairs(path.splitenv(values)) do
+                        -- get libfiles
+                        if os.isfile(library) then
+                            libfiles = libfiles or {}
+                            table.insert(libfiles, library)
+                        end
+
+                        -- get links and linkdirs
+                        local linkdir = path.directory(library)
+                        if linkdir ~= "." then
+                            linkdirs = linkdirs or {}
+                            table.insert(linkdirs, linkdir)
+                            local link = target.linkname(path.filename(library))
+                            if link then
+                                links = links or {}
+                                table.insert(links, link)
+                            end
+                        end
                     end
                 end
             end
