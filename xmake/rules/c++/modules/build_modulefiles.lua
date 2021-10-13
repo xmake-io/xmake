@@ -149,7 +149,7 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".pcm"
+        local modulefile = objectfile .. ".ifc"
 
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
