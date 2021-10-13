@@ -1,4 +1,4 @@
-import std.core;
+#include <iostream>
 import math;
 
 int main() {

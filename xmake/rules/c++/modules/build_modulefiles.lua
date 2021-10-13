@@ -67,7 +67,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
-    target:add("cxxflags", opt.modulesflag, "-fmodules-cache-path=" .. cachedir)
+    target:add("cxxflags", modulesflag, "-fmodules-cache-path=" .. cachedir)
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodule-file=" .. modulefile)
     end
