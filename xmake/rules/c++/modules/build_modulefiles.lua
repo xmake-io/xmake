@@ -64,12 +64,15 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir, "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir}}
+    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir,
+        "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir}}
     opt.quiet   = true
     import("private.action.build.object").build(target, sourcebatch, opt)
 
     -- add module files
     target:add("cxxflags", modulesflag, "-fmodules-cache-path=" .. cachedir)
+    -- FIXME It is invalid for the module implementation unit
+--    target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir)
     for _, modulefile in ipairs(modulefiles) do
         target:add("cxxflags", "-fmodule-file=" .. modulefile)
     end
