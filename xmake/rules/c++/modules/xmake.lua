@@ -21,5 +21,20 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    before_build_files("build_modulefiles")
+    on_load(function (target)
+        -- we disable to build across targets in parallel, because the source files may depend on other target modules
+        target:set("policy", "build.across_targets_in_parallel", false)
+    end)
+    before_build_files(function (target, batchjobs, sourcebatch, opt)
+        local _, toolname = target:tool("cxx")
+        if toolname:find("clang", 1, true) then
+            import("clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+        elseif toolname:find("gcc", 1, true) then
+            import("gcc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+        elseif toolname == "cl" then
+            import("msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+        else
+            raise("compiler(%s): does not support c++ module!", toolname)
+        end
+    end, {batch = true})
 
