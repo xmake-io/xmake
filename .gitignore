@@ -5,6 +5,9 @@
 .xmake/
 build/
 
+# gcc cache
+gcm.cache
+
 # for VS Code
 .vscode/
 

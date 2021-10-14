@@ -42,13 +42,15 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = target:objectfile(sourcefile) .. ".pcm"
+        --local objectfile = target:objectfile(sourcefile) .. ".pcm"
+        local objectfile = path.join(cachedir, path.basename(sourcefile) .. ".pcm")
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
     end
 
     -- compile module files to *.pcm
     opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag,
+        "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir,
         "--precompile", "-x c++-module", "-fmodules-cache-path=" .. cachedir}}}})
     import("private.action.build.object").build(target, sourcebatch, opt)
 
@@ -62,7 +64,7 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
         sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir}}
+    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir, "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir}}
     opt.quiet   = true
     import("private.action.build.object").build(target, sourcebatch, opt)
 
