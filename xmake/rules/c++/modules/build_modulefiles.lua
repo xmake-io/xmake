@@ -42,7 +42,6 @@ function _build_modulefiles_clang(target, sourcebatch, opt)
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        --local objectfile = target:objectfile(sourcefile) .. ".pcm"
         local objectfile = path.join(cachedir, path.basename(sourcefile) .. ".pcm")
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
