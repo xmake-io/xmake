@@ -20,9 +20,10 @@
 
 -- imports
 import("core.tool.compiler")
+import("private.action.build.object", {alias = "objectbuilder"})
 
 -- build module files
-function _build_modulefiles(target, sourcebatch, opt)
+function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
     -- get modules flag
     local modulesflag
@@ -32,7 +33,7 @@ function _build_modulefiles(target, sourcebatch, opt)
     end
     assert(modulesflag, "compiler(gcc): does not support c++ module!")
 
-    -- attempt to compile the module files as cxx
+    -- we need patch objectfiles to sourcebatch for linking module objects
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
@@ -43,17 +44,20 @@ function _build_modulefiles(target, sourcebatch, opt)
     end
 
     -- compile module files to object files
-    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "-x c++"}}}})
-    import("private.action.build.object").build(target, sourcebatch, opt)
+    local rootjob = opt.rootjob
+    for i = 1, #sourcebatch.sourcefiles do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        batchjobs:addjob(sourcefile, function (index, total)
+            opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "-x c++"}}}})
+            opt.progress   = (index * 100) / total
+            opt.objectfile = sourcebatch.objectfiles[i]
+            opt.dependfile = sourcebatch.dependfiles[i]
+            opt.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+            objectbuilder.build_object(target, sourcefile, opt)
+        end, {rootjob = rootjob})
+    end
 
     -- add module files
     target:add("cxxflags", modulesflag)
 end
 
-function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
-    local rootjob = opt.rootjob
-    batchjobs:addjob("rule/c++.build.modules/gcc", function (index, total)
-        opt.progress = (index * 100) / total
-        _build_modulefiles(target, sourcebatch, opt)
-    end, {rootjob = rootjob})
-end

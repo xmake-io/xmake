@@ -85,7 +85,7 @@ function _do_build_file(target, sourcefile, opt)
 end
 
 -- build object
-function _build_object(target, sourcefile, opt)
+function build_object(target, sourcefile, opt)
     local script = target:script("build_file", _do_build_file)
     if script then
         script(target, sourcefile, opt)
@@ -99,7 +99,7 @@ function build(target, sourcebatch, opt)
         opt.objectfile   = sourcebatch.objectfiles[i]
         opt.dependfile   = sourcebatch.dependfiles[i]
         opt.sourcekind   = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-        _build_object(target, sourcefile, opt)
+        build_object(target, sourcefile, opt)
     end
 end
 
@@ -113,7 +113,7 @@ function main(target, batchjobs, sourcebatch, opt)
         local sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
         batchjobs:addjob(sourcefile, function (index, total)
             local build_opt = table.join({objectfile = objectfile, dependfile = dependfile, sourcekind = sourcekind, progress = (index * 100) / total}, opt)
-            _build_object(target, sourcefile, build_opt)
+            build_object(target, sourcefile, build_opt)
         end, {rootjob = rootjob})
     end
 end
