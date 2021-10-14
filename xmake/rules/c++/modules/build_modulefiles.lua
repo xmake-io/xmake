@@ -116,9 +116,14 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     assert(modulesflag, "compiler(msvc): does not support c++ module!")
 
     -- get output flag
+    local cachedir
     local outputflag
     if compinst:has_flags("/ifcOutput")  then
         outputflag = "/ifcOutput"
+        cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
+        if not os.isdir(cachedir) then
+            os.mkdir(cachedir)
+        end
     elseif compinst:has_flags("/module:output") then
         outputflag = "/module:output"
     end
@@ -151,11 +156,14 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
-        local modulefile = objectfile .. ".ifc"
+        local modulefile = (cachedir and path.join(cachedir, path.basename(sourcefile)) or objectfile) .. ".ifc"
 
         -- compile module file to *.pcm
         local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
         opt.configs.cxxflags = {modulesflag, interfaceflag, outputflag .. " " .. os.args(modulefile), "/TP"}
+        if cachedir then
+            table.insert(opt.configs.cxxflags, "/ifcSearchDir " .. os.args(cachedir))
+        end
         import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
@@ -164,7 +172,12 @@ function _build_modulefiles_msvc(target, sourcebatch, opt)
 
     -- add module files
     for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", modulesflag, referenceflag .. " " .. os.args(modulefile))
+        target:add("cxxflags", modulesflag)
+        if cachedir then
+            target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
+        else
+            target:add("cxxflags", referenceflag .. " " .. os.args(modulefile))
+        end
     end
 end
 
