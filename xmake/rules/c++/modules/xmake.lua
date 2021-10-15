@@ -21,6 +21,15 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
+    before_build(function (target, opt)
+        local sourcebatches = target:sourcebatches()
+        if sourcebatches then
+            local sourcebatch = sourcebatches["c++.build.modules"]
+            if sourcebatch then
+                import("moduledeps").generate(target, sourcebatch, opt)
+            end
+        end
+    end)
     before_build_files(function (target, batchjobs, sourcebatch, opt)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
         -- @note we cannot set it in on_load, because it will affect all c++ projects
