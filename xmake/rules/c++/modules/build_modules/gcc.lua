@@ -21,6 +21,7 @@
 -- imports
 import("core.tool.compiler")
 import("private.action.build.object", {alias = "objectbuilder"})
+import("module_parser")
 
 -- build module files
 function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
@@ -42,6 +43,10 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
     end
+
+    -- TODO load moduledeps
+    --local moduledeps = module_parser.load(target, sourcebatch, opt)
+    --print(moduledeps)
 
     -- compile module files to object files
     local rootjob = opt.rootjob
