@@ -20,9 +20,10 @@
 
 -- imports
 import("core.tool.compiler")
+import("private.action.build.object", {alias = "objectbuilder"})
 
 -- build module files
-function _build_modulefiles(target, sourcebatch, opt)
+function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
     -- get modules flag
     local modulesflag
@@ -64,9 +65,8 @@ function _build_modulefiles(target, sourcebatch, opt)
     end
     assert(referenceflag, "compiler(msvc): does not support c++ module!")
 
-    -- attempt to compile the module files as cxx
+    -- we need patch objectfiles to sourcebatch for linking module objects
     local modulefiles = {}
-    opt = table.join(opt, {configs = {}})
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
@@ -74,34 +74,40 @@ function _build_modulefiles(target, sourcebatch, opt)
         local objectfile = target:objectfile(sourcefile)
         local dependfile = target:dependfile(objectfile)
         local modulefile = (cachedir and path.join(cachedir, path.basename(sourcefile)) or objectfile) .. ".ifc"
-
-        -- compile module file to *.pcm
-        local singlebatch = {sourcekind = "cxx", sourcefiles = {sourcefile}, objectfiles = {objectfile}, dependfiles = {dependfile}}
-        opt.configs.cxxflags = {modulesflag, interfaceflag, outputflag .. " " .. os.args(modulefile), "/TP"}
-        if cachedir then
-            table.insert(opt.configs.cxxflags, "/ifcSearchDir " .. os.args(cachedir))
-        end
-        import("private.action.build.object").build(target, singlebatch, opt)
         table.insert(modulefiles, modulefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 
-    -- add module files
-    for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", modulesflag)
-        if cachedir then
-            target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
-        else
-            target:add("cxxflags", referenceflag .. " " .. os.args(modulefile))
-        end
+    -- compile module files to object files
+    local rootjob = opt.rootjob
+    local count = 0
+    local sourcefiles_total = #sourcebatch.sourcefiles
+    for i = 1, sourcefiles_total do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        batchjobs:addjob(sourcefile, function (index, total)
+            local opt2 = table.join(opt, {configs = {force = {cxxflags = {interfaceflag,
+                outputflag .. " " .. os.args(modulefiles[i]), "/TP"}}}})
+            opt2.progress   = (index * 100) / total
+            opt2.objectfile = sourcebatch.objectfiles[i]
+            opt2.dependfile = sourcebatch.dependfiles[i]
+            opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+            objectbuilder.build_object(target, sourcefile, opt2)
+
+            -- add module flags to other c++ files after building all modules
+            count = count + 1
+            if count == sourcefiles_total and not cachedir then
+                for _, modulefile in ipairs(modulefiles) do
+                    target:add("cxxflags", referenceflag .. " " .. os.args(modulefile))
+                end
+            end
+        end, {rootjob = rootjob})
+    end
+
+    -- add module flags
+    target:add("cxxflags", modulesflag)
+    if cachedir then
+        target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
     end
 end
 
-function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
-    local rootjob = opt.rootjob
-    batchjobs:addjob("rule/c++.build.modules/msvc", function (index, total)
-        opt.progress = (index * 100) / total
-        _build_modulefiles(target, sourcebatch, opt)
-    end, {rootjob = rootjob})
-end
