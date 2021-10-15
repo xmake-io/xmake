@@ -52,6 +52,10 @@ function _generate_moduledeps(target, sourcefile, opt)
             end
             local module_depname = line:match("import%s+(.+)%s*;")
             if module_depname then
+                -- partition? import :xxx;
+                if module_depname:startswith(":") then
+                    module_depname = module_name .. module_depname
+                end
                 module_deps = module_deps or {}
                 table.insert(module_deps, module_depname)
             end
