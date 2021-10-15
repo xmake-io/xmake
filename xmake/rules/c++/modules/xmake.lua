@@ -21,11 +21,12 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    on_load(function (target)
-        -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        target:set("policy", "build.across_targets_in_parallel", false)
-    end)
     before_build_files(function (target, batchjobs, sourcebatch, opt)
+        -- we disable to build across targets in parallel, because the source files may depend on other target modules
+        -- @note we cannot set it in on_load, because it will affect all c++ projects
+        target:set("policy", "build.across_targets_in_parallel", false)
+
+        -- build module files with batchjobs
         local _, toolname = target:tool("cxx")
         if toolname:find("clang", 1, true) then
             import("clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
