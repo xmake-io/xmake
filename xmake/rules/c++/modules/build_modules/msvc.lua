@@ -80,17 +80,19 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         table.insert(sourcebatch.dependfiles, dependfile)
     end
 
-    -- TODO load moduledeps
-    --local moduledeps = module_parser.load(target, sourcebatch, opt)
-    --print(moduledeps)
+    -- load moduledeps
+    local moduledeps = module_parser.load(target, sourcebatch, opt)
+
+    -- build moduledeps
+    local moduledeps_files = module_parser.build(moduledeps)
 
     -- compile module files to object files
-    local rootjob = opt.rootjob
     local count = 0
     local sourcefiles_total = #sourcebatch.sourcefiles
     for i = 1, sourcefiles_total do
         local sourcefile = sourcebatch.sourcefiles[i]
-        batchjobs:addjob(sourcefile, function (index, total)
+        local moduledep = assert(moduledeps_files[sourcefile], "moduledep(%s) not found!", sourcefile)
+        moduledep.job = batchjobs:newjob(sourcefile, function (index, total)
             local opt2 = table.join(opt, {configs = {force = {cxxflags = {interfaceflag,
                 outputflag .. " " .. os.args(modulefiles[i]), "/TP"}}}})
             opt2.progress   = (index * 100) / total
@@ -106,13 +108,25 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
                     target:add("cxxflags", referenceflag .. " " .. os.args(modulefile))
                 end
             end
-        end, {rootjob = rootjob})
+        end)
     end
 
     -- add module flags
     target:add("cxxflags", modulesflag)
     if cachedir then
         target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
+    end
+
+    -- build batchjobs
+    local rootjob = opt.rootjob
+    for _, moduledep in pairs(moduledeps) do
+        if moduledep.parents then
+            for _, parent in ipairs(moduledep.parents) do
+                batchjobs:add(moduledep.job, parent.job)
+            end
+        else
+           batchjobs:add(moduledep.job, rootjob)
+        end
     end
 end
 

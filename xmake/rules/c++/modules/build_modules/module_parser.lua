@@ -94,3 +94,21 @@ function load(target, sourcebatch, opt)
     end
     return moduledeps
 end
+
+-- build module deps
+function build(moduledeps)
+    local moduledeps_files = {}
+    for _, moduledep in pairs(moduledeps) do
+        if moduledep.deps then
+            for _, depname in ipairs(moduledep.deps) do
+                local dep = moduledeps[depname]
+                if dep then
+                    dep.parents = dep.parents or {}
+                    table.insert(dep.parents, moduledep)
+                end
+            end
+        end
+        moduledeps_files[moduledep.file] = moduledep
+    end
+    return moduledeps_files
+end

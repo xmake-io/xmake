@@ -35,7 +35,22 @@ function jobpool:rootjob()
     return self._rootjob
 end
 
+-- new run job
+--
+-- e.g.
+-- local job = jobpool:newjob("xxx", function (index, total) end)
+-- jobpool:add(job, rootjob1)
+-- jobpool:add(job, rootjob2)
+-- jobpool:add(job, rootjob3)
+--
+function jobpool:newjob(name, run)
+    return {name = name, run = run}
+end
+
 -- add run job to the given job node
+--
+-- e.g.
+-- local job = jobpool:addjob("xxx", function (index, total) end, {rootjob = rootjob})
 --
 -- @param name      the job name
 -- @param run       the run command/script
