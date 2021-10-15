@@ -20,9 +20,10 @@
 
 -- imports
 import("core.tool.compiler")
+import("private.action.build.object", {alias = "objectbuilder"})
 
 -- build module files
-function _build_modulefiles(target, sourcebatch, opt)
+function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
     -- get modules flag
     local modulesflag
@@ -37,50 +38,58 @@ function _build_modulefiles(target, sourcebatch, opt)
     -- the module cache directory
     local cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
 
-    -- attempt to compile the module files as cxx
+    -- we need patch objectfiles to sourcebatch for linking module objects
+    local modulefiles = {}
     sourcebatch.sourcekind = "cxx"
     sourcebatch.objectfiles = sourcebatch.objectfiles or {}
     sourcebatch.dependfiles = sourcebatch.dependfiles or {}
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local objectfile = path.join(cachedir, path.basename(sourcefile) .. ".pcm")
+        local modulefile = path.join(cachedir, path.basename(sourcefile) .. ".pcm")
+        local objectfile = target:objectfile(sourcefile)
         table.insert(sourcebatch.objectfiles, objectfile)
         table.insert(sourcebatch.dependfiles, target:dependfile(objectfile))
-    end
-
-    -- compile module files to *.pcm
-    opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag,
-        "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir,
-        "--precompile", "-x c++-module", "-fmodules-cache-path=" .. cachedir}}}})
-    import("private.action.build.object").build(target, sourcebatch, opt)
-
-    -- compile *.pcm to object files
-    local modulefiles = {}
-    for idx, sourcefile in ipairs(sourcebatch.sourcefiles) do
-        local modulefile = sourcebatch.objectfiles[idx]
-        local objectfile = target:objectfile(sourcefile)
-        sourcebatch.sourcefiles[idx] = modulefile
-        sourcebatch.objectfiles[idx] = objectfile
-        sourcebatch.dependfiles[idx] = target:dependfile(objectfile)
         table.insert(modulefiles, modulefile)
     end
-    opt.configs = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir,
-        "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir}}
-    opt.quiet   = true
-    import("private.action.build.object").build(target, sourcebatch, opt)
 
-    -- add module files
-    target:add("cxxflags", modulesflag, "-fmodules-cache-path=" .. cachedir)
-    -- FIXME It is invalid for the module implementation unit
---    target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir)
-    for _, modulefile in ipairs(modulefiles) do
-        target:add("cxxflags", "-fmodule-file=" .. modulefile)
-    end
-end
-
-function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+    -- compile module files to object files
     local rootjob = opt.rootjob
-    batchjobs:addjob("rule/c++.build.modules/clang", function (index, total)
-        opt.progress = (index * 100) / total
-        _build_modulefiles(target, sourcebatch, opt)
-    end, {rootjob = rootjob})
+    local count = 0
+    local sourcefiles_total = #sourcebatch.sourcefiles
+    for i = 1, sourcefiles_total do
+        local sourcefile = sourcebatch.sourcefiles[i]
+        batchjobs:addjob(sourcefile, function (index, total)
+
+            -- compile module files to *.pcm
+            local opt2 = table.join(opt, {configs = {force = {cxxflags = {modulesflag,
+                "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir,
+                "--precompile", "-x c++-module", "-fmodules-cache-path=" .. cachedir}}}})
+            opt2.progress   = (index * 100) / total
+            opt2.objectfile = modulefiles[i]
+            opt2.dependfile = target:dependfile(opt2.objectfile)
+            opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+            objectbuilder.build_object(target, sourcefile, opt2)
+
+            -- compile *.pcm to object files
+            opt2.configs    = {force = {cxxflags = {modulesflag, "-fmodules-cache-path=" .. cachedir,
+                "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir}}}
+            opt2.quiet      = true
+            opt2.objectfile = sourcebatch.objectfiles[i]
+            opt2.dependfile = sourcebatch.dependfiles[i]
+            objectbuilder.build_object(target, modulefiles[i], opt2)
+
+            -- add module flags to other c++ files after building all modules
+            count = count + 1
+            if count == sourcefiles_total then
+                target:add("cxxflags", modulesflag, "-fmodules-cache-path=" .. cachedir, {force = true})
+                -- FIXME It is invalid for the module implementation unit
+                --target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir, {force = true})
+                for _, modulefile in ipairs(modulefiles) do
+                    target:add("cxxflags", "-fmodule-file=" .. modulefile, {force = true})
+                end
+            end
+
+        end, {rootjob = rootjob})
+    end
+
 end
+

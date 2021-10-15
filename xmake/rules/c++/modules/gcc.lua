@@ -48,16 +48,16 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     for i = 1, #sourcebatch.sourcefiles do
         local sourcefile = sourcebatch.sourcefiles[i]
         batchjobs:addjob(sourcefile, function (index, total)
-            opt = table.join(opt, {configs = {force = {cxxflags = {modulesflag, "-x c++"}}}})
-            opt.progress   = (index * 100) / total
-            opt.objectfile = sourcebatch.objectfiles[i]
-            opt.dependfile = sourcebatch.dependfiles[i]
-            opt.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
-            objectbuilder.build_object(target, sourcefile, opt)
+            local opt2 = table.join(opt, {configs = {force = {cxxflags = {"-x c++"}}}})
+            opt2.progress   = (index * 100) / total
+            opt2.objectfile = sourcebatch.objectfiles[i]
+            opt2.dependfile = sourcebatch.dependfiles[i]
+            opt2.sourcekind = assert(sourcebatch.sourcekind, "%s: sourcekind not found!", sourcefile)
+            objectbuilder.build_object(target, sourcefile, opt2)
         end, {rootjob = rootjob})
     end
 
-    -- add module files
+    -- add module flags
     target:add("cxxflags", modulesflag)
 end
 
