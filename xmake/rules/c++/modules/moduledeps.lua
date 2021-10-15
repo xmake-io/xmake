@@ -18,7 +18,47 @@
 -- @file        moduledeps.lua
 --
 
+-- imports
+import("core.project.depend")
+import("utils.progress")
+
+-- generate module deps for the given file
+function _generate_moduledeps(target, sourcefile, opt)
+    local dependfile = target:dependfile(sourcefile)
+    depend.on_changed(function ()
+
+        -- trace progress
+        progress.show(opt.progress, "${color.build.target}generating.deps %s", sourcefile)
+
+        -- generating deps
+        local module_name
+        local module_deps
+        local sourcecode = io.readfile(sourcefile)
+        sourcecode = sourcecode:gsub("//.-\n", "\n")
+        sourcecode = sourcecode:gsub("/%*.-%*/", "")
+        for _, line in ipairs(sourcecode:split("\n", {plain = true})) do
+            if not module_name then
+                module_name = line:match("export%s+module%s+(.+)%s*;")
+            end
+            local module_depname = line:match("import%s+(.+)%s*;")
+            if module_depname then
+                module_deps = module_deps or {}
+                table.insert(module_deps, module_depname)
+            end
+        end
+
+        -- save depend data
+        if module_name then
+            io.save(dependfile, {name = module_name, deps = module_deps, file = sourcefile})
+        end
+
+    end, {dependfile = dependfile, files = {sourcefile}})
+end
+
 -- generate module deps
 function generate(target, sourcebatch, opt)
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        _generate_moduledeps(target, sourcefile, opt)
+    end
 end
 
