@@ -82,7 +82,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
     -- load moduledeps
     local moduledeps = module_parser.load(target, sourcebatch, opt)
-    print(moduledeps)
+    --print(moduledeps)
 
     -- compile module files to object files
     local rootjob = opt.rootjob

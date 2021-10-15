@@ -20,14 +20,13 @@
 
 -- imports
 import("core.project.depend")
-import("utils.progress")
 
 -- get depend file of module source file
 function _get_dependfile_of_modulesource(target, sourcefile)
     return target:dependfile(sourcefile)
 end
 
--- get depend file of module object file
+-- get depend file of module object file, compiler will rewrite it
 function _get_dependfile_of_moduleobject(target, sourcefile)
     local objectfile = target:objectfile(sourcefile)
     return target:dependfile(objectfile)
@@ -38,8 +37,8 @@ function _generate_moduledeps(target, sourcefile, opt)
     local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
     depend.on_changed(function ()
 
-        -- trace progress
-        progress.show(opt.progress, "${color.build.target}generating.deps %s", sourcefile)
+        -- trace
+        vprint("generating.moduledeps %s", sourcefile)
 
         -- generating deps
         local module_name
@@ -76,6 +75,11 @@ end
 
 -- load module deps
 function load(target, sourcebatch, opt)
+
+    -- do generate first
+    generate(target, sourcebatch, opt)
+
+    -- load deps
     local moduledeps
     for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
         local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
