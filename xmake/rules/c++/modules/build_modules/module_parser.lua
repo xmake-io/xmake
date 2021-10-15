@@ -15,16 +15,27 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        moduledeps.lua
+-- @file        module_parser.lua
 --
 
 -- imports
 import("core.project.depend")
 import("utils.progress")
 
+-- get depend file of module source file
+function _get_dependfile_of_modulesource(target, sourcefile)
+    return target:dependfile(sourcefile)
+end
+
+-- get depend file of module object file
+function _get_dependfile_of_moduleobject(target, sourcefile)
+    local objectfile = target:objectfile(sourcefile)
+    return target:dependfile(objectfile)
+end
+
 -- generate module deps for the given file
 function _generate_moduledeps(target, sourcefile, opt)
-    local dependfile = target:dependfile(sourcefile)
+    local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
     depend.on_changed(function ()
 
         -- trace progress
@@ -49,7 +60,8 @@ function _generate_moduledeps(target, sourcefile, opt)
 
         -- save depend data
         if module_name then
-            io.save(dependfile, {name = module_name, deps = module_deps, file = sourcefile})
+            local dependinfo = {moduleinfo = {name = module_name, deps = module_deps, file = sourcefile}}
+            return dependinfo
         end
 
     end, {dependfile = dependfile, files = {sourcefile}})
@@ -62,3 +74,19 @@ function generate(target, sourcebatch, opt)
     end
 end
 
+-- load module deps
+function load(target, sourcebatch, opt)
+    local moduledeps
+    for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+        local dependfile = _get_dependfile_of_modulesource(target, sourcefile)
+        if os.isfile(dependfile) then
+            local data = io.load(dependfile)
+            if data then
+                local moduleinfo = data.moduleinfo
+                moduledeps = moduledeps or {}
+                moduledeps[moduleinfo.name] = moduleinfo
+            end
+        end
+    end
+    return moduledeps
+end

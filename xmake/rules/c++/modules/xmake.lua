@@ -26,7 +26,7 @@ rule("c++.build.modules")
         if sourcebatches then
             local sourcebatch = sourcebatches["c++.build.modules"]
             if sourcebatch then
-                import("moduledeps").generate(target, sourcebatch, opt)
+                import("build_modules.module_parser").generate(target, sourcebatch, opt)
             end
         end
     end)
@@ -38,11 +38,11 @@ rule("c++.build.modules")
         -- build module files with batchjobs
         local _, toolname = target:tool("cxx")
         if toolname:find("clang", 1, true) then
-            import("clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            import("build_modules.clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         elseif toolname:find("gcc", 1, true) then
-            import("gcc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            import("build_modules.gcc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         elseif toolname == "cl" then
-            import("msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
+            import("build_modules.msvc").build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         else
             raise("compiler(%s): does not support c++ module!", toolname)
         end
