@@ -54,9 +54,18 @@ end
 --  src/tbox/libc/string/../../prefix/../config.h \
 --  build/iphoneos/x86_64/release/tbox.config.h \
 --
+-- with c++ modules:
+-- build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o: src/foo.mpp\
+-- build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o  gcm.cache/foo.gcm: bar.c++m cat.c++m\
+-- foo.c++m: gcm.cache/foo.gcm\
+-- .PHONY: foo.c++m\
+-- gcm.cache/foo.gcm:|  build/.objs/dependence/linux/x86_64/release/src/foo.mpp.o\
+-- CXX_IMPORTS += bar.c++m cat.c++m\
+--
 function main(depsdata)
 
     -- we assume there is only one valid line
+    local block = 0
     local results = hashset.new()
     local projectdir = os.projectdir()
     local line = depsdata:rtrim() -- maybe there will be an empty newline at the end. so we trim it first
@@ -68,8 +77,15 @@ function main(depsdata)
         if is_host("windows") and includefile:match("^%w\\:") then
             includefile = includefile:replace("\\:", ":", plain)
         end
-        if not includefile:endswith(":") then -- ignore "xxx.o:" prefix
+        if includefile:endswith(":") then -- ignore "xxx.o:" prefix
+            block = block + 1
+            if block > 1 then
+                -- skip other `xxx.o:` block
+                break
+            end
+        else
             includefile = includefile:replace(space_placeholder, ' ', plain)
+            includefile = includefile:split("\n")[1]
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)
                 if includefile then
