@@ -85,7 +85,7 @@ function main(depsdata)
             end
         else
             includefile = includefile:replace(space_placeholder, ' ', plain)
-            includefile = includefile:split("\n")[1]
+            includefile = includefile:split("\n", {plain = true})[1]
             if #includefile > 0 then
                 includefile = _normailize_dep(includefile, projectdir)
                 if includefile then

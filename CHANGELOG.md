@@ -12,6 +12,7 @@
 ### Changes
 
 * [#1528](https://github.com/xmake-io/xmake/issues/1528): Check c++17/20 features
+* [#1729](https://github.com/xmake-io/xmake/issues/1729): Improve C++20 modules for clang/gcc/msvc
 
 ## v2.5.8
 
@@ -1111,6 +1112,7 @@
 ### 改进
 
 * [#1528](https://github.com/xmake-io/xmake/issues/1528): 检测 c++17/20 特性
+* [#1729](https://github.com/xmake-io/xmake/issues/1729): 改进 C++20 modules 对 clang/gcc/msvc 的支持
 
 ## v2.5.8
 
