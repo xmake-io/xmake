@@ -8,6 +8,7 @@
 * Support Lua 5.4 runtime
 * Add gcc-8, gcc-9, gcc-10, gcc-11 toolchains
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): Support find_package from cmake
+* [#1747](https://github.com/xmake-io/xmake/issues/1747): Add `set_kind("headeronly")` for target to install files for headeronly library
 
 ### Changes
 
@@ -1108,6 +1109,7 @@
 * 支持 Lua 5.4 运行时
 * 添加 gcc-8, gcc-9, gcc-10, gcc-11 工具链
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): 支持 find_package 从 cmake 查找包
+* [#1747](https://github.com/xmake-io/xmake/issues/1747): 添加 `set_kind("headeronly")` 更好的处理 headeronly 库的安装
 
 ### 改进
 
