@@ -127,7 +127,7 @@ function install_static(target, opt)
     _install_headers(target, opt)
 end
 
--- install phony
-function install_phony(target, opt)
+-- install headeronly library
+function install_headeronly(target, opt)
     _install_headers(target, opt)
 end

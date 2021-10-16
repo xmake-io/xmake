@@ -676,9 +676,19 @@ function _instance:is_static()
     return self:kind() == "static"
 end
 
+-- is object files target?
+function _instance:is_object()
+    return self:kind() == "object"
+end
+
+-- is headeronly target?
+function _instance:is_headeronly()
+    return self:kind() == "headeronly"
+end
+
 -- is library target?
 function _instance:is_library()
-    return self:is_static() or self:is_shared()
+    return self:is_static() or self:is_shared() or self:is_headeronly()
 end
 
 -- is default target?
@@ -1011,13 +1021,13 @@ end
 -- get the target file name
 function _instance:filename()
 
-    -- only compile objects? no target file
-    local targetkind = self:kind()
-    if targetkind == "object" then
+    -- no target file?
+    if self:is_object() or self:is_phony() or self:is_headeronly() then
         return
     end
 
     -- make the target file name and attempt to use the format of linker first
+    local targetkind = self:targetkind()
     local filename = self:get("filename")
     if not filename then
         local prefixname = self:get("prefixname")

@@ -174,14 +174,76 @@ function _package_library(target)
     print("package(%s): %s generated", packagename, packagedir)
 end
 
+-- package headeronly library
+function _package_headeronly(target)
+
+    -- get the output directory
+    local outputdir   = option.get("outputdir") or config.buildir()
+    local packagename = target:name():lower()
+    if #packagename > 1 and bit.band(packagename:byte(2), 0xc0) == 0x80 then
+        wprint("package(%s): cannot generate package, becauese it contains unicode characters!", packagename)
+        return
+    end
+    local packagedir  = path.join(outputdir, "packages", packagename:sub(1, 1), packagename)
+    local headerdir   = path.join(packagedir, target:plat(), target:arch(), config.mode(), "include")
+
+    -- copy headers
+    local srcheaders, dstheaders = target:headerfiles(headerdir)
+    if srcheaders and dstheaders then
+        local i = 1
+        for _, srcheader in ipairs(srcheaders) do
+            local dstheader = dstheaders[i]
+            if dstheader then
+                os.vcp(srcheader, dstheader)
+            end
+            i = i + 1
+        end
+    end
+
+    -- generate xmake.lua
+    local file = io.open(path.join(packagedir, "xmake.lua"), "w")
+    if file then
+        local deps = _get_linkdeps(target)
+        file:print("package(\"%s\")", packagename)
+        local homepage = option.get("homepage")
+        if homepage then
+            file:print("    set_homepage(\"%s\")", homepage)
+        end
+        local description = option.get("description") or ("The " .. packagename .. " package")
+        file:print("    set_description(\"%s\")", description)
+        if target:license() then
+            file:print("    set_license(\"%s\")", target:license())
+        end
+        if #deps > 0 then
+            file:print("    add_deps(\"%s\")", table.concat(deps, "\", \""))
+        end
+        file:print("")
+        file:print([[
+    on_load(function (package)
+        package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
+    end)
+
+    on_fetch(function (package)
+        local result = {}
+        result.includedirs = package:installdir("include")
+        return result
+    end)]])
+        file:close()
+    end
+
+    -- show tips
+    print("package(%s): %s generated", packagename, packagedir)
+end
+
 -- do package target
 function _do_package_target(target)
     if not target:is_phony() then
         local scripts =
         {
-            binary = _package_binary
-        ,   static = _package_library
-        ,   shared = _package_library
+            binary     = _package_binary
+        ,   static     = _package_library
+        ,   shared     = _package_library
+        ,   headeronly = _package_headeronly
         }
         local kind = target:kind()
         assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)

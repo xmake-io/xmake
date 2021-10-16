@@ -66,7 +66,9 @@ function main(target, opt)
     if file then
         file:print("prefix=%s", installdir)
         file:print("exec_prefix=${prefix}")
-        file:print("libdir=${exec_prefix}/lib")
+        if not target:is_headeronly() then
+            file:print("libdir=${exec_prefix}/lib")
+        end
         file:print("includedir=${prefix}/include")
         file:print("")
         file:print("Name: %s", target:name())
@@ -75,8 +77,10 @@ function main(target, opt)
         if version then
             file:print("Version: %s", version)
         end
-        file:print("Libs: %s", libs)
-        file:print("Libs.private: ")
+        if not target:is_headeronly() then
+            file:print("Libs: %s", libs)
+            file:print("Libs.private: ")
+        end
         file:print("Cflags: %s", cflags)
         file:close()
     end

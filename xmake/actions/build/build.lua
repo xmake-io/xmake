@@ -28,8 +28,7 @@ import("core.base.hashset")
 
 -- clean target for rebuilding
 function _clean_target(target)
-    local targetkind = target:kind()
-    if targetkind ~= "phony" and targetkind ~= "object" then
+    if target:targetfile() then
         os.tryrm(target:symbolfile())
         os.tryrm(target:targetfile())
     end
@@ -54,7 +53,7 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
     end
 
     -- uses the builtin target script
-    if not job and not target:is_phony() then
+    if not job and (target:is_static() or target:is_binary() or target:is_shared() or target:is_object()) then
         job, job_leaf = import("kinds." .. target:kind(), {anonymous = true})(batchjobs, rootjob, target)
     end
     job = job or rootjob

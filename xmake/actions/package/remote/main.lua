@@ -57,6 +57,8 @@ function _package_remote(target)
         file:print("package(\"%s\")", packagename)
         if target:is_binary() then
             file:print("    set_kind(\"binary\")")
+        elseif target:is_headeronly() then
+            file:print("    set_kind(\"library\", {headeronly = true})")
         end
         local homepage = option.get("homepage")
         if homepage then
@@ -102,9 +104,10 @@ function _package_target(target)
     if not target:is_phony() then
         local scripts =
         {
-            binary = _package_remote
-        ,   static = _package_remote
-        ,   shared = _package_remote
+            binary     = _package_remote
+        ,   static     = _package_remote
+        ,   shared     = _package_remote
+        ,   headeronly = _package_remote
         }
         local kind = target:kind()
         assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)

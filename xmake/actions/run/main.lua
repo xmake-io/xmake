@@ -162,7 +162,7 @@ function _check_targets(targetname)
     -- filter and check targets with builtin-run script
     local targetnames = {}
     for _, target in ipairs(targets) do
-        if not target:is_phony() and target:is_enabled() and not target:script("run") then
+        if target:targetfile() and target:is_enabled() and not target:script("run") then
             local targetfile = target:targetfile()
             if targetfile and not os.isfile(targetfile) then
                 table.insert(targetnames, target:name())

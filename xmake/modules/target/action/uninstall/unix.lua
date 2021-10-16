@@ -96,7 +96,7 @@ function uninstall_static(target, opt)
     _uninstall_headers(target, opt)
 end
 
--- uninstall phony
-function uninstall_phony(target, opt)
+-- uninstall headeronly library
+function uninstall_headeronly(target, opt)
     _uninstall_headers(target, opt)
 end

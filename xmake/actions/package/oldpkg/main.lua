@@ -35,12 +35,14 @@ function _package_library(target)
     local targetname = target:name()
 
     -- copy the library file to the output directory
-    os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile())))
+    if not target:is_headeronly() then
+        os.vcp(target:targetfile(), format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(target:targetfile())))
 
-    -- copy the symbol file to the output directory
-    local symbolfile = target:symbolfile()
-    if os.isfile(symbolfile) then
-        os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile)))
+        -- copy the symbol file to the output directory
+        local symbolfile = target:symbolfile()
+        if os.isfile(symbolfile) then
+            os.vcp(symbolfile, format("%s/%s.pkg/$(plat)/$(arch)/lib/$(mode)/%s", outputdir, targetname, path.filename(symbolfile)))
+        end
     end
 
     -- copy *.lib for shared/windows (*.dll) target
@@ -78,8 +80,10 @@ function _package_library(target)
         file:print("option(\"%s\")", targetname)
         file:print("    set_showmenu(true)")
         file:print("    set_category(\"package\")")
-        file:print("    add_links(\"%s\")", target:basename())
-        file:write("    add_linkdirs(\"$(plat)/$(arch)/lib/$(mode)\")\n")
+        if not target:is_headeronly() then
+            file:print("    add_links(\"%s\")", target:basename())
+            file:write("    add_linkdirs(\"$(plat)/$(arch)/lib/$(mode)\")\n")
+        end
         file:write("    add_includedirs(\"$(plat)/$(arch)/include\")\n")
         local languages = target:get("languages")
         if languages then
@@ -94,9 +98,10 @@ function _do_package_target(target)
     if not target:is_phony() then
         local scripts =
         {
-            binary = function (target) end
-        ,   static = _package_library
-        ,   shared = _package_library
+            binary     = function (target) end
+        ,   static     = _package_library
+        ,   shared     = _package_library
+        ,   headeronly = _package_library
         }
         local kind = target:kind()
         assert(scripts[kind], "this target(%s) with kind(%s) can not be packaged!", target:name(), kind)

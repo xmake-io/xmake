@@ -40,7 +40,7 @@ end
 function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
-            TARGETFILENAME  = _get_libfile(target, installdir),
+            TARGETFILENAME  = target:targetfile() and _get_libfile(target, installdir),
             TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
@@ -85,7 +85,7 @@ function _append_cmake_configfile(target, installdir, filename, opt)
     local builtinvars = _get_builtinvars(target, installdir)
 
     -- generate the file if not exist / file is outdated
-    if not os.isfile(importfile_dst) or os.mtime(importfile_dst) < os.mtime(target:targetfile()) then
+    if target:is_headeronly() or not os.isfile(importfile_dst) or os.mtime(importfile_dst) < os.mtime(target:targetfile()) then
         _install_cmake_configfile(target, installdir, filename, opt)
     end
 
@@ -151,7 +151,9 @@ function main(target, opt)
     _append_cmake_configfile(target, installdir, "xxxConfig.cmake", opt)
     _install_cmake_configfile(target, installdir, "xxxConfigVersion.cmake", opt)
     _install_cmake_targetfile(target, installdir, "xxxTargets.cmake", opt)
-    if is_mode("debug") then
+    if target:is_headeronly() then
+        _install_cmake_targetfile(target, installdir, "xxxTargets-headeronly.cmake", opt)
+    elseif is_mode("debug") then
         _install_cmake_targetfile(target, installdir, "xxxTargets-debug.cmake", opt)
     else
         _install_cmake_targetfile(target, installdir, "xxxTargets-release.cmake", opt)
