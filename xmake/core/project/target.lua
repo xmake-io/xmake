@@ -1688,11 +1688,7 @@ function _instance:sourcebatches()
             end
         end
     end
-
-    -- cache it
     self._SOURCEBATCHES = sourcebatches
-
-    -- ok?
     return sourcebatches, modified
 end
 
