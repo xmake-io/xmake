@@ -83,7 +83,7 @@ function main(target, sourcebatch)
         local fileconfig = target:fileconfig(sourcefile)
         if fileconfig and fileconfig.unity_group then
             sourcefile_unity = path.join(sourcedir, "unity_" .. fileconfig.unity_group .. path.extension(sourcefile))
-        elseif (fileconfig and fileconfig.unity_ignored) or (batchsize == 0) then
+        elseif (fileconfig and fileconfig.unity_ignored) or (batchsize and batchsize <= 1) then
             -- we do not add these files to unity file
             table.insert(sourcefiles, sourcefile)
             table.insert(objectfiles, objectfile)
@@ -111,9 +111,15 @@ function main(target, sourcebatch)
     -- use unit batch
     for _, sourcefile_unity in ipairs(table.orderkeys(unity_batch)) do
         local sourceinfo = unity_batch[sourcefile_unity]
-        table.insert(sourcefiles, sourcefile_unity)
-        table.insert(objectfiles, sourceinfo.objectfile)
-        table.insert(dependfiles, sourceinfo.dependfile)
+        if #sourceinfo.sourcefiles > 1 then
+            table.insert(sourcefiles, sourcefile_unity)
+            table.insert(objectfiles, sourceinfo.objectfile)
+            table.insert(dependfiles, sourceinfo.dependfile)
+        else
+            table.insert(sourcefiles, sourceinfo.sourcefiles[1])
+            table.insert(objectfiles, sourceinfo.objectfile)
+            table.insert(dependfiles, sourceinfo.dependfile)
+        end
     end
     sourcebatch.sourcefiles = sourcefiles
     sourcebatch.objectfiles = objectfiles
