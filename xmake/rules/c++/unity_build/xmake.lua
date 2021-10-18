@@ -38,7 +38,7 @@ rule("c++.unity_build")
             for _, rulename in ipairs({"c.build", "c++.build"}) do
                 local sourcebatch = sourcebatches[rulename]
                 if sourcebatch then
-                    unity_build.generate_unitfiles(target, sourcebatch, opt)
+                    unity_build.generate_unityfiles(target, sourcebatch, opt)
                 end
             end
         end
