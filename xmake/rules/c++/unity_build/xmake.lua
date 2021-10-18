@@ -18,27 +18,27 @@
 -- @file        xmake.lua
 --
 
-rule("c++.unit_build")
+rule("c++.unity_build")
     after_load(function (target)
-        import("unit_build")
+        import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then
             for _, rulename in ipairs({"c.build", "c++.build"}) do
                 local sourcebatch = sourcebatches[rulename]
                 if sourcebatch then
-                    unit_build(target, sourcebatch)
+                    unity_build(target, sourcebatch)
                 end
             end
         end
     end)
     before_build(function (target, opt)
-        import("unit_build")
+        import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then
             for _, rulename in ipairs({"c.build", "c++.build"}) do
                 local sourcebatch = sourcebatches[rulename]
                 if sourcebatch then
-                    unit_build.generate_unitfiles(target, sourcebatch, opt)
+                    unity_build.generate_unitfiles(target, sourcebatch, opt)
                 end
             end
         end

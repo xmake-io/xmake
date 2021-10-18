@@ -15,75 +15,75 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        unit_build.lua
+-- @file        unity_build.lua
 --
 
 -- imports
 import("core.project.depend")
 
-function _merge_unitfile(target, sourcefile_unit, sourcefiles, opt)
-    local dependfile = target:dependfile(sourcefile_unit)
+function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
+    local dependfile = target:dependfile(sourcefile_unity)
     depend.on_changed(function ()
 
         -- trace
-        vprint("generating.unitfile %s", sourcefile_unit)
+        vprint("generating.unityfile %s", sourcefile_unity)
 
         -- do merge
-        local unitfile = io.open(sourcefile_unit, "w")
+        local unityfile = io.open(sourcefile_unity, "w")
         for _, sourcefile in ipairs(sourcefiles) do
             sourcefile = path.absolute(sourcefile)
-            sourcefile_unit = path.absolute(sourcefile_unit)
-            sourcefile = path.relative(sourcefile, path.directory(sourcefile_unit))
-            unitfile:print("#include \"%s\"", sourcefile)
+            sourcefile_unity = path.absolute(sourcefile_unity)
+            sourcefile = path.relative(sourcefile, path.directory(sourcefile_unity))
+            unityfile:print("#include \"%s\"", sourcefile)
         end
-        unitfile:close()
+        unityfile:close()
 
     end, {dependfile = dependfile, files = sourcefiles})
 end
 
-function generate_unitfiles(target, sourcebatch, opt)
-    local unitbatch = target:data("unit_build.unitbatch." .. sourcebatch.rulename)
-    if unitbatch then
-        for _, sourcefile_unit in ipairs(sourcebatch.sourcefiles) do
-            local sourceinfo = unitbatch[sourcefile_unit]
+function generate_unityfiles(target, sourcebatch, opt)
+    local unity_batch = target:data("unity_build.unity_batch." .. sourcebatch.rulename)
+    if unity_batch then
+        for _, sourcefile_unity in ipairs(sourcebatch.sourcefiles) do
+            local sourceinfo = unity_batch[sourcefile_unity]
             if sourceinfo then
                 local sourcefiles = sourceinfo.sourcefiles
                 if sourcefiles then
-                    _merge_unitfile(target, sourcefile_unit, sourcefiles, opt)
+                    _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
                 end
             end
         end
     end
 end
 
--- use unit build
+-- use unity build
 --
 -- e.g.
--- add_rules("c++.unit_build", {batchsize = 2})
--- add_files("src/*.c", "src/*.cpp", {unit_ignored = true})
--- add_files("src/foo/*.c", {unit_group = "foo"})
--- add_files("src/bar/*.c", {unit_group = "bar"})
+-- add_rules("c++.unity_build", {batchsize = 2})
+-- add_files("src/*.c", "src/*.cpp", {unity_ignored = true})
+-- add_files("src/foo/*.c", {unity_group = "foo"})
+-- add_files("src/bar/*.c", {unity_group = "bar"})
 --
 function main(target, sourcebatch)
 
     -- get unit batch sources
-    local extraconf = target:extraconf("rules", "c++.unit_build")
+    local extraconf = target:extraconf("rules", "c++.unity_build")
     local batchsize = extraconf and extraconf.batchsize
     local id = 1
     local count = 0
-    local unitbatch = {}
+    local unity_batch = {}
     local sourcefiles = {}
     local objectfiles = {}
     local dependfiles = {}
-    local sourcedir = path.join(target:autogendir({root = true}), "unit_build")
+    local sourcedir = path.join(target:autogendir({root = true}), "unity_build")
     for idx, sourcefile in pairs(sourcebatch.sourcefiles) do
-        local sourcefile_unit
+        local sourcefile_unity
         local objectfile = sourcebatch.objectfiles[idx]
         local dependfile = sourcebatch.dependfiles[idx]
         local fileconfig = target:fileconfig(sourcefile)
-        if fileconfig and fileconfig.unit_group then
-            sourcefile_unit = path.join(sourcedir, "unit_" .. fileconfig.unit_group .. path.extension(sourcefile))
-        elseif fileconfig and fileconfig.unit_ignored then
+        if fileconfig and fileconfig.unity_group then
+            sourcefile_unity = path.join(sourcedir, "unity_" .. fileconfig.unity_group .. path.extension(sourcefile))
+        elseif fileconfig and fileconfig.unity_ignored then
             -- we do not add these files to unit file
             table.insert(sourcefiles, sourcefile)
             table.insert(objectfiles, objectfile)
@@ -92,16 +92,16 @@ function main(target, sourcebatch)
             if batchsize and count > batchsize then
                 id = id + 1
             end
-            sourcefile_unit = path.join(sourcedir, "unit_" .. hash.uuid(tostring(id)):split("-", {plain = true})[1] .. path.extension(sourcefile))
+            sourcefile_unity = path.join(sourcedir, "unity_" .. hash.uuid(tostring(id)):split("-", {plain = true})[1] .. path.extension(sourcefile))
             count = count + 1
         end
-        if sourcefile_unit then
-            local sourceinfo = unitbatch[sourcefile_unit]
+        if sourcefile_unity then
+            local sourceinfo = unity_batch[sourcefile_unity]
             if not sourceinfo then
                 sourceinfo = {}
-                sourceinfo.objectfile = target:objectfile(sourcefile_unit)
+                sourceinfo.objectfile = target:objectfile(sourcefile_unity)
                 sourceinfo.dependfile = target:dependfile(sourceinfo.objectfile)
-                unitbatch[sourcefile_unit] = sourceinfo
+                unity_batch[sourcefile_unity] = sourceinfo
             end
             sourceinfo.sourcefiles = sourceinfo.sourcefiles or {}
             table.insert(sourceinfo.sourcefiles, sourcefile)
@@ -109,8 +109,8 @@ function main(target, sourcebatch)
     end
 
     -- use unit batch
-    for sourcefile_unit, sourceinfo in pairs(unitbatch) do
-        table.insert(sourcefiles, sourcefile_unit)
+    for sourcefile_unity, sourceinfo in pairs(unity_batch) do
+        table.insert(sourcefiles, sourcefile_unity)
         table.insert(objectfiles, sourceinfo.objectfile)
         table.insert(dependfiles, sourceinfo.dependfile)
     end
@@ -119,5 +119,5 @@ function main(target, sourcebatch)
     sourcebatch.dependfiles = dependfiles
 
     -- save unit batch
-    target:data_set("unit_build.unitbatch." .. sourcebatch.rulename, unitbatch)
+    target:data_set("unity_build.unity_batch." .. sourcebatch.rulename, unity_batch)
 end
