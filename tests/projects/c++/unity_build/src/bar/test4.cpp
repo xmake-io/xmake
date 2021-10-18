@@ -2,7 +2,11 @@
 // main.cpp
 #include "header.h"
 
+namespace MY_UNITY_ID {
+    int i = 42;
+}
+
 int test4()
 {
-    return 0;
+    return MY_UNITY_ID::i;
 }

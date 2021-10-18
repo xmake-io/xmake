@@ -29,12 +29,21 @@ function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
         vprint("generating.unityfile %s", sourcefile_unity)
 
         -- do merge
+        local uniqueid = target:data("unity_build.uniqueid")
         local unityfile = io.open(sourcefile_unity, "w")
         for _, sourcefile in ipairs(sourcefiles) do
             sourcefile = path.absolute(sourcefile)
             sourcefile_unity = path.absolute(sourcefile_unity)
             sourcefile = path.relative(sourcefile, path.directory(sourcefile_unity))
+            if uniqueid then
+                unityfile:print("#ifndef %s", uniqueid)
+                unityfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
+                unityfile:print("#endif")
+            end
             unityfile:print("#include \"%s\"", sourcefile)
+            if uniqueid then
+                unityfile:print("#undef %s", uniqueid)
+            end
         end
         unityfile:close()
 
@@ -69,6 +78,7 @@ function main(target, sourcebatch)
     -- get unit batch sources
     local extraconf = target:extraconf("rules", sourcebatch.sourcekind == "cxx" and "c++.unity_build" or "c.unity_build")
     local batchsize = extraconf and extraconf.batchsize
+    local uniqueid = extraconf and extraconf.uniqueid
     local id = 1
     local count = 0
     local unity_batch = {}
@@ -126,5 +136,6 @@ function main(target, sourcebatch)
     sourcebatch.dependfiles = dependfiles
 
     -- save unit batch
+    target:data_set("unity_build.uniqueid", uniqueid)
     target:data_set("unity_build.unity_batch." .. sourcebatch.rulename, unity_batch)
 end
