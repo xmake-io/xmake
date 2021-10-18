@@ -109,7 +109,8 @@ function main(target, sourcebatch)
     end
 
     -- use unit batch
-    for sourcefile_unity, sourceinfo in pairs(unity_batch) do
+    for _, sourcefile_unity in ipairs(table.orderkeys(unity_batch)) do
+        local sourceinfo = unity_batch[sourcefile_unity]
         table.insert(sourcefiles, sourcefile_unity)
         table.insert(objectfiles, sourceinfo.objectfile)
         table.insert(dependfiles, sourceinfo.dependfile)
