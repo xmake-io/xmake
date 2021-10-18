@@ -36,9 +36,7 @@ function _merge_unityfile(target, sourcefile_unity, sourcefiles, opt)
             sourcefile_unity = path.absolute(sourcefile_unity)
             sourcefile = path.relative(sourcefile, path.directory(sourcefile_unity))
             if uniqueid then
-                unityfile:print("#ifndef %s", uniqueid)
                 unityfile:print("#define %s %s", uniqueid, "unity_" .. hash.uuid():split("-", {plain = true})[1])
-                unityfile:print("#endif")
             end
             unityfile:print("#include \"%s\"", sourcefile)
             if uniqueid then
