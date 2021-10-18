@@ -56,14 +56,25 @@ function generate_unitfiles(target, sourcebatch, opt)
     end
 end
 
+-- use unit build
+--
+-- e.g.
+-- add_rules("c++.unit_build", {batchsize = 2})
+-- add_files("src/*.c", "src/*.cpp", {unit_ignored = true})
+-- add_files("src/foo/*.c", {unit_group = "foo"})
+-- add_files("src/bar/*.c", {unit_group = "bar"})
+--
 function main(target, sourcebatch)
 
     -- get unit batch sources
     local extraconf = target:extraconf("rules", "c++.unit_build")
-    local batchsize = extraconf.batchsize
+    local batchsize = extraconf and extraconf.batchsize
     local id = 1
     local count = 0
     local unitbatch = {}
+    local sourcefiles = {}
+    local objectfiles = {}
+    local dependfiles = {}
     local sourcedir = path.join(target:autogendir({root = true}), "unit_build")
     for idx, sourcefile in pairs(sourcebatch.sourcefiles) do
         local sourcefile_unit
@@ -72,6 +83,11 @@ function main(target, sourcebatch)
         local fileconfig = target:fileconfig(sourcefile)
         if fileconfig and fileconfig.unit_group then
             sourcefile_unit = path.join(sourcedir, "unit_" .. fileconfig.unit_group .. path.extension(sourcefile))
+        elseif fileconfig and fileconfig.unit_ignored then
+            -- we do not add these files to unit file
+            table.insert(sourcefiles, sourcefile)
+            table.insert(objectfiles, objectfile)
+            table.insert(dependfiles, dependfile)
         else
             if batchsize and count > batchsize then
                 id = id + 1
@@ -79,21 +95,20 @@ function main(target, sourcebatch)
             sourcefile_unit = path.join(sourcedir, "unit_" .. hash.uuid(tostring(id)):split("-", {plain = true})[1] .. path.extension(sourcefile))
             count = count + 1
         end
-        local sourceinfo = unitbatch[sourcefile_unit]
-        if not sourceinfo then
-            sourceinfo = {}
-            sourceinfo.objectfile = target:objectfile(sourcefile_unit)
-            sourceinfo.dependfile = target:dependfile(sourceinfo.objectfile)
-            unitbatch[sourcefile_unit] = sourceinfo
+        if sourcefile_unit then
+            local sourceinfo = unitbatch[sourcefile_unit]
+            if not sourceinfo then
+                sourceinfo = {}
+                sourceinfo.objectfile = target:objectfile(sourcefile_unit)
+                sourceinfo.dependfile = target:dependfile(sourceinfo.objectfile)
+                unitbatch[sourcefile_unit] = sourceinfo
+            end
+            sourceinfo.sourcefiles = sourceinfo.sourcefiles or {}
+            table.insert(sourceinfo.sourcefiles, sourcefile)
         end
-        sourceinfo.sourcefiles = sourceinfo.sourcefiles or {}
-        table.insert(sourceinfo.sourcefiles, sourcefile)
     end
 
     -- use unit batch
-    local sourcefiles = {}
-    local objectfiles = {}
-    local dependfiles = {}
     for sourcefile_unit, sourceinfo in pairs(unitbatch) do
         table.insert(sourcefiles, sourcefile_unit)
         table.insert(objectfiles, sourceinfo.objectfile)
