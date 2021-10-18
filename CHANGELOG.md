@@ -9,6 +9,7 @@
 * Add gcc-8, gcc-9, gcc-10, gcc-11 toolchains
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): Support find_package from cmake
 * [#1747](https://github.com/xmake-io/xmake/issues/1747): Add `set_kind("headeronly")` for target to install files for headeronly library
+* [#1019](https://github.com/xmake-io/xmake/issues/1019): Support Unity build
 
 ### Changes
 
@@ -1110,6 +1111,7 @@
 * 添加 gcc-8, gcc-9, gcc-10, gcc-11 工具链
 * [#1623](https://github.com/xmake-io/xmake/issues/1632): 支持 find_package 从 cmake 查找包
 * [#1747](https://github.com/xmake-io/xmake/issues/1747): 添加 `set_kind("headeronly")` 更好的处理 headeronly 库的安装
+* [#1019](https://github.com/xmake-io/xmake/issues/1019): 支持 Unity build
 
 ### 改进
 
