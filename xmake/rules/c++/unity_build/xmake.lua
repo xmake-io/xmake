@@ -18,16 +18,14 @@
 -- @file        xmake.lua
 --
 
-rule("c++.unity_build")
+rule("c.unity_build")
     after_load(function (target)
         import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then
-            for _, rulename in ipairs({"c.build", "c++.build"}) do
-                local sourcebatch = sourcebatches[rulename]
-                if sourcebatch then
-                    unity_build(target, sourcebatch)
-                end
+            local sourcebatch = sourcebatches["c.build"]
+            if sourcebatch then
+                unity_build(target, sourcebatch)
             end
         end
     end)
@@ -35,11 +33,31 @@ rule("c++.unity_build")
         import("unity_build")
         local sourcebatches = target:sourcebatches()
         if sourcebatches then
-            for _, rulename in ipairs({"c.build", "c++.build"}) do
-                local sourcebatch = sourcebatches[rulename]
-                if sourcebatch then
-                    unity_build.generate_unityfiles(target, sourcebatch, opt)
-                end
+            local sourcebatch = sourcebatches["c.build"]
+            if sourcebatch then
+                unity_build.generate_unityfiles(target, sourcebatch, opt)
+            end
+        end
+    end)
+
+rule("c++.unity_build")
+    after_load(function (target)
+        import("unity_build")
+        local sourcebatches = target:sourcebatches()
+        if sourcebatches then
+            local sourcebatch = sourcebatches["c++.build"]
+            if sourcebatch then
+                unity_build(target, sourcebatch)
+            end
+        end
+    end)
+    before_build(function (target, opt)
+        import("unity_build")
+        local sourcebatches = target:sourcebatches()
+        if sourcebatches then
+            local sourcebatch = sourcebatches["c++.build"]
+            if sourcebatch then
+                unity_build.generate_unityfiles(target, sourcebatch, opt)
             end
         end
     end)

@@ -67,7 +67,7 @@ end
 function main(target, sourcebatch)
 
     -- get unit batch sources
-    local extraconf = target:extraconf("rules", "c++.unity_build")
+    local extraconf = target:extraconf("rules", sourcebatch.sourcekind == "cxx" and "c++.unity_build" or "c.unity_build")
     local batchsize = extraconf and extraconf.batchsize
     local id = 1
     local count = 0
