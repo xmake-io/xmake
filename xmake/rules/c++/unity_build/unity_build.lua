@@ -84,7 +84,7 @@ function main(target, sourcebatch)
         if fileconfig and fileconfig.unity_group then
             sourcefile_unity = path.join(sourcedir, "unity_" .. fileconfig.unity_group .. path.extension(sourcefile))
         elseif fileconfig and fileconfig.unity_ignored then
-            -- we do not add these files to unit file
+            -- we do not add these files to unity file
             table.insert(sourcefiles, sourcefile)
             table.insert(objectfiles, objectfile)
             table.insert(dependfiles, dependfile)
