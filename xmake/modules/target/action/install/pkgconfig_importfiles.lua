@@ -35,11 +35,11 @@ function main(target, opt)
     local pcfile = path.join(installdir, opt and opt.libdir or "lib", "pkgconfig", opt.filename or (target:basename() .. ".pc"))
 
     -- get includedirs
-    local includedirs = opt.includedirs or {path.join(installdir, "include")}
+    local includedirs = opt.includedirs
 
     -- get links and linkdirs
     local links = opt.links or target:basename()
-    local linkdirs = opt.linkdirs or {path.join(installdir, "lib")}
+    local linkdirs = opt.linkdirs
 
     -- get libs
     local libs = ""
@@ -47,8 +47,10 @@ function main(target, opt)
         libs = libs .. "-L" .. linkdir
     end
     libs = libs .. " -L${libdir}"
-    for _, link in ipairs(links) do
-        libs = libs .. " -l" .. link
+    if not target:is_headeronly() then
+        for _, link in ipairs(links) do
+            libs = libs .. " -l" .. link
+        end
     end
 
     -- get cflags
@@ -66,9 +68,7 @@ function main(target, opt)
     if file then
         file:print("prefix=%s", installdir)
         file:print("exec_prefix=${prefix}")
-        if not target:is_headeronly() then
-            file:print("libdir=${exec_prefix}/lib")
-        end
+        file:print("libdir=${exec_prefix}/lib")
         file:print("includedir=${prefix}/include")
         file:print("")
         file:print("Name: %s", target:name())
@@ -77,10 +77,8 @@ function main(target, opt)
         if version then
             file:print("Version: %s", version)
         end
-        if not target:is_headeronly() then
-            file:print("Libs: %s", libs)
-            file:print("Libs.private: ")
-        end
+        file:print("Libs: %s", libs)
+        file:print("Libs.private: ")
         file:print("Cflags: %s", cflags)
         file:close()
     end
