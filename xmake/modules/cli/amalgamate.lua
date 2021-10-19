@@ -35,8 +35,8 @@ local options =
 -- generate code
 function _generate_amalgamate_code(target, opt)
 
-    -- only for library
-    if not target:is_library() then
+    -- only for library/binary
+    if not target:is_library() and not target:is_binary() then
         return
     end
 

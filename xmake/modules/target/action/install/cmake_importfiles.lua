@@ -41,7 +41,7 @@ function _get_builtinvars(target, installdir)
     return {TARGETNAME      = target:name(),
             PROJECTNAME     = project.name() or target:name(),
             TARGETFILENAME  = target:targetfile() and _get_libfile(target, installdir),
-            TARGETKIND      = target:is_shared() and "SHARED" or "STATIC",
+            TARGETKIND      = target:is_headeronly() and "interface" or (target:is_shared() and "SHARED" or "STATIC"),
             PACKAGE_VERSION = target:get("version") or "1.0.0",
             TARGET_PTRBYTES = target:is_arch("x86", "i386") and "4" or "8"}
 end
@@ -151,12 +151,12 @@ function main(target, opt)
     _append_cmake_configfile(target, installdir, "xxxConfig.cmake", opt)
     _install_cmake_configfile(target, installdir, "xxxConfigVersion.cmake", opt)
     _install_cmake_targetfile(target, installdir, "xxxTargets.cmake", opt)
-    if target:is_headeronly() then
-        _install_cmake_targetfile(target, installdir, "xxxTargets-headeronly.cmake", opt)
-    elseif is_mode("debug") then
-        _install_cmake_targetfile(target, installdir, "xxxTargets-debug.cmake", opt)
-    else
-        _install_cmake_targetfile(target, installdir, "xxxTargets-release.cmake", opt)
+    if not target:is_headeronly() then
+        if is_mode("debug") then
+            _install_cmake_targetfile(target, installdir, "xxxTargets-debug.cmake", opt)
+        else
+            _install_cmake_targetfile(target, installdir, "xxxTargets-release.cmake", opt)
+        end
     end
 end
 
