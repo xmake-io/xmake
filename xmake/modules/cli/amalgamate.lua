@@ -35,6 +35,11 @@ local options =
 -- generate code
 function _generate_amalgamate_code(target, opt)
 
+    -- only for library
+    if not target:is_library() then
+        return
+    end
+
     -- generate source code
     local outputdir = opt.outputdir
     local uniqueid = opt.uniqueid
@@ -59,7 +64,7 @@ function _generate_amalgamate_code(target, opt)
 
     -- generate header file
     local srcheaders = target:headerfiles(includedir)
-    if srcheaders then
+    if srcheaders and #srcheaders > 0 then
         local outputpath = path.join(outputdir, target:name() .. ".h")
         local outputfile = io.open(outputpath, "w")
         for _, srcheader in ipairs(srcheaders) do
