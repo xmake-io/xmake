@@ -77,7 +77,7 @@ function main(opt)
         if longpaths_old and longpaths_old:find("false") then
             os.vrunv(git.program, {"config", "--global", "core.longpaths", "false"}, {curdir = opt.repodir})
         else
-            os.vrunv(git.program, {"config", "--global", "--unset", "core.longpaths", {curdir = opt.repodir}})
+            os.vrunv(git.program, {"config", "--global", "--unset", "core.longpaths"}, {curdir = opt.repodir})
         end
     end
 end
