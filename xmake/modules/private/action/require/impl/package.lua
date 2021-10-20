@@ -161,6 +161,16 @@ function _load_require(require_str, requires_extra, parentinfo)
         end
     end
 
+    -- check require options
+    local extra_options = hashset.of("plat", "arch", "kind", "targetos",
+    "alias", "group", "system", "option", "default", "optional", "debug",
+    "verify", "external", "private", "build", "configs", "version")
+    for name, value in pairs(require_extra) do
+        if not extra_options:has(name) then
+            wprint("add_requires(\"%s\") has unknown option: {%s=%s}!", require_str, name, tostring(value))
+        end
+    end
+
     -- init required item
     local required = {}
     parentinfo = parentinfo or {}
