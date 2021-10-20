@@ -9,7 +9,7 @@ on:
 jobs:
   build:
 
-    container: archlinux:latest
+    container: archlinux:base-devel
     runs-on: ubuntu-latest
 
     concurrency:
