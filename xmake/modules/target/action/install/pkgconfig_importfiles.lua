@@ -78,7 +78,6 @@ function main(target, opt)
             file:print("Version: %s", version)
         end
         file:print("Libs: %s", libs)
-        file:print("Libs.private: ")
         file:print("Cflags: %s", cflags)
         file:close()
     end
