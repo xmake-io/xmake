@@ -162,7 +162,7 @@ function _load_require(require_str, requires_extra, parentinfo)
     end
 
     -- check require options
-    local extra_options = hashset.of("plat", "arch", "kind", "targetos",
+    local extra_options = hashset.of("plat", "arch", "kind", "host", "targetos",
     "alias", "group", "system", "option", "default", "optional", "debug",
     "verify", "external", "private", "build", "configs", "version")
     for name, value in pairs(require_extra) do
