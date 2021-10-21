@@ -73,15 +73,15 @@ language("nim")
                 config =
                 {
                     {category = "Cross Complation Configuration/Compiler Configuration"      }
-                ,   {nil, "nc",         "kv", nil,          "The Nim Compiler"               }
+                ,   {nil, "nc",         "kv", nil,         "The Nim Compiler"                }
 
                 ,   {category = "Cross Complation Configuration/Linker Configuration"        }
                 ,   {nil, "ncld",      "kv", nil,          "The Nim Linker"                  }
                 ,   {nil, "ncar",      "kv", nil,          "The Nim Static Library Archiver" }
                 ,   {nil, "ncsh",      "kv", nil,          "The Nim Shared Library Linker"   }
 
-                ,   {category = "Cross Complation Configuration/Builtin Flags Configuration"  }
-                ,   {nil, "linkdirs",   "kv", nil,         "The Link Search Directories"      }
+                ,   {category = "Cross Complation Configuration/Builtin Flags Configuration" }
+                ,   {nil, "linkdirs",   "kv", nil,         "The Link Search Directories"     }
                 }
             }
 

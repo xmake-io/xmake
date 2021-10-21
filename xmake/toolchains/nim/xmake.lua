@@ -33,6 +33,9 @@ toolchain("nim")
 
     -- on load
     on_load(function (toolchain)
+        if toolchain:is_plat("windows") then
+            toolchain:set("ncflags", "--cc:vcc")
+        end
         toolchain:set("ncshflags", "")
         toolchain:set("ncldflags", "")
     end)
