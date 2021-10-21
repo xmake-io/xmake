@@ -78,9 +78,18 @@ end
 function nf_symbol(self, level)
     local maps =
     {
-        debug = "--stackTrace:on"
+        debug = "--debugger:native"
     }
     return maps[level]
+end
+
+-- make the strip flag
+function nf_strip(self, level)
+    if is_plat("linux", "macosx", "bsd") then
+        if level == "debug" or level == "all" then
+            return "--passL:-s"
+        end
+    end
 end
 
 -- make the includedir flag
