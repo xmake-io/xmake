@@ -233,6 +233,7 @@ ifort         Intel Fortran Compiler
 muslcc        The musl-based cross-compilation toolchain
 fpc           Free Pascal Programming Language Compiler
 wasi          WASI-enabled WebAssembly C/C++ toolchain
+nim           Nim Programming Language Compiler
 ```
 
 ## 支持语言
@@ -249,6 +250,7 @@ wasi          WASI-enabled WebAssembly C/C++ toolchain
 * Zig
 * Vala
 * Pascal
+* Nim
 
 ## 支持特性
 
