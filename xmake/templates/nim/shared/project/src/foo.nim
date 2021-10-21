@@ -3,3 +3,4 @@ proc foo(n: int): int {.cdecl, exportc, dynlib.} =
     result = n
   else:
     result = foo(n - 1) + (n - 2).foo
+
