@@ -24,13 +24,30 @@ import("core.project.config")
 import("core.project.project")
 
 -- init it
+--
+-- @see https://nim-lang.org/docs/nimc.html
 function init(self)
 
     -- init arflags
-    self:set("ncarflags", "--app:staticlib")
+    self:set("ncarflags", "--app:staticlib", "--noMain")
 
     -- init shflags
-    self:set("ncshflags", "--app:lib")
+    self:set("ncshflags", "--app:lib", "--noMain")
+end
+
+-- make the warning flag
+function nf_warning(self, level)
+    local maps =
+    {
+        none       = "--warning:X:off"
+    ,   less       = "--warning:X:on"
+    ,   more       = "--warning:X:on"
+    ,   all        = "--warning:X:on"
+    ,   allextra   = "--warning:X:on"
+    ,   everything = "--warning:X:on"
+    ,   error      = "--warningAsError:X:on"
+    }
+    return maps[level]
 end
 
 -- make the define flag
@@ -66,19 +83,37 @@ function nf_symbol(self, level)
     return maps[level]
 end
 
+-- make the includedir flag
+function nf_includedir(self, dir)
+    return {"--passC:-I" .. path.translate(dir)}
+end
+
 -- make the link flag
 function nf_link(self, lib)
-    return "--passL:" .. lib
+    return "--passL:-l" .. lib
 end
 
 -- make the linkdir flag
 function nf_linkdir(self, dir)
-    return {"-L" .. dir}
+    return {"--passL:-L" .. path.translate(dir)}
 end
 
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "c", "-o:" .. targetfile, sourcefiles)
+    local flags_extra = {}
+    if targetkind == "static" then
+        -- fix multiple definition of `NimMain', it is only workaround solution
+        -- we need to wait for this problem to be resolved
+        --
+        -- @see https://github.com/nim-lang/Nim/issues/15955
+        local uniquekey = hash.uuid(targetfile):split("-", {plain = true})[1]
+        table.insert(flags_extra, "--passC:-DNimMain=NimMain_" .. uniquekey)
+        table.insert(flags_extra, "--passC:-DNimMainInner=NimMainInner_" .. uniquekey)
+        table.insert(flags_extra, "--passC:-DNimMainModule=NimMainModule_" .. uniquekey)
+        table.insert(flags_extra, "--passC:-DPreMain=PreMain_" .. uniquekey)
+        table.insert(flags_extra, "--passC:-DPreMainInner=PreMainInner_" .. uniquekey)
+    end
+    return self:program(), table.join("c", flags, flags_extra, "-o:" .. targetfile, sourcefiles)
 end
 
 -- build the target file

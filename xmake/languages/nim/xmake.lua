@@ -31,12 +31,15 @@ language("nim")
 
     set_nameflags {
         object = {
-            "target.symbols"
+            "config.includedirs"
+        ,   "target.symbols"
         ,   "target.warnings"
         ,   "target.defines"
         ,   "target.undefines"
         ,   "target.optimize:check"
         ,   "target.vectorexts:check"
+        ,   "target.includedirs"
+        ,   "toolchain.includedirs"
         }
     ,   binary = {
             "config.linkdirs"
@@ -46,6 +49,9 @@ language("nim")
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
         }
     ,   shared = {
             "config.linkdirs"
@@ -53,6 +59,9 @@ language("nim")
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
         }
     ,   static = {
             "target.strip"
