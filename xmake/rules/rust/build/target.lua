@@ -76,10 +76,11 @@ end
 function main(target, opt)
 
     -- @note only support one source kind!
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        if sourcebatch.sourcekind == "rc" then
+    local sourcebatches = target:sourcebatches()
+    if sourcebatches then
+        local sourcebatch = sourcebatches["rust.build"]
+        if sourcebatch then
             build_sourcefiles(target, sourcebatch, opt)
-            break
         end
     end
 end

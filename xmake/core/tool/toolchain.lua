@@ -369,6 +369,10 @@ function _instance:_description(toolkind)
             cu         = "the cuda compiler",
             culd       = "the cuda linker",
             cuccbin    = "the cuda host c++ compiler",
+            nc         = "the nim compiler",
+            ncld       = "the nim linker",
+            ncsh       = "the nim shared library linker",
+            ncar       = "the nim static library archiver"
         }
         self._DESCRIPTIONS = descriptions
     end
