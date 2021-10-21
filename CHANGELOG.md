@@ -11,6 +11,7 @@
 * [#1747](https://github.com/xmake-io/xmake/issues/1747): Add `set_kind("headeronly")` for target to install files for headeronly library
 * [#1019](https://github.com/xmake-io/xmake/issues/1019): Support Unity build
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): Support code amalgamation, `xmake l cli.amalgamate`
+* [#1765](https://github.com/xmake-io/xmake/issues/1756): Support nim language
 
 ### Changes
 
@@ -1114,6 +1115,7 @@
 * [#1747](https://github.com/xmake-io/xmake/issues/1747): 添加 `set_kind("headeronly")` 更好的处理 headeronly 库的安装
 * [#1019](https://github.com/xmake-io/xmake/issues/1019): 支持 Unity build
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): 增加 `xmake l cli.amalgamate` 命令支持代码合并
+* [#1765](https://github.com/xmake-io/xmake/issues/1756): 支持 nim 语言
 
 ### 改进
 
