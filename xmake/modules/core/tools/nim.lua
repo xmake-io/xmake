@@ -65,11 +65,11 @@ function nf_optimize(self, level)
     local maps =
     {
         none        = "--opt:none"
-    ,   fast        = "--opt:speed"
-    ,   faster      = "--opt:speed"
-    ,   fastest     = "--opt:speed"
-    ,   smallest    = "--opt:size"
-    ,   aggressive  = "--opt:speed"
+    ,   fast        = "-d:release"
+    ,   faster      = "-d:release"
+    ,   fastest     = "-d:release"
+    ,   smallest    = {"-d:release", "--opt:size"}
+    ,   aggressive  = "-d:danger"
     }
     return maps[level]
 end
