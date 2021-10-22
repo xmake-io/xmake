@@ -160,7 +160,10 @@ function sandbox_core_project.unlock()
 end
 
 -- change project file and directory (xmake.lua)
-function sandbox_core_project.changefile(projectfile)
+function sandbox_core_project.chdir(projectdir, projectfile)
+    if not projectfile then
+        projectfile = path.join(projectdir, "xmake.lua")
+    end
     xmake._PROJECT_FILE = projectfile
     xmake._PROJECT_DIR = path.directory(projectfile)
     xmake._WORKING_DIR = xmake._PROJECT_DIR

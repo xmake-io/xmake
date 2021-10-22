@@ -139,7 +139,7 @@ function _enter_project(opt)
         os.cd(workdir)
     end
     if opt.enteronly then
-        project.changefile(path.join(workdir, "xmake.lua"))
+        project.chdir(workdir)
         return
     end
 
