@@ -227,6 +227,13 @@ function _package_addenvs(envs, instance)
             _addenvs(envs, "ACLOCAL_PATH", aclocal)
         end
         _addenvs(envs, "CMAKE_PREFIX_PATH", installdir)
+        if instance:is_plat("windows") then
+            _addenvs(envs, "INCLUDE", path.join(installdir, "include"))
+            _addenvs(envs, "LIBPATH", path.join(installdir, "lib"))
+        else
+            _addenvs(envs, "CPATH", path.join(installdir, "include"))
+            _addenvs(envs, "LIBRARY_PATH", path.join(installdir, "lib"))
+        end
     end
 end
 
