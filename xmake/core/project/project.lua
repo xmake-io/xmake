@@ -1086,6 +1086,9 @@ function project.mtimes()
     local mtimes = project._MTIMES
     if not mtimes then
         mtimes = project.interpreter():mtimes()
+        for _, rcfile in ipairs(project.rcfiles()) do
+            mtimes[rcfile] = os.mtime(rcfile)
+        end
         project._MTIMES = mtimes
     end
     return mtimes

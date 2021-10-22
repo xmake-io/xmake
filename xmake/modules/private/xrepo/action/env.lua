@@ -22,6 +22,7 @@
 import("core.base.option")
 import("core.base.task")
 import("core.base.hashset")
+import("core.base.global")
 import("core.project.config")
 import("core.project.project")
 import("core.tool.toolchain")
@@ -49,14 +50,27 @@ function menu_options()
                                        "e.g.",
                                        "    - xrepo env -f \"vs_runtime='MD'\" zlib cmake ..",
                                        "    - xrepo env -f \"regex=true,thread=true\" \"zlib,boost\" cmake .."},
-        {'b', "packages",   "kv", nil, "Set the packages to be bound",
+        {nil, "add",        "k",  nil, "Add global environment config.",
                                        "e.g.",
+                                       "    - xrepo env --add base.lua",
+                                       "    - xrepo env --add myenv.lua"},
+        {nil, "remove",     "k",  nil, "Remove global environment config.",
+                                       "e.g.",
+                                       "    - xrepo env --remove base",
+                                       "    - xrepo env --remove myenv"},
+        {"l", "list",       "k",  nil, "List all global environment configs.",
+                                       "e.g.",
+                                       "    - xrepo env --list"},
+        {'b', "bind",       "kv", nil, "Bind the specified environment or package.",
+                                       "e.g.",
+                                       "    - xrepo env -b base",
+                                       "    - xrepo env -b myenv",
                                        "    - xrepo env -b \"python 3.x\" python",
                                        "    - xrepo env -b \"llvm 11.x\" bash",
                                        "      $ clang --version",
                                        "    - xrepo env -p android -b \"zlib,luajit 2.x\" luajit xx.lua"},
         {},
-        {nil, "program",    "v",  nil, "Set the program name to be run",
+        {nil, "program",    "v",  nil, "Set the program name to be run.",
                                        "e.g.",
                                        "    - xrepo env",
                                        "    - xrepo env bash",
@@ -112,9 +126,10 @@ function _get_requires(packages)
 end
 
 -- enter project
-function _enter_project()
+function _enter_project(opt)
 
     -- enter working project directory
+    opt = opt or {}
     local workdir = path.join(os.tmpdir(), "xrepo", "working")
     if not os.isdir(workdir) then
         os.mkdir(workdir)
@@ -122,6 +137,10 @@ function _enter_project()
         os.vrunv("xmake", {"create", "-P", "."})
     else
         os.cd(workdir)
+    end
+    if opt.enteronly then
+        project.changefile(path.join(workdir, "xmake.lua"))
+        return
     end
 
     -- do configure first
@@ -172,6 +191,23 @@ function _remove_repeat_pathenv(value)
         end
     end
     return value
+end
+
+-- get environment directory
+function _get_envsdir()
+    return path.join(global.directory(), "envs")
+end
+
+-- get bound environment or packages
+function _get_boundenv()
+    local bind = option.get("bind")
+    if bind then
+        local envfile = path.join(_get_envsdir(), bind .. ".lua")
+        if envfile and os.isfile(envfile) then
+            return envfile
+        end
+    end
+    return bind
 end
 
 -- add values to environment variable
@@ -253,22 +289,33 @@ end
 -- get package environments
 function _package_getenvs()
     local envs = os.getenvs()
-    if os.isfile(os.projectfile()) and not option.get("packages") then
+    local boundenv = _get_boundenv()
+    local has_envfile = false
+    local packages = nil
+    if boundenv and os.isfile(boundenv) then
+        has_envfile = true
+    else
+        packages = boundenv or option.get("program")
+    end
+    if os.isfile(os.projectfile()) or has_envfile then
+        if not os.isfile(os.projectfile()) then
+            _enter_project({enteronly = true})
+        end
+        if has_envfile then
+            table.insert(project.rcfiles(), boundenv)
+        end
         task.run("config", {target = "all"}, {disable_dump = true})
         _toolchain_addenvs(envs)
         local requires, requires_extra = get_requires()
         for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
             _package_addenvs(envs, instance)
         end
-    else
-        local packages = option.get("packages") or option.get("program")
-        if packages then
-            _enter_project()
-            packages = packages:split(',', {plain = true})
-            local requires, requires_extra = _get_requires(packages)
-            for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
-                _package_addenvs(envs, instance)
-            end
+    elseif packages then
+        _enter_project()
+        packages = packages:split(',', {plain = true})
+        local requires, requires_extra = _get_requires(packages)
+        for _, instance in ipairs(package.load_packages(requires, {requires_extra = requires_extra})) do
+            _package_addenvs(envs, instance)
         end
     end
     local results = {}
@@ -371,18 +418,37 @@ end
 
 -- main entry
 function main()
-    local envs = _package_getenvs()
-    local program = option.get("program")
-    if program and not option.get("show") then
-        if envs and envs.PATH then
-            os.setenv("PATH", envs.PATH)
+    if option.get("list") then
+        print("%s:", _get_envsdir())
+        local count = 0
+        for _, envfile in ipairs(os.files(path.join(_get_envsdir(), "*.lua"))) do
+            local envname = path.basename(envfile)
+            print("  - %s", envname)
+            count = count + 1
         end
-        if program == "shell" then
-            _run_shell(envs)
-        else
-            os.execv(program, option.get("arguments"), {envs = envs})
+        print("envs(%d) found!", count)
+    elseif option.get("add") then
+        local envfile = assert(option.get("program"), "please set environment config file!")
+        if os.isfile(envfile) then
+            os.vcp(envfile, path.join(_get_envsdir(), path.filename(envfile)))
         end
+    elseif option.get("remove") then
+        local envname = assert(option.get("program"), "please set environment config name!")
+        os.rm(path.join(_get_envsdir(), envname .. ".lua"))
     else
-        print(envs)
+        local envs = _package_getenvs()
+        local program = option.get("program")
+        if program and not option.get("show") then
+            if envs and envs.PATH then
+                os.setenv("PATH", envs.PATH)
+            end
+            if program == "shell" then
+                _run_shell(envs)
+            else
+                os.execv(program, option.get("arguments"), {envs = envs})
+            end
+        else
+            print(envs)
+        end
     end
 end
