@@ -12,6 +12,7 @@
 * [#1019](https://github.com/xmake-io/xmake/issues/1019): Support Unity build
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): Support code amalgamation, `xmake l cli.amalgamate`
 * [#1765](https://github.com/xmake-io/xmake/issues/1756): Support nim language
+* [#1762](https://github.com/xmake-io/xmake/issues/1762): Manage and switch the given package envs for `xrepo env`
 
 ### Changes
 
@@ -1116,6 +1117,7 @@
 * [#1019](https://github.com/xmake-io/xmake/issues/1019): 支持 Unity build
 * [#1438](https://github.com/xmake-io/xmake/issues/1438): 增加 `xmake l cli.amalgamate` 命令支持代码合并
 * [#1765](https://github.com/xmake-io/xmake/issues/1756): 支持 nim 语言
+* [#1762](https://github.com/xmake-io/xmake/issues/1762): 为 `xrepo env` 管理和切换指定的环境配置
 
 ### 改进
 
