@@ -35,6 +35,12 @@ toolchain("nim")
     on_load(function (toolchain)
         if toolchain:is_plat("windows") then
             toolchain:set("ncflags", "--cc:vcc")
+            local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
+            if msvc:check() then
+                for name, value in pairs(msvc:get("runenvs")) do
+                    toolchain:add("runenvs", name, value)
+                end
+            end
         end
         toolchain:set("ncshflags", "")
         toolchain:set("ncldflags", "")

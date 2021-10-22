@@ -1,5 +1,3 @@
-import bar
-
 proc foo(n: int): int {.cdecl, exportc} =
   if n < 2:
     result = n

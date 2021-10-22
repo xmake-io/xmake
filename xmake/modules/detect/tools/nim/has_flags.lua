@@ -73,9 +73,9 @@ function _check_try_running(flags, opt)
     end
 
     -- check it
-    local binaryfile = os.tmpfile()
-    local ok, errors = _try_running(opt.program, table.join("c", flags, "-o:" .. binaryfile, sourcefile))
-    os.tryrm(binaryfile)
+    local cachedir = os.tmpfile() .. ".dir"
+    local ok, errors = _try_running(opt.program, table.join("c", "-c", flags, "--nimcache:" .. cachedir, sourcefile))
+    os.tryrm(cachedir)
     return ok, errors
 end
 

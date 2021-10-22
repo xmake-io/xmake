@@ -84,8 +84,8 @@ function nf_symbol(self, level)
 end
 
 -- make the strip flag
-function nf_strip(self, level)
-    if is_plat("linux", "macosx", "bsd") then
+function nf_strip(self, level, target)
+    if target:is_plat("linux", "macosx", "bsd") then
         if level == "debug" or level == "all" then
             return "--passL:-s"
         end
@@ -103,8 +103,12 @@ function nf_link(self, lib)
 end
 
 -- make the linkdir flag
-function nf_linkdir(self, dir)
-    return {"--passL:-L" .. path.translate(dir)}
+function nf_linkdir(self, dir, target)
+    if target:is_plat("windows") then
+        return {"--passL:-libpath:" .. path.translate(dir)}
+    else
+        return {"--passL:-L" .. path.translate(dir)}
+    end
 end
 
 -- make the build arguments list
@@ -128,6 +132,7 @@ end
 -- build the target file
 function build(self, sourcefiles, targetkind, targetfile, flags)
     os.mkdir(path.directory(targetfile))
-    os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
+    local program, argv = buildargv(self, sourcefiles, targetkind, targetfile, flags)
+    os.runv(program, argv, {envs = self:runenvs()})
 end
 
