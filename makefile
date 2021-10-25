@@ -117,7 +117,8 @@ install:
 	@if [ ! -d $(destdir)/bin ]; then mkdir -p $(destdir)/bin; fi
 	@# install the xmake directory
 	@cp -r xmake/* $(xmake_dir_install)
-	@# install the xmake core file
+	@# install the xmake core file, @note we need remove old binary first on mac M1, otherwise it will be killed
+	@if [ -f $(xmake_core_install) ]; then rm $(xmake_core_install); fi
 	@cp -p $(xmake_core) $(xmake_core_install)
 	@chmod 755 $(xmake_core_install)
 	@# install the xrepo bin file
