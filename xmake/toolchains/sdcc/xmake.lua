@@ -52,8 +52,6 @@ toolchain("sdcc")
 
     -- on load
     on_load(function (toolchain)
-
-        -- add port flags for arch
         local arch = toolchain:arch()
         if arch then
             toolchain:add("cxflags", "-m" .. arch)

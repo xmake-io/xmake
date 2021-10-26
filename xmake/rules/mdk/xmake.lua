@@ -29,10 +29,4 @@ rule("mdk.console")
         if not target:get("extension") then
             target:set("extension", ".axf")
         end
-
-        -- set cpu
-        local cpu = assert(target:values("mdk.cpu"), "unknown cpu, please use `add_values(\"mdk.cpu\", \"\")` to set it!")
-        target:add("cxflags", "--cpu " .. cpu)
-        target:add("asflags", "--cpu " .. cpu)
-        target:add("ldflags", "--cpu " .. cpu)
     end)

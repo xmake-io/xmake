@@ -36,3 +36,11 @@ toolchain("armcc")
         return import("lib.detect.find_tool")("armcc")
     end)
 
+    on_load(function (toolchain)
+        local arch = toolchain:arch()
+        if arch then
+            toolchain:add("cxflags", "--cpu " .. arch)
+            toolchain:add("asflags", "--cpu " .. arch)
+            toolchain:add("ldflags", "--cpu " .. arch)
+        end
+    end)

@@ -1,7 +1,6 @@
 add_rules("mode.debug", "mode.release")
 target("hello")
     add_rules("mdk.console")
-    add_values("mdk.cpu", "Cortex-M3")
     add_files("src/*.c", "src/*.s")
     add_defines("__EVAL", "__MICROLIB")
     add_includedirs("src/lib/cmsis")

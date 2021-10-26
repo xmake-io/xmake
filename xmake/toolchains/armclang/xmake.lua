@@ -37,7 +37,11 @@ toolchain("armclang")
     end)
 
     on_load(function (toolchain)
-        toolchain:add("cxflags", "--target=aarch64-arm-none-eabi")
-        toolchain:add("asflags", "--target=aarch64-arm-none-eabi")
-        toolchain:add("ldflags", "--target=aarch64-arm-none-eabi")
+        local arch = toolchain:arch()
+        if arch then
+            toolchain:add("cxflags", "-target=arm-arm-none-eabi")
+            toolchain:add("cxflags", "-mcpu=" .. arch:lower())
+            toolchain:add("asflags", "--cpu " .. arch)
+            toolchain:add("ldflags", "--cpu " .. arch)
+        end
     end)
