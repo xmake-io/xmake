@@ -18,8 +18,37 @@
 -- @file        armlink.lua
 --
 
-inherit("gcc")
+-- imports
+import("core.base.option")
+import("core.base.global")
+import("utils.progress")
 
 function init(self)
-    _super.init(self)
 end
+
+-- make the link flag
+function nf_link(self, lib)
+    return "lib" .. lib .. ".a"
+end
+
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
+-- make the linkdir flag
+function nf_linkdir(self, dir)
+    return {"--userlibpath", dir}
+end
+
+-- make the link arguments list
+function linkargv(self, objectfiles, targetkind, targetfile, flags)
+    return self:program(), table.join("-o", targetfile, objectfiles, flags)
+end
+
+-- link the target file
+function link(self, objectfiles, targetkind, targetfile, flags)
+    os.mkdir(path.directory(targetfile))
+    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
+end
+

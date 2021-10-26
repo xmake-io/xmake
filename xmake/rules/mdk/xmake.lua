@@ -30,3 +30,13 @@ rule("mdk.console")
             target:set("extension", ".axf")
         end
     end)
+
+rule("mdk.static")
+    on_load(function (target)
+        -- we disable checking flags for cross toolchain automatically
+        target:set("policy", "check.auto_ignore_flags", false)
+        target:set("policy", "check.auto_map_flags", false)
+
+        -- set default output binary
+        target:set("kind", "static")
+    end)
