@@ -37,4 +37,7 @@ toolchain("armcc")
     end)
 
     on_load(function (toolchain)
+        toolchain:add("cxflags", "--cpu Cortex-M3", {force = true})
+        toolchain:add("asflags", "--cpu Cortex-M3", {force = true})
+        toolchain:add("ldflags", "--cpu Cortex-M3", {force = true})
     end)
