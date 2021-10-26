@@ -104,7 +104,7 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-    return self:program(), table.join("-c", flags, "-o", objectfile, sourcefile)
+    return self:program(), table.join(flags, "-o", objectfile, sourcefile)
 end
 
 -- compile the source file
