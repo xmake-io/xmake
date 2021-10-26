@@ -15,26 +15,9 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        has_flags.lua
 --
 
-toolchain("armcc")
+-- imports
+inherit("detect.tools.gcc.has_flags")
 
-    set_homepage("https://www2.keil.com/mdk5/compiler/5")
-    set_description("ARM Compiler Version 5 of Keil MDK")
-
-    set_kind("standalone")
-
-    set_toolset("cc", "armcc")
-    set_toolset("cxx", "armcc")
-    set_toolset("ld", "armlink")
-    set_toolset("ar", "armar")
-    set_toolset("ex", "armar")
-    set_toolset("as", "armasm")
-
-    on_check(function (toolchain)
-        return import("lib.detect.find_tool")("armcc")
-    end)
-
-    on_load(function (toolchain)
-    end)
