@@ -23,7 +23,7 @@ toolchain("armclang")
     set_homepage("https://www2.keil.com/mdk5/compiler/6")
     set_description("ARM Compiler Version 6 of Keil MDK")
 
-    set_kind("standalone")
+    set_kind("cross")
 
     set_toolset("cc", "armclang")
     set_toolset("cxx", "armclang")
@@ -33,7 +33,14 @@ toolchain("armclang")
     set_toolset("as", "armasm")
 
     on_check(function (toolchain)
-        return import("lib.detect.find_tool")("armclang")
+        import("lib.detect.find_tool")
+        import("detect.sdks.find_mdk")
+        local mdk = find_mdk()
+        if mdk and mdk.sdkdir_armclang and find_tool("armclang") then
+            toolchain:config_set("sdkdir", mdk.sdkdir_armclang)
+            toolchain:configs_save()
+            return true
+        end
     end)
 
     on_load(function (toolchain)
