@@ -18,21 +18,21 @@
 -- @file        xmake.lua
 --
 
-toolchain("armcc")
+rule("mdk.console")
+    on_load(function (target)
+        -- we disable checking flags for cross toolchain automatically
+        target:set("policy", "check.auto_ignore_flags", false)
+        target:set("policy", "check.auto_map_flags", false)
 
-    set_homepage("https://www2.keil.com/mdk5/compiler/5")
-    set_description("ARM Compiler Version 5 of Keil MDK")
+        -- set default output binary
+        target:set("kind", "binary")
+        if not target:get("extension") then
+            target:set("extension", ".axf")
+        end
 
-    set_kind("standalone")
-
-    set_toolset("cc", "armcc")
-    set_toolset("cxx", "armcc")
-    set_toolset("ld", "armlink")
-    set_toolset("ar", "armar")
-    set_toolset("ex", "armar")
-    set_toolset("as", "armasm")
-
-    on_check(function (toolchain)
-        return import("lib.detect.find_tool")("armcc")
+        -- set cpu
+        local cpu = assert(target:values("mdk.cpu"), "unknown cpu, please use `add_values(\"mdk.cpu\", \"\")` to set it!")
+        target:add("cxflags", "--cpu " .. cpu)
+        target:add("asflags", "--cpu " .. cpu)
+        target:add("ldflags", "--cpu " .. cpu)
     end)
-
