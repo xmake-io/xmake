@@ -15,87 +15,47 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        sdcc.lua
+-- @file        armcc.lua
 --
 
 -- imports
 import("core.base.option")
 import("core.base.global")
+import("core.language.language")
 import("utils.progress")
 
 -- init it
 function init(self)
-
-    -- init flags map
-    self:set("mapflags",
-    {
-        -- optimize
-        ["-O0"]                     = ""
-    ,   ["-Os"]                     = "--opt-code-speed"
-    ,   ["-O3"]                     = "--opt-code-size"
-    ,   ["-Ofast"]                  = "--opt-code-speed"
-
-        -- symbols
-    ,   ["-fvisibility=.*"]         = ""
-
-        -- warnings
-    ,   ["-Weverything"]            = ""
-    ,   ["-Wextra"]                 = ""
-    ,   ["-Wall"]                   = ""
-    ,   ["-W1"]                     = "--less-pedantic"
-    ,   ["-W2"]                     = "--less-pedantic"
-    ,   ["-W3"]                     = ""
-    ,   ["%-Wno%-error=.*"]         = ""
-    ,   ["%-fno%-.*"]               = ""
-
-        -- language
-    ,   ["-ansi"]                   = "--std-c89"
-    ,   ["-std=c89"]                = "--std-c89"
-    ,   ["-std=c99"]                = "--std-c99"
-    ,   ["-std=c11"]                = "--std-c11"
-    ,   ["-std=c20"]                = "--std-c2x"
-    ,   ["-std=gnu89"]              = "--std-sdcc89"
-    ,   ["-std=gnu99"]              = "--std-sdcc99"
-    ,   ["-std=gnu11"]              = "--std-sdcc11"
-    ,   ["-std=gnu20"]              = "--std-sdcc2x"
-    ,   ["-std=.*"]                 = ""
-
-        -- others
-    ,   ["-ftrapv"]                 = ""
-    ,   ["-fsanitize=address"]      = ""
-    })
 end
 
--- make the warning flag
-function nf_warning(self, level)
-
-    -- the maps
-    local maps =
-    {
-        none       = "--less-pedantic"
-    ,   less       = "--less-pedantic"
-    ,   error      = "-Werror"
-    }
-
-    -- make it
-    return maps[level]
+-- make the symbol flag
+function nf_symbol(self, level)
+    -- only for source kind
+    local kind = self:kind()
+    if language.sourcekinds()[kind] then
+        local maps = _g.symbol_maps
+        if not maps then
+            maps =
+            {
+                debug  = "-g"
+            }
+            _g.symbol_maps = maps
+        end
+        return maps[level .. '_' .. kind] or maps[level]
+    end
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
-        none       = ""
-    ,   fast       = "--opt-code-speed"
-    ,   faster     = "--opt-code-speed"
-    ,   fastest    = "--opt-code-speed"
-    ,   smallest   = "--opt-code-size"
-    ,   aggressive = "--opt-code-speed"
+        none       = "-O0"
+    ,   fast       = "-O1"
+    ,   faster     = "-O2"
+    ,   fastest    = "-O3"
+    ,   smallest   = "-Os"
+    ,   aggressive = "-Ofast"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -106,17 +66,15 @@ function nf_language(self, stdname)
     if _g.cmaps == nil then
         _g.cmaps =
         {
-            ansi        = "--std-c89"
-        ,   c89         = "--std-c89"
-        ,   gnu89       = "--std-sdcc89"
-        ,   c99         = "--std-c99"
-        ,   gnu99       = "--std-sdcc99"
-        ,   c11         = "--std-c11"
-        ,   gnu11       = "--std-sdcc11"
-        ,   c20         = "--std-c2x"
-        ,   gnu20       = "--std-sdcc2x"
-        ,   clatest     = {"--std-c2x", "--std-c11", "--std-c99", "--std-c89"}
-        ,   gnulatest   = {"--std-sdcc2x", "--std-sdcc11", "--std-sdcc99", "--std-sdcc89"}
+            ansi        = "-c89"
+        ,   c89         = "-c89"
+        ,   gnu89       = "-c89"
+        ,   c99         = "-c99"
+        ,   gnu99       = "-c99"
+        ,   c11         = "-c11"
+        ,   gnu11       = "-c11"
+        ,   clatest     = {"-c11", "-c99", "-c89"}
+        ,   gnulatest   = {"-c11", "-c99", "-c89"}
         }
     end
     local maps = _g.cmaps
@@ -152,36 +110,6 @@ end
 -- make the sysincludedir flag
 function nf_sysincludedir(self, dir)
     return nf_includedir(self, dir)
-end
-
--- make the link flag
-function nf_link(self, lib)
-    return "-l" .. lib
-end
-
--- make the syslink flag
-function nf_syslink(self, lib)
-    return nf_link(self, lib)
-end
-
--- make the linkdir flag
-function nf_linkdir(self, dir)
-    return {"-L" .. dir}
-end
-
--- make the link arguments list
-function linkargv(self, objectfiles, targetkind, targetfile, flags)
-    return self:program(), table.join("-o", targetfile, objectfiles, flags)
-end
-
--- link the target file
-function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
-    os.mkdir(path.directory(targetfile))
-
-    -- link it
-    os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
 -- make the compile arguments list
@@ -244,4 +172,5 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
         }
     }
 end
+
 

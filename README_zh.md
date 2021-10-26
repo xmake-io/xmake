@@ -235,6 +235,8 @@ fpc           Free Pascal Programming Language Compiler
 wasi          WASI-enabled WebAssembly C/C++ toolchain
 nim           Nim Programming Language Compiler
 circle        A new C++20 compiler
+armcc         ARM Compiler Version 5 of Keil MDK
+armclang      ARM Compiler Version 6 of Keil MDK
 ```
 
 ## 支持语言
