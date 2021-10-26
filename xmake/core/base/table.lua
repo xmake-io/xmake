@@ -227,6 +227,27 @@ function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
 end
 
+-- does contain the given value in table?
+function table.contains(t, value)
+    local found = false
+    if table.is_array(t) then
+        for _, v in ipairs(t) do
+            if v == value then
+                found = true
+                break
+            end
+        end
+    else
+        for _, v in pairs(t) do
+            if v == value then
+                found = true
+                break
+            end
+        end
+    end
+    return found
+end
+
 -- read data from iterator, push them to an array
 -- usage: table.to_array(ipairs("a", "b")) -> {{1,"a",n=2},{2,"b",n=2}},2
 -- usage: table.to_array(io.lines("file")) -> {"line 1","line 2", ... , "line n"},n
