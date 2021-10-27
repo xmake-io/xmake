@@ -30,7 +30,6 @@ toolchain("circle")
     set_toolset("ld", "circle")
     set_toolset("sh", "circle")
     set_toolset("ar", "ar")
-    set_toolset("ex", "ar")
     set_toolset("strip", "strip")
 
     on_check(function (toolchain)

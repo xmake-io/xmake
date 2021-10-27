@@ -93,11 +93,12 @@ end
 
 -- do extract
 function _extract(target, libraryfile, objectdir)
-    local program, toolname = target:tool("ex")
+    local program, toolname = target:tool("ar")
     if program and toolname then
         if toolname:find("ar") then
             _extract_for_ar(program, libraryfile, objectdir)
-        elseif toolname == "lib" then
+        elseif toolname == "link" then
+            program = program:replace("link.exe", "lib.exe", {plain = true})
             _extract_for_msvclib(program, libraryfile, objectdir)
         end
     else

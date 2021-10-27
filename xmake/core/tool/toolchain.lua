@@ -338,7 +338,6 @@ function _instance:_description(toolkind)
             ld         = "the linker",
             sh         = "the shared library linker",
             ar         = "the static library archiver",
-            ex         = "the static library extractor",
             mrc        = "the windows resource compiler",
             strip      = "the symbols stripper",
             dsymutil   = "the symbols generator",

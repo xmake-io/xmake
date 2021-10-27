@@ -36,7 +36,6 @@ toolchain("sdcc")
     set_toolset("ld",  "sdcc")
     set_toolset("sh",  "sdcc")
     set_toolset("ar",  "sdar")
-    set_toolset("ex",  "sdar")
 
     -- set archs
     set_archs("stm8", "mcs51", "z80", "z180", "r2k", "r3ka", "s08", "hc08")

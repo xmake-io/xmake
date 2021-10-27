@@ -29,7 +29,6 @@ toolchain("armclang")
     set_toolset("cxx", "armclang")
     set_toolset("ld", "armlink")
     set_toolset("ar", "armar")
-    set_toolset("ex", "armar")
     set_toolset("as", "armasm")
 
     on_check(function (toolchain)

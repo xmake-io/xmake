@@ -54,7 +54,6 @@ function main(toolchain)
     toolchain:set("toolset", "ld",  "link.exe")
     toolchain:set("toolset", "sh",  "link.exe")
     toolchain:set("toolset", "ar",  "link.exe")
-    toolchain:set("toolset", "ex",  "lib.exe")
 
     -- add vs environments
     _add_vsenv(toolchain, "PATH")

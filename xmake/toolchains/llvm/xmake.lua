@@ -36,7 +36,6 @@ toolchain("llvm")
     set_toolset("ld",     "clang++", "clang")
     set_toolset("sh",     "clang++", "clang")
     set_toolset("ar",     "llvm-ar")
-    set_toolset("ex",     "llvm-ar")
     set_toolset("ranlib", "llvm-ranlib")
     set_toolset("strip",  "llvm-strip")
 
