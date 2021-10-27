@@ -30,7 +30,7 @@ import("lib.detect.find_file")
 -- find package using the dub package manager
 --
 -- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.x")
+-- @param opt   the options, e.g. {verbose = true, require_version = "1.12.x")
 --
 function main(name, opt)
 
