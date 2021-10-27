@@ -25,48 +25,34 @@ import("lib.detect.find_tool")
 
 -- install package
 --
--- @param name  the package name, e.g. dub::log
+-- e.g.
+-- add_requires("nimble::zip")
+-- add_requires("nimble::zip >0.3")
+-- add_requires("nimble::zip 0.3.1")
+--
+-- @param name  the package name, e.g. nimble::zip
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x"}
 --
 -- @return      true or false
 --
 function main(name, opt)
 
-    -- find dub
-    local dub = find_tool("dub")
-    if not dub then
-        raise("dub not found!")
+    -- find nimble
+    local nimble = find_tool("nimble")
+    if not nimble then
+        raise("nimble not found!")
     end
 
-    -- fetch the given package
-    local argv = {"fetch", name}
+    -- install the given package
+    local argv = {"install", "-y"}
     if option.get("verbose") then
-        table.insert(argv, "-v")
+        table.insert(argv, "--verbose")
     end
+    local require_str = name
     if opt.require_version and opt.require_version ~= "latest" and opt.require_version ~= "master" then
-        table.insert(argv, "--version=" .. opt.require_version)
+        name = name .. "@"
+        name = name .. opt.require_version
     end
-    os.vrunv(dub.program, argv)
-
-    -- build the given package
-    argv = {"build", name, "-y"}
-    if opt.mode == "debug" then
-        table.insert(argv, "--build=debug")
-    else
-        table.insert(argv, "--build=release")
-    end
-    if option.get("verbose") then
-        table.insert(argv, "-v")
-    end
-    local archs = {x86_64          = "x86_64",
-                   x64             = "x86_64",
-                   i386            = "x86",
-                   x86             = "x86"}
-    local arch = archs[opt.arch]
-    if arch then
-        table.insert(argv, "--arch=" .. arch)
-    else
-        raise("cannot install package(%s) for arch(%s)!", name, opt.arch)
-    end
-    os.vrunv(dub.program, argv)
+    table.insert(argv, name)
+    os.vrunv(nimble.program, argv)
 end
