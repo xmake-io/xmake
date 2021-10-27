@@ -15,6 +15,7 @@
 * [#1762](https://github.com/xmake-io/xmake/issues/1762): Manage and switch the given package envs for `xrepo env`
 * [#1767](https://github.com/xmake-io/xmake/issues/1767): Support Circle compiler
 * [#1753](https://github.com/xmake-io/xmake/issues/1753): Support armcc/armclang toolchains for Keil/MDK
+* [#1774](https://github.com/xmake-io/xmake/issues/1774): Add table.contains api
 
 ### Changes
 
@@ -1123,6 +1124,7 @@
 * [#1762](https://github.com/xmake-io/xmake/issues/1762): 为 `xrepo env` 管理和切换指定的环境配置
 * [#1767](https://github.com/xmake-io/xmake/issues/1767): 支持 Circle 编译器
 * [#1753](https://github.com/xmake-io/xmake/issues/1753): 支持 Keil/MDK 的 armcc/armclang 工具链
+* [#1774](https://github.com/xmake-io/xmake/issues/1774): 添加 table.contains api
 
 ### 改进
 
