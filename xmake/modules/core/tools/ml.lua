@@ -29,11 +29,7 @@ import("core.base.hashset")
 function init(self)
 
     -- init asflags
-    if self:program():find("64") then
-        self:set("asflags", "-nologo")
-    else
-        self:set("asflags", "-nologo", "-Gd")
-    end
+    self:set("asflags", "-nologo")
 
     -- init flags map
     self:set("mapflags",
@@ -111,6 +107,21 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
+    -- we need to set the default -Gd option for the x86 architecture,
+    -- if the other calling convention flags are not set
+    --
+    -- we can't directly remove -Gd. This is not only for backward compatibility,
+    -- but also to simplify mixed compilation with c programs.
+    --
+    -- although this may affect some performance,
+    -- it only takes effect under x86 asm, so there will be no major performance issues.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/1779
+    --
+    if not self:program():find("64", 1, true) and
+        not table.contains(flags, "-Gd", "/Gd", "-Gc", "/Gc", "-GZ", "/GZ") then
+        table.insert(flags, "-Gd")
+    end
     return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
 end
 

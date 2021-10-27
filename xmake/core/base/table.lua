@@ -227,21 +227,45 @@ function table.is_dictionary(dict)
     return type(dict) == "table" and dict[1] == nil
 end
 
--- does contain the given value in table?
-function table.contains(t, value)
+-- does contain the given values in table?
+-- contains arg1 or arg2 ...
+function table.contains(t, arg1, arg2, ...)
     local found = false
-    if table.is_array(t) then
-        for _, v in ipairs(t) do
-            if v == value then
-                found = true
-                break
+    if arg2 == nil then -- only one value
+        if table.is_array(t) then
+            for _, v in ipairs(t) do
+                if v == arg1 then
+                    found = true
+                    break
+                end
+            end
+        else
+            for _, v in pairs(t) do
+                if v == arg1 then
+                    found = true
+                    break
+                end
             end
         end
     else
-        for _, v in pairs(t) do
-            if v == value then
-                found = true
-                break
+        local values = {}
+        local args = table.pack(arg1, arg2, ...)
+        for _, arg in ipairs(args) do
+            values[arg] = true
+        end
+        if table.is_array(t) then
+            for _, v in ipairs(t) do
+                if values[v] then
+                    found = true
+                    break
+                end
+            end
+        else
+            for _, v in pairs(t) do
+                if values[v] then
+                    found = true
+                    break
+                end
             end
         end
     end

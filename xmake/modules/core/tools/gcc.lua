@@ -421,7 +421,6 @@ end
 
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags)
-
     -- precompiled header?
     local extension = path.extension(sourcefile)
     if (extension:startswith(".h") or extension == ".inl") then

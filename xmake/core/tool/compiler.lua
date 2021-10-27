@@ -284,7 +284,7 @@ end
 --              e.g.
 --              {target = ..., targetkind = "static", configs = {defines = "", cxflags = "", includedirs = ""}}
 --
--- @return      flags string, flags list
+-- @return      flags list
 --
 function compiler:compflags(opt)
 
