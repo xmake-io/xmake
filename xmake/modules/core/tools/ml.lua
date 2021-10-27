@@ -119,7 +119,7 @@ function compargv(self, sourcefile, objectfile, flags)
     -- @see https://github.com/xmake-io/xmake/issues/1779
     --
     if not self:program():find("64", 1, true) and
-        not table.contains(flags, "-Gd", "/Gd", "-Gc", "/Gc", "-GZ", "/GZ") then
+        not table.contains(flags, "-Gc", "/Gc", "-GZ", "/GZ") then
         table.insert(flags, "-Gd")
     end
     return self:program(), table.join("-c", flags, "-Fo" .. objectfile, sourcefile)
