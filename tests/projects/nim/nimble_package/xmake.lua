@@ -1,6 +1,6 @@
 add_rules("mode.debug", "mode.release")
 
-add_requires("nimble::zip")
+add_requires("nimble::zip >0.3")
 
 target("test")
     set_kind("binary")

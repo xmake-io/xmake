@@ -38,4 +38,16 @@ function main(name, opt)
         raise("nimble not found!")
     end
 
+    -- install the given package
+    local argv = {"install", "-y"}
+    if option.get("verbose") then
+        table.insert(argv, "--verbose")
+    end
+    local require_str = name
+    if opt.require_version and opt.require_version ~= "latest" and opt.require_version ~= "master" then
+        name = name .. "@"
+        name = name .. opt.require_version
+    end
+    table.insert(argv, name)
+    os.vrunv(nimble.program, argv)
 end

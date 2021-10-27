@@ -339,7 +339,7 @@ function _select_package_version(package, requireinfo, locked_requireinfo)
             version = "latest"
             source = "version"
         end
-        if not version then
+        if not version and not package:is_thirdparty() then
             raise("package(%s): version(%s) not found!", package:name(), require_version)
         end
         return version, source
