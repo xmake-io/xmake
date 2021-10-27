@@ -177,6 +177,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Clib (clib::clibs/bytes@0.0.4)
 * Dub (dub::log 0.4.3)
 * Portage on Gentoo/Linux (portage::libhandy)
+* Nimble for nimlang (nimble::zip >1.3)
 
 ## Supported platforms
 
