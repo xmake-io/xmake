@@ -77,8 +77,6 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps =
     {
         none         = "-w"
@@ -88,8 +86,6 @@ function nf_warning(self, level)
     ,   everything   = "-W3"
     ,   error        = "-WX"
     }
-
-    -- make it
     return maps[level]
 end
 

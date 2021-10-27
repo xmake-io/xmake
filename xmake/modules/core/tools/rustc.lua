@@ -41,8 +41,6 @@ end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
         none        = "-C opt-level=0"
@@ -52,21 +50,15 @@ function nf_optimize(self, level)
     ,   smallest    = "-C opt-level=s"
     ,   aggressive  = "-C opt-level=z"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the symbol flag
 function nf_symbol(self, level)
-
-    -- the maps
     local maps =
     {
         debug = "-C debuginfo=2"
     }
-
-    -- make it
     return maps[level]
 end
 
@@ -82,11 +74,7 @@ end
 
 -- build the target file
 function build(self, sourcefiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- build it
     os.runv(buildargv(self, sourcefiles, targetkind, targetfile, flags))
 end
 
@@ -97,11 +85,7 @@ end
 
 -- compile the source file
 function compile(self, sourcefiles, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
-    -- compile it
     os.runv(compargv(self, sourcefiles, objectfile, flags))
 end
 

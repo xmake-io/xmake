@@ -116,11 +116,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
@@ -131,11 +127,7 @@ end
 
 -- compile the source file
 function compile(self, sourcefile, objectfile, dependinfo, flags)
-
-    -- ensure the object directory
     os.mkdir(path.directory(objectfile))
-
-    -- compile it
     os.runv(compargv(self, sourcefile, objectfile, flags))
 end
 

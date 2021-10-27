@@ -68,23 +68,17 @@ end
 
 -- make the warning flag
 function nf_warning(self, level)
-
-    -- the maps
     local maps =
     {
         none       = "--less-pedantic"
     ,   less       = "--less-pedantic"
     ,   error      = "-Werror"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the optimize flag
 function nf_optimize(self, level)
-
-    -- the maps
     local maps =
     {
         none       = ""
@@ -94,15 +88,11 @@ function nf_optimize(self, level)
     ,   smallest   = "--opt-code-size"
     ,   aggressive = "--opt-code-speed"
     }
-
-    -- make it
     return maps[level]
 end
 
 -- make the language flag
 function nf_language(self, stdname)
-
-    -- the stdc maps
     if _g.cmaps == nil then
         _g.cmaps =
         {
@@ -176,11 +166,7 @@ end
 
 -- link the target file
 function link(self, objectfiles, targetkind, targetfile, flags)
-
-    -- ensure the target directory
     os.mkdir(path.directory(targetfile))
-
-    -- link it
     os.runv(linkargv(self, objectfiles, targetkind, targetfile, flags))
 end
 
