@@ -20,6 +20,7 @@
 
 * [#1528](https://github.com/xmake-io/xmake/issues/1528): Check c++17/20 features
 * [#1729](https://github.com/xmake-io/xmake/issues/1729): Improve C++20 modules for clang/gcc/msvc, support inter-module dependency compilation and parallel optimization
+* [#1779](https://github.com/xmake-io/xmake/issues/1779): Remove builtin `-Gd` for ml.exe/x86
 
 ## v2.5.8
 
@@ -1127,6 +1128,7 @@
 
 * [#1528](https://github.com/xmake-io/xmake/issues/1528): 检测 c++17/20 特性
 * [#1729](https://github.com/xmake-io/xmake/issues/1729): 改进 C++20 modules 对 clang/gcc/msvc 的支持，支持模块间依赖编译和并行优化
+* [#1779](https://github.com/xmake-io/xmake/issues/1779): 改进 ml.exe/x86，移除内置的 `-Gd` 选项
 
 ## v2.5.8
 
