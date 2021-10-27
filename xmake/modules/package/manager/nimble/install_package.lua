@@ -25,8 +25,13 @@ import("lib.detect.find_tool")
 
 -- install package
 --
+-- e.g.
+-- add_requires("nimble::zip")
+-- add_requires("nimble::zip >0.3")
+-- add_requires("nimble::zip 0.3.1")
+--
 -- @param name  the package name, e.g. nimble::zip
--- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x", buildhash = "xxxxxx"}
+-- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x"}
 --
 -- @return      true or false
 --
