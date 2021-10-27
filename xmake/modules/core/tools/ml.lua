@@ -20,6 +20,7 @@
 
 -- imports
 import("private.tools.vstool")
+import("core.base.hashset")
 
 -- init it
 --
@@ -55,6 +56,23 @@ function init(self)
     ,   ["-ftrapv"]                 = ""
     ,   ["-fsanitize=address"]      = ""
     })
+end
+
+-- make the symbol flags
+function nf_symbols(self, levels, target)
+    local flags = nil
+    local values = hashset.from(levels)
+    if values:has("debug") then
+        flags = {}
+        if values:has("edit") then
+            table.insert(flags, "-ZI")
+        elseif values:has("embed") then
+            table.insert(flags, "-Z7")
+        else
+            table.insert(flags, "-Zi")
+        end
+    end
+    return flags
 end
 
 -- make the warning flag
