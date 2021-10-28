@@ -188,7 +188,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * The official repository provides nearly 500+ packages, one-click compilation on all platforms
 * Full platform package support, support for cross-compiled dependent package integration
 * Support package virtual environment, `xrepo env shell`
-* Rrecompiled package acceleration for windows
+* Precompiled package acceleration for windows
 * Support self-built package repositories, private repository deployment
 * Third-party package repository support, such as: vcpkg, conan, conda, etc.
 * Support to pull using remote toolchain automatically
