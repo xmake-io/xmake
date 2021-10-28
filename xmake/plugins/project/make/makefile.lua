@@ -33,7 +33,7 @@ end
 
 -- mkdir directory
 function _mkdir(makefile, dir)
-    if is_plat("windows") then
+    if is_subhost("windows") then
         makefile:print("\t-@mkdir %s > NUL 2>&1", dir)
     else
         makefile:print("\t@mkdir -p %s", dir)
@@ -42,7 +42,7 @@ end
 
 -- copy file
 function _cp(makefile, sourcefile, targetfile)
-    if is_plat("windows") then
+    if is_subhost("windows") then
         makefile:print("\t@copy /Y %s %s > NUL 2>&1", sourcefile, targetfile)
     else
         makefile:print("\t@cp %s %s", sourcefile, targetfile)
@@ -51,7 +51,7 @@ end
 
 -- try to remove the given file or directory
 function _tryrm(makefile, filedir)
-    if is_plat("windows") then
+    if is_subhost("windows") then
         -- we attempt to delete it as file first, we remove it as directory if failed
         makefile:print("\t@del /F /Q %s > NUL 2>&1 || rmdir /S /Q %s > NUL 2>&1", filedir, filedir)
     else

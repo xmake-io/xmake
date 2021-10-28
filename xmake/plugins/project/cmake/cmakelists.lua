@@ -479,18 +479,45 @@ function _add_target_link_options(cmakelists, target)
     end
 end
 
+-- get command string
+function _get_command_string(cmd)
+    local kind = cmd.kind
+    if cmd.program then
+        return os.args(table.join(cmd.program, cmd.argv))
+    elseif kind == "cp" then
+        if is_subhost("windows") then
+            return string.format("copy /Y %s %s > NUL 2>&1", cmd.srcpath, cmd.dstpath)
+        else
+            return string.format("cp %s %s", cmd.srcpath, cmd.dstpath)
+        end
+    elseif kind == "rm" then
+        if is_subhost("windows") then
+            return string.format("del /F /Q %s > NUL 2>&1 || rmdir /S /Q %s > NUL 2>&1", cmd.filepath, cmd.filepath)
+        else
+            return string.format("rm -rf %s", cmd.filepath)
+        end
+    elseif kind == "mkdir" then
+        if is_subhost("windows") then
+            return string.format("mkdir %s > NUL 2>&1", cmd.dir)
+        else
+            return string.format("mkdir -p %s", cmd.dir)
+        end
+    elseif kind == "show" then
+        return string.format("echo %s", cmd.showtext)
+    end
+end
+
 -- add custom command
 function _add_target_custom_command(cmakelists, target, command, suffix)
-    local command_str = os.args(command)
     if suffix == "before" then
         -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
         -- so we need use add_dependencies and fake target to support it.
         --
         -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/17802
         --
-        local key = hash.uuid(command_str):split("-", {plain = true})[1]
+        local key = hash.uuid(command):split("-", {plain = true})[1]
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
-        cmakelists:print("    COMMAND %s", command_str)
+        cmakelists:print("    COMMAND %s", command)
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
         cmakelists:print("add_custom_target(target_%s", key)
@@ -502,7 +529,7 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         if suffix == "after" then
             cmakelists:print("    POST_BUILD")
         end
-        cmakelists:print("    COMMAND %s", command_str)
+        cmakelists:print("    COMMAND %s", command)
         cmakelists:print("    VERBATIM")
         cmakelists:print(")")
     end
@@ -518,8 +545,9 @@ function _add_target_custom_commands_for_target(cmakelists, target, suffix)
             script(target, batchcmds_, {})
             if not batchcmds_:empty() then
                 for _, cmd in ipairs(batchcmds_:cmds()) do
-                    if cmd.program then
-                        _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                    local command = _get_command_string(cmd)
+                    if command then
+                        _add_target_custom_command(cmakelists, target, command, suffix)
                     end
                 end
             end
