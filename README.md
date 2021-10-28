@@ -183,6 +183,17 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Portage on Gentoo/Linux (portage::libhandy)
 * Nimble for nimlang (nimble::zip >1.3)
 
+### Package management features
+
+* The official repository provides nearly 500+ packages, one-click compilation on all platforms
+* Full platform package support, support for cross-compiled dependent package integration
+* Support package virtual environment, `xrepo env shell`
+* Rrecompiled package acceleration for windows
+* Support self-built package repositories, private repository deployment
+* Third-party package repository support, such as: vcpkg, conan, conda, etc.
+* Support to pull using remote toolchain automatically
+* Support to lock package dependency
+
 ## Supported platforms
 
 * Windows (x86, x64)
@@ -255,24 +266,19 @@ armclang      ARM Compiler Version 6 of Keil MDK
 
 ## Supported Features
 
-* Simple project configuration syntax
-* Direct build support, without relying on any third-party back-end make tools
-* Support cross platform
-* Support cross compilation
-* Multi-task parallel compilation support
-* C++20 Module-TS support
-* Support cross-platform C/C++ dependency packages
-* Support self-built distributed package repositories
-* Support the installation of cloud pre-compiled packages
-* Support third-party package repositories, such as: vcpkg, conan, conda, etc.
-* Support multi-language mixed compilation
-* Flexible lua scripts, rich extension modules
-* Support for generating vsproj/cmake/makefile/compile_commands files
+* The configuration grammar is simple and easy to use
+* Quick installation, without any dependencies
+* One-click compilation for all platforms
+* Support cross compilation, intelligent analysis of cross tool chain information
+* Extremely fast, multi-task parallel compilation support
+* C++20 Module support
+* Support cross-platform C/C++ dependency package quick integration, built-in package manager
+* Multi-language mixed compilation support
+* Rich plug-in support, providing various project generators, such as: vs/makefile/cmakelists/compile_commands to generate plugins
 * REPL interactive execution support
-* Incremental compilation support, automatic analysis of header dependency files
-* Fast switching toolchains
-* Automatic pull toolchain and dependency package integration
-* Support precompiled package and lock package requires
+* Incremental compilation support, automatic analysis of header files
+* Quick switching and customization support of tool chain
+* A large number of expansion modules support
 
 ## Supported Projects
 
