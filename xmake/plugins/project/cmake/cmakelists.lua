@@ -22,7 +22,9 @@
 import("core.project.project")
 import("core.tool.compiler")
 import("core.base.semver")
+import("core.project.rule")
 import("lib.detect.find_tool")
+import("private.utils.batchcmds")
 
 -- get minimal cmake version
 function _get_cmake_minver()
@@ -146,8 +148,13 @@ end
 -- add target sources
 function _add_target_sources(cmakelists, target)
     cmakelists:print("target_sources(%s PRIVATE", target:name())
-    for _, sourcefile in ipairs(target:sourcefiles()) do
-        cmakelists:print("    " .. _get_unix_path(sourcefile))
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind == "cc" or sourcekind == "cxx" or sourcekind == "as" then
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                cmakelists:print("    " .. _get_unix_path(sourcefile))
+            end
+        end
     end
     for _, headerfile in ipairs(target:headerfiles()) do
         cmakelists:print("    " .. _get_unix_path(headerfile))
@@ -448,22 +455,117 @@ end
 
 -- add target link options
 function _add_target_link_options(cmakelists, target)
-    local ldflags    = _get_configs_from_target(target, "ldflags")
-    local shflags    = _get_configs_from_target(target, "shflags")
+    local ldflags = _get_configs_from_target(target, "ldflags")
+    local shflags = _get_configs_from_target(target, "shflags")
     if #ldflags > 0 or #shflags > 0 then
-        local cmake_minver = _get_cmake_minver()
-        if cmake_minver:ge("3.13.0") then
-            cmakelists:print("target_link_options(%s PRIVATE", target:name())
-        else
-            cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
-        end
+        local flags = {}
         for _, flag in ipairs(table.unique(table.join(ldflags, shflags))) do
             if target:linker():has_flags(flag) then
-                cmakelists:print("    " .. flag)
+                table.insert(flags, flag)
             end
         end
-        cmakelists:print(")")
+        if #flags > 0 then
+            local cmake_minver = _get_cmake_minver()
+            if cmake_minver:ge("3.13.0") then
+                cmakelists:print("target_link_options(%s PRIVATE", target:name())
+            else
+                cmakelists:print("target_link_libraries(%s PRIVATE", target:name())
+            end
+            for _, flag in ipairs(flags) do
+                cmakelists:print("    " .. flag)
+            end
+            cmakelists:print(")")
+        end
     end
+end
+
+-- add custom command
+function _add_target_custom_command(cmakelists, target, command, suffix)
+    cmakelists:print("add_custom_command(TARGET %s", target:name())
+    if suffix == "prefix" then
+        cmakelists:print("    PRE_BUILD")
+    elseif suffix == "suffix" then
+        cmakelists:print("    POST_BUILD")
+    end
+    cmakelists:print("    COMMAND %s", os.args(command))
+    cmakelists:print("    VERBATIM")
+    cmakelists:print(")")
+end
+
+-- add target custom commands for target
+function _add_target_custom_commands_for_target(cmakelists, target, suffix)
+    for _, ruleinst in ipairs(target:orderules()) do
+        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
+        local script = ruleinst:script(scriptname)
+        if script then
+            local batchcmds_ = batchcmds.new({target = target})
+            script(target, batchcmds_, {})
+            if not batchcmds_:empty() then
+                for _, cmd in ipairs(batchcmds_:cmds()) do
+                    if cmd.program then
+                        _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- add target custom commands for object rules
+function _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, suffix)
+
+    -- get rule
+    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+
+    -- generate commands for xx_buildcmd_files
+    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        local batchcmds_ = batchcmds.new({target = target})
+        script(target, batchcmds_, sourcebatch, {})
+        if not batchcmds_:empty() then
+            for _, cmd in ipairs(batchcmds_:cmds()) do
+                if cmd.program then
+                    _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                end
+            end
+        end
+    end
+
+    -- generate commands for xx_buildcmd_file
+    if not script then
+        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local batchcmds_ = batchcmds.new({target = target})
+                script(target, batchcmds_, sourcefile, {})
+                if not batchcmds_:empty() then
+                    for _, cmd in ipairs(batchcmds_:cmds()) do
+                        if cmd.program then
+                            _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- add target custom commands
+function _add_target_custom_commands(cmakelists, target)
+    _add_target_custom_commands_for_target(cmakelists, target, "before")
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
+            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, "before")
+            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch)
+            _add_target_custom_commands_for_objectrules(cmakelists, target, sourcebatch, "after")
+        end
+    end
+    _add_target_custom_commands_for_target(cmakelists, target, "after")
 end
 
 -- TODO export target headers (deprecated)
@@ -542,6 +644,9 @@ function _add_target(cmakelists, target)
 
     -- add target link options
     _add_target_link_options(cmakelists, target)
+
+    -- add target custom commands
+    _add_target_custom_commands(cmakelists, target)
 
     -- add target sources
     _add_target_sources(cmakelists, target)
