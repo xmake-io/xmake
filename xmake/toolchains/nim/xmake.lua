@@ -18,28 +18,22 @@
 -- @file        xmake.lua
 --
 
--- define toolchain
 toolchain("nim")
 
-    -- set homepage
     set_homepage("https://nim-lang.org/")
     set_description("Nim Programming Language Compiler")
 
-    -- set toolset
     set_toolset("nc",   "$(env NC)", "nim")
     set_toolset("ncld", "$(env NC)", "nim")
     set_toolset("ncsh", "$(env NC)", "nim")
     set_toolset("ncar", "$(env NC)", "nim")
 
-    -- on load
     on_load(function (toolchain)
         if toolchain:is_plat("windows") then
             toolchain:set("ncflags", "--cc:vcc")
             local msvc = import("core.tool.toolchain", {anonymous = true}).load("msvc", {plat = toolchain:plat(), arch = toolchain:arch()})
-            if msvc:check() then
-                for name, value in pairs(msvc:get("runenvs")) do
-                    toolchain:add("runenvs", name, value)
-                end
+            for name, value in pairs(msvc:get("runenvs")) do
+                 toolchain:add("runenvs", name, value)
             end
         end
         toolchain:set("ncshflags", "")
