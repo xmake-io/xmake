@@ -482,26 +482,27 @@ end
 -- get command string
 function _get_command_string(cmd)
     local kind = cmd.kind
+    local opt = cmd.opt
     if cmd.program then
-        return os.args(table.join(cmd.program, cmd.argv))
+        local command = os.args(table.join(cmd.program, cmd.argv))
+        if opt and opt.curdir then
+            command = "${CMAKE_COMMAND} -E chdir \"" .. opt.curdir .. "\" " .. command
+        end
+        return command
     elseif kind == "cp" then
-        if is_subhost("windows") then
-            return string.format("copy /Y %s %s > NUL 2>&1", cmd.srcpath, cmd.dstpath)
+        if os.isdir(cmd.srcpath) then
+            return string.format("${CMAKE_COMMAND} -E copy_directory %s %s", cmd.srcpath, cmd.dstpath)
         else
-            return string.format("cp %s %s", cmd.srcpath, cmd.dstpath)
+            return string.format("${CMAKE_COMMAND} -E copy %s %s", cmd.srcpath, cmd.dstpath)
         end
     elseif kind == "rm" then
-        if is_subhost("windows") then
-            return string.format("del /F /Q %s > NUL 2>&1 || rmdir /S /Q %s > NUL 2>&1", cmd.filepath, cmd.filepath)
-        else
-            return string.format("rm -rf %s", cmd.filepath)
-        end
+        return string.format("${CMAKE_COMMAND} -E rm -rf %s", cmd.filepath)
+    elseif kind == "mv" then
+        return string.format("${CMAKE_COMMAND} -E rename %s %s", cmd.srcpath, cmd.dstpath)
+    elseif kind == "cd" then
+        return string.format("cd %s", cmd.dir)
     elseif kind == "mkdir" then
-        if is_subhost("windows") then
-            return string.format("mkdir %s > NUL 2>&1", cmd.dir)
-        else
-            return string.format("mkdir -p %s", cmd.dir)
-        end
+        return string.format("${CMAKE_COMMAND} -E make_directory %s", cmd.dir)
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end

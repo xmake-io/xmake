@@ -117,6 +117,14 @@ function _runcmd_mkdir(cmd, opt)
     end
 end
 
+-- run command: os.cd
+function _runcmd_cd(cmd, opt)
+    local dir = cmd.dir
+    if not opt.dryrun then
+        os.cd(dir)
+    end
+end
+
 -- run command: os.rm
 function _runcmd_rm(cmd, opt)
     local filepath = cmd.filepath
@@ -158,6 +166,7 @@ function _runcmd(cmd, opt)
             vrunv = _runcmd_vrunv,
             execv = _runcmd_execv,
             mkdir = _runcmd_mkdir,
+            cd    = _runcmd_cd,
             rm    = _runcmd_rm,
             cp    = _runcmd_cp,
             mv    = _runcmd_mv,
@@ -266,6 +275,11 @@ end
 -- add command: os.ln
 function batchcmds:ln(srcpath, dstpath, opt)
     table.insert(self:cmds(), {kind = "ln", srcpath = srcpath, dstpath = dstpath, opt = opt})
+end
+
+-- add command: os.cd
+function batchcmds:cd(dir, opt)
+    table.insert(self:cmds(), {kind = "cd", dir = dir, opt = opt})
 end
 
 -- add command: show
