@@ -16,6 +16,7 @@
 * [#1767](https://github.com/xmake-io/xmake/issues/1767): Support Circle compiler
 * [#1753](https://github.com/xmake-io/xmake/issues/1753): Support armcc/armclang toolchains for Keil/MDK
 * [#1774](https://github.com/xmake-io/xmake/issues/1774): Add table.contains api
+* [#1735](https://github.com/xmake-io/xmake/issues/1735): Add custom command in cmake generator
 
 ### Changes
 
@@ -1125,6 +1126,7 @@
 * [#1767](https://github.com/xmake-io/xmake/issues/1767): 支持 Circle 编译器
 * [#1753](https://github.com/xmake-io/xmake/issues/1753): 支持 Keil/MDK 的 armcc/armclang 工具链
 * [#1774](https://github.com/xmake-io/xmake/issues/1774): 添加 table.contains api
+* [#1735](https://github.com/xmake-io/xmake/issues/1735): 添加自定义命令到 cmake 生成器
 
 ### 改进
 
