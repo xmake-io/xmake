@@ -62,6 +62,8 @@ function init(self)
     ,   ["-W2"]                     = "-W2"
     ,   ["-W3"]                     = "-W3"
     ,   ["-Werror"]                 = "-WX"
+    ,   ["-Wswitch"]                = "-we4062"
+    ,   ["-Wswitch-enum"]           = "-we4061"
     ,   ["%-Wno%-error=.*"]         = ""
     ,   ["%-fno%-.*"]               = ""
 
