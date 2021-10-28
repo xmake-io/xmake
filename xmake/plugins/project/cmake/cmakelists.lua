@@ -515,7 +515,7 @@ function _add_target_custom_command(cmakelists, target, command, suffix)
         --
         -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/17802
         --
-        local key = hash.uuid(command):split("-", {plain = true})[1]
+        local key = target:name() .. "_" .. hash.uuid():split("-", {plain = true})[1]
         cmakelists:print("add_custom_command(OUTPUT output_%s", key)
         cmakelists:print("    COMMAND %s", command)
         cmakelists:print("    VERBATIM")
@@ -570,8 +570,9 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
         script(target, batchcmds_, sourcebatch, {})
         if not batchcmds_:empty() then
             for _, cmd in ipairs(batchcmds_:cmds()) do
-                if cmd.program then
-                    _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                local command = _get_command_string(cmd)
+                if command then
+                    _add_target_custom_command(cmakelists, target, command, suffix)
                 end
             end
         end
@@ -588,8 +589,9 @@ function _add_target_custom_commands_for_objectrules(cmakelists, target, sourceb
                 script(target, batchcmds_, sourcefile, {})
                 if not batchcmds_:empty() then
                     for _, cmd in ipairs(batchcmds_:cmds()) do
-                        if cmd.program then
-                            _add_target_custom_command(cmakelists, target, table.join(cmd.program, cmd.argv), suffix)
+                        local command = _get_command_string(cmd)
+                        if command then
+                            _add_target_custom_command(cmakelists, target, command, suffix)
                         end
                     end
                 end
