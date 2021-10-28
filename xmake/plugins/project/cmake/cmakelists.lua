@@ -481,15 +481,31 @@ end
 
 -- add custom command
 function _add_target_custom_command(cmakelists, target, command, suffix)
-    cmakelists:print("add_custom_command(TARGET %s", target:name())
-    if suffix == "prefix" then
-        cmakelists:print("    PRE_BUILD")
-    elseif suffix == "suffix" then
-        cmakelists:print("    POST_BUILD")
+    local command_str = os.args(command)
+    if suffix == "before" then
+        -- ADD_CUSTOM_COMMAND and PRE_BUILD did not work as I expected,
+        -- so we need use add_dependencies and fake target to support it.
+        --
+        -- @see https://gitlab.kitware.com/cmake/cmake/-/issues/17802
+        --
+        local key = hash.uuid(command_str):split("-", {plain = true})[1]
+        cmakelists:print("add_custom_command(OUTPUT output_%s", key)
+        cmakelists:print("    COMMAND %s", command_str)
+        cmakelists:print("    VERBATIM")
+        cmakelists:print(")")
+        cmakelists:print("add_custom_target(target_%s", key)
+        cmakelists:print("    DEPENDS output_%s", key)
+        cmakelists:print(")")
+        cmakelists:print("add_dependencies(%s target_%s)", target:name(), key)
+    else
+        cmakelists:print("add_custom_command(TARGET %s", target:name())
+        if suffix == "after" then
+            cmakelists:print("    POST_BUILD")
+        end
+        cmakelists:print("    COMMAND %s", command_str)
+        cmakelists:print("    VERBATIM")
+        cmakelists:print(")")
     end
-    cmakelists:print("    COMMAND %s", os.args(command))
-    cmakelists:print("    VERBATIM")
-    cmakelists:print(")")
 end
 
 -- add target custom commands for target
