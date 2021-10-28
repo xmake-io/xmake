@@ -166,12 +166,8 @@ ifeq ($(RUNTIME),lua)
 xmake_INC_DIRS 			+= ../lua/lua
 xmake_CXFLAGS 			+= -DLUA_COMPAT_5_1 -DLUA_COMPAT_5_2 -DLUA_COMPAT_5_3
 endif
-ifneq ($(BRANCH),)
 xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_BRANCH="\"$(BRANCH)\""
-endif
-ifneq ($(COMMIT),)
 xmake_CXFLAGS 			+= -DXM_CONFIG_VERSION_COMMIT="\"$(COMMIT)\""
-endif
 
 # suffix
 include $(PRO_DIR)/suffix.mak
