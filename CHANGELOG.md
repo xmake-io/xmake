@@ -23,6 +23,7 @@
 * [#1528](https://github.com/xmake-io/xmake/issues/1528): Check c++17/20 features
 * [#1729](https://github.com/xmake-io/xmake/issues/1729): Improve C++20 modules for clang/gcc/msvc, support inter-module dependency compilation and parallel optimization
 * [#1779](https://github.com/xmake-io/xmake/issues/1779): Remove builtin `-Gd` for ml.exe/x86
+* [#1781](https://github.com/xmake-io/xmake/issues/1781): Improve get.sh installation script to support nixos
 
 ## v2.5.8
 
@@ -1127,6 +1128,7 @@
 * [#1753](https://github.com/xmake-io/xmake/issues/1753): 支持 Keil/MDK 的 armcc/armclang 工具链
 * [#1774](https://github.com/xmake-io/xmake/issues/1774): 添加 table.contains api
 * [#1735](https://github.com/xmake-io/xmake/issues/1735): 添加自定义命令到 cmake 生成器
+* [#1781](https://github.com/xmake-io/xmake/issues/1781): 改进 get.sh 安装脚本支持 nixos
 
 ### 改进
 
