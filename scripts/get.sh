@@ -143,7 +143,8 @@ test_tools()
             echo -e "$prog" | clang -xc - -o /dev/null -lreadline ||
             echo -e "$prog" | cc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
             echo -e "$prog" | gcc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
-            echo -e "$prog" | clang -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline
+            echo -e "$prog" | clang -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
+            echo -e "$prog" | cc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include
         }
     } >/dev/null 2>&1
 }
@@ -156,6 +157,7 @@ install_tools()
     { emerge -V >/dev/null 2>&1 && $sudoprefix emerge -atv dev-vcs/git ccache; } ||
     { pkg list-installed >/dev/null 2>&1 && $sudoprefix pkg install -y git getconf build-essential readline ccache; } || # termux
     { pkg help >/dev/null 2>&1 && $sudoprefix pkg install -y git readline ccache ncurses; } || # freebsd
+    { nix-env --version >/dev/null 2>&1 && nix-env -i git gcc readline ncurses; } || # nixos
     { apk --version >/dev/null 2>&1 && $sudoprefix apk add git gcc g++ make readline-dev ncurses-dev libc-dev linux-headers; } ||
     { xbps-install --version >/dev/null 2>&1 && $sudoprefix xbps-install -Sy git base-devel ccache; } #void
 
