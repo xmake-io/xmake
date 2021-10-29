@@ -144,7 +144,9 @@ test_tools()
             echo -e "$prog" | cc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
             echo -e "$prog" | gcc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
             echo -e "$prog" | clang -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
-            echo -e "$prog" | cc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include
+            echo -e "$prog" | cc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include ||
+            echo -e "$prog" | gcc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include ||
+            echo -e "$prog" | clang -xc -c - -o /dev/null -I/usr/include -I/usr/local/include
         }
     } >/dev/null 2>&1
 }
