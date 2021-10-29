@@ -133,17 +133,14 @@ my_exit(){
 }
 test_tools()
 {
-    prog='#include <stdio.h>\n#include <readline/readline.h>\nint main(){readline(0);return 0;}'
+    prog='#include <stdio.h>\nint main(){return 0;}'
     {
         git --version &&
         $make --version &&
         {
-            echo -e "$prog" | cc -xc - -o /dev/null -lreadline ||
-            echo -e "$prog" | gcc -xc - -o /dev/null -lreadline ||
-            echo -e "$prog" | clang -xc - -o /dev/null -lreadline ||
-            echo -e "$prog" | cc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
-            echo -e "$prog" | gcc -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
-            echo -e "$prog" | clang -xc - -o /dev/null -I/usr/local/include -L/usr/local/lib -lreadline ||
+            echo -e "$prog" | cc -xc - -o /dev/null ||
+            echo -e "$prog" | gcc -xc - -o /dev/null ||
+            echo -e "$prog" | clang -xc - -o /dev/null ||
             echo -e "$prog" | cc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include ||
             echo -e "$prog" | gcc -xc -c - -o /dev/null -I/usr/include -I/usr/local/include ||
             echo -e "$prog" | clang -xc -c - -o /dev/null -I/usr/include -I/usr/local/include
