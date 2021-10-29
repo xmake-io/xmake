@@ -40,7 +40,7 @@ remote_get_content() {
     if curl --version >/dev/null 2>&1
     then
         curl -fSL "$1"
-    elif wget --version >/dev/null 2>&1
+    elif wget --version >/dev/null 2>&1 || wget --help >/dev/null 2>&1
     then
         wget "$1" -O -
     fi
