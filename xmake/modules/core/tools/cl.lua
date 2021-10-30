@@ -476,7 +476,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                             end
                         end
                         if #lines > 0 then
-                            local warnings = table.concat(table.slice(lines, 1, (#lines > 8 and 8 or #lines)), "\r\n")
+                            if not option.get("diagnosis") then
+                                lines = table.slice(lines, 1, (#lines > 16 and 16 or #lines))
+                            end
+                            local warnings = table.concat(lines, "\r\n")
                             if progress.showing_without_scroll() then
                                 print("")
                             end
