@@ -2,7 +2,7 @@
 set_project("xmake")
 
 -- version
-set_version("2.5.8", {build = "%Y%m%d%H%M"})
+set_version("2.5.9", {build = "%Y%m%d%H%M"})
 
 -- set xmake min version
 set_xmakever("2.2.3")
@@ -43,7 +43,7 @@ end
 -- the runtime option
 option("runtime")
     set_showmenu(true)
-    set_default("lua")
+    set_default("luajit")
     set_description("Use luajit or lua runtime")
     set_values("luajit", "lua")
 option_end()

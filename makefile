@@ -17,7 +17,7 @@ endif
 
 # use luajit or lua backend
 ifeq ($(RUNTIME),)
-RUNTIME 	:=lua
+RUNTIME 	:=luajit
 endif
 
 # the temporary directory
