@@ -42,7 +42,11 @@ function init(self)
     self:set("shflags", "-shared")
 
     -- add -fPIC for shared
-    if not is_plat("windows", "mingw") then
+    --
+    -- we need check it for clang/gcc with window target
+    -- @see https://github.com/xmake-io/xmake/issues/1392
+    --
+    if not is_plat("windows", "mingw") and self:has_flags("-fPIC", "cxflags") then
         self:add("shflags", "-fPIC")
         self:add("shared.cxflags", "-fPIC")
     end
