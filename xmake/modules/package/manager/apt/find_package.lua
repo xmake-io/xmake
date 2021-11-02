@@ -1,3 +1,4 @@
+
 --!A cross-platform build utility based on Lua
 --
 -- Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,29 +25,20 @@ import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
 
--- find package using the dpkg package manager
+
+-- fetch_pkg_info fetch package info using the dpkg package manager
 --
 -- @param name  the package name
 -- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
+-- @param dpkg_program  the dpkg program
 --
-function main(name, opt)
-
-    -- check
-    opt = opt or {}
-    if not is_host(opt.plat) or os.arch() ~= opt.arch then
-        return
-    end
-
-    -- find dpkg
-    local dpkg = find_tool("dpkg")
-    if not dpkg then
-        return
-    end
-
+function fetch_pkg_info(name, opt, dpkg_program)
     -- find package
     local result = nil
-    local listinfo = try {function () return os.iorunv(dpkg.program, {"--listfiles", name}) end}
+    local is_found_includedirs = false
+    local listinfo = try {function () return os.iorunv(dpkg_program, {"--listfiles", name}) end}
     if listinfo then
+        result = {}
         for _, line in ipairs(listinfo:split('\n', {plain = true})) do
             line = line:trim()
 
@@ -55,6 +47,7 @@ function main(name, opt)
             if pos then
                 -- we need not add includedirs, gcc/clang will use /usr/ as default sysroot
                 result = result or {}
+                is_found_includedirs = true
             end
 
             -- get linkdirs and links
@@ -82,5 +75,50 @@ function main(name, opt)
             result.includedirs = table.unique(result.includedirs)
         end
     end
-    return result
+    return result, is_found_includedirs
+end
+
+
+-- find package using the dpkg package manager, support alias deb
+--
+-- @param name  the package name
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
+--
+function main(name, opt)
+    -- check
+    opt = opt or {}
+    if not is_host(opt.plat) or os.arch() ~= opt.arch then
+        return
+    end
+
+    -- find dpkg
+    local dpkg = find_tool("dpkg")
+    if not dpkg then
+        return
+    end
+
+    local pkg_info = nil
+    local is_found_includedirs = nil
+    pkg_info, is_found_includedirs = fetch_pkg_info(name, opt, dpkg.program)
+
+    -- not include or libinfo
+    if (type(pkg_info) == "table" and #pkg_info == 0 and not is_found_includedirs) then
+        -- fetch the only depends pkg
+        local status_info = try {function () return os.iorunv(dpkg.program, {"--status", name}) end}
+        if not status_info then
+            return
+        end
+
+        local depends_str = nil
+        _, _, depends_str = string.find(status_info, "Depends%s*:%s*(.-)\n")
+        if depends_str and not depends_str:find(",", 1, true) then
+            depends_str = depends_str:trim()
+            depends_str, _ = string.gsub(depends_str, "%(.*%)", "")
+            local depends_pkg_name = depends_str:trim()
+            pkg_info, _ = fetch_pkg_info(depends_pkg_name, opt, dpkg.program)
+        end
+
+    end
+
+    return pkg_info
 end
