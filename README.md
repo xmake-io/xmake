@@ -62,7 +62,7 @@ Support this project by becoming a sponsor. Your logo will show up here with a l
 
 Xmake is a lightweight cross-platform build utility based on Lua.
 
-It is very lightweight and does not have any dependencies because it has a built-in Lua runtime.
+It is very lightweight and has no dependencies because it has a built-in Lua runtime.
 
 It uses xmake.lua to maintain project builds and its configuration syntax is very simple and readable.
 
