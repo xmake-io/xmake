@@ -24,26 +24,8 @@ import("core.project.config")
 import("core.project.target")
 import("lib.detect.find_tool")
 
--- find package using the dpkg package manager
---
--- @param name  the package name
--- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
---
-function main(name, opt)
-
-    -- check
-    opt = opt or {}
-    if not is_host(opt.plat) or os.arch() ~= opt.arch then
-        return
-    end
-
-    -- find dpkg
-    local dpkg = find_tool("dpkg")
-    if not dpkg then
-        return
-    end
-
-    -- find package
+-- find package
+function _find_package(dpkg, name, opt)
     local result = nil
     local listinfo = try {function () return os.iorunv(dpkg.program, {"--listfiles", name}) end}
     if listinfo then
@@ -70,6 +52,24 @@ function main(name, opt)
         end
     end
 
+    -- meta/alias package? e.g. libboost-dev -> libboost1.74-dev
+    -- @see https://github.com/xmake-io/xmake/issues/1786
+    if not result then
+        local statusinfo = try {function () return os.iorunv(dpkg.program, {"--status", name}) end}
+        if statusinfo then
+            for _, line in ipairs(statusinfo:split("\n", {plain = true})) do
+                -- parse depends, e.g. Depends: libboost1.74-dev
+                if line:startswith("Depends:") then
+                    local depends = line:sub(9):split("%s+")
+                    if #depends == 1 then
+                        return _find_package(dpkg, depends[1], opt)
+                    end
+                    break
+                end
+            end
+        end
+    end
+
     -- remove repeat
     if result then
         if result.links then
@@ -83,4 +83,27 @@ function main(name, opt)
         end
     end
     return result
+end
+
+-- find package using the dpkg package manager
+--
+-- @param name  the package name
+-- @param opt   the options, e.g. {verbose = true, version = "1.12.0")
+--
+function main(name, opt)
+
+    -- check
+    opt = opt or {}
+    if not is_host(opt.plat) or os.arch() ~= opt.arch then
+        return
+    end
+
+    -- find dpkg
+    local dpkg = find_tool("dpkg")
+    if not dpkg then
+        return
+    end
+
+    -- find package
+    return _find_package(dpkg, name, opt)
 end
