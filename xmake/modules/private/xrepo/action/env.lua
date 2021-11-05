@@ -199,8 +199,8 @@ function _get_envsdir()
 end
 
 -- get bound environment or packages
-function _get_boundenv()
-    local bind = option.get("bind")
+function _get_boundenv(opt)
+    local bind = (opt and opt.bind) or option.get("bind")
     if bind then
         local envfile = path.join(_get_envsdir(), bind .. ".lua")
         if envfile and os.isfile(envfile) then
@@ -287,9 +287,9 @@ function _toolchain_addenvs(envs)
 end
 
 -- get package environments
-function _package_getenvs()
+function _package_getenvs(opt)
     local envs = os.getenvs()
-    local boundenv = _get_boundenv()
+    local boundenv = _get_boundenv(opt)
     local has_envfile = false
     local packages = nil
     if boundenv and os.isfile(boundenv) then
@@ -341,15 +341,15 @@ function _get_env_script(envs, shell, del)
         suffix = "\""
     elseif shell:endswith("sh") then
         if del then
-            prefix = "unset "
-            connector = ""
+            prefix = "unset '"
+            connector = "'"
         else
-            prefix = "export "
-            connector = "='"
+            prefix = "export '"
+            connector = "'='"
             suffix = "'"
         end
     end
-    local exceptions = hashset.of("_", "PS1", "PROMPT")
+    local exceptions = hashset.of("_", "PS1", "PROMPT", "!;", "!EXITCODE")
     local ret = ""
     if del then
         for name, _ in pairs(envs) do
@@ -368,25 +368,31 @@ function _get_env_script(envs, shell, del)
 end
 
 -- get information of current virtual environment
-function info(key)
+function info(key, bnd)
     if key == "prompt" then
-        assert(os.isfile(os.projectfile()), "xmake.lua not found!")
-        io.write("[" .. path.filename(os.projectdir()) .. "]")
+        local boundenv = _get_boundenv({bind = bnd})
+        if boundenv then
+            assert(os.isfile(boundenv), "environment not found!")
+            io.write("[" .. path.basename(boundenv) .. "]")
+        elseif not bnd then
+            assert(os.isfile(os.projectfile()), "xmake.lua not found!")
+            io.write("[" .. path.filename(os.projectdir()) .. "]")
+        end
     elseif key == "envfile" then
         print(os.tmpfile())
     elseif key == "config" then
-        if os.isfile(os.projectfile()) then
+        if not bnd and os.isfile(os.projectfile()) then
             task.run("config", {target = "all"}, {disable_dump = true})
         end
     elseif key:startswith("script.") then
         local shell = key:match("script%.(.+)")
-        print(_get_env_script(_package_getenvs(), shell, false))
+        io.write(_get_env_script(_package_getenvs({bind = bnd}), shell, false))
     elseif key:startswith("backup.") then
         local shell = key:match("backup%.(.+)")
 
         -- remove current environment variables first
-        print(_get_env_script(_package_getenvs(), shell, true))
-        print(_get_env_script(os.getenvs(), shell, false))
+        io.write(_get_env_script(_package_getenvs({bind = bnd}), shell, true))
+        io.write(_get_env_script(os.getenvs(), shell, false))
     end
 end
 
