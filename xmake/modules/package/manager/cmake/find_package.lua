@@ -72,6 +72,8 @@ function _find_package(cmake, name, opt)
         name, name, name)
     cmakefile:print("   target_include_directories(%s PRIVATE ${%s_INCLUDE_DIR} ${%s_INCLUDE_DIRS})",
         name, name:upper(), name:upper())
+    cmakefile:print("   target_include_directories(%s PRIVATE ${%s_CXX_INCLUDE_DIRS})",
+        name, name)
     cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
         name, name, name, name)
     cmakefile:print("   target_link_libraries(%s ${%s_LIBRARY} ${%s_LIBRARIES} ${%s_LIBS})",
