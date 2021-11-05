@@ -248,7 +248,7 @@ Section "XMake (required)" InstallExeutable
     WriteRegStr   ${RootKey} ${RegUninstall} "NoAdmin"               "$NOADMIN"
 
     ; Write the uninstall keys for Windows
-    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "XMake build utility"
+    WriteRegStr   ${RootKey} ${RegUninstall} "DisplayName"           "XMake build utility (${ARCH})"
     WriteRegStr   ${RootKey} ${RegUninstall} "DisplayIcon"           '"$InstDir\xmake.exe"'
     WriteRegStr   ${RootKey} ${RegUninstall} "Comments"              "A cross-platform build utility based on Lua"
     WriteRegStr   ${RootKey} ${RegUninstall} "Publisher"             "The TBOOX Open Source Group"
