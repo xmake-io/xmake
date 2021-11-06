@@ -9,7 +9,7 @@ function test_build:build(argv)
     os.exec("xmake g -c")
 
     -- generic?
-    os.exec("xmake f -c -D -y")
+    os.exec("xmake f -c -vD -y")
     os.exec("xmake")
     os.exec("xmake p -D")
     if not is_host("windows") then

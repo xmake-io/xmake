@@ -24,10 +24,8 @@ function main(target, opt)
     -- check
     opt = opt or {}
     assert(target:is_library(), 'pkgconfig_importfiles: only support for library target(%s)!', target:name())
-
-    -- only for unix platform
     local installdir = target:installdir()
-    if target:is_plat("windows") or not installdir then
+    if not installdir then
         return
     end
 
