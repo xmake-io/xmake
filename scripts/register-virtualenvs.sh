@@ -47,6 +47,7 @@ function xrepo {
                         unset XMAKE_PROMPT_BACKUP
                         unset XMAKE_ENV_BACKUP
                     fi
+                    "$XMAKE_EXE" lua private.xrepo.action.env.info config $bnd || return 1
                     local prompt="$("$XMAKE_EXE" lua --quiet private.xrepo.action.env.info prompt $bnd)" || return 1
                     if [ -z "${prompt+x}" ]; then
                         return 1
