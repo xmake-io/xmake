@@ -56,32 +56,15 @@ function main(toolchain)
     toolchain:set("toolset", "ar",  "link.exe")
 
     -- add vs environments
-    _add_vsenv(toolchain, "PATH")
-    _add_vsenv(toolchain, "LIB")
-    _add_vsenv(toolchain, "INCLUDE")
-    _add_vsenv(toolchain, "LIBPATH")
-    _add_vsenv(toolchain, "WindowsSdkDir")
-    _add_vsenv(toolchain, "WindowsSDKVersion")
-    _add_vsenv(toolchain, "WindowsSdkBinPath")
-    _add_vsenv(toolchain, "WindowsSDKLibVersion")
-    _add_vsenv(toolchain, "WindowsSdkVerBinPath")
-    _add_vsenv(toolchain, "DevEnvDir")
-    _add_vsenv(toolchain, "ExtensionSdkDir")
-    _add_vsenv(toolchain, "VCIDEInstallDir")
-    _add_vsenv(toolchain, "VCINSTALLDIR")
-    _add_vsenv(toolchain, "VCToolsInstallDir")
-    _add_vsenv(toolchain, "VCToolsRedistDir")
-    _add_vsenv(toolchain, "VCToolsVersion")
-    _add_vsenv(toolchain, "VisualStudioVersion")
-    _add_vsenv(toolchain, "VSINSTALLDIR")
-    _add_vsenv(toolchain, "VSCMD_VER")
-    _add_vsenv(toolchain, "VSCMD_ARG_app_plat")
-    _add_vsenv(toolchain, "VSCMD_ARG_HOST_ARCH")
-    _add_vsenv(toolchain, "VSCMD_ARG_TGT_ARCH")
-    _add_vsenv(toolchain, "VS140COMNTOOLS")
-    _add_vsenv(toolchain, "VS150COMNTOOLS")
-    _add_vsenv(toolchain, "VS160COMNTOOLS")
-    _add_vsenv(toolchain, "VS170COMNTOOLS")
+    local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    for _, name in ipairs(expect_vars) do
+        _add_vsenv(toolchain, name)
+    end
+    for _, name in ipairs(find_vstudio.get_vcvars()) do
+        if not table.contains(expect_vars, name:upper()) then
+            _add_vsenv(toolchain, name)
+        end
+    end
 
     -- add some default flags
     toolchain:add("cl.cxxflags", "/EHsc")
