@@ -81,6 +81,10 @@
             exit /B 1
         ) else (
             setlocal EnableDelayedExpansion
+            %XMAKE_EXE% lua private.xrepo.action.env.info config %3
+            if !errorlevel! neq 0 (
+                exit /B !errorlevel!
+            )
             @%XMAKE_EXE% lua --quiet private.xrepo.action.env.info prompt %3 1>nul
             if !errorlevel! neq 0 (
                 echo error: environment not found^^!

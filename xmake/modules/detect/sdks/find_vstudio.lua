@@ -28,15 +28,72 @@ local vcvars = {"path",
                 "libpath",
                 "include",
                 "DevEnvdir",
-                "VSInstallDir",
-                "VCInstallDir",
+                "VSINSTALLDIR",
+                "VCINSTALLDIR",
                 "WindowsSdkDir",
                 "WindowsLibPath",
                 "WindowsSDKVersion",
                 "WindowsSdkBinPath",
+                "WindowsSdkVerBinPath",
+                "ExtensionSdkDir",
                 "UniversalCRTSdkDir",
                 "UCRTVersion",
-                "VCToolsVersion"}
+                "VCToolsVersion",
+                "VCIDEInstallDir",
+                "VCToolsInstallDir",
+                "VCToolsRedistDir",
+                "VisualStudioVersion",
+                "VSCMD_VER",
+                "VSCMD_ARG_app_plat",
+                "VSCMD_ARG_HOST_ARCH",
+                "VSCMD_ARG_TGT_ARCH"}
+
+-- init vsvers
+local vsvers =
+{
+    ["17.0"] = "2022"
+,   ["16.0"] = "2019"
+,   ["15.0"] = "2017"
+,   ["14.0"] = "2015"
+,   ["12.0"] = "2013"
+,   ["11.0"] = "2012"
+,   ["10.0"] = "2010"
+,   ["9.0"]  = "2008"
+,   ["8.0"]  = "2005"
+,   ["7.1"]  = "2003"
+,   ["7.0"]  = "7.0"
+,   ["6.0"]  = "6.0"
+,   ["5.0"]  = "5.0"
+,   ["4.2"]  = "4.2"
+}
+
+-- init vsenvs
+local vsenvs =
+{
+    ["17.0"] = "VS170COMNTOOLS"
+,   ["16.0"] = "VS160COMNTOOLS"
+,   ["15.0"] = "VS150COMNTOOLS"
+,   ["14.0"] = "VS140COMNTOOLS"
+,   ["12.0"] = "VS120COMNTOOLS"
+,   ["11.0"] = "VS110COMNTOOLS"
+,   ["10.0"] = "VS100COMNTOOLS"
+,   ["9.0"]  = "VS90COMNTOOLS"
+,   ["8.0"]  = "VS80COMNTOOLS"
+,   ["7.1"]  = "VS71COMNTOOLS"
+,   ["7.0"]  = "VS70COMNTOOLS"
+,   ["6.0"]  = "VS60COMNTOOLS"
+,   ["5.0"]  = "VS50COMNTOOLS"
+,   ["4.2"]  = "VS42COMNTOOLS"
+}
+
+-- get all known Visual Studio environment variables
+function get_vcvars()
+    local realvcvars = vcvars
+    for _, v in pairs(vsenvs) do
+        table.insert(realvcvars, v)
+    end
+    return realvcvars
+end
 
 -- load vcvarsall environment variables
 function _load_vcvarsall(vcvarsall, vsver, arch, opt)
@@ -59,7 +116,7 @@ function _load_vcvarsall(vcvarsall, vsver, arch, opt)
     else
         file:print("call \"%s\" %s %s > nul", vcvarsall, arch, opt.sdkver and opt.sdkver or "")
     end
-    for idx, var in ipairs(vcvars) do
+    for idx, var in ipairs(get_vcvars()) do
         file:print("echo " .. var .. " = %%" .. var .. "%%")
     end
     file:close()
@@ -147,41 +204,6 @@ function main(opt)
     if not is_host("windows") then
         return
     end
-
-    -- init vsvers
-    local vsvers =
-    {
-        ["17.0"] = "2022"
-    ,   ["16.0"] = "2019"
-    ,   ["15.0"] = "2017"
-    ,   ["14.0"] = "2015"
-    ,   ["12.0"] = "2013"
-    ,   ["11.0"] = "2012"
-    ,   ["10.0"] = "2010"
-    ,   ["9.0"]  = "2008"
-    ,   ["8.0"]  = "2005"
-    ,   ["7.1"]  = "2003"
-    ,   ["7.0"]  = "7.0"
-    ,   ["6.0"]  = "6.0"
-    ,   ["5.0"]  = "5.0"
-    ,   ["4.2"]  = "4.2"
-    }
-
-    -- init vsenvs
-    local vsenvs =
-    {
-        ["14.0"] = "VS140COMNTOOLS"
-    ,   ["12.0"] = "VS120COMNTOOLS"
-    ,   ["11.0"] = "VS110COMNTOOLS"
-    ,   ["10.0"] = "VS100COMNTOOLS"
-    ,   ["9.0"]  = "VS90COMNTOOLS"
-    ,   ["8.0"]  = "VS80COMNTOOLS"
-    ,   ["7.1"]  = "VS71COMNTOOLS"
-    ,   ["7.0"]  = "VS70COMNTOOLS"
-    ,   ["6.0"]  = "VS60COMNTOOLS"
-    ,   ["5.0"]  = "VS50COMNTOOLS"
-    ,   ["4.2"]  = "VS42COMNTOOLS"
-    }
 
     -- init options
     opt = opt or {}

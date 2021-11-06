@@ -56,13 +56,15 @@ function main(toolchain)
     toolchain:set("toolset", "ar",  "link.exe")
 
     -- add vs environments
-    _add_vsenv(toolchain, "PATH")
-    _add_vsenv(toolchain, "LIB")
-    _add_vsenv(toolchain, "INCLUDE")
-    _add_vsenv(toolchain, "LIBPATH")
-    -- find_rc.lua need them
-    _add_vsenv(toolchain, "WindowsSdkDir")
-    _add_vsenv(toolchain, "WindowsSDKVersion")
+    local expect_vars = {"PATH", "LIB", "INCLUDE", "LIBPATH"}
+    for _, name in ipairs(expect_vars) do
+        _add_vsenv(toolchain, name)
+    end
+    for _, name in ipairs(find_vstudio.get_vcvars()) do
+        if not table.contains(expect_vars, name:upper()) then
+            _add_vsenv(toolchain, name)
+        end
+    end
 
     -- add some default flags
     toolchain:add("cl.cxxflags", "/EHsc")

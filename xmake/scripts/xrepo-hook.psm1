@@ -33,6 +33,11 @@ function Enter-XrepoEnvironment {
 
             $activateCommand = (& $Env:XMAKE_EXE lua --quiet private.xrepo.action.env.info script.powershell | Out-String);
         } else {
+            & $Env:XMAKE_EXE lua private.xrepo.action.env.info config $bnd;
+            if (-not $?) {
+                Exit 1;
+            }
+
             $xmakeColorTermBackup, $Env:XMAKE_COLORTERM = $Env:XMAKE_COLORTERM, "nocolor";
             $xrepoPrompt = (& $Env:XMAKE_EXE lua --quiet private.xrepo.action.env.info prompt $bnd | Out-String);
             $Env:XMAKE_COLORTERM = $xmakeColorTermBackup;
