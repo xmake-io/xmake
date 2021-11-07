@@ -1,6 +1,7 @@
 function test_version(t)
     local output = os.iorunv("xmake", {"--version"})
     local vstr = output:match("xmake v(.-),")
+
     t:are_equal(vstr, tostring(xmake.version()))
 end
 
