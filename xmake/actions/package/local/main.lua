@@ -163,14 +163,14 @@ function _package_library(target)
 
     on_fetch(function (package)
         local result = {}
+        local libfiledir = (package:config("shared") and package:is_plat("windows", "mingw")) and "bin" or "lib"
         result.links = "%s"
         result.linkdirs = package:installdir("lib")
         result.includedirs = package:installdir("include")
-        result.libfiles = path.join(package:installdir("%s"), "%s")
+        result.libfiles = path.join(package:installdir(libfiledir), "%s")
         return result
     end)]], target:is_shared() and "true" or "false",
             target:linkname(),
-            (target:is_shared() and target:is_plat("windows", "mingw")) and "bin" or "lib",
             path.filename(targetfile))
         file:close()
     end
