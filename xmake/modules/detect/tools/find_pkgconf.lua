@@ -15,14 +15,14 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        find_pkg_config.lua
+-- @file        find_pkgconf.lua
 --
 
 -- imports
 import("lib.detect.find_program")
 import("lib.detect.find_programver")
 
--- find pkg_config
+-- find pkgconf
 --
 -- @param opt   the argument options, e.g. {version = true}
 --
@@ -30,8 +30,8 @@ import("lib.detect.find_programver")
 --
 -- @code
 --
--- local pkg_config = find_pkg_config()
--- local pkg_config, version = find_pkg_config({version = true})
+-- local pkgconf = find_pkgconf()
+-- local pkgconf, version = find_pkgconf({version = true})
 --
 -- @endcode
 --
@@ -41,7 +41,7 @@ function main(opt)
     opt = opt or {}
 
     -- find program
-    local program = find_program(opt.program or "pkg-config", opt)
+    local program = find_program(opt.program or "pkgconf", opt)
 
     -- find program version
     local version = nil

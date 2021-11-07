@@ -24,7 +24,15 @@ import("core.project.target")
 import("core.project.config")
 import("lib.detect.find_file")
 import("lib.detect.find_library")
-import("detect.tools.find_pkg_config")
+import("lib.detect.find_tool")
+
+-- get pkgconfig
+function _get_pkgconfig()
+    local pkgconfig = find_tool("pkg-config") or find_tool("pkgconf")
+    if pkgconfig then
+        return pkgconfig.program
+    end
+end
 
 -- get version
 --
@@ -34,7 +42,7 @@ import("detect.tools.find_pkg_config")
 function version(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
@@ -73,7 +81,7 @@ end
 function variables(name, variables, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
@@ -125,7 +133,7 @@ end
 function libinfo(name, opt)
 
     -- attempt to add search paths from pkg-config
-    local pkgconfig = find_pkg_config()
+    local pkgconfig = _get_pkgconfig()
     if not pkgconfig then
         return
     end
