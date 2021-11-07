@@ -31,6 +31,7 @@ end
 
 -- get xmake version, e.g. v2.5.8+dev.d4cff6e11
 function xmake.version()
+    print(777, xmake._VERSION)
     if xmake._VERSION_CACHE == nil then
         xmake._VERSION_CACHE = semver.new(xmake._VERSION) or false
     end
