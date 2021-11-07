@@ -155,6 +155,8 @@ function _package_library(target)
         end
         file:print("")
         file:print([[
+    add_configs("shared", {description = "Build shared library.", default = %s, type = "boolean", readonly = true})
+
     on_load(function (package)
         package:set("installdir", path.join(os.scriptdir(), package:plat(), package:arch(), package:mode()))
     end)
@@ -164,8 +166,11 @@ function _package_library(target)
         result.links = "%s"
         result.linkdirs = package:installdir("lib")
         result.includedirs = package:installdir("include")
+        result.libfiles = path.join(package:installdir("%s"), "%s")
         return result
-    end)]], target:linkname(),
+    end)]], target:is_shared() and "true" or "false",
+            target:linkname(),
+            (target:is_shared() and target:is_plat("windows", "mingw")) and "bin" or "lib",
             path.filename(targetfile))
         file:close()
     end
