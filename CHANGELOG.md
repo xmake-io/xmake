@@ -8,6 +8,10 @@
 * [#1776](https://github.com/xmake-io/xmake/issues/1776): Improve system::find_package, support to find package from envs
 * [#1786](https://github.com/xmake-io/xmake/issues/1786): Improve apt:find_package, support to find alias package
 
+### Bugs Fixed
+
+* Fix semver to parse build string with zero prefix
+
 ## v2.5.9
 
 ### New features
@@ -1126,6 +1130,10 @@
 * 默认切换到 Lua5.4 运行时
 * [#1776](https://github.com/xmake-io/xmake/issues/1776): 改进 system::find_package，支持从环境变量中查找系统库
 * [#1786](https://github.com/xmake-io/xmake/issues/1786): 改进 apt:find_package，支持查找 alias 包
+
+### Bugs 修复
+
+* 修复语义版本中解析带有 0 前缀的 build 字符串问题
 
 ## v2.5.9
 
