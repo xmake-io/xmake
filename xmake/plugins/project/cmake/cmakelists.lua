@@ -162,6 +162,18 @@ function _add_target_sources(cmakelists, target)
     cmakelists:print(")")
 end
 
+-- add target precompilied header
+function _add_target_precompiled_header(cmakelists, target)
+    local precompiled_header = target:get("pcheader") or target:get("pcxxheader")
+    if precompiled_header then
+        cmakelists:print("target_precompile_headers(%s PRIVATE", target:name())
+        cmakelists:print("    $<$<COMPILE_LANGUAGE:%s>:${CMAKE_CURRENT_SOURCE_DIR}/%s>",
+            target:get("pcxxheader") and "CXX" or "C",
+            _get_unix_path(precompiled_header))
+        cmakelists:print(")")
+    end
+end
+
 -- add target include directories
 function _add_target_include_directories(cmakelists, target)
     local includedirs = _get_configs_from_target(target, "includedirs")
@@ -655,6 +667,9 @@ function _add_target(cmakelists, target)
 
     -- add target dependencies
     _add_target_dependencies(cmakelists, target)
+
+    -- add target precompilied header
+    _add_target_precompiled_header(cmakelists, target)
 
     -- add target include directories
     _add_target_include_directories(cmakelists, target)
