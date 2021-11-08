@@ -58,6 +58,8 @@ function xrepo {
                     "$XMAKE_EXE" lua --quiet private.xrepo.action.env.info backup.bash $bnd 1>"$XMAKE_ENV_BACKUP"
                     eval "$activateCommand"
                     PS1="${prompt} $PS1"
+                else
+                    "$XMAKE_EXE" lua private.xrepo "$@"
                 fi
                 ;;
             *)
