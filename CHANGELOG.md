@@ -7,6 +7,7 @@
 * Switch to Lua5.4 runtime by default
 * [#1776](https://github.com/xmake-io/xmake/issues/1776): Improve system::find_package, support to find package from envs
 * [#1786](https://github.com/xmake-io/xmake/issues/1786): Improve apt:find_package, support to find alias package
+* [#1819](https://github.com/xmake-io/xmake/issues/1819): Add precompiled header to cmake generator
 
 ### Bugs Fixed
 
@@ -1130,6 +1131,7 @@
 * 默认切换到 Lua5.4 运行时
 * [#1776](https://github.com/xmake-io/xmake/issues/1776): 改进 system::find_package，支持从环境变量中查找系统库
 * [#1786](https://github.com/xmake-io/xmake/issues/1786): 改进 apt:find_package，支持查找 alias 包
+* [#1819](https://github.com/xmake-io/xmake/issues/1819): 添加预编译头到 cmake 生成器
 
 ### Bugs 修复
 
