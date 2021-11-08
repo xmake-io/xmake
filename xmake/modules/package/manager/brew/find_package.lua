@@ -67,14 +67,16 @@ function main(name, opt)
 
     -- find package from pkg-config/*.pc, attempt to find it from `brew --prefix`/package first
     local result = nil
-    local pcfile = find_file(pcname .. ".pc", path.join(brew_pkg_rootdir, nameinfo[1], "*/lib/pkgconfig"))
+    local pcfile = find_file(pcname .. ".pc", path.join(brew_pkg_rootdir, nameinfo[1], "*/lib/pkgconfig")) or
+                   find_file(pcname .. ".pc", path.join(brew_pkg_rootdir, nameinfo[1], "*/share/pkgconfig"))
     if not pcfile then
         -- attempt to find it from `brew --prefix package`
         local brew = find_tool("brew")
         local brew_pkgdir = brew and try {function () return os.iorunv(brew.program, {"--prefix", nameinfo[1]}) end}
         if brew_pkgdir then
             brew_pkgdir = brew_pkgdir:trim()
-            pcfile = find_file(pcname .. ".pc", path.join(brew_pkgdir, "lib/pkgconfig"))
+            pcfile = find_file(pcname .. ".pc", path.join(brew_pkgdir, "lib/pkgconfig")) or
+                     find_file(pcname .. ".pc", path.join(brew_pkgdir, "share/pkgconfig"))
         end
     end
     if pcfile then
