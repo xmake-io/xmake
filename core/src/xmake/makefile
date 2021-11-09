@@ -145,7 +145,8 @@ xmake_C_FILES 			+= \
 						winos/logical_drives \
 						winos/registry_keys \
 						winos/registry_values \
-						winos/registry_query
+						winos/registry_query \
+						winos/short_path
 endif
 
 # flags

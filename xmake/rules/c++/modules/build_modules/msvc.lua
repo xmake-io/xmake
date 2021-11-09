@@ -37,7 +37,9 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     -- get output flag
     local cachedir
     local outputflag
+    local hasifc = false
     if compinst:has_flags("/ifcOutput")  then
+        hasifc = true
         outputflag = "/ifcOutput"
         cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
         if not os.isdir(cachedir) then
@@ -65,6 +67,15 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
         referenceflag = "/module:reference"
     end
     assert(referenceflag, "compiler(msvc): does not support c++ module!")
+
+    -- get stdifcdir flag
+    local stdifcdirflag
+    if compinst:has_flags("/stdIfcDir") then
+        stdifcdirflag = "/stdIfcDir"
+    elseif compinst:has_flags("/module:stdIfcDir") then
+        stdifcdirflag = "/module:stdIfcDir"
+    end
+    assert(stdifcdirflag, "compiler(msvc): does not support c++ module!")
 
     -- we need patch objectfiles to sourcebatch for linking module objects
     local modulefiles = {}
@@ -115,6 +126,20 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     target:add("cxxflags", modulesflag)
     if cachedir then
         target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir))
+    end
+    if stdifcdirflag then
+        for _, toolchain_inst in ipairs(target:toolchains()) do
+            if toolchain_inst:name() == "msvc" then
+                local vcvars = toolchain_inst:config("vcvars")
+                if vcvars.VCInstallDir and vcvars.VCToolsVersion then
+                    local stdifcdir = path.join(vcvars.VCInstallDir, "Tools", "MSVC", vcvars.VCToolsVersion, "ifc", target:is_arch("x64") and "x64" or "x86")
+                    if os.isdir(stdifcdir) then
+                        target:add("cxxflags", stdifcdirflag .. " " .. winos.short_path(stdifcdir))
+                    end
+                end
+                break
+            end
+        end
     end
 
     -- build batchjobs
