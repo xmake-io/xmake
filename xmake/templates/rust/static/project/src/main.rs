@@ -1,7 +1,7 @@
-extern crate interfaces;
+extern crate foo;
 
 fn main()
 {
     println!("hello xmake!");
-    println!("add: {}", interfaces::add(1, 1));
+    println!("add: {}", foo::add(1, 1));
 }
