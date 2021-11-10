@@ -45,13 +45,27 @@ language("rust")
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
+        ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = {
             "target.strip"

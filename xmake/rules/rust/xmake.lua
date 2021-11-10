@@ -21,6 +21,23 @@
 -- define rule: rust.build
 rule("rust.build")
     set_sourcekinds("rc")
+    on_load(function (target)
+        if target:is_static() then
+            target:set("extension", ".rlib")
+            target:add("arflags", "--crate-type=lib")
+        elseif target:is_shared() then
+            target:add("shflags", "--crate-type=dylib")
+            -- fix cannot satisfy dependencies so `std` only shows up once
+            -- https://github.com/rust-lang/rust/issues/19680
+            --
+            -- but it will link dynamic @rpath/libstd-xxx.dylib,
+            -- so we can no longer modify and set other rpath paths
+            target:add("shflags", "-C prefer-dynamic")
+        elseif target:is_binary() then
+            target:add("ldflags", "--crate-type=bin")
+        end
+        target:data_set("inherit.links.deplink", false)
+    end)
     on_build("build.target")
 
 -- define rule: rust

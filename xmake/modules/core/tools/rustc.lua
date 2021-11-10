@@ -25,18 +25,6 @@ import("core.project.project")
 
 -- init it
 function init(self)
-
-    -- init arflags
-    self:set("rcarflags", "--crate-type=lib")
-
-    -- init shflags
-    self:set("rcshflags", "--crate-type=dylib")
-
-    -- init ldflags
-    self:set("rcldflags", "--crate-type=bin")
-
-    -- init the file formats
-    self:set("formats", { static = "lib$(name).rlib" })
 end
 
 -- make the optimize flag
@@ -67,9 +55,47 @@ function nf_linkdir(self, dir)
     return {"-L" .. dir}
 end
 
+-- make the link flag
+function nf_link(self, lib)
+    return "-l" .. lib
+end
+
+-- make the syslink flag
+function nf_syslink(self, lib)
+    return nf_link(self, lib)
+end
+
+-- make the rpathdir flag
+function nf_rpathdir(self, dir)
+    dir = path.translate(dir)
+    if self:has_flags({"-C", "link-arg=-Wl,-rpath=$ORIGIN"}, "ldflags") then
+        return {"-C", "link-arg=-Wl,-rpath=" .. (dir:gsub("@[%w_]+", function (name)
+            local maps = {["@loader_path"] = "$ORIGIN", ["@executable_path"] = "$ORIGIN"}
+            return maps[name]
+        end))}
+    elseif self:has_flags({"-C", "link-arg=-Xlinker", "-C", "link-arg=-rpath", "-C", "link-arg=-Xlinker", "-C", "link-arg=@loader_path"}, "ldflags") then
+        return {"-C", "link-arg=-Xlinker",
+                "-C", "link-arg=-rpath",
+                "-C", "link-arg=-Xlinker",
+                "-C", "link-arg=" .. (dir:gsub("%$ORIGIN", "@loader_path"))}
+    end
+end
+
 -- make the build arguments list
 function buildargv(self, sourcefiles, targetkind, targetfile, flags)
-    return self:program(), table.join(flags, "-o", targetfile, sourcefiles)
+    -- add rpath for dylib (macho), e.g. -install_name @rpath/file.dylib
+    local flags_extra = {}
+    if targetkind == "shared" and is_plat("macosx", "iphoneos", "watchos") then
+        table.insert(flags_extra, "-C")
+        table.insert(flags_extra, "link-arg=-Xlinker")
+        table.insert(flags_extra, "-C")
+        table.insert(flags_extra, "link-arg=-install_name")
+        table.insert(flags_extra, "-C")
+        table.insert(flags_extra, "link-arg=-Xlinker")
+        table.insert(flags_extra, "-C")
+        table.insert(flags_extra, "link-arg=@rpath/" .. path.filename(targetfile))
+    end
+    return self:program(), table.join(flags, flags_extra, "-o", targetfile, sourcefiles)
 end
 
 -- build the target file
