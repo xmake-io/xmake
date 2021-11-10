@@ -6,8 +6,7 @@ target("foo")
 
 target("test")
     set_kind("binary")
+    add_rules("rust.cxxbridge", {override = true})
     add_deps("foo")
     add_files("src/main.cc")
-    add_files("src/bridge.rs", {rules = "rust.cxxbridge"})
-
-
+    add_files("src/bridge.rs")
