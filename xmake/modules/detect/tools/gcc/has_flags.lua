@@ -76,15 +76,17 @@ function _check_from_arglist(flags, opt, islinker)
     return allflags[flags[1]]
 end
 
+-- get extension
+function _get_extension(opt)
+    -- @note we need detect extension for ndk/clang++.exe: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
+    return (opt.program:endswith("++") or opt.flagkind == "cxxflags") and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
+end
+
 -- try running to check flags
 function _check_try_running(flags, opt, islinker)
 
-    -- get extension
-    -- @note we need detect extension for ndk/clang++.exe: warning: treating 'c' input as 'c++' when in C++ mode, this behavior is deprecated [-Wdeprecated]
-    local extension = opt.program:endswith("++") and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
-
     -- make an stub source file
-    local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. extension)
+    local sourcefile = path.join(os.tmpdir(), "detect", "gcc_has_flags" .. _get_extension(opt))
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end

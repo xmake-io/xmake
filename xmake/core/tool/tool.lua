@@ -140,8 +140,8 @@ function _instance:has_flags(flags, flagkind, opt)
 
     -- get system flags
     opt.sysflags = opt.sysflags or self:get(self:kind() .. 'flags')
-    if not opt.sysflags and flagkind then
-        opt.sysflags = self:get(flagkind)
+    if not opt.sysflags and opt.flagkind then
+        opt.sysflags = self:get(opt.flagkind)
     end
 
     -- import has_flags()

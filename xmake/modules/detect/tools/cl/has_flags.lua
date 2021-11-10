@@ -20,6 +20,7 @@
 
 -- imports
 import("core.cache.detectcache")
+import("core.language.language")
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt)
@@ -55,12 +56,17 @@ function _check_from_arglist(flags, opt)
     return allflags[flags[1]:gsub("/", "-")]
 end
 
+-- get extension
+function _get_extension(opt)
+    return opt.flagkind == "cxxflags" and ".cpp" or (table.wrap(language.sourcekinds()[opt.toolkind or "cc"])[1] or ".c")
+end
+
 -- try running to check flags
 function _check_try_running(flags, opt)
 
     -- make an stub source file
     local tmpdir = path.join(os.tmpdir(), "detect")
-    local sourcefile = path.join(tmpdir, "cl_has_flags.c")
+    local sourcefile = path.join(tmpdir, "cl_has_flags" .. _get_extension(opt))
     if not os.isfile(sourcefile) then
         io.writefile(sourcefile, "int main(int argc, char** argv)\n{return 0;}")
     end

@@ -29,7 +29,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     -- get modules flag
     local modulesflag
     local compinst = compiler.load("cxx", {target = target})
-    if compinst:has_flags("/experimental:module") then
+    if compinst:has_flags("/experimental:module", "cxxflags") then
         modulesflag = "/experimental:module"
     end
     assert(modulesflag, "compiler(msvc): does not support c++ module!")
@@ -38,41 +38,41 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     local cachedir
     local outputflag
     local hasifc = false
-    if compinst:has_flags("/ifcOutput")  then
+    if compinst:has_flags("/ifcOutput", "cxxflags")  then
         hasifc = true
         outputflag = "/ifcOutput"
         cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
         if not os.isdir(cachedir) then
             os.mkdir(cachedir)
         end
-    elseif compinst:has_flags("/module:output") then
+    elseif compinst:has_flags("/module:output", "cxxflags") then
         outputflag = "/module:output"
     end
     assert(outputflag, "compiler(msvc): does not support c++ module!")
 
     -- get interface flag
     local interfaceflag
-    if compinst:has_flags("/interface") then
+    if compinst:has_flags("/interface", "cxxflags") then
         interfaceflag = "/interface"
-    elseif compinst:has_flags("/module:interface") then
+    elseif compinst:has_flags("/module:interface", "cxxflags") then
         interfaceflag = "/module:interface"
     end
     assert(interfaceflag, "compiler(msvc): does not support c++ module!")
 
     -- get reference flag
     local referenceflag
-    if compinst:has_flags("/reference") then
+    if compinst:has_flags("/reference", "cxxflags") then
         referenceflag = "/reference"
-    elseif compinst:has_flags("/module:interface") then
+    elseif compinst:has_flags("/module:interface", "cxxflags") then
         referenceflag = "/module:reference"
     end
     assert(referenceflag, "compiler(msvc): does not support c++ module!")
 
     -- get stdifcdir flag
     local stdifcdirflag
-    if compinst:has_flags("/stdIfcDir") then
+    if compinst:has_flags("/stdIfcDir", "cxxflags") then
         stdifcdirflag = "/stdIfcDir"
-    elseif compinst:has_flags("/module:stdIfcDir") then
+    elseif compinst:has_flags("/module:stdIfcDir", "cxxflags") then
         stdifcdirflag = "/module:stdIfcDir"
     end
     assert(stdifcdirflag, "compiler(msvc): does not support c++ module!")

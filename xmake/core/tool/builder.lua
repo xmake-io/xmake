@@ -420,8 +420,8 @@ function builder:get(name)
 end
 
 -- has flags?
-function builder:has_flags(flags, flagkind)
-    return self:_tool():has_flags(flags, flagkind)
+function builder:has_flags(flags, flagkind, opt)
+    return self:_tool():has_flags(flags, flagkind, opt)
 end
 
 -- map flags from name and values, e.g. linkdirs, links, defines
