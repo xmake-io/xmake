@@ -23,5 +23,28 @@ import("core.base.option")
 import("lib.detect.find_tool")
 
 function main(target, batchcmds, sourcefile, opt)
-    print(sourcefile)
+    local cxxbridge = assert(find_tool("cxxbridge"), "cxxbridge not found!")
+
+    -- get c/c++ source file for cxxbridge
+    local headerfile = path.join(target:autogendir(), "rules", "cxxbridge", path.basename(sourcefile) .. ".rs.h")
+    local sourcefile_cx = path.join(target:autogendir(), "rules", "cxxbridge", path.basename(sourcefile) .. ".rs.cc")
+
+    -- add includedirs
+    target:add("includedirs", path.directory(headerfile))
+
+    -- add objectfile
+    local objectfile = target:objectfile(sourcefile_cx)
+    table.insert(target:objectfiles(), objectfile)
+
+    -- add commands
+    batchcmds:show_progress(opt.progress, "${color.build.object}compiling.cxxbridge %s", sourcefile)
+    batchcmds:mkdir(path.directory(sourcefile_cx))
+    batchcmds:vrunv(cxxbridge.program, {sourcefile}, {stdout = sourcefile_cx})
+    batchcmds:vrunv(cxxbridge.program, {sourcefile, "--header"}, {stdout = headerfile})
+    batchcmds:compile(sourcefile_cx, objectfile)
+
+    -- add deps
+    batchcmds:add_depfiles(sourcefile)
+    batchcmds:set_depmtime(os.mtime(objectfile))
+    batchcmds:set_depcache(target:dependfile(objectfile))
 end
