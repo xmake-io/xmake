@@ -21,8 +21,8 @@
 -- generate bridge.rs.cc/h to call rust library in c++ code
 -- @see https://cxx.rs/build/other.html
 rule("rust.cxxbridge")
-    set_extensions(".rs")
-    before_build_file(function (target, sourcefile, opt)
+    set_extensions(".rsx")
+    before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
         print(sourcefile)
     end)
 
