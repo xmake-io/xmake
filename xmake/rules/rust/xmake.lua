@@ -22,9 +22,7 @@
 -- @see https://cxx.rs/build/other.html
 rule("rust.cxxbridge")
     set_extensions(".rsx")
-    before_buildcmd_file(function (target, batchcmds, sourcefile, opt)
-        print(sourcefile)
-    end)
+    before_buildcmd_file("build.cxxbridge")
 
 -- define rule: rust.build
 rule("rust.build")
