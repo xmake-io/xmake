@@ -1,10 +1,12 @@
+add_rules("mode.debug", "mode.release")
+
 target("foo")
-    set_kind("static")
+    set_kind("shared")
     add_files("src/foo.rs")
 
-target("${TARGETNAME}_demo")
+target("test")
     set_kind("binary")
     add_deps("foo")
     add_files("src/main.rs")
 
-${FAQ}
+

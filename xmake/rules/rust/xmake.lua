@@ -18,16 +18,46 @@
 -- @file        xmake.lua
 --
 
--- define rule: rust.build
+-- generate bridge.rs.cc/h to call rust library in c++ code
+-- @see https://cxx.rs/build/other.html
+rule("rust.cxxbridge")
+    set_extensions(".rsx")
+    on_load(function (target)
+        if not target:get("languages") then
+            target:set("languages", "c++11")
+        end
+    end)
+    before_buildcmd_file("build.cxxbridge")
+
 rule("rust.build")
     set_sourcekinds("rc")
+    on_load(function (target)
+        local cratetype = target:values("rust.cratetype")
+        if cratetype == "staticlib" then
+            assert(target:is_static(), "target(%s) must be static kind for cratetype(staticlib)!", target:name())
+            target:add("arflags", "--crate-type=staticlib")
+        elseif cratetype == "cdylib" then
+            assert(target:is_shared(), "target(%s) must be shared kind for cratetype(cdylib)!", target:name())
+            target:add("shflags", "--crate-type=cdylib")
+            target:add("shflags", "-C prefer-dynamic")
+        elseif target:is_static() then
+            target:set("extension", ".rlib")
+            target:add("arflags", "--crate-type=lib")
+            target:data_set("inherit.links.deplink", false)
+        elseif target:is_shared() then
+            target:add("shflags", "--crate-type=dylib")
+            -- fix cannot satisfy dependencies so `std` only shows up once
+            -- https://github.com/rust-lang/rust/issues/19680
+            --
+            -- but it will link dynamic @rpath/libstd-xxx.dylib,
+            -- so we can no longer modify and set other rpath paths
+            target:add("shflags", "-C prefer-dynamic")
+        elseif target:is_binary() then
+            target:add("ldflags", "--crate-type=bin")
+        end
+    end)
     on_build("build.target")
 
--- define rule: rust
 rule("rust")
-
-    -- add build rules
     add_deps("rust.build")
-
-    -- inherit links and linkdirs of all dependent targets by default
     add_deps("utils.inherit.links")

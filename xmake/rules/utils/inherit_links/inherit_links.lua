@@ -46,7 +46,6 @@ function _add_export_value(target, name, value)
     end
 end
 
--- main entry
 function main(target)
 
     -- disable inherit.links for `add_deps()`?
@@ -59,12 +58,15 @@ function main(target)
     if targetkind == "shared" or targetkind == "static" then
         local targetfile = target:targetfile()
 
-        -- we need move target link to head
-        _add_export_value(target, "links", target:linkname())
-        local links = target:get("links", {rawref = true})
-        if links and type(links) == "table" and #links > 1 then
-            table.insert(links, 1, links[#links])
-            table.remove(links, #links)
+        -- rust maybe will disable inherit links, only inherit linkdirs
+        if target:data("inherit.links.deplink") ~= false then
+            -- we need move target link to head
+            _add_export_value(target, "links", target:linkname())
+            local links = target:get("links", {rawref = true})
+            if links and type(links) == "table" and #links > 1 then
+                table.insert(links, 1, links[#links])
+                table.remove(links, #links)
+            end
         end
 
         _add_export_value(target, "linkdirs", path.directory(targetfile))

@@ -25,7 +25,7 @@ language("rust")
     set_targetkinds {binary = "rcld", static = "rcar", shared = "rcsh"}
     set_targetflags {binary = "ldflags", static = "arflags", shared = "shflags"}
     set_langkinds {rust = "rc"}
-    set_mixingkinds("rc")
+    set_mixingkinds("rc", "cc", "cxx")
 
     on_load("load")
     on_check_main("check_main")
@@ -45,13 +45,27 @@ language("rust")
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   shared = {
             "config.linkdirs"
         ,   "target.linkdirs"
+        ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.rpathdirs"
+        ,   "config.links"
+        ,   "target.links"
+        ,   "toolchain.links"
+        ,   "config.syslinks"
+        ,   "target.syslinks"
+        ,   "toolchain.syslinks"
         }
     ,   static = {
             "target.strip"
