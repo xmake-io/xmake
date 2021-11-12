@@ -1258,6 +1258,7 @@ function _instance:find_tool(name, opt)
     self._find_tool = self._find_tool or sandbox_module.import("lib.detect.find_tool", {anonymous = true})
     return self._find_tool(name, {cachekey = opt.cachekey or "fetch_package_system",
                                   installdir = self:installdir(),
+                                  version = true, -- we alway check version
                                   require_version = opt.require_version,
                                   norun = opt.norun,
                                   force = opt.force})
@@ -1274,6 +1275,7 @@ function _instance:find_package(name, opt)
     return self._find_package(name, {
                               force = opt.force,
                               installdir = self:installdir(),
+                              version = true, -- we alway check version
                               require_version = opt.require_version,
                               mode = self:mode(),
                               plat = self:plat(),
