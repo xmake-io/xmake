@@ -53,7 +53,10 @@ function main(name, opt)
     end
 
     -- get required version
-    local require_version = assert(opt.require_version, "cargo::%s version not found!", name)
+    local require_version = opt.require_version
+    if not require_version or require_version == "latest" then
+        require_version = "*"
+    end
 
     -- build dependencies
     local sourcedir = path.join(opt.cachedir, "source")
