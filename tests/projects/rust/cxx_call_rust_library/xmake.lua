@@ -1,9 +1,12 @@
 add_rules("mode.debug", "mode.release")
 
+add_requires("cargo::cxx 1.0")
+
 target("foo")
     set_kind("static")
     add_files("src/foo.rs")
     set_values("rust.cratetype", "staticlib")
+    add_packages("cargo::cxx")
 
 target("test")
     set_kind("binary")

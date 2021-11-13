@@ -950,7 +950,7 @@ function get_configs_str(package)
             if type(v) == "boolean" then
                 table.insert(configs, k .. ":" .. (v and "y" or "n"))
             else
-                table.insert(configs, k .. ":" .. v)
+                table.insert(configs, k .. ":" .. string.serialize(v, {strip = true, indent = false}))
             end
         end
     end

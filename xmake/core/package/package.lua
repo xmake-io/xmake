@@ -1867,6 +1867,8 @@ function package.load_from_system(packagename)
             opt.arch            = pkg:arch()
             opt.require_version = pkg:version_str()
             opt.buildhash       = pkg:buildhash()
+            opt.cachedir        = pkg:cachedir()
+            opt.installdir      = pkg:installdir()
             import("package.manager.install_package")(pkg:name(), opt)
         end
 

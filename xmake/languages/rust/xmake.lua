@@ -39,12 +39,18 @@ language("rust")
         }
     ,   binary = {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
@@ -54,12 +60,18 @@ language("rust")
         }
     ,   shared = {
             "config.linkdirs"
+        ,   "config.frameworkdirs"
         ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
         ,   "target.rpathdirs"
         ,   "target.strip"
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
@@ -68,8 +80,17 @@ language("rust")
         ,   "toolchain.syslinks"
         }
     ,   static = {
-            "target.strip"
+            "config.linkdirs"
+        ,   "config.frameworkdirs"
+        ,   "target.linkdirs"
+        ,   "target.frameworkdirs"
+        ,   "target.strip"
         ,   "target.symbols"
+        ,   "toolchain.linkdirs"
+        ,   "toolchain.frameworkdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         }
     }
 

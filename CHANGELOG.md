@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1799](https://github.com/xmake-io/xmake/issues/1799): Support mixed rust & c++ target and cargo dependences
+
 ### Changes
 
 * Switch to Lua5.4 runtime by default
@@ -1126,6 +1130,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1799](https://github.com/xmake-io/xmake/issues/1799): 支持混合 Rust 和 C++ 程序，以及集成 Cargo 依赖库
 
 ### 改进
 
