@@ -23,14 +23,23 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 
+-- get configurations
+function configurations()
+    return
+    {
+        features         = {description = "set the features of dependency."},
+        default_features = {description = "enables or disables any defaults provided by the dependency.", default = true},
+    }
+end
+
 -- install package
 --
 -- e.g.
--- add_requires("cargo::zip")
--- add_requires("cargo::zip >0.3")
--- add_requires("cargo::zip 0.3.1")
+-- add_requires("cargo::base64")
+-- add_requires("cargo::base64 0.13.0")
+-- add_requires("cargo::flate2 1.0.17", {configs = {features = {"zlib"}, ["default-features"] = false}})
 --
--- @param name  the package name, e.g. cargo::zip
+-- @param name  the package name, e.g. cargo::base64
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = , require_version = "x.x.x"}
 --
 -- @return      true or false
@@ -43,4 +52,48 @@ function main(name, opt)
         raise("cargo not found!")
     end
 
+    -- get required version
+    local require_version = assert(opt.require_version, "cargo::%s version not found!", name)
+
+    -- build dependencies
+    local sourcedir = path.join(opt.cachedir, "source")
+    local cargotoml = path.join(sourcedir, "Cargo.toml")
+    os.tryrm(sourcedir)
+    local tomlfile = io.open(cargotoml, "w")
+    tomlfile:print("[package]")
+    tomlfile:print("name = \"cargodeps\"")
+    tomlfile:print("version = \"0.1.0\"")
+    tomlfile:print("edition = \"2018\"")
+    tomlfile:print("")
+    tomlfile:print("[dependencies]")
+    local features = opt.features
+    if features then
+        features = table.wrap(features)
+        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), opt.default_features)
+    else
+        tomlfile:print("%s = \"%s\"", name, require_version)
+    end
+    tomlfile:close()
+
+    -- generate main.rs
+    io.writefile(path.join(sourcedir, "src", "main.rs"), [[
+fn main() {
+    println!("Hello, world!");
+}
+    ]])
+
+    -- do build
+    local argv = {"build"}
+    if opt.mode ~= "debug" then
+        table.insert(argv, "--release")
+    end
+    if option.get("verbose") then
+        table.insert(argv, option.get("diagnosis") and "-vv" or "-v")
+    end
+    os.vrunv(cargo.program, argv, {curdir = sourcedir})
+
+    -- do install
+    local installdir = opt.installdir
+    os.tryrm(path.join(installdir, "lib"))
+    os.vcp(path.join(sourcedir, "target", opt.mode == "debug" and "debug" or "release", "deps"), path.join(installdir, "lib"))
 end
