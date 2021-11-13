@@ -1,7 +1,5 @@
 extern crate foo;
-
-fn main()
-{
+fn main() {
     println!("hello xmake!");
     println!("add: {}", foo::add(1, 1));
 }
