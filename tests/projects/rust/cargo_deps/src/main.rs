@@ -8,4 +8,5 @@ fn main() {
 
     assert_eq!(encode(a), b);
     assert_eq!(a, &decode(b).unwrap()[..]);
+    println!("{}", encode(a));
 }
