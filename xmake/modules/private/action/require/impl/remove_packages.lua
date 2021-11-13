@@ -36,7 +36,7 @@ function _get_package_configs_str(manifest_file)
             end
         end
         local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
-        local limitwidth = os.getwinsize().width * 2 / 3
+        local limitwidth = math.floor(os.getwinsize().width * 2 / 3)
         if #configs_str > limitwidth then
             configs_str = configs_str:sub(1, limitwidth) .. " ..)"
         end

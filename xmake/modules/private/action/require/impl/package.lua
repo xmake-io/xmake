@@ -959,7 +959,7 @@ function get_configs_str(package)
         table.insert(configs, "from:" .. parents_str)
     end
     local configs_str = #configs > 0 and "[" .. table.concat(configs, ", ") .. "]" or ""
-    local limitwidth = os.getwinsize().width * 2 / 3
+    local limitwidth = math.floor(os.getwinsize().width * 2 / 3)
     if #configs_str > limitwidth then
         configs_str = configs_str:sub(1, limitwidth) .. " ..)"
     end
