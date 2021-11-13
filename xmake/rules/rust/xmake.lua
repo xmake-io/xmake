@@ -36,6 +36,7 @@ rule("rust.build")
         if cratetype == "staticlib" then
             assert(target:is_static(), "target(%s) must be static kind for cratetype(staticlib)!", target:name())
             target:add("arflags", "--crate-type=staticlib")
+            target:data_set("inherit.links.exportlinks", false)
         elseif cratetype == "cdylib" then
             assert(target:is_shared(), "target(%s) must be shared kind for cratetype(cdylib)!", target:name())
             target:add("shflags", "--crate-type=cdylib")

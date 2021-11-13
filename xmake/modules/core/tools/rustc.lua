@@ -65,6 +65,15 @@ function nf_syslink(self, lib)
     return nf_link(self, lib)
 end
 
+-- make the framework flag, crate module
+function nf_framework(self, framework)
+    local basename = path.basename(framework)
+    local cratename = basename:match("lib(.-)%-.-") or basename:match("lib(.-)")
+    if cratename then
+        return {"--extern", cratename .. "=" .. framework}
+    end
+end
+
 -- make the rpathdir flag
 function nf_rpathdir(self, dir)
     dir = path.translate(dir)

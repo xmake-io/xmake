@@ -45,6 +45,9 @@ language("rust")
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
@@ -60,6 +63,9 @@ language("rust")
         ,   "target.symbols"
         ,   "toolchain.linkdirs"
         ,   "toolchain.rpathdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         ,   "config.links"
         ,   "target.links"
         ,   "toolchain.links"
@@ -68,8 +74,14 @@ language("rust")
         ,   "toolchain.syslinks"
         }
     ,   static = {
-            "target.strip"
+            "config.linkdirs"
+        ,   "target.linkdirs"
+        ,   "target.strip"
         ,   "target.symbols"
+        ,   "toolchain.linkdirs"
+        ,   "config.frameworks"
+        ,   "target.frameworks"
+        ,   "toolchain.frameworks"
         }
     }
 
