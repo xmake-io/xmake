@@ -32,25 +32,25 @@ import("lib.detect.find_file")
 -- @param opt   the options, e.g. {verbose = true, require_version = "1.12.x")
 --
 function main(name, opt)
-    local linkdirs
+    local frameworkdirs
     local frameworks
     local librarydir = path.join(opt.installdir, "lib")
     local libfiles = os.files(path.join(librarydir, "*.rlib"))
     for _, libraryfile in ipairs(libfiles) do
         local filename = path.filename(libraryfile)
         if filename:startswith("lib" .. name .. "-") then
-            linkdirs = linkdirs or {}
+            frameworkdirs = frameworkdirs or {}
             frameworks = frameworks or {}
-            table.insert(linkdirs, librarydir)
+            table.insert(frameworkdirs, librarydir)
             table.insert(frameworks, libraryfile)
             break
         end
     end
     local result
-    if frameworks and linkdirs then
+    if frameworks and frameworkdirs then
         result = result or {}
         result.libfiles = libfiles
-        result.linkdirs = linkdirs
+        result.frameworkdirs = frameworkdirs
         result.frameworks = frameworks
         result.version = opt.require_version
     end

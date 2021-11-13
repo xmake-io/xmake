@@ -65,6 +65,11 @@ function nf_syslink(self, lib)
     return nf_link(self, lib)
 end
 
+-- make the frameworkdir flag, crate module dependency directories
+function nf_frameworkdir(self, frameworkdir)
+    return {"-L", "dependency=" .. frameworkdir}
+end
+
 -- make the framework flag, crate module
 function nf_framework(self, framework)
     local basename = path.basename(framework)

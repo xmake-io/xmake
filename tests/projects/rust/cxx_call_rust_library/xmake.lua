@@ -7,7 +7,6 @@ target("foo")
     add_files("src/foo.rs")
     set_values("rust.cratetype", "staticlib")
     add_packages("cargo::cxx")
-    add_rcflags("--edition=2018")
 
 target("test")
     set_kind("binary")

@@ -32,6 +32,7 @@ rule("rust.cxxbridge")
 rule("rust.build")
     set_sourcekinds("rc")
     on_load(function (target)
+        -- set cratetype
         local cratetype = target:values("rust.cratetype")
         if cratetype == "staticlib" then
             assert(target:is_static(), "target(%s) must be static kind for cratetype(staticlib)!", target:name())
@@ -56,6 +57,10 @@ rule("rust.build")
         elseif target:is_binary() then
             target:add("ldflags", "--crate-type=bin")
         end
+
+        -- set edition
+        local edition = target:values("rust.edition") or "2018"
+        target:add("rcflags", "--edition", edition, {force = true})
     end)
     on_build("build.target")
 
