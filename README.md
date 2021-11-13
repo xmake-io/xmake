@@ -186,6 +186,7 @@ The test project: [xmake-core](https://github.com/xmake-io/xmake/tree/master/cor
 * Dub (dub::log 0.4.3)
 * Portage on Gentoo/Linux (portage::libhandy)
 * Nimble for nimlang (nimble::zip >1.3)
+* Cargo for rust (cargo::base64 0.13.0)
 
 ### Package management features
 
