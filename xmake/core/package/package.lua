@@ -1227,6 +1227,10 @@ function _instance:_fetch_library(opt)
                 fetchinfo.sysincludedirs = nil
             end
         end
+        if fetchinfo and option.get("verbose") then
+            local reponame = self:repo() and self:repo():name() or ""
+            utils.cprint("checking for %s::%s ... ${color.success}%s %s", reponame, self:name(), self:name(), fetchinfo.version and fetchinfo.version or "")
+        end
     end
     if fetchinfo == nil then
         if opt.system then
