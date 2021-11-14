@@ -276,9 +276,6 @@ end
 -- usage: table.to_array(ipairs("a", "b")) -> {{1,"a",n=2},{2,"b",n=2}},2
 -- usage: table.to_array(io.lines("file")) -> {"line 1","line 2", ... , "line n"},n
 function table.to_array(iterator, state, var)
-
-    assert(iterator)
-
     local result = {}
     local count = 0
     while true do
@@ -383,13 +380,10 @@ end
 table.unpack = table.unpack or unpack
 
 -- get keys of a table
-function table.keys(tab)
-
-    assert(tab)
-
+function table.keys(tbl)
     local keyset = {}
     local n = 0
-    for k, _ in pairs(tab) do
+    for k, _ in pairs(tbl) do
         n = n + 1
         keyset[n] = k
     end
@@ -397,8 +391,8 @@ function table.keys(tab)
 end
 
 -- get order keys of a table
-function table.orderkeys(tab)
-    local keys = table.keys(tab)
+function table.orderkeys(tbl)
+    local keys = table.keys(tbl)
     table.sort(keys)
     return keys
 end
@@ -419,13 +413,10 @@ function table.orderpairs(t)
 end
 
 -- get values of a table
-function table.values(tab)
-
-    assert(tab)
-
+function table.values(tbl)
     local valueset = {}
     local n = 0
-    for _, v in pairs(tab) do
+    for _, v in pairs(tbl) do
         n = n + 1
         valueset[n] = v
     end
@@ -433,24 +424,16 @@ function table.values(tab)
 end
 
 -- map values to a new table
-function table.map(tab, mapper)
-
-    assert(tab)
-    assert(mapper)
-
-    local newtab = {}
-    for k, v in pairs(tab) do
-        newtab[k] = mapper(k, v)
+function table.map(tbl, mapper)
+    local newtbl = {}
+    for k, v in pairs(tbl) do
+        newtbl[k] = mapper(k, v)
     end
-    return newtab
+    return newtbl
 end
 
 -- map values to a new array
 function table.imap(arr, mapper)
-
-    assert(arr)
-    assert(mapper)
-
     local newarr = {}
     for k, v in ipairs(arr) do
         table.insert(newarr, mapper(k, v))
@@ -460,15 +443,30 @@ end
 
 -- reverse table values
 function table.reverse(arr)
-
-    assert(arr)
-
     local revarr = {}
     local l = #arr
     for i = 1, l do
         revarr[i] = arr[l - i + 1]
     end
     return revarr
+end
+
+-- remove values if predicate is matched
+function table.remove_if(tbl, pred)
+    if table.is_array(tbl) then
+        for i = #tbl, 1, -1 do
+            if pred(tbl, i, tbl[i]) then
+                table.remove(tbl, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if pred(tbl, k, v) then
+                tbl[k] = nil
+            end
+        end
+    end
+    return tbl
 end
 
 -- return module: table
