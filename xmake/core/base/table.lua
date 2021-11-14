@@ -455,18 +455,78 @@ end
 function table.remove_if(tbl, pred)
     if table.is_array(tbl) then
         for i = #tbl, 1, -1 do
-            if pred(tbl, i, tbl[i]) then
+            if pred(i, tbl[i]) then
                 table.remove(tbl, i)
             end
         end
     else
         for k, v in pairs(tbl) do
-            if pred(tbl, k, v) then
+            if pred(k, v) then
                 tbl[k] = nil
             end
         end
     end
     return tbl
+end
+
+-- return indices or keys for the given value
+function table.find(tbl, value)
+    local result
+    if table.is_array(tbl) then
+        for i, v in ipairs(tbl) do
+            if v == value then
+                result = result or {}
+                table.insert(result, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if v == value then
+                result = result or {}
+                table.insert(result, k)
+            end
+        end
+    end
+    return result
+end
+
+-- return indices or keys if predicate is matched
+function table.find_if(tbl, pred)
+    local result
+    if table.is_array(tbl) then
+        for i, v in ipairs(tbl) do
+            if pred(i, v) then
+                result = result or {}
+                table.insert(result, i)
+            end
+        end
+    else
+        for k, v in pairs(tbl) do
+            if pred(k, v) then
+                result = result or {}
+                table.insert(result, k)
+            end
+        end
+    end
+    return result
+end
+
+-- return first index for the given value
+function table.find_first(tbl, value)
+    for i, v in ipairs(tbl) do
+        if v == value then
+            return i
+        end
+    end
+end
+
+-- return first index if predicate is matched
+function table.find_first_if(tbl, pred)
+    for i, v in ipairs(tbl) do
+        if pred(i, v) then
+            return i
+        end
+    end
 end
 
 -- return module: table
