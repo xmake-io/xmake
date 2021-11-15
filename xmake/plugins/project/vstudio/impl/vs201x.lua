@@ -57,6 +57,7 @@ function _get_command_string(cmd)
         local command = os.args(table.join(cmd.program, cmd.argv))
         if opt and opt.curdir then
             command = "cd \"" .. opt.curdir .. "\"\n" .. command
+            -- TODO cd oldir
         end
         return command
     elseif kind == "cp" then
