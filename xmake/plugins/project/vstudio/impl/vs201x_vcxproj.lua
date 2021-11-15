@@ -386,8 +386,9 @@ function _get_command_string(cmd)
     end
 end
 
--- add custom command
-function _make_custom_command(vcxprojfile, target, command, suffix)
+-- make custom commands item
+function _make_custom_commands_item(vcxprojfile, commands, suffix)
+    vcxprojfile:print("<ItemDefinitionGroup>")
     if suffix == "after" then
         vcxprojfile:print("<PostBuildEvent>")
     elseif suffix == "before" then
@@ -395,7 +396,9 @@ function _make_custom_command(vcxprojfile, target, command, suffix)
     end
     vcxprojfile:print("<Message></Message>")
     vcxprojfile:print("<Command>setlocal")
-    vcxprojfile:print("%s", command)
+    for _, command in ipairs(commands) do
+        vcxprojfile:print("%s", command)
+    end
     vcxprojfile:write([[if %errorlevel% neq 0 goto :xmEnd
 :xmEnd
 endlocal &amp; call :xmErrorLevel %errorlevel% &amp; goto :xmDone
@@ -409,10 +412,11 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     elseif suffix == "before" then
         vcxprojfile:print("</PreBuildEvent>")
     end
+    vcxprojfile:print("</ItemDefinitionGroup>")
 end
 
 -- add target custom commands for target
-function _make_custom_commands_for_target(vcxprojfile, target, suffix)
+function _make_custom_commands_for_target(commands, target, suffix)
     for _, ruleinst in ipairs(target:orderules()) do
         local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
         local script = ruleinst:script(scriptname)
@@ -423,7 +427,8 @@ function _make_custom_commands_for_target(vcxprojfile, target, suffix)
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd)
                     if command then
-                        _make_custom_command(vcxprojfile, target, command, suffix)
+                        commands[suffix] = commands[suffix] or {}
+                        table.insert(commands[suffix], command)
                     end
                 end
             end
@@ -432,7 +437,7 @@ function _make_custom_commands_for_target(vcxprojfile, target, suffix)
 end
 
 -- add target custom commands for object rules
-function _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch, suffix)
+function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix)
 
     -- get rule
     local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
@@ -448,7 +453,8 @@ function _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch,
             for _, cmd in ipairs(batchcmds_:cmds()) do
                 local command = _get_command_string(cmd)
                 if command then
-                    _make_custom_command(vcxprojfile, target, command, suffix)
+                    commands[suffix] = commands[suffix] or {}
+                    table.insert(commands[suffix], command)
                 end
             end
         end
@@ -467,7 +473,8 @@ function _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch,
                     for _, cmd in ipairs(batchcmds_:cmds()) do
                         local command = _get_command_string(cmd)
                         if command then
-                            _make_custom_command(vcxprojfile, target, command, suffix)
+                            commands[suffix] = commands[suffix] or {}
+                            table.insert(commands[suffix], command)
                         end
                     end
                 end
@@ -478,16 +485,20 @@ end
 
 -- make custom commands
 function _make_custom_commands(vcxprojfile, target)
-    _make_custom_commands_for_target(vcxprojfile, target, "before")
+    local commands = {}
+    _make_custom_commands_for_target(commands, target, "before")
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
-            _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch, "before")
-            _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch)
-            _make_custom_commands_for_objectrules(vcxprojfile, target, sourcebatch, "after")
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before")
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after")
         end
     end
-    _make_custom_commands_for_target(vcxprojfile, target, "after")
+    _make_custom_commands_for_target(commands, target, "after")
+    for suffix, cmds in pairs(commands) do
+        _make_custom_commands_item(vcxprojfile, cmds, suffix)
+    end
 end
 
 -- make common item
@@ -576,9 +587,6 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         end
 
     vcxprojfile:leave("</ClCompile>")
-
-    -- make custom commands
-    _make_custom_commands(vcxprojfile, target.targetinst)
 
     -- leave ItemDefinitionGroup
     vcxprojfile:leave("</ItemDefinitionGroup>")
@@ -912,6 +920,9 @@ function make(vsinfo, target)
 
     -- make common items
     _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
+
+    -- make custom commands
+    _make_custom_commands(vcxprojfile, target.targetinst)
 
     -- make source files
     _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
