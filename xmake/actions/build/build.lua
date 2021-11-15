@@ -24,6 +24,7 @@ import("core.project.config")
 import("core.project.project")
 import("private.async.jobpool")
 import("private.async.runjobs")
+import("private.utils.batchcmds")
 import("core.base.hashset")
 
 -- clean target for rebuilding
@@ -47,6 +48,15 @@ function _add_batchjobs_builtin(batchjobs, rootjob, target)
             else
                 job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
                     script(target, {progress = (index * 100) / total})
+                end, {rootjob = job or rootjob})
+            end
+        else
+            local buildcmd = r:script("buildcmd")
+            if buildcmd then
+                job = batchjobs:addjob("rule/" .. r:name() .. "/build", function (index, total)
+                    local batchcmds_ = batchcmds.new({target = target})
+                    buildcmd(target, batchcmds_, {progress =  (index * 100) / total})
+                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
                 end, {rootjob = job or rootjob})
             end
         end
@@ -117,6 +127,13 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
             local after_build = r:script("build_after")
             if after_build then
                 after_build(target, {progress = progress})
+            else
+                local after_buildcmd = r:script("buildcmd_after")
+                if after_buildcmd then
+                    local batchcmds_ = batchcmds.new({target = target})
+                    after_buildcmd(target, batchcmds_, {progress = progress})
+                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
+                end
             end
         end
 
@@ -151,6 +168,13 @@ function _add_batchjobs_for_target(batchjobs, rootjob, target)
             local before_build = r:script("build_before")
             if before_build then
                 before_build(target, {progress = progress})
+            else
+                local before_buildcmd = r:script("buildcmd_before")
+                if before_buildcmd then
+                    local batchcmds_ = batchcmds.new({target = target})
+                    before_buildcmd(target, batchcmds_, {progress = progress})
+                    batchcmds_:runcmds({dryrun = option.get("dry-run")})
+                end
             end
         end
     end, {rootjob = job_build_leaf})
