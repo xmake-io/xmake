@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
@@ -376,11 +377,21 @@ function _get_command_string(cmd)
     local kind = cmd.kind
     local opt = cmd.opt
     if cmd.program then
+        local command = os.args(table.join(cmd.program, cmd.argv))
+        if opt and opt.curdir then
+            command = "cd \"" .. opt.curdir .. "\"\n" .. command
+        end
+        return command
     elseif kind == "cp" then
+        return string.format("copy /Y \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
     elseif kind == "rm" then
+        return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", cmd.filepath, cmd.filepath)
     elseif kind == "mv" then
+        return string.format("rename \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
     elseif kind == "cd" then
+        return string.format("cd \"%s\"", cmd.dir)
     elseif kind == "mkdir" then
+        return string.format("mkdir \"%s\"", cmd.dir)
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end
