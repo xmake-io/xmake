@@ -399,7 +399,6 @@ end
 
 -- make custom commands item
 function _make_custom_commands_item(vcxprojfile, commands, suffix)
-    vcxprojfile:print("<ItemDefinitionGroup>")
     if suffix == "after" then
         vcxprojfile:print("<PostBuildEvent>")
     elseif suffix == "before" then
@@ -423,7 +422,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     elseif suffix == "before" then
         vcxprojfile:print("</PreBuildEvent>")
     end
-    vcxprojfile:print("</ItemDefinitionGroup>")
 end
 
 -- add target custom commands for target
@@ -598,6 +596,9 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
         end
 
     vcxprojfile:leave("</ClCompile>")
+
+    -- make custom commands
+    _make_custom_commands(vcxprojfile, target.targetinst)
 
     -- leave ItemDefinitionGroup
     vcxprojfile:leave("</ItemDefinitionGroup>")
@@ -931,9 +932,6 @@ function make(vsinfo, target)
 
     -- make common items
     _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
-
-    -- make custom commands
-    _make_custom_commands(vcxprojfile, target.targetinst)
 
     -- make source files
     _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
