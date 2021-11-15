@@ -330,6 +330,7 @@ function make(outputdir, vsinfo)
                     _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
 
                     -- init target info
+                    _target.targetinst = target
                     _target.name = targetname
                     _target.kind = target:kind()
                     _target.scriptdir = target:scriptdir()
