@@ -68,7 +68,7 @@ function _get_command_string(cmd)
     elseif kind == "cd" then
         return string.format("cd \"%s\"", cmd.dir)
     elseif kind == "mkdir" then
-        return string.format("mkdir \"%s\"", cmd.dir)
+        return string.format("if not exist \"%s\" mkdir \"%s\"", cmd.dir, cmd.dir)
     elseif kind == "show" then
         return string.format("echo %s", cmd.showtext)
     end
