@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.platform.platform")
@@ -34,6 +35,7 @@ import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
+import("private.utils.batchcmds")
 
 -- clear cache configuration
 function _clear_cacheconf()
@@ -45,6 +47,115 @@ function _clear_cacheconf()
     localcache.clear("package")
     localcache.clear("toolchain")
     localcache.save()
+end
+
+-- get command string
+function _get_command_string(cmd)
+    local kind = cmd.kind
+    local opt = cmd.opt
+    if cmd.program then
+        local command = os.args(table.join(cmd.program, cmd.argv))
+        if opt and opt.curdir then
+            command = "cd \"" .. opt.curdir .. "\"\n" .. command
+        end
+        return command
+    elseif kind == "cp" then
+        return string.format("copy /Y \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
+    elseif kind == "rm" then
+        return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", cmd.filepath, cmd.filepath)
+    elseif kind == "mv" then
+        return string.format("rename \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
+    elseif kind == "cd" then
+        return string.format("cd \"%s\"", cmd.dir)
+    elseif kind == "mkdir" then
+        return string.format("mkdir \"%s\"", cmd.dir)
+    elseif kind == "show" then
+        return string.format("echo %s", cmd.showtext)
+    end
+end
+
+-- add target custom commands for target
+function _make_custom_commands_for_target(commands, target, suffix)
+    for _, ruleinst in ipairs(target:orderules()) do
+        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
+        local script = ruleinst:script(scriptname)
+        if script then
+            local batchcmds_ = batchcmds.new({target = target})
+            script(target, batchcmds_, {})
+            if not batchcmds_:empty() then
+                for _, cmd in ipairs(batchcmds_:cmds()) do
+                    local command = _get_command_string(cmd)
+                    if command then
+                        commands[suffix] = commands[suffix] or {}
+                        table.insert(commands[suffix], command)
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- add target custom commands for object rules
+function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix)
+
+    -- get rule
+    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
+    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
+
+    -- generate commands for xx_buildcmd_files
+    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
+    local script = ruleinst:script(scriptname)
+    if script then
+        local batchcmds_ = batchcmds.new({target = target})
+        script(target, batchcmds_, sourcebatch, {})
+        if not batchcmds_:empty() then
+            for _, cmd in ipairs(batchcmds_:cmds()) do
+                local command = _get_command_string(cmd)
+                if command then
+                    commands[suffix] = commands[suffix] or {}
+                    table.insert(commands[suffix], command)
+                end
+            end
+        end
+    end
+
+    -- generate commands for xx_buildcmd_file
+    if not script then
+        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local sourcekind = sourcebatch.sourcekind
+            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
+                local batchcmds_ = batchcmds.new({target = target})
+                script(target, batchcmds_, sourcefile, {})
+                if not batchcmds_:empty() then
+                    for _, cmd in ipairs(batchcmds_:cmds()) do
+                        local command = _get_command_string(cmd)
+                        if command then
+                            commands[suffix] = commands[suffix] or {}
+                            table.insert(commands[suffix], command)
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- make custom commands
+function _make_custom_commands(target)
+    local commands = {}
+    _make_custom_commands_for_target(commands, target, "before")
+    for _, sourcebatch in pairs(target:sourcebatches()) do
+        local sourcekind = sourcebatch.sourcekind
+        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before")
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch)
+            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after")
+        end
+    end
+    _make_custom_commands_for_target(commands, target, "after")
+    return commands
 end
 
 -- make target info
@@ -125,6 +236,9 @@ function _make_targetinfo(mode, arch, target)
             break
         end
     end
+
+    -- save custom commands
+    targetinfo.commands = _make_custom_commands(target)
 
     -- ok
     return targetinfo
@@ -330,7 +444,6 @@ function make(outputdir, vsinfo)
                     _target.pcxxheader = target:pcheaderfile("cxx")   -- header.[hpp|inl]
 
                     -- init target info
-                    _target.targetinst = target
                     _target.name = targetname
                     _target.kind = target:kind()
                     _target.scriptdir = target:scriptdir()

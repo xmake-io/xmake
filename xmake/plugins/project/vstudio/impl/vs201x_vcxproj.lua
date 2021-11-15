@@ -372,31 +372,6 @@ function _make_source_options(vcxprojfile, flags, condition)
     end
 end
 
--- get command string
-function _get_command_string(cmd)
-    local kind = cmd.kind
-    local opt = cmd.opt
-    if cmd.program then
-        local command = os.args(table.join(cmd.program, cmd.argv))
-        if opt and opt.curdir then
-            command = "cd \"" .. opt.curdir .. "\"\n" .. command
-        end
-        return command
-    elseif kind == "cp" then
-        return string.format("copy /Y \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
-    elseif kind == "rm" then
-        return string.format("del /F /Q \"%s\" || rmdir /S /Q \"%s\"", cmd.filepath, cmd.filepath)
-    elseif kind == "mv" then
-        return string.format("rename \"%s\" \"%s\"", cmd.srcpath, cmd.dstpath)
-    elseif kind == "cd" then
-        return string.format("cd \"%s\"", cmd.dir)
-    elseif kind == "mkdir" then
-        return string.format("mkdir \"%s\"", cmd.dir)
-    elseif kind == "show" then
-        return string.format("echo %s", cmd.showtext)
-    end
-end
-
 -- make custom commands item
 function _make_custom_commands_item(vcxprojfile, commands, suffix)
     if suffix == "after" then
@@ -424,88 +399,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     end
 end
 
--- add target custom commands for target
-function _make_custom_commands_for_target(commands, target, suffix)
-    for _, ruleinst in ipairs(target:orderules()) do
-        local scriptname = "buildcmd" .. (suffix and ("_" .. suffix) or "")
-        local script = ruleinst:script(scriptname)
-        if script then
-            local batchcmds_ = batchcmds.new({target = target})
-            script(target, batchcmds_, {})
-            if not batchcmds_:empty() then
-                for _, cmd in ipairs(batchcmds_:cmds()) do
-                    local command = _get_command_string(cmd)
-                    if command then
-                        commands[suffix] = commands[suffix] or {}
-                        table.insert(commands[suffix], command)
-                    end
-                end
-            end
-        end
-    end
-end
-
--- add target custom commands for object rules
-function _make_custom_commands_for_objectrules(commands, target, sourcebatch, suffix)
-
-    -- get rule
-    local rulename = assert(sourcebatch.rulename, "unknown rule for sourcebatch!")
-    local ruleinst = assert(project.rule(rulename) or rule.rule(rulename), "unknown rule: %s", rulename)
-
-    -- generate commands for xx_buildcmd_files
-    local scriptname = "buildcmd_files" .. (suffix and ("_" .. suffix) or "")
-    local script = ruleinst:script(scriptname)
-    if script then
-        local batchcmds_ = batchcmds.new({target = target})
-        script(target, batchcmds_, sourcebatch, {})
-        if not batchcmds_:empty() then
-            for _, cmd in ipairs(batchcmds_:cmds()) do
-                local command = _get_command_string(cmd)
-                if command then
-                    commands[suffix] = commands[suffix] or {}
-                    table.insert(commands[suffix], command)
-                end
-            end
-        end
-    end
-
-    -- generate commands for xx_buildcmd_file
-    if not script then
-        scriptname = "buildcmd_file" .. (suffix and ("_" .. suffix) or "")
-        script = ruleinst:script(scriptname)
-        if script then
-            local sourcekind = sourcebatch.sourcekind
-            for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
-                local batchcmds_ = batchcmds.new({target = target})
-                script(target, batchcmds_, sourcefile, {})
-                if not batchcmds_:empty() then
-                    for _, cmd in ipairs(batchcmds_:cmds()) do
-                        local command = _get_command_string(cmd)
-                        if command then
-                            commands[suffix] = commands[suffix] or {}
-                            table.insert(commands[suffix], command)
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 -- make custom commands
 function _make_custom_commands(vcxprojfile, target)
-    local commands = {}
-    _make_custom_commands_for_target(commands, target, "before")
-    for _, sourcebatch in pairs(target:sourcebatches()) do
-        local sourcekind = sourcebatch.sourcekind
-        if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "before")
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch)
-            _make_custom_commands_for_objectrules(commands, target, sourcebatch, "after")
-        end
-    end
-    _make_custom_commands_for_target(commands, target, "after")
-    for suffix, cmds in pairs(commands) do
+    for suffix, cmds in pairs(target.commands) do
         _make_custom_commands_item(vcxprojfile, cmds, suffix)
     end
 end
@@ -598,7 +494,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
     vcxprojfile:leave("</ClCompile>")
 
     -- make custom commands
-    _make_custom_commands(vcxprojfile, target.targetinst)
+    _make_custom_commands(vcxprojfile, targetinfo)
 
     -- leave ItemDefinitionGroup
     vcxprojfile:leave("</ItemDefinitionGroup>")
