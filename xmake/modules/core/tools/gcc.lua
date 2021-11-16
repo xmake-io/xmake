@@ -494,7 +494,12 @@ function compile(self, sourcefile, objectfile, dependinfo, flags)
                 end
 
                 -- raise compiling errors
-                raise(#lines > 0 and table.concat(lines, "\n") or "")
+                local results = #lines > 0 and table.concat(lines, "\n") or ""
+                if not option.get("verbose") then
+                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
+                end
+                raise(results)
+
             end
         },
         finally

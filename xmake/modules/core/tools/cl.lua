@@ -454,7 +454,10 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
                         end
                     end
                 end
-                os.raise(results)
+                if not option.get("verbose") then
+                    results = results .. "\n  ${yellow}> in ${bright}" .. sourcefile
+                end
+                raise(results)
             end
         },
         finally
