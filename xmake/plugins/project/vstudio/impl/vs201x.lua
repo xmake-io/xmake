@@ -86,8 +86,26 @@ function _make_custom_commands_for_target(commands, target, suffix)
                 for _, cmd in ipairs(batchcmds_:cmds()) do
                     local command = _get_command_string(cmd)
                     if command then
-                        commands[suffix] = commands[suffix] or {}
-                        table.insert(commands[suffix], command)
+                        local key = suffix and suffix or "before"
+                        commands[key] = commands[key] or {}
+                        table.insert(commands[key], command)
+                    end
+                end
+            end
+        end
+
+        scriptname = "linkcmd" .. (suffix and ("_" .. suffix) or "")
+        script = ruleinst:script(scriptname)
+        if script then
+            local batchcmds_ = batchcmds.new({target = target})
+            script(target, batchcmds_, {})
+            if not batchcmds_:empty() then
+                for _, cmd in ipairs(batchcmds_:cmds()) do
+                    local command = _get_command_string(cmd)
+                    if command then
+                        local key = (suffix and suffix or "before") .. "_link"
+                        commands[key] = commands[key] or {}
+                        table.insert(commands[key], command)
                     end
                 end
             end
@@ -112,8 +130,9 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, su
             for _, cmd in ipairs(batchcmds_:cmds()) do
                 local command = _get_command_string(cmd)
                 if command then
-                    commands[suffix] = commands[suffix] or {}
-                    table.insert(commands[suffix], command)
+                    local key = suffix and suffix or "before"
+                    commands[key] = commands[key] or {}
+                    table.insert(commands[key], command)
                 end
             end
         end
@@ -132,8 +151,9 @@ function _make_custom_commands_for_objectrules(commands, target, sourcebatch, su
                     for _, cmd in ipairs(batchcmds_:cmds()) do
                         local command = _get_command_string(cmd)
                         if command then
-                            commands[suffix] = commands[suffix] or {}
-                            table.insert(commands[suffix], command)
+                            local key = suffix and suffix or "before"
+                            commands[key] = commands[key] or {}
+                            table.insert(commands[key], command)
                         end
                     end
                 end
@@ -146,6 +166,7 @@ end
 function _make_custom_commands(target)
     local commands = {}
     _make_custom_commands_for_target(commands, target, "before")
+    _make_custom_commands_for_target(commands, target)
     for _, sourcebatch in pairs(target:sourcebatches()) do
         local sourcekind = sourcebatch.sourcekind
         if sourcekind ~= "cc" and sourcekind ~= "cxx" and sourcekind ~= "as" then

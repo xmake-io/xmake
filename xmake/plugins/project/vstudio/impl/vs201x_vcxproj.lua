@@ -374,10 +374,12 @@ end
 
 -- make custom commands item
 function _make_custom_commands_item(vcxprojfile, commands, suffix)
-    if suffix == "after" then
+    if suffix == "after" or suffix == "after_link" then
         vcxprojfile:print("<PostBuildEvent>")
     elseif suffix == "before" then
         vcxprojfile:print("<PreBuildEvent>")
+    elseif suffix == "before_link" then
+        vcxprojfile:print("<PreLinkEvent>")
     end
     vcxprojfile:print("<Message></Message>")
     vcxprojfile:print("<Command>setlocal")
@@ -392,10 +394,12 @@ exit /b %1
 :xmDone
 if %errorlevel% neq 0 goto :VCEnd</Command>
 ]])
-    if suffix == "after" then
+    if suffix == "after" or suffix == "after_link" then
         vcxprojfile:print("</PostBuildEvent>")
     elseif suffix == "before" then
         vcxprojfile:print("</PreBuildEvent>")
+    elseif suffix == "before_link" then
+        vcxprojfile:print("</PreLinkEvent>")
     end
 end
 
