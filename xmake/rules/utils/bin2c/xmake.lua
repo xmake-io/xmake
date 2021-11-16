@@ -32,6 +32,7 @@ rule("utils.bin2c")
         -- get header file
         local headerdir = path.join(target:autogendir(), "rules", "c++", "bin2c")
         local headerfile = path.join(headerdir, path.filename(sourcefile_bin) .. ".h")
+        target:add("includedirs", headerdir)
 
         -- add commands
         batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
