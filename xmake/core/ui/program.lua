@@ -350,10 +350,10 @@ function program:_key_map()
             --
             -- @see https://github.com/xmake-io/xmake/issues/1610
             -- https://github.com/wmcbrine/PDCurses/blob/HEAD/curses.h#L766-L774
-            [curses.KEY_C2          ] = "Down",
-            [curses.KEY_A2          ] = "Up",
-            [curses.KEY_B1          ] = "Left",
-            [curses.KEY_B3          ] = "Right"
+            [curses.KEY_C2 or -1    ] = "Down",
+            [curses.KEY_A2 or -1    ] = "Up",
+            [curses.KEY_B1 or -1    ] = "Left",
+            [curses.KEY_B3 or -1    ] = "Right"
         }
     end
     return self._KEYMAP
