@@ -92,6 +92,11 @@ function nf_language(self, stdname)
     end
 end
 
+-- make the define flag
+function nf_define(self, macro)
+    return {"--pd", macro .. " SETA 1"}
+end
+
 -- make the includedir flag
 function nf_includedir(self, dir)
     return {"-I" .. dir}
