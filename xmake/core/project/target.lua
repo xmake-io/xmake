@@ -1166,17 +1166,17 @@ function _instance:filerules(sourcefile)
     end
 
     -- get target rules from the given sourcekind or extension
+    --
+    -- @note we prefer to use rules with extension because we need to be able to
+    -- override the language code rules set by set_sourcekinds
+    --
+    -- e.g. set_extensions(".bpf.c") will override c++ rules
+    --
     local rules_override = {}
     local filename = path.filename(sourcefile):lower()
     for _, r in ipairs(table.wrap(key2rules[path.extension(filename, 2)] or
-                                  key2rules[path.extension(filename)])) do
-        if self:extraconf("rules", r:name(), "override") then
-            table.insert(rules_override, r)
-        else
-            table.insert(rules, r)
-        end
-    end
-    for _, r in ipairs(table.wrap(key2rules[self:sourcekind_of(filename)])) do
+                                  key2rules[path.extension(filename)] or
+                                  key2rules[self:sourcekind_of(filename)])) do
         if self:extraconf("rules", r:name(), "override") then
             table.insert(rules_override, r)
         else
