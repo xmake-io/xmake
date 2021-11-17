@@ -23,3 +23,10 @@ inherit("gcc")
 function init(self)
     _super.init(self)
 end
+
+-- make runtime flag
+function nf_runtime(self, runtime)
+    if runtime == "microlib" then
+        return "-D__MICROLIB"
+    end
+end

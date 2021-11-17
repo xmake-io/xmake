@@ -45,6 +45,13 @@ function nf_symbol(self, level)
     end
 end
 
+-- make runtime flag
+function nf_runtime(self, runtime)
+    if runtime == "microlib" then
+        return "-D__MICROLIB"
+    end
+end
+
 -- make the optimize flag
 function nf_optimize(self, level)
     local maps =

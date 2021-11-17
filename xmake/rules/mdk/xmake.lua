@@ -40,3 +40,4 @@ rule("mdk.static")
         -- set default output binary
         target:set("kind", "static")
     end)
+
