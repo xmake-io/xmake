@@ -18,6 +18,7 @@
 ### Bugs Fixed
 
 * Fix semver to parse build string with zero prefix
+* [#50](https://github.com/libbpf/libbpf-bootstrap/issues/50): Fix rule and build bpf program errors
 
 ## v2.5.9
 
@@ -1148,6 +1149,7 @@
 ### Bugs 修复
 
 * 修复语义版本中解析带有 0 前缀的 build 字符串问题
+* [#50](https://github.com/libbpf/libbpf-bootstrap/issues/50): 修复 rule 和构建 bpf 程序 bug
 
 ## v2.5.9
 
