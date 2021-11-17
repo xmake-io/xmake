@@ -92,6 +92,13 @@ function nf_language(self, stdname)
     end
 end
 
+-- make runtime flag
+function nf_runtime(self, runtime)
+    if runtime == "microlib" then
+        return {"--pd", "__MICROLIB SETA 1"}
+    end
+end
+
 -- make the define flag
 function nf_define(self, macro)
     return {"--pd", macro .. " SETA 1"}

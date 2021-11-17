@@ -41,6 +41,13 @@ function nf_linkdir(self, dir)
     return {"--userlibpath", dir}
 end
 
+-- make runtime flag
+function nf_runtime(self, runtime)
+    if runtime == "microlib" then
+        return "--library_type=microlib"
+    end
+end
+
 -- make the link arguments list
 function linkargv(self, objectfiles, targetkind, targetfile, flags)
     return self:program(), table.join("-o", targetfile, objectfiles, flags)

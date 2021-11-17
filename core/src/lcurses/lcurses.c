@@ -609,6 +609,12 @@ static void register_curses_constants(lua_State *L)
     CC(KEY_COPY)        CC(KEY_CREATE)      CC(KEY_END)
     CC(KEY_EXIT)        CC(KEY_FIND)        CC(KEY_HELP)
     CC(KEY_MARK)        CC(KEY_MESSAGE)
+#ifdef PDCURSES
+    // https://github.com/xmake-io/xmake/issues/1610#issuecomment-971149885
+    CC(KEY_C2)          CC(KEY_A2)          CC(KEY_B1)
+    CC(KEY_B3)
+#endif
+
 #if !defined(XCURSES)
 #ifndef NOMOUSE
     CC(KEY_MOUSE)
