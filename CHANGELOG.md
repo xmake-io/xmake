@@ -14,11 +14,13 @@
 * [#1819](https://github.com/xmake-io/xmake/issues/1819): Add precompiled header to cmake generator
 * Improve C++20 module to support std libraries for msvc
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): Add custom command in vs project generator
+* [#1835](https://github.com/xmake-io/xmake/issues/1835): Improve MDK program supports
 
 ### Bugs Fixed
 
 * Fix semver to parse build string with zero prefix
 * [#50](https://github.com/libbpf/libbpf-bootstrap/issues/50): Fix rule and build bpf program errors
+* [#1610](https://github.com/xmake-io/xmake/issues/1610): Fix `xmake f --menu` not responding in vscode and support ConPTY terminal virtkeys
 
 ## v2.5.9
 
@@ -1145,11 +1147,13 @@
 * [#1819](https://github.com/xmake-io/xmake/issues/1819): 添加预编译头到 cmake 生成器
 * 改进 C++20 Modules 为 msvc 支持 std 标准库
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): 添加自定义命令到 vs 工程生成器
+* [#1835](https://github.com/xmake-io/xmake/issues/1835): 改进 MDK 程序构建支持
 
 ### Bugs 修复
 
 * 修复语义版本中解析带有 0 前缀的 build 字符串问题
 * [#50](https://github.com/libbpf/libbpf-bootstrap/issues/50): 修复 rule 和构建 bpf 程序 bug
+* [#1610](https://github.com/xmake-io/xmake/issues/1610): 修复 `xmake f --menu` 在 vscode 终端下按键无响应，并且支持 ConPTY 终端虚拟按键
 
 ## v2.5.9
 
