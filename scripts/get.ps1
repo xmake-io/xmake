@@ -11,7 +11,7 @@ param (
 )
 
 & {
-    $LastRelease = "v2.5.8"
+    $LastRelease = "v2.5.9"
     $ErrorActionPreference = 'Stop'
 
     function writeErrorTip($msg) {
@@ -157,7 +157,7 @@ param (
                 writeErrorTip 'Check your network or... the news of S3 break'
                 return
             }
-            Set-Content $file "$content`n$appendcontent" -NoNewline
+            Set-Content $file "$content`n# >>> xmake >>>`n$appendcontent`n# <<< xmake <<<`n" -NoNewline
             . $file
             Write-Host "Tab completion installed"
         }

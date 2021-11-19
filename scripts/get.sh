@@ -225,7 +225,7 @@ else
 fi
 write_profile()
 {
-    grep -sq ".xmake/profile" $1 || echo -e "\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile" >> $1
+    grep -sq ".xmake/profile" $1 || echo -e "\n# >>> xmake >>>\n[[ -s \"\$HOME/.xmake/profile\" ]] && source \"\$HOME/.xmake/profile\" # load xmake profile\n# <<< xmake <<<" >> $1
 }
 install_profile()
 {
