@@ -1,5 +1,5 @@
 target("lua")
-    if not is_config("lua") then
+    if not is_config("runtime", "lua") then
         set_default(false)
     end
     set_kind("static")
