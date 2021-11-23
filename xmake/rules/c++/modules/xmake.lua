@@ -21,12 +21,36 @@
 -- define rule: c++.build.modules
 rule("c++.build.modules")
     set_extensions(".mpp", ".mxx", ".cppm", ".ixx")
-    before_build_files(function (target, batchjobs, sourcebatch, opt)
+    after_load(function (target)
         -- we disable to build across targets in parallel, because the source files may depend on other target modules
-        -- @note we cannot set it in on_load, because it will affect all c++ projects
-        target:set("policy", "build.across_targets_in_parallel", false)
-
-        -- build module files with batchjobs
+        -- @see https://github.com/xmake-io/xmake/issues/1858
+        local target_with_modules
+        for _, dep in ipairs(target:orderdeps()) do
+            local sourcebatches = dep:sourcebatches()
+            if sourcebatches and sourcebatches["c++.build.modules"] then
+                target_with_modules = true
+                break
+            end
+        end
+        if target_with_modules then
+            -- @note this will cause cross-parallel builds to be disabled for all sub-dependent targets,
+            -- even if some sub-targets do not contain C++ modules.
+            --
+            -- maybe we will have a more fine-grained configuration strategy to disable it in the future.
+            target:set("policy", "build.across_targets_in_parallel", false)
+            local _, toolname = target:tool("cxx")
+            if toolname:find("clang", 1, true) then
+                import("build_modules.clang").load_parent(target, opt)
+            elseif toolname:find("gcc", 1, true) then
+                import("build_modules.gcc").load_parent(target, opt)
+            elseif toolname == "cl" then
+                import("build_modules.msvc").load_parent(target, opt)
+            else
+                raise("compiler(%s): does not support c++ module!", toolname)
+            end
+        end
+    end)
+    before_build_files(function (target, batchjobs, sourcebatch, opt)
         local _, toolname = target:tool("cxx")
         if toolname:find("clang", 1, true) then
             import("build_modules.clang").build_with_batchjobs(target, batchjobs, sourcebatch, opt)

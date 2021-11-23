@@ -23,6 +23,32 @@ import("core.tool.compiler")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("module_parser")
 
+-- load parent target with modules files
+function load_parent(target, opt)
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("-fmodules") then
+        modulesflag = "-fmodules"
+    elseif compinst:has_flags("-fmodules-ts") then
+        modulesflag = "-fmodules-ts"
+    end
+    assert(modulesflag, "compiler(clang): does not support c++ module!")
+
+    -- add module flags
+    target:add("cxxflags", modulesflag)
+
+    -- the module cache directory
+    for _, dep in ipairs(target:orderdeps()) do
+        local sourcebatches = dep:sourcebatches()
+        if sourcebatches and sourcebatches["c++.build.modules"] then
+            local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+            target:add("cxxflags", "-fmodules-cache-path=" .. cachedir, {force = true})
+            target:add("cxxflags", "-fimplicit-modules", "-fimplicit-module-maps", "-fprebuilt-module-path=" .. cachedir, {force = true})
+        end
+    end
+end
+
 -- build module files
 function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 

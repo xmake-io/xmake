@@ -23,6 +23,21 @@ import("core.tool.compiler")
 import("private.action.build.object", {alias = "objectbuilder"})
 import("module_parser")
 
+-- load parent target with modules files
+function load_parent(target, opt)
+
+    -- get modules flag
+    local modulesflag
+    local compinst = compiler.load("cxx", {target = target})
+    if compinst:has_flags("/experimental:module", "cxxflags") then
+        modulesflag = "/experimental:module"
+    end
+    assert(modulesflag, "compiler(msvc): does not support c++ module!")
+
+    -- add module flags
+    target:add("cxxflags", modulesflag)
+end
+
 -- build module files
 function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
 
