@@ -23,7 +23,7 @@ local autogendir = path.join("autogen", plat, jit and "jit" or "nojit", arch)
 
 -- add target
 target("luajit")
-    if not is_config("luajit") then
+    if not is_config("runtime", "luajit") then
         set_default(false)
     end
 
