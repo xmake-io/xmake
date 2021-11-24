@@ -25,12 +25,20 @@ import("core.tool.linker")
 import("core.tool.compiler")
 import("lib.detect.find_tool")
 
--- translate path
-function _translate_path(package, p)
-    if p and is_host("windows") and (package:is_plat("mingw") or package:is_plat("msys") or package:is_plat("cygwin")) then
-        p = p:gsub("\\", "/")
+-- translate paths
+function _translate_paths(package, paths)
+    if paths and is_host("windows") and (package:is_plat("mingw") or package:is_plat("msys") or package:is_plat("cygwin")) then
+        if type(paths) == "string" then
+            return (paths:gsub("\\", "/"))
+        elseif type(paths) == "table" then
+            local result = {}
+            for _, p in ipairs(paths) do
+                table.insert(result, (p:gsub("\\", "/")))
+            end
+            return result
+        end
     end
-    return p
+    return paths
 end
 
 -- translate windows bin path
@@ -57,7 +65,7 @@ function _get_configs(package, configs)
 
     -- add prefix
     local configs = configs or {}
-    table.insert(configs, "--prefix=" .. _translate_path(package, package:installdir()))
+    table.insert(configs, "--prefix=" .. _translate_paths(package, package:installdir()))
 
     -- add host for cross-complation
     if not configs.host and not package:is_plat(os.subhost()) then
@@ -109,6 +117,40 @@ function _get_configs(package, configs)
     return configs
 end
 
+-- get cflags from package deps
+function _get_cflags_from_packagedeps(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch({external = false})
+            if fetchinfo then
+                table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
+                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "includedir", fetchinfo.includedirs)))
+                table.join2(result, _translate_paths(package, _map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs)))
+            end
+        end
+    end
+    return result
+end
+
+-- get ldflags from package deps
+function _get_ldflags_from_packagedeps(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch({external = false})
+            if fetchinfo then
+                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs)))
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
+                table.join2(result, _translate_paths(package, _map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks)))
+            end
+        end
+    end
+    return result
+end
+
 -- get the build environments
 function buildenvs(package, opt)
     opt = opt or {}
@@ -132,6 +174,10 @@ function buildenvs(package, opt)
         table.join2(cppflags, opt.cppflags) -- @see https://github.com/xmake-io/xmake/issues/1688
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
+        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
+        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.CPPFLAGS  = table.concat(cppflags, ' ')
@@ -158,6 +204,10 @@ function buildenvs(package, opt)
         table.join2(asflags,  opt.asflags)
         table.join2(ldflags,  opt.ldflags)
         table.join2(shflags,  opt.shflags)
+        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
+        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(cppflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
         table.join2(cflags,   _map_compflags(package, "c", "define", defines))
         table.join2(cflags,   _map_compflags(package, "c", "includedir", includedirs))
         table.join2(cflags,   _map_compflags(package, "c", "sysincludedir", sysincludedirs))
