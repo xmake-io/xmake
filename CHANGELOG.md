@@ -15,6 +15,7 @@
 * Improve C++20 module to support std libraries for msvc
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): Add custom command in vs project generator
 * [#1835](https://github.com/xmake-io/xmake/issues/1835): Improve MDK program supports and add `set_runtimes("microlib")`
+* [#1858](https://github.com/xmake-io/xmake/issues/1858): Improve to build c++20 modules with libraries
 
 ### Bugs Fixed
 
@@ -1148,6 +1149,7 @@
 * 改进 C++20 Modules 为 msvc 支持 std 标准库
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): 添加自定义命令到 vs 工程生成器
 * [#1835](https://github.com/xmake-io/xmake/issues/1835): 改进 MDK 程序构建支持，增加 `set_runtimes("microlib")`
+* [#1858](https://github.com/xmake-io/xmake/issues/1858): 改进构建 c++20 modules，修复跨 target 构建问题
 
 ### Bugs 修复
 
