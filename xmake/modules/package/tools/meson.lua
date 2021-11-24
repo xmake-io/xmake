@@ -22,6 +22,8 @@
 import("core.base.option")
 import("core.project.config")
 import("core.tool.toolchain")
+import("core.tool.linker")
+import("core.tool.compiler")
 import("package.tools.ninja")
 
 -- get build directory
@@ -32,6 +34,16 @@ function _get_buildir(package, opt)
         _g.buildir = _g.buildir or package:buildir()
         return _g.buildir
     end
+end
+
+-- map compiler flags
+function _map_compflags(package, langkind, name, values)
+    return compiler.map_flags(langkind, name, values, {target = package})
+end
+
+-- map linker flags
+function _map_linkflags(package, targetkind, sourcekinds, name, values)
+    return linker.map_flags(targetkind, sourcekinds, name, values, {target = package})
 end
 
 -- get configs
@@ -79,21 +91,86 @@ function _fix_libname_on_windows(package)
     end
 end
 
+-- get cflags from package deps
+function _get_cflags_from_packagedeps(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch({external = false})
+            if fetchinfo then
+                table.join2(result, _map_compflags(package, "cxx", "define", fetchinfo.defines))
+                table.join2(result, _map_compflags(package, "cxx", "includedir", fetchinfo.includedirs))
+                table.join2(result, _map_compflags(package, "cxx", "sysincludedir", fetchinfo.sysincludedirs))
+            end
+        end
+    end
+    return result
+end
+
+-- get ldflags from package deps
+function _get_ldflags_from_packagedeps(package, opt)
+    local result = {}
+    for _, depname in ipairs(opt.packagedeps) do
+        local dep = package:dep(depname)
+        if dep then
+            local fetchinfo = dep:fetch({external = false})
+            if fetchinfo then
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "linkdir", fetchinfo.linkdirs))
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "link", fetchinfo.links))
+                table.join2(result, _map_linkflags(package, "binary", {"cxx"}, "syslink", fetchinfo.syslinks))
+            end
+        end
+    end
+    return result
+end
+
 -- get the build environments
 function buildenvs(package)
     local envs = {}
     if package:is_plat(os.host()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
+        local asflags  = table.wrap(package:config("asflags"))
+        local ldflags  = table.wrap(package:config("ldflags"))
+        local shflags  = table.wrap(package:config("shflags"))
+        table.join2(cflags,   opt.cflags)
+        table.join2(cflags,   opt.cxflags)
+        table.join2(cxxflags, opt.cxxflags)
+        table.join2(cxxflags, opt.cxflags)
+        table.join2(asflags,  opt.asflags)
+        table.join2(ldflags,  opt.ldflags)
+        table.join2(shflags,  opt.shflags)
+        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
+        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
+        table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(package:config("asflags")), ' ')
+        envs.ASFLAGS   = table.concat(asflags, ' ')
+        envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.SHFLAGS   = table.concat(shflags, ' ')
         if package:is_plat("windows") then
             envs = os.joinenvs(envs, _get_msvc_runenvs(package))
         end
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
+        local asflags  = table.wrap(package:build_getenv("asflags"))
+        local arflags  = table.wrap(package:build_getenv("arflags"))
+        local ldflags  = table.wrap(package:build_getenv("ldflags"))
+        local shflags  = table.wrap(package:build_getenv("shflags"))
+        table.join2(cflags,   opt.cflags)
+        table.join2(cflags,   opt.cxflags)
+        table.join2(cxxflags, opt.cxxflags)
+        table.join2(cxxflags, opt.cxflags)
+        table.join2(asflags,  opt.asflags)
+        table.join2(ldflags,  opt.ldflags)
+        table.join2(shflags,  opt.shflags)
+        table.join2(cflags,   _get_cflags_from_packagedeps(package, opt))
+        table.join2(cxxflags, _get_cflags_from_packagedeps(package, opt))
+        table.join2(ldflags,  _get_ldflags_from_packagedeps(package, opt))
+        table.join2(shflags,  _get_ldflags_from_packagedeps(package, opt))
         envs.CC        = package:build_getenv("cc")
         envs.AS        = package:build_getenv("as")
         envs.AR        = package:build_getenv("ar")
@@ -103,10 +180,10 @@ function buildenvs(package)
         envs.RANLIB    = package:build_getenv("ranlib")
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
-        envs.ASFLAGS   = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
-        envs.ARFLAGS   = table.concat(table.wrap(package:build_getenv("arflags")), ' ')
-        envs.LDFLAGS   = table.concat(table.wrap(package:build_getenv("ldflags")), ' ')
-        envs.SHFLAGS   = table.concat(table.wrap(package:build_getenv("shflags")), ' ')
+        envs.ASFLAGS   = table.concat(asflags, ' ')
+        envs.ARFLAGS   = table.concat(arflags, ' ')
+        envs.LDFLAGS   = table.concat(ldflags, ' ')
+        envs.SHFLAGS   = table.concat(shflags, ' ')
     end
     local ACLOCAL_PATH = {}
     local PKG_CONFIG_PATH = {}
