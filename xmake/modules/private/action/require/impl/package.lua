@@ -573,9 +573,6 @@ function _inherit_parent_configs(requireinfo, package, parentinfo)
         if parentinfo.arch then
             requireinfo.arch = parentinfo.arch
         end
-        if parentinfo.private ~= nil then
-            requireinfo.private = parentinfo.private
-        end
         requireinfo_configs.toolchains = requireinfo_configs.toolchains or parentinfo_configs.toolchains
         requireinfo_configs.vs_runtime = requireinfo_configs.vs_runtime or parentinfo_configs.vs_runtime
         requireinfo.configs = requireinfo_configs
