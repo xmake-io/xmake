@@ -36,6 +36,17 @@ function load_parent(target, opt)
 
     -- add module flags
     target:add("cxxflags", modulesflag)
+
+    -- get output flag
+    if compinst:has_flags("/ifcOutput", "cxxflags")  then
+        for _, dep in ipairs(target:orderdeps()) do
+            local sourcebatches = dep:sourcebatches()
+            if sourcebatches and sourcebatches["c++.build.modules"] then
+                local cachedir = path.join(dep:autogendir(), "rules", "modules", "cache")
+                target:add("cxxflags", "/ifcSearchDir " .. os.args(cachedir), {force = true})
+            end
+        end
+    end
 end
 
 -- build module files
@@ -52,9 +63,7 @@ function build_with_batchjobs(target, batchjobs, sourcebatch, opt)
     -- get output flag
     local cachedir
     local outputflag
-    local hasifc = false
     if compinst:has_flags("/ifcOutput", "cxxflags")  then
-        hasifc = true
         outputflag = "/ifcOutput"
         cachedir = path.join(target:autogendir(), "rules", "modules", "cache")
         if not os.isdir(cachedir) then
