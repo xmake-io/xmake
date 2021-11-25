@@ -109,7 +109,7 @@ function main(name, opt)
             end
 
             -- get linkdirs and links
-            if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") then
+            if (plat == "windows" and line:endswith(".lib")) or line:endswith(".a") or line:endswith(".so") then
                 if line:find(triplet .. (mode == "debug" and "/debug" or "") .. "/lib/", 1, true) then
                     result = result or {}
                     result.links = result.links or {}
