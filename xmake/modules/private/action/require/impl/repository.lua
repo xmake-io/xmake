@@ -24,6 +24,7 @@ import("core.base.global")
 import("core.project.config")
 import("core.package.repository")
 import("devel.git")
+import("net.proxy")
 
 -- get package directory from the locked repository
 function _get_packagedir_from_locked_repo(packagename, locked_repo)
@@ -55,7 +56,8 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
             git.clone(repo_global:directory(), {verbose = option.get("verbose"), outputdir = repodir_local})
             lastcommit = repo_global:commit()
         elseif global.get("network") ~= "private" then
-            git.clone(locked_repo.url, {verbose = option.get("verbose"), branch = locked_repo.branch, outputdir = repodir_local})
+            local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
+            git.clone(remoteurl, {verbose = option.get("verbose"), branch = locked_repo.branch, outputdir = repodir_local})
         else
             wprint("we cannot lock repository(%s) in private network mode!", locked_repo.url)
             return
@@ -73,7 +75,8 @@ function _get_packagedir_from_locked_repo(packagename, locked_repo)
             if not ok then
                 if global.get("network") ~= "private" then
                     -- pull the latest commit
-                    git.pull({verbose = option.get("verbose"), remote = locked_repo.url, branch = locked_repo.branch, repodir = repodir_local})
+                    local remoteurl = proxy.mirror(locked_repo.url) or locked_repo.url
+                    git.pull({verbose = option.get("verbose"), remote = remoteurl, branch = locked_repo.branch, repodir = repodir_local})
                     -- re-checkout to the given commit
                     ok = try {function () git.checkout(locked_repo.commit, {verbose = option.get("verbose"), repodir = repodir_local}); return true end}
                 else
