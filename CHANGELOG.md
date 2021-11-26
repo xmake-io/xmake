@@ -16,6 +16,7 @@
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): Add custom command in vs project generator
 * [#1835](https://github.com/xmake-io/xmake/issues/1835): Improve MDK program supports and add `set_runtimes("microlib")`
 * [#1858](https://github.com/xmake-io/xmake/issues/1858): Improve to build c++20 modules with libraries
+* Add $XMAKE_BINARY_REPO and $XMAKE_MAIN_REPO repositories envs
 
 ### Bugs Fixed
 
@@ -1150,6 +1151,7 @@
 * [#1792](https://github.com/xmake-io/xmake/issues/1792): 添加自定义命令到 vs 工程生成器
 * [#1835](https://github.com/xmake-io/xmake/issues/1835): 改进 MDK 程序构建支持，增加 `set_runtimes("microlib")`
 * [#1858](https://github.com/xmake-io/xmake/issues/1858): 改进构建 c++20 modules，修复跨 target 构建问题
+* 添加 $XMAKE_BINARY_REPO 和 $XMAKE_MAIN_REPO 仓库设置环境变量
 
 ### Bugs 修复
 
