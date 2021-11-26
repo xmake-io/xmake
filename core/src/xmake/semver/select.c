@@ -87,10 +87,11 @@ static tb_bool_t xm_semver_select_from_versions_tags2(lua_State* lua, tb_int_t f
         lua_gettable(lua, fromidx);
 
         tb_char_t const* source_str = luaL_checkstring(lua, -1);
-        if (source_str && tb_strncmp(source_str, version_str, version_len) == 0)
+        tb_size_t source_len = tb_strlen(source_str);
+        if (source_len == version_len && tb_strncmp(source_str, version_str, version_len) == 0)
         {
             lua_createtable(lua, 0, 2);
-            lua_pushstring(lua, source_str);
+            lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
             lua_pushstring(lua, fromidx == 2? "version" : "tag");
             lua_setfield(lua, -2, "source");
@@ -109,25 +110,17 @@ static tb_bool_t xm_semver_select_from_branches(lua_State* lua, tb_int_t fromidx
         lua_gettable(lua, fromidx);
 
         tb_char_t const* source_str = luaL_checkstring(lua, -1);
-        tb_check_continue(source_str);
-
         tb_size_t source_len = tb_strlen(source_str);
         if (source_len == range_len && tb_memcmp(source_str, range_str, source_len) == 0)
         {
             lua_createtable(lua, 0, 2);
-
             lua_pushlstring(lua, source_str, source_len);
             lua_setfield(lua, -2, "version");
-
             lua_pushstring(lua, "branch");
             lua_setfield(lua, -2, "source");
-
-            // ok
             return tb_true;
         }
     }
-
-    // no matches
     return tb_false;
 }
 static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State* lua, tb_int_t fromidx, semver_t* semver, semvers_t* matches)
@@ -147,8 +140,6 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State* lua, tb_i
         if (source_str && semver_tryn(semver, source_str, tb_strlen(source_str)) == 0)
             semvers_ppush(matches, *semver);
     }
-
-    // no matches?
     tb_check_return_val(matches->length, tb_false);
 
     // sort matches
@@ -165,10 +156,7 @@ static tb_bool_t xm_semver_select_latest_from_versions_tags(lua_State* lua, tb_i
     lua_pushstring(lua, fromidx == 2? "version" : "tag");
     lua_setfield(lua, -2, "source");
 
-    // exit the popped semver
     semver_dtor(&top);
-
-    // ok
     return tb_true;
 }
 
