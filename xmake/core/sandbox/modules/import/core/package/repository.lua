@@ -110,15 +110,20 @@ function sandbox_core_package_repository.repositories(is_global)
         -- add artifacts urls
         local artifacts_urls = localcache.cache("repository"):get("artifacts_urls")
         if not artifacts_urls then
-            artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
-                              "https://gitlab.com/xmake-mirror/build-artifacts.git",
-                              "https://gitee.com/xmake-mirror/build-artifacts.git"}
-            if global.get("network") ~= "private" then
-                import("net.fasturl")
-                fasturl.add(artifacts_urls)
-                artifacts_urls = fasturl.sort(artifacts_urls)
-                localcache.cache("repository"):set("artifacts_urls", artifacts_urls)
-                localcache.cache("repository"):save()
+            local binary_repo = os.getenv("XMAKE_BINARY_REPO")
+            if binary_repo then
+                artifacts_urls = {binary_repo}
+            else
+                artifacts_urls = {"https://github.com/xmake-mirror/build-artifacts.git",
+                                  "https://gitlab.com/xmake-mirror/build-artifacts.git",
+                                  "https://gitee.com/xmake-mirror/build-artifacts.git"}
+                if global.get("network") ~= "private" then
+                    import("net.fasturl")
+                    fasturl.add(artifacts_urls)
+                    artifacts_urls = fasturl.sort(artifacts_urls)
+                    localcache.cache("repository"):set("artifacts_urls", artifacts_urls)
+                    localcache.cache("repository"):save()
+                end
             end
         end
         if #artifacts_urls > 0 then
@@ -131,15 +136,20 @@ function sandbox_core_package_repository.repositories(is_global)
         -- add main urls
         local mainurls = localcache.cache("repository"):get("mainurls")
         if not mainurls then
-            mainurls = {"https://github.com/xmake-io/xmake-repo.git",
-                        "https://gitlab.com/tboox/xmake-repo.git",
-                        "https://gitee.com/tboox/xmake-repo.git"}
-            if global.get("network") ~= "private" then
-                import("net.fasturl")
-                fasturl.add(mainurls)
-                mainurls = fasturl.sort(mainurls)
-                localcache.cache("repository"):set("mainurls", mainurls)
-                localcache.cache("repository"):save()
+            local mainrepo = os.getenv("XMAKE_MAIN_REPO")
+            if mainrepo then
+                mainurls = {mainrepo}
+            else
+                mainurls = {"https://github.com/xmake-io/xmake-repo.git",
+                            "https://gitlab.com/tboox/xmake-repo.git",
+                            "https://gitee.com/tboox/xmake-repo.git"}
+                if global.get("network") ~= "private" then
+                    import("net.fasturl")
+                    fasturl.add(mainurls)
+                    mainurls = fasturl.sort(mainurls)
+                    localcache.cache("repository"):set("mainurls", mainurls)
+                    localcache.cache("repository"):save()
+                end
             end
         end
         if #mainurls > 0 then
