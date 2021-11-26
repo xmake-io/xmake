@@ -164,7 +164,7 @@ function _install(sourcedir)
                             no_admin = try {function () return winos.registry_query("HKEY_CURRENT_USER\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\XMake;NoAdmin") end}
                         end
                         if no_admin ~= nil then
-                            no_admin = tostring(value):lower() == "true"
+                            no_admin = tostring(no_admin):lower() == "true"
                         else
                             local testfile = path.join(os.programdir(), "temp-install")
                             no_admin = os.trycp(path.join(os.programdir(), "scripts", "run.vbs"), testfile)
