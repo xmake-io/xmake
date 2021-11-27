@@ -442,6 +442,16 @@ function builder:map_flags(name, values, opt)
     end
 end
 
+-- is the given name?
+function builder:is(...)
+    local name = self:name()
+    for _, v in ipairs(table.join(...)) do
+        if v and name:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- get the format of the given target kind
 function builder:format(targetkind)
     local formats = self:get("formats")
