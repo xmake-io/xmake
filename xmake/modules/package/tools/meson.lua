@@ -128,6 +128,7 @@ end
 -- get the build environments
 function buildenvs(package)
     local envs = {}
+    opt = opt or {}
     if package:is_plat(os.host()) then
         local cflags   = table.join(table.wrap(package:config("cxflags")), package:config("cflags"))
         local cxxflags = table.join(table.wrap(package:config("cxflags")), package:config("cxxflags"))
