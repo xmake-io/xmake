@@ -582,21 +582,35 @@ function _instance:basename()
     return self:get("basename") or self:name()
 end
 
+-- get the target compiler
+function _instance:compiler(sourcekind)
+    local compilerinst = self:_memcache():get("compiler")
+    if not compilerinst then
+        if not sourcekind then
+            os.raise("please pass sourcekind to the first argument of target:compiler(), e.g. cc, cxx, as")
+        end
+        local instance, errors = compiler.load(sourcekind, self)
+        if not instance then
+            os.raise(errors)
+        end
+        compilerinst = instance
+        self:_memcache():set("compiler", compilerinst)
+    end
+    return compilerinst
+end
+
 -- get the target linker
 function _instance:linker()
-
-    -- get it from cache first
-    if self._LINKER then
-        return self._LINKER
+    local linkerinst = self:_memcache():get("linker")
+    if not linkerinst then
+        local instance, errors = linker.load(self:kind(), self:sourcekinds(), self)
+        if not instance then
+            os.raise(errors)
+        end
+        linkerinst = instance
+        self:_memcache():set("linker", linkerinst)
     end
-
-    -- get the linker instance
-    local instance, errors = linker.load(self:kind(), self:sourcekinds(), self)
-    if not instance then
-        os.raise(errors)
-    end
-    self._LINKER = instance
-    return instance
+    return linkerinst
 end
 
 -- make linking command for this target
