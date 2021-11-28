@@ -1951,6 +1951,22 @@ function _instance:toolconfig(name)
     end})
 end
 
+-- has the given tool for the current target?
+--
+-- e.g.
+--
+-- if target:has_tool("cc", "clang", "gcc") then
+--    ...
+-- end
+function _instance:has_tool(toolkind, ...)
+    local _, toolname = self:tool(toolkind)
+    for _, v in ipairs(table.join(...)) do
+        if v and toolname:find("^" .. v:gsub("%-", "%%-") .. "$") then
+            return true
+        end
+    end
+end
+
 -- get target apis
 function target.apis()
 
