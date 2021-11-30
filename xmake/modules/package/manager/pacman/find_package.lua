@@ -20,6 +20,7 @@
 
 -- imports
 import("core.base.option")
+import("core.project.target")
 import("lib.detect.find_tool")
 import("package.manager.pkgconfig.find_package", {alias = "find_package_from_pkgconfig"})
 
@@ -56,31 +57,20 @@ function _find_package_from_list(list, name, pacman, opt)
         -- remove lib and .a, .dll.a and .so to have the links
         elseif line:endswith(".dll.a") then -- only for mingw
             local apath = os.iorunv(cygpath.program, {"--windows", line})
+            apath = apath:trim()
             table.insert(result.linkdirs, path.directory(apath))
-            apath = path.filename(apath)
-            if apath:startswith("lib") then
-                apath = apath:sub(4, apath:len())
-            end
-            table.insert(result.links, apath:sub(1, apath:len() - 7))
+            table.insert(result.links, target.linkname(path.filename(apath), {plat = opt.plat}))
         elseif line:endswith(".so") then
-            local apath = line
-            table.insert(result.linkdirs, path.directory(apath))
-            apath = path.filename(apath)
-            if apath:startswith("lib") then
-                apath = apath:sub(4, apath:len())
-            end
-            table.insert(result.links, apath:sub(1, apath:len() - 4))
+            table.insert(result.linkdirs, path.directory(line))
+            table.insert(result.links, target.linkname(path.filename(line), {plat = opt.plat}))
         elseif line:endswith(".a") then
             local apath = line
             if is_subhost("msys") and opt.plat == "mingw" then
                 apath = os.iorunv(cygpath.program, {"--windows", line})
+                apath = apath:trim()
             end
             table.insert(result.linkdirs, path.directory(apath))
-            apath = path.filename(apath)
-            if apath:startswith("lib") then
-                apath = apath:sub(4, apath:len())
-            end
-            table.insert(result.links, apath:sub(1, apath:len() - 3))
+            table.insert(result.links, target.linkname(path.filename(apath), {plat = opt.plat}))
         end
     end
     result.includedirs = table.unique(result.includedirs)
