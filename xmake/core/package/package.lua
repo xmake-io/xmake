@@ -1421,9 +1421,7 @@ function _instance:fetch_linkdeps()
     fetchinfo = table.copy(fetchinfo) -- avoid the cached fetchinfo be modified
     local linkdeps = self:linkdeps()
     if linkdeps then
-        local total = #linkdeps
-        for idx, _ in ipairs(linkdeps) do
-            local dep = linkdeps[total + 1 - idx]
+        for _, dep in ipairs(linkdeps) do
             local depinfo = dep:fetch()
             if depinfo then
                 for name, values in pairs(depinfo) do
