@@ -5,6 +5,7 @@
 ### New features
 
 * [#1799](https://github.com/xmake-io/xmake/issues/1799): Support mixed rust & c++ target and cargo dependences
+* Add `utils.glsl2spv` rules to compile *.vert/*.frag shader files to spirv file and binary c header file
 
 ### Changes
 
@@ -1141,6 +1142,7 @@
 ### 新特性
 
 * [#1799](https://github.com/xmake-io/xmake/issues/1799): 支持混合 Rust 和 C++ 程序，以及集成 Cargo 依赖库
+* 添加 `utils.glsl2spv` 规则去编译 *.vert/*.frag shader 文件生成 spirv 文件和二进制 C 头文件
 
 ### 改进
 
