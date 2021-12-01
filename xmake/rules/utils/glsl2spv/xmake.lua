@@ -34,7 +34,7 @@
 --
 --
 rule("utils.glsl2spv")
-    set_extensions(".vert", ".frag")
+    set_extensions(".vert", ".frag", ".tesc", ".tese", ".geom", ".comp", ".glsl")
     on_load(function (target)
         local is_bin2c = target:extraconf("rules", "utils.glsl2spv", "bin2c")
         if is_bin2c then
