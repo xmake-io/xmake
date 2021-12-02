@@ -461,11 +461,11 @@ target("test")
 
 ## Plugins
 
-#### Generate IDE project file plugin（makefile, vs2002 - vs2019 .. ）
+#### Generate IDE project file plugin（makefile, vs2002 - vs2022 .. ）
 
 ```bash
-$ xmake project -k vsxmake -m "debug;release" # New vsproj generator (Recommended)
-$ xmake project -k vs -m "debug;release"
+$ xmake project -k vsxmake -m "debug,release" # New vsproj generator (Recommended)
+$ xmake project -k vs -m "debug,release"
 $ xmake project -k cmake
 $ xmake project -k ninja
 $ xmake project -k compile_commands
@@ -513,7 +513,7 @@ We can uses [xmake-gradle](https://github.com/xmake-io/xmake-gradle) plugin to c
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.5'
 }
 
 android {
