@@ -47,10 +47,14 @@ function _do_build_file(target, sourcefile, opt)
     -- dry run?
     local dryrun = option.get("dry-run")
 
+    -- get filtered compile flags
+    -- @see https://github.com/xmake-io/xmake/issues/1824
+    local depcompflags = compinst:depflags(compflags)
+
     -- need build this object?
     -- @note we use mtime(dependfile) instead of mtime(objectfile) to ensure the object file is is fully compiled.
     -- @see https://github.com/xmake-io/xmake/issues/748
-    local depvalues = {compinst:program(), compflags}
+    local depvalues = {compinst:program(), depcompflags}
     if not dryrun and not depend.is_changed(dependinfo, {lastmtime = os.mtime(dependfile), values = depvalues}) then
         return
     end

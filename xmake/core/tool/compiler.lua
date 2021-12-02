@@ -278,7 +278,7 @@ function compiler:compcmd(sourcefiles, objectfile, opt)
     return os.args(table.join(self:compargv(sourcefiles, objectfile, opt)))
 end
 
--- get the compling flags
+-- get the compiling flags
 --
 -- @param opt   the argument options (contain all the compiler attributes of target),
 --              e.g.
@@ -333,6 +333,28 @@ function compiler:compflags(opt)
 
     -- preprocess flags
     return self:_preprocess_flags(flags)
+end
+
+-- filter the compiling flags by removing those who don't should be part of depends files
+--
+-- @param flags   flags list
+--
+-- @return      a new filtered flags list
+--
+function compiler:depflags(flags)
+    local nondepflags = self:get("nondepflags")
+    if nondepflags == nil then
+        return table.copy(flags)
+    end
+
+    local filteredflags = {}
+    for _, flag in ipairs(flags) do
+        if not nondepflags[flag] then
+            table.insert(filteredflags, flag)
+        end
+    end
+
+    return filteredflags
 end
 
 -- return module

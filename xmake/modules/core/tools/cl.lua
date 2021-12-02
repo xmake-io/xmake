@@ -40,6 +40,15 @@ function init(self)
         self:add("cxflags", "-FC")
     end
 
+    -- init flags that shouldn't justifiy a recompilation if added/removed
+    self:set("nondepflags",
+    {
+        ["/nologo"] = true
+    ,   ["-nologo"] = true
+    ,   ["/FC"] = true
+    ,   ["-FC"] = true
+    })
+
     -- init flags map
     self:set("mapflags",
     {
