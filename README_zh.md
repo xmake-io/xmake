@@ -469,11 +469,11 @@ target("test")
 
 ## 插件
 
-#### 生成IDE工程文件插件（makefile, vs2002 - vs2019, ...）
+#### 生成IDE工程文件插件（makefile, vs2002 - vs2022, ...）
 
 ```bash
-$ xmake project -k vsxmake -m "debug;release" # 新版vs工程生成插件（推荐）
-$ xmake project -k vs -m "debug;release"
+$ xmake project -k vsxmake -m "debug,release" # 新版vs工程生成插件（推荐）
+$ xmake project -k vs -m "debug,release"
 $ xmake project -k cmake
 $ xmake project -k ninja
 $ xmake project -k compile_commands
@@ -521,7 +521,7 @@ $ xmake l
 
 ```
 plugins {
-  id 'org.tboox.gradle-xmake-plugin' version '1.1.4'
+  id 'org.tboox.gradle-xmake-plugin' version '1.1.5'
 }
 
 android {
