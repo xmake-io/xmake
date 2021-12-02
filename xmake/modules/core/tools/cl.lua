@@ -378,7 +378,7 @@ end
 function _is_in_vstudio()
     local is_in_vstudio = _g._IS_IN_VSTUDIO
     if is_in_vstudio == nil then
-        is_in_vstudio = os.getenv("XMAKE_IN_VSTUDIO")
+        is_in_vstudio = os.getenv("XMAKE_IN_VSTUDIO") or false
         _g._IS_IN_VSTUDIO = is_in_vstudio
     end
     return is_in_vstudio
