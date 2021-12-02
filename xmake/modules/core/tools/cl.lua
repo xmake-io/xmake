@@ -375,6 +375,15 @@ function _has_source_dependencies(self)
     return has_source_dependencies
 end
 
+function _is_in_vstudio()
+    local is_in_vstudio = _g._IS_IN_VSTUDIO
+    if is_in_vstudio == nil then
+        is_in_vstudio = os.getenv("XMAKE_IN_VSTUDIO")
+        _g._IS_IN_VSTUDIO = is_in_vstudio
+    end
+    return is_in_vstudio
+end
+
 -- make the compile arguments list
 function compargv(self, sourcefile, objectfile, flags, opt)
 
@@ -410,7 +419,7 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- we need show full file path to goto error position if xmake is called in vstudio
             -- https://github.com/xmake-io/xmake/issues/1049
-            if os.getenv("XMAKE_IN_VSTUDIO") then
+            if _is_in_vstudio() then
                 compflags = table.join(compflags, "-FC")
             end
 
