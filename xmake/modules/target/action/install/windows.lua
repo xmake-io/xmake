@@ -76,6 +76,7 @@ function install_binary(target, opt)
     local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
+    os.trycp(target:symbolfile(), binarydir)
 
     -- install the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
@@ -105,6 +106,7 @@ function install_shared(target, opt)
     local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.mkdir(binarydir)
     os.vcp(target:targetfile(), binarydir)
+    os.trycp(target:symbolfile(), binarydir)
 
     -- install *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
@@ -130,6 +132,7 @@ function install_static(target, opt)
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.mkdir(librarydir)
     os.vcp(target:targetfile(), librarydir)
+    os.trycp(target:symbolfile(), librarydir)
 
     -- install headers
     _install_headers(target, opt)
