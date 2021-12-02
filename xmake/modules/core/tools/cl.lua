@@ -417,18 +417,22 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
             -- generate includes file
             local compflags = flags
 
-            -- we need show full file path to goto error position if xmake is called in vstudio
-            -- https://github.com/xmake-io/xmake/issues/1049
-            if _is_in_vstudio() then
-                compflags = table.join(compflags, "-FC")
-            end
-
             if dependinfo then
                 if _has_source_dependencies(self) then
                     depfile = os.tmpfile()
-                    compflags = table.join(compflags, "/sourceDependencies", depfile)
+                    compflags = table.join(flags, "/sourceDependencies", depfile)
                 else
-                    compflags = table.join(compflags, "-showIncludes")
+                    compflags = table.join(flags, "-showIncludes")
+                end
+            end
+
+            -- we need show full file path to goto error position if xmake is called in vstudio
+            -- https://github.com/xmake-io/xmake/issues/1049
+            if _is_in_vstudio() then
+                if compflags == flags then
+                    compflags = table.join(flags, "-FC")
+                else
+                    table.join2(compflags, "-FC")
                 end
             end
 
