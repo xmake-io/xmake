@@ -34,12 +34,6 @@ function init(self)
     -- init cxflags
     self:set("cxflags", "-nologo")
 
-    -- we need show full file path to goto error position if xmake is called in vstudio
-    -- https://github.com/xmake-io/xmake/issues/1049
-    if os.getenv("XMAKE_IN_VSTUDIO") then
-        self:add("cxflags", "-FC")
-    end
-
     -- init flags map
     self:set("mapflags",
     {
@@ -413,12 +407,19 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
 
             -- generate includes file
             local compflags = flags
+
+            -- we need show full file path to goto error position if xmake is called in vstudio
+            -- https://github.com/xmake-io/xmake/issues/1049
+            if os.getenv("XMAKE_IN_VSTUDIO") then
+                compflags = table.join(compflags, "-FC")
+            end
+
             if dependinfo then
                 if _has_source_dependencies(self) then
                     depfile = os.tmpfile()
-                    compflags = table.join(flags, "/sourceDependencies", depfile)
+                    compflags = table.join(compflags, "/sourceDependencies", depfile)
                 else
-                    compflags = table.join(flags, "-showIncludes")
+                    compflags = table.join(compflags, "-showIncludes")
                 end
             end
 
@@ -504,4 +505,3 @@ function compile(self, sourcefile, objectfile, dependinfo, flags, opt)
         end
     end
 end
-
