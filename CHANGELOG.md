@@ -19,6 +19,7 @@
 * [#1858](https://github.com/xmake-io/xmake/issues/1858): Improve to build c++20 modules with libraries
 * Add $XMAKE_BINARY_REPO and $XMAKE_MAIN_REPO repositories envs
 * [#1865](https://github.com/xmake-io/xmake/issues/1865): Improve openmp projects
+* [#1845](https://github.com/xmake-io/xmake/issues/1845): Install pdb files for static library
 
 ### Bugs Fixed
 
@@ -1156,6 +1157,7 @@
 * [#1858](https://github.com/xmake-io/xmake/issues/1858): 改进构建 c++20 modules，修复跨 target 构建问题
 * 添加 $XMAKE_BINARY_REPO 和 $XMAKE_MAIN_REPO 仓库设置环境变量
 * [#1865](https://github.com/xmake-io/xmake/issues/1865): 改进 openmp 工程
+* [#1845](https://github.com/xmake-io/xmake/issues/1845): 为静态库安装 pdb 文件
 
 ### Bugs 修复
 
