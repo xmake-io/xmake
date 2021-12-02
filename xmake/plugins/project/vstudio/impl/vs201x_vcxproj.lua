@@ -23,6 +23,7 @@ import("core.project.rule")
 import("core.project.config")
 import("core.project.project")
 import("core.language.language")
+import("core.tool.toolchain")
 import("private.utils.batchcmds")
 import("vsfile")
 
@@ -31,10 +32,12 @@ function _get_toolset_ver(targetinfo, vsinfo)
 
     -- get toolset version from vs version
     local toolset_ver = nil
-    local vs_toolset = config.get("vs_toolset")
+    local vs_toolset = toolchain.load("msvc"):config("vs_toolset") or config.get("vs_toolset")
     if vs_toolset then
         local verinfo = vs_toolset:split('%.')
-        toolset_ver = "v" .. verinfo[1] .. (verinfo[2] or "0")
+        if #verinfo >= 2 then
+            toolset_ver = "v" .. verinfo[1] .. (verinfo[2]:sub(1, 1) or "0")
+        end
     end
     if not toolset_ver then
         toolset_ver = vsinfo.toolset_version
