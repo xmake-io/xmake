@@ -56,6 +56,7 @@ function uninstall_binary(target, opt)
     -- remove the target file
     local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
+    os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
 
     -- remove the dependent shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/961
@@ -76,6 +77,7 @@ function uninstall_shared(target, opt)
     -- remove the target file
     local binarydir = path.join(target:installdir(), opt and opt.bindir or "bin")
     os.vrm(path.join(binarydir, path.filename(target:targetfile())))
+    os.tryrm(path.join(binarydir, path.filename(target:symbolfile())))
 
     -- remove *.lib for shared/windows (*.dll) target
     -- @see https://github.com/xmake-io/xmake/issues/714
@@ -96,6 +98,7 @@ function uninstall_static(target, opt)
     -- remove the target file
     local librarydir = path.join(target:installdir(), opt and opt.libdir or "lib")
     os.vrm(path.join(librarydir, path.filename(target:targetfile())))
+    os.tryrm(path.join(librarydir, path.filename(target:symbolfile())))
 
     -- remove headers from the include directory
     _uninstall_headers(target, opt)
