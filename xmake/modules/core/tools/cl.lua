@@ -118,7 +118,7 @@ function nf_symbols(self, levels, target)
             end
 
             -- check and add symbol output file
-            local pdbflags = "-Fd" .. path.join(symboldir, "compile." .. path.filename(symbolfile))
+            local pdbflags = "-Fd" .. (target:is_static() and symbolfile or path.join(symboldir, "compile." .. path.filename(symbolfile)))
             if self:has_flags({"-FS", "-Fd" .. os.nuldev() .. ".pdb"}, "cxflags", { flagskey = "-FS -Fd" }) then
                 pdbflags = {"-FS", pdbflags}
             end
