@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.1
+
 ### New features
 
 * [#1799](https://github.com/xmake-io/xmake/issues/1799): Support mixed rust & c++ target and cargo dependences
@@ -1139,6 +1141,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.1
 
 ### 新特性
 
