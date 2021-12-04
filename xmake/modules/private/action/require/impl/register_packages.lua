@@ -88,16 +88,9 @@ function _register_required_package(instance, required_package)
         _register_required_package_base(instance, required_package)
         _register_required_package_libs(instance, required_package)
         _register_required_package_envs(instance, envs)
-        local linkdeps = instance:linkdeps()
-        if linkdeps then
-            local total = #linkdeps
-            for idx, _ in ipairs(linkdeps) do
-                local dep = linkdeps[total + 1 - idx]
-                if dep then
-                    if instance:is_library() then
-                        _register_required_package_libs(dep, required_package, true)
-                    end
-                end
+        for _, dep in ipairs(instance:linkdeps()) do
+            if instance:is_library() then
+                _register_required_package_libs(dep, required_package, true)
             end
         end
         for _, dep in ipairs(instance:orderdeps()) do
