@@ -254,13 +254,34 @@ end
 --
 -- orderdeps: c -> b -> a
 --
-function _sort_packagedeps(package, onlylink)
+function _sort_packagedeps(package)
     -- we must use native deps list instead of package:deps() to generate correct linkdeps
     local orderdeps = {}
     for _, dep in ipairs(package:plaindeps()) do
-        if dep and (onlylink ~= true or (dep:is_library() and not dep:is_private())) then
-            table.join2(orderdeps, _sort_packagedeps(dep, onlylink))
+        if dep then
+            table.join2(orderdeps, _sort_packagedeps(dep))
             table.insert(orderdeps, dep)
+        end
+    end
+    return orderdeps
+end
+
+-- sort link deps
+--
+-- e.g.
+--
+-- a.deps = b
+-- b.deps = c
+--
+-- orderdeps: a -> b -> c
+--
+function _sort_linkdeps(package)
+    -- we must use native deps list instead of package:deps() to generate correct linkdeps
+    local orderdeps = {}
+    for _, dep in ipairs(package:plaindeps()) do
+        if dep and dep:is_library() and not dep:is_private() then
+            table.insert(orderdeps, dep)
+            table.join2(orderdeps, _sort_linkdeps(dep))
         end
     end
     return orderdeps
@@ -818,7 +839,7 @@ function _load_packages(requires, opt)
                     package._DEPS = packagedeps
                     package._PLAINDEPS = plaindeps
                     package._ORDERDEPS = table.unique(_sort_packagedeps(package))
-                    package._LINKDEPS = table.reverse_unique(_sort_packagedeps(package, true))
+                    package._LINKDEPS = table.reverse_unique(_sort_linkdeps(package))
                 end
             end
 
