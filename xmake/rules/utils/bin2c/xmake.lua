@@ -15,39 +15,97 @@
 -- Copyright (C) 2015-present, TBOOX Open Source Group.
 --
 -- @author      ruki
--- @file        xmake.lua
+-- @file        bin2c.lua
 --
 
-rule("utils.bin2c")
-    set_extensions(".bin")
-    on_load(function (target)
-        local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
-        if not os.isdir(headerdir) then
-            os.mkdir(headerdir)
+-- imports
+import("core.base.bytes")
+import("core.base.option")
+
+local options = {
+    {'w', "linewidth",  "kv", nil,   "Set the line width"},
+    {nil, "nozeroend",  "k",  false, "Disable to patch zero terminating character"},
+    {'i', "binarypath", "kv", nil,   "Set the binary file path."},
+    {'o', "outputpath", "kv", nil,   "Set the output file path."}
+}
+
+function _do_dump(binarydata, outputfile, opt)
+    local i = 0
+    local n = 147
+    local p = 0
+    local e = binarydata:size()
+    local line = nil
+    local linewidth = opt.linewidth or 0x20
+    local first = true
+    while p < e do
+        line = ""
+        if p + linewidth <= e then
+            for i = 0, linewidth - 1 do
+                if first then
+                    first = false
+                    line = line .. " "
+                else
+                    line = line .. ","
+                end
+                line = line .. string.format(" 0x%02X", binarydata[p + i + 1])
+            end
+            outputfile:print(line)
+            p = p + linewidth
+        elseif p < e then
+            local left = e - p
+            for i = 0, left - 1 do
+                if first then
+                    first = false
+                    line = line .. " "
+                else
+                    line = line .. ","
+                end
+                line = line .. string.format(" 0x%02X", binarydata[p + i + 1])
+            end
+            outputfile:print(line)
+            p = p + left
+        else
+            break
         end
-        target:add("includedirs", headerdir)
-    end)
-    before_buildcmd_file(function (target, batchcmds, sourcefile_bin, opt)
+    end
+end
 
-        -- get header file
-        local headerdir = path.join(target:autogendir(), "rules", "utils", "bin2c")
-        local headerfile = path.join(headerdir, path.filename(sourcefile_bin) .. ".h")
-        target:add("includedirs", headerdir)
+function _do_bin2c(binarypath, outputpath, opt)
 
-        -- add commands
-        batchcmds:show_progress(opt.progress, "${color.build.object}generating.bin2c %s", sourcefile_bin)
-        batchcmds:mkdir(headerdir)
-        local argv = {"lua", "private.utils.bin2c", "-i", sourcefile_bin, "-o", headerfile}
-        local linewidth = target:extraconf("rules", "utils.bin2c", "linewidth")
-        if linewidth then
-            table.insert(argv, "-w")
-            table.insert(argv, tostring(linewidth))
+    -- init source directory and options
+    opt = opt or {}
+    binarypath = path.absolute(binarypath)
+    outputpath = path.absolute(outputpath)
+    assert(os.isfile(binarypath), "%s not found!", binarypath)
+
+    -- trace
+    print("generating code data file from %s ..", binarypath)
+
+    -- do dump
+    local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
+    local outputfile = io.open(outputpath, 'w')
+    if outputfile then
+        if opt.nozeroend then
+            binarydata = binarydata .. bytes('\0')
         end
-        batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
+        _do_dump(binarydata, outputfile, opt)
+        outputfile:close()
+    end
 
-        -- add deps
-        batchcmds:add_depfiles(sourcefile_bin)
-        batchcmds:set_depmtime(os.mtime(headerfile))
-        batchcmds:set_depcache(target:dependfile(headerfile))
-    end)
+    -- trace
+    cprint("${bright}%s generated!", outputpath)
+end
 
+-- main entry
+function main(...)
+
+    print("sss")
+    -- parse arguments
+    local argv = {...}
+    local opt  = option.parse(argv, options, "Print c/c++ code files from the given binary file."
+                                           , ""
+                                           , "Usage: xmake l private.utils.bin2c [options]")
+
+    -- do bin2c
+    _do_bin2c(opt.binarypath, opt.outputpath, opt)
+end
