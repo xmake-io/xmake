@@ -23,10 +23,10 @@ import("core.base.bytes")
 import("core.base.option")
 
 local options = {
-    {'w', "linewidth",  "kv", nil,  "Set the line width"},
-    {'z', "zeroend",    "k",  true, "Patch zero terminating character"},
-    {'i', "binarypath", "kv", nil,  "Set the binary file path."},
-    {'o', "outputpath", "kv", nil,  "Set the output file path."}
+    {'w', "linewidth",  "kv", nil,   "Set the line width"},
+    {nil, "nozeroend",  "k",  false, "Disable to patch zero terminating character"},
+    {'i', "binarypath", "kv", nil,   "Set the binary file path."},
+    {'o', "outputpath", "kv", nil,   "Set the output file path."}
 }
 
 function _do_dump(binarydata, outputfile, opt)
@@ -85,7 +85,7 @@ function _do_bin2c(binarypath, outputpath, opt)
     local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
     local outputfile = io.open(outputpath, 'w')
     if outputfile then
-        if opt.zeroend then
+        if opt.nozeroend then
             binarydata = binarydata .. bytes('\0')
         end
         _do_dump(binarydata, outputfile, opt)
@@ -99,7 +99,6 @@ end
 -- main entry
 function main(...)
 
-    print("sss")
     -- parse arguments
     local argv = {...}
     local opt  = option.parse(argv, options, "Print c/c++ code files from the given binary file."
