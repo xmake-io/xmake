@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Change
+
+* [#1872](https://github.com/xmake-io/xmake/issues/1872): Escape characters for set_configvar
+
 ### Bugs fixed
 
 * [#1885](https://github.com/xmake-io/xmake/issues/1885): Fix package:fetch_linkdeps
@@ -1145,6 +1149,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 改进
+
+* [#1872](https://github.com/xmake-io/xmake/issues/1872): 支持转义 set_configvar 中字符串值
 
 ### Bugs 修复
 
