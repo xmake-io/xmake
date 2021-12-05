@@ -253,11 +253,25 @@ function _generate_configfile(srcfile, dstfile, fileinfo, targets)
                 elseif type(value) == "number" then
                     value = ("#define %s %d"):format(variable, value)
                 elseif type(value) == "string" then
-                    -- disable to wrap quote, @see https://github.com/xmake-io/xmake/issues/1694
-                    if extraconf and extraconf.quote == false then
-                        value = ("#define %s %s"):format(variable, value)
-                    else
+                    local quote = true
+                    local escape = false
+                    if extraconf then
+                        -- disable to wrap quote, @see https://github.com/xmake-io/xmake/issues/1694
+                        if extraconf.quote == false then
+                            quote = false
+                        end
+                        -- escape path seperator when with quote, @see https://github.com/xmake-io/xmake/issues/1872
+                        if quote and extraconf.escape then
+                            escape = true
+                        end
+                    end
+                    if quote then
+                        if escape then
+                            value = value:gsub("\\", "\\\\")
+                        end
                         value = ("#define %s \"%s\""):format(variable, value)
+                    else
+                        value = ("#define %s %s"):format(variable, value)
                     end
                 else
                     raise("unknown variable(%s) type: %s", variable, type(value))
