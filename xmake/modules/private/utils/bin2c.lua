@@ -85,7 +85,7 @@ function _do_bin2c(binarypath, outputpath, opt)
     local binarydata = bytes(io.readfile(binarypath, {encoding = "binary"}))
     local outputfile = io.open(outputpath, 'w')
     if outputfile then
-        if opt.nozeroend then
+        if not opt.nozeroend then
             binarydata = binarydata .. bytes('\0')
         end
         _do_dump(binarydata, outputfile, opt)
