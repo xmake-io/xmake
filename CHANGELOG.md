@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### Bugs fixed
+
+* [#1885](https://github.com/xmake-io/xmake/issues/1885): Fix package:fetch_linkdeps
+
 ## v2.6.1
 
 ### New features
@@ -1141,6 +1145,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### Bugs 修复
+
+* [#1885](https://github.com/xmake-io/xmake/issues/1885): 修复 package:fetch_linkdeps 链接顺序问题
 
 ## v2.6.1
 
