@@ -230,7 +230,11 @@ Section "XMake (required)" InstallExeutable
   SetOutPath $InstDir
 
   ; Remove previous directories used
-  RMDir /r "$InstDir"
+  IfFileExists "$InstDir\xmake.exe" file_found file_not_found_or_end
+  file_found:
+    RMDir /r "$InstDir"
+    goto file_not_found_or_end
+  file_not_found_or_end:
 
   ; Put file there
   File /r /x ".DS_Store" /x "*.swp" "..\xmake\*.*"
