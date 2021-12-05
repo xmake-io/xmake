@@ -230,6 +230,7 @@ Section "XMake (required)" InstallExeutable
   SetOutPath $InstDir
 
   ; Remove previous directories used
+  ; https://github.com/xmake-io/xmake/issues/1888
   IfFileExists "$InstDir\xmake.exe" file_found file_not_found_or_end
   file_found:
     RMDir /r "$InstDir"
