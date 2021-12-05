@@ -78,7 +78,7 @@ rule("utils.glsl2spv")
             outputfile = headerfile
 
             -- add commands
-            local argv = {"lua", "private.utils.bin2c", "-i", spvfilepath, "-o", headerfile}
+            local argv = {"lua", "private.utils.bin2c", "-z", "-i", spvfilepath, "-o", headerfile}
             batchcmds:vrunv(os.programfile(), argv, {envs = {XMAKE_SKIP_HISTORY = "y"}})
         end
 
