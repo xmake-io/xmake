@@ -99,7 +99,6 @@ end
 -- main entry
 function main(...)
 
-    print("sss")
     -- parse arguments
     local argv = {...}
     local opt  = option.parse(argv, options, "Print c/c++ code files from the given binary file."
