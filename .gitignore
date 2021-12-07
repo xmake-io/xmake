@@ -50,3 +50,10 @@ compile_commands.json
 /scripts/rpmbuild/SRPMS/*
 
 !/xmake/actions/build/
+
+# for linux driver
+*.ko
+*.mod
+.*.cmd
+Module.symvers
+modules.order
