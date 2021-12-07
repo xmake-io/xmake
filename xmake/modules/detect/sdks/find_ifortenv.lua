@@ -100,11 +100,11 @@ function _find_intel_on_windows(opt)
     opt = opt or {}
 
     -- find ifortvars_bat.bat
-    local paths = {os.getenv("IFORT_COMPILER20")}
+    local paths = {"$(env IFORT_COMPILER20)"}
     local ifortvars_bat = find_file("bin/ifortvars.bat", paths)
     -- look for setvars.bat which is new in 2021
     if not ifortvars_bat then
-        paths = {os.getenv("IFORT_COMPILER21")}
+        paths = {"$(env IFORT_COMPILER21)"}
         ifortvars_bat = find_file("../../../setvars.bat", paths)
     end
 
