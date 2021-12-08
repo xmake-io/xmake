@@ -19,6 +19,7 @@
 --
 
 -- imports
+import("core.base.option")
 import("core.base.hashset")
 import("vstudio.impl.vsinfo", { rootdir = path.directory(os.scriptdir()) })
 import("render")
@@ -172,6 +173,17 @@ function _writefileifneeded(file, content)
     io.writefile(file, content, {encoding = "utf8bom"})
 end
 
+-- save plugin arguments for `plugin.vsxmake.autoupdate`
+-- @see https://github.com/xmake-io/xmake/issues/1895
+function _save_plugin_arguments()
+    local vsxmake_cache = localcache.cache("vsxmake")
+    for _, name in ipairs({"kind", "modes", "archs", "outputdir"}) do
+        vsxmake_cache:set(name, option.get(name))
+    end
+    vsxmake_cache:save()
+end
+
+-- clear configuration cache
 function _clear_cacheconf()
     config.clear()
     config.save()
@@ -235,5 +247,8 @@ function make(version)
 
         -- clear config and local cache
         _clear_cacheconf()
+
+        -- save plugin arguments for autoupdate
+        _save_plugin_arguments()
     end
 end
