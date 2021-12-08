@@ -116,12 +116,24 @@ end
 -- find intel fortran envirnoment on linux
 function _find_intel_on_linux(opt)
 
-    -- attempt to find the sdk directory
     local paths = {"/opt/intel/bin", "/usr/local/bin", "/usr/bin"}
     local ifort = find_file("ifort", paths)
     if ifort then
-        local sdkdir = path.directory(path.directory(ifort))
-        return {sdkdir = sdkdir, bindir = path.directory(ifort), path.join(sdkdir, "include"), libdir = path.join(sdkdir, "lib")}
+        local bindir = path.directory(ifort)
+        local sdkdir = path.directory(bindir)
+        return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "lib")}
+    end
+
+    if is_host("linux") then
+        local arch = os.arch() == "x86_64" and "intel64" or "ia32"
+        local host = is_host("macosx") and "macos" or "linux"
+        local paths = {"~/intel/oneapi/compiler/latest/" .. host .. "/bin/" .. arch}
+        local ifort = find_file("ifort", paths)
+        if ifort then
+            local bindir = path.directory(ifort)
+            local sdkdir = path.directory(bindir)
+            return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "compiler", "lib", arch)}
+        end
     end
 end
 
