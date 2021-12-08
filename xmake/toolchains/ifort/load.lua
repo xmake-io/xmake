@@ -87,7 +87,6 @@ function _load_intel_on_linux(toolchain)
     end
 
     -- get ifort environments
-    local ifortenv = toolchain:config("ifortenv")
     if ifortenv then
         local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
         toolchain:add("runenvs", ldname, ifortenv.libdir)

@@ -124,10 +124,14 @@ function _find_intel_on_linux(opt)
         return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "lib")}
     end
 
-    if is_host("linux") then
-        local arch = os.arch() == "x86_64" and "intel64" or "ia32"
-        local host = is_host("macosx") and "macos" or "linux"
-        local paths = {"~/intel/oneapi/compiler/latest/" .. host .. "/bin/" .. arch}
+    -- find it from oneapi sdk directory
+    local oneapi_rootdirs = {"~/intel/oneapi/compiler", "/opt/intel/oneapi/compiler"}
+    local arch = os.arch() == "x86_64" and "intel64" or "ia32"
+    paths = {}
+    for _, rootdir in ipairs(oneapi_rootdirs) do
+        table.insert(paths, path.join(rootdir, "*", is_host("macosx") and "mac" or "linux", "bin", arch))
+    end
+    if #paths > 0 then
         local ifort = find_file("ifort", paths)
         if ifort then
             local bindir = path.directory(ifort)

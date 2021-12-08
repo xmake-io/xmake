@@ -43,7 +43,7 @@ function _check_intel_on_windows(toolchain)
             if tool then
                 cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
                 toolchain:config_set("varsall", ifortvarsall)
-                toolchain:config_save()
+                toolchain:configs_save()
                 return true
             end
         end
@@ -63,7 +63,8 @@ function _check_intel_on_linux(toolchain)
         if tool then
             cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
             toolchain:config_set("ifortenv", ifortenv)
-            toolchain:config_save()
+            toolchain:config_set("bindir", ifortenv.bindir)
+            toolchain:configs_save()
             return true
         end
         return true
