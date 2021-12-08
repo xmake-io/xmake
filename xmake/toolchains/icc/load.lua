@@ -26,7 +26,7 @@ import("core.project.config")
 function _add_iclenv(toolchain, name)
 
     -- get iclvarsall
-    local iclvarsall = config.get("__iclvarsall")
+    local iclvarsall = toolchain:config("varsall")
     if not iclvarsall then
         return
     end
@@ -99,6 +99,13 @@ function _load_intel_on_linux(toolchain)
         toolchain:add("asflags", march)
         toolchain:add("ldflags", march)
         toolchain:add("shflags", march)
+    end
+
+    -- get icc environments
+    local iccenv = toolchain:config("iccenv")
+    if iccenv then
+        local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
+        toolchain:add("runenvs", ldname, iccenv.libdir)
     end
 end
 
