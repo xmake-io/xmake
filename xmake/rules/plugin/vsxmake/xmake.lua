@@ -21,7 +21,7 @@
 -- update vsxmake project automatically
 --
 -- @code
--- add_rules("plugin.vsxmake.autoupdate")
+-- add_rules("plugin.vsxmake.autoupdate", {outputdir = "xxx"})
 -- target("test")
 --     set_kind("binary")
 --     add_files("src/*.c")
@@ -41,6 +41,7 @@ rule("plugin.vsxmake.autoupdate")
         local tmpfile = path.join(config.buildir(), ".gens", "rules", "plugin.vsxmake.autoupdate")
         local dependfile = tmpfile .. ".d"
         local lockfile = io.openlock(tmpfile .. ".lock")
+        local outputdir = project.extraconf("target.rules", "plugin.vsxmake.autoupdate", "outputdir")
         if lockfile:trylock() then
             if os.getenv("XMAKE_IN_VSTUDIO") then
                 local sourcefiles = {}
@@ -51,7 +52,7 @@ rule("plugin.vsxmake.autoupdate")
                 depend.on_changed(function ()
                     -- we use task instead of os.exec("xmake") to avoid the project lock
                     print("update vsxmake project ..")
-                    task.run("project", {kind = "vsxmake"})
+                    task.run("project", {kind = "vsxmake", outputdir = outputdir})
                     print("update vsxmake project ok")
                 end, {dependfile = dependfile,
                       files = project.allfiles(),
