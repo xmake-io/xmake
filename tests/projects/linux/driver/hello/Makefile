@@ -1,5 +1,5 @@
 ifneq ($(KERNELRELEASE),)
-    obj-m := hello.o
+    obj-m := src/hello.o
 else
     KERN_DIR ?= /usr/src/linux-headers-5.11.0-41-generic/
     PWD := $(shell pwd)
