@@ -143,18 +143,21 @@ end
 
 -- remove single file or directory
 function os._rm(filedir)
+    print("rm", filedir)
 
     -- check
     assert(filedir)
 
     -- is file or link?
     if os.isfile(filedir) or os.islink(filedir) then
+        print("rmfile")
         -- remove file
         if not os.rmfile(filedir) then
             return false, string.format("cannot remove file %s %s", filedir, os.strerror())
         end
     -- is directory?
     elseif os.isdir(filedir) then
+        print("rmdir")
         -- remove directory
         if not os.rmdir(filedir) then
             return false, string.format("cannot remove directory %s %s", filedir, os.strerror())
@@ -450,6 +453,7 @@ end
 
 -- remove files or directories
 function os.rm(filepath)
+    print("rmssss", filepath)
 
     -- check arguments
     if not filepath then
