@@ -26,7 +26,7 @@ function main(archivefile)
 
     local extension = ""
     local filename = path.filename(archivefile)
-    local extensionset = hashset.from({".zip", ".7z", ".gz", ".xz", ".tgz", ".bz2", ".tar", ".tar.gz", ".tar.xz", ".tar.bz2"})
+    local extensionset = hashset.from({".zip", ".7z", ".gz", ".xz", ".tgz", ".bz2", ".tar", ".tar.gz", ".tar.xz", ".tar.bz2", ".tar.lz"})
     local i = filename:lastof(".", true)
     if i then
         local p = filename:sub(1, i - 1):lastof(".", true)
