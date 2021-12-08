@@ -6,6 +6,7 @@
 
 * [#1872](https://github.com/xmake-io/xmake/issues/1872): Escape characters for set_configvar
 * [#1888](https://github.com/xmake-io/xmake/issues/1888): Improve windows installer to avoid remove other files
+* [#1895](https://github.com/xmake-io/xmake/issues/1895): Improve `plugin.vsxmake.autoupdate` rule
 
 ### Bugs fixed
 
@@ -1155,6 +1156,7 @@
 
 * [#1872](https://github.com/xmake-io/xmake/issues/1872): 支持转义 set_configvar 中字符串值
 * [#1888](https://github.com/xmake-io/xmake/issues/1888): 改进 windows 安装器，避免错误删除其他安装目录下的文件
+* [#1895](https://github.com/xmake-io/xmake/issues/1895): 改进 `plugin.vsxmake.autoupdate` 规则
 
 ### Bugs 修复
 
