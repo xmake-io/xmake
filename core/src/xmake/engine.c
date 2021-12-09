@@ -612,7 +612,7 @@ static tb_bool_t xm_engine_get_program_directory(xm_engine_t* engine, tb_char_t*
             tb_size_t i;
             tb_file_info_t info;
             tb_char_t scriptpath[TB_PATH_MAXN];
-            tb_char_t const* subdirs[] = {"", sharedir};
+            tb_char_t const* subdirs[] = {".", sharedir};
             for (i = 0; i < tb_arrayn(subdirs); i++)
             {
                 // get program directory
