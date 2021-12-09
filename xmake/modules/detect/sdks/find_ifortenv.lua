@@ -141,7 +141,7 @@ function _find_intel_on_linux(opt)
         local ifort = find_file("ifort", paths)
         if ifort then
             local bindir = path.directory(ifort)
-            local sdkdir = path.directory(bindir)
+            local sdkdir = path.directory(path.directory(bindir))
             return {sdkdir = sdkdir, bindir = bindir, libdir = path.join(sdkdir, "compiler", "lib", arch)}
         end
     end
