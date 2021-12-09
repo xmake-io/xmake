@@ -52,6 +52,7 @@ compile_commands.json
 !/xmake/actions/build/
 
 # for linux driver
+*.o
 *.ko
 *.mod
 .*.cmd
