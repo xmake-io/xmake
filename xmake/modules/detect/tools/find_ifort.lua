@@ -52,20 +52,6 @@ function main(opt)
         return program, version
     else
         -- find program
-        if is_host("linux") then
-            local arch = os.arch() == "x86_64" and "intel64" or "ia32"
-            local dirs = {"~/intel/oneapi/compiler/latest/linux"}
-            opt.envs = opt.envs or {}
-            opt.paths = opt.paths or {}
-            local LD_LIBRARY_PATH = {}
-            for _, dir in ipairs(dirs) do
-                if os.isdir(dir) then
-                    table.insert(LD_LIBRARY_PATH, path.join(dir, "compiler/lib", arch))
-                    table.insert(opt.paths, path.join(dir, "bin", arch))
-                end
-            end
-            opt.envs.LD_LIBRARY_PATH = path.joinenv(LD_LIBRARY_PATH)
-        end
         local program = find_program(opt.program or "ifort", opt)
 
         -- find program version

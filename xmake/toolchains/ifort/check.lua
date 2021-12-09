@@ -28,7 +28,8 @@ import("lib.detect.find_tool")
 function _check_intel_on_windows(toolchain)
 
     -- have been checked?
-    if config.get("__ifortvarsall") then
+    local varsall = toolchain:config("varsall")
+    if varsall then
         return true
     end
 
@@ -38,18 +39,11 @@ function _check_intel_on_windows(toolchain)
         local ifortvarsall = ifortenv.ifortvars
         local ifortenv = ifortvarsall[toolchain:arch()]
         if ifortenv and ifortenv.PATH and ifortenv.INCLUDE and ifortenv.LIB then
-
-            -- save ifortvars
-            config.set("__ifortvarsall", ifortvarsall)
-
-            -- check compiler
-            local program = nil
             local tool = find_tool("ifort.exe", {force = true, envs = ifortenv, version = true})
             if tool then
-                program = tool.program
-            end
-            if program then
                 cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+                toolchain:config_set("varsall", ifortvarsall)
+                toolchain:configs_save()
                 return true
             end
         end
@@ -58,7 +52,23 @@ end
 
 -- check intel on linux
 function _check_intel_on_linux(toolchain)
-    return find_tool("ifort")
+    local ifortenv = toolchain:config("ifortenv")
+    if ifortenv then
+        return true
+    end
+    ifortenv = find_ifortenv()
+    if ifortenv then
+        local ldname = is_host("macosx") and "DYLD_LIBRARY_PATH" or "LD_LIBRARY_PATH"
+        local tool = find_tool("ifort", {force = true, envs = {[ldname] = ifortenv.libdir}, paths = ifortenv.bindir})
+        if tool then
+            cprint("checking for Intel Fortran Compiler (%s) ... ${color.success}${text.success}", toolchain:arch())
+            toolchain:config_set("ifortenv", ifortenv)
+            toolchain:config_set("bindir", ifortenv.bindir)
+            toolchain:configs_save()
+            return true
+        end
+        return true
+    end
 end
 
 -- main entry
