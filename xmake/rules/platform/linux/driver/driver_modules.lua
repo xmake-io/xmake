@@ -66,7 +66,7 @@ function load(target)
         archsubdir = path.join(sdkdir, "arch", "x86")
     end
     assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
-    target:add("sysincludedirs", "/usr/lib/gcc/x86_64-linux-gnu/10/include")
+    target:add("sysincludedirs", "/usr/lib/gcc/x86_64-linux-gnu/10/include") -- TODO
     target:add("includedirs", path.join(archsubdir, "include"))
     target:add("includedirs", path.join(archsubdir, "include", "generated"))
     target:add("includedirs", includedir)
@@ -83,7 +83,7 @@ function load(target)
     -- add compilation flags
     target:set("policy", "check.auto_ignore_flags", false)
     target:add("defines", "__KERNEL__", "MODULE", "CC_USING_FENTRY")
-    target:add("defines", "KBUILD_BASENAME=\"" .. target:name() .. "\"", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
+    target:add("defines", "KBUILD_BASENAME=\"" .. target:name() .. "\"", "KBUILD_MODNAME=\"" .. target:name() .. "\"") -- TODO
     if target:is_arch("x86_64", "i386") then
         target:add("defines", "CONFIG_X86_X32_ABI")
     end
