@@ -23,15 +23,21 @@ function _get_linux_headers_sdk(target)
     local linux_headers = assert(target:pkg("linux-headers"), "please add `add_requires(\"linux-headers\", {configs = {driver_modules = true}})` and `add_packages(\"linux-headers\")` to the given target!")
     local includedirs = linux_headers:get("includedirs") or linux_headers:get("sysincludedirs")
     local version = linux_headers:version()
+    local includedir
     local linux_headersdir
-    for _, includedir in ipairs(includedirs) do
-        if includedir:find("linux-headers", 1, true) then
-            linux_headersdir = path.directory(includedir)
+    for _, dir in ipairs(includedirs) do
+        if dir:find("linux-headers", 1, true) then
+            includedir = dir
+            linux_headersdir = path.directory(dir)
             break
         end
     end
     assert(linux_headersdir, "linux-headers not found!")
-    return {version = version, sdkdir = linux_headersdir, includedirs = includedirs}
+    if not os.isfile(path.join(includedir, "generated/autoconf.h")) and
+        not os.isfile(path.join(includedir, "config/auto.conf")) then
+        raise("kernel configuration is invalid. include/generated/autoconf.h or include/config/auto.conf are missing.")
+    end
+    return {version = version, sdkdir = linux_headersdir, includedir = includedir}
 end
 
 function load(target)
