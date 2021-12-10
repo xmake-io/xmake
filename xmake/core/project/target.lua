@@ -2092,7 +2092,7 @@ function target.filename(targetname, targetkind, opt)
 
     -- make filename by format
     local filename = targetname
-    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch)
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) or "$(name)"
     if format then
         local splitinfo = format:split("$(name)", {plain = true, strict = true})
         local prefixname = splitinfo[1] or ""

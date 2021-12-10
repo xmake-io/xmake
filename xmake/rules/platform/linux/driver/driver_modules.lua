@@ -49,6 +49,7 @@ end
 function load(target)
     -- we need only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
+    target:set("extension", ".ko")
 
     -- get and save linux-headers sdk
     local linux_headers = _get_linux_headers_sdk(target)
@@ -102,32 +103,83 @@ function load(target)
     target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
 end
 
---[[
-function after_build_file(target, sourcefile, opt)
-
-    -- get modepost
-    local modpost
-    local linux_headers = target:data("linux.driver.linux_headers")
-    if linux_headers then
-        modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
-    end
-    assert(modpost and os.isfile(modpost), "modpost not found!")
-
-    -- compile .mod.c file
-    local objectfile = target:objectfile(sourcefile)
-    local modfile = objectfile:gsub("%.o$", ".mod")
-    local modfile_c = objectfile:gsub("%.o$", ".mod.c")
-    local modfile_o = objectfile:gsub("%.o$", ".mod.o")
-    local dependfile = target:dependfile(modfile_o)
-    local exists_ccache = ccache.exists()
-    depend.on_changed(function ()
-        progress.show(opt.progress, "${color.build.object}%scompiling.mod.$(mode) %s", exists_ccache and "ccache " or "", modfile_c)
-        os.vrunv(modpost, {"-m", "-a", "-o", })
-    end, {dependfile = dependfile, files = {sourcefile}})
-
-    -- echo build/.objs/hello/linux/x86_64/release/src/hello.c.o |
-    -- scripts/mod/modpost -m -a -o /tmp/Module.symvers -e   -N -T -
-end]]
-
 function link(target, opt)
+    local targetfile  = target:targetfile()
+    local dependfile  = target:dependfile(targetfile)
+    local objectfiles = target:objectfiles()
+    depend.on_changed(function ()
+
+        -- trace
+        progress.show(opt.progress, "${color.build.object}linking.$(mode) %s", targetfile)
+
+        -- get module scripts
+        local modpost, ldscriptfile
+        local linux_headers = target:data("linux.driver.linux_headers")
+        if linux_headers then
+            modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
+            ldscriptfile = path.join(linux_headers.sdkdir, "scripts", "module.lds")
+        end
+        assert(modpost and os.isfile(modpost), "scripts/mod/modpost not found!")
+        assert(ldscriptfile and os.isfile(ldscriptfile), "scripts/module.lds not found!")
+
+        -- link target.o
+        local argv = {"-m"}
+        if target:is_arch("x86_64") then
+            table.insert(argv, "elf_x86_64")
+        end
+        local targetfile_o = target:objectfile(targetfile)
+        table.insert(argv, "-r")
+        table.insert(argv, "-o")
+        table.insert(argv, targetfile_o)
+        table.join2(argv, objectfiles)
+        os.mkdir(path.directory(targetfile_o))
+        os.vrunv("ld", argv)
+
+        -- generate target.mod
+        local targetfile_mod = targetfile_o:gsub("%.o$", ".mod")
+        io.writefile(targetfile_mod, table.concat(objectfiles, " ") .. "\n\n")
+
+        -- generate .sourcename.o.cmd
+        -- we need only touch an empty file, otherwise modpost command will raise error.
+        for _, objectfile in ipairs(objectfiles) do
+            local objectdir = path.directory(objectfile)
+            local objectname = path.filename(objectfile)
+            local cmdfile = path.join(objectdir, "." .. objectname .. ".cmd")
+            io.writefile(cmdfile, "")
+        end
+
+        -- generate target.mod.c
+        local orderfile = path.join(path.directory(targetfile_o), "modules.order")
+        local symversfile = path.join(path.directory(targetfile_o), "Module.symvers")
+        argv = {"-m", "-a", "-o", symversfile, "-e", "-N", "-T", "-"}
+        io.writefile(orderfile, targetfile_o .. "\n")
+        os.vrunv(modpost, argv, {stdin = orderfile})
+
+        -- compile target.mod.c
+        local targetfile_mod_c = targetfile_o:gsub("%.o$", ".mod.c")
+        local targetfile_mod_o = targetfile_o:gsub("%.o$", ".mod.o")
+        local compinst = target:compiler("cc")
+        if option.get("verbose") then
+            print(compinst:compcmd(targetfile_mod_c, targetfile_mod_o, {target = target, rawargs = true}))
+        end
+        assert(compinst:compile(targetfile_mod_c, targetfile_mod_o, {target = target}))
+
+        -- link target.ko
+        argv = {"-m"}
+        if target:is_arch("x86_64") then
+            table.insert(argv, "elf_x86_64")
+        end
+        local targetfile_o = target:objectfile(targetfile)
+        table.insert(argv, "-r")
+        table.insert(argv, "--build-id=sha1")
+        table.insert(argv, "-T")
+        table.insert(argv, ldscriptfile)
+        table.insert(argv, "-o")
+        table.insert(argv, targetfile)
+        table.insert(argv, targetfile_o)
+        table.insert(argv, targetfile_mod_o)
+        os.mkdir(path.directory(targetfile))
+        os.vrunv("ld", argv)
+
+    end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles})
 end
