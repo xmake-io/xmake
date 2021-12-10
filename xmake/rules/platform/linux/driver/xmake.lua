@@ -21,7 +21,9 @@
 -- build linux driver module
 rule("platform.linux.driver")
     on_load(function (target)
-        target:set("kind", "binary")
-        -- TODO
+        import("driver_modules").load(target)
+    end)
+    on_link(function (target, opt)
+        import("driver_modules").link(target, opt)
     end)
 

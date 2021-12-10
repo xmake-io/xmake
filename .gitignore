@@ -56,5 +56,6 @@ compile_commands.json
 *.ko
 *.mod
 .*.cmd
+*.mod.c
 Module.symvers
 modules.order
