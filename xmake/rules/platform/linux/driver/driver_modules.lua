@@ -18,6 +18,12 @@
 -- @file        driver_modules.lua
 --
 
+-- imports
+import("core.base.option")
+import("core.project.depend")
+import("utils.progress")
+import("private.tools.ccache")
+
 -- get linux-headers sdk
 function _get_linux_headers_sdk(target)
     local linux_headers = assert(target:pkg("linux-headers"), "please add `add_requires(\"linux-headers\", {configs = {driver_modules = true}})` and `add_packages(\"linux-headers\")` to the given target!")
@@ -95,6 +101,33 @@ function load(target)
     target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
     target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
 end
+
+--[[
+function after_build_file(target, sourcefile, opt)
+
+    -- get modepost
+    local modpost
+    local linux_headers = target:data("linux.driver.linux_headers")
+    if linux_headers then
+        modpost = path.join(linux_headers.sdkdir, "scripts", "mod", "modpost")
+    end
+    assert(modpost and os.isfile(modpost), "modpost not found!")
+
+    -- compile .mod.c file
+    local objectfile = target:objectfile(sourcefile)
+    local modfile = objectfile:gsub("%.o$", ".mod")
+    local modfile_c = objectfile:gsub("%.o$", ".mod.c")
+    local modfile_o = objectfile:gsub("%.o$", ".mod.o")
+    local dependfile = target:dependfile(modfile_o)
+    local exists_ccache = ccache.exists()
+    depend.on_changed(function ()
+        progress.show(opt.progress, "${color.build.object}%scompiling.mod.$(mode) %s", exists_ccache and "ccache " or "", modfile_c)
+        os.vrunv(modpost, {"-m", "-a", "-o", })
+    end, {dependfile = dependfile, files = {sourcefile}})
+
+    -- echo build/.objs/hello/linux/x86_64/release/src/hello.c.o |
+    -- scripts/mod/modpost -m -a -o /tmp/Module.symvers -e   -N -T -
+end]]
 
 function link(target, opt)
 end

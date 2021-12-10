@@ -20,6 +20,7 @@
 
 -- build linux driver module
 rule("platform.linux.driver")
+    set_sourcekinds("cc")
     on_load(function (target)
         import("driver_modules").load(target)
     end)

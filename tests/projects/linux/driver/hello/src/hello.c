@@ -6,9 +6,11 @@ MODULE_AUTHOR("Ruki");
 MODULE_DESCRIPTION("A simple Hello World Module");
 MODULE_ALIAS("a simplest module");
 
+int add(int a, int b);
+
 int hello_init(void)
 {
-    printk(KERN_INFO "Hello World\n");
+    printk(KERN_INFO "Hello World: %d\n", add(1, 2));
     return 0;
 }
 
