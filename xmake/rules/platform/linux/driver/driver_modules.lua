@@ -67,8 +67,8 @@ function load(target)
     target:add("includedirs", path.join(archsubdir, "include", "generated"))
     target:add("includedirs", path.join(archsubdir, "include", "uapi"))
     target:add("includedirs", path.join(archsubdir, "include", "generated", "uapi"))
-    target:add("cflags", "-include", path.join(includedir, "linux", "kconfig.h"))
-    target:add("cflags", "-include", path.join(includedir, "linux", "compiler_types.h"))
+    target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"))
+    target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"))
 
     -- add compilation flags
     target:set("policy", "check.auto_ignore_flags", false)
