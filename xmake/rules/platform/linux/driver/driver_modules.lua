@@ -60,15 +60,16 @@ function load(target)
     end
     assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
     target:add("sysincludedirs", "/usr/lib/gcc/x86_64-linux-gnu/10/include")
-    target:add("includedirs", includedir)
-    target:add("includedirs", path.join(includedir, "uapi"))
-    target:add("includedirs", path.join(includedir, "generated", "uapi"))
     target:add("includedirs", path.join(archsubdir, "include"))
     target:add("includedirs", path.join(archsubdir, "include", "generated"))
+    target:add("includedirs", includedir)
     target:add("includedirs", path.join(archsubdir, "include", "uapi"))
     target:add("includedirs", path.join(archsubdir, "include", "generated", "uapi"))
+    target:add("includedirs", path.join(includedir, "uapi"))
+    target:add("includedirs", path.join(includedir, "generated", "uapi"))
     target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"))
     target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"))
+    target:pkg("linux-headers"):set("includedirs", nil) -- TODO
 
     -- add compilation flags
     target:set("policy", "check.auto_ignore_flags", false)
