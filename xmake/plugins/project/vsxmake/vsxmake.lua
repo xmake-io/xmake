@@ -202,7 +202,7 @@ function make(version)
         version = tonumber(config.get("vs"))
         if not version then
             return function(outputdir)
-                raise("invalid vs version, run `xmake f --vs=201x`")
+                raise("invalid vs version, run `xmake f --vs=20xx`")
             end
         end
     end
