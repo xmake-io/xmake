@@ -47,7 +47,50 @@ function load(target)
     -- get and save linux-headers sdk
     local linux_headers = _get_linux_headers_sdk(target)
     target:data_set("linux.driver.linux_headers", linux_headers)
-    print(linux_headers)
+
+    -- check compiler, we must use gcc
+    assert(target:has_tool("cc", "gcc"), "we must use gcc compiler!")
+
+    -- add includedirs
+    local sdkdir = linux_headers.sdkdir
+    local includedir = linux_headers.includedir
+    local archsubdir
+    if target:is_arch("x86_64", "i386") then
+        archsubdir = path.join(sdkdir, "arch", "x86")
+    end
+    assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
+    target:add("sysincludedirs", "/usr/lib/gcc/x86_64-linux-gnu/10/include")
+    target:add("includedirs", includedir)
+    target:add("includedirs", path.join(includedir, "uapi"))
+    target:add("includedirs", path.join(includedir, "generated", "uapi"))
+    target:add("includedirs", path.join(archsubdir, "include"))
+    target:add("includedirs", path.join(archsubdir, "include", "generated"))
+    target:add("includedirs", path.join(archsubdir, "include", "uapi"))
+    target:add("includedirs", path.join(archsubdir, "include", "generated", "uapi"))
+    target:add("cflags", "-include", path.join(includedir, "linux", "kconfig.h"))
+    target:add("cflags", "-include", path.join(includedir, "linux", "compiler_types.h"))
+
+    -- add compilation flags
+    target:set("policy", "check.auto_ignore_flags", false)
+    target:add("defines", "__KERNEL__", "MODULE", "CC_USING_FENTRY")
+    target:add("defines", "KBUILD_BASENAME=\"" .. target:name() .. "\"", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
+    if target:is_arch("x86_64", "i386") then
+        target:add("defines", "CONFIG_X86_X32_ABI")
+    end
+    target:set("optimize", "faster") -- we need use -O2 for gcc
+    target:set("languages", "gnu89")
+    target:add("cflags", "-nostdinc")
+    target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
+    target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
+    target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount", "-mfentry")
+    target:add("cflags", "-fmacro-prefix-map=./=", " -fno-strict-aliasing", "-fno-common", "-fshort-wchar", "-fno-PIE")
+    target:add("cflags", "-fcf-protection=none", "-falign-jumps=1", "-falign-loops=1", "-fno-asynchronous-unwind-tables")
+    target:add("cflags", "-fno-jump-tables", "-fno-delete-null-pointer-checks", "-fno-allow-store-data-races")
+    target:add("cflags", "-fno-reorder-blocks", "-fno-ipa-cp-clone", "-fno-partial-inlining", "-fstack-protector-strong")
+    target:add("cflags", "-fno-inline-functions-called-once", "-falign-functions=32")
+    target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
+    target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
+    target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
 end
 
 function link(target, opt)
