@@ -6,7 +6,7 @@ else
     PWD := $(shell pwd)
 
 default:
-	$(MAKE) -C $(KERN_DIR) V=1 ARCH=arm64 CROSS_COMPILE=/mnt/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- M=$(PWD) modules
+	$(MAKE) -C $(KERN_DIR) V=1 M=$(PWD) modules
 endif
 
 clean:

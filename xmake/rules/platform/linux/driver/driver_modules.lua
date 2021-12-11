@@ -125,14 +125,13 @@ function load(target)
     target:add("includedirs", path.join(archsubdir, "include", "generated", "uapi"))
     target:add("includedirs", path.join(includedir, "uapi"))
     target:add("includedirs", path.join(includedir, "generated", "uapi"))
-    target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"))
-    target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"))
+    target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"), {force = true})
+    target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"), {force = true})
     -- we need disable includedirs from add_packages("linux-headers")
     target:pkg("linux-headers"):set("includedirs", nil)
     target:pkg("linux-headers"):set("sysincludedirs", nil)
 
     -- add compilation flags
-    target:set("policy", "check.auto_ignore_flags", false)
     target:add("defines", "__KERNEL__", "MODULE")
     target:add("defines", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
     for _, sourcefile in ipairs(target:sourcefiles()) do
@@ -151,12 +150,14 @@ function load(target)
     target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
     if target:is_arch("x86_64", "i386") then
         target:add("defines", "CONFIG_X86_X32_ABI")
+        target:add("cflags", "-mcmodel=kernel", {force = true})
         target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
-        target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
+        target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone")
         target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount")
         target:add("cflags", "-fmacro-prefix-map=./=", "-fcf-protection=none", "-fno-allow-store-data-races")
     elseif target:is_arch("arm", "armv7") then
-        target:add("cflags", "-mbig-endian", "-mabi=aapcs-linux", "-mfpu=vfp", "-marm", "-march=armv6k", "-mtune=arm1136j-s", "-msoft-float", "-Uarm")
+        target:add("cflags", "-march=armv6k", {force = true})
+        target:add("cflags", "-mbig-endian", "-mabi=aapcs-linux", "-mfpu=vfp", "-marm", "-mtune=arm1136j-s", "-msoft-float", "-Uarm")
         target:add("defines", "__LINUX_ARM_ARCH__=6")
     elseif target:is_arch("arm64", "arm64-v8a") then
         target:add("cflags", "-mlittle-endian", "-mgeneral-regs-only", "-mabi=lp64")
