@@ -27,6 +27,18 @@ import("core.tool.toolchain")
 import("private.utils.batchcmds")
 import("vsfile")
 
+function _make_dirs(dir, vcxprojdir)
+    dir = dir:trim()
+    if #dir == 0 then
+        return ""
+    end
+    dir = path.translate(dir)
+    if not path.is_absolute(dir) then
+        dir = path.relative(path.absolute(dir), vcxprojdir)
+    end
+    return dir
+end
+
 -- get toolset version
 function _get_toolset_ver(targetinfo, vsinfo)
 
@@ -66,18 +78,16 @@ function _make_compcmd(compargv, sourcefile, objectfile, vcxprojdir)
         end
         v = v:gsub("__sourcefile__", sourcefile)
         v = v:gsub("__objectfile__", objectfile)
+
         -- -Idir or /Idir
-        v = v:gsub("([%-/]I)(.*)", function (I, dir)
-                dir = dir:trim()
-                if #dir == 0 then
-                    return ""
-                end
-                dir = path.translate(dir)
-                if not path.is_absolute(dir) then
-                    dir = path.relative(path.absolute(dir), vcxprojdir)
-                end
-                return I .. dir
+        -- handle external includes as well
+        for _, pattern in ipairs({"[%-/](I)(.*)", "[%-/](external:I)(.*)"}) do
+            v = v:gsub(pattern, function (flag, dir)
+                dir = _make_dirs(dir, vcxprojdir)
+                return "/" .. flag .. dir
             end)
+        end
+
         table.insert(argv, v)
     end
     return table.concat(argv, " ")
@@ -90,18 +100,15 @@ function _make_compflags(sourcefile, targetinfo, vcxprojdir)
     local flags = {}
     for _, flag in ipairs(targetinfo.compflags[sourcefile]) do
 
-        -- -Idir or /Idir
-        flag = flag:gsub("[%-/]I(.*)", function (dir)
-                        dir = dir:trim()
-                        if #dir == 0 then
-                            return ""
-                        end
-                        dir = path.translate(dir)
-                        if not path.is_absolute(dir) then
-                            dir = path.relative(path.absolute(dir), vcxprojdir)
-                        end
-                        return "/I" .. dir
-                    end)
+        -- handle external includes as well
+        for _, pattern in ipairs({"[%-/](I)(.*)", "[%-/](external:I)(.*)"}) do
+
+            -- -Idir or /Idir
+            flag = flag:gsub(pattern, function (flag, dir)
+                dir = _make_dirs(dir, vcxprojdir)
+                return "/" .. flag .. dir
+            end)
+        end
 
         -- save flag
         table.insert(flags, flag)
@@ -124,29 +131,15 @@ function _make_linkflags(targetinfo, vcxprojdir)
 
         -- replace -libpath:dir or /libpath:dir
         flag = flag:gsub(string.ipattern("[%-/]libpath:(.*)"), function (dir)
-                        dir = dir:trim()
-                        if #dir == 0 then
-                            return ""
-                        end
-                        dir = path.translate(dir)
-                        if not path.is_absolute(dir) then
-                            dir = path.relative(path.absolute(dir), vcxprojdir)
-                        end
-                        return "/libpath:" .. dir
-                    end)
+            dir = _make_dirs(dir, vcxprojdir)
+            return "/libpath:" .. dir
+        end)
 
         -- replace -def:dir or /def:dir
         flag = flag:gsub(string.ipattern("[%-/]def:(.*)"), function (dir)
-                        dir = dir:trim()
-                        if #dir == 0 then
-                            return ""
-                        end
-                        dir = path.translate(dir)
-                        if not path.is_absolute(dir) then
-                            dir = path.relative(path.absolute(dir), vcxprojdir)
-                        end
-                        return "/def:" .. dir
-                    end)
+            dir = _make_dirs(dir, vcxprojdir)
+            return "/def:" .. dir
+        end)
 
         -- save flag
         table.insert(flags, flag)
@@ -240,8 +233,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make OutputDirectory and IntermediateDirectory
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<OutDir>%s\\</OutDir>", path.relative(path.absolute(targetinfo.targetdir), vcxprojdir))
-            vcxprojfile:print("<IntDir>%s\\</IntDir>", path.relative(path.absolute(targetinfo.objectdir), vcxprojdir))
+            vcxprojfile:print("<OutDir>%s\\</OutDir>", _make_dirs(targetinfo.targetdir, vcxprojdir))
+            vcxprojfile:print("<IntDir>%s\\</IntDir>", _make_dirs(targetinfo.objectdir, vcxprojdir))
             vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
             vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
 
