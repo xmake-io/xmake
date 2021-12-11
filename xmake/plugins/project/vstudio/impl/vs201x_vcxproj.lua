@@ -288,6 +288,8 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<WarningLevel%s>Level2</WarningLevel>", condition)
     elseif flagstr:find("[%-/]W3") then
         vcxprojfile:print("<WarningLevel%s>Level3</WarningLevel>", condition)
+    elseif flagstr:find("[%-/]W4") then
+        vcxprojfile:print("<WarningLevel%s>Level4</WarningLevel>", condition)
     elseif flagstr:find("[%-/]Wall") then
         vcxprojfile:print("<WarningLevel%s>EnableAllWarnings</WarningLevel>", condition)
     else
@@ -357,7 +359,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm", "MP"}
+    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm", "MP"}
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
