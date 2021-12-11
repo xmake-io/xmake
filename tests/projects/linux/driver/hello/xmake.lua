@@ -1,5 +1,3 @@
-add_rules("mode.release", "mode.debug")
-
 add_requires("linux-headers", {configs = {driver_modules = true}})
 
 target("hello")

@@ -103,6 +103,11 @@ function load(target)
     -- check compiler, we must use gcc
     assert(target:has_tool("cc", "gcc"), "we must use gcc compiler!")
 
+    -- check rules
+    for _, rulename in ipairs({"mode.release", "mode.debug", "mode.releasedbg", "mode.minsizerel", "mode.asan", "mode.tsan"}) do
+        assert(not target:rule(rulename), "target(%s) is linux driver module, it need not rule(%s)!", target:name(), rulename)
+    end
+
     -- add includedirs
     local sdkdir = linux_headers.sdkdir
     local includedir = linux_headers.includedir
@@ -132,7 +137,7 @@ function load(target)
 
     -- add compilation flags
     target:set("policy", "check.auto_ignore_flags", false)
-    target:add("defines", "__KERNEL__", "MODULE", "CC_USING_FENTRY")
+    target:add("defines", "__KERNEL__", "MODULE")
     target:add("defines", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
@@ -147,13 +152,19 @@ function load(target)
     target:add("cflags", "-nostdinc")
     target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
     target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
-    target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount", "-mfentry")
+    target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount")
     target:add("cflags", "-fmacro-prefix-map=./=", " -fno-strict-aliasing", "-fno-common", "-fshort-wchar", "-fno-PIE")
     target:add("cflags", "-fcf-protection=none", "-falign-jumps=1", "-falign-loops=1", "-fno-asynchronous-unwind-tables")
     target:add("cflags", "-fno-jump-tables", "-fno-delete-null-pointer-checks", "-fno-allow-store-data-races")
     target:add("cflags", "-fno-reorder-blocks", "-fno-ipa-cp-clone", "-fno-partial-inlining", "-fstack-protector-strong")
     target:add("cflags", "-fno-inline-functions-called-once", "-falign-functions=32")
     target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
+
+    -- add optional flags (fentry)
+    target:add("cflags", "-mfentry")
+    target:add("defines", "CC_USING_FENTRY")
+
+    -- add optional flags (asan)
     target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
     target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
 end
