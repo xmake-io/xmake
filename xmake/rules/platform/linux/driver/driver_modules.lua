@@ -170,7 +170,8 @@ function load(target)
     -- add optional flags (asan)
     local has_asan = target:values("linux.driver.asan")
     if has_asan then
-        target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
+        target:add("cflags", "-fsanitize=kernel-address")
+        target:add("cflags", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
         target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
     end
 end
