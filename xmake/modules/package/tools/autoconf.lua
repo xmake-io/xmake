@@ -377,6 +377,18 @@ function build(package, configs, opt)
     if option.get("verbose") then
         table.insert(argv, "V=1")
     end
+    if opt.makeconfigs then
+        for name, value in pairs(opt.makeconfigs) do
+            value = tostring(value):trim()
+            if value ~= "" then
+                if type(name) == "number" then
+                    table.insert(argv, value)
+                else
+                    table.insert(argv, name .. "=" .. value)
+                end
+            end
+        end
+    end
     make(package, argv, opt)
 end
 
@@ -391,6 +403,18 @@ function install(package, configs, opt)
     local argv = {"install"}
     if option.get("verbose") then
         table.insert(argv, "V=1")
+    end
+    if opt.makeconfigs then
+        for name, value in pairs(opt.makeconfigs) do
+            value = tostring(value):trim()
+            if value ~= "" then
+                if type(name) == "number" then
+                    table.insert(argv, value)
+                else
+                    table.insert(argv, name .. "=" .. value)
+                end
+            end
+        end
     end
     make(package, argv, opt)
 end
