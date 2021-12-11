@@ -300,7 +300,7 @@ armclang      ARM Compiler Version 6 of Keil MDK
 * 控制台程序
 * Cuda 程序
 * Qt 应用程序
-* WDK 驱动程序
+* WDK Windows 驱动程序
 * WinSDK 应用程序
 * MFC 应用程序
 * iOS/MacOS 应用程序（支持.metal）
@@ -310,6 +310,7 @@ armclang      ARM Compiler Version 6 of Keil MDK
 * Protobuf 程序
 * Lex/yacc 程序
 * C++20 模块
+* Linux 内核驱动模块
 
 ## 更多例子
 
