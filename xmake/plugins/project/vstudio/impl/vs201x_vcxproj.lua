@@ -213,6 +213,13 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
         vcxprojfile:leave("</PropertyGroup>")
     end
 
+    -- make Debugger
+    for _, targetinfo in ipairs(target.info) do
+        vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Debugger\">", targetinfo.mode, targetinfo.arch)
+            vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", targetinfo.rundir)
+        vcxprojfile:leave("</PropertyGroup>")
+    end
+
     -- import Microsoft.Cpp.props
     vcxprojfile:print("<Import Project=\"%$(VCTargetsPath)\\Microsoft.Cpp.props\" />")
 

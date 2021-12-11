@@ -32,6 +32,7 @@ import("vs201x_vcxproj")
 import("vs201x_vcxproj_filters")
 import("core.cache.memcache")
 import("core.cache.localcache")
+import("private.action.run.make_runenvs")
 import("private.action.require.install", {alias = "install_requires"})
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
@@ -242,6 +243,9 @@ function _make_targetinfo(mode, arch, target)
     -- save linker flags
     local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
+
+    -- save execution dir (when executed from VS)
+    targetinfo.rundir = target:rundir()
 
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then
