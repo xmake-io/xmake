@@ -88,8 +88,10 @@ end
 
 -- get cflags from make
 function _get_cflags_from_make(target, sdkdir)
-    local key = "cflags." .. target:plat() .. target:arch()
-    local cflags = memcache.get("linux.driver", key)
+    local key = target:plat() .. target:arch()
+    local cflags = memcache.get2("linux.driver", key, "cflags")
+    local ldflags_o = memcache.get2("linux.driver", key, "ldflags_o")
+    local ldflags_ko = memcache.get2("linux.driver", key, "ldflags_ko")
     if cflags == nil then
         local make = assert(find_tool("make"), "make not found!")
         local tmpdir = os.tmpfile() .. ".dir"
@@ -143,6 +145,24 @@ module_exit(hello_exit);
                             table.insert(cflags, cflag)
                         end
                     end
+                end
+                local ldflags = line:match("%-ld (.+) %-o ") or line:match("ld (.+) %-o ")
+                if ldflags then
+                    local ko = ldflags:find("-T ", 1, true)
+                    for _, ldflag in ipairs(ldflags:split("%s+")) do
+                        if ko then
+                            if ldflag:startswith("--build-id=") or ldflag:startswith("-T ") then
+                                break
+                            end
+                            ldflags_ko = ldflags_ko or {}
+                            table.insert(ldflags_ko, ldflag)
+                        else
+                            ldflags_o = ldflags_o or {}
+                            table.insert(ldflags_o, ldflag)
+                        end
+                    end
+                end
+                if cflags and ldflags_o and ldflags_ko then
                     break
                 end
             end
@@ -153,9 +173,9 @@ module_exit(hello_exit);
             end
         end
         os.tryrm(tmpdir)
-        memcache.set("linux.driver", key, cflags or false)
+        memcache.set2("linux.driver", key, "cflags", cflags or false)
     end
-    return cflags or nil
+    return cflags or nil, ldflags_o or nil, ldflags_ko or nil
 end
 
 function load(target)
@@ -211,9 +231,11 @@ function load(target)
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
     end
-    local cflags = _get_cflags_from_make(target, sdkdir)
+    local cflags, ldflags_o, ldflags_ko = _get_cflags_from_make(target, sdkdir)
     if cflags then
         target:add("cflags", cflags, {force = true})
+        target:data_set("linux.driver.ldflags_o", ldflags_o)
+        target:data_set("linux.driver.ldflags_ko", ldflags_ko)
     end
 end
 
@@ -244,15 +266,12 @@ function link(target, opt)
 
         -- link target.o
         local argv = {}
-        if target:is_arch("x86_64", "i386") then
-            table.join2(argv, "-m", "elf_" .. target:arch())
-        elseif target:is_arch("arm", "armv7") then
-            table.join2(argv, "-EB")
-        elseif target:is_arch("arm64", "arm64-v8a") then
-            table.join2(argv, "-EL", "-maarch64elf")
+        local ldflags_o = target:data("linux.driver.ldflags_o")
+        if ldflags_o then
+            table.join2(argv, ldflags_o)
         end
         local targetfile_o = target:objectfile(targetfile)
-        table.join2(argv, "-r", "-o", targetfile_o)
+        table.join2(argv, "-o", targetfile_o)
         table.join2(argv, objectfiles)
         os.mkdir(path.directory(targetfile_o))
         os.vrunv(ld, argv)
@@ -288,15 +307,12 @@ function link(target, opt)
 
         -- link target.ko
         argv = {}
-        if target:is_arch("x86_64", "i386") then
-            table.join2(argv, "-m", "elf_" .. target:arch())
-        elseif target:is_arch("arm", "armv7") then
-            table.join2(argv, "-EB", "--be8")
-        elseif target:is_arch("arm64", "arm64-v8a") then
-            table.join2(argv, "-EL", "-maarch64elf")
+        local ldflags_ko = target:data("linux.driver.ldflags_ko")
+        if ldflags_ko then
+            table.join2(argv, ldflags_ko)
         end
         local targetfile_o = target:objectfile(targetfile)
-        table.join2(argv, "-r", "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o)
+        table.join2(argv, "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o)
         os.mkdir(path.directory(targetfile))
         os.vrunv(ld, argv)
 
