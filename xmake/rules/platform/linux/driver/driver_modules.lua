@@ -21,6 +21,8 @@
 -- imports
 import("core.base.option")
 import("core.project.depend")
+import("core.cache.memcache")
+import("lib.detect.find_tool")
 import("utils.progress")
 import("private.tools.ccache")
 
@@ -61,7 +63,8 @@ end
 -- /usr/include
 -- End of search list.
 function _get_gcc_includedir(target)
-    local includedir = _g.includedir
+    local key = "gcc.includedir." .. target:plat() .. target:arch()
+    local includedir = memcache.get("linux.driver", key)
     if includedir == nil then
         local gcc, toolname = target:tool("cc")
         assert(toolname, "gcc")
@@ -78,9 +81,81 @@ function _get_gcc_includedir(target)
                 end
             end
         end
-        _g.includedir = includedir or false
+        memcache.set("linux.driver", key, includedir or false)
     end
     return includedir or nil
+end
+
+-- get cflags from make
+function _get_cflags_from_make(target, sdkdir)
+    local key = "cflags." .. target:plat() .. target:arch()
+    local cflags = memcache.get("linux.driver", key)
+    if cflags == nil then
+        local make = assert(find_tool("make"), "make not found!")
+        local tmpdir = os.tmpfile() .. ".dir"
+        local makefile = path.join(tmpdir, "Makefile")
+        local stubfile = path.join(tmpdir, "stub.c")
+        io.writefile(makefile, "obj-m := stub.o")
+        io.writefile(stubfile, [[
+#include <linux/init.h>
+#include <linux/module.h>
+
+MODULE_LICENSE("Dual BSD/GPL");
+MODULE_AUTHOR("Ruki");
+MODULE_DESCRIPTION("A simple Hello World Module");
+MODULE_ALIAS("a simplest module");
+
+int hello_init(void) {
+    printk(KERN_INFO "Hello World\n");
+    return 0;
+}
+
+void hello_exit(void) {
+    printk(KERN_INFO "Goodbye World\n");
+}
+
+module_init(hello_init);
+module_exit(hello_exit);
+        ]])
+        local argv = {"-C", sdkdir, "V=1", "M=" .. tmpdir, "modules"}
+        if target:is_plat("cross") then
+            local arch
+            if target:is_arch("arm", "armv7") then
+                arch = "arm"
+            elseif target:is_arch("arm64", "arm64-v8a") then
+                arch = "arm64"
+            end
+            assert(arch, "unknown arch(%s)!", target:arch())
+            local cc = target:tool("cc")
+            local cross = cc:gsub("%-gcc$", "-")
+            table.insert(argv, "ARCH=" .. arch)
+            table.insert(argv, "CROSS_COMPILE=" .. cross)
+        end
+        local result, errors = try {function () return os.iorunv(make.program, argv, {curdir = tmpdir}) end}
+        if result then
+            for _, line in ipairs(result:split("\n", {plain = true})) do
+                if line:endswith("stub.c") then
+                    for _, cflag in ipairs(line:split("%s+")) do
+                        if cflag:startswith("-f") or cflag:startswith("-m")
+                        or (cflag:startswith("-W") and not cflag:startswith("-Wp,-MMD,"))
+                        or (cflag:startswith("-D") and not cflag:startswith("-DKBUILD_")) then
+                            cflags = cflags or {}
+                            table.insert(cflags, cflag)
+                        end
+                    end
+                    break
+                end
+            end
+        else
+            if option.get("diagnosis") then
+                print("rule(platform.linux.driver): cannot get cflags from make!")
+                print(errors)
+            end
+        end
+        os.tryrm(tmpdir)
+        memcache.set("linux.driver", key, cflags or false)
+    end
+    return cflags or nil
 end
 
 function load(target)
@@ -132,50 +207,13 @@ function load(target)
     target:pkg("linux-headers"):set("sysincludedirs", nil)
 
     -- add compilation flags
-    target:add("defines", "__KERNEL__", "MODULE")
     target:add("defines", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
     end
-    target:set("optimize", "faster") -- we need use -O2 for gcc
-    if not target:get("language") then
-        target:set("languages", "gnu89")
-    end
-    target:add("cflags", "-nostdinc")
-    target:add("cflags", "-fno-strict-aliasing", "-fno-common", "-fshort-wchar", "-fno-PIE")
-    target:add("cflags", "-falign-jumps=1", "-falign-loops=1", "-fno-asynchronous-unwind-tables")
-    target:add("cflags", "-fno-jump-tables", "-fno-delete-null-pointer-checks")
-    target:add("cflags", "-fno-reorder-blocks", "-fno-ipa-cp-clone", "-fno-partial-inlining", "-fstack-protector-strong")
-    target:add("cflags", "-fno-inline-functions-called-once", "-falign-functions=32")
-    target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
-    if target:is_arch("x86_64", "i386") then
-        target:add("defines", "CONFIG_X86_X32_ABI")
-        target:add("cflags", "-mcmodel=kernel", {force = true})
-        target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
-        target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone")
-        target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount")
-        target:add("cflags", "-fmacro-prefix-map=./=", "-fcf-protection=none", "-fno-allow-store-data-races")
-    elseif target:is_arch("arm", "armv7") then
-        target:add("cflags", "-march=armv6k", {force = true})
-        target:add("cflags", "-mbig-endian", "-mabi=aapcs-linux", "-mfpu=vfp", "-marm", "-mtune=arm1136j-s", "-msoft-float", "-Uarm")
-        target:add("defines", "__LINUX_ARM_ARCH__=6")
-    elseif target:is_arch("arm64", "arm64-v8a") then
-        target:add("cflags", "-mlittle-endian", "-mgeneral-regs-only", "-mabi=lp64")
-    end
-
-    -- add optional flags (fentry)
-    local has_fentry = target:values("linux.driver.fentry")
-    if has_fentry then
-        target:add("cflags", "-mfentry")
-        target:add("defines", "CC_USING_FENTRY")
-    end
-
-    -- add optional flags (asan)
-    local has_asan = target:values("linux.driver.asan")
-    if has_asan then
-        target:add("cflags", "-fsanitize=kernel-address")
-        target:add("cflags", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
-        target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
+    local cflags = _get_cflags_from_make(target, sdkdir)
+    if cflags then
+        target:add("cflags", cflags, {force = true})
     end
 end
 
