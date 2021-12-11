@@ -84,6 +84,13 @@ function _get_gcc_includedir(target)
     return includedir or nil
 end
 
+-- get ld arch, e.g. ld -m elf_x86_64
+function _get_ld_arch(target)
+    if target:is_arch("x86_64", "i386") then
+        return "elf_" .. target:arch()
+    end
+end
+
 function load(target)
     -- we need only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
@@ -102,6 +109,8 @@ function load(target)
     local archsubdir
     if target:is_arch("x86_64", "i386") then
         archsubdir = path.join(sdkdir, "arch", "x86")
+    else
+        raise("rule(platform.linux.driver): unsupported arch(%s)!", target:arch())
     end
     assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
     local gcc_includedir = _get_gcc_includedir(target)
@@ -129,7 +138,9 @@ function load(target)
         target:add("defines", "CONFIG_X86_X32_ABI")
     end
     target:set("optimize", "faster") -- we need use -O2 for gcc
-    target:set("languages", "gnu89")
+    if not target:get("language") then
+        target:set("languages", "gnu89")
+    end
     target:add("cflags", "-nostdinc")
     target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
     target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
@@ -167,14 +178,9 @@ function link(target, opt)
         local ld = assert(find_tool("ld"), "ld not found!")
 
         -- link target.o
-        local argv = {"-m"}
-        if target:is_arch("x86_64") then
-            table.insert(argv, "elf_x86_64")
-        end
+        local ldarch = assert(_get_ld_arch(target), "unknown ld arch!")
         local targetfile_o = target:objectfile(targetfile)
-        table.insert(argv, "-r")
-        table.insert(argv, "-o")
-        table.insert(argv, targetfile_o)
+        local argv = {"-m", ldarch, "-r", "-o", targetfile_o}
         table.join2(argv, objectfiles)
         os.mkdir(path.directory(targetfile_o))
         os.vrunv(ld.program, argv)
@@ -209,19 +215,8 @@ function link(target, opt)
         assert(compinst:compile(targetfile_mod_c, targetfile_mod_o, {target = target}))
 
         -- link target.ko
-        argv = {"-m"}
-        if target:is_arch("x86_64") then
-            table.insert(argv, "elf_x86_64")
-        end
         local targetfile_o = target:objectfile(targetfile)
-        table.insert(argv, "-r")
-        table.insert(argv, "--build-id=sha1")
-        table.insert(argv, "-T")
-        table.insert(argv, ldscriptfile)
-        table.insert(argv, "-o")
-        table.insert(argv, targetfile)
-        table.insert(argv, targetfile_o)
-        table.insert(argv, targetfile_mod_o)
+        argv = {"-m", ldarch, "-r", "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o}
         os.mkdir(path.directory(targetfile))
         os.vrunv(ld.program, argv)
 
