@@ -270,13 +270,17 @@ end
 function nf_sysincludedir(self, dir)
     local has_external_includedir = _g._HAS_EXTERNAL_INCLUDEDIR
     if has_external_includedir == nil then
-        if self:has_flags({"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir"}) then
-            has_external_includedir = true
+        if self:has_flags({"-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir"}) then
+            has_external_includedir = 2 -- full support
+        elseif self:has_flags({"-experimental:external", "-external:W0", "-external:I" .. os.args(path.translate(dir))}, "cxflags", {flagskey = "cl_external_includedir_experimental"}) then
+            has_external_includedir = 1 -- experimental support
         end
-        has_external_includedir = has_external_includedir or false
+        has_external_includedir = has_external_includedir or 0
         _g._HAS_EXTERNAL_INCLUDEDIR = has_external_includedir
     end
-    if has_external_includedir then
+    if has_external_includedir >= 2 then
+        return {"-external:W0", "-external:I" .. path.translate(dir)}
+    elseif has_external_includedir >= 1 then
         return {"-experimental:external", "-external:W0", "-external:I" .. path.translate(dir)}
     else
         return nf_includedir(self, dir)
