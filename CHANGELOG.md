@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1902](https://github.com/xmake-io/xmake/issues/1902): Support to build linux kernel driver modules
+
 ### Change
 
 * [#1872](https://github.com/xmake-io/xmake/issues/1872): Escape characters for set_configvar
@@ -1152,6 +1156,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1902](https://github.com/xmake-io/xmake/issues/1902): 支持构建 linux 内核驱动模块
 
 ### 改进
 
