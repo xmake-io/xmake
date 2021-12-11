@@ -46,6 +46,43 @@ function _get_linux_headers_sdk(target)
     return {version = version, sdkdir = linux_headersdir, includedir = includedir}
 end
 
+-- get c system search include directory of gcc
+--
+-- e.g. gcc -E -Wp,-v -xc /dev/null
+--
+-- ignoring nonexistent directory "/usr/local/include/x86_64-linux-gnu"
+-- ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/10/include-fixed"
+-- ignoring nonexistent directory "/usr/lib/gcc/x86_64-linux-gnu/10/../../../../x86_64-linux-gnu/include"
+-- #include "..." search starts here:
+-- #include <...> search starts here:
+-- /usr/lib/gcc/x86_64-linux-gnu/10/include        <-- we need get it
+-- /usr/local/include
+-- /usr/include/x86_64-linux-gnu
+-- /usr/include
+-- End of search list.
+function _get_gcc_includedir(target)
+    local includedir = _g.includedir
+    if includedir == nil then
+        local gcc, toolname = target:tool("cc")
+        assert(toolname, "gcc")
+
+        local _, result = try {function () return os.iorunv(gcc, {"-E", "-Wp,-v", "-xc", os.nuldev()}) end}
+        if result then
+            for _, line in ipairs(result:split("\n", {plain = true})) do
+                line = line:trim()
+                if os.isdir(line) then
+                    includedir = line
+                    break
+                elseif line:startswith("End") then
+                    break
+                end
+            end
+        end
+        _g.includedir = includedir or false
+    end
+    return includedir or nil
+end
+
 function load(target)
     -- we need only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
@@ -66,7 +103,10 @@ function load(target)
         archsubdir = path.join(sdkdir, "arch", "x86")
     end
     assert(archsubdir, "unknown arch(%s) for linux driver modules!", target:arch())
-    target:add("sysincludedirs", "/usr/lib/gcc/x86_64-linux-gnu/10/include") -- TODO
+    local gcc_includedir = _get_gcc_includedir(target)
+    if gcc_includedir then
+        target:add("sysincludedirs", gcc_includedir)
+    end
     target:add("includedirs", path.join(archsubdir, "include"))
     target:add("includedirs", path.join(archsubdir, "include", "generated"))
     target:add("includedirs", includedir)
