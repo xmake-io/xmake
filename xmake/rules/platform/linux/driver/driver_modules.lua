@@ -159,6 +159,7 @@ function load(target)
         target:add("cflags", "-mbig-endian", "-mabi=aapcs-linux", "-mfpu=vfp", "-marm", "-march=armv6k", "-mtune=arm1136j-s", "-msoft-float", "-Uarm")
         target:add("defines", "__LINUX_ARM_ARCH__=6")
     elseif target:is_arch("arm64", "arm64-v8a") then
+        target:add("cflags", "-mlittle-endian", "-mgeneral-regs-only", "-mabi=lp64")
     end
 
     -- add optional flags (fentry)
@@ -208,6 +209,8 @@ function link(target, opt)
             table.join2(argv, "-m", "elf_" .. target:arch())
         elseif target:is_arch("arm", "armv7") then
             table.join2(argv, "-EB")
+        elseif target:is_arch("arm64", "arm64-v8a") then
+            table.join2(argv, "-EL", "-maarch64elf")
         end
         local targetfile_o = target:objectfile(targetfile)
         table.join2(argv, "-r", "-o", targetfile_o)
@@ -250,6 +253,8 @@ function link(target, opt)
             table.join2(argv, "-m", "elf_" .. target:arch())
         elseif target:is_arch("arm", "armv7") then
             table.join2(argv, "-EB", "--be8")
+        elseif target:is_arch("arm64", "arm64-v8a") then
+            table.join2(argv, "-EL", "-maarch64elf")
         end
         local targetfile_o = target:objectfile(targetfile)
         table.join2(argv, "-r", "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o)
