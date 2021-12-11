@@ -21,7 +21,6 @@
 -- imports
 import("core.base.option")
 import("core.project.depend")
-import("lib.detect.find_tool")
 import("utils.progress")
 import("private.tools.ccache")
 
@@ -84,13 +83,6 @@ function _get_gcc_includedir(target)
     return includedir or nil
 end
 
--- get ld arch, e.g. ld -m elf_x86_64
-function _get_ld_arch(target)
-    if target:is_arch("x86_64", "i386") then
-        return "elf_" .. target:arch()
-    end
-end
-
 function load(target)
     -- we need only need binary kind, because we will rewrite on_link
     target:set("kind", "binary")
@@ -114,6 +106,10 @@ function load(target)
     local archsubdir
     if target:is_arch("x86_64", "i386") then
         archsubdir = path.join(sdkdir, "arch", "x86")
+    elseif target:is_arch("arm", "armv7") then
+        archsubdir = path.join(sdkdir, "arch", "arm")
+    elseif target:is_arch("arm64", "arm64-v8a") then
+        archsubdir = path.join(sdkdir, "arch", "arm64")
     else
         raise("rule(platform.linux.driver): unsupported arch(%s)!", target:arch())
     end
@@ -142,23 +138,28 @@ function load(target)
     for _, sourcefile in ipairs(target:sourcefiles()) do
         target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
     end
-    if target:is_arch("x86_64", "i386") then
-        target:add("defines", "CONFIG_X86_X32_ABI")
-    end
     target:set("optimize", "faster") -- we need use -O2 for gcc
     if not target:get("language") then
         target:set("languages", "gnu89")
     end
     target:add("cflags", "-nostdinc")
-    target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
-    target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
-    target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount")
-    target:add("cflags", "-fmacro-prefix-map=./=", " -fno-strict-aliasing", "-fno-common", "-fshort-wchar", "-fno-PIE")
-    target:add("cflags", "-fcf-protection=none", "-falign-jumps=1", "-falign-loops=1", "-fno-asynchronous-unwind-tables")
-    target:add("cflags", "-fno-jump-tables", "-fno-delete-null-pointer-checks", "-fno-allow-store-data-races")
+    target:add("cflags", "-fno-strict-aliasing", "-fno-common", "-fshort-wchar", "-fno-PIE")
+    target:add("cflags", "-falign-jumps=1", "-falign-loops=1", "-fno-asynchronous-unwind-tables")
+    target:add("cflags", "-fno-jump-tables", "-fno-delete-null-pointer-checks")
     target:add("cflags", "-fno-reorder-blocks", "-fno-ipa-cp-clone", "-fno-partial-inlining", "-fstack-protector-strong")
     target:add("cflags", "-fno-inline-functions-called-once", "-falign-functions=32")
     target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
+    if target:is_arch("x86_64", "i386") then
+        target:add("defines", "CONFIG_X86_X32_ABI")
+        target:add("cflags", "-mno-sse", "-mno-mmx", "-mno-sse2", "-mno-3dnow", "-mno-avx", "-mno-80387", "-mno-fp-ret-in-387")
+        target:add("cflags", "-mpreferred-stack-boundary=3", "-mskip-rax-setup", "-mtune=generic", "-mno-red-zone", "-mcmodel=kernel")
+        target:add("cflags", "-mindirect-branch=thunk-extern", "-mindirect-branch-register", "-mrecord-mcount")
+        target:add("cflags", "-fmacro-prefix-map=./=", "-fcf-protection=none", "-fno-allow-store-data-races")
+    elseif target:is_arch("arm", "armv7") then
+        target:add("cflags", "-mbig-endian", "-mabi=aapcs-linux", "-mfpu=vfp", "-marm", "-march=armv6k", "-mtune=arm1136j-s", "-msoft-float", "-Uarm")
+        target:add("defines", "__LINUX_ARM_ARCH__=6")
+    elseif target:is_arch("arm64", "arm64-v8a") then
+    end
 
     -- add optional flags (fentry)
     local has_fentry = target:values("linux.driver.fentry")
@@ -196,15 +197,23 @@ function link(target, opt)
         assert(ldscriptfile and os.isfile(ldscriptfile), "scripts/module.lds not found!")
 
         -- get ld
-        local ld = assert(find_tool("ld"), "ld not found!")
+        local ld = target:tool("ld")
+        assert(ld, "ld not found!")
+        ld = ld:gsub("gcc$", "ld")
+        ld = ld:gsub("g%+%+$", "ld")
 
         -- link target.o
-        local ldarch = assert(_get_ld_arch(target), "unknown ld arch!")
+        local argv = {}
+        if target:is_arch("x86_64", "i386") then
+            table.join2(argv, "-m", "elf_" .. target:arch())
+        elseif target:is_arch("arm", "armv7") then
+            table.join2(argv, "-EB")
+        end
         local targetfile_o = target:objectfile(targetfile)
-        local argv = {"-m", ldarch, "-r", "-o", targetfile_o}
+        table.join2(argv, "-r", "-o", targetfile_o)
         table.join2(argv, objectfiles)
         os.mkdir(path.directory(targetfile_o))
-        os.vrunv(ld.program, argv)
+        os.vrunv(ld, argv)
 
         -- generate target.mod
         local targetfile_mod = targetfile_o:gsub("%.o$", ".mod")
@@ -236,10 +245,16 @@ function link(target, opt)
         assert(compinst:compile(targetfile_mod_c, targetfile_mod_o, {target = target}))
 
         -- link target.ko
+        argv = {}
+        if target:is_arch("x86_64", "i386") then
+            table.join2(argv, "-m", "elf_" .. target:arch())
+        elseif target:is_arch("arm", "armv7") then
+            table.join2(argv, "-EB", "--be8")
+        end
         local targetfile_o = target:objectfile(targetfile)
-        argv = {"-m", ldarch, "-r", "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o}
+        table.join2(argv, "-r", "--build-id=sha1", "-T", ldscriptfile, "-o", targetfile, targetfile_o, targetfile_mod_o)
         os.mkdir(path.directory(targetfile))
-        os.vrunv(ld.program, argv)
+        os.vrunv(ld, argv)
 
     end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles})
 end
