@@ -550,7 +550,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make common flags
         targetinfo.commonflags = {}
         for _, flag in ipairs(first_flags) do
-            if flags_stats[flag] == files_count then
+            if flags_stats[flag] >= files_count then
                 table.insert(targetinfo.commonflags, flag)
             end
         end
@@ -560,7 +560,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         for sourcefile, flags in pairs(targetinfo.sourceflags) do
             local otherflags = {}
             for _, flag in ipairs(flags) do
-                if flags_stats[flag] ~= files_count then
+                if flags_stats[flag] < files_count then
                     table.insert(otherflags, flag)
                 end
             end
