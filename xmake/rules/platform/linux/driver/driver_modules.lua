@@ -133,7 +133,10 @@ function load(target)
     -- add compilation flags
     target:set("policy", "check.auto_ignore_flags", false)
     target:add("defines", "__KERNEL__", "MODULE", "CC_USING_FENTRY")
-    target:add("defines", "KBUILD_BASENAME=\"" .. target:name() .. "\"", "KBUILD_MODNAME=\"" .. target:name() .. "\"") -- TODO
+    target:add("defines", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
+    for _, sourcefile in ipairs(target:sourcefiles()) do
+        target:fileconfig_set(sourcefile, {defines = "KBUILD_BASENAME=\"" .. path.basename(sourcefile) .. "\""})
+    end
     if target:is_arch("x86_64", "i386") then
         target:add("defines", "CONFIG_X86_X32_ABI")
     end
