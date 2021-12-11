@@ -161,12 +161,18 @@ function load(target)
     target:add("cflags", "-fno-strict-overflow", "-fno-stack-check", "-fconserve-stack")
 
     -- add optional flags (fentry)
-    target:add("cflags", "-mfentry")
-    target:add("defines", "CC_USING_FENTRY")
+    local has_fentry = target:values("linux.driver.fentry")
+    if has_fentry then
+        target:add("cflags", "-mfentry")
+        target:add("defines", "CC_USING_FENTRY")
+    end
 
     -- add optional flags (asan)
-    target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
-    target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
+    local has_asan = target:values("linux.driver.asan")
+    if has_asan then
+        target:add("cflags", "-fsanitize=kernel-address", "-fasan-shadow-offset=0xdffffc0000000000", "-fsanitize-coverage=trace-pc", "-fsanitize-coverage=trace-cmp")
+        target:add("cflags", "--param asan-globals=1", "--param asan-instrumentation-with-call-threshold=0", "--param asan-stack=1", "--param asan-instrument-allocas=1")
+    end
 end
 
 function link(target, opt)
