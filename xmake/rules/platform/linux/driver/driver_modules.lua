@@ -21,6 +21,7 @@
 -- imports
 import("core.base.option")
 import("core.project.depend")
+import("lib.detect.find_tool")
 import("utils.progress")
 import("private.tools.ccache")
 
@@ -162,6 +163,9 @@ function link(target, opt)
         assert(modpost and os.isfile(modpost), "scripts/mod/modpost not found!")
         assert(ldscriptfile and os.isfile(ldscriptfile), "scripts/module.lds not found!")
 
+        -- get ld
+        local ld = assert(find_tool("ld"), "ld not found!")
+
         -- link target.o
         local argv = {"-m"}
         if target:is_arch("x86_64") then
@@ -173,7 +177,7 @@ function link(target, opt)
         table.insert(argv, targetfile_o)
         table.join2(argv, objectfiles)
         os.mkdir(path.directory(targetfile_o))
-        os.vrunv("ld", argv)
+        os.vrunv(ld.program, argv)
 
         -- generate target.mod
         local targetfile_mod = targetfile_o:gsub("%.o$", ".mod")
@@ -219,7 +223,7 @@ function link(target, opt)
         table.insert(argv, targetfile_o)
         table.insert(argv, targetfile_mod_o)
         os.mkdir(path.directory(targetfile))
-        os.vrunv("ld", argv)
+        os.vrunv(ld.program, argv)
 
     end, {dependfile = dependfile, lastmtime = os.mtime(target:targetfile()), files = objectfiles})
 end
