@@ -121,6 +121,7 @@ module_exit(hello_exit);
         ]])
         local argv = {"-C", sdkdir, "V=1", "M=" .. tmpdir, "modules"}
         if target:is_plat("cross") then
+            -- e.g.	$(MAKE) -C $(KERN_DIR) V=1 ARCH=arm64 CROSS_COMPILE=/mnt/gcc-linaro-7.5.0-2019.12-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu- M=$(PWD) modules
             local arch
             if target:is_arch("arm", "armv7") then
                 arch = "arm"
@@ -154,9 +155,11 @@ module_exit(hello_exit);
                             if ldflag:startswith("--build-id=") or ldflag:startswith("-T ") then
                                 break
                             end
+                            -- e.g. aarch64-linux-gnu-ld -r -EL  -maarch64elf --build-id=sha1  -T scripts/module.lds -o hello.ko hello.o hello.mod.o
                             ldflags_ko = ldflags_ko or {}
                             table.insert(ldflags_ko, ldflag)
                         else
+                            -- e.g. aarch64-linux-gnu-ld -EL  -maarch64elf   -r -o hello.o xxx.o
                             ldflags_o = ldflags_o or {}
                             table.insert(ldflags_o, ldflag)
                         end
