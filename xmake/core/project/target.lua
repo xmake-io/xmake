@@ -398,6 +398,11 @@ function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
 end
 
+-- set the extra configuration
+function _instance:extraconf_set(name, item, key, value)
+    self._INFO:extraconf_set(name, item, key, value)
+end
+
 -- get user private data
 function _instance:data(name)
     return self._DATA and self._DATA[name]
@@ -1239,14 +1244,8 @@ end
 
 -- set the config info to the given source file
 function _instance:fileconfig_set(sourcefile, info)
-
-    -- get files config
     local filesconfig = self._FILESCONFIG or {}
-
-    -- set config info
     filesconfig[sourcefile] = info
-
-    -- update files config
     self._FILESCONFIG = filesconfig
 end
 
@@ -2092,7 +2091,7 @@ function target.filename(targetname, targetkind, opt)
 
     -- make filename by format
     local filename = targetname
-    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch)
+    local format = opt.format or platform.format(targetkind, opt.plat, opt.arch) or "$(name)"
     if format then
         local splitinfo = format:split("$(name)", {plain = true, strict = true})
         local prefixname = splitinfo[1] or ""
