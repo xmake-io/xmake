@@ -243,6 +243,9 @@ function _make_targetinfo(mode, arch, target)
     local linkflags = linker.linkflags(target:kind(), target:sourcekinds(), {target = target})
     targetinfo.linkflags = linkflags
 
+    -- save execution dir (when executed from VS)
+    targetinfo.rundir = target:rundir()
+
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then
         targetinfo.usemfc = "Dynamic"

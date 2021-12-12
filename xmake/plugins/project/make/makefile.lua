@@ -109,7 +109,7 @@ function _make_common_flags(target, sourcekind, sourcebatch)
     -- make common flags
     local commonflags = {}
     for _, flag in ipairs(first_flags) do
-        if flags_stats[flag] == files_count then
+        if flags_stats[flag] >= files_count then
             table.insert(commonflags, flag)
         end
     end
@@ -119,7 +119,7 @@ function _make_common_flags(target, sourcekind, sourcebatch)
     for sourcefile, flags in pairs(sourceflags) do
         local otherflags = {}
         for _, flag in ipairs(flags) do
-            if flags_stats[flag] ~= files_count then
+            if flags_stats[flag] < files_count then
                 table.insert(otherflags, flag)
             end
         end
