@@ -550,7 +550,6 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
 
                     -- no common flags for asm
                     if sourcekind ~= "as" then
-                        local foundDebug = false
                         for _, flag in ipairs(flags) do
                             flags_stats[flag] = (flags_stats[flag] or 0) + 1
                         end
