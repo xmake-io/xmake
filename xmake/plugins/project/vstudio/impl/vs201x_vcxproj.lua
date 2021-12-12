@@ -299,6 +299,26 @@ function _make_source_options(vcxprojfile, flags, condition)
         vcxprojfile:print("<TreatWarningAsError%s>true</TreatWarningAsError>", condition)
     end
 
+    -- make ExternalWarningLevel
+    if flagstr:find("[%-/]external:W1") then
+        vcxprojfile:print("<ExternalWarningLevel%s>Level1</ExternalWarningLevel>", condition)
+    elseif flagstr:find("[%-/]external:W2") then
+        vcxprojfile:print("<ExternalWarningLevel%s>Level2</ExternalWarningLevel>", condition)
+    elseif flagstr:find("[%-/]external:W3") then
+        vcxprojfile:print("<ExternalWarningLevel%s>Level3</ExternalWarningLevel>", condition)
+    elseif flagstr:find("[%-/]external:W4") then
+        vcxprojfile:print("<ExternalWarningLevel%s>Level4</ExternalWarningLevel>", condition)
+    else
+        vcxprojfile:print("<ExternalWarningLevel%s>TurnOffAllWarnings</ExternalWarningLevel>", condition)
+    end
+
+    -- make ExternalTemplatesDiagnostics
+    if flagstr:find("[%-/]external:templates-") then
+        vcxprojfile:print("<ExternalTemplatesDiagnostics%s>true</ExternalTemplatesDiagnostics>", condition)
+    else
+        vcxprojfile:print("<ExternalTemplatesDiagnostics%s>false</ExternalTemplatesDiagnostics>", condition)
+    end
+
     -- make PreprocessorDefinitions
     local defstr = ""
     for _, flag in ipairs(flags) do
@@ -359,7 +379,7 @@ function _make_source_options(vcxprojfile, flags, condition)
 
     -- make AdditionalOptions
     local additional_flags = {}
-    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm", "MP"}
+    local excludes = {"Od", "Os", "O0", "O1", "O2", "Ot", "Ox", "W0", "W1", "W2", "W3", "W4", "WX", "Wall", "Zi", "ZI", "Z7", "MT", "MTd", "MD", "MDd", "TP", "Fd", "fp", "I", "D", "Gm-", "Gm", "MP", "external:W0", "external:W1", "external:W2", "external:W3", "external:W4", "external:templates-", "external:templates" }
     for _, flag in ipairs(flags) do
         local excluded = false
         for _, exclude in ipairs(excludes) do
