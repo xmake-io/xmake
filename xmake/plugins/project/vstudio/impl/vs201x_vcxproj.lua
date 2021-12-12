@@ -247,7 +247,7 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make Debugger
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Debugger\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", targetinfo.rundir)
+            vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", _make_dirs(targetinfo.rundir, vcxprojdir))
         vcxprojfile:leave("</PropertyGroup>")
     end
 end
@@ -550,6 +550,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
 
                     -- no common flags for asm
                     if sourcekind ~= "as" then
+                        local foundDebug = false
                         for _, flag in ipairs(flags) do
                             flags_stats[flag] = (flags_stats[flag] or 0) + 1
                         end
