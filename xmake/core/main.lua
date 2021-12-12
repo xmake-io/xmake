@@ -218,7 +218,7 @@ function main.entry()
     end
 
     -- load theme
-    local theme_inst = theme.load(global.get("theme")) or theme.load("default")
+    local theme_inst = theme.load(os.getenv("XMAKE_THEME") or global.get("theme")) or theme.load("default")
     if theme_inst then
         colors.theme_set(theme_inst)
     end
