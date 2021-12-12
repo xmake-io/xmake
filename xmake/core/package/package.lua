@@ -110,6 +110,9 @@ end
 
 -- get the platform of package
 function _instance:plat()
+    if self._PLAT then
+        return self._PLAT
+    end
     -- @note we uses os.host() instead of them for the binary package
     if self:is_binary() then
         return os.subhost()
@@ -123,11 +126,24 @@ end
 
 -- get the architecture of package
 function _instance:arch()
+    if self._ARCH then
+        return self._ARCH
+    end
     -- @note we uses os.arch() instead of them for the binary package
     if self:is_binary() then
         return os.subarch()
     end
     return self:targetarch()
+end
+
+-- set the package platform
+function _instance:plat_set(plat)
+    self._PLAT = plat
+end
+
+-- set the package architecture
+function _instance:arch_set(arch)
+    self._ARCH = arch
 end
 
 -- get the target os
