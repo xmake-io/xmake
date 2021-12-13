@@ -15,6 +15,7 @@
 * [#1905](https://github.com/xmake-io/xmake/pull/1905): Add support of external headers without experimental for msvc
 * [#1904](https://github.com/xmake-io/xmake/pull/1904): Improve vs201x generator
 * Add `XMAKE_THEME` envirnoment variable to switch theme
+* [#1907](https://github.com/xmake-io/xmake/issues/1907): Add `-f/--force` to force to create project in a non-empty directory
 
 ### Bugs fixed
 
@@ -1174,6 +1175,7 @@
 * [#1905](https://github.com/xmake-io/xmake/pull/1905): 改进 msvc 对 external 头文件搜索探测支持
 * [#1904](https://github.com/xmake-io/xmake/pull/1904): 改进 vs201x 工程生成器
 * 添加 `XMAKE_THEME` 环境变量去切换主题配置
+* [#1907](https://github.com/xmake-io/xmake/issues/1907): 添加 `-f/--force` 参数使得 `xmake create` 可以在费控目录被强制创建
 
 ### Bugs 修复
 
