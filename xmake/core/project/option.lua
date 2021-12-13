@@ -534,6 +534,15 @@ function option.interpreter()
     -- define apis for language
     interp:api_define(language.apis())
 
+    -- we need to be able to precisely control the direction of deduplication of different types of values.
+    -- the default is to de-duplicate from left to right, but like links/syslinks need to be de-duplicated from right to left.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/1903
+    --
+    interp:deduplication_policy_set("links", "toleft")
+    interp:deduplication_policy_set("syslinks", "toleft")
+    interp:deduplication_policy_set("frameworks", "toleft")
+
     -- register filter handler
     interp:filter():register("option", function (variable)
 

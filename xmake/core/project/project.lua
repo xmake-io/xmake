@@ -240,7 +240,7 @@ function project._load_deps(instance, instances, deps, orderdeps, depspath)
 end
 
 -- load scope from the project file
-function project._load_scope(scope_kind, remove_repeat, enable_filter)
+function project._load_scope(scope_kind, deduplicate, enable_filter)
 
     -- enter the project directory
     local oldir, errors = os.cd(os.projectdir())
@@ -252,7 +252,7 @@ function project._load_scope(scope_kind, remove_repeat, enable_filter)
     local interp = project.interpreter()
 
     -- load scope
-    local results, errors = interp:make(scope_kind, remove_repeat, enable_filter)
+    local results, errors = interp:make(scope_kind, deduplicate, enable_filter)
     if not results then
         return nil, errors
     end
@@ -726,6 +726,15 @@ function project.interpreter()
 
     -- define apis for project
     interp:api_define(project.apis())
+
+    -- we need to be able to precisely control the direction of deduplication of different types of values.
+    -- the default is to de-duplicate from left to right, but like links/syslinks need to be de-duplicated from right to left.
+    --
+    -- @see https://github.com/xmake-io/xmake/issues/1903
+    --
+    interp:deduplication_policy_set("links", "toleft")
+    interp:deduplication_policy_set("syslinks", "toleft")
+    interp:deduplication_policy_set("frameworks", "toleft")
 
     -- register api: deprecated
     deprecated_project.api_register(interp)

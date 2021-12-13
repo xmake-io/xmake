@@ -251,7 +251,7 @@ end
 -- @see https://github.com/xmake-io/xmake-repo/pull/489
 -- https://stackoverflow.com/questions/34491244/environment-variable-is-too-large-on-windows-10
 --
-function os._remove_repeat_pathenv(value)
+function os._deduplicate_pathenv(value)
     if value and #value > 4096 then
         local itemset = {}
         local results = {}
@@ -731,7 +731,7 @@ function os.execv(program, argv, opt)
             end
             -- we try to fix too long value before running process
             if type(v) == "string" and #v > 4096 and os.host() == "windows" then
-                v = os._remove_repeat_pathenv(v)
+                v = os._deduplicate_pathenv(v)
             end
             envars[k] = v
         end

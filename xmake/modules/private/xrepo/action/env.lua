@@ -176,7 +176,7 @@ function _enter_project(opt)
 end
 
 -- remove repeat environment values
-function _remove_repeat_pathenv(value)
+function _deduplicate_pathenv(value)
     if value then
         local itemset = {}
         local results = {}
@@ -320,7 +320,7 @@ function _package_getenvs(opt)
     end
     local results = {}
     for k, v in pairs(envs) do
-        results[k] = _remove_repeat_pathenv(v)
+        results[k] = _deduplicate_pathenv(v)
     end
     return results
 end

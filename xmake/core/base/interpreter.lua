@@ -481,7 +481,7 @@ function interpreter:_filter(values, level)
 end
 
 -- handle scope data
-function interpreter:_handle(scope, remove_repeat, enable_filter)
+function interpreter:_handle(scope, deduplicate, enable_filter)
 
     -- check
     assert(scope)
@@ -499,8 +499,12 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
         end
 
         -- remove repeat first for each slice with deleted item (__del_xxx)
-        if remove_repeat and not table.is_dictionary(values) then
-            values = table.unique(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+        if deduplicate and not table.is_dictionary(values) then
+            local policy = self:deduplication_policy(name)
+            if policy ~= false then
+                local unique_func = policy == "toleft" and table.reverse_unique or table.unique
+                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+            end
         end
 
         -- unwrap it if be only one
@@ -513,7 +517,7 @@ function interpreter:_handle(scope, remove_repeat, enable_filter)
 end
 
 -- make results
-function interpreter:_make(scope_kind, remove_repeat, enable_filter)
+function interpreter:_make(scope_kind, deduplicate, enable_filter)
 
     -- check
     assert(self and self._PRIVATE)
@@ -528,12 +532,12 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
     -- get the root scope info of the given scope kind, e.g. root.target
     local results = {}
-    local scope_opt = {interpreter = self, remove_repeat = remove_repeat, enable_filter = enable_filter}
+    local scope_opt = {interpreter = self, deduplicate = deduplicate, enable_filter = enable_filter}
     if scope_kind and scope_kind:startswith("root.") then
 
         local root_scope = scopes._ROOT[scope_kind:sub(6)]
         if root_scope then
-            results = self:_handle(root_scope, remove_repeat, enable_filter)
+            results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)
 
@@ -542,7 +546,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
 
         local root_scope = scopes._ROOT["__rootkind"]
         if root_scope then
-            results = self:_handle(root_scope, remove_repeat, enable_filter)
+            results = self:_handle(root_scope, deduplicate, enable_filter)
         end
         return scopeinfo.new(scope_kind, results, scope_opt)
 
@@ -578,7 +582,7 @@ function interpreter:_make(scope_kind, remove_repeat, enable_filter)
                 end
 
                 -- add this scope
-                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, remove_repeat, enable_filter), scope_opt)
+                results[scope_name] = scopeinfo.new(scope_kind, self:_handle(scope_values, deduplicate, enable_filter), scope_opt)
             end
         end
     end
@@ -751,11 +755,11 @@ function interpreter:load(file, opt)
 end
 
 -- make results
-function interpreter:make(scope_kind, remove_repeat, enable_filter)
+function interpreter:make(scope_kind, deduplicate, enable_filter)
 
     -- get the results with the given scope
     self._PENDING = true
-    local ok, results = xpcall(interpreter._make, interpreter._traceback, self, scope_kind, remove_repeat, enable_filter)
+    local ok, results = xpcall(interpreter._make, interpreter._traceback, self, scope_kind, deduplicate, enable_filter)
     self._PENDING = false
     if not ok then
         return nil, results
@@ -811,6 +815,34 @@ end
 function interpreter:rootscope_set(scope_kind)
     assert(self and self._PRIVATE)
     self._PRIVATE._ROOTSCOPE = scope_kind
+end
+
+-- get the deduplication policy
+function interpreter:deduplication_policy(name)
+    local policies = self._PRIVATE._DEDUPLICATION_POLICIES
+    if name then
+        return policies and policies[name]
+    else
+        return policies
+    end
+end
+
+-- set the deduplication policy
+--
+-- we need to be able to precisely control the direction of deduplication of different types of values.
+-- the default is to de-duplicate from left to right, but like links/syslinks need to be de-duplicated from right to left.
+--
+-- e.g
+--
+-- interp:deduplication_set("defines", "right") -- remove duplicates to the right (default)
+-- interp:deduplication_set("links", "left") -- remove duplicates to the left
+-- interp:deduplication_set("links", false) -- disable deduplication
+--
+-- @see https://github.com/xmake-io/xmake/issues/1903
+--
+function interpreter:deduplication_policy_set(name, policy)
+    self._PRIVATE._DEDUPLICATION_POLICIES = self._PRIVATE._DEDUPLICATION_POLICIES or {}
+    self._PRIVATE._DEDUPLICATION_POLICIES[name] = policy
 end
 
 -- get apis

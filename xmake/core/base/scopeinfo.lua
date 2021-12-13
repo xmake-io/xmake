@@ -35,8 +35,8 @@ function _instance.new(kind, info, opt)
     local instance = table.inherit(_instance)
     instance._KIND = kind or "root"
     instance._INFO = info
-    instance._INTERPRETER   = opt.interpreter
-    instance._REMOVE_REPEAT = opt.remove_repeat
+    instance._INTERPRETER = opt.interpreter
+    instance._DEDUPLICATE = opt.deduplicate
     instance._ENABLE_FILTER = opt.enable_filter
     return instance
 end
@@ -58,13 +58,17 @@ function _instance:_api_type(name)
 end
 
 -- handle the api values
-function _instance:_api_handle(values)
+function _instance:_api_handle(name, values)
     local interp = self:interpreter()
     if interp then
 
         -- remove repeat first for each slice with deleted item (__del_xxx)
-        if self._REMOVE_REPEAT and not table.is_dictionary(values) then
-            values = table.unique(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+        if self._DEDUPLICATE and not table.is_dictionary(values) then
+            local policy = interp:deduplication_policy(name)
+            if policy ~= false then
+                local unique_func = policy == "toleft" and table.reverse_unique or table.unique
+                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+            end
         end
 
         -- filter values
@@ -112,7 +116,7 @@ function _instance:_api_set_values(name, ...)
     values = table.join(table.unpack(values))
 
     -- handle values
-    local handled_values = self:_api_handle(values)
+    local handled_values = self:_api_handle(name, values)
 
     -- save values
     if type(handled_values) == "table" and #handled_values == 0 then
@@ -151,7 +155,7 @@ function _instance:_api_add_values(name, ...)
     values = table.join(table.unpack(values))
 
     -- save values
-    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), values))
+    scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), values))
 
     -- save extra config
     if extra_config then
@@ -180,7 +184,7 @@ function _instance:_api_set_keyvalues(name, key, ...)
 
     -- save values to "name"
     scope[name] = scope[name] or {}
-    scope[name][key] = self:_api_handle(values)
+    scope[name][key] = self:_api_handle(name, values)
 
     -- save values to "name.key"
     local name_key = name .. "." .. key
@@ -218,9 +222,9 @@ function _instance:_api_add_keyvalues(name, key, ...)
     -- save values to "name"
     scope[name] = scope[name] or {}
     if scope[name][key] == nil then
-        scope[name][key] = self:_api_handle(values)
+        scope[name][key] = self:_api_handle(name, values)
     else
-        scope[name][key] = self:_api_handle(table.join2(table.wrap(scope[name][key]), values))
+        scope[name][key] = self:_api_handle(name, table.join2(table.wrap(scope[name][key]), values))
     end
 
     -- save values to "name.key"
@@ -247,11 +251,11 @@ function _instance:_api_set_dictionary(name, dict_or_key, value, extra_config)
     if type(dict_or_key) == "table" then
         local dict = {}
         for k, v in pairs(dict_or_key) do
-            dict[k] = self:_api_handle(v)
+            dict[k] = self:_api_handle(name, v)
         end
         scope[name] = dict
     elseif type(dict_or_key) == "string" and value ~= nil then
-        scope[name] = {[dict_or_key] = self:_api_handle(value)}
+        scope[name] = {[dict_or_key] = self:_api_handle(name, value)}
         -- save extra config
         if extra_config and table.is_dictionary(extra_config) then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
@@ -275,11 +279,11 @@ function _instance:_api_add_dictionary(name, dict_or_key, value, extra_config)
     if type(dict_or_key) == "table" then
         local dict = {}
         for k, v in pairs(dict_or_key) do
-            dict[k] = self:_api_handle(v)
+            dict[k] = self:_api_handle(name, v)
         end
         table.join2(scope[name], dict)
     elseif type(dict_or_key) == "string" and value ~= nil then
-        scope[name][dict_or_key] = self:_api_handle(value)
+        scope[name][dict_or_key] = self:_api_handle(name, value)
         -- save extra config
         if extra_config and table.is_dictionary(extra_config) then
             scope["__extra_" .. name] = scope["__extra_" .. name] or {}
@@ -317,7 +321,7 @@ function _instance:_api_set_paths(name, ...)
     local paths = interp:_api_translate_paths(values, "set_" .. name, 5)
 
     -- save values
-    scope[name] = self:_api_handle(paths)
+    scope[name] = self:_api_handle(name, paths)
 
     -- save extra config
     if extra_config then
@@ -357,7 +361,7 @@ function _instance:_api_add_paths(name, ...)
     local paths = interp:_api_translate_paths(values, "add_" .. name, 5)
 
     -- save values
-    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), paths))
+    scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), paths))
 
     -- save extra config
     if extra_config then
@@ -394,7 +398,7 @@ function _instance:_api_del_paths(name, ...)
     end
 
     -- save values
-    scope[name] = self:_api_handle(table.join2(table.wrap(scope[name]), paths_deleted))
+    scope[name] = self:_api_handle(name, table.join2(table.wrap(scope[name]), paths_deleted))
 
     -- save api source info, e.g. call api() in sourcefile:linenumber
     self:_api_save_sourceinfo_to_scope(scope, name, paths)
@@ -590,7 +594,7 @@ end
 
 -- clone a new instance from the current
 function _instance:clone()
-    return _instance.new(self:kind(), self:info(), {interpreter = self:interpreter(), remove_repeat = self._REMOVE_REPEAT, enable_filter = self._ENABLE_FILTER})
+    return _instance.new(self:kind(), self:info(), {interpreter = self:interpreter(), deduplicate = self._DEDUPLICATE, enable_filter = self._ENABLE_FILTER})
 end
 
 -- new a scope instance

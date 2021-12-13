@@ -1385,20 +1385,20 @@ function _instance:objectfiles()
 
     -- some object files may be repeat and appear link errors if multi-batches exists, so we need remove all repeat object files
     -- e.g. add_files("src/*.c", {rules = {"rule1", "rule2"}})
-    local remove_repeat = batchcount > 1
+    local deduplicate = batchcount > 1
 
     -- get object files from all dependent targets (object kind)
     if self:orderdeps() then
         for _, dep in ipairs(self:orderdeps()) do
             if dep:kind() == "object" then
                 table.join2(objectfiles, dep:objectfiles())
-                remove_repeat = true
+                deduplicate = true
             end
         end
     end
 
     -- remove repeat object files
-    if remove_repeat then
+    if deduplicate then
         objectfiles = table.unique(objectfiles)
     end
 
