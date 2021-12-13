@@ -38,7 +38,8 @@ task("create")
                 -- options
             ,   options =
                 {
-                    {'l', "language",   "kv", "c++",        "The project language"
+                    {'f', "force",      "k",   nil,         "Force to create project in a non-empty directory."}
+                ,   {'l', "language",   "kv", "c++",        "The project language"
 
                                                             -- show the description of all languages
                                                           , values = function (complete, opt)
