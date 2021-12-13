@@ -12,10 +12,13 @@
 * [#1888](https://github.com/xmake-io/xmake/issues/1888): Improve windows installer to avoid remove other files
 * [#1895](https://github.com/xmake-io/xmake/issues/1895): Improve `plugin.vsxmake.autoupdate` rule
 * [#1893](https://github.com/xmake-io/xmake/issues/1893): Improve to detect icc and ifort toolchains
+* [#1905](https://github.com/xmake-io/xmake/pull/1905): Add support of external headers without experimental for msvc
+* [#1904](https://github.com/xmake-io/xmake/pull/1904): Improve vs201x generator
 
 ### Bugs fixed
 
 * [#1885](https://github.com/xmake-io/xmake/issues/1885): Fix package:fetch_linkdeps
+* [#1903](https://github.com/xmake-io/xmake/issues/1903): Fix package link order
 
 ## v2.6.1
 
@@ -1167,10 +1170,13 @@
 * [#1888](https://github.com/xmake-io/xmake/issues/1888): 改进 windows 安装器，避免错误删除其他安装目录下的文件
 * [#1895](https://github.com/xmake-io/xmake/issues/1895): 改进 `plugin.vsxmake.autoupdate` 规则
 * [#1893](https://github.com/xmake-io/xmake/issues/1893): 改进探测 icc 和 ifort 工具链
+* [#1905](https://github.com/xmake-io/xmake/pull/1905): 改进 msvc 对 external 头文件搜索探测支持
+* [#1904](https://github.com/xmake-io/xmake/pull/1904): 改进 vs201x 工程生成器
 
 ### Bugs 修复
 
 * [#1885](https://github.com/xmake-io/xmake/issues/1885): 修复 package:fetch_linkdeps 链接顺序问题
+* [#1903](https://github.com/xmake-io/xmake/issues/1903): 修复包链接顺序
 
 ## v2.6.1
 
