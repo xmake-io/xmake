@@ -201,7 +201,8 @@ function _find_package(cmake, name, opt)
 
                         -- get links and linkdirs
                         local linkdir = path.directory(library)
-                        if linkdir ~= "." and string.find(string.gsub(linkdir,"/","\\"),workdir) == nil then
+                        linkdir = path.translate(linkdir) 
+                        if linkdir ~= "." and not linkdir:find(workdir) then
                             linkdirs = linkdirs or {}
                             table.insert(linkdirs, linkdir)
                             local link = target.linkname(path.filename(library))
