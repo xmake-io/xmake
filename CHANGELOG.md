@@ -5,6 +5,7 @@
 ### New features
 
 * [#1902](https://github.com/xmake-io/xmake/issues/1902): Support to build linux kernel driver modules
+* [#1913](https://github.com/xmake-io/xmake/issues/1913): Build and run targets with given group pattern
 
 ### Change
 
@@ -1165,6 +1166,7 @@
 ### 新特性
 
 * [#1902](https://github.com/xmake-io/xmake/issues/1902): 支持构建 linux 内核驱动模块
+* [#1913](https://github.com/xmake-io/xmake/issues/1913): 通过 group 模式匹配，指定构建和运行一批目标程序
 
 ### 改进
 
