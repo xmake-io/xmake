@@ -162,7 +162,7 @@ function main()
     -- enter project directory
     local oldir = os.cd(project.directory())
 
-    -- clean the current target
+    -- clean target
     _clean(targetname)
 
     -- unlock the whole project
