@@ -144,17 +144,19 @@ function _run(target)
 end
 
 -- check targets
-function _check_targets(targetname)
+function _check_targets(targetname, group_pattern)
 
     -- get targets
     local targets = {}
-    if targetname and not targetname:startswith("__") then
+    if targetname then
         table.insert(targets, project.target(targetname))
     else
-        -- install default or all targets
         for _, target in ipairs(project.ordertargets()) do
-            if (target:is_default() or option.get("all")) and target:is_binary() then
-                table.insert(targets, target)
+            if target:is_binary() then
+                local group = target:get("group")
+                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                    table.insert(targets, target)
+                end
             end
         end
     end
@@ -179,14 +181,18 @@ end
 -- main
 function main()
 
-    -- get the target name
-    local targetname = option.get("target")
-
     -- config it first
+    local targetname
+    local group_pattern = option.get("group")
+    if group_pattern then
+        group_pattern = "^" .. path.pattern(group_pattern) .. "$"
+    else
+        targetname = option.get("target")
+    end
     task.run("config", {target = targetname, require = "n", verbose = false})
 
     -- check targets first
-    _check_targets(targetname)
+    _check_targets(targetname, group_pattern)
 
     -- enter project directory
     local oldir = os.cd(project.directory())
@@ -195,10 +201,12 @@ function main()
     if targetname then
         _run(project.target(targetname))
     else
-        -- run default or all binary targets
         for _, target in ipairs(project.ordertargets()) do
-            if (target:is_default() or option.get("all")) and target:is_binary() then
-                _run(target)
+            if target:is_binary() then
+                local group = target:get("group")
+                if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
+                    _run(target)
+                end
             end
         end
     end

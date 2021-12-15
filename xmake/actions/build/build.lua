@@ -200,7 +200,7 @@ function _add_batchjobs_for_target_and_deps(batchjobs, rootjob, jobrefs, target)
 end
 
 -- get batch jobs, @note we need export it for private.diagnosis.dump_buildjobs
-function get_batchjobs(targetname)
+function get_batchjobs(targetname, group_pattern)
 
     -- get root targets
     local targets_root = {}
@@ -210,7 +210,8 @@ function get_batchjobs(targetname)
         local depset = hashset.new()
         local targets = {}
         for _, target in pairs(project.targets()) do
-            if target:is_default() or option.get("all") then
+            local group = target:get("group")
+            if (target:is_default() and not group_pattern) or option.get("all") or (group_pattern and group and group:match(group_pattern)) then
                 for _, depname in ipairs(target:get("deps")) do
                     depset:insert(depname)
                 end
@@ -234,10 +235,10 @@ function get_batchjobs(targetname)
 end
 
 -- the main entry
-function main(targetname)
+function main(targetname, group_pattern)
 
     -- build all jobs
-    local batchjobs = get_batchjobs(targetname)
+    local batchjobs = get_batchjobs(targetname, group_pattern)
     if batchjobs and batchjobs:size() > 0 then
         local curdir = os.curdir()
         runjobs("build", batchjobs, {comax = option.get("jobs") or 1, on_exit = function (errors)

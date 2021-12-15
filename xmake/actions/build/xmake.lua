@@ -44,6 +44,11 @@ task("build")
                     {'b', "build",      "k",  nil   , "Build target. This is default building mode and optional."     }
                 ,   {'r', "rebuild",    "k",  nil   , "Rebuild the target."                                           }
                 ,   {'a', "all",        "k",  nil   , "Build all targets."                                            }
+                ,   {'g', "group",      "kv",  nil  , "Run all targets of the given group. It support path pattern matching.",
+                                                      "e.g.",
+                                                      "    xmake -g test",
+                                                      "    xmake -g test_*",
+                                                      "    xmake --group=benchmark/*"                                 }
                 ,   {nil, "dry-run",    "k",  nil   , "Dry run to build target."                                      }
 
                 ,   {}
