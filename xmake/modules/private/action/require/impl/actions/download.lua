@@ -151,15 +151,20 @@ function _download(package, url, sourcedir, url_alias, url_excludes)
 
     -- extract package file
     os.rm(sourcedir .. ".tmp")
+    local extension = archive.extension(packagefile)
     if archive.extract(packagefile, sourcedir .. ".tmp", {excludes = url_excludes}) then
         -- move to source directory
         os.rm(sourcedir)
         os.mv(sourcedir .. ".tmp", sourcedir)
-    else
+    elseif extension and extension ~= "" then
         -- create an empty source directory if do not extract package file
         os.tryrm(sourcedir)
         os.mkdir(sourcedir)
         raise("cannot extract %s, maybe missing extractor or invalid package file!", packagefile)
+    else
+        -- if it is not archive file, we need only create empty source file and use package:originfile()
+        os.tryrm(sourcedir)
+        os.mkdir(sourcedir)
     end
 
     -- save original file path
