@@ -49,15 +49,15 @@ function _conan_get_build_directory(name)
 end
 
 -- generate conanfile.txt
-function _conan_generate_conanfile(name, pkgconfigs)
+function _conan_generate_conanfile(name, configs)
 
     -- trace
     dprint("generate %s ..", path.join(_conan_get_build_directory(name), "conanfile.txt"))
 
     -- get conan options, imports and build_requires
-    local options        = table.wrap(pkgconfigs.options)
-    local imports        = table.wrap(pkgconfigs.imports)
-    local build_requires = table.wrap(pkgconfigs.build_requires)
+    local options        = table.wrap(configs.options)
+    local imports        = table.wrap(configs.imports)
+    local build_requires = table.wrap(configs.build_requires)
 
     -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
     -- generate it
@@ -113,7 +113,7 @@ end
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = ,
---                                  pkgconfigs = {
+--                                  configs = {
 --                                      remote = "", build = "all", options = {}, imports = {}, build_requires = {},
 --                                      settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}}
 --
@@ -121,9 +121,9 @@ end
 --
 function main(name, opt)
 
-    -- get pkgconfigs
+    -- get configs
     opt = opt or {}
-    local pkgconfigs = opt.pkgconfigs or {}
+    local configs = opt.configs or {}
 
     -- find conan
     local conan = find_tool("conan")
@@ -147,15 +147,15 @@ function main(name, opt)
     _conan_install_xmake_generator(conan)
 
     -- generate conanfile.txt
-    _conan_generate_conanfile(name, pkgconfigs)
+    _conan_generate_conanfile(name, configs)
 
     -- install package
     local argv = {"install", "."}
-    if pkgconfigs.build then
-        if pkgconfigs.build == "all" then
+    if configs.build then
+        if configs.build == "all" then
             table.insert(argv, "--build")
         else
-            table.insert(argv, "--build=" .. pkgconfigs.build)
+            table.insert(argv, "--build=" .. configs.build)
         end
     end
 
@@ -233,15 +233,15 @@ function main(name, opt)
     end
 
     -- set custom settings
-    for _, setting in ipairs(pkgconfigs.settings) do
+    for _, setting in ipairs(configs.settings) do
         table.insert(argv, "-s")
         table.insert(argv, setting)
     end
 
     -- set remote
-    if pkgconfigs.remote then
+    if configs.remote then
         table.insert(argv, "-r")
-        table.insert(argv, pkgconfigs.remote)
+        table.insert(argv, configs.remote)
     end
 
     -- TODO set environments

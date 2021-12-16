@@ -1316,7 +1316,7 @@ function _instance:find_package(name, opt)
                               mode = self:mode(),
                               plat = self:plat(),
                               arch = self:arch(),
-                              pkgconfigs = self:configs(),
+                              configs = self:configs(),
                               buildhash = self:buildhash(), -- for xmake package or 3rd package manager, e.g. go:: ..
                               cachekey = opt.cachekey or "fetch_package_system",
                               external = opt.external,
@@ -1896,7 +1896,7 @@ function package.load_from_system(packagename)
         -- on install script
         local on_install = function (pkg)
             local opt = {}
-            opt.pkgconfigs      = pkg:configs()
+            opt.configs         = pkg:configs()
             opt.mode            = pkg:is_debug() and "debug" or "release"
             opt.plat            = pkg:plat()
             opt.arch            = pkg:arch()

@@ -26,7 +26,7 @@ import("lib.detect.find_tool")
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
 -- @param opt   the options, e.g. { verbose = true,
---                                  pkgconfigs = {outputdir = "clib", save = false, save_dev = false}}
+--                                  configs = {outputdir = "clib", save = false, save_dev = false}}
 --
 -- @return      true or false
 --
@@ -39,19 +39,19 @@ function main(name, opt)
     end
 
     opt = opt or {}
-    local pkgconfigs = opt.pkgconfigs or {}
+    local configs = opt.configs or {}
     local argv = {"install", name}
-    local abs_out = path.join(os.projectdir(), pkgconfigs.outputdir)
+    local abs_out = path.join(os.projectdir(), configs.outputdir)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
     if not option.get("verbose") then
         table.insert(argv, "-q")
     end
-    if pkgconfigs.save then
+    if configs.save then
         table.insert(argv, "--save")
     end
-    if pkgconfigs.save_dev then
+    if configs.save_dev then
         table.insert(argv, "--save-dev")
     end
 

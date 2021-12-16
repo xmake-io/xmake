@@ -41,23 +41,28 @@ function _find_package(cmake, name, opt)
 
     -- e.g. OpenCV 4.1.1, Boost COMPONENTS regex system
     local requirestr = name
+    local configs = opt.configs or {}
     if opt.required_version then
         requirestr = requirestr .. " " .. opt.required_version
     end
-    if opt.components then
+    -- use opt.components is for backward compatibility
+    local components = configs.components or opt.components
+    if components then
         requirestr = requirestr .. " COMPONENTS"
-        for _, component in ipairs(opt.components) do
+        for _, component in ipairs(components) do
             requirestr = requirestr .. " " .. component
         end
     end
-    if opt.moduledirs then
-        for _, moduledir in ipairs(opt.moduledirs) do
+    local moduledirs = configs.moduledirs or opt.moduledirs
+    if moduledirs then
+        for _, moduledir in ipairs(moduledirs) do
             cmakefile:print("add_cmake_modules(%s)", moduledir)
         end
     end
     -- e.g. set(Boost_USE_STATIC_LIB ON)
-    if opt.presets then
-        for k, v in pairs(opt.presets) do
+    local presets = configs.presets or opt.presets
+    if presets then
+        for k, v in pairs(presets) do
             if type(v) == "boolean" then
                 cmakefile:print("set(%s %s)", k, v and "ON" or "OFF")
             else
@@ -82,7 +87,8 @@ function _find_package(cmake, name, opt)
     cmakefile:close()
 
     -- run cmake
-    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = opt.envs}) end}
+    local envs = configs.envs or opt.envs
+    try {function() return os.vrunv(cmake.program, {workdir}, {curdir = workdir, envs = envs}) end}
 
     -- pares defines and includedirs for macosx/linux
     local links
@@ -238,12 +244,19 @@ end
 --
 -- find_package("cmake::ZLIB")
 -- find_package("cmake::OpenCV", {required_version = "4.1.1"})
--- find_package("cmake::Boost", {components = {"regex", "system"}, presets = {Boost_USE_STATIC_LIB = true}})
--- find_package("cmake::Foo", {moduledirs = "xxx"})
+-- find_package("cmake::Boost", {configs = {components = {"regex", "system"}, presets = {Boost_USE_STATIC_LIB = true}}})
+-- find_package("cmake::Foo", {configs = {moduledirs = "xxx"}})
+--
+-- we can use add_requires with {system = true}
+--
+-- add_requires("cmake::ZLIB", {system = true})
+-- add_requires("cmake::OpenCV 4.1.1", {system = true})
+-- add_requires("cmake::Boost", {configs = {components = {"regex", "system"}, presets = {Boost_USE_STATIC_LIB = true}}})
+-- add_requires("cmake::Foo", {configs = {moduledirs = "xxx"}})
 --
 -- @param name  the package name
 -- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
---                                 pkgconfigs = {
+--                                 configs = {
 --                                      components = {"regex", "system"},
 --                                      moduledirs = "xxx",
 --                                      presets = {Boost_USE_STATIC_LIB = true},

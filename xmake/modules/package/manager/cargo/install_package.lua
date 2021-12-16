@@ -45,7 +45,7 @@ function main(name, opt)
 
     -- get required version
     opt = opt or {}
-    local pkgconfigs = opt.pkgconfigs or {}
+    local configs = opt.configs or {}
     local require_version = opt.require_version
     if not require_version or require_version == "latest" then
         require_version = "*"
@@ -62,10 +62,10 @@ function main(name, opt)
     tomlfile:print("edition = \"2018\"")
     tomlfile:print("")
     tomlfile:print("[dependencies]")
-    local features = pkgconfigs.features
+    local features = configs.features
     if features then
         features = table.wrap(features)
-        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), pkgconfigs.default_features)
+        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), configs.default_features)
     else
         tomlfile:print("%s = \"%s\"", name, require_version)
     end

@@ -22,7 +22,7 @@
 function main()
     return
     {
-        build          = {description = "use it to choose if you want to build from sources.", default = "missing", values = {"all", "never", "missing", "outdated"}},
+        build          = {description = "Use it to choose if you want to build from sources.", default = "missing", values = {"all", "never", "missing", "outdated"}},
         remote         = {description = "Set the conan remote server."},
         options        = {description = "Set the options values, e.g. OpenSSL:shared=True"},
         imports        = {description = "Set the imports for conan."},
