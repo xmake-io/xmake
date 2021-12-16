@@ -23,15 +23,6 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 
--- get configurations
-function configurations()
-    return
-    {
-        features         = {description = "set the features of dependency."},
-        default_features = {description = "enables or disables any defaults provided by the dependency.", default = true},
-    }
-end
-
 -- install package
 --
 -- e.g.
@@ -53,6 +44,8 @@ function main(name, opt)
     end
 
     -- get required version
+    opt = opt or {}
+    local pkgconfigs = opt.pkgconfigs or {}
     local require_version = opt.require_version
     if not require_version or require_version == "latest" then
         require_version = "*"
@@ -69,10 +62,10 @@ function main(name, opt)
     tomlfile:print("edition = \"2018\"")
     tomlfile:print("")
     tomlfile:print("[dependencies]")
-    local features = opt.features
+    local features = pkgconfigs.features
     if features then
         features = table.wrap(features)
-        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), opt.default_features)
+        tomlfile:print("%s = {version = \"%s\", features = [\"%s\"], default-features = %s}", name, require_version, table.concat(features, "\", \""), pkgconfigs.default_features)
     else
         tomlfile:print("%s = \"%s\"", name, require_version)
     end

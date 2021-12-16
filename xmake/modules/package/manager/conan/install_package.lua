@@ -49,15 +49,15 @@ function _conan_get_build_directory(name)
 end
 
 -- generate conanfile.txt
-function _conan_generate_conanfile(name, opt)
+function _conan_generate_conanfile(name, pkgconfigs)
 
     -- trace
     dprint("generate %s ..", path.join(_conan_get_build_directory(name), "conanfile.txt"))
 
     -- get conan options, imports and build_requires
-    local options        = table.wrap(opt.options)
-    local imports        = table.wrap(opt.imports)
-    local build_requires = table.wrap(opt.build_requires)
+    local options        = table.wrap(pkgconfigs.options)
+    local imports        = table.wrap(pkgconfigs.imports)
+    local build_requires = table.wrap(pkgconfigs.build_requires)
 
     -- @see https://docs.conan.io/en/latest/systems_cross_building/cross_building.html
     -- generate it
@@ -109,29 +109,21 @@ function _conan_install_xmake_generator(conan)
     end
 end
 
--- get configurations
-function configurations()
-    return
-    {
-        build          = {description = "use it to choose if you want to build from sources.", default = "missing", values = {"all", "never", "missing", "outdated"}},
-        remote         = {description = "Set the conan remote server."},
-        options        = {description = "Set the options values, e.g. OpenSSL:shared=True"},
-        imports        = {description = "Set the imports for conan."},
-        settings       = {description = "Set the build settings for conan."},
-        build_requires = {description = "Set the build requires for conan.", default = "xmake_generator/0.1.0@bincrafters/testing"}
-    }
-end
-
 -- install package
 --
 -- @param name  the package name, e.g. conan::OpenSSL/1.0.2n@conan/stable
 -- @param opt   the options, e.g. { verbose = true, mode = "release", plat = , arch = ,
---                                  remote = "", build = "all", options = {}, imports = {}, build_requires = {},
---                                  settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}
+--                                  pkgconfigs = {
+--                                      remote = "", build = "all", options = {}, imports = {}, build_requires = {},
+--                                      settings = {"compiler=Visual Studio", "compiler.version=10", "compiler.runtime=MD"}}}
 --
 -- @return      true or false
 --
 function main(name, opt)
+
+    -- get pkgconfigs
+    opt = opt or {}
+    local pkgconfigs = opt.pkgconfigs or {}
 
     -- find conan
     local conan = find_tool("conan")
@@ -155,15 +147,15 @@ function main(name, opt)
     _conan_install_xmake_generator(conan)
 
     -- generate conanfile.txt
-    _conan_generate_conanfile(name, opt)
+    _conan_generate_conanfile(name, pkgconfigs)
 
     -- install package
     local argv = {"install", "."}
-    if opt.build then
-        if opt.build == "all" then
+    if pkgconfigs.build then
+        if pkgconfigs.build == "all" then
             table.insert(argv, "--build")
         else
-            table.insert(argv, "--build=" .. opt.build)
+            table.insert(argv, "--build=" .. pkgconfigs.build)
         end
     end
 
@@ -241,15 +233,15 @@ function main(name, opt)
     end
 
     -- set custom settings
-    for _, setting in ipairs(opt.settings) do
+    for _, setting in ipairs(pkgconfigs.settings) do
         table.insert(argv, "-s")
         table.insert(argv, setting)
     end
 
     -- set remote
-    if opt.remote then
+    if pkgconfigs.remote then
         table.insert(argv, "-r")
-        table.insert(argv, opt.remote)
+        table.insert(argv, pkgconfigs.remote)
     end
 
     -- TODO set environments

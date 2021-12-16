@@ -1895,7 +1895,8 @@ function package.load_from_system(packagename)
 
         -- on install script
         local on_install = function (pkg)
-            local opt = table.copy(pkg:configs())
+            local opt = {}
+            opt.pkgconfigs      = pkg:configs()
             opt.mode            = pkg:is_debug() and "debug" or "release"
             opt.plat            = pkg:plat()
             opt.arch            = pkg:arch()
@@ -1930,9 +1931,9 @@ function package.load_from_system(packagename)
 
     if is_thirdparty then
         -- add configurations for the 3rd package
-        local install_package = sandbox_module.import("package.manager." .. packagename:split("::")[1]:lower() .. ".install_package", {try = true, anonymous = true})
-        if install_package and install_package.configurations then
-            for name, conf in pairs(install_package.configurations()) do
+        local configurations = sandbox_module.import("package.manager." .. packagename:split("::")[1]:lower() .. ".configurations", {try = true, anonymous = true})
+        if configurations then
+            for name, conf in pairs(configurations()) do
                 instance:add("configs", name, conf)
             end
         end

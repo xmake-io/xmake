@@ -23,42 +23,35 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 
--- get configurations
-function configurations()
-    return
-    {
-        save = {description = "save dependency in project's package.json", default = false, type = "boolean"},
-        save_dev = {description = "save as development dependency in project's package.json", default = false, type = "boolean"},
-        outputdir = {description = "package installation directory relative to project root", default = "clib"},
-    }
-end
-
 -- install package
 -- @param name  the package name, e.g. clib::clibs/bytes@0.4.0
 -- @param opt   the options, e.g. { verbose = true,
---                                  settings = {outputdir = "clib", save = false, save_dev = false}}
+--                                  pkgconfigs = {outputdir = "clib", save = false, save_dev = false}}
 --
 -- @return      true or false
 --
 function main(name, opt)
+
     -- find clib
     local clib = find_tool("clib")
     if not clib then
         raise("clib not found!")
     end
 
+    opt = opt or {}
+    local pkgconfigs = opt.pkgconfigs or {}
     local argv = {"install", name}
-    local abs_out = path.join(os.projectdir(), opt.outputdir)
+    local abs_out = path.join(os.projectdir(), pkgconfigs.outputdir)
     dprint("installing %s to %s", name, abs_out)
     table.insert(argv, "-o " .. abs_out)
 
     if not option.get("verbose") then
         table.insert(argv, "-q")
     end
-    if opt.save then
+    if pkgconfigs.save then
         table.insert(argv, "--save")
     end
-    if opt.save_dev then
+    if pkgconfigs.save_dev then
         table.insert(argv, "--save-dev")
     end
 

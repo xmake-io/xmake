@@ -243,10 +243,11 @@ end
 --
 -- @param name  the package name
 -- @param opt   the options, e.g. {verbose = true, required_version = "1.0",
---                                 components = {"regex", "system"},
---                                 moduledirs = "xxx",
---                                 presets = {Boost_USE_STATIC_LIB = true},
---                                 envs = {CMAKE_PREFIX_PATH = "xxx"})
+--                                 pkgconfigs = {
+--                                      components = {"regex", "system"},
+--                                      moduledirs = "xxx",
+--                                      presets = {Boost_USE_STATIC_LIB = true},
+--                                      envs = {CMAKE_PREFIX_PATH = "xxx"}})
 --
 function main(name, opt)
     opt = opt or {}
