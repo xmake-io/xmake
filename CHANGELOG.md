@@ -17,6 +17,7 @@
 * [#1904](https://github.com/xmake-io/xmake/pull/1904): Improve vs201x generator
 * Add `XMAKE_THEME` envirnoment variable to switch theme
 * [#1907](https://github.com/xmake-io/xmake/issues/1907): Add `-f/--force` to force to create project in a non-empty directory
+* [#1917](https://github.com/xmake-io/xmake/pull/1917): Improve to find_package and configurations
 
 ### Bugs fixed
 
@@ -1178,6 +1179,7 @@
 * [#1904](https://github.com/xmake-io/xmake/pull/1904): 改进 vs201x 工程生成器
 * 添加 `XMAKE_THEME` 环境变量去切换主题配置
 * [#1907](https://github.com/xmake-io/xmake/issues/1907): 添加 `-f/--force` 参数使得 `xmake create` 可以在费控目录被强制创建
+* [#1917](https://github.com/xmake-io/xmake/pull/1917): 改进 find_package 和配置
 
 ### Bugs 修复
 
