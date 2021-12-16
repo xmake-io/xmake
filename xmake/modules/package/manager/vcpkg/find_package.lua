@@ -82,8 +82,8 @@ function main(name, opt)
 
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local triplet = arch .. "-" .. plat
-    local configs = opt.configs
-    if plat == "windows" and configs and configs.shared ~= true then
+    local configs = opt.configs or {}
+    if plat == "windows" and configs.shared ~= true then
         triplet = triplet .. "-static"
         if configs.vs_runtime and configs.vs_runtime:startswith("MD") then
             triplet = triplet .. "-md"
