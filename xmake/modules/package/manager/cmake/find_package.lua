@@ -96,6 +96,7 @@ function _find_package(cmake, name, opt)
     local libfiles
     local defines
     local includedirs
+    local ldflags
     local flagsfile = path.join(workdir, "CMakeFiles", name .. ".dir", "flags.make")
     if os.isfile(flagsfile) then
         local flagsdata = io.readfile(flagsfile)
@@ -144,14 +145,21 @@ function _find_package(cmake, name, opt)
                 vprint(linkdata)
             end
             for _, line in ipairs(os.argv(linkdata)) do
+                local is_ldflags = false
                 local is_library = false
                 for _, suffix in ipairs({".so", ".dylib", ".dylib", ".tbd", ".lib"}) do
-                    if line:find(suffix, 1, true) then
+                    if line:startswith("-Wl,") then
+                        is_ldflags = true
+                        break
+                    elseif line:find(suffix, 1, true) then
                         is_library = true
                         break
                     end
                 end
-                if is_library then
+                if is_ldflags then
+                    ldflags = ldflags or {}
+                    table.insert(ldflags, line)
+                elseif is_library then
                     -- strip library version suffix, e.g. libxxx.so.1.1 -> libxxx.so
                     if line:find(".so", 1, true) then
                         line = line:gsub("lib(.-)%.so%..+$", "lib%1.so")
@@ -207,7 +215,7 @@ function _find_package(cmake, name, opt)
 
                         -- get links and linkdirs
                         local linkdir = path.directory(library)
-                        linkdir = path.translate(linkdir) 
+                        linkdir = path.translate(linkdir)
                         if linkdir ~= "." and not linkdir:startswith(workdir) then
                             linkdirs = linkdirs or {}
                             table.insert(linkdirs, linkdir)
@@ -230,10 +238,12 @@ function _find_package(cmake, name, opt)
     if links or includedirs then
         local results = {}
         results.links       = table.reverse_unique(links)
+        results.ldflags     = table.reverse_unique(ldflags)
         results.linkdirs    = table.unique(linkdirs)
         results.defines     = table.unique(defines)
         results.libfiles    = table.unique(libfiles)
         results.includedirs = table.unique(includedirs)
+        print(results)
         return results
     end
 end

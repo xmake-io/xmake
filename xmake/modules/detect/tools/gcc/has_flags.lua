@@ -44,36 +44,27 @@ end
 
 -- attempt to check it from the argument list
 function _check_from_arglist(flags, opt, islinker)
-
-    -- only for compiler
-    if islinker or #flags > 1 then
-        return
-    end
-
-    -- make cache key
-    local key = "detect.tools.gcc.has_flags"
-
-    -- make flags key
+    local key = "detect.tools.gcc." .. (islinker and "has_ldflags" or "has_cflags")
     local flagskey = opt.program .. "_" .. (opt.programver or "")
-
-    -- get all flags from argument list
     local allflags = detectcache:get2(key, flagskey)
     if not allflags then
-
-        -- get argument list
         allflags = {}
-        local arglist = os.iorunv(opt.program, {"--help"}, {envs = opt.envs})
+        local arglist = try {function () return os.iorunv(opt.program, {islinker and "-Wl,--help" or "--help"}, {envs = opt.envs}) end}
         if arglist then
             for arg in arglist:gmatch("%s+(%-[%-%a%d]+)%s+") do
                 allflags[arg] = true
             end
         end
-
-        -- save cache
         detectcache:set2(key, flagskey, allflags)
         detectcache:save()
     end
-    return allflags[flags[1]]
+    local flag = flags[1]
+    if islinker and flag then
+        if flag:startswith("-Wl,") then
+            flag = flag:match("-Wl,(.-),") or flag:sub(5)
+        end
+    end
+    return allflags[flag]
 end
 
 -- get extension
