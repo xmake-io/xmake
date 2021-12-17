@@ -2,6 +2,8 @@
 
 ## master (unreleased)
 
+## v2.6.2
+
 ### New features
 
 * [#1902](https://github.com/xmake-io/xmake/issues/1902): Support to build linux kernel driver modules
@@ -1163,6 +1165,8 @@
 # 更新日志
 
 ## master (开发中)
+
+## v2.6.2
 
 ### 新特性
 
