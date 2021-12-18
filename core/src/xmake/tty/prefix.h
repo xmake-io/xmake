@@ -18,8 +18,8 @@
  * @file        prefix.h
  *
  */
-#ifndef XM_PATH_PREFIX_H
-#define XM_PATH_PREFIX_H
+#ifndef XM_TTY_PREFIX_H
+#define XM_TTY_PREFIX_H
 
 /* //////////////////////////////////////////////////////////////////////////////////////
  * includes
