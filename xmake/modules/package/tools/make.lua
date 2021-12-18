@@ -23,6 +23,14 @@ import("core.base.option")
 import("core.project.config")
 import("lib.detect.find_tool")
 
+-- translate bin path
+function _translate_bin_path(bin_path)
+    if is_host("windows") and bin_path then
+        return bin_path:gsub("\\", "/") .. ".exe"
+    end
+    return bin_path
+end
+
 -- get the build environments
 function buildenvs(package)
     local envs = {}
@@ -44,14 +52,14 @@ function buildenvs(package)
     else
         local cflags   = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cflags"))
         local cxxflags = table.join(table.wrap(package:build_getenv("cxflags")), package:build_getenv("cxxflags"))
-        envs.CC        = package:build_getenv("cc")
-        envs.CXX       = package:build_getenv("cxx")
-        envs.AS        = package:build_getenv("as")
-        envs.AR        = package:build_getenv("ar")
-        envs.LD        = package:build_getenv("ld")
-        envs.LDSHARED  = package:build_getenv("sh")
-        envs.CPP       = package:build_getenv("cpp")
-        envs.RANLIB    = package:build_getenv("ranlib")
+        envs.CC        = _translate_bin_path(package:build_getenv("cc"))
+        envs.CXX       = _translate_bin_path(package:build_getenv("cxx"))
+        envs.AS        = _translate_bin_path(package:build_getenv("as"))
+        envs.AR        = _translate_bin_path(package:build_getenv("ar"))
+        envs.LD        = _translate_bin_path(package:build_getenv("ld"))
+        envs.LDSHARED  = _translate_bin_path(package:build_getenv("sh"))
+        envs.CPP       = _translate_bin_path(package:build_getenv("cpp"))
+        envs.RANLIB    = _translate_bin_path(package:build_getenv("ranlib"))
         envs.CFLAGS    = table.concat(cflags, ' ')
         envs.CXXFLAGS  = table.concat(cxxflags, ' ')
         envs.ASFLAGS   = table.concat(table.wrap(package:build_getenv("asflags")), ' ')
