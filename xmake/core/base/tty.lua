@@ -24,6 +24,9 @@ local tty = tty or {}
 -- load modules
 local io = require("base/io")
 
+-- save metatable and builtin functions
+tty._term_mode = tty._term_mode or tty.term_mode
+
 -- @see http://www.termsys.demon.co.uk/vtansi.htm
 
 -- write control characters
@@ -390,6 +393,23 @@ function tty.has_color24()
         tty._HAS_COLOR24 = has_color24 or false
     end
     return has_color24
+end
+
+-- get term mode, e.g. stdin, stdout, stderr
+--
+-- local oldmode = tty.term_mode(stdtype)
+-- local oldmode = tty.term_mode(stdtype, newmode)
+--
+function tty.term_mode(stdtype, newmode)
+    local oldmode = 0
+    if stdtype == "stdin" then
+        oldmode = tty._term_mode(1, newmode)
+    elseif stdtype == "stdout" then
+        oldmode = tty._term_mode(2, newmode)
+    elseif stdtype == "stderr" then
+        oldmode = tty._term_mode(3, newmode)
+    end
+    return oldmode
 end
 
 -- return module

@@ -268,6 +268,9 @@ function _install_packages(packages_install, packages_download, installdeps)
         packages_installed[tostring(instance)] = false
     end
 
+    -- save terminal mode for stdout, @see https://github.com/xmake-io/xmake/issues/1924
+    local term_mode_stdout = tty.term_mode("stdout")
+
     -- do install
     local progress_helper = show_wait and progress.new() or nil
     local packages_installing = {}
@@ -436,6 +439,12 @@ function _install_packages(packages_install, packages_download, installdeps)
                 end
                 tips = string.format("(%d/%s)", waitobjs:size(), names)
             end
+        end
+
+        -- fix terminal mode to avoid some subprocess to change it
+        -- @see https://github.com/xmake-io/xmake/issues/1924
+        if term_mode_stdout ~= tty.term_mode("stdout") then
+            tty.term_mode("stdout", term_mode_stdout)
         end
 
         -- trace
