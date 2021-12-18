@@ -123,7 +123,8 @@ xmake_C_FILES 			+= \
 						libc/dataptr \
 						libc/byteof \
 						libc/setbyte \
-						libc/strndup
+						libc/strndup \
+						tty/term_mode
 
 iswin =
 ifeq ($(PLAT),windows)

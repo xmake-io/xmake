@@ -232,6 +232,9 @@ tb_int_t xm_libc_dataptr(lua_State* lua);
 tb_int_t xm_libc_byteof(lua_State* lua);
 tb_int_t xm_libc_setbyte(lua_State* lua);
 
+// the tty functions
+tb_int_t xm_tty_term_mode(lua_State* lua);
+
 #ifdef XM_CONFIG_API_HAVE_CURSES
 // register curses
 __tb_extern_c_enter__
@@ -435,6 +438,13 @@ static luaL_Reg const g_libc_functions[] =
 ,   { "dataptr",        xm_libc_dataptr     }
 ,   { "byteof",         xm_libc_byteof      }
 ,   { "setbyte",        xm_libc_setbyte     }
+,   { tb_null,          tb_null             }
+};
+
+// the tty functions
+static luaL_Reg const g_tty_functions[] =
+{
+    { "term_mode",      xm_tty_term_mode    }
 ,   { tb_null,          tb_null             }
 };
 
@@ -882,6 +892,9 @@ xm_engine_ref_t xm_engine_init(tb_char_t const* name, xm_engine_lni_initalizer_c
 
         // bind libc functions
         xm_lua_register(engine->lua, "libc", g_libc_functions);
+
+        // bind tty functions
+        xm_lua_register(engine->lua, "tty", g_tty_functions);
 
 #ifdef XM_CONFIG_API_HAVE_CURSES
         // bind curses

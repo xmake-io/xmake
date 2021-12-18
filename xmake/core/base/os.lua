@@ -761,8 +761,6 @@ function os.execv(program, argv, opt)
         -- cannot execute process
         return nil, os.strerror()
     end
-
-    -- ok?
     return ok
 end
 
