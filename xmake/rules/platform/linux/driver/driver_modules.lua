@@ -28,11 +28,14 @@ import("private.tools.ccache")
 
 -- get linux-headers sdk
 function _get_linux_headers_sdk(target)
+    local linux_headersdir = target:values("linux.driver.linux-headers")
+    if linux_headersdir then
+        return {sdkdir = linux_headersdir, includedir = path.join(linux_headersdir, "include")}
+    end
     local linux_headers = assert(target:pkg("linux-headers"), "please add `add_requires(\"linux-headers\", {configs = {driver_modules = true}})` and `add_packages(\"linux-headers\")` to the given target!")
     local includedirs = linux_headers:get("includedirs") or linux_headers:get("sysincludedirs")
     local version = linux_headers:version()
     local includedir
-    local linux_headersdir
     for _, dir in ipairs(includedirs) do
         if dir:find("linux-headers", 1, true) then
             includedir = dir
@@ -226,8 +229,10 @@ function load(target)
     target:add("cflags", "-include " .. path.join(includedir, "linux", "kconfig.h"), {force = true})
     target:add("cflags", "-include " .. path.join(includedir, "linux", "compiler_types.h"), {force = true})
     -- we need disable includedirs from add_packages("linux-headers")
-    target:pkg("linux-headers"):set("includedirs", nil)
-    target:pkg("linux-headers"):set("sysincludedirs", nil)
+    if target:pkg("linux-headers") then
+        target:pkg("linux-headers"):set("includedirs", nil)
+        target:pkg("linux-headers"):set("sysincludedirs", nil)
+    end
 
     -- add compilation flags
     target:add("defines", "KBUILD_MODNAME=\"" .. target:name() .. "\"")
