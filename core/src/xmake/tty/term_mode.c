@@ -45,11 +45,11 @@ tb_int_t xm_tty_term_mode(lua_State* lua)
     // check
     tb_assert_and_check_return_val(lua, 0);
 
+#ifdef TB_CONFIG_OS_WINDOWS
+
     // get std type, (stdin: 1, stdout: 2, stderr: 3)
     tb_int_t stdtype = (tb_int_t)luaL_checkinteger(lua, 1);
 
-    // get terminal mode
-#ifdef TB_CONFIG_OS_WINDOWS
     DWORD mode = 0;
     HANDLE console_handle;
     switch (stdtype)
