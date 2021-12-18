@@ -49,8 +49,8 @@ tb_int_t xm_tty_term_mode(lua_State* lua)
     tb_int_t stdtype = (tb_int_t)luaL_checkinteger(lua, 1);
 
     // get terminal mode
-    DWORD mode = 0;
 #ifdef TB_CONFIG_OS_WINDOWS
+    DWORD mode = 0;
     HANDLE console_handle;
     switch (stdtype)
     {
@@ -64,6 +64,8 @@ tb_int_t xm_tty_term_mode(lua_State* lua)
         tb_int_t newmode = (tb_int_t)lua_tointeger(lua, 2);
         SetConsoleMode(console_handle, (DWORD)newmode);
     }
+#else
+    tb_int_t mode = 0;
 #endif
     lua_pushinteger(lua, (tb_int_t)mode);
     return 1;
