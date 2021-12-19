@@ -378,6 +378,10 @@ function _get_configs_for_mingw(package, configs, opt)
         envs.CMAKE_MAKE_PROGRAM = path.join(mingw, "bin", "mingw32-make.exe")
     end
 
+    if opt.cmake_generator == "Ninja" then
+        envs.CMAKE_MAKE_PROGRAM = "ninja"
+    end
+
     for k, v in pairs(envs) do
         table.insert(configs, "-D" .. k .. "=" .. v)
     end
