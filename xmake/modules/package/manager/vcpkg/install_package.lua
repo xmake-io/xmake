@@ -22,20 +22,13 @@
 import("core.base.option")
 import("lib.detect.find_tool")
 
--- install package
---
--- @param name  the package name, e.g. pcre2, pcre2/libpcre2-8
--- @param opt   the options, e.g. {verbose = true}
---
--- @return      true or false
---
-function main(name, opt)
+-- need manifest mode?
+function _need_manifest(opt)
+--    print("_need_manifest", opt)
+end
 
-    -- attempt to find vcpkg
-    local vcpkg = find_tool("vcpkg")
-    if not vcpkg then
-        raise("vcpkg not found!")
-    end
+-- install for classic mode
+function _install_for_classic(vcpkg, name, opt)
 
     -- get arch, plat and mode
     local arch = opt.arch
@@ -81,5 +74,28 @@ function main(name, opt)
     end
 
     -- install package
-    os.vrunv(vcpkg.program, argv)
+    os.vrunv(vcpkg, argv)
+end
+
+-- install package
+--
+-- @param name  the package name, e.g. pcre2, pcre2/libpcre2-8
+-- @param opt   the options, e.g. {verbose = true}
+--
+-- @return      true or false
+--
+function main(name, opt)
+
+    -- attempt to find vcpkg
+    local vcpkg = find_tool("vcpkg")
+    if not vcpkg then
+        raise("vcpkg not found!")
+    end
+
+    -- do install
+    if _need_manifest(opt) then
+        _install_for_manifest(vcpkg.program, name, opt)
+    else
+        _install_for_classic(vcpkg.program, name, opt)
+    end
 end
