@@ -74,18 +74,6 @@ function _install_for_manifest(vcpkg, name, opt)
     -- get configs
     local configs = opt.configs or {}
 
-    --[[
-    -- get arch, plat and mode
-
-    -- init triplet
-    local triplet = arch .. "-" .. plat
-    if opt.plat == "windows" and opt.shared ~= true then
-        triplet = triplet .. "-static"
-        if opt.vs_runtime and opt.vs_runtime:startswith("MD") then
-            triplet = triplet .. "-md"
-        end
-    end]]
-
     -- init argv
     local argv = {"--feature-flags=\"versions\"", "install"}
     if option.get("diagnosis") then
