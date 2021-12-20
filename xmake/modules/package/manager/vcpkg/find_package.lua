@@ -27,21 +27,8 @@ import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
 import("package.manager.vcpkg.configurations")
 
--- find package from the vcpkg package manager
---
--- @param name  the package name, e.g. zlib, pcre
--- @param opt   the options, e.g. {verbose = true)
---
-function main(name, opt)
-
-    -- attempt to find vcpkg directory
-    local vcpkgdir = find_vcpkgdir()
-    if not vcpkgdir then
-        if option.get("diagnosis") then
-            cprint("${color.warning}checkinfo: ${clear dim}vcpkg root directory not found, maybe you need set $VCPKG_ROOT!")
-        end
-        return
-    end
+-- find it for classic mode
+function _find_package_for_classic(vcpkgdir, name, opt)
 
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
     -- @see https://github.com/xmake-io/xmake/issues/925
@@ -137,3 +124,26 @@ function main(name, opt)
     return result
 end
 
+-- find it for manifest mode
+function _find_package_for_manifest(vcpkgdir, name, opt)
+end
+
+-- find package from the vcpkg package manager
+--
+-- @param name  the package name, e.g. zlib, pcre
+-- @param opt   the options, e.g. {verbose = true)
+--
+function main(name, opt)
+
+    -- attempt to find vcpkg directory
+    local vcpkgdir = find_vcpkgdir()
+    if not vcpkgdir then
+        if option.get("diagnosis") then
+            cprint("${color.warning}checkinfo: ${clear dim}vcpkg root directory not found, maybe you need set $VCPKG_ROOT!")
+        end
+        return
+    end
+
+    -- do find
+    return _find_package_for_manifest(vcpkgdir, name, opt) or _find_package_for_classic(vcpkgdir, name, opt)
+end
