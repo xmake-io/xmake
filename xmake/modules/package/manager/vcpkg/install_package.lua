@@ -74,19 +74,28 @@ function _install_for_manifest(vcpkg, name, opt)
     -- get configs
     local configs = opt.configs or {}
 
-    -- init argv
-    local argv = {"--feature-flags=\"versions\"", "install"}
-    if option.get("diagnosis") then
-        table.insert(argv, "--debug")
-    end
-
-    -- generate platform
+    -- init triplet
     local arch = opt.arch
     local plat = opt.plat
     if plat == "macosx" then
         plat = "osx"
     end
     arch = configurations.arch(arch)
+    local triplet = arch .. "-" .. plat
+    if opt.plat == "windows" and opt.shared ~= true then
+        triplet = triplet .. "-static"
+        if opt.vs_runtime and opt.vs_runtime:startswith("MD") then
+            triplet = triplet .. "-md"
+        end
+    end
+
+    -- init argv
+    local argv = {"--feature-flags=\"versions\"", "install", "--triplet", triplet}
+    if option.get("diagnosis") then
+        table.insert(argv, "--debug")
+    end
+
+    -- generate platform
     local platform = plat .. " & " .. arch
 
     -- generate dependencies
@@ -120,7 +129,7 @@ function _install_for_manifest(vcpkg, name, opt)
         dependencies = dependencies,
         ["builtin-baseline"] = baseline,
         overrides = overrides}
-    local tmpdir = os.tmpfile() .. ".dir"
+    local tmpdir = os.tmpfile({ramdisk = false}) .. ".dir"
     json.savefile(path.join(tmpdir, "vcpkg.json"), manifest)
 
     -- install package
