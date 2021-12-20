@@ -25,6 +25,7 @@ import("core.base.option")
 import("core.project.config")
 import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
+import("package.manager.vcpkg.configurations")
 
 -- find package from the vcpkg package manager
 --
@@ -50,29 +51,10 @@ function main(name, opt)
     local arch = opt.arch
     local plat = opt.plat
     local mode = opt.mode
-
-    -- mapping plat
     if plat == "macosx" then
         plat = "osx"
     end
-
-    -- archs mapping for vcpkg
-    local archs = {
-        x86_64          = "x64",
-        i386            = "x86",
-
-        -- android: armeabi armeabi-v7a arm64-v8a x86 x86_64 mips mip64
-        -- Offers a doc: https://github.com/microsoft/vcpkg/blob/master/docs/users/android.md
-        ["armeabi-v7a"] = "arm",
-        ["arm64-v8a"]   = "arm64",
-
-        -- ios: arm64 armv7 armv7s i386
-        armv7           = "arm",
-        armv7s          = "arm",
-        arm64           = "arm64",
-    }
-    -- mapping arch
-    arch = archs[arch] or arch
+    arch = configurations.arch(arch)
 
     -- get the vcpkg installed directory
     local installdir = path.join(vcpkgdir, "installed")

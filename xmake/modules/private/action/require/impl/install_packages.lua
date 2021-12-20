@@ -285,7 +285,6 @@ function _install_packages(packages_install, packages_download, installdeps)
         -- fetch a new package
         local instance = nil
         while instance == nil and #packages_pending > 0 do
-            print("packages_pending", #packages_pending)
             for idx, pkg in ipairs(packages_pending) do
 
                 -- all dependences has been installed? we install it now
