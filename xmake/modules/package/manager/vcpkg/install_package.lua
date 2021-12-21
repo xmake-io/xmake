@@ -90,7 +90,7 @@ function _install_for_manifest(vcpkg, name, opt)
     end
 
     -- init argv
-    local argv = {"--feature-flags=\"versions\"", "install", "--triplet", triplet}
+    local argv = {"--feature-flags=\"versions\"", "install", "--x-wait-for-lock", "--triplet", triplet}
     if option.get("diagnosis") then
         table.insert(argv, "--debug")
     end
