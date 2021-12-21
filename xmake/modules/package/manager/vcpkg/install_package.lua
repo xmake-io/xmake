@@ -32,7 +32,7 @@ function _need_manifest(opt)
         return true
     end
     local configs = opt.configs
-    if configs and (configs.features or configs.default_features or configs.baseline) then
+    if configs and (configs.features or configs.default_features == false or configs.baseline) then
         return true
     end
 end
@@ -129,12 +129,18 @@ function _install_for_manifest(vcpkg, name, opt)
         dependencies = dependencies,
         ["builtin-baseline"] = baseline,
         overrides = overrides}
-    local tmpdir = os.tmpfile({ramdisk = false}) .. ".dir"
-    json.savefile(path.join(tmpdir, "vcpkg.json"), manifest)
+    local installdir = assert(opt.installdir, "installdir not found!")
+    json.savefile(path.join(installdir, "vcpkg.json"), manifest)
+    if not os.isdir(installdir) then
+        os.mkdir(installdir)
+    end
+    if option.get("diagnosis") then
+        vprint(path.join(installdir, "vcpkg.json"))
+        vprint(manifest)
+    end
 
     -- install package
-    os.vrunv(vcpkg, argv, {curdir = tmpdir})
-    os.tryrm(tmpdir)
+    os.vrunv(vcpkg, argv, {curdir = installdir})
 end
 
 -- install package

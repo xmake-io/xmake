@@ -27,8 +27,7 @@ import("core.project.target")
 import("detect.sdks.find_vcpkgdir")
 import("package.manager.vcpkg.configurations")
 
--- find it for classic mode
-function _find_package_for_classic(vcpkgdir, name, opt)
+function _find_package(vcpkgdir, name, opt)
 
     -- fix name, e.g. ffmpeg[x264] as ffmpeg
     -- @see https://github.com/xmake-io/xmake/issues/925
@@ -43,11 +42,11 @@ function _find_package_for_classic(vcpkgdir, name, opt)
     end
     arch = configurations.arch(arch)
 
-    -- get the vcpkg installed directory
-    local installdir = path.join(vcpkgdir, "installed")
-
-    -- get the vcpkg info directory
-    local infodir = path.join(installdir, "vcpkg", "info")
+    -- get the vcpkg info directories
+    local infodirs = {
+        path.join(opt.installdir, "vcpkg_installed", "vcpkg", "info"),
+        path.join(vcpkgdir, "installed", "vcpkg", "info")
+    }
 
     -- find the package info file, e.g. zlib_1.2.11-3_x86-windows[-static].list
     local triplet = arch .. "-" .. plat
@@ -58,11 +57,15 @@ function _find_package_for_classic(vcpkgdir, name, opt)
             triplet = triplet .. "-md"
         end
     end
-    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodir)
+    local infofile = find_file(format("%s_*_%s.list", name, triplet), infodirs)
+    if not infofile then
+        return
+    end
+    local installdir = path.directory(path.directory(path.directory(infofile)))
 
     -- save includedirs, linkdirs and links
     local result = nil
-    local info = infofile and io.readfile(infofile) or nil
+    local info = io.readfile(infofile)
     if info then
         for _, line in ipairs(info:split('\n')) do
             line = line:trim()
@@ -104,7 +107,7 @@ function _find_package_for_classic(vcpkgdir, name, opt)
     end
 
     -- save version
-    if result and infofile then
+    if result then
         local infoname = path.basename(infofile)
         result.version = infoname:match(name .. "_(%d+%.?%d*%.?%d*.-)_" .. arch)
         if not result.version then
@@ -124,10 +127,6 @@ function _find_package_for_classic(vcpkgdir, name, opt)
     return result
 end
 
--- find it for manifest mode
-function _find_package_for_manifest(vcpkgdir, name, opt)
-end
-
 -- find package from the vcpkg package manager
 --
 -- @param name  the package name, e.g. zlib, pcre
@@ -144,6 +143,6 @@ function main(name, opt)
         return
     end
 
-    -- do find
-    return _find_package_for_manifest(vcpkgdir, name, opt) or _find_package_for_classic(vcpkgdir, name, opt)
+    -- do find package
+    return _find_package(vcpkgdir, name, opt)
 end
