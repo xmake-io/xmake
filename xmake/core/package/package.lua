@@ -486,7 +486,7 @@ end
 -- is local package?
 -- we will use local installdir and cachedir in current project
 function _instance:is_local()
-    return self:is_embed()
+    return self:is_embed() or self:is_thirdparty()
 end
 
 -- is debug package? (deprecated)
@@ -570,10 +570,15 @@ function _instance:cachedir()
         cachedir = self:get("cachedir")
         if not cachedir then
             local name = self:name():lower():gsub("::", "_")
+            local version_str = self:version_str()
+            if self:is_thirdparty() then
+                -- strip `>= <=`
+                version_str = version_str:gsub("[>=<]", "")
+            end
             if self:is_local() then
-                cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, self:version_str(), "cache")
+                cachedir = path.join(config.buildir({absolute = true}), ".packages", name:sub(1, 1):lower(), name, version_str, "cache")
             else
-                cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, self:version_str())
+                cachedir = path.join(package.cachedir(), name:sub(1, 1):lower(), name, version_str)
             end
         end
         self._CACHEDIR = cachedir
@@ -593,8 +598,13 @@ function _instance:installdir(...)
             else
                 installdir = path.join(package.installdir(), name:sub(1, 1):lower(), name)
             end
-            if self:version_str() then
-                installdir = path.join(installdir, self:version_str())
+            local version_str = self:version_str()
+            if version_str then
+                if self:is_thirdparty() then
+                    -- strip `>= <=`
+                    version_str = version_str:gsub("[>=<]", "")
+                end
+                installdir = path.join(installdir, version_str)
             end
             installdir = path.join(installdir, self:buildhash())
         end
@@ -1054,6 +1064,9 @@ function _instance:buildhash()
                 -- We cannot directly deserialize the table, so the result may be different each time
                 local configs_order = {}
                 for k, v in pairs(table.wrap(configs)) do
+                    if type(v) == "table" then
+                        v = string.serialize(v, {strip = true, indent = false, orderkeys = true})
+                    end
                     table.insert(configs_order, k .. "=" .. tostring(v))
                 end
                 table.sort(configs_order)
