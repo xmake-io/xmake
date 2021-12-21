@@ -2,6 +2,10 @@
 
 ## master (unreleased)
 
+### New features
+
+* [#1298](https://github.com/xmake-io/xmake/issues/1928): Support vcpkg manifest mode and select version for package/install
+
 ### Changes
 
 * [#1923](https://github.com/xmake-io/xmake/issues/1923): Improve to build linux driver, support set custom linux-headers path
@@ -1169,6 +1173,10 @@
 # 更新日志
 
 ## master (开发中)
+
+### 新特性
+
+* [#1298](https://github.com/xmake-io/xmake/issues/1928): 支持 vcpkg 清单模式安装包，实现安装包的版本选择
 
 ### 改进
 
