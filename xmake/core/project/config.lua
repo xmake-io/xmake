@@ -97,14 +97,7 @@ function config.buildir(opt)
     opt = opt or {}
     local buildir = config.get("buildir") or "build"
     if not path.is_absolute(buildir) then
-        local rootdir
-        if os.isdir(path.join(os.workingdir(), ".xmake")) then
-            -- we switch to independent working directory @see https://github.com/xmake-io/xmake/issues/820
-            rootdir = os.workingdir()
-        else
-            rootdir = os.projectdir()
-        end
-        buildir = path.absolute(buildir, rootdir)
+        buildir = path.absolute(buildir, os.projectdir())
     end
 
     -- adjust path for the current directory
