@@ -73,18 +73,11 @@ function _make_dirs(dir, vcxprojdir)
             return ""
         end
         if path.is_absolute(dir) then
-            print("absolute")
-            print(dir)
-            print("projectdir", project.directory())
             if dir:startswith(project.directory()) then
-                print("relative to ", vcxprojdir)
-                print(dir)
                 return _escape(path.relative(dir, vcxprojdir))
             end
             return _escape(dir)
         else
-            print("relative")
-            print(dir)
             return _escape(path.relative(path.absolute(dir), vcxprojdir))
         end
     end
