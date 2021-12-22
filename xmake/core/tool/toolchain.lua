@@ -131,7 +131,7 @@ function _instance:get(name)
         return value
     end
 
-    -- lazy loading platform
+    -- lazy loading toolchain
     self:_load()
 
     -- get other platform info
@@ -185,6 +185,7 @@ end
 -- get the program and name of the given tool kind
 function _instance:tool(toolkind)
     -- ensure to do load for initializing toolset first
+    self:check()
     self:_load()
     local toolpaths = self:get("toolset." .. toolkind)
     if toolpaths then
