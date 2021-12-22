@@ -33,9 +33,68 @@ import("vs201x_vcxproj_filters")
 import("core.cache.memcache")
 import("core.cache.localcache")
 import("private.action.require.install", {alias = "install_requires"})
+import("private.action.run.make_runenvs")
 import("actions.config.configfiles", {alias = "generate_configfiles", rootdir = os.programdir()})
 import("actions.config.configheader", {alias = "generate_configheader", rootdir = os.programdir()})
 import("private.utils.batchcmds")
+
+-- escape special chars in msbuild file
+function _escape(str)
+    if not str then
+        return nil
+    end
+
+    local map =
+    {
+         ["%"] = "%25" -- Referencing metadata
+    ,    ["$"] = "%24" -- Referencing properties
+    ,    ["@"] = "%40" -- Referencing item lists
+    ,    ["'"] = "%27" -- Conditions and other expressions
+    ,    [";"] = "%3B" -- List separator
+    ,    ["?"] = "%3F" -- Wildcard character for file names in Include and Exclude attributes
+    ,    ["*"] = "%2A" -- Wildcard character for use in file names in Include and Exclude attributes
+    -- html entities
+    ,    ["\""] = "&quot;"
+    ,    ["<"] = "&lt;"
+    ,    [">"] = "&gt;"
+    ,    ["&"] = "&amp;"
+    }
+
+    return (string.gsub(str, "[%%%$@';%?%*\"<>&]", function (c) return assert(map[c]) end))
+end
+
+function _make_dirs(dir, vcxprojdir)
+    if dir == nil then
+        return ""
+    end
+    if type(dir) == "string" then
+        dir = path.translate(dir)
+        if dir == "" then
+            return ""
+        end
+        if path.is_absolute(dir) then
+            print("absolute")
+            print(dir)
+            print("projectdir", project.directory())
+            if dir:startswith(project.directory()) then
+                print("relative to ", vcxprojdir)
+                print(dir)
+                return _escape(path.relative(dir, vcxprojdir))
+            end
+            return _escape(dir)
+        else
+            print("relative")
+            print(dir)
+            return _escape(path.relative(path.absolute(dir), vcxprojdir))
+        end
+    end
+    local r = {}
+    for k, v in ipairs(dir) do
+        r[k] = _make_dirs(v, vcxprojdir)
+    end
+    r = table.unique(r)
+    return path.joinenv(r)
+end
 
 -- clear cache configuration
 function _clear_cacheconf()
@@ -180,7 +239,7 @@ function _make_custom_commands(target)
 end
 
 -- make target info
-function _make_targetinfo(mode, arch, target)
+function _make_targetinfo(mode, arch, target, vcxprojdir)
 
     -- init target info
     local targetinfo = { mode = mode, arch = (arch == "x86" and "Win32" or "x64") }
@@ -245,6 +304,44 @@ function _make_targetinfo(mode, arch, target)
 
     -- save execution dir (when executed from VS)
     targetinfo.rundir = target:rundir()
+
+    -- save runenvs
+    local runenvs = {}
+    local addrunenvs, setrunenvs = make_runenvs(target)
+    for k, v in pairs(target:pkgenvs()) do
+        addrunenvs = addrunenvs or {}
+        addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
+    end
+    for _, dep in ipairs(target:orderdeps()) do
+        for k, v in pairs(dep:pkgenvs()) do
+            addrunenvs = addrunenvs or {}
+            addrunenvs[k] = table.join(table.wrap(addrunenvs[k]), path.splitenv(v))
+        end
+    end
+    for k, v in pairs(addrunenvs) do
+        if k:upper() == "PATH" then
+            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", _make_dirs(v, vcxprojdir), k)
+        else
+            runenvs[k] = format("%s;$([System.Environment]::GetEnvironmentVariable('%s'))", path.joinenv(v), k)
+        end
+    end
+    for k, v in pairs(setrunenvs) do
+        if #v == 1 then
+            v = v[1]
+            if path.is_absolute(v) and v:startswith(project.directory()) then
+                runenvs[k] = _make_dirs(v, vcxprojdir)
+            else
+                runenvs[k] = v[1]
+            end
+        else
+            runenvs[k] = path.joinenv(v)
+        end
+    end
+    local runenvstr = {}
+    for k, v in pairs(runenvs) do
+        table.insert(runenvstr, k .. "=" .. v)
+    end
+    targetinfo.runenvs = table.concat(runenvstr, "\n")
 
     -- use mfc? save the mfc runtime kind
     if target:rule("win.sdk.mfc.shared_app") or target:rule("win.sdk.mfc.shared") then
@@ -462,6 +559,9 @@ function make(outputdir, vsinfo)
                     -- make target with the given mode and arch
                     targets[targetname] = targets[targetname] or {}
                     local _target = targets[targetname]
+                                    
+                    -- the vcxproj directory
+                    _target.project_dir = path.join(vsinfo.solution_dir, targetname)
 
                     -- save c/c++ precompiled header
                     _target.pcheader   = target:pcheaderfile("c")     -- header.h
@@ -472,7 +572,7 @@ function make(outputdir, vsinfo)
                     _target.kind = target:kind()
                     _target.scriptdir = target:scriptdir()
                     _target.info = _target.info or {}
-                    table.insert(_target.info, _make_targetinfo(mode, arch, target))
+                    table.insert(_target.info, _make_targetinfo(mode, arch, target, _target.project_dir))
 
                     -- save all sourcefiles and headerfiles
                     _target.sourcefiles = table.unique(table.join(_target.sourcefiles or {}, (target:sourcefiles())))

@@ -166,7 +166,7 @@ function _make_tailer(vcxprojfile, vsinfo)
 end
 
 -- make Configurations
-function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
+function _make_configurations(vcxprojfile, vsinfo, target)
 
     -- the target name
     local targetname = target.name
@@ -233,8 +233,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make OutputDirectory and IntermediateDirectory
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<OutDir>%s\\</OutDir>", _make_dirs(targetinfo.targetdir, vcxprojdir))
-            vcxprojfile:print("<IntDir>%s\\</IntDir>", _make_dirs(targetinfo.objectdir, vcxprojdir))
+            vcxprojfile:print("<OutDir>%s\\</OutDir>", _make_dirs(targetinfo.targetdir, target.project_dir))
+            vcxprojfile:print("<IntDir>%s\\</IntDir>", _make_dirs(targetinfo.objectdir, target.project_dir))
             vcxprojfile:print("<TargetName>%s</TargetName>", path.basename(targetinfo.targetfile))
             vcxprojfile:print("<TargetExt>%s</TargetExt>", path.extension(targetinfo.targetfile))
 
@@ -247,7 +247,8 @@ function _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
     -- make Debugger
     for _, targetinfo in ipairs(target.info) do
         vcxprojfile:enter("<PropertyGroup Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Label=\"Debugger\">", targetinfo.mode, targetinfo.arch)
-            vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", _make_dirs(targetinfo.rundir, vcxprojdir))
+            vcxprojfile:print("<LocalDebuggerWorkingDirectory>%s</LocalDebuggerWorkingDirectory>", _make_dirs(targetinfo.rundir, target.project_dir))
+            vcxprojfile:print("<LocalDebuggerEnvironment>%s;$(LocalDebuggerEnvironment)</LocalDebuggerEnvironment>", targetinfo.runenvs)
         vcxprojfile:leave("</PropertyGroup>")
     end
 end
@@ -530,7 +531,7 @@ function _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
 end
 
 -- make common items
-function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
+function _make_common_items(vcxprojfile, vsinfo, target)
 
     -- for each mode and arch
     for _, targetinfo in ipairs(target.info) do
@@ -546,7 +547,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
                 for _, sourcefile in ipairs(sourcebatch.sourcefiles) do
 
                     -- make compiler flags
-                    local flags = _make_compflags(sourcefile, targetinfo, vcxprojdir)
+                    local flags = _make_compflags(sourcefile, targetinfo, target.project_dir)
 
                     -- no common flags for asm
                     if sourcekind ~= "as" then
@@ -591,7 +592,7 @@ function _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
         targetinfo.sourceflags = sourceflags
 
         -- make common item
-        _make_common_item(vcxprojfile, vsinfo, target, targetinfo, vcxprojdir)
+        _make_common_item(vcxprojfile, vsinfo, target, targetinfo, target.project_dir)
     end
 end
 
@@ -601,7 +602,7 @@ function _make_header_file(vcxprojfile, includefile, vcxprojdir)
 end
 
 -- make source file for all modes
-function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
+function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
 
     -- get object file and source kind
     local sourcekind = nil
@@ -612,7 +613,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
 
     -- enter it
     local nodename = (sourcekind == "as" and "CustomBuild" or (sourcekind == "mrc" and "ResourceCompile" or "ClCompile"))
-    sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
+    sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     vcxprojfile:enter("<%s Include=\"%s\">", nodename, sourcefile)
 
         -- for *.asm files
@@ -620,8 +621,8 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
             vcxprojfile:print("<ExcludedFromBuild>false</ExcludedFromBuild>")
             vcxprojfile:print("<FileType>Document</FileType>")
             for _, info in ipairs(sourceinfo) do
-                local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
-                local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, vcxprojdir)
+                local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
+                local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, target.project_dir)
                 vcxprojfile:print("<Outputs Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Outputs>", info.mode .. '|' .. info.arch, objectfile)
                 vcxprojfile:print("<Command Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s\'\">%s</Command>", info.mode .. '|' .. info.arch, compcmd)
             end
@@ -630,7 +631,7 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
         -- for *.rc files
         elseif sourcekind == "mrc" then
             for _, info in ipairs(sourceinfo) do
-                local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
+                local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
                 vcxprojfile:print("<ResourceOutputFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ResourceOutputFileName>", info.mode, info.arch, objectfile)
             end
 
@@ -717,10 +718,10 @@ function _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourc
 end
 
 -- make source file for specific modes
-function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
+function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
 
     -- add source file
-    sourcefile = path.relative(path.absolute(sourcefile), vcxprojdir)
+    sourcefile = path.relative(path.absolute(sourcefile), target.project_dir)
     for _, info in ipairs(sourceinfo) do
 
         -- enter it
@@ -728,9 +729,9 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
         vcxprojfile:enter("<%s Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\" Include=\"%s\">", nodename, info.mode, info.arch, sourcefile)
 
         -- for *.asm files
-        local objectfile = path.relative(path.absolute(info.objectfile), vcxprojdir)
+        local objectfile = path.relative(path.absolute(info.objectfile), target.project_dir)
         if info.sourcekind == "as" then
-            local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, vcxprojdir)
+            local compcmd = _make_compcmd(info.compargv, sourcefile, objectfile, target.project_dir)
             vcxprojfile:print("<ExcludedFromBuild>false</ExcludedFromBuild>")
             vcxprojfile:print("<FileType>Document</FileType>")
             vcxprojfile:print("<Outputs>%s</Outputs>", objectfile)
@@ -757,12 +758,12 @@ function _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sour
 end
 
 -- make source file for precompiled header
-function _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
+function _make_source_file_forpch(vcxprojfile, vsinfo, target)
 
     -- add precompiled source file
     local pcheader = target.pcxxheader or target.pcheader
     if pcheader then
-        local sourcefile = path.relative(path.absolute(pcheader), vcxprojdir)
+        local sourcefile = path.relative(path.absolute(pcheader), target.project_dir)
         vcxprojfile:enter("<ClCompile Include=\"%s\">", sourcefile)
             vcxprojfile:print("<PrecompiledHeader>Create</PrecompiledHeader>")
             vcxprojfile:print("<PrecompiledHeaderFile></PrecompiledHeaderFile>")
@@ -776,7 +777,7 @@ function _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
                 -- add object file
                 local pcoutputfile = info.pcxxoutputfile or info.pcoutputfile
                 if pcoutputfile then
-                    local objectfile = path.relative(path.absolute(pcoutputfile .. ".obj"), vcxprojdir)
+                    local objectfile = path.relative(path.absolute(pcoutputfile .. ".obj"), target.project_dir)
                     vcxprojfile:print("<ObjectFileName Condition=\"\'%$(Configuration)|%$(Platform)\'==\'%s|%s\'\">%s</ObjectFileName>", info.mode, info.arch, objectfile)
                 end
             end
@@ -785,7 +786,7 @@ function _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
 end
 
 -- make source files
-function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
+function _make_source_files(vcxprojfile, vsinfo, target)
 
     -- add source files
     vcxprojfile:enter("<ItemGroup>")
@@ -810,14 +811,14 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         -- make source files
         for sourcefile, sourceinfo in pairs(sourceinfos) do
             if #sourceinfo == #target.info then
-                _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
+                _make_source_file_forall(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
             else
-                _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo, vcxprojdir)
+                _make_source_file_forspec(vcxprojfile, vsinfo, target, sourcefile, sourceinfo)
             end
         end
 
         -- make precompiled source file
-        _make_source_file_forpch(vcxprojfile, vsinfo, target, vcxprojdir)
+        _make_source_file_forpch(vcxprojfile, vsinfo, target)
 
     vcxprojfile:leave("</ItemGroup>")
 
@@ -827,7 +828,7 @@ function _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
         for _, includefile in ipairs(target.headerfiles) do
             -- we need ignore pcheader file to fix https://github.com/xmake-io/xmake/issues/1171
             if not pcheader or includefile ~= pcheader then
-                _make_header_file(vcxprojfile, includefile, vcxprojdir)
+                _make_header_file(vcxprojfile, includefile, target.project_dir)
             end
         end
     vcxprojfile:leave("</ItemGroup>")
@@ -840,7 +841,7 @@ function make(vsinfo, target)
     local targetname = target.name
 
     -- the vcxproj directory
-    local vcxprojdir = path.join(vsinfo.solution_dir, targetname)
+    local vcxprojdir = target.project_dir
 
     -- open vcxproj file
     local vcxprojpath = path.join(vcxprojdir, targetname .. ".vcxproj")
@@ -853,13 +854,13 @@ function make(vsinfo, target)
     _make_header(vcxprojfile, vsinfo)
 
     -- make Configurations
-    _make_configurations(vcxprojfile, vsinfo, target, vcxprojdir)
+    _make_configurations(vcxprojfile, vsinfo, target)
 
     -- make common items
-    _make_common_items(vcxprojfile, vsinfo, target, vcxprojdir)
+    _make_common_items(vcxprojfile, vsinfo, target)
 
     -- make source files
-    _make_source_files(vcxprojfile, vsinfo, target, vcxprojdir)
+    _make_source_files(vcxprojfile, vsinfo, target)
 
     -- make tailer
     _make_tailer(vcxprojfile, vsinfo)
