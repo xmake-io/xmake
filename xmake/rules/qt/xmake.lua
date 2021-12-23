@@ -137,7 +137,7 @@ rule("qt.widgetapp_static")
             QtPlatformSupport = "QtPlatformCompositorSupport"
         end
 
-        -- laod some basic plugins and frameworks
+        -- load some basic plugins and frameworks
         local plugins = {}
         local frameworks = {"QtGui", "QtWidgets", "QtCore"}
         if qt_sdkver and qt_sdkver:lt("5.0") then
@@ -211,7 +211,7 @@ rule("qt.quickapp_static")
             QtPlatformSupport = "QtPlatformCompositorSupport"
         end
 
-        -- laod some basic plugins and frameworks
+        -- load some basic plugins and frameworks
         local plugins = {}
         local frameworks = {"QtGui", "QtQuick", "QtQml", "QtQmlModels", "QtCore", "QtNetwork"}
         if target:is_plat("macosx") then

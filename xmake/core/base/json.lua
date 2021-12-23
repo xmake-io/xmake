@@ -22,7 +22,7 @@
 local json  = json or {}
 local cjson = cjson or {}
 
--- laod modules
+-- load modules
 local io    = require("base/io")
 local utils = require("base/utils")
 
