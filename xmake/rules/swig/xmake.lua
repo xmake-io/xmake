@@ -30,8 +30,21 @@ rule("swig.base")
         local moduletype = target:extraconf("rules", "swig.c", "moduletype") or target:extraconf("rules", "swig.cpp", "moduletype")
         if moduletype == "python" then
             target:set("prefixname", "_")
-            if target:is_plat("windows") then
-                target:set("extension", ".pyd")
+            local soabi = target:extraconf("rules", "swig.c", "soabi") or target:extraconf("rules", "swig.cpp", "soabi")
+            if soabi then
+                import("lib.detect.find_tool")
+                local python = assert(find_tool("python3"), "python not found!")
+                local result = try { function() return os.iorunv(python.program, {"-c", "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"}) end}
+                if result then
+                    result = result:trim()
+                    if result ~= "None" then
+                        target:set("extension", result)
+                    end
+                end
+            else
+                if target:is_plat("windows") then
+                    target:set("extension", ".pyd")
+                end
             end
         elseif moduletype == "lua" then
             target:set("prefixname", "")
