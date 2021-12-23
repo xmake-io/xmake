@@ -25,6 +25,15 @@ rule("python.library")
         target:set("prefixname", "_")
         local soabi = target:extraconf("rules", "python.library", "soabi")
         if soabi then
+            import("lib.detect.find_tool")
+            local python = assert(find_tool("python3"), "python not found!")
+            local result = try { function() return os.iorunv(python.program, {"-c", "import sysconfig; print(sysconfig.get_config_var('EXT_SUFFIX'))"}) end}
+            if result then
+                result = result:trim()
+                if result ~= "None" then
+                    target:set("extension", result)
+                end
+            end
         else
             if target:is_plat("windows") then
                 target:set("extension", ".pyd")
