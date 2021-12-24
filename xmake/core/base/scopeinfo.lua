@@ -23,11 +23,12 @@ local scopeinfo = scopeinfo or {}
 local _instance = _instance or {}
 
 -- load modules
-local io    = require("base/io")
-local os    = require("base/os")
-local path  = require("base/path")
-local table = require("base/table")
-local utils = require("base/utils")
+local io         = require("base/io")
+local os         = require("base/os")
+local path       = require("base/path")
+local table      = require("base/table")
+local utils      = require("base/utils")
+local deprecated = require("base/deprecated")
 
 -- new an instance
 function _instance.new(kind, info, opt)
@@ -387,6 +388,9 @@ function _instance:_api_del_paths(name, ...)
 
     -- expand values
     values = table.join(...)
+
+    -- it has been marked as deprecated
+    deprecated.add("remove_" .. name .. "(%s)", "del_" .. name .. "(%s)", table.concat(values, ", "), table.concat(values, ", "))
 
     -- translate paths
     local paths = interp:_api_translate_paths(values, "del_" .. name, 5)
