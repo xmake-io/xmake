@@ -1512,7 +1512,9 @@ function _instance:headerfiles(outputdir, only_deprecated)
                 end
                 pattern = path.pattern(pattern)
                 if srcheader:match(pattern) then
-                    table.remove(dstheaders, i)
+                    if i <= #dstheaders then
+                        table.remove(dstheaders, i)
+                    end
                     return true
                 end
             end
