@@ -387,9 +387,15 @@ function _instance:add(name, ...)
     self:_invalidate(name)
 end
 
--- remove the value to the target info
+-- remove the value to the target info (deprecated)
 function _instance:del(name, ...)
     self._INFO:apival_del(name, ...)
+    self:_invalidate(name)
+end
+
+-- remove the value to the target info
+function _instance:remove(name, ...)
+    self._INFO:apival_remove(name, ...)
     self:_invalidate(name)
 end
 
@@ -1267,24 +1273,25 @@ function _instance:sourcefiles()
     local i = 1
     local count = 0
     local sourcefiles = {}
-    local sourcefiles_deleted = {}
+    local sourcefiles_removed = {}
     local sourcefiles_inserted = {}
-    local deleted_count = 0
+    local removed_count = 0
     local targetcache = memcache.cache("core.project.target")
     for _, file in ipairs(table.wrap(files)) do
 
-        -- mark as deleted files?
-        local deleted = false
-        if file:startswith("__del_") then
-            file = file:sub(7)
-            deleted = true
+        -- mark as removed files?
+        local removed = false
+        local prefix = "__remove_"
+        if file:startswith(prefix) then
+            file = file:sub(#prefix + 1)
+            removed = true
         end
 
         -- find source files and try to cache the matching results of os.match across targets
         -- @see https://github.com/xmake-io/xmake/issues/1353
         local results = targetcache:get2("sourcefiles", file)
         if not results then
-            if deleted then
+            if removed then
                 results = {file}
             else
                 results = os.files(file)
@@ -1311,7 +1318,7 @@ function _instance:sourcefiles()
         end
         if #results == 0 then
             local sourceinfo = (self:get("__sourceinfo_files") or {})[file] or {}
-            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (deleted and "del" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
+            utils.warning("cannot match %s(%s).%s_files(\"%s\") at %s:%d", self:type(), self:name(), (removed and "remove" or "add"), file, sourceinfo.file or "", sourceinfo.line or -1)
         end
 
         -- process source files
@@ -1322,10 +1329,10 @@ function _instance:sourcefiles()
                 sourcefile = path.relative(sourcefile, os.projectdir())
             end
 
-            -- add or delete it
-            if deleted then
-                deleted_count = deleted_count + 1
-                table.insert(sourcefiles_deleted, sourcefile)
+            -- add or remove it
+            if removed then
+                removed_count = removed_count + 1
+                table.insert(sourcefiles_removed, sourcefile)
             elseif not sourcefiles_inserted[sourcefile] then
                 table.insert(sourcefiles, sourcefile)
                 sourcefiles_inserted[sourcefile] = true
@@ -1333,12 +1340,12 @@ function _instance:sourcefiles()
         end
     end
 
-    -- remove all deleted source files
-    if deleted_count > 0 then
+    -- remove all source files which need be removed
+    if removed_count > 0 then
         for i = #sourcefiles, 1, -1 do
             local sourcefile = sourcefiles[i]
-            for _, deletefile in ipairs(sourcefiles_deleted) do
-                local pattern = path.translate(deletefile:gsub("|.*$", ""))
+            for _, removed_file in ipairs(sourcefiles_removed) do
+                local pattern = path.translate(removed_file:gsub("|.*$", ""))
                 if pattern:sub(1, 2):find('%.[/\\]') then
                     pattern = pattern:sub(3)
                 end
@@ -2034,8 +2041,10 @@ function target.apis()
         ,   "target.add_cleanfiles"
         ,   "target.add_configfiles"
         ,   "target.add_installfiles"
-            -- target.del_xxx
+            -- target.del_xxx (deprecated)
         ,   "target.del_files"
+            -- target.remove_xxx
+        ,   "target.remove_files"
         }
     ,   dictionary =
         {

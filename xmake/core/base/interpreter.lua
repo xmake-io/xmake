@@ -257,7 +257,7 @@ function interpreter:_api_register_xxx_values(scope_kind, action, apifunc, ...)
         assert(scope)
 
         -- set values (set, on, before, after ...)? mark as "override"
-        if apiname and (action ~= "add" and action ~= "del") then
+        if apiname and (action ~= "add" and action ~= "del" and action ~= "remove") then
             scope["__override_" .. apiname] = true
         end
 
@@ -498,12 +498,12 @@ function interpreter:_handle(scope, deduplicate, enable_filter)
             values = self:_filter(values)
         end
 
-        -- remove repeat first for each slice with deleted item (__del_xxx)
+        -- remove repeat first for each slice with removed item (__remove_xxx)
         if deduplicate and not table.is_dictionary(values) then
             local policy = self:deduplication_policy(name)
             if policy ~= false then
                 local unique_func = policy == "toleft" and table.reverse_unique or table.unique
-                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__del_") end)
+                values = unique_func(values, function (v) return type(v) == "string" and v:startswith("__remove_") end)
             end
         end
 
@@ -1360,7 +1360,7 @@ function interpreter:api_register_set_paths(scope_kind, ...)
     self:_api_register_xxx_values(scope_kind, "set", implementation, ...)
 end
 
--- register api for del_paths
+-- register api for del_paths (deprecated)
 function interpreter:api_register_del_paths(scope_kind, ...)
 
     -- check
@@ -1376,7 +1376,7 @@ function interpreter:api_register_del_paths(scope_kind, ...)
         -- mark these paths as deleted
         local paths_deleted = {}
         for _, pathname in ipairs(paths) do
-            table.insert(paths_deleted, "__del_" .. pathname)
+            table.insert(paths_deleted, "__remove_" .. pathname)
         end
 
         -- save values
@@ -1388,6 +1388,36 @@ function interpreter:api_register_del_paths(scope_kind, ...)
 
     -- register implementation
     self:_api_register_xxx_values(scope_kind, "del", implementation, ...)
+end
+
+-- register api for remove_paths
+function interpreter:api_register_remove_paths(scope_kind, ...)
+
+    -- check
+    assert(self)
+
+    -- define implementation
+    local implementation = function (self, scope, name, ...)
+
+        -- translate paths
+        local values = table.join(...)
+        local paths = self:_api_translate_paths(values, "remove_" .. name)
+
+        -- mark these paths as removed
+        local paths_removed = {}
+        for _, pathname in ipairs(paths) do
+            table.insert(paths_removed, "__remove_" .. pathname)
+        end
+
+        -- save values
+        scope[name] = table.join2(scope[name] or {}, paths_removed)
+
+        -- save api source info, e.g. call api() in sourcefile:linenumber
+        self:_save_sourceinfo_to_scope(scope, name, paths)
+    end
+
+    -- register implementation
+    self:_api_register_xxx_values(scope_kind, "remove", implementation, ...)
 end
 
 -- register api for add_paths
@@ -1509,7 +1539,7 @@ function interpreter:api_define(apis)
 
                 -- get function prefix
                 local prefix = nil
-                for _, name in ipairs({"set", "add", "del", "on", "before", "after"}) do
+                for _, name in ipairs({"set", "add", "del", "remove", "on", "before", "after"}) do
                     if funcname:startswith(name .. "_") then
                         prefix = name
                         break

@@ -420,6 +420,12 @@ function _instance:del(name, ...)
     self:_invalidate()
 end
 
+-- remove the value to the option info (deprecated)
+function _instance:remove(name, ...)
+    self._INFO:apival_remove(name, ...)
+    self:_invalidate()
+end
+
 -- get the extra configuration
 function _instance:extraconf(name, item, key)
     return self._INFO:extraconf(name, item, key)
