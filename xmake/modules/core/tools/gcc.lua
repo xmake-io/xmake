@@ -76,13 +76,13 @@ function init(self)
 end
 
 -- make the strip flag
-function nf_strip(self, level)
+function nf_strip(self, level, target)
     local maps =
     {
         debug = "-Wl,-S"
     ,   all   = "-s"
     }
-    if is_plat("macosx") or is_plat("iphoneos") then
+    if target:is_plat("macosx") or target:is_plat("iphoneos") then
         maps.all   = "-Wl,-x"
     end
     return maps[level]
